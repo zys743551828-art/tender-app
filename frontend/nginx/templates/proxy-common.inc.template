@@ -1,0 +1,9 @@
+# 反向代理到 API 的公共设置（同样因为 proxy_set_header 不跨层继承，每个代理 location 都 include）。
+proxy_http_version 1.1;
+proxy_set_header Connection "";
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $web_xff;
+proxy_set_header X-Forwarded-Proto $web_proto;
+proxy_set_header X-Forwarded-Host $host;
+proxy_connect_timeout 5s;

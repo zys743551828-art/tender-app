@@ -1,0 +1,22 @@
+# 构建上下文只需要 pyproject.toml、src、alembic.ini、migrations（以及可选的 constraints.txt）。
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.git
+.gitignore
+.venv
+venv
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+tests
+*.md
+Dockerfile
+.dockerignore
+.env
+.env.*
+*.egg-info
+dist
+build

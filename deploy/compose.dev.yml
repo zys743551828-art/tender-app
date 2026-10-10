@@ -1,0 +1,164 @@
+# =============================================================================
+# 开发 / 本地环境覆盖文件（与 compose.yml 叠加使用，绝不用于生产）
+#
+#   cp .env.example .env
+#   scripts/gen-secrets.sh --dev
+#   docker compose -f compose.yml -f compose.dev.yml up --build
+#
+# 与生产的差异（全部为开发便利，因此本文件不受 check_compose.py 的加固规则约束，只检查镜像标签与明文口令）：
+#   - MinIO 模拟 OSS（milvusdb/minio 镜像，与 Milvus 官方示例同源），桶由 dev-init 自动创建；
+#     CORS 由 MinIO 服务端变量统一放行（MinIO 不支持按桶 PutBucketCors）。
+#   - 前端：web（nginx）不启动，改用 web-dev（vite dev server，热更新）http://localhost:5173，/api 代理到 api。
+#   - api 与各 worker 把 ../backend/src 只读挂入并用 PYTHONPATH 优先加载，改代码后重启服务即生效；
+#     api 另设 BIDWB_API_RELOAD=true（bidwb-api 读取该变量后以 reload 方式启动 uvicorn，见 entrypoints.py）。
+#   - postgres 暴露在 127.0.0.1:5432，api 暴露在 127.0.0.1:8000（只绑回环地址）。
+#   - 本地管理员由 dev-init 通过 bidwb-admin create-member 创建，登录名取 ADMIN_LOGIN，口令在 secrets/admin_initial_password。
+# =============================================================================
+
+x-dev-env: &dev-env
+  BIDWB_ENVIRONMENT: development
+  BIDWB_LOG_LEVEL: DEBUG
+  BIDWB_PUBLIC_BASE_URL: http://localhost:5173
+  BIDWB_COOKIE_SECURE: "false"
+  BIDWB_SESSION_COOKIE_NAME: sid          # __Host- 前缀要求 Secure，开发走 http 故改用普通名称
+  BIDWB_STORAGE_ENDPOINT_URL: http://minio:9000
+  BIDWB_STORAGE_PUBLIC_ENDPOINT_URL: http://localhost:9000
+  BIDWB_STORAGE_REGION: us-east-1
+  BIDWB_STORAGE_BUCKET: bidwb-dev
+  BIDWB_STORAGE_ADDRESSING_STYLE: path
+  PYTHONPATH: /app/backend/src
+
+x-dev-src: &dev-src
+  - ../backend/src:/app/backend/src:ro
+
+services:
+  # 生产用 nginx 不启动（profile 未激活）；需要在开发环境验证 nginx 配置时：--profile prod-web
+  web:
+    profiles: ["prod-web"]
+
+  web-dev:
+    image: ${NODE_IMAGE:-node:22-alpine}
+    working_dir: /app
+    # 开发容器以 root 运行，避免命名卷 node_modules 的属主问题；仅开发使用
+    command: ["sh", "-c", "npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0"]
+    environment:
+      API_TARGET: http://api:8000
+    volumes:
+      - ../frontend:/app
+      - web_node_modules:/app/node_modules
+    ports:
+      - "127.0.0.1:5173:5173"
+    networks: [edge, egress]
+    depends_on:
+      api: {condition: service_healthy}
+    restart: unless-stopped
+    mem_limit: 2g
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  api:
+    environment:
+      <<: *dev-env
+      BIDWB_API_RELOAD: "true"
+    volumes: *dev-src
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      dev-init: {condition: service_completed_successfully}
+
+  kafka-init:
+    environment: *dev-env
+  relay:
+    environment: *dev-env
+    volumes: *dev-src
+  reaper:
+    environment: *dev-env
+    volumes: *dev-src
+  worker-parse:
+    environment: *dev-env
+    volumes: *dev-src
+  worker-ai:
+    environment: *dev-env
+    volumes: *dev-src
+  worker-experiment:
+    environment: *dev-env
+    volumes: *dev-src
+  worker-export:
+    environment: *dev-env
+    volumes: *dev-src
+  admin:
+    environment: *dev-env
+
+  postgres:
+    # data 是 internal 网络，容器只在该网络时无法发布端口；开发环境额外接入 devhost 以便本机 psql 连接
+    networks: [data, devhost]
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  # MinIO：开发用 S3 兼容存储。根凭据来自 secrets/minio_root_user|minio_root_password（gen-secrets.sh --dev 生成），
+  # 并同时作为 oss_access_key_id / oss_secret_access_key（见文件末尾 secrets 覆盖），应用侧无需改动。
+  minio:
+    image: ${MINIO_IMAGE:?开发用 MinIO 镜像，见 .env.example}
+    command: ["minio", "server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/minio_root_user
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_root_password
+      # 浏览器直传要求服务端返回 CORS 头；放行 vite 开发地址与本机 nginx 地址
+      MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:5173,http://localhost:8080"
+    secrets: [minio_root_user, minio_root_password]
+    volumes:
+      - miniodata:/data
+    networks: [data, devhost]
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  # 一次性：建桶 + 创建本地管理员
+  dev-init:
+    image: ${APP_IMAGE:?}
+    user: "10001:10001"
+    command: ["sh", "/dev-init.sh"]
+    restart: "no"
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+    networks: [data]
+    secrets: [db_url_api, admin_initial_password, oss_access_key_id, oss_secret_access_key]
+    environment:
+      <<: *dev-env
+      BIDWB_DATABASE_URL_FILE: /run/secrets/db_url_api
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_DISPLAY_NAME: ${ADMIN_DISPLAY_NAME:-系统管理员}
+    volumes:
+      - ./dev/dev-init.sh:/dev-init.sh:ro
+      - ../backend/src:/app/backend/src:ro
+    depends_on:
+      postgres: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+      minio: {condition: service_healthy}
+
+networks:
+  devhost: {}      # 非 internal 网络，仅用于把 postgres / minio 的端口发布到宿主机回环地址
+
+volumes:
+  miniodata: {}
+  web_node_modules: {}
+
+secrets:
+  # 开发环境把 OSS 凭据指向 MinIO 根凭据
+  oss_access_key_id: {file: ./secrets/minio_root_user}
+  oss_secret_access_key: {file: ./secrets/minio_root_password}
+  minio_root_user: {file: ./secrets/minio_root_user}
+  minio_root_password: {file: ./secrets/minio_root_password}

@@ -1,0 +1,579 @@
+# =============================================================================
+# 施组工作台 · 生产编排（单机 Docker Compose）
+#
+# 编排的安全与稳定性约束：
+#   - 网络：edge（对外）/ data（internal，无法出网）/ egress（出网，仅 api 与需要访问 OSS/模型的服务加入）
+#   - 全部容器：非 root、cap_drop ALL、no-new-privileges、只读根文件系统（第三方镜像的例外见下“例外清单”）
+#   - 数据服务（postgres/kafka/milvus）不发布端口；只有 web 向宿主机发布 8080（TLS 覆盖文件再加 443）
+#   - 口令全部走 secrets 文件（见 secrets/README.md），compose 与 .env 里没有任何明文凭据
+#   - 镜像标签一律 ${VAR:?}，由 .env 提供并固定版本；日志 json-file 轮转；restart: unless-stopped
+#
+# 用法（在本目录执行）：
+#   cp .env.example .env && scripts/gen-secrets.sh        # 然后编辑 .env、填写 secrets/ 里需手工提供的文件
+#   docker compose build api web mlflow                    # 或 docker compose pull（镜像来自私有仓库时）
+#   docker compose up -d                                   # 详见 README.md
+# 开发环境：docker compose -f compose.yml -f compose.dev.yml up    TLS：-f compose.yml -f compose.tls.yml
+#
+# 资源限额说明：宿主假定 8 vCPU / 32 GiB / 500 GB SSD（架构文档 8.1 的假设，未在真机核对）。
+# 下面的 mem_limit / cpus 是依据组件特性给出的【未实测估计】，用真实 PDF 压测后再调整：
+#   常驻服务 mem_limit 之和约 26.75 GiB，给宿主 OS、Docker 与页缓存留约 5 GiB（偏紧：这些是上限不是预留，
+#   且各服务峰值不会同时出现；若压测发现不够，优先降低 milvus 与 worker-parse 的限额或升级主机）。
+#   cpus 是上限而不是预留，所以之和（约 15）允许超过 8。tmpfs 占用计入容器内存。
+#
+# 例外清单（与 check_compose.py 的白名单一一对应；其余服务无例外）：
+#   - kafka  ：官方镜像启动脚本要写 /opt/kafka/config（生成 server.properties），故根文件系统可写；
+#              以镜像自带的非 root 用户 appuser(1000) 运行。
+#   - milvus ：官方镜像默认 root 且未文档化其写入路径，故不设 read_only、不指定 user；按官方要求 seccomp:unconfined。
+#              已 cap_drop ALL、no-new-privileges、仅在 internal 网络。是否可以收紧见 README 第 10 节。
+# =============================================================================
+name: bidwb
+
+# ---- 公共片段 ----------------------------------------------------------------
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+x-hardening: &hardening
+  restart: unless-stopped
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  logging: *logging
+
+# 应用服务（同一后端镜像）的公共部分。凭据类环境变量不放在这里：每个服务只拿到自己需要的 secret，
+# 且 BIDWB_*_FILE 指向的文件必须真的被挂载（否则后端读取 secret 文件时会启动失败）。
+x-app: &app
+  <<: *hardening
+  image: ${APP_IMAGE:?设置后端镜像，例如 bidwb-backend:0.1.0}
+  init: true
+  user: "10001:10001"
+  stop_grace_period: 60s
+  pids_limit: 512
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=128m,uid=10001,gid=10001,mode=0700
+
+x-app-env: &app-env
+  BIDWB_ENVIRONMENT: production
+  BIDWB_LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  BIDWB_PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?站点对外地址，生产必须是 https://...}
+  BIDWB_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  BIDWB_KAFKA_TOPIC_PREFIX: ${KAFKA_TOPIC_PREFIX:-}
+  BIDWB_STORAGE_ENDPOINT_URL: ${OSS_ENDPOINT_URL:?OSS 的 S3 兼容端点}
+  BIDWB_STORAGE_PUBLIC_ENDPOINT_URL: ${OSS_PUBLIC_ENDPOINT_URL:?浏览器可访问的 OSS 端点}
+  BIDWB_STORAGE_REGION: ${OSS_REGION:?OSS 地域}
+  BIDWB_STORAGE_BUCKET: ${OSS_BUCKET:?OSS 桶名}
+  BIDWB_STORAGE_ADDRESSING_STYLE: ${OSS_ADDRESSING_STYLE:-virtual}
+  BIDWB_RETRIEVAL_BACKEND: ${RETRIEVAL_BACKEND:-keyword}
+  BIDWB_AUTO_ANALYSIS: ${AUTO_ANALYSIS:-true}
+  BIDWB_PREDICTION_REPEATS: ${PREDICTION_REPEATS:-3}
+  BIDWB_PREDICTION_ANCHORS: ${PREDICTION_ANCHORS:-6}
+  BIDWB_PREDICTION_ANCHOR_TAU: ${PREDICTION_ANCHOR_TAU:-6}
+  BIDWB_MILVUS_URI: http://milvus:19530
+
+# worker / relay / reaper 的共同依赖：数据库健康、迁移完成、主题已创建
+x-worker-deps: &worker-deps
+  postgres: {condition: service_healthy}
+  migrate: {condition: service_completed_successfully}
+  kafka-init: {condition: service_completed_successfully}
+
+x-worker-healthcheck: &worker-healthcheck
+  # 无 HTTP 端口，只能确认进程存活；任务停滞由租约 + 回收器兜底（架构文档 7.1/8.2）
+  test: ["CMD", "bidwb-healthcheck", "proc"]
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 20s
+
+services:
+  # ---- 入口：静态资源 + 反向代理 -------------------------------------------
+  web:
+    <<: *hardening
+    build:
+      context: ../frontend
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+        NGINX_IMAGE: ${NGINX_IMAGE:-nginxinc/nginx-unprivileged:1.30.5-alpine}
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
+        VERSION: ${APP_VERSION:-dev}
+    image: ${WEB_IMAGE:?设置前端镜像，例如 bidwb-web:0.1.0}
+    user: "101:101"
+    networks: [edge]
+    ports:
+      # 默认只用 8080 明文（前面有 SLB 终止 TLS）。要把 80 映射到容器的 8080 做 TLS 跳转，设 WEB_HTTP_PORT=80
+      - "${WEB_BIND_ADDR:-0.0.0.0}:${WEB_HTTP_PORT:-8080}:8080"
+    environment:
+      WEB_MODE: http
+      WEB_SERVER_NAME: ${WEB_SERVER_NAME:-_}
+      WEB_PUBLIC_HOST: ${WEB_PUBLIC_HOST:-localhost}
+      WEB_SET_REAL_IP_FROM: ${WEB_SET_REAL_IP_FROM:-10.0.0.0/8}
+      WEB_CSP_CONNECT_EXTRA: ${WEB_CSP_CONNECT_EXTRA:-}
+      WEB_LOGIN_RATE: ${WEB_LOGIN_RATE:-10r/m}
+      WEB_API_RATE: ${WEB_API_RATE:-30r/s}
+      WEB_CLIENT_MAX_BODY_SIZE: ${WEB_CLIENT_MAX_BODY_SIZE:-5m}
+    tmpfs:
+      # envsubst 把模板渲染到 conf.d，故 conf.d 与 /tmp（pid、临时文件）需要可写
+      - /etc/nginx/conf.d:rw,noexec,nosuid,size=2m,uid=101,gid=101,mode=0755
+      - /tmp:rw,noexec,nosuid,size=64m,uid=101,gid=101,mode=0700
+    depends_on:
+      api: {condition: service_healthy}
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/nginx-health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # ---- 业务 API ------------------------------------------------------------
+  api:
+    <<: *app
+    build:
+      context: ../backend
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.11-slim-bookworm}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-}
+        VERSION: ${APP_VERSION:-dev}
+    command: ["bidwb-api"]
+    networks: [edge, data, egress]   # edge：web 反代；data：库与 Kafka/Milvus；egress：访问 OSS
+    secrets: [db_url_api, oss_access_key_id, oss_secret_access_key]
+    environment:
+      <<: *app-env
+      BIDWB_DATABASE_URL_FILE: /run/secrets/db_url_api
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      # API 只与 web 同处 edge 网络，信任其转发头（uvicorn 读取该变量决定信任哪些代理地址）
+      BIDWB_FORWARDED_ALLOW_IPS: "*"
+    depends_on:
+      postgres: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+    mem_limit: 2g
+    cpus: 1.5
+    healthcheck:
+      # /healthz 只表示进程存活（容器健康用它，避免数据库短暂抖动让整个栈显示不健康）；
+      # 含数据库的就绪检查 /readyz 由 scripts/healthcheck.sh 做
+      test: ["CMD", "bidwb-healthcheck", "http", "http://127.0.0.1:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---- 一次性任务：迁移 ----------------------------------------------------
+  migrate:
+    <<: *app
+    command:
+      - sh
+      - -c
+      # alembic 的 env.py 直接读环境变量 BIDWB_MIGRATION_DATABASE_URL（不经过 *_FILE 展开），
+      # 所以在这里把 secret 文件内容读入该进程的环境；不进入容器配置，docker inspect 看不到。
+      - 'BIDWB_MIGRATION_DATABASE_URL="$$(cat /run/secrets/db_url_owner)" exec alembic upgrade head'
+    restart: "no"
+    networks: [data]
+    secrets: [db_url_owner]
+    depends_on:
+      postgres: {condition: service_healthy}
+    mem_limit: 512m
+    cpus: 1.0
+
+  # ---- 一次性任务：创建 Kafka 主题 -----------------------------------------
+  kafka-init:
+    <<: *app
+    command: ["bidwb-admin", "ensure-topics"]
+    restart: "no"
+    networks: [data]
+    environment:
+      <<: *app-env
+    depends_on:
+      kafka: {condition: service_healthy}
+    mem_limit: 256m
+    cpus: 0.5
+
+  # ---- 发件箱中继 / 回收器 ----------------------------------------------------
+  # relay 只读写 jobs 与 outbox_events，无需访问 OSS，故只在 data 网络。
+  # reaper 回收租约；BIDWB_AUTO_ANALYSIS 开启时还会兜底推进“分析中”的项目，冻结输入快照要写 OSS，
+  # 因此 reaper 持有 OSS 凭据并加入 egress 网络。
+  relay:
+    <<: *app
+    command: ["bidwb-relay"]
+    networks: [data]
+    secrets: [db_url_worker]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      BIDWB_WORKER_ID: relay
+    depends_on: *worker-deps
+    mem_limit: 512m
+    cpus: 0.5
+    healthcheck: *worker-healthcheck
+
+  reaper:
+    <<: *app
+    command: ["bidwb-reaper"]
+    networks: [data, egress]
+    secrets: [db_url_worker, oss_access_key_id, oss_secret_access_key]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      BIDWB_WORKER_ID: reaper
+    depends_on: *worker-deps
+    mem_limit: 512m
+    cpus: 0.25
+    healthcheck: *worker-healthcheck
+
+  # ---- 四类 worker：同一镜像，BIDWB_WORKER_CLASS 决定消费的主题 --------------
+  # 设计：worker 单进程一次只算 1 个重任务（架构文档 8.1），要更大吞吐就增加服务副本而不是调大并发。
+  # 每个 worker 用静态 BIDWB_WORKER_ID，故不要用 `--scale`；需要更多消费者时复制该服务段并改名。
+  # 同一服务的容器重启后沿用同一 ID，租约与审计里的 worker 名因此稳定。
+  worker-parse:
+    <<: *app
+    command: ["bidwb-worker"]
+    networks: [data, egress]
+    secrets: [db_url_worker, oss_access_key_id, oss_secret_access_key, llm_api_key]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_CLASS: parse
+      BIDWB_WORKER_ID: worker-parse
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      # 规则提取任务（kind=rules）与解析任务同属该类 worker，需要模型配置
+      BIDWB_LLM_BASE_URL: ${LLM_BASE_URL:-}
+      BIDWB_LLM_MODEL: ${LLM_MODEL:-}
+      BIDWB_LLM_API_KEY_FILE: /run/secrets/llm_api_key
+    tmpfs:
+      # PDF 解析/渲染的临时文件；300 页图纸分册可能较大。tmpfs 计入内存，压测后调整
+      - /tmp:rw,noexec,nosuid,size=768m,uid=10001,gid=10001,mode=0700
+    depends_on: *worker-deps
+    mem_limit: 4g
+    cpus: 2.0
+    healthcheck: *worker-healthcheck
+
+  worker-ai:
+    <<: *app
+    command: ["bidwb-worker"]
+    networks: [data, egress]
+    secrets: [db_url_worker, db_url_runtime, oss_access_key_id, oss_secret_access_key, llm_api_key]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_CLASS: ai
+      BIDWB_WORKER_ID: worker-ai
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      # LangGraph 检查点库（独立数据库与角色）的连接串。后端配置读取该项，但当前处理器没有使用检查点，
+      # 该库目前只做了初始化与备份
+      BIDWB_RUNTIME_DATABASE_URL_FILE: /run/secrets/db_url_runtime
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      BIDWB_LLM_BASE_URL: ${LLM_BASE_URL:-}
+      BIDWB_LLM_MODEL: ${LLM_MODEL:-}
+      BIDWB_LLM_API_KEY_FILE: /run/secrets/llm_api_key
+    depends_on: *worker-deps
+    mem_limit: 2g
+    cpus: 1.0
+    healthcheck: *worker-healthcheck
+
+  worker-experiment:
+    <<: *app
+    command: ["bidwb-worker"]
+    networks: [data, egress]
+    secrets: [db_url_worker, db_url_runtime, oss_access_key_id, oss_secret_access_key, llm_api_key]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_CLASS: experiment
+      BIDWB_WORKER_ID: worker-experiment
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      BIDWB_RUNTIME_DATABASE_URL_FILE: /run/secrets/db_url_runtime
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+      BIDWB_LLM_BASE_URL: ${LLM_BASE_URL:-}
+      BIDWB_LLM_MODEL: ${LLM_MODEL:-}
+      BIDWB_LLM_API_KEY_FILE: /run/secrets/llm_api_key
+      # MLflow 客户端的标准变量：实验与大回测写 MLflow（研究侧副记录）；MLflow 不可用时业务记录仍完整（ADR-0015）。
+      # 当前后端代码未调用 MLflow，实验任务也没有处理器，变量供后续实验代码直接使用
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    # 训练/大回测与截止前的业务队列分开：独立服务、独立限额，不挤占 parse/ai
+    # （当前后端没有注册 experiment 处理器，进程可消费该类主题但不会有任务入队）
+    depends_on: *worker-deps
+    mem_limit: 2560m
+    cpus: 1.5
+    healthcheck: *worker-healthcheck
+
+  # export 类 worker：评审报告的 Word/PDF 导出在 API 进程内同步生成，不经过该队列；后端没有注册 export 处理器，
+  # 也没有入口入队 export 任务。服务保留是为了与 job.export 主题和 worker 类别一一对应。
+  worker-export:
+    <<: *app
+    command: ["bidwb-worker"]
+    networks: [data, egress]
+    secrets: [db_url_worker, oss_access_key_id, oss_secret_access_key]
+    environment:
+      <<: *app-env
+      BIDWB_WORKER_CLASS: export
+      BIDWB_WORKER_ID: worker-export
+      BIDWB_WORKER_DATABASE_URL_FILE: /run/secrets/db_url_worker
+      BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
+      BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
+    depends_on: *worker-deps
+    mem_limit: 2g
+    cpus: 1.0
+    healthcheck: *worker-healthcheck
+
+  # ---- 运维一次性工具（profile tools，不随 up 启动）--------------------------
+  # 用法：docker compose run --rm admin bidwb-admin create-member ...（见 scripts/create-admin.sh）
+  admin:
+    <<: *app
+    profiles: ["tools"]
+    command: ["bidwb-admin", "--help"]
+    restart: "no"
+    networks: [data]
+    secrets: [db_url_api, admin_initial_password]
+    environment:
+      <<: *app-env
+      BIDWB_DATABASE_URL_FILE: /run/secrets/db_url_api
+    depends_on:
+      postgres: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+    mem_limit: 256m
+    cpus: 0.5
+
+  # ---- PostgreSQL 16：业务主库 + LangGraph 运行库 + MLflow 元数据库 -----------
+  # 为什么三个库放一个实例：一期约 20 项目/月，规模远低于需要拆分实例的量级；逻辑隔离（独立库、独立属主、
+  # 互不授权）已足够，备份也能一次覆盖。规模增大或恢复目标变严时再拆实例/改托管库（架构文档 8.1）。
+  postgres:
+    <<: *hardening
+    image: ${POSTGRES_IMAGE:?固定 PostgreSQL 16 的具体小版本，例如 postgres:16.15-bookworm}
+    user: "999:999"
+    networks: [data]
+    stop_grace_period: 120s
+    shm_size: 256m
+    pids_limit: 512
+    secrets:
+      - postgres_password
+      - db_password_owner
+      - db_password_api
+      - db_password_worker
+      - db_password_runtime
+      - db_password_mlflow
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      # 数据校验和可在静默磁盘损坏时尽早报错；只能在初始化时开启
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    # 参数按 mem_limit 4 GiB 估计（未实测）：shared_buffers 约 25%，其余留给 work_mem 与页缓存。
+    # max_connections=150：API 池 10 + 4 个 worker/relay/reaper 各自的池 + MLflow + 运维，余量充足；
+    # 连接数达 70%（约 105）按架构文档 8.1 触发容量复审。
+    command:
+      - postgres
+      - -c
+      - max_connections=150
+      - -c
+      - shared_buffers=1GB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=16MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - wal_compression=on
+      - -c
+      - max_wal_size=2GB
+      - -c
+      - log_min_duration_statement=1000
+      - -c
+      - log_lock_waits=on
+      - -c
+      - log_checkpoints=on
+      - -c
+      - "log_line_prefix=%m [%p] %q%u@%d "
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,uid=999,gid=999,mode=0700
+      - /run/postgresql:rw,noexec,nosuid,size=4m,uid=999,gid=999,mode=0755
+    mem_limit: 4g
+    cpus: 2.0
+    healthcheck:
+      # 用 TCP（127.0.0.1）探测：初始化阶段临时服务只监听 unix 套接字，不会被误判为就绪
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U bidwb_owner -d bidwb"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ---- Kafka（KRaft 单节点，仅内部监听）---------------------------------------
+  # 为什么单节点：一期规模远低于 Kafka 的设计量级，价值在解耦与独立限流（架构文档 3 节）；Kafka 丢失可由任务表
+  # 与回收器补发，不进备份真值。单节点没有冗余，故障恢复靠“重启 + 回收器重发”，不承诺高可用。
+  kafka:
+    <<: *hardening
+    image: ${KAFKA_IMAGE:?固定 apache/kafka 的具体版本，例如 apache/kafka:4.0.0}
+    # 例外：官方镜像启动时要写 /opt/kafka/config（见文件头“例外清单”）
+    read_only: false
+    user: "1000:1000"
+    networks: [data]
+    stop_grace_period: 60s
+    pids_limit: 1024
+    environment:
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:?Kafka 集群 ID（22 位 base64url，见 .env.example）}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # 主题由 kafka-init 显式创建（分区数在后端代码里定义），禁止“发送即自动建主题”掩盖拼写错误
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_HEAP_OPTS: "-Xms768m -Xmx768m"
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    mem_limit: 2g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ---- Milvus standalone（可重建的派生索引，不进备份）--------------------------
+  # 官方 standalone 有两种形态：(1) docker-compose 三件套 milvus + etcd + minio；(2) 官方 standalone_embed.sh 的
+  # 单容器形态，etcd 内嵌、数据落本地卷（COMMON_STORAGETYPE=local）。这里选 (2)：
+  #   - 索引可由解析产物重建（架构文档 8.3），不需要为它再运维一套对象存储与 etcd，少两个服务就少两类故障；
+  #   - 数据量远小于需要 minio 的规模（一期约 20 项目/月）；
+  #   - 代价：该形态官方把它定位为单机/试用，生产高可用与大规模需改用 (1) 或集群版。出现性能或稳定性问题时，
+  #     先切到 (1)（把 etcd、minio 作为两个 data 网络内服务加入，参考官方 deployments/docker/standalone/docker-compose.yml）。
+  # 版本：v2.6.10 取自官方 v2.6.11 标签下 docker-compose.yml 引用的镜像（2026-10-07 核对）；
+  #       Milvus 官方主线已出 v3.0.x，一期用 2.6 稳定线，升级需单独评估。
+  # 后端目前只有关键词检索实现，BIDWB_MILVUS_URI 被读取但没有代码连接 Milvus；该服务为后续检索通道预置。
+  # Milvus 官方单机最低 4 核 8 GB、推荐 16 GB（架构文档 8.1）；这里 mem_limit 6g 低于推荐值，仅适用于
+  # 一期数据量，且检索默认走关键词通道（RETRIEVAL_BACKEND=keyword），Milvus 通道须在评测胜过基线后才进入业务路径。
+  milvus:
+    restart: unless-stopped
+    cap_drop: [ALL]
+    # seccomp:unconfined 为 Milvus 官方示例所要求（未验证：当前版本是否仍必要）
+    security_opt: ["no-new-privileges:true", "seccomp:unconfined"]
+    logging: *logging
+    image: ${MILVUS_IMAGE:?固定 Milvus 版本，例如 milvusdb/milvus:v2.6.10}
+    command: ["milvus", "run", "standalone"]
+    networks: [data]
+    stop_grace_period: 60s
+    environment:
+      ETCD_USE_EMBED: "true"
+      ETCD_DATA_DIR: /var/lib/milvus/etcd
+      ETCD_CONFIG_PATH: /milvus/configs/embedEtcd.yaml
+      COMMON_STORAGETYPE: local
+      DEPLOY_MODE: STANDALONE
+    volumes:
+      - milvusdata:/var/lib/milvus
+      - ./milvus/embedEtcd.yaml:/milvus/configs/embedEtcd.yaml:ro
+      - ./milvus/user.yaml:/milvus/configs/user.yaml:ro
+    mem_limit: 6g
+    cpus: 3.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 90s
+
+  # ---- MLflow Tracking（研究侧副记录，业务真值不依赖它）------------------------
+  # 元数据：PostgreSQL 库 mlflow。产物：默认写 OSS 的 s3://<桶>/mlflow-artifacts（S3 兼容端点），经 MLflow 服务端代理
+  # （--serve-artifacts），所以客户端（worker）不需要持有 OSS 凭据。
+  # 未验证：MLflow 官方文档只列出 S3/Azure/GCS 等，OSS 的 S3 兼容接入未见官方说明（架构文档 INF-006）；
+  # 阿里云要求 virtual-hosted 寻址（mlflow/aws-config 已配置）。boto3 新版默认的校验和/分块编码在 S3 兼容存储上
+  # 可能报错，下面两个 AWS_* 变量已设为仅在必须时计算——首次联调须实测一次产物上传/下载。
+  # 联调不通时的回退：把 MLFLOW_ARTIFACT_URI 改成 file:///mlflow/artifacts（落本地卷 mlflowdata），
+  # 但该卷需要纳入备份（backup.sh 默认不备份它）。
+  mlflow:
+    <<: *hardening
+    build:
+      context: ./mlflow
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.11-slim-bookworm}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-}
+        MLFLOW_VERSION: ${MLFLOW_VERSION:-3.17.0}
+    image: ${MLFLOW_IMAGE:?设置 MLflow 镜像，例如 bidwb-mlflow:3.17.0}
+    init: true
+    user: "10002:10002"
+    networks: [data, egress]
+    pids_limit: 256
+    ports:
+      # 研究员用 SSH 隧道访问界面（ssh -L 5000:127.0.0.1:5000 <服务器>）；MLflow 无业务授权，绝不绑定公网地址
+      - "127.0.0.1:${MLFLOW_UI_PORT:-5000}:5000"
+    secrets: [db_url_mlflow, oss_access_key_id, oss_secret_access_key]
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: ${OSS_ENDPOINT_URL:?}
+      AWS_DEFAULT_REGION: ${OSS_REGION:?}
+      AWS_CONFIG_FILE: /etc/mlflow/aws-config
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+      # MLflow 3.x 的 Host 头校验：容器间用服务名访问，必须放行
+      MLFLOW_SERVER_ALLOWED_HOSTS: "mlflow,mlflow:5000,localhost,localhost:5000,127.0.0.1,127.0.0.1:5000"
+      MLFLOW_ARTIFACT_URI: ${MLFLOW_ARTIFACT_URI:-s3://${OSS_BUCKET}/mlflow-artifacts}
+    command:
+      - sh
+      - -c
+      # 凭据读入该进程的环境变量（boto3 只认 AWS_* 变量），不出现在容器配置里
+      - >-
+        export AWS_ACCESS_KEY_ID="$$(cat /run/secrets/oss_access_key_id)"
+        AWS_SECRET_ACCESS_KEY="$$(cat /run/secrets/oss_secret_access_key)";
+        exec mlflow server --host 0.0.0.0 --port 5000 --workers 2
+        --backend-store-uri "$$(cat /run/secrets/db_url_mlflow)"
+        --artifacts-destination "$$MLFLOW_ARTIFACT_URI" --serve-artifacts
+    volumes:
+      - mlflowdata:/mlflow/artifacts
+      - ./mlflow/aws-config:/etc/mlflow/aws-config:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m,uid=10002,gid=10002,mode=0700
+    depends_on:
+      postgres: {condition: service_healthy}
+    mem_limit: 1g
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=4).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+networks:
+  edge: {}
+  data:
+    internal: true   # 数据与内部服务网络：不能出网，也无法从宿主机直接访问
+  egress: {}
+
+volumes:
+  pgdata: {}         # PostgreSQL 数据（备份真值，见 scripts/backup.sh）
+  kafkadata: {}      # Kafka 日志（派生，不备份）
+  milvusdata: {}     # Milvus 索引与内嵌 etcd（派生，可由解析产物重建，不备份）
+  mlflowdata: {}     # 仅当 MLFLOW_ARTIFACT_URI 使用本地卷时有内容
+
+secrets:
+  postgres_password: {file: ./secrets/postgres_password}
+  db_password_owner: {file: ./secrets/db_password_owner}
+  db_password_api: {file: ./secrets/db_password_api}
+  db_password_worker: {file: ./secrets/db_password_worker}
+  db_password_runtime: {file: ./secrets/db_password_runtime}
+  db_password_mlflow: {file: ./secrets/db_password_mlflow}
+  db_url_owner: {file: ./secrets/db_url_owner}
+  db_url_api: {file: ./secrets/db_url_api}
+  db_url_worker: {file: ./secrets/db_url_worker}
+  db_url_runtime: {file: ./secrets/db_url_runtime}
+  db_url_mlflow: {file: ./secrets/db_url_mlflow}
+  oss_access_key_id: {file: ./secrets/oss_access_key_id}
+  oss_secret_access_key: {file: ./secrets/oss_secret_access_key}
+  llm_api_key: {file: ./secrets/llm_api_key}
+  admin_initial_password: {file: ./secrets/admin_initial_password}

@@ -1,0 +1,14 @@
+# tender-app
+
+施组（施工组织设计）投标评审工作台的代码仓库。目标是中标：上传招标文件与技术标正文后，系统自动评审，给出废标／否决风险、强制性要求的响应矩阵、前后矛盾与范围残留、评分预测（未校准的估计）和报价模拟，并导出 Word 评审报告与批注版 PDF。
+
+| 目录 | 内容 |
+|---|---|
+| `backend/` | FastAPI 模块化单体、PostgreSQL 迁移、任务与消息 worker、自动评审流水线，见 [backend/README.md](backend/README.md) |
+| `frontend/` | React + TypeScript 前端，见 [frontend/README.md](frontend/README.md) |
+| `deploy/` | Docker Compose、镜像与运维脚本，见 [deploy/README.md](deploy/README.md) |
+| `contracts/` | `schema.sql`（与 `backend/migrations/sql/0001_initial.sql` 逐字一致）、`openapi.json`（由代码生成）、`domain.schema.json` |
+
+质量门：后端 `ruff`、`mypy`、`bandit`、`pytest`（真实 PostgreSQL）；前端 `npm run check`（格式、lint、类型、测试、构建）。契约文件由 `backend/tools/export_contracts.py` 生成，测试校验它们与代码一致。
+
+相关仓库：`tender-docs`（产品、研究与技术文档）、`tender-design`（设计稿）、`tender-research`（规则解析、评分预测实验）、`tender-datasets`（评测数据集）。

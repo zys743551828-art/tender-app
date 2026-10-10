@@ -1,0 +1,49 @@
+# =============================================================================
+# 模式 tls：nginx 自己终止 TLS。容器内监听 8443（TLS）与 8080（仅做 80→443 跳转与健康检查），
+# 由 deploy/compose.tls.yml 发布到宿主机 443 / 80，并把证书作为 secrets 挂载到 /run/secrets/。
+# =============================================================================
+
+# 自己终止 TLS：协议取自实际连接，不信任客户端发来的 X-Forwarded-Proto / X-Forwarded-For。
+map $scheme $web_proto {
+    default $scheme;
+}
+map $remote_addr $web_xff {
+    default $remote_addr;
+}
+map $scheme $web_hsts {
+    https   "max-age=31536000; includeSubDomains";
+    default "";
+}
+
+# 80 → 443 跳转。目标主机取自配置而不是请求头，避免 Host 头被反射成跳转目标。
+server {
+    listen 8080 default_server;
+    server_name _;
+
+    location = /nginx-health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+    location / {
+        return 301 https://${WEB_PUBLIC_HOST}$request_uri;
+    }
+}
+
+server {
+    listen 8443 ssl default_server;
+    http2 on;
+    server_name ${WEB_SERVER_NAME};
+
+    ssl_certificate     /run/secrets/tls_fullchain;
+    ssl_certificate_key /run/secrets/tls_privkey;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    # Mozilla "intermediate" 套件（TLS 1.2 部分；TLS 1.3 套件由 OpenSSL 默认）
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    include /etc/nginx/conf.d/app-locations.inc;
+}

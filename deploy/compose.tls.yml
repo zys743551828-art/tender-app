@@ -1,0 +1,25 @@
+# =============================================================================
+# TLS 覆盖：由 compose 里的 nginx 自己终止 TLS（方式 a）。
+# 方式 b（默认）是前面有公司负载均衡 / 阿里云 SLB 终止 TLS，此时不需要本文件，nginx 只监听 8080。
+#
+# 启用步骤（详见 README“TLS 终止”）：
+#   1. 把证书链与私钥放到 secrets/tls/fullchain.pem 与 secrets/tls/privkey.pem（目录 0700、文件 0444，原因同 secrets/README.md）
+#   2. .env 中设置：WEB_HTTP_PORT=80、WEB_HTTPS_PORT=443、WEB_PUBLIC_HOST=<域名>，并追加一行
+#        COMPOSE_FILE=compose.yml:compose.tls.yml
+#      这样之后所有 docker compose 命令与 scripts/*.sh 都会自动带上本文件
+#   3. docker compose up -d web
+#
+# 做法：同一个 web 镜像里已有两种模式的配置，WEB_MODE=tls 时 nginx 在容器内监听 8443（TLS）与 8080（80→443 跳转 + 健康检查）。
+# 证书续期后需重载：docker compose exec web nginx -s reload（nginx 在重载时重新读取证书文件）。
+# =============================================================================
+services:
+  web:
+    environment:
+      WEB_MODE: tls
+    ports:
+      - "${WEB_BIND_ADDR:-0.0.0.0}:${WEB_HTTPS_PORT:-443}:8443"
+    secrets: [tls_fullchain, tls_privkey]
+
+secrets:
+  tls_fullchain: {file: ./secrets/tls/fullchain.pem}
+  tls_privkey: {file: ./secrets/tls/privkey.pem}

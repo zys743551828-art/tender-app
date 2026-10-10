@@ -1,0 +1,16 @@
+# 依赖与构建产物
+node_modules/
+dist/
+coverage/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.local
+
+# 部署：真实密钥与环境文件不入库（secrets/README.md 说明如何生成）
+deploy/.env
+deploy/secrets/*
+!deploy/secrets/README.md

@@ -1,0 +1,622 @@
+# 施组工作台 · 部署手册（Docker Compose）
+
+适用对象：负责把系统部署到一台 Linux 服务器并长期运维的工程师。本手册假设你**不熟悉本项目**，照着做即可；
+凡是我们在沙箱里无法验证的地方，都在文末“[未验证项](#10-未验证项)”如实列出，首次上线前请逐项在真机上确认。
+
+目录：[1 总览](#1-总览) · [2 先决条件](#2-先决条件) · [3 阿里云 OSS 准备](#3-阿里云-oss-准备) · [4 部署步骤](#4-部署步骤) ·
+[5 TLS 终止](#5-tls-终止) · [6 验证清单](#6-验证清单) · [7 日常运维](#7-日常运维) · [8 故障排查](#8-故障排查) ·
+[9 安全注意事项](#9-安全注意事项) · [10 未验证项](#10-未验证项) · [11 文件清单与约定](#11-文件清单与约定)
+
+---
+
+## 1. 总览
+
+### 1.1 组成
+
+一台主机上用 Docker Compose 运行 13 个常驻/一次性服务，OSS 与大模型为外部服务：
+
+| 服务 | 作用 | 镜像 | 网络 | 备注 |
+| --- | --- | --- | --- | --- |
+| `web` | nginx：静态前端 + `/api` 反向代理 + 限流 + 安全头 | 自建 `bidwb-web` | edge | 唯一对宿主机发布端口的服务 |
+| `api` | FastAPI 业务 API | 自建 `bidwb-backend` | edge、data、egress | 健康检查 `/healthz`，就绪 `/readyz` |
+| `migrate` | 一次性：`alembic upgrade head` | 同上 | data | 用库属主角色 |
+| `kafka-init` | 一次性：创建 Kafka 主题 | 同上 | data | `bidwb-admin ensure-topics` |
+| `relay` / `reaper` | 发件箱中继 / 租约回收器（兼自动评审的兜底推进） | 同上 | relay：data；reaper：data、egress | relay 不出网；reaper 开启自动评审时要写 OSS，持有 OSS 凭据 |
+| `worker-parse` / `-ai` / `-experiment` / `-export` | 四类计算 worker | 同上 | data、egress | 需要访问 OSS、模型；当前只注册了 parse、rules、diagnosis、revision、prediction 处理器，experiment、export 类暂无任务入队（见 11.2） |
+| `postgres` | PostgreSQL 16：业务库 `bidwb` + LangGraph 库 `bidwb_runtime` + MLflow 库 `mlflow` | 官方 | data | 数据卷 `pgdata` 是备份真值 |
+| `kafka` | Kafka KRaft 单节点 | 官方 `apache/kafka` | data | 派生数据，不备份 |
+| `milvus` | Milvus standalone（内嵌 etcd + 本地存储） | 官方 | data | 派生索引，不备份；后端当前只实现关键词检索，不连接它 |
+| `mlflow` | MLflow Tracking | 自建 `bidwb-mlflow` | data、egress | 界面只绑 `127.0.0.1:5000` |
+| `admin`（profile `tools`） | 一次性运维命令（`bidwb-admin`：创建成员、创建主题） | 同后端 | data | 不随 `up` 启动 |
+
+三个网络：`edge`（对外）、`data`（`internal: true`，不能出网，宿主机也无法直连）、`egress`（出网，只有需要访问 OSS/模型/IdP 的服务加入）。
+
+```
+浏览器 ──https──> [SLB 或 nginx 自带 TLS] ──> web:8080 ──> api:8000 ──> postgres / kafka
+   │                                                    └─> OSS（S3 兼容，服务端）
+   └──────────── 预签名分片 PUT 直传 ───────────────────────> OSS（浏览器直连，不经本站）
+worker-*  <── kafka <── relay <── postgres（发件箱）          worker-*、reaper ──> OSS；worker-* ──> 大模型 API
+```
+
+### 1.2 几个设计取舍（为什么这样做）
+
+- **Milvus 用单容器 standalone（内嵌 etcd + 本地存储）**：Milvus 官方 standalone 有“milvus + etcd + minio 三件套”和“单容器内嵌 etcd”两种形态。索引是由解析产物可重建的派生数据（架构文档 8.3），
+  不值得为它再运维一套 minio 与 etcd；一期约 20 项目/月的数据量也远小于需要它们的规模。代价是该形态官方定位为单机，出现稳定性/性能问题时先改用三件套（参考 Milvus 官方
+  `deployments/docker/standalone/docker-compose.yml`）。检索默认走关键词通道（BM25，`retrieval.py`）；后端当前没有连接 Milvus 的代码，`BIDWB_RETRIEVAL_BACKEND=milvus` 与 `BIDWB_MILVUS_URI` 只被配置读取，Milvus 通道须评测胜过基线后才会接入业务路径。
+- **Kafka 单节点**：规模远低于 Kafka 设计量级，价值在解耦与独立限流；Kafka 丢失可由任务表与回收器补发。单节点无冗余，故障恢复靠“重启 + 回收器重发”，不承诺高可用。
+- **三个库放一个 PostgreSQL 实例**：逻辑隔离（独立库、独立属主、互不授权）足够，一次备份覆盖；规模或恢复目标变严时再拆实例/用托管库。
+- **一个后端镜像跑所有后端进程**：保证 API 与 worker 版本一致，不会出现灰度错配。
+- **自动评审流水线**：`BIDWB_AUTO_ANALYSIS`（`.env` 中为 `AUTO_ANALYSIS`，默认 `true`）开启时，资料上传完成后自动依次解析、提取规则、冻结输入并评审，worker 在任务结束时推进下一步，reaper 周期性兜底推进仍处于“分析中”的项目；设为 `false` 则各步骤只由人工触发（模型服务故障或需要控制调用成本时使用）。评审报告的 Word/PDF 导出由 API 进程同步生成（依赖 `python-docx`、`pypdfium2`，均已在 `pyproject.toml` 声明并装入后端镜像），不经过任务队列。
+- **MLflow 只绑回环地址**：MLflow 没有业务授权模型（架构文档 ADR-0015），研究员通过 SSH 隧道访问。
+- **资源限额是估计值**：宿主假定 8 vCPU / 32 GiB / 500 GB SSD（架构文档 8.1 的假设，未在真机核对），`compose.yml` 里的 `mem_limit` / `cpus` 是未实测估计，用真实 PDF 压测后再调整。
+
+---
+
+## 2. 先决条件
+
+### 2.1 服务器
+
+| 项 | 要求 | 说明 |
+| --- | --- | --- |
+| 配置 | 8 vCPU / 32 GiB 内存 / 500 GB SSD | 架构文档 8.1 的假设，**非实测**。Milvus 官方单机最低 4 核 8 GB、推荐 16 GB 内存并要求 SSD；`mem_limit` 之和 26.75 GiB，余量偏紧 |
+| 系统 | 64 位 Linux（x86_64 已验证依赖可安装；aarch64 未验证） | 内核启用 cgroup v2/v1 均可；服务器时间必须用 NTP 同步（任务租约以服务端时间为准） |
+| Docker Engine | ≥ 24（建议最新稳定版） | 本编排通过了 Docker 29.4.3 / Compose 5.1.3 的 `docker compose config` 语法校验；更低版本未逐一验证 |
+| Docker Compose | v2 插件，≥ 2.24 | 需要 `depends_on.condition`、`service_completed_successfully`、`init`、profiles、嵌套变量默认值 |
+| 其它工具 | `openssl`、`curl`、`bash` ≥ 4、`sha256sum`、`flock`（备份防并发）、`git` | 脚本使用 |
+| 磁盘规划 | Docker 数据目录（默认 `/var/lib/docker`）≥ 100 GiB 可用；备份目录放**另一块盘** | 容量复审线：磁盘/连接数达 70% |
+
+### 2.2 域名与证书
+
+- 一个对外域名（例如 `tender.example.com`），解析到 SLB 或本机。
+- 证书：由公司负载均衡/SLB 终止 TLS（推荐，见 5.1），或把证书链与私钥交给 nginx（5.2）。
+- 浏览器上传的 OSS 域名（`<桶名>.oss-<地域>.aliyuncs.com` 或自定义域名）需要加进 CSP 与桶 CORS（第 3 节、`WEB_CSP_CONNECT_EXTRA`）。
+
+### 2.3 防火墙与端口
+
+| 方向 | 端口 | 说明 |
+| --- | --- | --- |
+| 入站 | `8080/tcp` | 默认模式（前面有 SLB）：**只放行 SLB 的来源地址** |
+| 入站 | `80/tcp`、`443/tcp` | 仅 TLS 模式（5.2）：对办公网/公网开放 |
+| 入站 | `22/tcp` | SSH 运维，限制来源 |
+| 仅本机 | `127.0.0.1:5000` | MLflow 界面，用 SSH 隧道访问（`ssh -L 5000:127.0.0.1:5000 <服务器>`） |
+| **不得开放** | `5432`、`9092/9093`、`19530/9091/2379`、`3306` 等 | 数据服务在 internal 网络内，本来就不发布端口 |
+| 出站 | `443/tcp` | OSS 端点、大模型 API；构建时还需要镜像仓库、PyPI、npm（或其国内镜像） |
+
+注意：Docker 发布的端口会绕过 `ufw` / `firewalld` 的普通规则（走 iptables 的 DOCKER 链）。本编排只发布 web 与回环地址的 MLflow，风险有限；要限制 web 的来源，
+请用云安全组，或在 `.env` 设 `WEB_BIND_ADDR=<内网IP>`，或在 `DOCKER-USER` 链加规则。
+
+### 2.4 内网/国内网络提示
+
+服务器若访问不了 Docker Hub / PyPI / npm：在能联网的机器上构建镜像后 `docker save | docker load` 或推到私有仓库；`.env` 里的镜像名可直接改成私有仓库地址，
+构建参数 `PIP_INDEX_URL`、`NPM_REGISTRY`、`PYTHON_IMAGE`、`NODE_IMAGE`、`NGINX_IMAGE` 可指向内部镜像。
+
+---
+
+## 3. 阿里云 OSS 准备
+
+原件与不可变产物存阿里云 OSS，浏览器用预签名地址分片直传，服务端用 S3 兼容接口访问（架构文档 INF-004）。
+
+### 3.1 建桶
+
+- 地域选择与服务器同地域（服务端走内网端点可省流量费）；读写权限 **私有**，不要开公共读；
+- 版本控制：**建议开启**（恢复到备份时间点需要对象历史；是否启用及跨地域复制，是否启用由运维按公司保留要求决定；未启用时恢复只能回到对象的当前状态）；
+- 记下：桶名、地域（如 `cn-hangzhou`）。
+
+### 3.2 RAM 子账号与最小权限策略
+
+创建一个 RAM 用户（仅编程访问），生成 AccessKey，把下面的策略授予它（把 `your-bucket-name` 换成桶名）。
+权限覆盖：预签名分片上传的服务端部分（创建/完成/中止分片上传、列分片）、读取与复制对象、清理暂存前缀。**不授予删除其它前缀对象的权限**，原件与正式产物因此不可被应用删除。
+
+```json
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "oss:GetObject",
+        "oss:PutObject",
+        "oss:AbortMultipartUpload",
+        "oss:ListParts"
+      ],
+      "Resource": ["acs:oss:*:*:your-bucket-name/*"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["oss:ListObjects", "oss:ListMultipartUploads", "oss:GetBucketInfo"],
+      "Resource": ["acs:oss:*:*:your-bucket-name"]
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["oss:DeleteObject"],
+      "Resource": ["acs:oss:*:*:your-bucket-name/staging/*"]
+    }
+  ]
+}
+```
+
+说明：
+
+- 动作名与资源格式（`acs:oss:*:*:<桶名>[/*]`、`"Version": "1"`）取自阿里云“RAM Policy 常见示例”文档（2026-10-07 查阅）。
+  OSS 的分片上传各步骤在 RAM 里主要归属 `oss:PutObject`、`oss:AbortMultipartUpload`、`oss:ListParts`、`oss:ListMultipartUploads`；缺权限会在上传完成/复制时报 `AccessDenied`。
+- 后端的对象键见 `storage.py`：浏览器直传落在 `staging/<上传ID>`；校验通过后复制到内容寻址键 `objects/<sha256 前两位>/<sha256>`；worker 产物写 `artifacts/<产物ID>`。本策略与 3.4 的生命周期规则里的 `staging/` 即该前缀。
+- 复制到最终键用 CopyObject（需要源的 `GetObject` 与目标的 `PutObject`）。后端不依赖 OSS 的“禁止覆盖”选项：写入前先 HEAD 目标键，已存在则跳过，同键即同内容（架构文档 INF-004）。CopyObject / CompleteMultipartUpload 在 OSS 上的实际行为未验证（见 10.2）。
+- MLflow 默认把产物写到同一桶的 `mlflow-artifacts/` 前缀，复用同一对 AccessKey；想进一步隔离可单独建 RAM 用户并拆分前缀权限。
+
+### 3.3 桶 CORS（浏览器直传必需）
+
+浏览器用预签名地址向 OSS 发 `PUT`（分片），并需要读取响应头 `ETag`（服务端据此合并分片），所以必须允许 `PUT`、**暴露 `ETag`**，来源限定为站点域名：
+
+| 项 | 值 |
+| --- | --- |
+| 允许来源 | `https://tender.example.com`（你的站点地址，**不要用 `*`**） |
+| 允许方法 | `PUT`、`GET`、`HEAD` |
+| 允许头 | `*` |
+| 暴露头 | `ETag`（建议同时 `x-oss-request-id`） |
+| 缓存时间（秒） | `3600` |
+
+等价的 API/ossutil 配置（PutBucketCors 的 XML 形式；控制台填写项与之一一对应，字段名称以控制台实际界面为准）：
+
+```xml
+<CORSConfiguration>
+  <CORSRule>
+    <AllowedOrigin>https://tender.example.com</AllowedOrigin>
+    <AllowedMethod>PUT</AllowedMethod>
+    <AllowedMethod>GET</AllowedMethod>
+    <AllowedMethod>HEAD</AllowedMethod>
+    <AllowedHeader>*</AllowedHeader>
+    <ExposeHeader>ETag</ExposeHeader>
+    <ExposeHeader>x-oss-request-id</ExposeHeader>
+    <MaxAgeSeconds>3600</MaxAgeSeconds>
+  </CORSRule>
+</CORSConfiguration>
+```
+
+同时：浏览器侧还受站点 CSP 约束，`.env` 的 `WEB_CSP_CONNECT_EXTRA` 必须包含桶的访问域名（如 `https://your-bucket-name.oss-cn-hangzhou.aliyuncs.com`），否则控制台报 `Refused to connect`。
+
+### 3.4 生命周期：清理暂存前缀与未完成分片
+
+浏览器上传中断会留下未完成的分片上传与暂存对象，占用存储。对 `staging/` 前缀配置：
+
+```xml
+<LifecycleConfiguration>
+  <Rule>
+    <ID>cleanup-staging</ID>
+    <Prefix>staging/</Prefix>
+    <Status>Enabled</Status>
+    <AbortMultipartUpload><Days>1</Days></AbortMultipartUpload>
+    <Expiration><Days>7</Days></Expiration>
+  </Rule>
+</LifecycleConfiguration>
+```
+
+- `AbortMultipartUpload` 清理未完成分片（最小 1 天）；`Expiration` 清理超期的暂存对象。**只配置在 `staging/` 前缀**，原件与正式产物前缀绝不能配置过期删除。
+- 开启版本控制时，`Expiration` 对暂存对象会产生删除标记，历史版本需另配“非当前版本过期”规则（未验证：规则写法；验证方法：在测试桶创建规则后核对执行结果）。
+- 上线后定期检查：暂存前缀残留量、生命周期执行情况（架构文档 8.2 监测项）。
+
+### 3.5 填入配置
+
+| 内容 | 位置 |
+| --- | --- |
+| 桶名、地域、端点 | `.env`：`OSS_BUCKET`、`OSS_REGION`、`OSS_ENDPOINT_URL`、`OSS_PUBLIC_ENDPOINT_URL`（compose 映射为 `BIDWB_STORAGE_*`） |
+| AccessKey | `secrets/oss_access_key_id`、`secrets/oss_secret_access_key` |
+
+S3 兼容端点格式为 `https://s3.oss-<地域>.aliyuncs.com`（阿里云“用 Amazon S3 SDK 访问 OSS”文档）；OSS **只支持 virtual-hosted 寻址**，`OSS_ADDRESSING_STYLE` 保持默认 `virtual`。
+该文档还提到 boto3 的 V4 签名默认带分块编码（aws-chunked），OSS 不支持，官方示例改用 `signature_version='s3'`（V2）。后端使用 `s3v4`（`storage.py` 的 `S3ObjectStore`，签名版本不可通过环境变量切换）。未验证：服务端 PutObject / CopyObject / CompleteMultipartUpload 在 OSS 上是否受此影响；验证方法：首次部署时上传一个多片文件并触发解析，观察 api 与 worker 日志中的 OSS 错误码（见 10.2 第 8 项）。
+
+---
+
+## 4. 部署步骤
+
+约定：以下命令都在本目录（`deploy`）执行，工作目录里没有 `.env` 时 compose 会报变量缺失。
+
+### 4.1 拉代码与准备
+
+```bash
+git clone <仓库地址> /opt/tender-app && cd /opt/tender-app/deploy
+```
+
+### 4.2 构建或获取镜像
+
+```bash
+# 方式 A：在服务器上构建（需要能访问 PyPI/npm/基础镜像，或在 .env 配置镜像源）
+cp .env.example .env            # 先拷贝，下面 4.4 再改
+docker compose build api web mlflow
+
+# 方式 B：从私有镜像仓库拉取（在 .env 里把 APP_IMAGE 等改成仓库地址）
+docker compose pull
+```
+
+`api` 构建出 `APP_IMAGE`，worker/relay/reaper/migrate 复用它；`web` 构建前端（`npm ci` + `npm run build`）；`mlflow` 构建自带 PostgreSQL 驱动与 boto3 的镜像。
+
+### 4.3 生成 secrets
+
+```bash
+scripts/gen-secrets.sh
+```
+
+然后手工填写 `oss_access_key_id`、`oss_secret_access_key`（必填）、`llm_api_key`（建议），方法见 [`secrets/README.md`](secrets/README.md)。**把整个 `secrets/` 目录离线加密备份。**
+
+### 4.4 填写 `.env`
+
+编辑 `.env`，逐项阅读注释。**必须修改**的有：`PUBLIC_BASE_URL`（https）、`OSS_*`（端点、地域、桶名）、`WEB_CSP_CONNECT_EXTRA`（OSS 访问域名）、
+默认模式下的 `WEB_SET_REAL_IP_FROM`（SLB 网段）；以及确认各 `*_IMAGE` 标签、`KAFKA_CLUSTER_ID`。
+
+```bash
+scripts/preflight.sh            # 检查版本、资源、.env、secrets、compose 语法；全部通过再继续
+```
+
+### 4.5 起库
+
+```bash
+docker compose up -d postgres
+docker compose ps postgres      # 等到 healthy（首次初始化约十几秒）
+```
+
+首次启动时 `postgres/initdb/10-roles-and-databases.sh` 自动创建角色 `bidwb_owner / bidwb_api / bidwb_worker / bidwb_runtime / mlflow` 与数据库 `bidwb / bidwb_runtime / mlflow`
+（口令来自 secrets）。**这个脚本只在数据目录为空时执行一次**；之后改口令请用 `ALTER ROLE`（见 `secrets/README.md`）。
+
+### 4.6 迁移
+
+```bash
+docker compose up --no-deps --exit-code-from migrate migrate
+```
+
+成功时最后一行是 `migrate ... exited with code 0`。迁移用库属主角色 `bidwb_owner`，并按 `schema.sql` 对 `app_api` / `app_worker` 授权。
+（也可跳过这一步：4.8 的 `up -d` 会因 `depends_on` 自动先跑迁移；单独跑只是为了在创建管理员前看到迁移结果。）
+
+### 4.7 创建首个账号
+
+```bash
+docker compose up -d kafka kafka-init   # 创建管理员本身不需要 Kafka；此处顺手确认 Kafka 与主题就绪
+scripts/create-admin.sh                 # 登录名 ADMIN_LOGIN，口令在 secrets/admin_initial_password
+```
+
+脚本调用 `bidwb-admin create-member --login … --display-name … --password-file … --if-not-exists`（`admin.py`；`--if-not-exists` 使重复执行时登录名已存在视为成功，口令只从文件或标准输入读取）。
+登录后**立即修改口令**，并清空 `secrets/admin_initial_password`。系统只有登录一道门，登录后的成员可以访问全部项目；其他成员同样用 `bidwb-admin create-member` 创建。
+
+### 4.8 启动全部服务
+
+```bash
+docker compose up -d
+docker compose ps               # 常驻服务应全部 running（healthy），migrate / kafka-init 为 exited (0)
+```
+
+启动顺序由 `depends_on` 保证：`postgres` healthy → `migrate` 成功 → `kafka` healthy → `kafka-init` 成功 → api / relay / reaper / worker-* → `web`。
+
+### 4.9 验证
+
+```bash
+scripts/healthcheck.sh
+```
+
+再按[第 6 节](#6-验证清单)做人工验收；然后配置备份（7.3）并做第一次恢复演练。
+
+---
+
+## 5. TLS 终止
+
+提供两种方式，默认是 5.1（compose 保持简单）。
+
+### 5.1 方式 b（默认）：前面有公司负载均衡 / 阿里云 SLB 终止 TLS
+
+- nginx 只监听容器内 `8080` 明文，发布到宿主机 `WEB_HTTP_PORT`（默认 8080）。SLB 的后端服务器组指向本机 `8080`；
+- SLB 必须传递 `X-Forwarded-For`（客户端真实 IP）与 `X-Forwarded-Proto`（`https`）。nginx **只信任来自 `WEB_SET_REAL_IP_FROM` 网段的这两个头**，请把它收紧为 SLB 的私网网段；
+  填错的后果：所有用户被当成同一个 IP，登录限流（`10r/m`）会误伤全体用户；
+- 健康检查：HTTP `GET /nginx-health` → 200；
+- **SSE 超时**：任务进度走 SSE 长连接（`/api/v1/tasks/<id>/events`），SLB 监听器的空闲超时必须大于后端心跳间隔：API 每 15 秒发一次 SSE 注释行心跳（`routes_tasks.py`），单次连接最长保持 600 秒后由服务端结束，浏览器用 `Last-Event-ID` 续传；nginx 对该路径的读超时为 3600 秒。SLB 的默认空闲超时可能只有几十秒，请调到 60 秒以上（未验证：所用 SLB 的默认值；验证方法：在监听器配置页核对，并保持一个任务进度页面打开数分钟观察是否被重连）；
+- HSTS 头仅在 `X-Forwarded-Proto: https`（且来自可信代理）时由 nginx 下发。
+
+### 5.2 方式 a：nginx 自己终止 TLS（`compose.tls.yml`）
+
+```bash
+mkdir -p secrets/tls && chmod 700 secrets/tls
+cp /path/to/fullchain.pem secrets/tls/fullchain.pem        # 证书 + 中间证书
+cp /path/to/privkey.pem   secrets/tls/privkey.pem
+chmod 444 secrets/tls/*.pem                                # 容器内 nginx(101) 需要读取，原因见 secrets/README.md
+```
+
+在 `.env` 中设置并追加一行（compose 自己读取 `COMPOSE_FILE`，之后所有 `docker compose` 命令与 `scripts/*.sh` 都会自动叠加 TLS 文件）：
+
+```
+WEB_HTTP_PORT=80
+WEB_HTTPS_PORT=443
+WEB_PUBLIC_HOST=tender.example.com
+COMPOSE_FILE=compose.yml:compose.tls.yml
+```
+
+```bash
+docker compose up -d web
+curl -I http://tender.example.com        # 应 301 到 https://tender.example.com/
+curl -I https://tender.example.com/nginx-health
+```
+
+证书续期后：替换 `secrets/tls/*.pem`，执行 `docker compose exec web nginx -s reload`（若 bind mount 的文件被“删除重建”导致容器仍看到旧文件，则 `docker compose up -d --force-recreate web`）。
+该模式下 nginx 不信任客户端传来的 `X-Forwarded-*`（自己就是边界）；协议 TLS 1.2/1.3，HSTS 一年（含子域名，**确认全站都能走 HTTPS 再上线**）。
+
+---
+
+## 6. 验证清单
+
+上线验收逐项确认（✓ 的前提是第 10 节的“未验证项”已在真机核对过）：
+
+- [ ] `scripts/preflight.sh` 无失败
+- [ ] `docker compose ps`：常驻服务 running；`migrate`、`kafka-init` exited (0)；数据服务无 `ports`（`docker compose ps` 的端口列只有 web 与 mlflow 的回环地址）
+- [ ] `scripts/healthcheck.sh` 无 FAIL（若有 WARN，逐条判断）
+- [ ] 浏览器打开站点首页，使用管理员登录；直接打开一个深层前端路由并刷新（SPA 回退正常）
+- [ ] 浏览器开发者工具：无 CSP 报错；响应头含 `Content-Security-Policy`、`X-Content-Type-Options`、（https 下）`Strict-Transport-Security`；无 `Server: nginx/x.y.z` 版本号
+- [ ] 创建测试项目并**上传一个多片大文件**（> 8 MiB 触发多分片）：浏览器直传 OSS 成功、完成后服务端校验通过（验证 CORS、CSP、RAM 权限三件事）
+- [ ] 用 Range 请求读取原件：`curl -H 'Range: bytes=0-99' -b <登录 cookie> https://<站点>/api/v1/files/<版本ID>/content -i` 返回 `206`
+- [ ] 创建一个任务，页面进度（SSE）实时更新；任务最终 `succeeded`；`docker compose logs worker-parse` 无异常
+- [ ] 登录接口限流：连续快速错误登录 > 6 次返回 429（`WEB_LOGIN_RATE`）
+- [ ] `docker compose exec kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list` 含 `job.parse`、`job.ai`、`job.experiment`、`job.export`、`domain.events` 及各自死信主题
+- [ ] MLflow：`ssh -L 5000:127.0.0.1:5000 <服务器>` 后浏览器打开 `http://127.0.0.1:5000`；跑一个实验确认产物写入 OSS `mlflow-artifacts/`
+- [ ] 手动执行一次 `scripts/backup.sh`，再执行 `scripts/restore.sh --backup latest`（恢复演练）全部通过
+- [ ] 重启演练：`docker compose restart worker-parse`（任务中途）→ 任务由租约/回收器恢复；`sudo reboot` 后所有服务自动恢复（`restart: unless-stopped`，且 Docker 服务开机自启）
+
+---
+
+## 7. 日常运维
+
+### 7.1 日志
+
+- 容器日志为 `json-file`，每服务 `20m × 5` 轮转（约 100 MB 上限/服务）：
+  `docker compose logs -f --tail 200 api`、`docker compose logs --since 1h worker-ai`。
+- 后端日志是 JSON 单行（`logs.py`，输出到 stdout），包含 request / project / job / attempt 等业务 ID，**不应出现口令、预签名地址、令牌**（对常见敏感键名另有兜底脱敏）；API 访问日志只记录路径，不记录查询串；发现敏感信息立即按安全事件处理。
+- nginx 访问日志用 `$uri`（不含查询串），避免把查询串中的令牌、回调参数写入日志。
+- 日志是排障用，**不是审计记录**：人工审核与发布是业务记录，在 PostgreSQL 里（架构文档 8.2）。需要长期留存日志时，在宿主机配置日志采集。
+
+### 7.2 常用命令
+
+```bash
+docker compose ps                         # 状态
+scripts/healthcheck.sh                    # 整体检查（可放 cron，--quiet 只输出异常）
+docker compose restart worker-ai          # 重启单个服务
+docker compose exec postgres psql -U postgres -d bidwb     # 进数据库（超级用户，慎用）
+docker compose top / docker stats         # 资源占用
+```
+
+扩容消费者：worker 单进程一次只算 1 个重任务。要更大吞吐，**复制 `compose.yml` 中对应 worker 服务段并改服务名与 `BIDWB_WORKER_ID`**，不要用 `--scale`（`BIDWB_WORKER_ID` 是静态的）。
+训练/大回测使用独立的 `worker-experiment`，不挤占截止前的业务队列（后端没有注册 experiment 处理器）。
+
+### 7.3 备份
+
+备份范围：业务库 `bidwb`、LangGraph 运行库 `bidwb_runtime`、MLflow 元数据库 `mlflow`（逻辑导出 `pg_dump -Fc`）。**不含** OSS 对象、Kafka、Milvus、`secrets/`。
+
+```bash
+scripts/backup.sh                         # 手工备份
+scripts/backup.sh --label before-change   # 带备注
+```
+
+定时（cron，每天 02:30；`BACKUP_DIR` 必须在另一块盘或挂载点）：
+
+```
+30 2 * * * cd /opt/tender-app/deploy && scripts/backup.sh >> /var/log/bidwb-backup.log 2>&1
+```
+
+- 每个批次一个目录 `BACKUP_DIR/<UTC时间>/`：`*.dump`、`manifest.txt`（版本、迁移版本、表数与行数、镜像、OSS 桶）、`SHA256SUMS`；`latest` 指向最近成功批次。
+- 保留策略：近 30 份 + 近 12 个月各月最早一份（`BACKUP_KEEP_DAILY` / `BACKUP_KEEP_MONTHLY`，架构文档 8.3 初始策略；公司保留要求改变时调整，**不自动删除正式投标原件**——它们在 OSS，不在本备份范围）。
+- 脚本每个转储都用 `pg_restore --list` 校验可读；失败的批次被丢弃，退出码非 0（接入监控/邮件）。退出码 3 表示数据库备份成功但 OSS 清单命令失败。
+- **与 OSS 配对**：架构文档要求同一备份批次的数据库与对象引用配对。本脚本只在 manifest 记录桶名与时间点；对象本身的保护依赖 OSS 版本控制 / 跨地域复制 / 复制到备份桶（是否启用由运维决定，本编排不替你开启）。
+  可在 `.env` 配置 `BACKUP_OSS_MANIFEST_CMD`（如 `ossutil ls oss://<桶>/ --short-format`），其输出作为 `oss-manifest.txt` 存入批次。
+- 备份含全部业务数据（未加密）：`BACKUP_DIR` 所在磁盘应加密，并**异地**保存（如定时同步到另一个桶/机房）；仅放在本机同一块盘上不算备份。
+- 初始恢复目标：RPO ≤ 24 小时，RTO ≤ 4 小时；这是设计目标，须首次恢复演练与稳定运营阶段验收后才能承诺。要缩小 RPO 可另行启用基础备份 + WAL 归档（本编排默认不启用）。
+
+### 7.4 恢复演练（每月一次，重要迁移后追加）
+
+```bash
+scripts/restore.sh --backup latest                 # 默认：恢复到临时库 restore_<库>_<时间>，核验后删除，不影响线上
+scripts/restore.sh --backup 20261007-023000 --db bidwb --keep   # 保留临时库供人工抽查
+```
+
+脚本核验：校验和、`pg_restore` 无错误、表数量与迁移版本与清单一致、总行数对比。结束时会打印**业务恢复核对清单**（核对 OSS 对象、抽样打开原页与提交稿、核对快照/结果/发布关联、确认检索通道、任务租约处理）——
+“备份存在、下载成功或 SQL 导入成功均不单独算业务恢复成功”（架构文档 8.3），请完成清单后把结果与耗时记入运维台账。
+
+**灾难恢复（危险，覆盖线上数据）**：
+
+```bash
+scripts/restore.sh --backup <批次> --in-place --yes
+```
+
+会先做一次 pre-restore 备份，停止应用与 MLflow，删除并重建选定数据库，导入后再核验；完成后服务保持停止，确认后 `docker compose up -d`。
+换新主机的流程：恢复 `secrets/`（若丢失则重新 `gen-secrets.sh` 并 `ALTER ROLE` 对齐）→ 起 `postgres`（初始化脚本建角色与空库）→ `scripts/restore.sh --backup <批次> --in-place --yes` → `docker compose up -d` →
+按核对清单验收。Kafka 主题由 `kafka-init` 重建，未完成任务由回收器重发。
+
+**Milvus 索引（范围外 / 未实现）**：后端没有 `rebuild-index` 之类的索引重建命令（`bidwb-admin` 只有 `create-member` 与 `ensure-topics`），也没有写入 Milvus 的代码；当前检索只走关键词通道，直接读取库里的解析产物，因此恢复数据库后无需重建任何索引，丢失 `milvusdata` 卷不影响业务。影响：Milvus 通道上线前不存在可恢复的向量数据；通道接入时须同时提供重建命令并更新本节。替代做法：如有人在 Milvus 里手工做过评测，数据从解析产物重新导入，不属于本系统的恢复范围。
+
+### 7.5 升级与回退
+
+1. 备好新版本镜像（构建或拉取），在 `.env` 修改 `APP_IMAGE`、`WEB_IMAGE`、`MLFLOW_IMAGE`（及要升级的第三方镜像）为新标签；
+2. `scripts/upgrade.sh --build`（或 `--pull`）：预检 → 获取镜像 → 记录当前镜像 → **升级前备份** → 创建主题 → 迁移 → 逐个重启（relay、reaper、worker-*、mlflow、api、web）→ `healthcheck.sh --strict`；
+3. 任一步失败，脚本打印回退指引；镜像回退：`scripts/upgrade.sh rollback`（回到 `.upgrade-state/previous.env` 记录的镜像，随后把 `.env` 标签也改回旧值）。
+
+要点（架构文档 8.3）：
+
+- **迁移只进不退**：追加保存的表有触发器禁止改写，初始迁移不提供降级。升级策略是“先加字段/双读过渡，再迁移历史并校验，最后停旧写入”；已应用的迁移不改写。因此旧程序必须兼容新结构；若新迁移不向后兼容，回退必须恢复升级前备份（`restore.sh --backup <升级前批次> --in-place --yes`）。
+- 内容语义、解析或特征变化会生成新方法包并重评；回退要同时恢复兼容的 worker、配置与发布路由，**不撤销已经发生的业务事件**。
+- 单机单副本，API 重建的几秒内会短暂不可用，请安排在低峰期。
+- MLflow 升级大版本后，库结构需要升级：`docker compose run --rm --no-deps mlflow mlflow db upgrade "$(cat secrets/db_url_mlflow)"`（未验证：命令形式；验证方法：升级前在备份恢复出的副本上执行一次）。
+- 第三方镜像（postgres 小版本、kafka、milvus）升级前先看各自发行说明；**Milvus 跨大版本、PostgreSQL 跨大版本不能只改标签**（PostgreSQL 大版本需要 dump/restore 或 pg_upgrade；Milvus 需按官方升级文档）。
+- 定期（建议每月）重建镜像以获取基础镜像的安全补丁，并走同样的升级流程。
+
+### 7.6 清理
+
+`docker image prune`（只删悬空镜像）可以；**不要执行 `docker volume prune` 或 `docker compose down -v`**——会删除数据库卷。`docker compose down`（不带 `-v`）只停止并删除容器，数据卷保留。
+
+---
+
+## 8. 故障排查
+
+| 现象 | 可能原因 | 处理 |
+| --- | --- | --- |
+| `docker compose` 报 `required variable XXX is missing` | `.env` 缺变量 | 对照 `.env.example` 补齐；运行 `scripts/preflight.sh` |
+| 容器内 `Permission denied: /run/secrets/...` | secrets 文件权限不对（非 0444/0644）或不在 0700 目录内的 bind mount 异常 | `ls -l secrets/`；文件改回 `chmod 444`；目录 `chmod 700` |
+| `postgres` 一直 unhealthy，日志显示初始化脚本失败 | secret 缺失/为空，或数据目录已存在导致脚本不执行 | 看 `docker compose logs postgres`；首次初始化失败后卷里已有半成品，**确认没有数据**后才能 `docker compose down` 并删除卷 `bidwb_pgdata` 重来 |
+| 改了 `db_password_*` 但连不上库 | 初始化脚本只在首次运行；改口令没同步到数据库 | 按 `secrets/README.md` 的轮换步骤 `ALTER ROLE` 并同步口令文件与连接串文件 |
+| `migrate` 失败：`未设置 BIDWB_MIGRATION_DATABASE_URL` 或认证失败 | `secrets/db_url_owner` 为空/口令不一致 | `scripts/preflight.sh` 会检查连接串与口令一致；修正后 `docker compose up --no-deps --exit-code-from migrate migrate` |
+| `migrate` 失败：权限错误 | 库属主角色不对，或库被手工改过 | 确认连接串是 `bidwb_owner` 且库属主是它：`\l`；不要用超级用户跑迁移 |
+| `api` 或 relay / reaper / worker 退出，日志提示“生产环境必须…” | 后端生产配置校验（`config.py`）：`cookie_secure` 关闭、`PUBLIC_BASE_URL` 非 https、会话 Cookie 不是 `__Host-` 前缀；relay / reaper / worker 另要求配置 `BIDWB_WORKER_DATABASE_URL(_FILE)` | 修正 `.env` / compose；注意 `PUBLIC_BASE_URL` 必须 `https://`（结尾 `/` 会被去掉） |
+| `api` 启动失败，找不到 `bidwb-api` / `bidwb-admin` | 镜像不是由当前后端源码构建，入口脚本（`pyproject.toml` 的 `[project.scripts]`）未安装 | 确认镜像由当前源码构建；`docker compose run --rm --no-deps api bidwb-admin --help` |
+| 浏览器 502/504 | api 不健康或重建中 | `docker compose ps api`、`logs api`；nginx 用 Docker DNS 动态解析，api 恢复后自动恢复 |
+| 页面能开但登录一直 429 | 限流命中；在 SLB 后面所有用户共用一个来源 IP | 正确设置 `WEB_SET_REAL_IP_FROM`；确认 SLB 传了 `X-Forwarded-For`；必要时调大 `WEB_LOGIN_RATE` |
+| 登录后马上掉线/Cookie 不生效 | 用户不是通过 https 访问（生产会话 Cookie 为 `__Host-sid` 且带 Secure，浏览器不会在 http 下保存） | 保证用户通过 https 访问，且访问地址与 `PUBLIC_BASE_URL` 一致；Secure 属性由后端的 `cookie_secure`（默认开启）决定，与转发协议头无关；SLB 仍应传 `X-Forwarded-Proto: https` 供 nginx 下发 HSTS |
+| 上传时浏览器报 CORS 错误 | OSS 桶 CORS 未配置、来源/方法/暴露头不对 | 按 3.3 配置；暴露 `ETag`；来源与站点地址完全一致（含协议与端口） |
+| 上传时浏览器报 `Refused to connect`（CSP） | `WEB_CSP_CONNECT_EXTRA` 缺 OSS 域名 | 补上并 `docker compose up -d web` |
+| 上传完成时报 403 / `AccessDenied` | RAM 策略缺动作或前缀不一致 | 对照 3.2；看 api 日志里的 OSS 错误码 |
+| 服务端访问 OSS 报签名/`aws-chunked` 错误 | boto3 V4 分块编码与 OSS 不兼容（未验证是否会发生） | 见 3.5。可先在出错服务的 environment 里加 `AWS_REQUEST_CHECKSUM_CALCULATION=when_required`（botocore 读取该变量，mlflow 服务已如此设置；未验证对 OSS 有效）；仍不通则需调整 `storage.py` 的客户端配置，属后端改动 |
+| 任务进度页不更新 / 频繁重连 | SLB 或中间代理的空闲超时过短；nginx 缓冲 | 调大 SLB 空闲超时；SSE 路径在 nginx 已关缓冲（`proxy_buffering off`） |
+| 任务一直 `queued` | relay 不工作、Kafka 不可用或 worker 没消费 | `healthcheck.sh`；`logs relay worker-*`；`kafka-init` 是否成功；reaper 会在 120 秒后重发未被领取的 queued 任务 |
+| 任务卡在 `running` | worker 崩溃/卡死 | 租约（300 秒）到期后 reaper 自动回收：重排或标 `failed`；`docker compose restart worker-xxx` 可加速 |
+| `kafka` 启动失败，日志 `file not writable` | Docker < 20.10.4 或数据卷属主不对（Kafka 以 uid 1000 运行） | 升级 Docker；`docker run --rm -v bidwb_kafkadata:/d alpine chown -R 1000:1000 /d` |
+| `kafka` 重启后无法加入/报 cluster id 不匹配 | 数据卷里的 cluster id 与 `KAFKA_CLUSTER_ID` 不一致（改过 .env） | 改回原值；Kafka 是派生数据，确认无积压后可删 `kafkadata` 卷重建（任务靠回收器重发） |
+| `milvus` 启动慢/unhealthy | 首次启动需要约 90 秒；内存不足 | 看 `logs milvus`、`docker stats`；当前后端不连接 Milvus，检索恒走关键词通道，Milvus 不健康不影响业务；资源紧张时可先停掉该服务 |
+| `mlflow` 报 `Invalid Host header` | 访问时用了未放行的主机名 | `MLFLOW_SERVER_ALLOWED_HOSTS` 已含 `mlflow`、`localhost`；经隧道访问用 `127.0.0.1:5000` |
+| 磁盘告警 | 日志/备份/WAL/Kafka 日志/镜像累积 | `docker system df`；清理旧备份（保留策略）；Kafka 日志保留 168 小时；检查 PostgreSQL 的 WAL 与大表 |
+| 时间相关异常（租约、会话过期） | 主机时钟漂移 | 启用 chrony/ntpd |
+
+排障信息收集：`docker compose ps -a`、`docker compose logs --tail 200 <服务>`、`scripts/healthcheck.sh`、`docker stats --no-stream`。**贴日志给他人前先检查是否含敏感信息。**
+
+---
+
+## 9. 安全注意事项
+
+- **机密**：口令/密钥只放 `secrets/`；`.env` 与 compose 不含明文凭据（`check_compose.py` 在 CI 中检查）；`secrets/` 单独加密备份；轮换步骤见 `secrets/README.md`。
+  secrets 文件为 `0444`、目录 `0700`，只在“宿主机仅受信任运维人员可登录、且 docker 组成员等同 root”的前提下成立。
+- **能执行 `docker` 命令的人等同于 root**，并且能读到所有 secrets 与容器环境。限制 `docker` 组成员，运维账号用个人账号，不共享。
+- **网络隔离**：数据服务在 `internal` 网络，不发布端口；不要为了调试把 `5432`、`9092`、`19530` 发布到宿主机（开发用 `compose.dev.yml`，只绑 127.0.0.1）。MLflow 界面只绑回环地址，经 SSH 隧道访问，并限制可访问的研究组成员。
+- **容器加固**：非 root、`cap_drop: ALL`、`no-new-privileges`、只读根文件系统、`tmpfs` 临时目录、`pids_limit`、内存/CPU 限额；例外只有 Kafka（写配置目录）与 Milvus（root、seccomp:unconfined，未实测前不收紧），均记录在 `compose.yml` 头部并由 `check_compose.py` 白名单约束。
+- **数据库角色分权**：迁移用库属主 `bidwb_owner`；API 用 `bidwb_api`；worker/relay/reaper 用 `bidwb_worker`（不读身份、会话、上传与成员表）；LangGraph 运行库与 MLflow 库各有独立属主，互不授权。不要把属主或超级用户连接串交给应用。
+- **站点安全头**：CSP、`X-Content-Type-Options`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`、HSTS（https 下）；登录限流；隐藏 nginx 版本；隐藏文件不可访问。CSP 中 `style-src 'unsafe-inline'` 与 `'wasm-unsafe-eval'` 是为兼容 React/PDF.js 而放宽，是否都需要未验证（见 10.2 第 11 项）。
+- **OSS**：桶私有；RAM 子账号最小权限，无删除原件权限；CORS 来源限定站点域名；预签名地址短时有效且不写日志。
+- **备份**：含全部业务数据，磁盘加密 + 异地保存 + 限制访问；演练恢复时临时库会含真实数据，用完删除。
+- **日志**：后端不记录口令、令牌、预签名地址、文档全文、思考过程（`logs.py` 的约定与兜底脱敏）；对外分享日志前自查。
+- **更新**：定期重建镜像取得基础镜像安全补丁；关注 Docker、PostgreSQL、Kafka、Milvus、nginx 的安全公告。
+- **模型调用**：worker 出网访问大模型 API，文档内容会发送到该供应商——**这是数据出境/供应商合规问题，需公司法务/信息安全确认**后才可对真实招投标资料启用。
+
+---
+
+## 10. 未验证项
+
+本手册与全部部署文件是在**没有 Docker 守护进程**的沙箱里编写的：没有构建过任何镜像、没有启动过任何容器。已验证与未验证的边界如下，请在真机首次部署时逐项确认并把结果回填。
+
+### 10.1 已验证（含方法）
+
+| 项 | 方法 | 结果 |
+| --- | --- | --- |
+| compose 语法（生产 / 生产+TLS / 生产+开发） | `docker compose --env-file .env.example [-f ...] config -q`（Docker Compose v5.1.3，仅 CLI） | 通过 |
+| 编排的安全与稳定性约束 | `python3 check_compose.py`（21 项静态检查，含白名单、变量双向一致、明文口令、资源总和）；并对故意破坏的副本做了反向测试，确认能报出违规 | 通过 |
+| shell 脚本 | `shellcheck`（0.11.0）全部干净；`bash -n`；`--help` | 通过 |
+| nginx 配置 | 在 nginx 1.24（沙箱可装版本，**非镜像里的 1.30**）上渲染模板并 `nginx -t`（HTTP 与 TLS 两种模式，TLS 模式去掉了 1.25.1 才有的 `http2 on;`）；并用本地假 API 做了功能测试：SPA 路由回退、静态资源长缓存/index.html 不缓存、缺失资源 404、Range 与转发头透传、SSE 逐条实时转发（不缓冲）、登录限流（第 7 次起 429）、`/nginx-health`、隐藏文件 404、不可信来源的 `X-Forwarded-*` 被忽略 | 通过 |
+| PostgreSQL 初始化脚本 + 迁移 | 在真实 PostgreSQL 16.13（Ubuntu 软件包，**非 postgres:16.15 镜像**）上用相同口令文件运行 `10-roles-and-databases.sh`，再以 `bidwb_owner` 执行真实的 `alembic upgrade head`（0001，42 张表含 alembic_version）；核对角色、成员关系、`CONNECT` 授权，以及 `app_api` 能更新 `jobs`、`app_worker` 不能读 `members` | 通过 |
+| 备份/恢复脚本逻辑 | 用一个把 `docker compose exec postgres` 转发到上述本地集群的垫片，实跑 `backup.sh`（含空库、校验、清单、保留策略模拟）、`restore.sh` 演练与 `--in-place --yes`（含不带 `--yes` 被拒绝）；恢复后角色授权仍然有效 | 通过 |
+| 后端依赖可纯 wheel 安装 | 在 Python 3.11 / x86_64 上 `pip wheel` 本项目并以 `--only-binary=:all:` 安装依赖，导入 fastapi、psycopg、confluent_kafka、pypdfium2、argon2、boto3（该次安装发生在 `python-docx` 加入依赖列表之前，见 10.2 第 1 项） | 通过 |
+| 部署文件与后端源码的一致性 | 逐项对照 `pyproject.toml`、`entrypoints.py`、`admin.py`、`config.py`、`api/app.py`、`messaging.py`、`storage.py`、`tasks.py`、`workers/` 与 compose / 脚本中的命令、环境变量、端点、主题、对象键前缀（仅读源码，未运行后端） | 一致（11.2 逐项列出） |
+| `gen-secrets.sh` | 实跑：幂等、不覆盖、权限、连接串与口令一致 | 通过 |
+| 版本号 | postgres `16.15-bookworm`、python `3.11-slim-bookworm`、node `22-alpine` 取自 docker-library 官方清单；Milvus `v2.6.10` 与 MinIO 镜像取自 Milvus 官方仓库的 compose 文件；MLflow `3.17.0` 取自 PyPI（并核对了 `MLFLOW_SERVER_ALLOWED_HOSTS`、`db` 额外依赖、`--serve-artifacts` 存在） | 见下 |
+
+### 10.2 未验证（必须在真机核对）
+
+**镜像与构建**
+1. 三个自建镜像（`bidwb-backend`、`bidwb-web`、`bidwb-mlflow`）从未真正 `docker build`；`python-docx` 及其依赖在 `--only-binary=:all:` 下能否安装未验证；前端 `npm ci && npm run build` 在容器内的结果、`pip install mlflow[db]==3.17.0` 的体积与耗时未知。
+2. `apache/kafka:4.0.0`、`nginxinc/nginx-unprivileged:1.30.5-alpine` 两个标签**未能在线核对存在**（沙箱访问不了 Docker Hub）；前者是已知的官方发布版本，后者由 nginx stable 线版本推断。首次部署前用 `docker manifest inspect` 确认，不存在则换同线存在的标签。
+3. `milvusdb/milvus:v2.6.10` 来自 Milvus 官方 v2.6.11 标签下 compose 文件的引用，镜像本身未拉取验证；官方主线已到 v3.0.x，一期选用 2.6 稳定线是判断，不是实测结论。
+
+**运行行为**
+4. 只读根文件系统 + `cap_drop: ALL` + 非 root 在 **postgres**（uid 999、命名卷属主继承、tmpfs `/run/postgresql`）、**nginx-unprivileged**（tmpfs `/etc/nginx/conf.d` 供 envsubst 渲染）、**mlflow** 上能否正常启动，未实测。失败时先查 `docker compose logs <服务>` 的 `Read-only file system` / `Permission denied`，再按需放宽并同步更新 `check_compose.py` 白名单与理由。
+5. **Kafka**：环境变量命名（`CLUSTER_ID`、`KAFKA_*`）取自 Apache Kafka 官方 Docker 镜像文档的常见形态；`/var/lib/kafka/data` 命名卷属主、`kafka-broker-api-versions.sh` 健康检查路径、堆设置 `-Xmx768m`、4.0 版本下的行为均未实测。
+6. **Milvus 内嵌 etcd + 本地存储**（`ETCD_USE_EMBED`、`COMMON_STORAGETYPE=local`、`embedEtcd.yaml`）取自官方 `standalone_embed.sh`（v2.6.11 标签）；`seccomp:unconfined` 是否仍必要、可否只读根文件系统/非 root 均未实测；内存 6 GiB 低于官方推荐 16 GiB，Milvus 通道启用前必须压测。
+7. **MLflow 产物写 OSS**：MLflow 官方文档未列出 OSS 的 S3 兼容接入（架构文档 INF-006）；`aws-config`（virtual-hosted）与 `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` 的组合能否通过需联调（后端代码本身不调用 MLflow，只有研究侧使用）；不通时回退到本地卷（`MLFLOW_ARTIFACT_URI=file:///mlflow/artifacts`，需自行备份该卷）。
+8. **OSS 联调**：预签名分片直传、CORS（暴露 ETag）、RAM 策略动作集、生命周期规则写法、虚拟主机寻址、后端 `s3v4` 与 OSS 的 aws-chunked 兼容性、“禁止覆盖”对 CopyObject/CompleteMultipartUpload 的支持，均只对照了文档，未实际访问 OSS。验证方法：按第 6 节上传多片大文件并触发解析，再抽查 OSS 中 `staging/`、`objects/`、`artifacts/` 前缀。
+9. **资源限额**（`mem_limit`、`cpus`、`pids_limit`、PostgreSQL 参数、tmpfs 大小）是估计值，合计约 26.75 GiB/15.25 CPU 上限，压测前不能当容量承诺。`cpus` 总和超过 8 是有意的（上限而非预留）。
+10. **TLS 模式**：nginx 1.30 上的 `http2 on;`、证书热加载、80→443 跳转未在真实容器里验证（沙箱用 1.24 做了语法检查，TLS 块去掉了 `http2 on`）。
+11. **CSP**：`script-src 'wasm-unsafe-eval'`、`style-src 'unsafe-inline'`、`worker-src blob:` 是为兼容 PDF.js/React 预留的放宽，没有拿真实前端页面验证过是否都需要或是否还缺（例如 PDF 以 blob 在 iframe 中预览需要 `frame-src`）；PDF.js worker 的 `.mjs` MIME 已在 nginx 配置补充。
+12. **secrets 文件权限**：采用“目录 700 + 文件 444”，依据是 Compose（非 Swarm）不改写 bind mount 属主权限这一已知行为；在你们的 Docker/Compose 版本上需实测容器内用户确实可读。
+13. **开发环境**（`compose.dev.yml`）：MinIO 的 `MINIO_ROOT_USER_FILE` 支持与 `MINIO_API_CORS_ALLOW_ORIGIN` 是否足以让浏览器直传通过（含 ETag 暴露）、vite 容器热更新、`mc ready local` 健康检查，均未实测。
+
+**与后端/前端的接口（已对照源码，未联调运行，见第 11 节）**
+14. 后端入口（`bidwb-api` 等）、`bidwb-admin ensure-topics / create-member`、`/healthz`、`/readyz` 的参数与行为已按源码核对，但没有在容器里实际运行过。验证方法：首次部署后执行 `docker compose run --rm --no-deps api bidwb-admin --help`、`scripts/create-admin.sh`、`scripts/healthcheck.sh`。
+15. relay 不需要 OSS，但后端对所有进程统一构造对象存储客户端；relay 以空凭据构造该客户端，不会发起 OSS 请求。未验证：boto3 在空凭据下构造客户端不报错；验证方法：`docker compose logs relay` 无启动异常。
+16. 备份脚本通过 `docker compose exec` 调用容器内 `pg_dump`/`pg_restore`，这一层在沙箱里用垫片模拟，未经真实 Docker。
+17. 评审报告的 Word/PDF 导出在 API 进程内同步生成；API 容器内存上限 2 GiB、nginx 对 `/api/` 的读超时 120 秒，大项目（数百页原件的批注版 PDF）能否在限额内完成未测。验证方法：用真实大文件导出并观察 `docker stats` 与响应耗时。
+18. `BIDWB_AUTO_ANALYSIS` 开启时 reaper 需要访问 OSS（冻结输入快照），compose 已为其配置凭据与 egress 网络；端到端（上传 → 自动解析 → 规则 → 评审 → 报告）未在真机跑通。
+
+**流程**
+19. `upgrade.sh` 的滚动重启、等待健康、回退，以及 `healthcheck.sh` 对真实容器状态的解析（`docker compose ps --format` 模板）未在真实 Docker 上跑过。
+20. 恢复目标（RPO ≤ 24h、RTO ≤ 4h）未测；`restore.sh` 的耗时需用真实数据量演练。
+21. Docker/Compose 的最低版本（24 / 2.24）是建议值，只在 29.4.3 / 5.1.3 上做过语法校验。
+
+---
+
+## 11. 文件清单与约定
+
+### 11.1 文件清单
+
+```
+backend/Dockerfile, .dockerignore          后端镜像（多阶段、非 root uid 10001、预编译 venv、HEALTHCHECK 工具）
+frontend/Dockerfile, .dockerignore         前端镜像（node:22-alpine 构建 → nginx-unprivileged）
+frontend/nginx/templates/*.template        nginx 配置模板（envsubst 渲染，WEB_* 变量）
+deploy/
+  compose.yml                                  生产编排
+  compose.tls.yml                              覆盖：nginx 自己终止 TLS
+  compose.dev.yml                              覆盖：开发环境（MinIO、vite、热重载、本地管理员）
+  .env.example                                 环境变量模板
+  secrets/README.md, .gitkeep                  机密说明（其余内容不入库）
+  postgres/initdb/10-roles-and-databases.sh    角色与数据库初始化
+  milvus/embedEtcd.yaml, user.yaml             Milvus 内嵌 etcd 与用户配置
+  mlflow/Dockerfile, aws-config                MLflow 镜像与 S3 寻址配置
+  dev/dev-init.sh                              开发环境：建桶 + 创建本地管理员
+  scripts/lib.sh                               公共函数
+  scripts/gen-secrets.sh                       生成 secrets
+  scripts/preflight.sh                         部署前检查
+  scripts/create-admin.sh                      创建首个账号
+  scripts/healthcheck.sh                       整体健康检查
+  scripts/backup.sh, restore.sh                备份与恢复（演练 / 就地）
+  scripts/upgrade.sh                           升级与镜像回退
+  check_compose.py                             编排静态校验（CI）
+  README.md                                    本手册
+```
+
+CI 建议：`python3 deploy/check_compose.py`（需要 PyYAML；有 `docker compose` CLI 时自动追加语法校验；有 `shellcheck` 时自动检查脚本）。
+
+### 11.2 后端提供的运行约定
+
+以下均以 `backend/` 源码为准（出处列只写文件名，除注明外位于 `backend/src/bidwb/`）。
+
+| 项 | 事实 | 出处 |
+| --- | --- | --- |
+| 命令入口 | `bidwb-api`、`bidwb-relay`、`bidwb-reaper`、`bidwb-worker`、`bidwb-admin`，由后端镜像的 venv 提供 | `pyproject.toml`、`entrypoints.py`、`admin.py` |
+| API 监听 | 监听 `BIDWB_API_HOST`:`BIDWB_API_PORT`；配置默认 `127.0.0.1:8000`，后端镜像通过 `ENV BIDWB_API_HOST=0.0.0.0` 监听 `0.0.0.0:8000`，对外暴露范围由编排层决定（API 只在 `edge`/`data`/`egress` 网络内，不发布端口） | `config.py`、`entrypoints.py`、`backend/Dockerfile` |
+| 健康检查 | `GET /healthz` 存活，返回 `{"status":"ok","version":…}`；`GET /readyz` 就绪，执行 `SELECT 1`，数据库不可用返回 503。容器健康用 `/healthz`，`scripts/healthcheck.sh` 用 `/readyz`；worker/relay/reaper 无 HTTP 端口，只检查进程存活（`bidwb-healthcheck proc`） | `api/app.py`、`backend/Dockerfile` |
+| 接口文档 | `BIDWB_ENVIRONMENT=production` 时 `/api/docs` 与 `/api/openapi.json` 关闭 | `api/app.py` |
+| worker 选择 | `BIDWB_WORKER_CLASS` 取 `parse`、`ai`、`experiment`、`export`，其它值以退出码 2 退出；消费主题 `job.<类别>`，消费组 `bidwb-<类别>`。任务种类到类别：`parse`、`rules` → parse；`diagnosis`、`revision`、`recheck`、`prediction` → ai；`experiment` → experiment；`export` → export。`BIDWB_WORKER_ID` 默认 `worker-local`，部署时静态且每服务唯一 | `entrypoints.py`、`tasks.py` |
+| 已注册的处理器 | `parse`、`rules`、`diagnosis`、`revision`、`prediction`；其它种类（`recheck`、`experiment`、`export`）以 `kind_not_implemented` 失败，且通用入口 `POST /projects/{id}/tasks` 目前不接受任何种类，因此 experiment、export 类 worker 空转 | `ai/handlers.py`、`workers/handlers.py`、`workers/runner.py`、`tasks.py` |
+| `bidwb-admin ensure-topics` | 幂等创建 `job.parse`(3 分区)、`job.ai`(3)、`job.experiment`(1)、`job.export`(1)、`domain.events`(3) 及各自 `.dlq` 死信主题(1 分区)；参数 `--replication-factor`（默认 1）；读 `BIDWB_KAFKA_*`，主题名带 `BIDWB_KAFKA_TOPIC_PREFIX` | `admin.py`、`messaging.py` |
+| `bidwb-admin create-member` | 参数 `--login`、`--display-name`、`--password-file`（缺省读标准输入，不接受命令行明文口令）、`--if-not-exists`（登录名已存在时输出提示并以 0 退出）；使用 `BIDWB_DATABASE_URL`（API 角色） | `admin.py`、`access.py` |
+| admin 的其它子命令 | 只有 `create-member` 与 `ensure-topics`；没有 `create-roles`（角色由 PostgreSQL 初始化脚本创建）、没有 `rebuild-index`（范围外，见 7.4） | `admin.py` |
+| 迁移 | `alembic upgrade head`，工作目录 `/backend`；`migrations/env.py` 直接读环境变量 `BIDWB_MIGRATION_DATABASE_URL`，**不经 `*_FILE`**，所以 migrate 服务用 `sh -c` 从 secret 文件读入；只有初始迁移 `0001`，`downgrade` 直接报错，回退靠备份恢复 | `backend/migrations/env.py`、`0001_initial.py`、`backend/Dockerfile` |
+| 配置读取 | 环境变量前缀 `BIDWB_`，未知变量忽略；凭据类变量支持 `BIDWB_<NAME>_FILE=/run/secrets/…`，进程启动时读取文件（去除首尾空白）并作为 `BIDWB_<NAME>`；同时设置 `X` 与 `X_FILE` 会报错；每个 `*_FILE` 指向的文件必须被该服务挂载 | `config.py` |
+| 运行库连接串 | `BIDWB_RUNTIME_DATABASE_URL`（及 `_FILE`）对应 `bidwb_runtime` 库，可选；配置项存在，但当前没有代码使用 LangGraph 检查点，该库只做初始化与备份 | `config.py` |
+| 数据库连接串 | API/admin 用 `BIDWB_DATABASE_URL`（`bidwb_api`）；relay/reaper/worker 用 `BIDWB_WORKER_DATABASE_URL`（`bidwb_worker`） | `config.py`、`runtime.py` |
+| 生产环境校验 | `BIDWB_ENVIRONMENT=production` 时要求 `cookie_secure` 开启、`PUBLIC_BASE_URL` 以 `https://` 开头、会话 Cookie 名以 `__Host-` 开头，否则拒绝启动；`lease_renew_seconds` 不得超过 `lease_seconds` 的一半（对所有环境生效）。`worker_database_url` 只在 relay/reaper/worker 启动时校验，api、admin、kafka-init 无需配置 | `config.py`、`runtime.py` |
+| 空值语义 | 配置按“空字符串等同未设置”处理（`env_ignore_empty`），所以未配置模型时 compose 传入的空 `BIDWB_LLM_*`、`BIDWB_KAFKA_TOPIC_PREFIX` 按默认值/未配置处理；内容为空的 `*_FILE` 同理。未配置模型时 AI 类任务以 `llm_not_configured` 明确失败 | `config.py`、`ai/llm.py` |
+| 认证 | 账号加口令登录（口令以 Argon2id 哈希保存），账号由 `bidwb-admin create-member` 创建；没有单点登录 | `services/auth.py`、`api/routes_auth.py` |
+| 开发热重载 | `BIDWB_API_RELOAD=true` 时 uvicorn 以 reload 方式启动；`PYTHONPATH=/app/backend/src` 优先于已安装包（`compose.dev.yml`） | `entrypoints.py` |
+| 代理头 | uvicorn 以 `proxy_headers=True` 运行，信任 `BIDWB_FORWARDED_ALLOW_IPS` 列出的代理（默认 `127.0.0.1`，compose 设为 `*`，因为只有 web 能访问 api）。会话 Cookie 的 Secure 属性由 `BIDWB_COOKIE_SECURE`（默认 true）决定，与转发协议无关 | `entrypoints.py`、`config.py`、`api/routes_auth.py` |
+| 对象存储 | 变量 `BIDWB_STORAGE_*`；键前缀 `staging/`（直传落点）、`objects/<sha256 前两位>/<sha256>`（内容寻址最终位置）、`artifacts/`（worker 产物）；签名版本 `s3v4`；预签名用公网端点，服务端读写用内网端点。OSS 兼容性未验证（见 3.5、10.2） | `storage.py`、`config.py` |
+| 自动评审流水线 | `BIDWB_AUTO_ANALYSIS`（默认 true，`.env` 中为 `AUTO_ANALYSIS`）：上传完成时 API 推进、任务结束时 worker 推进、reaper 周期兜底；因 reaper 要写 OSS，编排给它配置了 OSS 凭据与 egress 网络。关闭后只由人工触发各步骤 | `config.py`、`api/routes_files.py`、`workers/runner.py`、`workers/loops.py`、`services/pipeline.py` |
+| 评审报告导出 | `GET /api/v1/projects/{id}/report.docx` 与 `GET /api/v1/projects/{id}/body.annotated.pdf` 在 API 进程内同步生成，依赖 `python-docx`、`pypdfium2`（`pyproject.toml` 已声明）；响应头 `Cache-Control: private, no-store`，不经任务队列与 worker-export | `api/routes_report.py`、`services/export.py`、`pyproject.toml` |
+| 任务进度 SSE | `GET /api/v1/tasks/{id}/events`：每 15 秒心跳，单连接最长 600 秒，支持 `Last-Event-ID` 续传 | `api/routes_tasks.py` |
+| 检索与 MLflow | 检索只实现关键词通道；`BIDWB_RETRIEVAL_BACKEND`、`BIDWB_MILVUS_URI` 被读取但没有连接 Milvus 的代码；后端代码不调用 MLflow（范围外） | `retrieval.py`、`config.py` |
+| 日志 | stdout JSON 单行；访问日志只记路径与状态码；对 password、secret、token、authorization、cookie、signature、api_key、dsn 等键名做兜底脱敏 | `logs.py`、`api/app.py` |
+
+### 11.3 前端提供的构建与运行约定
+
+| 项 | 事实 | 出处 |
+| --- | --- | --- |
+| 构建 | `npm ci && npm run build` 生成 `dist/`（`build` 脚本含 `tsc --noEmit`）；`package-lock.json` 已提交，镜像构建严格按锁文件安装 | `frontend/package.json`、`frontend/Dockerfile` |
+| 路由 | history 路由，nginx 回退到 `index.html`；资源路径使用 `/assets/` 前缀（Vite 默认） | `frontend/nginx/templates/app-locations.inc.template` |
+| 资源 | PDF.js worker 随应用打包；中文原件所需的 CMap 与标准字体在构建时复制到 `dist/pdfjs/`，不引用外部 CDN、字体与脚本 | `frontend/vite.config.ts` |
+| API | 全部走同源 `/api/v1/...`；SSE `/api/v1/tasks/<id>/events`；文件内容 `/api/v1/files/<id>/content` 支持 Range；报告下载链接直接指向 `report.docx` 与 `body.annotated.pdf` | `frontend/src/api/endpoints.ts` |
+| 超时与限流 | nginx 对 SSE 读超时 3600 秒并关闭缓冲，对文件内容 300 秒，对其余 `/api/` 120 秒（报告导出属于后者），登录单独限流 | `app-locations.inc.template` |
+| CSP | `script-src 'self' 'wasm-unsafe-eval'`、`style-src 'self' 'unsafe-inline'`、`img-src 'self' data: blob:`、`worker-src 'self' blob:`、无 `frame-src`（回退到 `default-src 'self'`）；如前端新增内联脚本、`eval`、外部域名或 iframe 预览，须同步调整 `security-headers.inc.template` | `security-headers.inc.template` |
+| 开发 | `vite dev` 的 `/api` 代理使用环境变量 `API_TARGET`（缺省 `http://localhost:8000`，`compose.dev.yml` 设为 `http://api:8000`） | `frontend/vite.config.ts`、`compose.dev.yml` |

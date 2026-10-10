@@ -1,0 +1,7 @@
+# Milvus standalone 的内嵌 etcd 配置（取自 Milvus 官方 scripts/standalone_embed.sh 的内容；v2.6.x 核对）。
+# 仅容器内部使用：etcd 与 Milvus 在同一进程内，端口不发布到宿主机，所在网络为 internal。
+listen-client-urls: http://0.0.0.0:2379
+advertise-client-urls: http://0.0.0.0:2379
+quota-backend-bytes: 4294967296
+auto-compaction-mode: revision
+auto-compaction-retention: '1000'

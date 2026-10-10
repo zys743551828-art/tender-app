@@ -1,0 +1,36 @@
+# =============================================================================
+# 模式 http（默认）：前面有公司负载均衡 / 阿里云 SLB 终止 TLS，nginx 只监听 8080 明文。
+# SLB 需把客户端真实 IP 放进 X-Forwarded-For，把协议放进 X-Forwarded-Proto。
+# =============================================================================
+
+# 只信任来自 WEB_SET_REAL_IP_FROM 网段（SLB 地址）的 X-Forwarded-*；其余来源一律视为不可信。
+# 默认 10.0.0.0/8 只是常见 VPC 网段的占位值，必须按实际 SLB 私网地址收紧（待部署时核实）。
+geo $realip_remote_addr $web_trusted_proxy {
+    default 0;
+    ${WEB_SET_REAL_IP_FROM} 1;
+}
+map "$web_trusted_proxy:$http_x_forwarded_proto" $web_proto {
+    "1:https" https;
+    default   $scheme;
+}
+# 来自可信代理时沿用并追加 X-Forwarded-For 链，否则只记录实际对端地址（防止客户端伪造转发链）
+map $web_trusted_proxy $web_xff {
+    1       $proxy_add_x_forwarded_for;
+    default $remote_addr;
+}
+# 仅当外部协议为 https 时才下发 HSTS（值为空时 add_header 不输出）
+map $web_proto $web_hsts {
+    https   "max-age=31536000; includeSubDomains";
+    default "";
+}
+
+server {
+    listen 8080 default_server;
+    server_name ${WEB_SERVER_NAME};
+
+    set_real_ip_from ${WEB_SET_REAL_IP_FROM};
+    real_ip_header X-Forwarded-For;
+    real_ip_recursive on;
+
+    include /etc/nginx/conf.d/app-locations.inc;
+}

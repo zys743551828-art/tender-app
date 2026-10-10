@@ -1,0 +1,8 @@
+# 环境变量与机密永不入库
+.env
+secrets/*
+!secrets/README.md
+!secrets/.gitkeep
+# 备份与升级状态
+backups/
+.upgrade-state/

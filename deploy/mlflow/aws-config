@@ -1,0 +1,5 @@
+# 供 MLflow（boto3）访问阿里云 OSS 的 S3 兼容接口：OSS 只支持 virtual-hosted 风格寻址（路径风格会被拒绝，
+# 见阿里云“OSS 与 Amazon S3 兼容”文档）。该文件由 compose 只读挂载，并通过 AWS_CONFIG_FILE 指向。
+[default]
+s3 =
+    addressing_style = virtual

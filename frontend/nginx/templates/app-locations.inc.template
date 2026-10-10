@@ -1,0 +1,91 @@
+# =============================================================================
+# 站点行为（两种 TLS 模式共用），被 mode-*.inc 的 server 块 include。
+# =============================================================================
+root /usr/share/nginx/html;
+index index.html;
+
+# 上传走 OSS 直传，不经过本服务；API 的 JSON 请求体都很小。需要放宽时改 WEB_CLIENT_MAX_BODY_SIZE。
+client_max_body_size ${WEB_CLIENT_MAX_BODY_SIZE};
+access_log /dev/stdout web;
+
+include /etc/nginx/conf.d/security-headers.inc;
+
+# 用 Docker 内置 DNS + 变量形式的 proxy_pass：api 容器重建后换了 IP 也能在 10 秒内自动跟上，
+# 且 api 暂时不可用时 nginx 仍能启动（静态页照常提供）。
+resolver 127.0.0.11 valid=10s ipv6=off;
+set $api_upstream http://${WEB_API_UPSTREAM};
+
+# 负载均衡 / 编排的存活探针；不经过 API，不依赖数据库
+location = /nginx-health {
+    access_log off;
+    default_type text/plain;
+    return 200 "ok\n";
+}
+
+# 禁止访问隐藏文件（保留 /.well-known/ 以便证书签发等用途）
+location ~ /\.(?!well-known/) {
+    return 404;
+}
+
+# ---- API 反向代理 -------------------------------------------------------
+# 登录：更严的限流。burst=5 容忍用户手误重试，超出返回 429。
+location = /api/v1/auth/login {
+    limit_req zone=web_login burst=5 nodelay;
+    include /etc/nginx/conf.d/proxy-common.inc;
+    proxy_read_timeout 30s;
+    proxy_pass $api_upstream$request_uri;
+}
+
+# 任务进度 SSE：关闭缓冲与压缩，长超时；浏览器断线后用 Last-Event-ID 头续传（头原样透传）。
+location ~ ^/api/v1/tasks/[^/]+/events$ {
+    include /etc/nginx/conf.d/proxy-common.inc;
+    include /etc/nginx/conf.d/security-headers.inc;
+    add_header X-Accel-Buffering "no" always;
+    proxy_buffering off;
+    proxy_cache off;
+    gzip off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    proxy_pass $api_upstream$request_uri;
+}
+
+# 原件内容：支持 Range，流式转发，不落盘缓冲（大 PDF/图纸）。Range / If-Range 请求头默认即透传。
+location ~ ^/api/v1/files/[^/]+/content$ {
+    include /etc/nginx/conf.d/proxy-common.inc;
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_max_temp_file_size 0;
+    gzip off;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_pass $api_upstream$request_uri;
+}
+
+location /api/ {
+    limit_req zone=web_api burst=100 nodelay;
+    include /etc/nginx/conf.d/proxy-common.inc;
+    proxy_read_timeout 120s;
+    proxy_send_timeout 120s;
+    proxy_pass $api_upstream$request_uri;
+}
+
+# ---- 静态资源 -----------------------------------------------------------
+# Vite 产物带内容哈希，可以永久缓存；不存在时返回 404，不回退到 index.html（否则缺失的 JS 会以 HTML 形式返回）
+location /assets/ {
+    include /etc/nginx/conf.d/security-headers.inc;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    try_files $uri =404;
+}
+
+# SPA 入口不缓存，保证发版后用户立即拿到新的资源哈希
+location = /index.html {
+    include /etc/nginx/conf.d/security-headers.inc;
+    add_header Cache-Control "no-cache" always;
+}
+
+# history 路由回退
+location / {
+    include /etc/nginx/conf.d/security-headers.inc;
+    add_header Cache-Control "no-cache" always;
+    try_files $uri /index.html;
+}

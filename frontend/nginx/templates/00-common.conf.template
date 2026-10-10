@@ -1,0 +1,40 @@
+# =============================================================================
+# http 级公共设置（由官方镜像的 envsubst 机制渲染到 /etc/nginx/conf.d/00-common.conf）
+# 只有 ${WEB_*} 形式的变量会被替换；nginx 自己的 $变量 原样保留。
+# =============================================================================
+
+# 隐藏 nginx 版本号
+server_tokens off;
+
+# 访问日志：用 $uri 而不是 $request，避免把查询串写进日志（查询串里的参数不应落盘）。
+log_format web '$remote_addr "$request_method $uri" $status $body_bytes_sent '
+               'rt=$request_time urt=$upstream_response_time ua="$http_user_agent"';
+
+# ---- 限流 ---------------------------------------------------------------
+# 登录接口：按客户端 IP 限速，防口令爆破（后端另有账号维度的限流，两层互补）。
+limit_req_zone $binary_remote_addr zone=web_login:10m rate=${WEB_LOGIN_RATE};
+# 其余 /api/：宽松的整体保护，防止单一来源把 API 打满。
+limit_req_zone $binary_remote_addr zone=web_api:10m rate=${WEB_API_RATE};
+limit_req_status 429;
+
+# ---- 压缩 ---------------------------------------------------------------
+# 只压缩可压缩的文本类型；PDF/图片本身已压缩，SSE(text/event-stream) 不在列表内。
+gzip on;
+gzip_vary on;
+gzip_comp_level 5;
+gzip_min_length 1024;
+gzip_proxied any;
+gzip_types text/plain text/css text/javascript application/javascript application/json
+           image/svg+xml application/wasm;
+
+# 客户端超时：防慢速连接占满 worker
+client_header_timeout 15s;
+client_body_timeout 30s;
+send_timeout 60s;
+keepalive_timeout 65s;
+
+# MIME 补充：PDF.js worker 是 .mjs，浏览器对 module worker 的 MIME 类型有严格要求（必须是 JavaScript 类型）；
+# 部分 nginx 版本的 mime.types 可能未收录 mjs（若已收录则 nginx 仅打印 duplicate extension 警告，无害）。与 mime.types 的 types 块在同一 http 级累加，不覆盖。
+types {
+    text/javascript mjs;
+}

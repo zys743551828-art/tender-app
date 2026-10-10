@@ -1,0 +1,16 @@
+# 安全响应头。nginx 的 add_header 在 location 里一旦出现就不再继承 server 级的设置，
+# 所以每个自己写了 add_header 的 location 都要重新 include 本文件。
+#
+# CSP 说明（待与前端同事用真实页面核对，违规会在浏览器控制台出现 CSP 报错）：
+#   - script-src 'wasm-unsafe-eval'：PDF.js 的部分解码器（如 JPX）需要 WebAssembly；不放开 unsafe-eval。
+#   - style-src 'unsafe-inline'：React/组件库常写行内样式；如前端确认没有行内 <style>/style 属性可收紧。
+#   - worker-src blob:：PDF.js worker 已随应用打包（'self'），blob: 为其回退加载方式预留。
+#   - connect-src：'self' + OSS 公网端点。上传分片由浏览器直接 PUT 到 OSS，必须在 WEB_CSP_CONNECT_EXTRA 中
+#     列出桶的访问域名，例如 https://my-bucket.oss-cn-hangzhou.aliyuncs.com（见 deploy/.env.example）。
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ${WEB_CSP_CONNECT_EXTRA}; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "DENY" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+add_header Cross-Origin-Opener-Policy "same-origin" always;
+add_header Strict-Transport-Security $web_hsts always;

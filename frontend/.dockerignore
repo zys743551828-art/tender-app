@@ -1,0 +1,14 @@
+# 构建上下文只需要源码与 package-lock.json；node_modules 与 dist 在镜像内重新生成。
+node_modules
+dist
+coverage
+.vite
+.git
+.gitignore
+.env
+.env.*
+*.log
+Dockerfile
+.dockerignore
+LICENSES/.DS_Store
+**/.DS_Store

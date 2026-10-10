@@ -1,0 +1,4976 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/tender-assistant/contracts/input-v1",
+  "title": "领域契约",
+  "$defs": {
+    "AdoptRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "base_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "edited_diff_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "base_version_id",
+        "edited_diff_artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactRef": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        },
+        "media_type": {
+          "type": "string",
+          "description": "产物 MIME 类型",
+          "minLength": 1
+        },
+        "byte_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "contract_version": {
+          "type": "string",
+          "description": "具体契约版本",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "artifact_id",
+        "sha256",
+        "media_type",
+        "byte_size",
+        "contract_version"
+      ],
+      "additionalProperties": false
+    },
+    "BidTerms": {
+      "additionalProperties": false,
+      "description": "从评标办法提取的投标条件，带原文出处；没有提取到的项为空。",
+      "properties": {
+        "technical_full_score": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FullScoreTerm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PriceRuleTerm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "technical_full_score",
+        "price_rule"
+      ],
+      "type": "object"
+    },
+    "BundleRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "target": {
+          "type": "string",
+          "description": "策略能力",
+          "enum": [
+            "technical_total",
+            "anchor_pack",
+            "pairwise_quality",
+            "diagnosis",
+            "rules"
+          ]
+        },
+        "experiment_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "components": {
+          "type": "object",
+          "description": "",
+          "properties": {
+            "parser": {
+              "type": "string",
+              "description": "具体解析版本",
+              "minLength": 1
+            },
+            "rules": {
+              "type": "string",
+              "description": "规则解释配置",
+              "minLength": 1
+            },
+            "strategy": {
+              "type": "string",
+              "description": "策略版本",
+              "minLength": 1
+            },
+            "provider": {
+              "type": "string",
+              "description": "厂商 ID",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string",
+              "description": "实际调用模型标识",
+              "minLength": 1
+            },
+            "prompt": {
+              "type": "string",
+              "description": "提示校验值／版本",
+              "minLength": 1
+            },
+            "code": {
+              "type": "string",
+              "description": "代码校验值",
+              "minLength": 1
+            },
+            "dependencies": {
+              "type": "string",
+              "description": "依赖锁定产物",
+              "minLength": 1
+            },
+            "calibrator": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "未使用校准时为空"
+            },
+            "reference_dataset": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "description": "服务端分配的稳定 ID，非展示名称"
+            }
+          },
+          "required": [
+            "parser",
+            "rules",
+            "strategy",
+            "provider",
+            "model",
+            "prompt",
+            "code",
+            "dependencies",
+            "calibrator",
+            "reference_dataset"
+          ],
+          "additionalProperties": false
+        },
+        "artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "target",
+        "experiment_id",
+        "components",
+        "artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessAcceptancePolicy": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "target": {
+          "const": "technical_total"
+        },
+        "scope": {
+          "type": "string",
+          "description": "工程/地区/规则/量尺",
+          "minLength": 1
+        },
+        "protocol_version": {
+          "type": "string",
+          "description": "预先固定验证协议",
+          "minLength": 1
+        },
+        "minimum_evaluable_projects": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maximum_mae": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "maximum_rmse": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "maximum_absolute_bias": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "maximum_repeat_range": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "required_baseline": {
+          "type": "string",
+          "description": "实际对照基线",
+          "minLength": 1
+        },
+        "minimum_prediction_coverage": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "fixed_before_test_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "responsible_member_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "policy_id",
+        "target",
+        "scope",
+        "protocol_version",
+        "minimum_evaluable_projects",
+        "maximum_mae",
+        "maximum_rmse",
+        "maximum_absolute_bias",
+        "maximum_repeat_range",
+        "required_baseline",
+        "minimum_prediction_coverage",
+        "fixed_before_test_at",
+        "responsible_member_id"
+      ],
+      "additionalProperties": false
+    },
+    "DatasetRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "description": "数据用途",
+          "enum": [
+            "development",
+            "calibration",
+            "holdout",
+            "engineering_review",
+            "prospective"
+          ]
+        },
+        "protocol_version": {
+          "type": "string",
+          "description": "固定分组及时间协议",
+          "minLength": 1
+        },
+        "submission_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "候选实际提交",
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "time_cutoff": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "parent_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "purpose",
+        "protocol_version",
+        "submission_ids",
+        "time_cutoff",
+        "parent_id"
+      ],
+      "additionalProperties": false
+    },
+    "DatasetSnapshot": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "dataset_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "数据用途",
+          "enum": [
+            "development",
+            "calibration",
+            "holdout",
+            "engineering_review",
+            "prospective"
+          ]
+        },
+        "protocol_version": {
+          "type": "string",
+          "description": "划分及可用信息协议",
+          "minLength": 1
+        },
+        "manifest": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "member_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "grouping": {
+          "type": "string",
+          "description": "项目／模板连通分组办法",
+          "minLength": 1
+        },
+        "time_cutoff": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "parent_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "purpose",
+        "protocol_version",
+        "manifest",
+        "member_count",
+        "grouping",
+        "time_cutoff",
+        "parent_id",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "Error": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "稳定机器错误码",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "description": "可操作的中文信息",
+          "minLength": 1
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "details": {
+          "type": "object",
+          "description": "仅返回获授权字段；不得包含凭据或全文"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "request_id",
+        "retryable",
+        "details"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "file_role": {
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ],
+          "type": "string"
+        },
+        "file_name": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "physical_page": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "printed_page": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "quote": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "table",
+            "visual_observation"
+          ],
+          "type": "string"
+        },
+        "parser_version": {
+          "type": "string"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "semantic_review": {
+          "enum": [
+            "pending",
+            "supported",
+            "unsupported"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "project_id",
+        "version_id",
+        "file_role",
+        "file_name",
+        "source_sha256",
+        "physical_page",
+        "printed_page",
+        "quote",
+        "kind",
+        "parser_version",
+        "bbox",
+        "semantic_review"
+      ],
+      "type": "object"
+    },
+    "Experiment": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "experiment_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "dataset_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "protocol_version": {
+          "type": "string",
+          "description": "具体评测协议",
+          "minLength": 1
+        },
+        "strategy": {
+          "type": "string",
+          "description": "路线与配置",
+          "minLength": 1
+        },
+        "code_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        },
+        "config_artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "status": {
+          "type": "string",
+          "description": "实验状态",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "not_evaluable"
+          ]
+        },
+        "report_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "含时区的取得／核实／运行时间"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "experiment_id",
+        "dataset_id",
+        "protocol_version",
+        "strategy",
+        "code_sha256",
+        "config_artifact",
+        "status",
+        "report_artifact",
+        "started_at"
+      ],
+      "additionalProperties": false
+    },
+    "ExperimentRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "dataset_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "strategy": {
+          "type": "string",
+          "description": "已登记策略 ID",
+          "minLength": 1
+        },
+        "protocol_version": {
+          "type": "string",
+          "description": "协议",
+          "minLength": 1
+        },
+        "config_artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "strategy",
+        "protocol_version",
+        "config_artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "FactRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "事实名称",
+          "minLength": 1
+        },
+        "subject": {
+          "type": "string",
+          "description": "工程对象",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "description": "区段、阶段或时间范围",
+          "minLength": 1
+        },
+        "value_decimal": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "明确单位，非数值事实可空"
+        },
+        "statement": {
+          "type": "string",
+          "description": "事实内容",
+          "minLength": 1
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "事实依据",
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "name",
+        "subject",
+        "scope",
+        "value_decimal",
+        "unit",
+        "statement",
+        "evidence_ids"
+      ],
+      "additionalProperties": false
+    },
+    "FactWithdrawRequest": {
+      "type": "object",
+      "description": "撤回当前事实集中的一条事实",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "撤回理由",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "FileVersion": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "file_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "version_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "该版本在其逻辑文件内的序号，从 1 起"
+        },
+        "original_name": {
+          "type": "string",
+          "description": "上传原名",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "description": "资料用途",
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ]
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "obtained_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "document_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "文内日期，未知为空"
+        },
+        "association_status": {
+          "type": "string",
+          "description": "关联核实状态",
+          "enum": [
+            "pending",
+            "confirmed",
+            "conflict"
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "version_id",
+        "project_id",
+        "file_id",
+        "version_number",
+        "original_name",
+        "role",
+        "artifact",
+        "obtained_at",
+        "document_date",
+        "association_status",
+        "supersedes"
+      ],
+      "additionalProperties": false
+    },
+    "FullScoreTerm": {
+      "additionalProperties": false,
+      "description": "评标办法写明的技术标满分。",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "value",
+        "quote",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "InputSnapshot": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "contract_version": {
+          "const": "input-v1"
+        },
+        "file_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "本项目且在截止前已取得的输入版本",
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "body_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "rule_set_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "fact_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "reference_dataset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "coverage_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "具体缺口",
+            "minLength": 1
+          },
+          "description": "本次无法检查项",
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "project_id",
+        "contract_version",
+        "file_version_ids",
+        "body_version_id",
+        "rule_set_id",
+        "fact_set_id",
+        "as_of",
+        "reference_dataset_id",
+        "coverage_gaps",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Me": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "展示名",
+          "minLength": 1
+        },
+        "csrf_token": {
+          "type": "string",
+          "description": "随会话下发，写请求须在 X-CSRF-Token 回传",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "member_id",
+        "display_name",
+        "csrf_token"
+      ],
+      "additionalProperties": false
+    },
+    "ModelBundle": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "target": {
+          "type": "string",
+          "description": "策略能力",
+          "enum": [
+            "technical_total",
+            "anchor_pack",
+            "pairwise_quality",
+            "diagnosis",
+            "rules"
+          ]
+        },
+        "contract_version": {
+          "type": "string",
+          "description": "输入契约版本",
+          "minLength": 1
+        },
+        "components": {
+          "type": "object",
+          "description": "",
+          "properties": {
+            "parser": {
+              "type": "string",
+              "description": "具体解析版本",
+              "minLength": 1
+            },
+            "rules": {
+              "type": "string",
+              "description": "规则解释配置",
+              "minLength": 1
+            },
+            "strategy": {
+              "type": "string",
+              "description": "策略版本",
+              "minLength": 1
+            },
+            "provider": {
+              "type": "string",
+              "description": "厂商 ID",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string",
+              "description": "实际调用模型标识",
+              "minLength": 1
+            },
+            "prompt": {
+              "type": "string",
+              "description": "提示校验值／版本",
+              "minLength": 1
+            },
+            "code": {
+              "type": "string",
+              "description": "代码校验值",
+              "minLength": 1
+            },
+            "dependencies": {
+              "type": "string",
+              "description": "依赖锁定产物",
+              "minLength": 1
+            },
+            "calibrator": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "未使用校准时为空"
+            },
+            "reference_dataset": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "description": "服务端分配的稳定 ID，非展示名称"
+            }
+          },
+          "required": [
+            "parser",
+            "rules",
+            "strategy",
+            "provider",
+            "model",
+            "prompt",
+            "code",
+            "dependencies",
+            "calibrator",
+            "reference_dataset"
+          ],
+          "additionalProperties": false
+        },
+        "experiment_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "registered_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "target",
+        "contract_version",
+        "components",
+        "experiment_id",
+        "artifact",
+        "registered_at"
+      ],
+      "additionalProperties": false
+    },
+    "Outcome": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "outcome_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "submission_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "source_kind": {
+          "type": "string",
+          "description": "结果来源",
+          "enum": [
+            "user_reported",
+            "official"
+          ]
+        },
+        "verification_status": {
+          "type": "string",
+          "description": "来源核实",
+          "enum": [
+            "pending",
+            "verified",
+            "conflict"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "description": "成绩口径",
+          "enum": [
+            "technical_total",
+            "composite_total",
+            "no_score"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "maximum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "aggregation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "聚合方式，未知为空"
+        },
+        "stage_result": {
+          "type": "string",
+          "description": "结果阶段",
+          "enum": [
+            "pending",
+            "technical_shortlisted",
+            "not_shortlisted",
+            "rejected",
+            "candidate",
+            "awarded",
+            "not_awarded",
+            "cancelled",
+            "failed_tender"
+          ]
+        },
+        "source_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "含时区的取得／核实／运行时间"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "known_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "verified_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "outcome_id",
+        "project_id",
+        "submission_id",
+        "source_kind",
+        "verification_status",
+        "target",
+        "value",
+        "maximum",
+        "aggregation",
+        "stage_result",
+        "source_artifact",
+        "source_page",
+        "published_at",
+        "known_at",
+        "verified_by",
+        "supersedes"
+      ],
+      "additionalProperties": false
+    },
+    "OutcomeRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "submission_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "source_kind": {
+          "type": "string",
+          "description": "结果来源",
+          "enum": [
+            "user_reported",
+            "official"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "description": "成绩口径",
+          "enum": [
+            "technical_total",
+            "composite_total",
+            "no_score"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "maximum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
+        },
+        "aggregation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "聚合方式，未知为空"
+        },
+        "stage_result": {
+          "type": "string",
+          "description": "结果阶段",
+          "enum": [
+            "pending",
+            "technical_shortlisted",
+            "not_shortlisted",
+            "rejected",
+            "candidate",
+            "awarded",
+            "not_awarded",
+            "cancelled",
+            "failed_tender"
+          ]
+        },
+        "source_page": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "description": "含时区的取得／核实／运行时间"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "source_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "source_description": {
+          "type": "string",
+          "description": "原件出处或报送说明",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "submission_id",
+        "source_kind",
+        "target",
+        "value",
+        "maximum",
+        "aggregation",
+        "stage_result",
+        "source_page",
+        "published_at",
+        "supersedes",
+        "source_artifact_id",
+        "source_description"
+      ],
+      "additionalProperties": false
+    },
+    "OutcomeVerifyRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "source_artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "source_page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "aggregation": {
+          "type": "string",
+          "description": "确切聚合口径",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "description": "核实过程与依据",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source_artifact_id",
+        "source_page",
+        "aggregation",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "PartUrl": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "part_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 13
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "OSS 预签名分片上传地址，短时有效，不写日志"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "part_number",
+        "url",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "PredictionBrief": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "candidate",
+            "abstained",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "estimated_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "low": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "high": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "technical_full_score": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_status": {
+          "enum": [
+            "not_validated",
+            "validated_in_scope",
+            "out_of_scope"
+          ],
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "estimated_value",
+        "low",
+        "high",
+        "maximum",
+        "technical_full_score",
+        "validation_status",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "PriceRuleTerm": {
+      "additionalProperties": false,
+      "description": "评标办法写明的评标价得分规则；没写的项为空。数值都出自 ``quote`` 原文。",
+      "properties": {
+        "full_score": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "above_deduct_per_pct": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "below_deduct_per_pct": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "anyOf": [
+            {
+              "enum": [
+                "fixed",
+                "average",
+                "trimmed_average"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "coefficient": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "trim_pct": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_limit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "abnormal_low_pct": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "quote": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "quote",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "ProjectSummary": {
+      "additionalProperties": false,
+      "description": "项目总览上的一行摘要，与报告同源：下一步就是报告“下一步”的第一条。",
+      "properties": {
+        "reviewed": {
+          "type": "boolean"
+        },
+        "qualification_open": {
+          "type": "integer"
+        },
+        "prediction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PredictionBrief"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_action": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NextAction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "reviewed",
+        "qualification_open",
+        "prediction",
+        "next_action"
+      ],
+      "type": "object"
+    },
+    "Release": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "release_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "validation_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "environment": {
+          "type": "string",
+          "description": "执行环境",
+          "enum": [
+            "research",
+            "shadow",
+            "business"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "description": "放行目标及适用范围",
+          "minLength": 1
+        },
+        "previous_release_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "actor_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "released_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "release_id",
+        "bundle_id",
+        "validation_id",
+        "environment",
+        "scope",
+        "previous_release_id",
+        "actor_id",
+        "released_at"
+      ],
+      "additionalProperties": false
+    },
+    "ReleaseRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "validation_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "environment": {
+          "type": "string",
+          "description": "执行环境",
+          "enum": [
+            "research",
+            "shadow",
+            "business"
+          ]
+        },
+        "scope_key": {
+          "type": "string",
+          "description": "目标／工程／规则适用范围键",
+          "minLength": 1
+        },
+        "expected_route_revision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "bundle_id",
+        "validation_id",
+        "environment",
+        "scope_key",
+        "expected_route_revision"
+      ],
+      "additionalProperties": false
+    },
+    "Review": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "review_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "object_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "object_version": {
+          "type": "string",
+          "description": "审核对应版本",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "description": "人工决定",
+          "enum": [
+            "confirm",
+            "reject",
+            "defer",
+            "resolve",
+            "request_facts",
+            "reopen"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "description": "决定依据",
+          "minLength": 1
+        },
+        "actor_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "review_id",
+        "project_id",
+        "object_id",
+        "object_version",
+        "decision",
+        "reason",
+        "actor_id",
+        "reviewed_at"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "object_version": {
+          "type": "string",
+          "description": "审核对象版本",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "description": "人工决定",
+          "enum": [
+            "confirm",
+            "reject",
+            "defer",
+            "resolve",
+            "request_facts",
+            "reopen"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "description": "实际判断依据；确认可以不写，驳回、暂缓、重新打开等决定必须写明理由",
+          "default": ""
+        }
+      },
+      "required": [
+        "object_version",
+        "decision"
+      ],
+      "additionalProperties": false
+    },
+    "Revision": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "revision_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "base_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "finding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "修订依据",
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "allowed_fact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "可用于修订的已确认事实",
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "status": {
+          "type": "string",
+          "description": "修订状态",
+          "enum": [
+            "proposed",
+            "adopted",
+            "rejected",
+            "stale",
+            "recheck_pending",
+            "reviewed"
+          ]
+        },
+        "diff_artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "target_version_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "review_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "审核引用",
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "revision_id",
+        "project_id",
+        "base_version_id",
+        "finding_ids",
+        "allowed_fact_ids",
+        "status",
+        "diff_artifact",
+        "target_version_id",
+        "review_ids"
+      ],
+      "additionalProperties": false
+    },
+    "RevisionRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "base_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "finding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "已确认问题",
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "allowed_fact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "已确认事实",
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "scope": {
+          "type": "string",
+          "description": "允许修改的段落／范围",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "base_version_id",
+        "snapshot_id",
+        "finding_ids",
+        "allowed_fact_ids",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "mandatory",
+            "scoring",
+            "disqualification",
+            "recommendation",
+            "exception"
+          ],
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "conditions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "exceptions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "confirmation": {
+          "enum": [
+            "pending",
+            "confirmed",
+            "rejected"
+          ],
+          "type": "string"
+        },
+        "carried_from_rule_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "max_points": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "rule_id",
+        "kind",
+        "statement",
+        "conditions",
+        "exceptions",
+        "evidence",
+        "confirmation",
+        "carried_from_rule_id",
+        "max_points"
+      ],
+      "type": "object"
+    },
+    "SearchHit": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "score": {
+          "type": "number",
+          "description": "同一通道内可比，不跨通道解释为概率"
+        },
+        "channel": {
+          "type": "string",
+          "description": "命中通道",
+          "enum": [
+            "dense",
+            "sparse",
+            "fused",
+            "keyword"
+          ]
+        }
+      },
+      "required": [
+        "evidence",
+        "score",
+        "channel"
+      ],
+      "additionalProperties": false
+    },
+    "SearchRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "description": "服务端分配的稳定 ID，非展示名称"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "限定在某一轮诊断固定下来的文件版本内检索；不给（null）则检索项目当前资料"
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "自然语言或条款关键词"
+        },
+        "top_k": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "mode": {
+          "type": "string",
+          "description": "检索通道；keyword 为不依赖向量库的基线／降级通道",
+          "enum": [
+            "hybrid",
+            "keyword"
+          ]
+        }
+      },
+      "required": [
+        "query",
+        "top_k",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "SearchResult": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "description": "服务端分配的稳定 ID，非展示名称"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "检索项目当前资料时为 null"
+        },
+        "mode_used": {
+          "type": "string",
+          "description": "实际使用通道",
+          "enum": [
+            "hybrid",
+            "keyword"
+          ]
+        },
+        "index_state": {
+          "type": "string",
+          "description": "索引状态",
+          "enum": [
+            "ready",
+            "building",
+            "unavailable"
+          ]
+        },
+        "hits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SearchHit"
+          },
+          "description": "命中证据，均可回到 PostgreSQL 证据记录与原页",
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "未覆盖原因",
+            "minLength": 1
+          },
+          "description": "索引未就绪或解析不完整的文件版本",
+          "minItems": 0,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "mode_used",
+        "index_state",
+        "hits",
+        "gaps"
+      ],
+      "additionalProperties": false
+    },
+    "SnapshotRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "body_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "rule_set_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "fact_set_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "file_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "description": "服务端分配的稳定 ID，非展示名称"
+          },
+          "description": "允许输入版本",
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "reference_dataset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "body_version_id",
+        "rule_set_id",
+        "fact_set_id",
+        "file_version_ids",
+        "reference_dataset_id"
+      ],
+      "additionalProperties": false
+    },
+    "Submission": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "submission_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "body_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "confirmation_review_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "receipt_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "submission_id",
+        "project_id",
+        "body_version_id",
+        "snapshot_id",
+        "submitted_at",
+        "confirmation_review_id",
+        "receipt_artifact",
+        "supersedes"
+      ],
+      "additionalProperties": false
+    },
+    "SubmissionRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "body_version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "receipt_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "body_version_id",
+        "snapshot_id",
+        "submitted_at",
+        "receipt_artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "Task": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "kind": {
+          "type": "string",
+          "description": "任务类型",
+          "enum": [
+            "parse",
+            "rules",
+            "diagnosis",
+            "revision",
+            "recheck",
+            "prediction",
+            "experiment",
+            "export"
+          ]
+        },
+        "purpose": {
+          "type": "string",
+          "description": "用途",
+          "enum": [
+            "research",
+            "shadow",
+            "business"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "description": "任务状态",
+          "enum": [
+            "queued",
+            "running",
+            "waiting_input",
+            "succeeded",
+            "failed",
+            "cancel_requested",
+            "cancelled"
+          ]
+        },
+        "stage": {
+          "type": "string",
+          "description": "当前阶段",
+          "minLength": 1
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "input_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        },
+        "output_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "失败分类，成功为空"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "面向人的中文说明（失败原因或覆盖不完整的提示）"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "type": "object",
+              "description": "诊断覆盖度：已检查/失败规则数与被丢弃的候选数；status 为 complete 才允许项目进入待确认交付",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "complete",
+                    "partial",
+                    "empty"
+                  ]
+                },
+                "rules_total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rules_checked": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rules_failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "candidates_dropped": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "status",
+                "rules_total",
+                "rules_checked",
+                "rules_failed",
+                "candidates_dropped"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "task_id",
+        "project_id",
+        "snapshot_id",
+        "bundle_id",
+        "kind",
+        "purpose",
+        "state",
+        "stage",
+        "attempt",
+        "input_sha256",
+        "output_artifact",
+        "error_code",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "TaskCoverage": {
+      "additionalProperties": false,
+      "description": "诊断覆盖度：只有 complete 才允许项目进入“可登记提交”；partial / empty 的结论不完整，需要重新诊断。",
+      "properties": {
+        "status": {
+          "enum": [
+            "complete",
+            "partial",
+            "empty"
+          ],
+          "type": "string"
+        },
+        "rules_total": {
+          "type": "integer"
+        },
+        "rules_checked": {
+          "type": "integer"
+        },
+        "rules_failed": {
+          "type": "integer"
+        },
+        "candidates_dropped": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "status",
+        "rules_total",
+        "rules_checked",
+        "rules_failed",
+        "candidates_dropped"
+      ],
+      "type": "object"
+    },
+    "TaskEvent": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "type": "string",
+          "description": "事件类型",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "description": "任务状态",
+          "enum": [
+            "queued",
+            "running",
+            "waiting_input",
+            "succeeded",
+            "failed",
+            "cancel_requested",
+            "cancelled"
+          ]
+        },
+        "stage": {
+          "type": "string",
+          "description": "当前阶段",
+          "minLength": 1
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "面向人的中文说明（失败原因或覆盖不完整的提示）"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "type": "object",
+              "description": "诊断覆盖度：已检查/失败规则数与被丢弃的候选数；status 为 complete 才允许项目进入待确认交付",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "complete",
+                    "partial",
+                    "empty"
+                  ]
+                },
+                "rules_total": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rules_checked": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rules_failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "candidates_dropped": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "status",
+                "rules_total",
+                "rules_checked",
+                "rules_failed",
+                "candidates_dropped"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "task_id",
+        "attempt",
+        "kind",
+        "state",
+        "stage",
+        "at"
+      ],
+      "additionalProperties": false
+    },
+    "TaskRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "kind": {
+          "type": "string",
+          "description": "任务类型",
+          "enum": [
+            "parse",
+            "rules",
+            "diagnosis",
+            "revision",
+            "recheck",
+            "prediction",
+            "experiment",
+            "export"
+          ]
+        },
+        "purpose": {
+          "type": "string",
+          "description": "用途",
+          "enum": [
+            "research",
+            "shadow",
+            "business"
+          ]
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "kind",
+        "purpose",
+        "bundle_id"
+      ],
+      "additionalProperties": false
+    },
+    "UploadComplete": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 13,
+          "uniqueItems": true,
+          "description": "浏览器从 OSS 响应取得的分片 ETag",
+          "items": {
+            "type": "object",
+            "description": "",
+            "properties": {
+              "part_number": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 13
+              },
+              "etag": {
+                "type": "string",
+                "description": "OSS 返回的分片 ETag",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "part_number",
+              "etag"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "sha256",
+        "parts"
+      ],
+      "additionalProperties": false
+    },
+    "UploadRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "original_name": {
+          "type": "string",
+          "description": "原名",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "description": "资料用途",
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ]
+        },
+        "byte_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 104857600
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "原始字节 SHA-256"
+        },
+        "media_type": {
+          "type": "string",
+          "description": "声明类型，服务端核实",
+          "minLength": 1
+        },
+        "version_of_file_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "可选。给出则本次上传成为该文件的下一版本（须是同项目、同用途的文件，否则 422 version_of_invalid）；缺省或为空则总是新的逻辑文件"
+        }
+      },
+      "required": [
+        "original_name",
+        "role",
+        "byte_size",
+        "sha256",
+        "media_type"
+      ],
+      "additionalProperties": false
+    },
+    "UploadResult": {
+      "type": "object",
+      "description": "上传完成的结果：文件版本加去重与新建标志",
+      "properties": {
+        "version_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "project_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "file_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "version_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "该版本在其逻辑文件内的序号，从 1 起"
+        },
+        "original_name": {
+          "type": "string",
+          "description": "上传原名",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "description": "资料用途",
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ]
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "obtained_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        },
+        "document_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "文内日期，未知为空"
+        },
+        "association_status": {
+          "type": "string",
+          "description": "关联核实状态",
+          "enum": [
+            "pending",
+            "confirmed",
+            "conflict"
+          ]
+        },
+        "supersedes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "duplicate": {
+          "type": "boolean",
+          "description": "字节与已有最新版本完全相同，返回已有版本，未新建版本、不再解析"
+        },
+        "new_file": {
+          "type": "boolean",
+          "description": "本次上传新建了逻辑文件（该版本是其第 1 版且非重复）"
+        }
+      },
+      "required": [
+        "version_id",
+        "project_id",
+        "file_id",
+        "version_number",
+        "original_name",
+        "role",
+        "artifact",
+        "obtained_at",
+        "document_date",
+        "association_status",
+        "supersedes",
+        "duplicate",
+        "new_file"
+      ],
+      "additionalProperties": false
+    },
+    "UploadSession": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "upload_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "part_bytes": {
+          "const": 8388608
+        },
+        "part_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 13
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PartUrl"
+          },
+          "minItems": 1,
+          "maxItems": 13,
+          "description": "每个分片的直传地址；过期用 refreshUploadUrls 重取"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "upload_id",
+        "part_bytes",
+        "part_count",
+        "parts",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "Validation": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "policy_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "validation_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "dataset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "放行范围",
+          "enum": [
+            "contract",
+            "research",
+            "engineering_assist",
+            "technical_total_business"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "独立验收",
+          "enum": [
+            "passed",
+            "failed",
+            "not_evaluable"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "description": "工程／地区／规则及限制",
+          "minLength": 1
+        },
+        "report_artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "reviewer_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "validated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "含时区的取得／核实／运行时间"
+        }
+      },
+      "required": [
+        "policy_artifact_id",
+        "validation_id",
+        "bundle_id",
+        "dataset_id",
+        "purpose",
+        "status",
+        "scope",
+        "report_artifact",
+        "reviewer_id",
+        "validated_at"
+      ],
+      "additionalProperties": false
+    },
+    "ValidationRequest": {
+      "type": "object",
+      "description": "",
+      "properties": {
+        "policy_artifact_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "bundle_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "dataset_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "放行范围",
+          "enum": [
+            "contract",
+            "research",
+            "engineering_assist",
+            "technical_total_business"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "独立验收",
+          "enum": [
+            "passed",
+            "failed",
+            "not_evaluable"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "description": "具体适用范围",
+          "minLength": 1
+        },
+        "report_artifact_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "description": "服务端分配的稳定 ID，非展示名称"
+        }
+      },
+      "required": [
+        "policy_artifact_id",
+        "bundle_id",
+        "dataset_id",
+        "purpose",
+        "status",
+        "scope",
+        "report_artifact_id"
+      ],
+      "additionalProperties": false
+    },
+    "BenchmarkSpec": {
+      "additionalProperties": false,
+      "description": "评标基准价的取法：固定值，或竞争对手（可含己方）报价的平均值／去极值平均值乘以系数。",
+      "properties": {
+        "method": {
+          "enum": [
+            "fixed",
+            "average",
+            "trimmed_average"
+          ],
+          "type": "string"
+        },
+        "fixed_value": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "coefficient": {
+          "default": "1",
+          "maxLength": 24,
+          "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+          "type": "string"
+        },
+        "trim_pct": {
+          "default": "0",
+          "maxLength": 24,
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
+        "include_own": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "method"
+      ],
+      "type": "object"
+    },
+    "Calibration": {
+      "additionalProperties": false,
+      "description": "预测与官方成绩的对照。样本不足时不给误差：``state`` 为 insufficient，``mae``、``bias`` 为 null。",
+      "properties": {
+        "state": {
+          "enum": [
+            "uncalibrated",
+            "insufficient",
+            "calibrated"
+          ],
+          "type": "string"
+        },
+        "pairs": {
+          "type": "integer"
+        },
+        "needed_pairs": {
+          "type": "integer"
+        },
+        "mae": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bias": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "pairs",
+        "needed_pairs",
+        "mae",
+        "bias"
+      ],
+      "type": "object"
+    },
+    "CategoryCount": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "disqualification",
+            "response",
+            "consistency",
+            "scope",
+            "improvement"
+          ],
+          "type": "string"
+        },
+        "total": {
+          "type": "integer"
+        },
+        "open": {
+          "type": "integer"
+        },
+        "resolved": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "category",
+        "total",
+        "open",
+        "resolved"
+      ],
+      "type": "object"
+    },
+    "Compliance": {
+      "additionalProperties": false,
+      "description": "一次评审里每条规则的判定。``qualification`` 统计废标／否决与强制类规则，``scoring`` 统计评分条款。",
+      "properties": {
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "run_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaskCoverage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "qualification": {
+          "$ref": "#/$defs/VerdictCounts"
+        },
+        "scoring": {
+          "$ref": "#/$defs/VerdictCounts"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/RuleVerdict"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "run_id",
+        "coverage",
+        "qualification",
+        "scoring",
+        "rows"
+      ],
+      "type": "object"
+    },
+    "ConfirmRulesRequest": {
+      "additionalProperties": false,
+      "description": "一次确认多条还没有人看过的规则（按原文接受）。已有决定的规则不受影响。",
+      "properties": {
+        "object_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "rule_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "object_version",
+        "rule_ids"
+      ],
+      "type": "object"
+    },
+    "ConfirmRulesResult": {
+      "additionalProperties": false,
+      "properties": {
+        "confirmed": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "skipped": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "confirmed",
+        "skipped"
+      ],
+      "type": "object"
+    },
+    "ExchangeRate": {
+      "additionalProperties": false,
+      "description": "技术分与报价的换算：高于基准价 1% 失去 ``points_per_pct_above`` 分，即 1 个技术分约相当于 ``pct_per_point_above`` % 的报价。",
+      "properties": {
+        "points_per_pct_above": {
+          "type": "string"
+        },
+        "pct_per_point_above": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "points_per_pct_above",
+        "pct_per_point_above"
+      ],
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "finding_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source": {
+          "enum": [
+            "rule",
+            "consistency",
+            "scope"
+          ],
+          "type": "string"
+        },
+        "category": {
+          "enum": [
+            "disqualification",
+            "response",
+            "consistency",
+            "scope",
+            "improvement"
+          ],
+          "type": "string"
+        },
+        "rule_basis": {
+          "anyOf": [
+            {
+              "enum": [
+                "confirmed",
+                "unconfirmed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nature": {
+          "enum": [
+            "fact_conflict",
+            "needs_confirmation",
+            "suggestion"
+          ],
+          "type": "string"
+        },
+        "impact": {
+          "enum": [
+            "qualification",
+            "technical",
+            "delivery"
+          ],
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "normal",
+            "improvement"
+          ],
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        },
+        "required_facts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "confirmed",
+            "rejected",
+            "deferred",
+            "revision_pending",
+            "recheck_pending",
+            "resolved"
+          ],
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "official_score_effect": {
+          "default": null,
+          "type": "null"
+        }
+      },
+      "required": [
+        "finding_id",
+        "project_id",
+        "snapshot_id",
+        "run_id",
+        "rule_id",
+        "source",
+        "category",
+        "rule_basis",
+        "nature",
+        "impact",
+        "severity",
+        "statement",
+        "evidence",
+        "required_facts",
+        "status",
+        "revision"
+      ],
+      "type": "object"
+    },
+    "Metrics": {
+      "additionalProperties": false,
+      "properties": {
+        "outcomes": {
+          "$ref": "#/$defs/OutcomeMetrics"
+        },
+        "qualification": {
+          "$ref": "#/$defs/QualificationMetrics"
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        },
+        "trends": {
+          "items": {
+            "$ref": "#/$defs/RoundTrend"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "outcomes",
+        "qualification",
+        "calibration",
+        "trends"
+      ],
+      "type": "object"
+    },
+    "NextAction": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "enum": [
+            "upload_materials",
+            "start_analysis",
+            "wait_analysis",
+            "retry_analysis",
+            "handle_disqualification",
+            "review_unclear",
+            "handle_findings",
+            "reanalyze",
+            "confirm_rules",
+            "set_price",
+            "submit",
+            "record_outcome"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "materials",
+            "report",
+            "findings",
+            "rules",
+            "price",
+            "submit",
+            "outcomes"
+          ],
+          "type": "string"
+        },
+        "count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "detail",
+        "target",
+        "count"
+      ],
+      "type": "object"
+    },
+    "OutcomeMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "submissions": {
+          "type": "integer"
+        },
+        "decided": {
+          "type": "integer"
+        },
+        "shortlisted": {
+          "type": "integer"
+        },
+        "not_shortlisted": {
+          "type": "integer"
+        },
+        "rejected": {
+          "type": "integer"
+        },
+        "awarded": {
+          "type": "integer"
+        },
+        "not_awarded": {
+          "type": "integer"
+        },
+        "shortlist_rate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "award_rate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "submissions",
+        "decided",
+        "shortlisted",
+        "not_shortlisted",
+        "rejected",
+        "awarded",
+        "not_awarded",
+        "shortlist_rate",
+        "award_rate"
+      ],
+      "type": "object"
+    },
+    "PipelineStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "stage": {
+          "enum": [
+            "waiting_materials",
+            "waiting_start",
+            "running",
+            "done",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/PipelineStep"
+          },
+          "type": "array"
+        },
+        "missing": {
+          "items": {
+            "enum": [
+              "tender",
+              "body"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round_no": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stale_reasons": {
+          "items": {
+            "enum": [
+              "body_updated",
+              "tender_updated",
+              "rules_changed",
+              "facts_changed"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rules_total": {
+          "type": "integer"
+        },
+        "rules_unconfirmed": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "project_id",
+        "stage",
+        "steps",
+        "missing",
+        "snapshot_id",
+        "round_no",
+        "stale_reasons",
+        "rules_total",
+        "rules_unconfirmed"
+      ],
+      "type": "object"
+    },
+    "PipelineStep": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "enum": [
+            "materials",
+            "rules",
+            "review",
+            "prediction"
+          ],
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "waiting",
+            "running",
+            "done",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "state",
+        "task_id",
+        "message"
+      ],
+      "type": "object"
+    },
+    "Prediction": {
+      "additionalProperties": false,
+      "properties": {
+        "prediction_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "target": {
+          "const": "technical_total",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "abstained",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "purpose": {
+          "enum": [
+            "research",
+            "shadow",
+            "business"
+          ],
+          "type": "string"
+        },
+        "estimated_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "low": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "high": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "technical_full_score": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_status": {
+          "enum": [
+            "not_validated",
+            "validated_in_scope",
+            "out_of_scope"
+          ],
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "scoring_model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScoringModelRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "topics": {
+          "items": {
+            "$ref": "#/$defs/PredictionTopic"
+          },
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        }
+      },
+      "required": [
+        "prediction_id",
+        "project_id",
+        "snapshot_id",
+        "run_id",
+        "target",
+        "status",
+        "purpose",
+        "estimated_value",
+        "low",
+        "high",
+        "maximum",
+        "technical_full_score",
+        "validation_status",
+        "reason",
+        "scoring_model",
+        "topics",
+        "created_at",
+        "calibration"
+      ],
+      "type": "object"
+    },
+    "PredictionTopic": {
+      "additionalProperties": false,
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "points_lost": {
+          "type": "string"
+        },
+        "assessment": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        },
+        "limitations": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "points_lost",
+        "assessment",
+        "evidence",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "PriceParams": {
+      "additionalProperties": false,
+      "description": "评标价得分规则：高于基准价每 1% 扣 ``above_deduct_per_pct`` 分，低于每 1% 扣 ``below_deduct_per_pct`` 分，满分 ``full_score``。",
+      "properties": {
+        "full_score": {
+          "maxLength": 24,
+          "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+          "type": "string"
+        },
+        "above_deduct_per_pct": {
+          "maxLength": 24,
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
+        "below_deduct_per_pct": {
+          "maxLength": 24,
+          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "type": "string"
+        },
+        "max_limit": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "abnormal_low_pct": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "benchmark": {
+          "$ref": "#/$defs/BenchmarkSpec"
+        }
+      },
+      "required": [
+        "full_score",
+        "above_deduct_per_pct",
+        "below_deduct_per_pct",
+        "benchmark"
+      ],
+      "type": "object"
+    },
+    "PricePlan": {
+      "additionalProperties": false,
+      "properties": {
+        "plan_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/PriceParams"
+        },
+        "competitor_prices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_prices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "note": {
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_by": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "project_id",
+        "params",
+        "competitor_prices",
+        "candidate_prices",
+        "note",
+        "supersedes",
+        "created_by",
+        "created_at"
+      ],
+      "type": "object"
+    },
+    "PricePlanRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "params": {
+          "$ref": "#/$defs/PriceParams"
+        },
+        "competitor_prices": {
+          "items": {
+            "maxLength": 24,
+            "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+            "type": "string"
+          },
+          "maxItems": 200,
+          "type": "array"
+        },
+        "candidate_prices": {
+          "items": {
+            "maxLength": 24,
+            "pattern": "^(0\\.[0-9]*[1-9][0-9]*|[1-9][0-9]*(\\.[0-9]+)?)$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "maxLength": 500,
+          "type": "string"
+        }
+      },
+      "required": [
+        "params",
+        "competitor_prices",
+        "candidate_prices"
+      ],
+      "type": "object"
+    },
+    "PricePlanWithSimulation": {
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/PricePlan"
+        },
+        "simulation": {
+          "$ref": "#/$defs/PriceSimulation"
+        }
+      },
+      "required": [
+        "plan",
+        "simulation"
+      ],
+      "type": "object"
+    },
+    "PricePoint": {
+      "additionalProperties": false,
+      "properties": {
+        "price": {
+          "type": "string"
+        },
+        "deviation_pct": {
+          "type": "string"
+        },
+        "score": {
+          "type": "string"
+        },
+        "flags": {
+          "items": {
+            "enum": [
+              "over_max_limit",
+              "abnormal_low"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "price",
+        "deviation_pct",
+        "score",
+        "flags"
+      ],
+      "type": "object"
+    },
+    "PriceSimulation": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "exchange_rate": {
+          "$ref": "#/$defs/ExchangeRate"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/PricePoint"
+          },
+          "type": "array"
+        },
+        "curve": {
+          "items": {
+            "$ref": "#/$defs/PricePoint"
+          },
+          "type": "array"
+        },
+        "best": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PricePoint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "benchmark",
+        "exchange_rate",
+        "candidates",
+        "curve",
+        "best",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "PriceSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "plan_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "exchange_rate": {
+          "$ref": "#/$defs/ExchangeRate"
+        },
+        "best": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PricePoint"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/PricePoint"
+          },
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "exchange_rate",
+        "best",
+        "candidates",
+        "created_at"
+      ],
+      "type": "object"
+    },
+    "ProjectCreate": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "tender_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "round": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "engineering_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deadline": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "settings": {
+          "$ref": "#/$defs/ProjectSettings"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "type": "object"
+    },
+    "ProjectOverview": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "tender_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round": {
+          "type": "integer"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "engineering_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "deadline": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "materials_pending",
+            "ready_to_analyze",
+            "analyzing",
+            "analysis_failed",
+            "issues_open",
+            "ready_to_submit",
+            "submitted",
+            "archived",
+            "cancelled",
+            "failed_tender"
+          ],
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "owner_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "settings": {
+          "$ref": "#/$defs/ProjectSettings"
+        },
+        "summary": {
+          "$ref": "#/$defs/ProjectSummary"
+        }
+      },
+      "required": [
+        "project_id",
+        "title",
+        "tender_number",
+        "lot",
+        "round",
+        "region",
+        "engineering_type",
+        "deadline",
+        "state",
+        "revision",
+        "owner_id",
+        "created_at",
+        "settings",
+        "summary"
+      ],
+      "type": "object"
+    },
+    "ProjectSettings": {
+      "additionalProperties": false,
+      "description": "项目级功能开关：用户可以只用自己需要的部分。默认全部开启，只有“规则按原文接受”默认关闭。\n\n废标／否决检测与证据溯源是核心，不提供开关。",
+      "properties": {
+        "auto_start": {
+          "default": true,
+          "type": "boolean"
+        },
+        "accept_rules_as_written": {
+          "default": false,
+          "type": "boolean"
+        },
+        "consistency_check": {
+          "default": true,
+          "type": "boolean"
+        },
+        "scope_check": {
+          "default": true,
+          "type": "boolean"
+        },
+        "show_score": {
+          "default": true,
+          "type": "boolean"
+        },
+        "price": {
+          "default": true,
+          "type": "boolean"
+        },
+        "outcome_tracking": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "ProjectUpdate": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tender_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "round": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "engineering_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "deadline": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "settings": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProjectSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "QualificationMetrics": {
+      "additionalProperties": false,
+      "description": "废标／否决风险的闭环：评审发现了多少、提交前处理了多少、提交时仍未处理多少，以及招标方实际否决了多少。",
+      "properties": {
+        "identified": {
+          "type": "integer"
+        },
+        "resolved_or_dismissed": {
+          "type": "integer"
+        },
+        "open_at_submission": {
+          "type": "integer"
+        },
+        "rejected_by_buyer": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "identified",
+        "resolved_or_dismissed",
+        "open_at_submission",
+        "rejected_by_buyer"
+      ],
+      "type": "object"
+    },
+    "Report": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "round_no": {
+          "type": "integer"
+        },
+        "basis": {
+          "$ref": "#/$defs/ReportBasis"
+        },
+        "qualification": {
+          "$ref": "#/$defs/Compliance"
+        },
+        "categories": {
+          "items": {
+            "$ref": "#/$defs/CategoryCount"
+          },
+          "type": "array"
+        },
+        "prediction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Prediction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PriceSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "next_actions": {
+          "items": {
+            "$ref": "#/$defs/NextAction"
+          },
+          "type": "array"
+        },
+        "pipeline": {
+          "$ref": "#/$defs/PipelineStatus"
+        }
+      },
+      "required": [
+        "project_id",
+        "snapshot_id",
+        "round_no",
+        "basis",
+        "qualification",
+        "categories",
+        "prediction",
+        "price",
+        "next_actions",
+        "pipeline"
+      ],
+      "type": "object"
+    },
+    "ReportBasis": {
+      "additionalProperties": false,
+      "properties": {
+        "rules_total": {
+          "type": "integer"
+        },
+        "rules_confirmed": {
+          "type": "integer"
+        },
+        "rules_unconfirmed": {
+          "type": "integer"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaskCoverage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "generated_from_snapshot_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rules_total",
+        "rules_confirmed",
+        "rules_unconfirmed",
+        "coverage",
+        "generated_from_snapshot_at"
+      ],
+      "type": "object"
+    },
+    "RoundPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "round_no": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "estimated_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "open_findings": {
+          "type": "integer"
+        },
+        "resolved_findings": {
+          "type": "integer"
+        },
+        "open_qualification": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "round_no",
+        "snapshot_id",
+        "estimated_value",
+        "open_findings",
+        "resolved_findings",
+        "open_qualification"
+      ],
+      "type": "object"
+    },
+    "RoundTrend": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actual_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rounds": {
+          "items": {
+            "$ref": "#/$defs/RoundPoint"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "project_id",
+        "title",
+        "maximum",
+        "actual_value",
+        "rounds"
+      ],
+      "type": "object"
+    },
+    "RuleSet": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_set_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "source_version_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "conflict",
+            "confirmed"
+          ],
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        },
+        "terms": {
+          "$ref": "#/$defs/BidTerms"
+        }
+      },
+      "required": [
+        "rule_set_id",
+        "project_id",
+        "source_version_ids",
+        "status",
+        "revision",
+        "rules",
+        "terms"
+      ],
+      "type": "object"
+    },
+    "RuleVerdict": {
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "mandatory",
+            "scoring",
+            "disqualification",
+            "recommendation",
+            "exception"
+          ],
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "rule_basis": {
+          "enum": [
+            "confirmed",
+            "unconfirmed"
+          ],
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "unclear",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        },
+        "finding_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "rule_id",
+        "kind",
+        "statement",
+        "rule_basis",
+        "verdict",
+        "note",
+        "evidence",
+        "finding_ids"
+      ],
+      "type": "object"
+    },
+    "ScoringModelRef": {
+      "additionalProperties": false,
+      "description": "校准所用的打分模型：用多少组官方成绩训练与评估、误差多大、适用于哪些项目。",
+      "properties": {
+        "model_id": {
+          "type": "string"
+        },
+        "pairs": {
+          "type": "integer"
+        },
+        "mae": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "model_id",
+        "pairs",
+        "mae",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "VerdictCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "satisfied": {
+          "type": "integer"
+        },
+        "violated": {
+          "type": "integer"
+        },
+        "unclear": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "total",
+        "satisfied",
+        "violated",
+        "unclear",
+        "failed"
+      ],
+      "type": "object"
+    }
+  }
+}
