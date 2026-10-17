@@ -2,6 +2,16 @@
 
 FastAPI 模块化单体 + PostgreSQL 16 + S3 兼容对象存储（阿里云 OSS）+ Kafka。同一镜像按入口分为 API、发件箱中继、回收器和四类 worker（`parse` / `ai` / `experiment` / `export`）。设计依据见《系统架构与数据契约》。
 
+## 已部署栈联调
+
+已部署核心栈的真实模型合成冒烟可在本目录执行：
+
+```bash
+python -m tools.smoke.deployed_stack --password-file ../deploy/secrets/admin_initial_password --out <本机结果目录>
+```
+
+需要开发依赖、已创建的 `local-admin` 与本机服务。它会创建注明“合成冒烟”的项目、上传两份三页合成 PDF，并调用 worker 中配置的真实模型，核验自动评审与导出；不确认规则、不登记正式提交。可用 `--project-id <合成项目ID> --restart` 重试失败环节；输出不保存口令、Cookie 或预签名 URL。此检查不代表真实标书质量评测，也不代替浏览器 CORS 和视觉检查。
+
 ## 结构
 
 | 目录 | 内容 |

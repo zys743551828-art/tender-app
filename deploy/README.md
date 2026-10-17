@@ -69,6 +69,8 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 本机验证范围与未完成项统一见 tender-docs《验证报告》第 2.9 节。
 
+`oss-cors.local.json` 是本机浏览器直传的待应用规则：仅允许 `http://localhost:8080` 与 `http://127.0.0.1:8080`，方法为 PUT／GET／HEAD，暴露 ETag。它不会随 Compose 自动应用；应用前需确认桶的现有规则并保留其他业务来源。`WEB_CSP_CONNECT_EXTRA` 还需填写预签名地址实际使用的桶域名（S3 兼容端点下为 `https://<桶名>.s3.oss-<地域>.aliyuncs.com`）。
+
 ### 2.1 服务器
 
 | 项 | 要求 | 说明 |
