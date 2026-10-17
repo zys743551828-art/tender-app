@@ -167,7 +167,7 @@ describe('报告页：评审报告', () => {
     expect(verdict.getByText('价格分 29')).toBeInTheDocument();
   });
 
-  it('下一步按后端顺序列出，按钮写明要做什么，第一条是主按钮；评审本身的动作交给顶部横幅', async () => {
+  it('下一步保留主要动作，其余关键问题有数量且可展开；评审动作交给横幅', async () => {
     backend(
       report({
         next_actions: [
@@ -192,6 +192,10 @@ describe('报告页：评审报告', () => {
     );
     renderApp('/projects/prj-1');
     const section = (await screen.findByRole('heading', { name: '下一步' })).closest('section')!;
+    expect(within(section.querySelector('ol')!).getAllByRole('link')).toHaveLength(1);
+    const remaining = within(section).getByText('剩余关键问题 3 项／其他建议 1 项');
+    expect(remaining.closest('details')).not.toHaveAttribute('open');
+    await userEvent.click(remaining);
     const items = within(section).getAllByRole('listitem');
     expect(items.map((li) => li.querySelector('strong')?.textContent)).toEqual([
       '确认 2 条规则',
@@ -426,11 +430,11 @@ describe('报告页：评审报告', () => {
   it('导出：Word 评审报告与批注版 PDF 是直接下载链接', async () => {
     backend(report());
     renderApp('/projects/prj-1');
-    expect(await screen.findByRole('link', { name: '导出 Word 报告' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: '下载评审报告（Word）' })).toHaveAttribute(
       'href',
       '/api/v1/projects/prj-1/report.docx',
     );
-    expect(screen.getByRole('link', { name: '导出批注版 PDF' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: '下载批注审阅稿（PDF）' })).toHaveAttribute(
       'href',
       '/api/v1/projects/prj-1/body.annotated.pdf',
     );

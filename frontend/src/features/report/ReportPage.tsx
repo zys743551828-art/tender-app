@@ -94,13 +94,13 @@ function ExportButtons({ projectId }: { projectId: string }) {
       <Button asChild size="sm">
         <a href={api.report.docxUrl(projectId)} download>
           <Icon name="Download" />
-          导出 Word 报告
+          下载评审报告（Word）
         </a>
       </Button>
       <Button asChild size="sm">
         <a href={api.report.annotatedPdfUrl(projectId)} download>
           <Icon name="Download" />
-          导出批注版 PDF
+          下载批注审阅稿（PDF）
         </a>
       </Button>
     </>
@@ -239,39 +239,49 @@ function NextActions({
 }) {
   const todo = actions.filter((a) => !PIPELINE_KEYS.has(a.key));
   if (todo.length === 0) return null;
+  const remaining = todo.slice(1);
+  const criticalKeys = new Set(['handle_disqualification', 'review_unclear', 'confirm_rules']);
+  const critical = remaining.filter((a) => criticalKeys.has(a.key));
+  const suggestions = remaining.filter((a) => !criticalKeys.has(a.key));
+  const count = (items: NextAction[]) => items.reduce((n, a) => n + (a.count ?? 1), 0);
+  const row = (a: NextAction, i: number) => (
+    <li
+      key={a.key}
+      className="flex flex-col gap-3 border-b border-border px-5 py-3.5 last:border-0 sm:flex-row sm:items-center"
+    >
+      <div className="flex min-w-0 flex-1 gap-3">
+        <span
+          aria-hidden="true"
+          className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular"
+        >
+          {i + 1}
+        </span>
+        <div className="min-w-0 flex-1">
+          <strong className="block text-[13px] font-medium">{a.title}</strong>
+          <p className="m-0 text-xs text-muted-foreground">{a.detail}</p>
+        </div>
+      </div>
+      <Button asChild size="sm" variant={i === 0 && !bannerHasAction ? 'primary' : 'secondary'}>
+        <Link to={actionPath(base, a)}>{actionLabel(a)}</Link>
+      </Button>
+    </li>
+  );
   return (
     <Card aria-labelledby="next-h" className="mb-5">
       <CardHeader>
         <CardTitle id="next-h">下一步</CardTitle>
       </CardHeader>
-      <ol className="m-0 list-none border-t border-border p-0">
-        {todo.map((a, i) => (
-          <li
-            key={a.key}
-            className="flex flex-col gap-3 border-b border-border px-5 py-3.5 last:border-0 sm:flex-row sm:items-center"
-          >
-            <div className="flex min-w-0 flex-1 gap-3">
-              <span
-                aria-hidden="true"
-                className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular"
-              >
-                {i + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <strong className="block text-[13px] font-medium">{a.title}</strong>
-                <p className="m-0 text-xs text-muted-foreground">{a.detail}</p>
-              </div>
-            </div>
-            <Button
-              asChild
-              size="sm"
-              variant={i === 0 && !bannerHasAction ? 'primary' : 'secondary'}
-            >
-              <Link to={actionPath(base, a)}>{actionLabel(a)}</Link>
-            </Button>
-          </li>
-        ))}
-      </ol>
+      <ol className="m-0 list-none border-t border-border p-0">{todo.slice(0, 1).map(row)}</ol>
+      {todo.length > 1 ? (
+        <details key={todo[0]?.key} className="border-t border-border">
+          <summary className="cursor-pointer rounded-b-lg px-5 py-3 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            剩余关键问题 {count(critical)} 项／其他建议 {count(suggestions)} 项
+          </summary>
+          <ol start={2} className="m-0 list-none border-t border-border p-0">
+            {todo.slice(1).map((a, i) => row(a, i + 1))}
+          </ol>
+        </details>
+      ) : null}
     </Card>
   );
 }

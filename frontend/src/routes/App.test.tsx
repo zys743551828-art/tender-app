@@ -14,23 +14,33 @@ function backend() {
 }
 
 describe('导航与路由', () => {
-  it('项目内导航：报告、问题、依据、报价、提交与结果、资料；工具：检索、设置', async () => {
+  it('常用入口直接显示，更多功能可展开；当前工具页面自动展开', async () => {
     backend();
     renderApp('/projects/prj-1');
     const nav = within(await screen.findByRole('navigation', { name: '项目导航' }));
     expect(nav.getAllByRole('link').map((a) => a.textContent)).toEqual([
-      '报告',
-      '问题',
+      '评审报告',
+      '上传资料',
+      '处理问题',
+    ]);
+    expect(nav.getByRole('link', { name: '评审报告' })).toHaveAttribute('aria-current', 'page');
+    expect(nav.getByRole('link', { name: '处理问题' })).not.toHaveAttribute('aria-current');
+    const more = screen.getByText('更多功能');
+    expect(more.closest('details')).not.toHaveAttribute('open');
+    await userEvent.click(more);
+    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
+    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual([
       '依据',
       '报价',
       '提交与结果',
-      '资料',
+      '检索',
+      '设置',
     ]);
-    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
-    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual(['检索', '设置']);
-    // 报告是落地页：只有它高亮
-    expect(nav.getByRole('link', { name: '报告' })).toHaveAttribute('aria-current', 'page');
-    expect(nav.getByRole('link', { name: '问题' })).not.toHaveAttribute('aria-current');
+    await userEvent.click(tools.getByRole('link', { name: '依据' }));
+    await waitFor(() =>
+      expect(screen.getByText('更多功能').closest('details')).toHaveAttribute('open'),
+    );
+    expect(screen.getByRole('link', { name: '依据' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('未知地址落到“页面不存在”', async () => {

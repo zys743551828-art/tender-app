@@ -109,7 +109,19 @@ export function MaterialsPage() {
 
   return (
     <>
-      <PageHead title="资料" lede="招标文件和施组正文齐了会自动评审。" />
+      <PageHead
+        title="资料"
+        lede="把招标文件、补遗和施组正文放到这里，资料齐了会自动评审。"
+        actions={
+          pipeline.data && pipeline.data.stage !== 'waiting_materials' ? (
+            <Button asChild size="sm">
+              <Link to={`/projects/${project.project_id}`}>
+                {pipeline.data.stage === 'done' ? '查看评审报告' : '查看评审进度'}
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
       {pipeline.data ? <PipelineBanner pipeline={pipeline.data} showSteps /> : null}
       <Card aria-labelledby="upload-h" className="mb-5">
         <CardHeader>
