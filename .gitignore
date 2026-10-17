@@ -9,6 +9,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 *.local
+.venv/
 
 # 部署：真实密钥与环境文件不入库（secrets/README.md 说明如何生成）
 deploy/.env
