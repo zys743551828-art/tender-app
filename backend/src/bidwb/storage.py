@@ -70,7 +70,7 @@ class S3ObjectStore:
 
     def __init__(self, settings: Settings) -> None:
         cfg = Config(
-            signature_version="s3v4",
+            signature_version=settings.storage_signature_version,
             s3={"addressing_style": settings.storage_addressing_style},
             retries={"max_attempts": 3, "mode": "standard"},
             connect_timeout=5,

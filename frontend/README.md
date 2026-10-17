@@ -4,6 +4,8 @@ React 18 + TypeScript（strict）+ Vite + React Router + TanStack Query；界面
 
 ## 开发、测试、构建
 
+使用 Node.js 22。测试并发限制为两个进程，避免页面异步加载在本机资源竞争时超过组件测试的等待时限。Git 按仓库 `.gitattributes` 将前端文件检出为 LF。
+
 ```bash
 npm ci
 npm run dev        # http://localhost:5173，/api 代理到 http://localhost:8000

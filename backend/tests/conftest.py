@@ -1,6 +1,6 @@
 """测试夹具：每个测试会话建一个独立的 PostgreSQL 库，跑完整 Alembic 迁移，再按测试清空数据。
 
-需要环境变量 ``BIDWB_TEST_ADMIN_DSN`` 指向有建库权限的实例（默认 ``postgresql+psycopg://postgres@localhost:5432/postgres``）。
+需要环境变量 ``BIDWB_TEST_ADMIN_DSN`` 指向有建库权限的实例（默认 ``postgresql+psycopg://postgres@127.0.0.1:5432/postgres``）。
 连不上时集成测试整体跳过，而不是失败，纯单元测试仍会运行。
 """
 
@@ -21,7 +21,7 @@ from bidwb import db
 from bidwb.storage import MemoryObjectStore
 
 BACKEND = Path(__file__).resolve().parent.parent
-ADMIN_DSN = os.environ.get("BIDWB_TEST_ADMIN_DSN", "postgresql+psycopg://postgres@localhost:5432/postgres")
+ADMIN_DSN = os.environ.get("BIDWB_TEST_ADMIN_DSN", "postgresql+psycopg://postgres@127.0.0.1:5432/postgres")
 DATA_TABLES_SQL = """SELECT string_agg(format('%I', tablename), ',') FROM pg_tables
                      WHERE schemaname='public' AND tablename <> 'alembic_version'"""
 

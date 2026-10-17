@@ -172,6 +172,8 @@ def ensure_topics(settings: Settings, *, replication_factor: int = 1) -> list[st
             if name not in existing:
                 wanted.append(NewTopic(name, parts, replication_factor))
     created: list[str] = []
+    if not wanted:
+        return created
     for name, future in admin.create_topics(wanted).items():
         try:
             future.result()

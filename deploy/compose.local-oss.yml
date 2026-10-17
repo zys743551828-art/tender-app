@@ -1,0 +1,12 @@
+# Windows / Docker Desktop 本机联调，使用真实 OSS；仅监听本机回环地址。
+# docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper worker-parse worker-ai
+services:
+  web:
+    ports: !override
+      - "127.0.0.1:8080:8080"
+  api:
+    environment:
+      BIDWB_ENVIRONMENT: development
+      BIDWB_PUBLIC_BASE_URL: http://localhost:8080
+      BIDWB_COOKIE_SECURE: "false"
+      BIDWB_SESSION_COOKIE_NAME: sid

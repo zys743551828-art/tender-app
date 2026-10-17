@@ -71,7 +71,7 @@ gen_hex() { openssl rand -hex 24; }
 ensure_random() {
   local name="$1"
   if exists_nonempty "${name}"; then kept+=("${name}"); return; fi
-  gen_hex | tr -d '\n' | write_secret "${name}"
+  gen_hex | tr -d '\r\n' | write_secret "${name}"
   created+=("${name}")
 }
 

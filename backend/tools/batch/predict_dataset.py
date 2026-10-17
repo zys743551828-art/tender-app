@@ -63,7 +63,7 @@ from bidwb.workers.runner import WorkerRunner  # noqa: E402
 
 SCHEMA_IN = "score-pairs/1"
 SCHEMA_OUT = "system-prediction/1"
-DEFAULT_ADMIN_DSN = "postgresql+psycopg://postgres@localhost:5432/postgres"
+DEFAULT_ADMIN_DSN = "postgresql+psycopg://postgres@127.0.0.1:5432/postgres"
 TOOL_LOGIN = "batch"
 TOOL_PASSWORD = "batch-runner-" + "x" * 8
 ROLE_BY_KIND = {"tender": "tender", "addendum": "supplement"}  # 格式 A 的 role → 产品的资料用途

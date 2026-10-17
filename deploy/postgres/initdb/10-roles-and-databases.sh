@@ -25,11 +25,11 @@ for f in db_password_owner db_password_api db_password_worker db_password_runtim
 done
 
 psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER:-postgres}" --dbname postgres <<'SQL'
-\set owner_pw   `cat /run/secrets/db_password_owner`
-\set api_pw     `cat /run/secrets/db_password_api`
-\set worker_pw  `cat /run/secrets/db_password_worker`
-\set runtime_pw `cat /run/secrets/db_password_runtime`
-\set mlflow_pw  `cat /run/secrets/db_password_mlflow`
+\set owner_pw   `tr -d '\r\n' < /run/secrets/db_password_owner`
+\set api_pw     `tr -d '\r\n' < /run/secrets/db_password_api`
+\set worker_pw  `tr -d '\r\n' < /run/secrets/db_password_worker`
+\set runtime_pw `tr -d '\r\n' < /run/secrets/db_password_runtime`
+\set mlflow_pw  `tr -d '\r\n' < /run/secrets/db_password_mlflow`
 
 -- 权限模板角色（与迁移 0001 的 IF NOT EXISTS 兼容）
 DO $$

@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -614,8 +615,17 @@ def main() -> int:
                 probs.append(f"{p.name} 缺少 set -Eeuo pipefail")
             if p.name != "lib.sh" and "--help" not in text:
                 probs.append(f"{p.name} 缺少 --help")
-            if p.name != "lib.sh" and not p.stat().st_mode & 0o111:
-                probs.append(f"{p.name} 没有可执行权限")
+            if p.name != "lib.sh":
+                if os.name == "nt":
+                    mode = subprocess.run(
+                        ["git", "ls-files", "--stage", "--", f"scripts/{p.name}"],
+                        capture_output=True, text=True, cwd=HERE, check=False,
+                    )
+                    executable = mode.returncode == 0 and mode.stdout.startswith("100755 ")
+                else:
+                    executable = bool(p.stat().st_mode & 0o111)
+                if not executable:
+                    probs.append(f"{p.name} 没有可执行权限（Windows 检查 Git 索引中的权限）")
         sc = shutil.which("shellcheck")
         if sc:
             res = subprocess.run([sc, "-x", *map(str, sorted((HERE / "scripts").glob("*.sh")))], capture_output=True, text=True, cwd=HERE / "scripts")

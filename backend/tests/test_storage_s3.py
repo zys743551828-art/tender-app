@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import os
 from collections.abc import Iterator
+from urllib.parse import parse_qs, urlsplit
 
 import boto3
 import pytest
@@ -18,8 +19,8 @@ DATA = os.urandom(5 * 1024 * 1024 + 123)  # 超过 S3 分片下限（5 MiB）的
 PART = 5 * 1024 * 1024
 
 
-@pytest.fixture
-def s3_store() -> Iterator[S3ObjectStore]:
+@pytest.fixture(params=["s3", "s3v4"])
+def s3_store(request: pytest.FixtureRequest) -> Iterator[S3ObjectStore]:
     with mock_aws():
         boto3.client("s3", region_name="us-east-1").create_bucket(Bucket="bidwb")
         settings = Settings(
@@ -29,6 +30,7 @@ def s3_store() -> Iterator[S3ObjectStore]:
             storage_access_key_id=SecretStr("testing"),
             storage_secret_access_key=SecretStr("testing"),
             storage_addressing_style="path",
+            storage_signature_version=request.param,
         )
         yield S3ObjectStore(settings)
 
@@ -60,6 +62,16 @@ def test_s3_adapter(s3_store: S3ObjectStore) -> None:
 
     _exercise(s3_store, put_part)
     assert s3_store.presign_part("staging/u2", "uid", 1, 600).startswith("https://")
+
+
+def test_s3_presign_uses_selected_signature(s3_store: S3ObjectStore) -> None:
+    query = parse_qs(urlsplit(s3_store.presign_part("staging/u2", "uid", 1, 600)).query)
+    if s3_store._client.meta.config.signature_version == "s3":
+        assert "AWSAccessKeyId" in query and "Signature" in query
+        assert "X-Amz-Algorithm" not in query
+    else:
+        assert query["X-Amz-Algorithm"] == ["AWS4-HMAC-SHA256"]
+        assert "X-Amz-Signature" in query
 
 
 def test_memory_store_behaves_the_same() -> None:

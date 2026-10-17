@@ -40,7 +40,7 @@ python tools/export_contracts.py   # 接口或数据结构变化后重新生成�
 
 ```bash
 export BIDWB_LLM_BASE_URL=… BIDWB_LLM_MODEL=… BIDWB_LLM_API_KEY=…
-export BIDWB_BATCH_ADMIN_DSN=postgresql+psycopg://postgres@localhost:5432/postgres   # 有建库权限
+export BIDWB_BATCH_ADMIN_DSN=postgresql+psycopg://postgres@127.0.0.1:5432/postgres   # 有建库权限
 python -m tools.batch.predict_dataset 评分配对集.json --out results/system-pred --cache-dir .llm-cache --estimate-only \
     --price-per-mtok-in 2 --price-per-mtok-out 8                          # 先粗估调用量与费用，不调用模型
 python -m tools.batch.predict_dataset 评分配对集.json --out results/system-pred --cache-dir .llm-cache --limit 10   # 试点

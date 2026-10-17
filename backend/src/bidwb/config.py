@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     storage_access_key_id: SecretStr = SecretStr("")
     storage_secret_access_key: SecretStr = SecretStr("")
     storage_addressing_style: Literal["virtual", "path"] = "virtual"
+    storage_signature_version: Literal["s3", "s3v4"] = "s3v4"
     upload_part_bytes: Annotated[int, Field(ge=100 * 1024)] = 8 * 1024 * 1024
     upload_max_bytes: Annotated[int, Field(ge=1)] = 100 * 1024 * 1024
     upload_url_ttl_seconds: Annotated[int, Field(ge=60, le=3600)] = 900

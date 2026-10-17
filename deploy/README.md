@@ -54,6 +54,21 @@ worker-*  <── kafka <── relay <── postgres（发件箱）          w
 
 ## 2. 先决条件
 
+### 本机 Docker Desktop 联调（真实 OSS）
+
+在 `deploy/` 中填写 `.env` 与 OSS／模型密钥后，运行 `scripts/gen-secrets.sh` 生成缺失的数据库凭据。Windows 可用 Git Bash 执行该脚本；已存在的非空文件保留。仓库 `.gitattributes` 要求 Dockerfile 和 Shell 脚本为 LF。
+
+```bash
+docker compose build api web
+docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper worker-parse worker-ai worker-experiment worker-export
+```
+
+访问 `http://localhost:8080`。覆盖文件仅把 web 发布在 `127.0.0.1:8080`，API 使用开发环境的 HTTP 会话配置，数据库不发布端口，可与测试数据库并存。该命令启动核心评审服务，不启动尚未接入业务代码的 Milvus 和 MLflow；生产部署不要使用此覆盖文件。登录成员通过第 4 节的建号流程创建。
+
+阿里云 OSS 的 boto3 兼容配置使用 `OSS_SIGNATURE_VERSION=s3`；AWS S3 等服务可设置 `s3v4`，MinIO 开发覆盖文件固定使用 `s3v4`。依据：[阿里云 AWS SDK 接入说明](https://www.alibabacloud.com/help/en/oss/developer-reference/use-aws-sdks-to-access-oss)。
+
+本机验证范围与未完成项统一见 tender-docs《验证报告》第 2.9 节。
+
 ### 2.1 服务器
 
 | 项 | 要求 | 说明 |
@@ -559,6 +574,7 @@ deploy/
   compose.yml                                  生产编排
   compose.tls.yml                              覆盖：nginx 自己终止 TLS
   compose.dev.yml                              覆盖：开发环境（MinIO、vite、热重载、本地管理员）
+  compose.local-oss.yml                        覆盖：本机 HTTP、真实 OSS、仅发布回环端口
   .env.example                                 环境变量模板
   secrets/README.md, .gitkeep                  机密说明（其余内容不入库）
   postgres/initdb/10-roles-and-databases.sh    角色与数据库初始化
@@ -592,7 +608,7 @@ CI 建议：`python3 deploy/check_compose.py`（需要 PyYAML；有 `docker comp
 | 已注册的处理器 | `parse`、`rules`、`diagnosis`、`revision`、`prediction`；其它种类（`recheck`、`experiment`、`export`）以 `kind_not_implemented` 失败，且通用入口 `POST /projects/{id}/tasks` 目前不接受任何种类，因此 experiment、export 类 worker 空转 | `ai/handlers.py`、`workers/handlers.py`、`workers/runner.py`、`tasks.py` |
 | `bidwb-admin ensure-topics` | 幂等创建 `job.parse`(3 分区)、`job.ai`(3)、`job.experiment`(1)、`job.export`(1)、`domain.events`(3) 及各自 `.dlq` 死信主题(1 分区)；参数 `--replication-factor`（默认 1）；读 `BIDWB_KAFKA_*`，主题名带 `BIDWB_KAFKA_TOPIC_PREFIX` | `admin.py`、`messaging.py` |
 | `bidwb-admin create-member` | 参数 `--login`、`--display-name`、`--password-file`（缺省读标准输入，不接受命令行明文口令）、`--if-not-exists`（登录名已存在时输出提示并以 0 退出）；使用 `BIDWB_DATABASE_URL`（API 角色） | `admin.py`、`access.py` |
-| admin 的其它子命令 | 只有 `create-member` 与 `ensure-topics`；没有 `create-roles`（角色由 PostgreSQL 初始化脚本创建）、没有 `rebuild-index`（范围外，见 7.4） | `admin.py` |
+| admin 的其它子命令 | `register-scoring-model`、`register-anchor-pack`、`unroute-scoring-model`、`unroute-anchor-pack`、`list-scoring-models`、`list-anchor-packs`、`export-score-pairs`；参数以 `bidwb-admin <子命令> --help` 为准。数据库角色由 PostgreSQL 初始化脚本创建 | `admin.py` |
 | 迁移 | `alembic upgrade head`，工作目录 `/backend`；`migrations/env.py` 直接读环境变量 `BIDWB_MIGRATION_DATABASE_URL`，**不经 `*_FILE`**，所以 migrate 服务用 `sh -c` 从 secret 文件读入；只有初始迁移 `0001`，`downgrade` 直接报错，回退靠备份恢复 | `backend/migrations/env.py`、`0001_initial.py`、`backend/Dockerfile` |
 | 配置读取 | 环境变量前缀 `BIDWB_`，未知变量忽略；凭据类变量支持 `BIDWB_<NAME>_FILE=/run/secrets/…`，进程启动时读取文件（去除首尾空白）并作为 `BIDWB_<NAME>`；同时设置 `X` 与 `X_FILE` 会报错；每个 `*_FILE` 指向的文件必须被该服务挂载 | `config.py` |
 | 运行库连接串 | `BIDWB_RUNTIME_DATABASE_URL`（及 `_FILE`）对应 `bidwb_runtime` 库，可选；配置项存在，但当前没有代码使用 LangGraph 检查点，该库只做初始化与备份 | `config.py` |

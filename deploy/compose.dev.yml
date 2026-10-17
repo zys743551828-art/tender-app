@@ -26,6 +26,7 @@ x-dev-env: &dev-env
   BIDWB_STORAGE_REGION: us-east-1
   BIDWB_STORAGE_BUCKET: bidwb-dev
   BIDWB_STORAGE_ADDRESSING_STYLE: path
+  BIDWB_STORAGE_SIGNATURE_VERSION: s3v4
   PYTHONPATH: /app/backend/src
 
 x-dev-src: &dev-src
