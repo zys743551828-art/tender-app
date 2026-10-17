@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import json
 
 import pytest
 
 from bidwb import db, tasks
 from bidwb.messaging import InMemoryBus
 from bidwb.runtime import Container
+from bidwb.services.snapshots import _coverage_gaps
 from bidwb.storage import MemoryObjectStore, content_key
 from bidwb.workers.handlers import default_handlers
 from bidwb.workers.runner import WorkerRunner
@@ -223,6 +225,30 @@ def test_parse_pipeline_end_to_end_under_restricted_worker_role(
         assert db.scalar(conn, "SELECT count(*) FROM evidence") == 2
         assert db.scalar(conn, "SELECT count(*) FROM job_events WHERE kind='claimed'") == 1
     assert version_id
+
+
+def test_image_gap_persists_in_artifact_and_snapshot_coverage(api_factory, make_member, store, engine, worker_container: Container) -> None:  # type: ignore[no-untyped-def]
+    api, pid = _setup(api_factory, make_member)
+    _, done = _upload(api, store, pid, make_pdf([["-24-"], ["第一章 施工部署"]], image_first=True))
+    version_id = done.json()["version_id"]
+    bus = InMemoryBus()
+    with worker_container.engine.begin() as conn:
+        tasks.relay_outbox(conn, bus.producer())
+    runner = WorkerRunner(worker_container, "parse", bus.consumer(["job.parse"]), default_handlers(), consumer_name="worker-parse")
+    assert runner.poll_once() is True
+    with engine.connect() as conn:
+        parse = db.one(conn, "SELECT coverage,gaps_json,artifact_id FROM parses")
+        assert parse["coverage"] == "partial" and parse["gaps_json"] == ["page_1:raster_images_unread"]
+        key = db.scalar(conn, "SELECT object_key FROM artifacts WHERE id=:a", {"a": parse["artifact_id"]})
+        payload = json.loads(store.get(key))
+        assert payload["source_sha256"] == done.json()["artifact"]["sha256"]
+        assert payload["file_version_id"] == version_id and payload["parser_version"] == "pdfium-1.2"
+        assert payload["coverage_scope"] == "native_text_and_raster_presence"
+        assert [p["physical_page"] for p in payload["pages"]] == [1, 2]
+        assert payload["pages"][0]["issues"] == ["raster_images_unread"]
+        assert payload["pages"][1]["issues"] == []
+        assert _coverage_gaps(conn, pid, [version_id]) == [f"{version_id}:partial", f"{version_id}:page_1:raster_images_unread"]
+        assert db.scalar(conn, "SELECT count(*) FROM evidence WHERE file_version_id=:v", {"v": version_id}) == 2
 
 
 def test_unreadable_file_fails_parse_task_with_reason_and_no_parse_record(

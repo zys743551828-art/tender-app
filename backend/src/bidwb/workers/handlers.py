@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Protocol
 
 from sqlalchemy import Connection, Engine, text
@@ -98,6 +98,8 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         "gaps": document.gaps,
         "chunk_count": len(document.chunks),
         "page_text_chars": document.page_text_chars,
+        "coverage_scope": "native_text_and_raster_presence",
+        "pages": [asdict(page) for page in document.pages],
     }
     claim = ctx.claim
 

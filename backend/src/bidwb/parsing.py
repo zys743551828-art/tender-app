@@ -6,6 +6,7 @@
 诚实边界（写进 ``gaps``，不静默略过）：
 * 没有文本层的页（扫描件、整页图片）不会产生证据，标记 ``page_N:no_text_layer``，需要 OCR 才能覆盖，当前不含 OCR；
 * 表格目前按文本块处理，不识别表格结构；
+* 图片对象无论是否伴有文字，都标记 ``page_N:raster_images_unread``；装饰背景也可能触发，不猜测图片用途；
 * 页面有旋转时坐标需要变换，当前不输出坐标（``bbox`` 为 ``None``，前端只显示整页，不画虚构高亮）。
 """
 
@@ -19,9 +20,9 @@ import pypdfium2 as pdfium
 
 from bidwb.util import xml_safe
 
-PARSER_VERSION = "pdfium-1.1"
+PARSER_VERSION = "pdfium-1.2"
 MAX_CHUNK_CHARS = 400
-MIN_PAGE_CHARS = 3  # 少于该字符数的页视为无文本层（孤立页码、残留噪点不算）
+MIN_PAGE_CHARS = 3  # 文字层为空的低字符阈值；有页码或标题不能证明业务内容已覆盖。
 
 # 标题与条款起始：第X章/节/条、1.2.3、（一）、一、
 HEADING = re.compile(
@@ -45,11 +46,23 @@ class Chunk:
 
 
 @dataclass
+class PageCoverage:
+    physical_page: int
+    text_layer: Literal["extracted", "empty", "failed"] = "failed"
+    text_chars: int = 0
+    raster_images: int | None = None
+    issues: list[str] = field(default_factory=list)
+    table_structure: Literal["not_evaluated"] = "not_evaluated"
+    figure_semantics: Literal["not_evaluated"] = "not_evaluated"
+
+
+@dataclass
 class ParsedDocument:
     page_count: int
     chunks: list[Chunk] = field(default_factory=list)
     gaps: list[str] = field(default_factory=list)
     page_text_chars: list[int] = field(default_factory=list)
+    pages: list[PageCoverage] = field(default_factory=list)
 
     @property
     def coverage(self) -> Coverage:
@@ -136,28 +149,43 @@ def parse_pdf(data: bytes) -> ParsedDocument:
     try:
         result = ParsedDocument(page_count=len(document))
         for number in range(1, len(document) + 1):
-            page = document[number - 1]
+            coverage = PageCoverage(number)
+            result.pages.append(coverage)
+            result.page_text_chars.append(0)
             try:
-                _parse_page(page, number, result)
-            finally:
-                page.close()
+                page = document[number - 1]
+                try:
+                    _parse_page(page, number, result, coverage)
+                finally:
+                    page.close()
+            except pdfium.PdfiumError:
+                # 读取故障只影响本物理页；之前提取的文字保留，但本页不得标作已覆盖。
+                coverage.text_layer = "failed"
+                coverage.issues.append("page_read_failed")
+            result.gaps.extend(f"page_{number}:{issue}" for issue in coverage.issues)
         return result
     finally:
         document.close()
 
 
-def _parse_page(page: pdfium.PdfPage, number: int, result: ParsedDocument) -> None:
+def _parse_page(page: pdfium.PdfPage, number: int, result: ParsedDocument, coverage: PageCoverage) -> None:
+    coverage.raster_images = sum(1 for _ in page.get_objects(filter=[pdfium.raw.FPDF_PAGEOBJ_IMAGE]))
+    if coverage.raster_images:
+        coverage.issues.append("raster_images_unread")
     textpage = page.get_textpage()
     try:
         text = textpage.get_text_range()
         meaningful = len(text.strip())
-        result.page_text_chars.append(meaningful)
+        result.page_text_chars[number - 1] = meaningful
+        coverage.text_chars = meaningful
         if meaningful < MIN_PAGE_CHARS:
-            result.gaps.append(f"page_{number}:no_text_layer")
+            coverage.text_layer = "empty"
+            coverage.issues.append("no_text_layer")
             return
+        coverage.text_layer = "extracted"
         rotated = page.get_rotation() % 360 != 0
         if rotated:
-            result.gaps.append(f"page_{number}:rotated_no_bbox")
+            coverage.issues.append("rotated_no_bbox")
         width, height = page.get_size()
         for start, end in split_chunks(text):
             quote = chunk_text(text[start:end].splitlines())
