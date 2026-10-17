@@ -598,7 +598,7 @@ def main() -> int:
         for needle, why in (
             ("server_tokens off", "隐藏版本号"), ("limit_req zone=web_login", "登录限流"), ("Content-Security-Policy", "CSP"),
             ("Strict-Transport-Security", "HSTS"), ("try_files $uri /index.html", "SPA 回退"), ("proxy_buffering off", "SSE/流式不缓冲"),
-            ("client_max_body_size", "请求体上限"), ("gzip on", "gzip"), ("immutable", "静态资源长缓存"), ("WEB_CSP_CONNECT_EXTRA", "CSP 注入 OSS 端点"),
+            ("client_max_body_size", "请求体上限"), ("gzip on", "gzip"), ("immutable", "静态资源长缓存"), ("connect-src 'self'", "CSP 限制同源连接"),
         ):
             if needle not in text:
                 probs.append(f"nginx 模板缺少 {why}（{needle}）")

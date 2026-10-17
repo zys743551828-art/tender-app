@@ -33,8 +33,7 @@
 
 ```
 浏览器 ──https──> [SLB 或 nginx 自带 TLS] ──> web:8080 ──> api:8000 ──> postgres / kafka
-   │                                                    └─> OSS（S3 兼容，服务端）
-   └──────────── 预签名分片 PUT 直传 ───────────────────────> OSS（浏览器直连，不经本站）
+                                                         └─> OSS（API 分片转传／读取）
 worker-*  <── kafka <── relay <── postgres（发件箱）          worker-*、reaper ──> OSS；worker-* ──> 大模型 API
 ```
 
@@ -69,7 +68,7 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 本机验证范围与未完成项统一见 tender-docs《验证报告》第 2.9 节。
 
-`oss-cors.local.json` 是本机浏览器直传的待应用规则：仅允许 `http://localhost:8080` 与 `http://127.0.0.1:8080`，方法为 PUT／GET／HEAD，暴露 ETag。它不会随 Compose 自动应用；应用前需确认桶的现有规则并保留其他业务来源。`WEB_CSP_CONNECT_EXTRA` 还需填写预签名地址实际使用的桶域名（S3 兼容端点下为 `https://<桶名>.s3.oss-<地域>.aliyuncs.com`）。
+上传统一走同源 API，不需要配置存储桶 CORS，也不需要为 CSP 增加 OSS 域名。
 
 ### 2.1 服务器
 
@@ -86,7 +85,7 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 - 一个对外域名（例如 `tender.example.com`），解析到 SLB 或本机。
 - 证书：由公司负载均衡/SLB 终止 TLS（推荐，见 5.1），或把证书链与私钥交给 nginx（5.2）。
-- 浏览器上传的 OSS 域名（`<桶名>.oss-<地域>.aliyuncs.com` 或自定义域名）需要加进 CSP 与桶 CORS（第 3 节、`WEB_CSP_CONNECT_EXTRA`）。
+- 浏览器只连接站点域名；OSS 地址仅由服务端访问（第 3.3 节）。
 
 ### 2.3 防火墙与端口
 
@@ -111,7 +110,7 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 ## 3. 阿里云 OSS 准备
 
-原件与不可变产物存阿里云 OSS，浏览器用预签名地址分片直传，服务端用 S3 兼容接口访问（架构文档 INF-004）。
+原件与不可变产物存阿里云 OSS，浏览器通过同源 API 分片上传，服务端用 S3 兼容接口转传（架构文档 INF-004）。
 
 ### 3.1 建桶
 
@@ -122,7 +121,7 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 ### 3.2 RAM 子账号与最小权限策略
 
 创建一个 RAM 用户（仅编程访问），生成 AccessKey，把下面的策略授予它（把 `your-bucket-name` 换成桶名）。
-权限覆盖：预签名分片上传的服务端部分（创建/完成/中止分片上传、列分片）、读取与复制对象、清理暂存前缀。**不授予删除其它前缀对象的权限**，原件与正式产物因此不可被应用删除。
+权限覆盖：服务端分片上传（创建、上传、完成、中止、列分片）、读取与复制对象、清理暂存前缀。**不授予删除其它前缀对象的权限**，原件与正式产物因此不可被应用删除。
 
 ```json
 {
@@ -156,40 +155,15 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 - 动作名与资源格式（`acs:oss:*:*:<桶名>[/*]`、`"Version": "1"`）取自阿里云“RAM Policy 常见示例”文档（2026-10-07 查阅）。
   OSS 的分片上传各步骤在 RAM 里主要归属 `oss:PutObject`、`oss:AbortMultipartUpload`、`oss:ListParts`、`oss:ListMultipartUploads`；缺权限会在上传完成/复制时报 `AccessDenied`。
-- 后端的对象键见 `storage.py`：浏览器直传落在 `staging/<上传ID>`；校验通过后复制到内容寻址键 `objects/<sha256 前两位>/<sha256>`；worker 产物写 `artifacts/<产物ID>`。本策略与 3.4 的生命周期规则里的 `staging/` 即该前缀。
+- 后端的对象键见 `storage.py`：API 转传分片落在 `staging/<上传ID>`；校验通过后复制到内容寻址键 `objects/<sha256 前两位>/<sha256>`；worker 产物写 `artifacts/<产物ID>`。本策略与 3.4 的生命周期规则里的 `staging/` 即该前缀。
 - 复制到最终键用 CopyObject（需要源的 `GetObject` 与目标的 `PutObject`）。后端不依赖 OSS 的“禁止覆盖”选项：写入前先 HEAD 目标键，已存在则跳过，同键即同内容（架构文档 INF-004）。CopyObject / CompleteMultipartUpload 在 OSS 上的实际行为未验证（见 10.2）。
 - MLflow 默认把产物写到同一桶的 `mlflow-artifacts/` 前缀，复用同一对 AccessKey；想进一步隔离可单独建 RAM 用户并拆分前缀权限。
 
-### 3.3 桶 CORS（浏览器直传必需）
+### 3.3 同源分片上传
 
-浏览器用预签名地址向 OSS 发 `PUT`（分片），并需要读取响应头 `ETag`（服务端据此合并分片），所以必须允许 `PUT`、**暴露 `ETag`**，来源限定为站点域名：
+浏览器通过本站 `PUT /api/v1/uploads/{upload_id}/parts/{part_number}` 上传，携带会话与 CSRF。API 校验上传人、项目访问、会话状态与有效期，以及分片编号和字节数后，使用服务端 OSS 凭据转传并返回 ETag。分片地址始终是本站相对路径，不含对象存储凭据或签名。
 
-| 项 | 值 |
-| --- | --- |
-| 允许来源 | `https://tender.example.com`（你的站点地址，**不要用 `*`**） |
-| 允许方法 | `PUT`、`GET`、`HEAD` |
-| 允许头 | `*` |
-| 暴露头 | `ETag`（建议同时 `x-oss-request-id`） |
-| 缓存时间（秒） | `3600` |
-
-等价的 API/ossutil 配置（PutBucketCors 的 XML 形式；控制台填写项与之一一对应，字段名称以控制台实际界面为准）：
-
-```xml
-<CORSConfiguration>
-  <CORSRule>
-    <AllowedOrigin>https://tender.example.com</AllowedOrigin>
-    <AllowedMethod>PUT</AllowedMethod>
-    <AllowedMethod>GET</AllowedMethod>
-    <AllowedMethod>HEAD</AllowedMethod>
-    <AllowedHeader>*</AllowedHeader>
-    <ExposeHeader>ETag</ExposeHeader>
-    <ExposeHeader>x-oss-request-id</ExposeHeader>
-    <MaxAgeSeconds>3600</MaxAgeSeconds>
-  </CORSRule>
-</CORSConfiguration>
-```
-
-同时：浏览器侧还受站点 CSP 约束，`.env` 的 `WEB_CSP_CONNECT_EXTRA` 必须包含桶的访问域名（如 `https://your-bucket-name.oss-cn-hangzhou.aliyuncs.com`），否则控制台报 `Refused to connect`。
+nginx 的专用上传 location 允许每片最多 8 MiB，关闭请求落盘缓冲；普通 JSON API 保持原上限。API 按会话声明限制读取大小，单个请求只缓存一个分片，不缓存整份 100 MiB 文件。浏览器无需 OSS 的 CORS 规则，CSP 的 `connect-src` 仅为 `'self'`，桶仍保持私有。
 
 ### 3.4 生命周期：清理暂存前缀与未完成分片
 
@@ -256,7 +230,7 @@ scripts/gen-secrets.sh
 
 ### 4.4 填写 `.env`
 
-编辑 `.env`，逐项阅读注释。**必须修改**的有：`PUBLIC_BASE_URL`（https）、`OSS_*`（端点、地域、桶名）、`WEB_CSP_CONNECT_EXTRA`（OSS 访问域名）、
+编辑 `.env`，逐项阅读注释。**必须修改**的有：`PUBLIC_BASE_URL`（https）、`OSS_*`（端点、地域、桶名）、
 默认模式下的 `WEB_SET_REAL_IP_FROM`（SLB 网段）；以及确认各 `*_IMAGE` 标签、`KAFKA_CLUSTER_ID`。
 
 ```bash
@@ -362,7 +336,7 @@ curl -I https://tender.example.com/nginx-health
 - [ ] `scripts/healthcheck.sh` 无 FAIL（若有 WARN，逐条判断）
 - [ ] 浏览器打开站点首页，使用管理员登录；直接打开一个深层前端路由并刷新（SPA 回退正常）
 - [ ] 浏览器开发者工具：无 CSP 报错；响应头含 `Content-Security-Policy`、`X-Content-Type-Options`、（https 下）`Strict-Transport-Security`；无 `Server: nginx/x.y.z` 版本号
-- [ ] 创建测试项目并**上传一个多片大文件**（> 8 MiB 触发多分片）：浏览器直传 OSS 成功、完成后服务端校验通过（验证 CORS、CSP、RAM 权限三件事）
+- [ ] 创建测试项目并**上传一个多片大文件**（> 8 MiB 触发多分片）：浏览器只请求本站分片接口、API 转传成功，完成后服务端校验通过；核实会话、CSRF 与 RAM 权限
 - [ ] 用 Range 请求读取原件：`curl -H 'Range: bytes=0-99' -b <登录 cookie> https://<站点>/api/v1/files/<版本ID>/content -i` 返回 `206`
 - [ ] 创建一个任务，页面进度（SSE）实时更新；任务最终 `succeeded`；`docker compose logs worker-parse` 无异常
 - [ ] 登录接口限流：连续快速错误登录 > 6 次返回 429（`WEB_LOGIN_RATE`）
@@ -477,8 +451,8 @@ scripts/restore.sh --backup <批次> --in-place --yes
 | 浏览器 502/504 | api 不健康或重建中 | `docker compose ps api`、`logs api`；nginx 用 Docker DNS 动态解析，api 恢复后自动恢复 |
 | 页面能开但登录一直 429 | 限流命中；在 SLB 后面所有用户共用一个来源 IP | 正确设置 `WEB_SET_REAL_IP_FROM`；确认 SLB 传了 `X-Forwarded-For`；必要时调大 `WEB_LOGIN_RATE` |
 | 登录后马上掉线/Cookie 不生效 | 用户不是通过 https 访问（生产会话 Cookie 为 `__Host-sid` 且带 Secure，浏览器不会在 http 下保存） | 保证用户通过 https 访问，且访问地址与 `PUBLIC_BASE_URL` 一致；Secure 属性由后端的 `cookie_secure`（默认开启）决定，与转发协议头无关；SLB 仍应传 `X-Forwarded-Proto: https` 供 nginx 下发 HSTS |
-| 上传时浏览器报 CORS 错误 | OSS 桶 CORS 未配置、来源/方法/暴露头不对 | 按 3.3 配置；暴露 `ETag`；来源与站点地址完全一致（含协议与端口） |
-| 上传时浏览器报 `Refused to connect`（CSP） | `WEB_CSP_CONNECT_EXTRA` 缺 OSS 域名 | 补上并 `docker compose up -d web` |
+| 分片上传 HTTP 413／422 | 分片超过 8 MiB 或与会话声明大小不符 | 检查 nginx 专用上传 location，浏览器使用会话返回的 part_bytes 拆分 |
+| 分片上传 HTTP 401／403 | 登录会话或 CSRF 失效 | 重新登录；客户端会自动刷新 CSRF 并重试一次 |
 | 上传完成时报 403 / `AccessDenied` | RAM 策略缺动作或前缀不一致 | 对照 3.2；看 api 日志里的 OSS 错误码 |
 | 服务端访问 OSS 报签名/`aws-chunked` 错误 | boto3 V4 分块编码与 OSS 不兼容（未验证是否会发生） | 见 3.5。可先在出错服务的 environment 里加 `AWS_REQUEST_CHECKSUM_CALCULATION=when_required`（botocore 读取该变量，mlflow 服务已如此设置；未验证对 OSS 有效）；仍不通则需调整 `storage.py` 的客户端配置，属后端改动 |
 | 任务进度页不更新 / 频繁重连 | SLB 或中间代理的空闲超时过短；nginx 缓冲 | 调大 SLB 空闲超时；SSE 路径在 nginx 已关缓冲（`proxy_buffering off`） |
@@ -504,7 +478,7 @@ scripts/restore.sh --backup <批次> --in-place --yes
 - **容器加固**：非 root、`cap_drop: ALL`、`no-new-privileges`、只读根文件系统、`tmpfs` 临时目录、`pids_limit`、内存/CPU 限额；例外只有 Kafka（写配置目录）与 Milvus（root、seccomp:unconfined，未实测前不收紧），均记录在 `compose.yml` 头部并由 `check_compose.py` 白名单约束。
 - **数据库角色分权**：迁移用库属主 `bidwb_owner`；API 用 `bidwb_api`；worker/relay/reaper 用 `bidwb_worker`（不读身份、会话、上传与成员表）；LangGraph 运行库与 MLflow 库各有独立属主，互不授权。不要把属主或超级用户连接串交给应用。
 - **站点安全头**：CSP、`X-Content-Type-Options`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`、HSTS（https 下）；登录限流；隐藏 nginx 版本；隐藏文件不可访问。CSP 中 `style-src 'unsafe-inline'` 与 `'wasm-unsafe-eval'` 是为兼容 React/PDF.js 而放宽，是否都需要未验证（见 10.2 第 11 项）。
-- **OSS**：桶私有；RAM 子账号最小权限，无删除原件权限；CORS 来源限定站点域名；预签名地址短时有效且不写日志。
+- **OSS**：桶私有；RAM 子账号最小权限，无删除原件权限；浏览器不访问桶；API 校验会话与 CSRF 后转传。
 - **备份**：含全部业务数据，磁盘加密 + 异地保存 + 限制访问；演练恢复时临时库会含真实数据，用完删除。
 - **日志**：后端不记录口令、令牌、预签名地址、文档全文、思考过程（`logs.py` 的约定与兜底脱敏）；对外分享日志前自查。
 - **更新**：定期重建镜像取得基础镜像安全补丁；关注 Docker、PostgreSQL、Kafka、Milvus、nginx 的安全公告。
@@ -543,12 +517,12 @@ scripts/restore.sh --backup <批次> --in-place --yes
 5. **Kafka**：环境变量命名（`CLUSTER_ID`、`KAFKA_*`）取自 Apache Kafka 官方 Docker 镜像文档的常见形态；`/var/lib/kafka/data` 命名卷属主、`kafka-broker-api-versions.sh` 健康检查路径、堆设置 `-Xmx768m`、4.0 版本下的行为均未实测。
 6. **Milvus 内嵌 etcd + 本地存储**（`ETCD_USE_EMBED`、`COMMON_STORAGETYPE=local`、`embedEtcd.yaml`）取自官方 `standalone_embed.sh`（v2.6.11 标签）；`seccomp:unconfined` 是否仍必要、可否只读根文件系统/非 root 均未实测；内存 6 GiB 低于官方推荐 16 GiB，Milvus 通道启用前必须压测。
 7. **MLflow 产物写 OSS**：MLflow 官方文档未列出 OSS 的 S3 兼容接入（架构文档 INF-006）；`aws-config`（virtual-hosted）与 `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` 的组合能否通过需联调（后端代码本身不调用 MLflow，只有研究侧使用）；不通时回退到本地卷（`MLFLOW_ARTIFACT_URI=file:///mlflow/artifacts`，需自行备份该卷）。
-8. **OSS 联调**：预签名分片直传、CORS（暴露 ETag）、RAM 策略动作集、生命周期规则写法、虚拟主机寻址、后端 `s3v4` 与 OSS 的 aws-chunked 兼容性、“禁止覆盖”对 CopyObject/CompleteMultipartUpload 的支持，均只对照了文档，未实际访问 OSS。验证方法：按第 6 节上传多片大文件并触发解析，再抽查 OSS 中 `staging/`、`objects/`、`artifacts/` 前缀。
+8. **OSS 联调**：同源分片转传、RAM 策略动作集、生命周期规则写法、虚拟主机寻址、后端 `s3v4` 与 OSS 的 aws-chunked 兼容性、“禁止覆盖”对 CopyObject/CompleteMultipartUpload 的支持，均只对照了文档，未实际访问 OSS。验证方法：按第 6 节上传多片大文件并触发解析，再抽查 OSS 中 `staging/`、`objects/`、`artifacts/` 前缀。
 9. **资源限额**（`mem_limit`、`cpus`、`pids_limit`、PostgreSQL 参数、tmpfs 大小）是估计值，合计约 26.75 GiB/15.25 CPU 上限，压测前不能当容量承诺。`cpus` 总和超过 8 是有意的（上限而非预留）。
 10. **TLS 模式**：nginx 1.30 上的 `http2 on;`、证书热加载、80→443 跳转未在真实容器里验证（沙箱用 1.24 做了语法检查，TLS 块去掉了 `http2 on`）。
 11. **CSP**：`script-src 'wasm-unsafe-eval'`、`style-src 'unsafe-inline'`、`worker-src blob:` 是为兼容 PDF.js/React 预留的放宽，没有拿真实前端页面验证过是否都需要或是否还缺（例如 PDF 以 blob 在 iframe 中预览需要 `frame-src`）；PDF.js worker 的 `.mjs` MIME 已在 nginx 配置补充。
 12. **secrets 文件权限**：采用“目录 700 + 文件 444”，依据是 Compose（非 Swarm）不改写 bind mount 属主权限这一已知行为；在你们的 Docker/Compose 版本上需实测容器内用户确实可读。
-13. **开发环境**（`compose.dev.yml`）：MinIO 的 `MINIO_ROOT_USER_FILE` 支持与 `MINIO_API_CORS_ALLOW_ORIGIN` 是否足以让浏览器直传通过（含 ETag 暴露）、vite 容器热更新、`mc ready local` 健康检查，均未实测。
+13. **开发环境**（`compose.dev.yml`）：MinIO 的 `MINIO_ROOT_USER_FILE` 支持、vite 容器热更新、`mc ready local` 健康检查，均未实测。
 
 **与后端/前端的接口（已对照源码，未联调运行，见第 11 节）**
 14. 后端入口（`bidwb-api` 等）、`bidwb-admin ensure-topics / create-member`、`/healthz`、`/readyz` 的参数与行为已按源码核对，但没有在容器里实际运行过。验证方法：首次部署后执行 `docker compose run --rm --no-deps api bidwb-admin --help`、`scripts/create-admin.sh`、`scripts/healthcheck.sh`。
@@ -620,7 +594,7 @@ CI 建议：`python3 deploy/check_compose.py`（需要 PyYAML；有 `docker comp
 | 认证 | 账号加口令登录（口令以 Argon2id 哈希保存），账号由 `bidwb-admin create-member` 创建；没有单点登录 | `services/auth.py`、`api/routes_auth.py` |
 | 开发热重载 | `BIDWB_API_RELOAD=true` 时 uvicorn 以 reload 方式启动；`PYTHONPATH=/app/backend/src` 优先于已安装包（`compose.dev.yml`） | `entrypoints.py` |
 | 代理头 | uvicorn 以 `proxy_headers=True` 运行，信任 `BIDWB_FORWARDED_ALLOW_IPS` 列出的代理（默认 `127.0.0.1`，compose 设为 `*`，因为只有 web 能访问 api）。会话 Cookie 的 Secure 属性由 `BIDWB_COOKIE_SECURE`（默认 true）决定，与转发协议无关 | `entrypoints.py`、`config.py`、`api/routes_auth.py` |
-| 对象存储 | 变量 `BIDWB_STORAGE_*`；键前缀 `staging/`（直传落点）、`objects/<sha256 前两位>/<sha256>`（内容寻址最终位置）、`artifacts/`（worker 产物）；签名版本 `s3v4`；预签名用公网端点，服务端读写用内网端点。OSS 兼容性未验证（见 3.5、10.2） | `storage.py`、`config.py` |
+| 对象存储 | 变量 `BIDWB_STORAGE_*`；键前缀 `staging/`（API 分片转传落点）、`objects/<sha256 前两位>/<sha256>`（内容寻址最终位置）、`artifacts/`（worker 产物）；签名由 `OSS_SIGNATURE_VERSION` 配置，OSS 用 `s3`，MinIO 用 `s3v4`；字节只经服务端读写。验证范围见 tender-docs《验证报告》 | `storage.py`、`config.py` |
 | 自动评审流水线 | `BIDWB_AUTO_ANALYSIS`（默认 true，`.env` 中为 `AUTO_ANALYSIS`）：上传完成时 API 推进、任务结束时 worker 推进、reaper 周期兜底；因 reaper 要写 OSS，编排给它配置了 OSS 凭据与 egress 网络。关闭后只由人工触发各步骤 | `config.py`、`api/routes_files.py`、`workers/runner.py`、`workers/loops.py`、`services/pipeline.py` |
 | 评审报告导出 | `GET /api/v1/projects/{id}/report.docx` 与 `GET /api/v1/projects/{id}/body.annotated.pdf` 在 API 进程内同步生成，依赖 `python-docx`、`pypdfium2`（`pyproject.toml` 已声明）；响应头 `Cache-Control: private, no-store`，不经任务队列与 worker-export | `api/routes_report.py`、`services/export.py`、`pyproject.toml` |
 | 任务进度 SSE | `GET /api/v1/tasks/{id}/events`：每 15 秒心跳，单连接最长 600 秒，支持 `Last-Event-ID` 续传 | `api/routes_tasks.py` |

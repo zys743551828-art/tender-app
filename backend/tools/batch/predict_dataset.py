@@ -33,7 +33,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs, urlparse
 
 BACKEND = Path(__file__).resolve().parents[2]
 if str(BACKEND / "src") not in sys.path:
@@ -558,7 +557,7 @@ class Api:
 
 
 def upload(api: Api, store: MemoryObjectStore, project_id: str, data: bytes, *, name: str, role: str) -> dict[str, Any]:
-    """走真实上传接口：申请分片会话 → 按预签名地址写分片（内存存储） → 完成并由服务端复算校验值。"""
+    """走真实上传接口：申请分片会话 → 通过同源接口写分片（内存存储适配器） → 完成并由服务端复算校验值。"""
     sha = hashlib.sha256(data).hexdigest()
     session = api.post(
         f"/projects/{project_id}/uploads",
@@ -568,8 +567,10 @@ def upload(api: Api, store: MemoryObjectStore, project_id: str, data: bytes, *, 
     parts = []
     for part in session["parts"]:
         n = part["part_number"]
-        oss_upload_id = parse_qs(urlparse(part["url"]).query)["uploadId"][0]
-        parts.append({"part_number": n, "etag": store.put_part(oss_upload_id, n, data[(n - 1) * size : n * size])})
+        response = api.http.put(part["url"], content=data[(n - 1) * size : n * size], headers={"X-CSRF-Token": api.csrf})
+        if response.status_code != 200:
+            raise SampleError(f"分片上传失败：HTTP {response.status_code}")
+        parts.append({"part_number": n, "etag": response.headers["ETag"]})
     return dict(api.post(f"/uploads/{session['upload_id']}/complete", {"sha256": sha, "parts": parts}))
 
 

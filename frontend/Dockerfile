@@ -46,7 +46,6 @@ LABEL org.opencontainers.image.title="bidwb-web" \
 # 官方 envsubst 脚本只替换以 WEB_ 开头的变量，避免把 nginx 自己的 $host、$uri 等误替换
 ENV NGINX_ENVSUBST_FILTER="^WEB_" \
     WEB_API_UPSTREAM="api:8000" \
-    WEB_CSP_CONNECT_EXTRA="" \
     WEB_CLIENT_MAX_BODY_SIZE="5m" \
     WEB_LOGIN_RATE="10r/m" \
     WEB_API_RATE="30r/s" \

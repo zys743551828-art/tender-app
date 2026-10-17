@@ -34,6 +34,23 @@ const json = (body: unknown, status = 200, headers: Record<string, string> = {})
 const ME = { member_id: 'm1', display_name: '张工', csrf_token: 'tok-1' };
 
 describe('ApiClient 请求头', () => {
+  it('二进制上传在 CSRF 刷新后重传相同 Blob 和幂等键', async () => {
+    const { fn, calls } = mockFetch([
+      json({ code: 'csrf_failed', message: 'CSRF 已失效' }, 403),
+      json(ME),
+      new Response(null, { headers: { ETag: 'part-etag' } }),
+    ]);
+    const c = new ApiClient({ fetchImpl: fn });
+    c.setCsrfToken('expired-token');
+    const body = new Blob(['binary']);
+    const response = await c.putBytes('/uploads/upl-1/parts/1', body, new AbortController().signal);
+    expect(response.headers.get('ETag')).toBe('part-etag');
+    expect(calls[0]?.body).toBe(body);
+    expect(calls[2]?.body).toBe(body);
+    expect(calls[2]?.headers['X-CSRF-Token']).toBe('tok-1');
+    expect(calls[2]?.headers['Idempotency-Key']).toBe(calls[0]?.headers['Idempotency-Key']);
+  });
+
   it('写请求带 X-CSRF-Token 与 Idempotency-Key，GET 两者都不带', async () => {
     const { fn, calls } = mockFetch([json({ ok: 1 }), json({ ok: 2 })]);
     const c = new ApiClient({ fetchImpl: fn });

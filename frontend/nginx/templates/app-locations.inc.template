@@ -4,7 +4,7 @@
 root /usr/share/nginx/html;
 index index.html;
 
-# 上传走 OSS 直传，不经过本服务；API 的 JSON 请求体都很小。需要放宽时改 WEB_CLIENT_MAX_BODY_SIZE。
+# 普通 API 请求体上限；分片上传在专用 location 中使用独立的 8 MiB 上限。
 client_max_body_size ${WEB_CLIENT_MAX_BODY_SIZE};
 access_log /dev/stdout web;
 
@@ -28,6 +28,18 @@ location ~ /\.(?!well-known/) {
 }
 
 # ---- API 反向代理 -------------------------------------------------------
+location ~ ^/api/v1/uploads/[^/]+/parts/[0-9]+$ {
+    limit_req zone=web_api burst=100 nodelay;
+    client_max_body_size 8m;
+    include /etc/nginx/conf.d/proxy-common.inc;
+    proxy_request_buffering off;
+    proxy_buffering off;
+    proxy_max_temp_file_size 0;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_pass $api_upstream$request_uri;
+}
+
 # 登录：更严的限流。burst=5 容忍用户手误重试，超出返回 429。
 location = /api/v1/auth/login {
     limit_req zone=web_login burst=5 nodelay;

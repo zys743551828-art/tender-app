@@ -1,3 +1,4 @@
+import { ApiClient } from '../../api/client';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../api/errors';
 import type { FileVersion, UploadComplete, UploadSession } from '../../api/types';
@@ -196,7 +197,7 @@ describe('Uploader 状态机', () => {
     expect(calls.complete[0]?.body.parts).toHaveLength(3);
   });
 
-  it('存储端回 403（预签名地址过期）：刷新地址后用新地址重试，且并发的刷新合并为一次', async () => {
+  it('分片接口回 403：刷新地址后用新地址重试，且并发的刷新合并为一次', async () => {
     const { deps, calls } = setup(3, {
       putPart: (url) => {
         calls.put.push(url);
@@ -323,37 +324,54 @@ describe('Uploader 状态机', () => {
   });
 });
 
-describe('fetchPutPart（直传存储）', () => {
+describe('fetchPutPart（同源分片）', () => {
   const ac = new AbortController();
   const blob = new Blob(['x']);
+  const url = '/api/v1/uploads/upl-1/parts/1';
+  function client(fetchImpl: typeof fetch) {
+    const c = new ApiClient({ fetchImpl });
+    c.setCsrfToken('csrf-part');
+    return c;
+  }
 
-  it('读取响应头 ETag；不带 cookie（credentials: omit）', async () => {
+  it('上传二进制，带同源会话和 CSRF，读取 ETag', async () => {
     const f = vi.fn(() =>
       Promise.resolve(new Response(null, { status: 200, headers: { ETag: '"abc"' } })),
     );
-    const etag = await fetchPutPart('https://oss/x', blob, ac.signal, f);
-    expect(etag).toBe('"abc"');
+    expect(await fetchPutPart(url, blob, ac.signal, client(f))).toBe('"abc"');
     expect(f).toHaveBeenCalledWith(
-      'https://oss/x',
-      expect.objectContaining({ method: 'PUT', credentials: 'omit' }),
+      url,
+      expect.objectContaining({
+        method: 'PUT',
+        credentials: 'same-origin',
+        body: blob,
+        headers: expect.objectContaining({
+          'X-CSRF-Token': 'csrf-part',
+          'Content-Type': 'application/octet-stream',
+        }),
+      }),
     );
   });
 
-  it('读不到 ETag（CORS 未暴露）给出可操作的中文提示', async () => {
-    const f = () => Promise.resolve(new Response(null, { status: 200 }));
-    await expect(
-      fetchPutPart('https://oss/x', blob, ac.signal, f as unknown as typeof fetch),
-    ).rejects.toThrow(/ETag/);
+  it('拒绝外部上传地址，不向外部发送会话或 CSRF', async () => {
+    const f = vi.fn();
+    await expect(fetchPutPart('https://oss/x', blob, ac.signal, client(f))).rejects.toThrow(/本站/);
+    expect(f).not.toHaveBeenCalled();
   });
 
-  it('403 → PartPutError(403)；网络错误 → PartPutError(0)', async () => {
-    const f403 = () => Promise.resolve(new Response('denied', { status: 403 }));
-    await expect(
-      fetchPutPart('u', blob, ac.signal, f403 as unknown as typeof fetch),
-    ).rejects.toMatchObject({ status: 403 });
-    const fnet = () => Promise.reject(new TypeError('Failed to fetch'));
-    await expect(
-      fetchPutPart('u', blob, ac.signal, fnet as unknown as typeof fetch),
-    ).rejects.toMatchObject({ status: 0 });
+  it('缺少 ETag 时明确失败', async () => {
+    const f = () => Promise.resolve(new Response(null, { status: 200 }));
+    await expect(fetchPutPart(url, blob, ac.signal, client(f))).rejects.toThrow(/ETag/);
+  });
+
+  it('403 和网络错误保留状态供重试判断', async () => {
+    const denied = () => Promise.resolve(new Response('{}', { status: 403 }));
+    await expect(fetchPutPart(url, blob, ac.signal, client(denied))).rejects.toMatchObject({
+      status: 403,
+    });
+    const offline = () => Promise.reject(new TypeError('Failed to fetch'));
+    await expect(fetchPutPart(url, blob, ac.signal, client(offline))).rejects.toMatchObject({
+      status: 0,
+    });
   });
 });

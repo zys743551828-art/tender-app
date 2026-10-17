@@ -1,8 +1,8 @@
 """资料上传与文件版本。
 
 流程（TECH-001 §6.3）：
-    initUpload      服务端分配 upload ID，在暂存键上开分片上传并签发预签名分片地址
-    浏览器直传      分片直接 PUT 到对象存储，应用服务器不经手大文件
+    initUpload      服务端分配 upload ID，在暂存键上开分片上传并返回同源分片接口
+    同源分片上传    浏览器携带会话和 CSRF，API 校验最多 8 MiB 的分片后转传对象存储
     completeUpload  合并分片 → 流式复算 SHA-256 与大小 → 一致则复制到内容寻址的不可覆盖键，
                     并在一个事务里提交产物与文件版本；不一致则隔离，不可下载
 文件版本一旦写入不可改（触发器强制）。版本关系显式声明：上传请求带 ``version_of_file_id`` 才成为该文件的下一版本
@@ -68,10 +68,7 @@ def _session_response(store: ObjectStore, settings: Settings, row: db.Row) -> Up
     ttl = settings.upload_url_ttl_seconds
     expires = min(utcnow() + timedelta(seconds=ttl), row["expires_at"])
     count = math.ceil(row["expected_bytes"] / row["part_bytes"])
-    parts = [
-        PartUrl(part_number=n, url=store.presign_part(row["staging_key"], row["oss_upload_id"], n, ttl), expires_at=expires)
-        for n in range(1, count + 1)
-    ]
+    parts = [PartUrl(part_number=n, url=f"/api/v1/uploads/{row['id']}/parts/{n}", expires_at=expires) for n in range(1, count + 1)]
     return UploadSession(upload_id=row["id"], part_bytes=row["part_bytes"], part_count=count, parts=parts, expires_at=row["expires_at"])
 
 
@@ -175,6 +172,34 @@ def refresh_urls(conn: Connection, store: ObjectStore, settings: Settings, actor
     if row["expires_at"] <= utcnow():
         raise Conflict("upload_expired", "上传会话已过期，请重新开始")
     return _session_response(store, settings, row)
+
+
+def _upload_part_row(conn: Connection, actor: Actor, upload_id: str, part_number: int, *, lock: bool = False) -> tuple[db.Row, int]:
+    row = _own_open_session(conn, actor, upload_id, lock=lock)
+    if row["state"] != "open":
+        raise Conflict("upload_not_open", "该上传会话已结束", state=row["state"])
+    if row["expires_at"] <= utcnow():
+        raise Conflict("upload_expired", "上传会话已过期，请重新开始")
+    count = math.ceil(row["expected_bytes"] / row["part_bytes"])
+    if not 1 <= part_number <= count:
+        raise Unprocessable("invalid_part_number", "分片编号超出范围", expected=count)
+    expected = min(row["part_bytes"], row["expected_bytes"] - (part_number - 1) * row["part_bytes"])
+    return row, expected
+
+
+def upload_part_size(conn: Connection, actor: Actor, upload_id: str, part_number: int) -> int:
+    return _upload_part_row(conn, actor, upload_id, part_number)[1]
+
+
+def upload_part(conn: Connection, store: ObjectStore, actor: Actor, upload_id: str, part_number: int, data: bytes) -> str:
+    # 上传与合并使用同一会话锁，避免已完成会话被迟到的分片请求修改。
+    row, expected = _upload_part_row(conn, actor, upload_id, part_number, lock=True)
+    if len(data) != expected:
+        raise Unprocessable("part_size_mismatch", "分片大小与声明不一致", expected=expected)
+    try:
+        return store.upload_part(row["staging_key"], row["oss_upload_id"], part_number, data)
+    except ObjectStoreError as exc:
+        raise Unavailable("storage_unavailable", "对象存储暂不可用，请稍后重试") from exc
 
 
 def _artifact_for(conn: Connection, *, sha256: str, size: int, media_type: str, key: str, status: str) -> str:

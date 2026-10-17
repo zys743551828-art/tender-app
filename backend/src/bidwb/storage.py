@@ -5,7 +5,7 @@
 并避免被单一厂商 SDK 绑定。
 
 对象键约定：
-    staging/<upload_id>             浏览器直传落点，不对任何业务可见
+    staging/<upload_id>             API 分片转传落点，不对任何业务可见
     objects/<sha256[:2]>/<sha256>   内容寻址的最终位置，同一内容只保存一份且不会被覆盖
     artifacts/<artifact_id>         worker 产物
 """
@@ -41,6 +41,8 @@ class ObjectInfo:
 
 class ObjectStore(Protocol):
     def create_multipart(self, key: str, content_type: str) -> str: ...
+
+    def upload_part(self, key: str, upload_id: str, part_number: int, data: bytes) -> str: ...
     def presign_part(self, key: str, upload_id: str, part_number: int, ttl_seconds: int) -> str: ...
     def complete_multipart(self, key: str, upload_id: str, parts: Sequence[tuple[int, str]]) -> None: ...
     def abort_multipart(self, key: str, upload_id: str) -> None: ...
@@ -100,6 +102,13 @@ class S3ObjectStore:
             Params={"Bucket": self._bucket, "Key": key, "UploadId": upload_id, "PartNumber": part_number},
             ExpiresIn=ttl_seconds,
         )
+
+    def upload_part(self, key: str, upload_id: str, part_number: int, data: bytes) -> str:
+        try:
+            result = self._client.upload_part(Bucket=self._bucket, Key=key, UploadId=upload_id, PartNumber=part_number, Body=data)
+        except ClientError as exc:
+            raise ObjectStoreError("upload_part") from exc
+        return result["ETag"]
 
     def complete_multipart(self, key: str, upload_id: str, parts: Sequence[tuple[int, str]]) -> None:
         try:
@@ -209,6 +218,12 @@ class MemoryObjectStore:
     def put_part(self, upload_id: str, part_number: int, data: bytes) -> str:
         self._uploads[upload_id].parts[part_number] = data
         return hashlib.md5(data, usedforsecurity=False).hexdigest()
+
+    def upload_part(self, key: str, upload_id: str, part_number: int, data: bytes) -> str:
+        upload = self._uploads.get(upload_id)
+        if upload is None or upload.key != key:
+            raise ObjectStoreError("upload_part")
+        return self.put_part(upload_id, part_number, data)
 
     def complete_multipart(self, key: str, upload_id: str, parts: Sequence[tuple[int, str]]) -> None:
         upload = self._uploads.get(upload_id)

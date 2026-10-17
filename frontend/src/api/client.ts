@@ -8,6 +8,7 @@ const WRITE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 export interface RequestOptions {
   query?: Record<string, string | number | undefined | null>;
   body?: unknown;
+  rawBody?: Blob;
   /** If-Match：更新项目与授权时传对象 revision（字符串）。 */
   ifMatch?: string | number;
   /** 同一次用户动作重试时传入同一个键；不传则每次请求生成新键。 */
@@ -28,7 +29,7 @@ export interface ApiClientOptions {
 
 /**
  * 集中处理：路径前缀、JSON、CSRF（仅内存）、Idempotency-Key、If-Match、错误解析、401 跳转。
- * 组件不得直接 fetch；一律经本客户端（PDF.js 与对象存储直传是两个明确例外，见各自模块）。
+ * 组件不得直接 fetch；一律经本客户端（PDF.js 原件读取是明确例外，见各自模块）。
  */
 export class ApiClient {
   private csrf: string | null = null;
@@ -64,6 +65,18 @@ export class ApiClient {
   }
 
   async request<T>(method: string, path: string, opts: RequestOptions = {}): Promise<T> {
+    return (await readBody(await this.requestResponse(method, path, opts))) as T;
+  }
+
+  async putBytes(path: string, body: Blob, signal: AbortSignal): Promise<Response> {
+    return this.requestResponse('PUT', path, { rawBody: body, signal });
+  }
+
+  private async requestResponse(
+    method: string,
+    path: string,
+    opts: RequestOptions,
+  ): Promise<Response> {
     const m = method.toUpperCase();
     const isWrite = WRITE_METHODS.has(m);
     // 写请求的幂等键在重试（含 CSRF 刷新后的自动重发）时必须保持不变。
@@ -72,7 +85,7 @@ export class ApiClient {
 
     for (let attempt = 0; ; attempt++) {
       const res = await this.send(m, path, opts, idemKey);
-      if (res.ok) return (await readBody(res)) as T;
+      if (res.ok) return res;
 
       const err = errorFromResponse(
         res.status,
@@ -106,8 +119,10 @@ export class ApiClient {
     idemKey: string | undefined,
   ): Promise<Response> {
     const headers: Record<string, string> = { Accept: 'application/json' };
-    let body: string | undefined;
-    if (opts.body !== undefined) {
+    let body: string | Blob | undefined = opts.rawBody;
+    if (opts.rawBody !== undefined) {
+      headers['Content-Type'] = 'application/octet-stream';
+    } else if (opts.body !== undefined) {
       headers['Content-Type'] = 'application/json';
       body = JSON.stringify(opts.body);
     }

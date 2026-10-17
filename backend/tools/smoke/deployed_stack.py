@@ -1,4 +1,4 @@
-"""真实已部署栈的合成资料冒烟：登录、OSS 分片直传、自动评审和导出。
+"""真实已部署栈的合成资料冒烟：登录、同源分片转传 OSS、自动评审和导出。
 
 在 backend 中运行：python -m tools.smoke.deployed_stack --password-file ../deploy/secrets/admin_initial_password --out <目录>
 会调用已部署 worker 配置的真实模型，保留带“合成冒烟”名称的项目，不确认规则、不登记提交。
@@ -104,14 +104,15 @@ def run(args: argparse.Namespace) -> int:
                 },
             ).json()
             parts = []
-            with httpx.Client(timeout=60) as oss:
-                for part in upload["parts"]:
-                    n = part["part_number"]
-                    chunk = data[(n - 1) * upload["part_bytes"] : n * upload["part_bytes"]]
-                    response = oss.put(part["url"], content=chunk)
-                    if response.is_error:
-                        raise RuntimeError(f"OSS PUT: HTTP {response.status_code}")
-                    parts.append({"part_number": n, "etag": response.headers["ETag"]})
+            for part in upload["parts"]:
+                n = part["part_number"]
+                if part["url"] != f"/api/v1/uploads/{upload['upload_id']}/parts/{n}":
+                    raise RuntimeError("服务端未返回同源分片地址")
+                chunk = data[(n - 1) * upload["part_bytes"] : n * upload["part_bytes"]]
+                response = api.put(part["url"], content=chunk, headers={"Content-Type": "application/octet-stream"})
+                if response.is_error:
+                    raise RuntimeError(f"同源分片 PUT: HTTP {response.status_code}")
+                parts.append({"part_number": n, "etag": response.headers["ETag"]})
             request("POST", f"/uploads/{upload['upload_id']}/complete", {"sha256": digest, "parts": parts})
             print(f"{role} 真实 OSS 分片上传与提交通过", flush=True)
         print(f"项目 {pid}", flush=True)

@@ -67,7 +67,7 @@ if [[ ! -f .env ]]; then
   p_fail "缺少 .env（cp .env.example .env 后修改）"
 else
   required=(APP_IMAGE WEB_IMAGE MLFLOW_IMAGE POSTGRES_IMAGE KAFKA_IMAGE MILVUS_IMAGE PUBLIC_BASE_URL
-            OSS_ENDPOINT_URL OSS_PUBLIC_ENDPOINT_URL OSS_REGION OSS_BUCKET KAFKA_CLUSTER_ID WEB_CSP_CONNECT_EXTRA)
+            OSS_ENDPOINT_URL OSS_PUBLIC_ENDPOINT_URL OSS_REGION OSS_BUCKET KAFKA_CLUSTER_ID)
   for v in "${required[@]}"; do
     val="$(env_get "${v}")"
     if [[ -z "${val}" ]]; then p_fail ".env：${v} 为空"

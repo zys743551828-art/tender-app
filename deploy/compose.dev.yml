@@ -7,7 +7,7 @@
 #
 # 与生产的差异（全部为开发便利，因此本文件不受 check_compose.py 的加固规则约束，只检查镜像标签与明文口令）：
 #   - MinIO 模拟 OSS（milvusdb/minio 镜像，与 Milvus 官方示例同源），桶由 dev-init 自动创建；
-#     CORS 由 MinIO 服务端变量统一放行（MinIO 不支持按桶 PutBucketCors）。
+#     浏览器通过同源 API 上传，MinIO 只接受服务端访问。
 #   - 前端：web（nginx）不启动，改用 web-dev（vite dev server，热更新）http://localhost:5173，/api 代理到 api。
 #   - api 与各 worker 把 ../backend/src 只读挂入并用 PYTHONPATH 优先加载，改代码后重启服务即生效；
 #     api 另设 BIDWB_API_RELOAD=true（bidwb-api 读取该变量后以 reload 方式启动 uvicorn，见 entrypoints.py）。
@@ -105,8 +105,6 @@ services:
     environment:
       MINIO_ROOT_USER_FILE: /run/secrets/minio_root_user
       MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_root_password
-      # 浏览器直传要求服务端返回 CORS 头；放行 vite 开发地址与本机 nginx 地址
-      MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:5173,http://localhost:8080"
     secrets: [minio_root_user, minio_root_password]
     volumes:
       - miniodata:/data

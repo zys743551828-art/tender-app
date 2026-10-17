@@ -1,3 +1,4 @@
+import { API_PREFIX, ApiClient, apiClient } from '../../api/client';
 import { ApiError, isApiError } from '../../api/errors';
 import type {
   CompletedPart,
@@ -15,7 +16,7 @@ export const MAX_PARALLEL_PARTS = 4;
 export const MAX_FILE_BYTES = 104_857_600;
 export const MAX_PART_ATTEMPTS = 3;
 export const MAX_URL_REFRESHES = 3;
-/** 预签名地址距过期不足此时长时先刷新，避免传到一半失效。 */
+/** 分片会话距过期不足此时长时先刷新，避免传到一半失效。 */
 export const URL_EXPIRY_MARGIN_MS = 30_000;
 
 export type UploadPhase =
@@ -55,7 +56,7 @@ export interface UploadSource extends SliceableSource {
   readonly type: string;
 }
 
-/** 存储端 PUT 失败：status 为 HTTP 状态码，0 表示网络错误；etag 缺失视为不可读（CORS 未暴露）。 */
+/** 同源分片 PUT 失败：status 为 HTTP 状态码，0 表示网络错误；ETag 缺失视为上传失败。 */
 export class PartPutError extends Error {
   constructor(
     readonly status: number,
@@ -74,7 +75,7 @@ export interface UploaderDeps {
     body: UploadComplete,
     o: { idempotencyKey: string },
   ) => Promise<FileVersion>;
-  /** 把分片直传到预签名地址，返回 ETag（响应头）。 */
+  /** 把分片上传到同源接口，返回 ETag（响应头）。 */
   putPart: (
     url: string,
     body: { arrayBuffer(): Promise<ArrayBuffer> } | Blob,
@@ -99,7 +100,7 @@ const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
  *
  * - 分片失败：指数退避重试至 MAX_PART_ATTEMPTS；仍失败则整体进入 failed，已完成分片保留，
  *   调用 retry() 只补传未完成分片（同一会话内的断点续传）。
- * - 预签名地址过期（距过期不足余量，或存储端回 403）：调用 refreshUrls 取新地址再重试，
+ * - 分片会话即将过期（距过期不足余量，或存储端回 403）：调用 refreshUrls 取新地址再重试，
  *   刷新次数有上限，且并发的刷新请求合并为一次。
  * - complete 失败（含服务端复算校验不一致）：整体 failed，保留服务端 message 与请求编号。
  * - 幂等键：init、complete 各用一个键，retry 时复用，保证服务端同键同会话。
@@ -367,37 +368,28 @@ export class Uploader {
   }
 }
 
-/** 浏览器实现：fetch PUT 直传预签名地址并读取 ETag。必须不带 cookie/自定义头，避免预签名校验失败与多余的 CORS 预检。 */
+/** 同源分片上传：统一客户端携带会话与 CSRF，后端转传对象存储并返回 ETag。 */
 export async function fetchPutPart(
   url: string,
   body: Blob | { arrayBuffer(): Promise<ArrayBuffer> },
   signal: AbortSignal,
-  fetchImpl: typeof fetch = (...a) => globalThis.fetch(...a),
+  client: ApiClient = apiClient,
 ): Promise<string> {
+  if (!/^\/api\/v1\/uploads\/[A-Za-z0-9_-]+\/parts\/[1-9][0-9]*$/.test(url)) {
+    throw new PartPutError(0, '上传地址必须是本站分片接口');
+  }
   let res: Response;
   try {
-    res = await fetchImpl(url, {
-      method: 'PUT',
-      body: body as Blob,
-      signal,
-      credentials: 'omit',
-    });
+    const payload = body instanceof Blob ? body : new Blob([await body.arrayBuffer()]);
+    res = await client.putBytes(url.slice(API_PREFIX.length), payload, signal);
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e;
+    if (isApiError(e)) throw new PartPutError(e.status, e.message);
     throw new PartPutError(0, '网络中断，分片未传完');
-  }
-  if (!res.ok) {
-    throw new PartPutError(
-      res.status,
-      res.status === 403 ? '上传地址已失效' : `存储服务返回 HTTP ${String(res.status)}`,
-    );
   }
   const etag = res.headers.get('ETag');
   if (!etag) {
-    throw new PartPutError(
-      res.status,
-      '读不到存储服务返回的 ETag：存储桶跨域配置需要暴露 ETag 响应头，请联系管理员',
-    );
+    throw new PartPutError(res.status, '上传接口没有返回 ETag，请重试或联系管理员');
   }
   return etag;
 }

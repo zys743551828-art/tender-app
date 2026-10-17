@@ -516,6 +516,68 @@
         }
       }
     },
+    "/api/v1/uploads/{upload_id}/parts/{part_number}": {
+      "put": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Put Upload Part",
+        "operationId": "uploadPart",
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Upload Id"
+            }
+          },
+          {
+            "name": "part_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Part Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分片已保存",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/uploads/{upload_id}/complete": {
       "post": {
         "tags": [

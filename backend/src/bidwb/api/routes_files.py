@@ -1,4 +1,4 @@
-"""资料上传（预签名分片直传）、文件版本与原件读取。"""
+"""资料上传（同源分片转传）、文件版本与原件读取。"""
 
 from __future__ import annotations
 
@@ -6,9 +6,10 @@ from email.utils import formatdate
 from typing import Annotated
 from urllib.parse import quote
 
-from fastapi import APIRouter, Header, Response
+from fastapi import APIRouter, Header, Request, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Connection
+from starlette.concurrency import run_in_threadpool
 
 from bidwb import db
 from bidwb.api.deps import Body, Ctr, CurrentSession, IdemKey, Session, mutate
@@ -34,6 +35,35 @@ def init_upload(project_id: str, body: UploadRequest, session: CurrentSession, k
 def refresh_urls(upload_id: str, session: CurrentSession, _key: IdemKey, ctr: Ctr) -> UploadSession:
     with db.transaction(ctr.engine) as conn:
         return files.refresh_urls(conn, ctr.store, ctr.settings, session.actor, upload_id)
+
+
+@router.put(
+    "/uploads/{upload_id}/parts/{part_number}",
+    operation_id="uploadPart",
+    response_class=Response,
+    openapi_extra={
+        "requestBody": {"required": True, "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}
+    },
+    responses={200: {"description": "分片已保存", "headers": {"ETag": {"schema": {"type": "string"}}}}},
+)
+async def put_upload_part(upload_id: str, part_number: int, request: Request, session: CurrentSession, ctr: Ctr) -> Response:
+    def expected_size() -> int:
+        with ctr.engine.connect() as conn:
+            return files.upload_part_size(conn, session.actor, upload_id, part_number)
+
+    expected = await run_in_threadpool(expected_size)
+    data = bytearray()
+    async for chunk in request.stream():
+        if len(data) + len(chunk) > expected:
+            raise Unprocessable("part_size_mismatch", "分片大小超出声明范围", expected=expected)
+        data.extend(chunk)
+
+    def persist() -> str:
+        with db.transaction(ctr.engine) as conn:
+            return files.upload_part(conn, ctr.store, session.actor, upload_id, part_number, bytes(data))
+
+    etag = await run_in_threadpool(persist)
+    return Response(headers={"ETag": etag, "Cache-Control": "private, no-store"})
 
 
 @router.post("/uploads/{upload_id}/complete", response_model=UploadResult, operation_id="completeUpload")

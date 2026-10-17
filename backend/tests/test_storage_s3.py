@@ -53,12 +53,8 @@ def _exercise(store: ObjectStore, put_part) -> None:  # type: ignore[no-untyped-
 
 
 def test_s3_adapter(s3_store: S3ObjectStore) -> None:
-    client = s3_store._client
-
     def put_part(upload_id: str, number: int, data: bytes) -> str:
-        key = "staging/u1"
-        etag = client.upload_part(Bucket="bidwb", Key=key, UploadId=upload_id, PartNumber=number, Body=data)["ETag"]
-        return str(etag)
+        return s3_store.upload_part("staging/u1", upload_id, number, data)
 
     _exercise(s3_store, put_part)
     assert s3_store.presign_part("staging/u2", "uid", 1, 600).startswith("https://")
