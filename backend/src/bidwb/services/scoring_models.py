@@ -65,6 +65,11 @@ class Scope(_Contract):
     regions: list[str] = Field(default_factory=list)
 
 
+class AcceptanceEvaluation(BaseModel):
+    model_config = ConfigDict(extra="allow", allow_inf_nan=False)
+    status: Literal["passed", "not_passed", "not_evaluable"]
+
+
 class Evaluation(BaseModel):
     """研究侧的评估摘要。产品只用其中几项（样本数、误差、放行结论），其余原样保留。"""
 
@@ -75,6 +80,7 @@ class Evaluation(BaseModel):
     mae_pct: Annotated[float, Field(ge=0)]
     verdict: str
     mode: str | None = None
+    acceptance: AcceptanceEvaluation | None = None
 
 
 class ScoringModel(_Contract):
@@ -82,6 +88,7 @@ class ScoringModel(_Contract):
     model_id: _Sha
     target: Literal["technical_total"]
     feature_spec: str
+    input_method: str = "legacy-truncated"
     method: Annotated[str, Field(min_length=1)]
     features: Annotated[list[str], Field(min_length=1)]
     standardize: Standardize
@@ -253,7 +260,14 @@ def registration(bundle_bytes: bytes, report_bytes: bytes, environment: Environm
     model = parse_model(raw)
     if environment == "business" and model.evaluation.verdict != "passed":
         raise Unprocessable("business_gate_not_met", f"业务环境只接受评估结论为 passed 的模型（本模型为 {model.evaluation.verdict}）")
-    protocol = model.evaluation.model_extra.get("protocol_sha256") if model.evaluation.model_extra else None
+    extra = model.evaluation.model_extra or {}
+    if (
+        environment == "business"
+        and model.input_method == "complete-chapters-1"
+        and (model.evaluation.acceptance is None or model.evaluation.acceptance.status != "passed" or model.evaluation.mode != "holdout")
+    ):
+        raise Unprocessable("business_gate_not_met", "完整章节方法须在独立时间留出中通过全部融合验收门槛（含整轮复跑）")
+    protocol = extra.get("protocol_sha256")
     return Registration(
         target=TARGET_SCORING,
         schema=SCHEMA,

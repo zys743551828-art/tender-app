@@ -4,9 +4,8 @@
 再把章节全文交给模型。产品与比较锚点包（``tools/batch/build_anchor_pack.py``）用同一套切分，保证两边的“章节”是同一回事。
 
 做法：解析时块以标题行开头的，标题单独成第一行（``parsing.chunk_text``）。标题的写法（第X章、一、、（一）、1.、1.1……）
-按由外到内排成固定次序，文中实际出现的写法里最外层的定为 1 级、次一层 2 级、再往里都算 3 级；1、2 级标题开新章节，
-3 级并入所属章节。只出现一次的写法不参与定级（多半是误识别），按次序归到相邻的层级。目录页（带点线与页码的行）不算标题。
-章节过多（超过 ``MAX_SECTIONS``）时只按 1 级分；仍然过多或找不到两个以上的章节时，按约 ``SEGMENT_CHARS`` 字切成“片段”。
+按由外到内的实际样式分级，保留所有层级。父节点包含全部子节的证据，选择父章时不会漏读后续小节。
+目录页（带点线与页码的行）不算标题。没有标题时按约 ``SEGMENT_CHARS`` 字切成片段，章节数量不改变结构。
 """
 
 from __future__ import annotations
@@ -21,7 +20,6 @@ from bidwb.parsing import HEADING
 
 MAX_TITLE_CHARS = 40  # 标题行超过这个长度的视为以编号开头的正文段落
 SEGMENT_CHARS = 3000
-MAX_SECTIONS = 60
 LEAD_CHARS = 60
 PREAMBLE_TITLE = "（正文开头）"
 
@@ -47,12 +45,13 @@ _TOC_LINE = re.compile(r"(?:[.．…·•\-_]{3,}|\s{2,})\s*\d{1,4}\s*$")
 class Section:
     id: str  # S1、S2……按文档顺序
     title: str
-    level: int  # 1 或 2；按片段切分时为 1
-    parent: str | None  # 2 级章节所属 1 级章节的标题
+    level: int  # 实际标题层级；按片段切分时为 1
+    parent: str | None  # 祖先标题路径
     evidence_ids: tuple[str, ...]
     chars: int
     first_page: int
     lead: str  # 标题之后的开头文字，最多 LEAD_CHARS 字
+    parent_id: str | None = None
 
     @property
     def label(self) -> str:
@@ -70,6 +69,9 @@ def heading_of(text: str) -> _Heading | None:
     first = text.split("\n", 1)[0].strip()
     if not first or len(first) > MAX_TITLE_CHARS or _TOC_LINE.search(first) or not HEADING.match(first):
         return None
+    numeric = re.match(r"\d+(?:[.．]\d+)+(?=\s|$)", first)
+    if numeric:
+        return _Heading(f"numeric_{len(re.split(r'[.．]', numeric[0]))}", first)
     for name, _, pattern in _STYLES:
         if pattern.match(first):
             return _Heading(name, first)
@@ -77,9 +79,11 @@ def heading_of(text: str) -> _Heading | None:
 
 
 def _levels(counts: Counter[str]) -> dict[str, int]:
-    """写法 → 层级。出现两次以上的写法参与定级；只出现一次的按次序落在比它更外的已定级写法之下。"""
-    present = sorted({_RANK[s] for s, n in counts.items() if n >= 2} or {_RANK[s] for s in counts})
-    return {s: min(3, 1 + sum(1 for r in present if r < _RANK[s])) for s in counts}
+    def rank(style: str) -> int:
+        return 5 + int(style.split("_")[1]) - 1 if style.startswith("numeric_") else _RANK[style]
+
+    present = sorted({rank(style) for style in counts})
+    return {style: 1 + present.index(rank(style)) for style in counts}
 
 
 def _body_text(passage: Passage) -> str:
@@ -102,19 +106,25 @@ class _Draft:
     passages: list[Passage]
 
 
-def _group(passages: Sequence[Passage], heads: Sequence[_Heading | None], levels: dict[str, int], max_level: int) -> list[_Draft]:
+def _group(passages: Sequence[Passage], heads: Sequence[_Heading | None], levels: dict[str, int]) -> list[_Draft]:
     drafts: list[_Draft] = []
-    parent: str | None = None
+    ancestors: list[_Draft] = []
     for passage, head in zip(passages, heads, strict=True):
-        level = levels[head.style] if head is not None else None
-        if head is not None and level is not None and level <= max_level:
-            if level == 1:
-                parent = head.title
-            drafts.append(_Draft(head.title, level, parent if level == 2 else None, [passage]))
-        elif drafts:
-            drafts[-1].passages.append(passage)
+        if head is not None:
+            level = levels[head.style]
+            while ancestors and ancestors[-1].level >= level:
+                ancestors.pop()
+            parent = " › ".join(d.title for d in ancestors) or None
+            draft = _Draft(head.title, level, parent, [])
+            drafts.append(draft)
+            ancestors.append(draft)
+        elif not drafts:
+            drafts.append(_Draft(PREAMBLE_TITLE, 1, None, []))
+        if ancestors:
+            for ancestor in ancestors:
+                ancestor.passages.append(passage)
         else:
-            drafts.append(_Draft(PREAMBLE_TITLE, 1, None, [passage]))
+            drafts[-1].passages.append(passage)
     return drafts
 
 
@@ -136,13 +146,11 @@ def build_sections(passages: Sequence[Passage]) -> list[Section]:
         return []
     heads = [heading_of(p.text) for p in passages]
     levels = _levels(Counter(h.style for h in heads if h is not None))
-    drafts = _group(passages, heads, levels, 2)
-    if len(drafts) > MAX_SECTIONS:
-        drafts = _group(passages, heads, levels, 1)
-    if len([d for d in drafts if d.title != PREAMBLE_TITLE]) < 2 or len(drafts) > MAX_SECTIONS:
-        drafts = _segments(passages)
-    return [
-        Section(
+    drafts = _group(passages, heads, levels) if levels else _segments(passages)
+    parent_ids: dict[str, str] = {}
+    result: list[Section] = []
+    for n, d in enumerate(drafts, 1):
+        section = Section(
             id=f"S{n}",
             title=d.title,
             level=d.level,
@@ -151,6 +159,8 @@ def build_sections(passages: Sequence[Passage]) -> list[Section]:
             chars=sum(len(p.text) for p in d.passages),
             first_page=d.passages[0].page,
             lead=_lead(d.passages),
+            parent_id=parent_ids.get(d.parent or ""),
         )
-        for n, d in enumerate(drafts, 1)
-    ]
+        parent_ids[section.label] = section.id
+        result.append(section)
+    return result

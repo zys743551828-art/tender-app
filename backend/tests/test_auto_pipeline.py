@@ -84,6 +84,8 @@ def judgement_reply(user: str) -> dict[str, Any]:
             {"point": "关键线路说明", "status": "missing", "evidence_ids": []},
         ],
         "specificity": 0.6,
+        "effectiveness": {"status": "weak", "note": "缺少关键线路", "evidence_ids": [body[0]] if body else []},
+        "consistency": {"status": "unclear", "note": "未检查到双侧证据", "evidence_ids": []},
         "specificity_note": "写明了本工程的计划工期",
         "assessment": "进度计划给出了总工期但缺少关键线路说明",
         "limitations": "评分标准含主观判断",

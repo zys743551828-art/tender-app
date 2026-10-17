@@ -91,6 +91,16 @@ def _scoring_model(conn: Connection, bundle_id: str | None) -> ScoringModelRef |
     )
 
 
+def assessment_text(item: dict[str, Any]) -> str:
+    parts = [item["assessment"]]
+    labels = {"supported": "有依据", "weak": "不足", "contradicted": "存在矛盾", "unclear": "无法判断"}
+    for key, title in (("effectiveness", "具体性与有效性"), ("consistency", "前后一致性")):
+        dimension = item.get(key)
+        if dimension:
+            parts.append(f"{title}（{labels[dimension['status']]}）：{dimension['note']}")
+    return "；".join(parts)
+
+
 def _topics(conn: Connection, store: ObjectStore, row: db.Row) -> list[PredictionTopic]:
     if row["artifact_key"] is None:
         return []
@@ -103,7 +113,7 @@ def _topics(conn: Connection, store: ObjectStore, row: db.Row) -> list[Predictio
             PredictionTopic(
                 topic=topic_text(item),
                 points_lost=decimal_text(lost.quantize(_PLACES, ROUND_HALF_UP)) or "0",
-                assessment=item["assessment"],
+                assessment=assessment_text(item),
                 evidence=evidence.evidence_for_ids(conn, row["project_id"], item["evidence_ids"]),
                 limitations=item["limitations"] or ("依据未确认的评分条款" if item["rule_basis"] == "unconfirmed" else ""),
             )

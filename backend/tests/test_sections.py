@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from bidwb.ai.sections import PREAMBLE_TITLE, SEGMENT_CHARS, build_sections, heading_of
+from bidwb.ai.sections import SEGMENT_CHARS, build_sections, heading_of
 from bidwb.checks import Passage
 from bidwb.parsing import chunk_text, parse_pdf
 from tests.pdfs import make_pdf
@@ -23,35 +23,28 @@ def test_chapter_and_cn_numbering_are_levels_one_and_two_deeper_merge() -> None:
         _p(7, "一、关键线路\n路基—基层—面层。", page=3),
     ]
     sections = build_sections(passages)
-    assert [(s.title, s.level, s.parent) for s in sections] == [
-        (PREAMBLE_TITLE, 1, None),
-        ("第一章 施工部署", 1, None),
-        ("一、施工段划分", 2, "第一章 施工部署"),
-        ("二、施工顺序", 2, "第一章 施工部署"),
-        ("第二章 施工进度计划", 1, None),
-        ("一、关键线路", 2, "第二章 施工进度计划"),
-    ]
-    assert [s.id for s in sections] == ["S1", "S2", "S3", "S4", "S5", "S6"]
-    assert sections[2].evidence_ids == ("e3", "e4")  # （一）是更深一级，并入所属章节，章节跨页
-    assert sections[2].first_page == 1 and sections[3].first_page == 2
-    assert sections[2].label == "第一章 施工部署 › 一、施工段划分" and sections[2].lead.startswith("按桩号划分为三段")
-    assert sections[1].lead == "本工程分三个施工段。"
+    assert [s.level for s in sections] == [1, 1, 2, 3, 2, 1, 2]
+    assert sections[1].evidence_ids == ("e2", "e3", "e4", "e5")
+    assert sections[2].evidence_ids == ("e3", "e4")
+    assert sections[3].parent_id == sections[2].id
+    assert sections[3].label == "第一章 施工部署 › 一、施工段划分 › （一）第一施工段"
+    assert sections[3].first_page == 2
 
 
-def test_numeric_outline_levels_are_relative_to_what_the_document_uses() -> None:
+def test_numeric_outline_keeps_deep_nodes_and_single_chapter() -> None:
     passages = [
-        _p(1, "1 工程概况\n道路全长 2.4km。"),
-        _p(2, "1.1 工程范围\n含排水与照明。"),
-        _p(3, "1.1.1 排水\n雨污分流。"),
-        _p(4, "2 施工方案\n路基采用分层填筑。"),
-        _p(5, "2.1 路基\n分层压实。"),
+        _p(1, "1 工程概况\n概况"),
+        _p(2, "1.1 范围\n含排水"),
+        _p(3, "1.1.1 管网\n雨污分流"),
+        _p(4, "1.1.1.1 雨水\n开挖"),
+        _p(5, "1.1.1.1.1 支护\n钢板桩"),
     ]
-    assert [(s.title, s.level) for s in build_sections(passages)] == [
-        ("1 工程概况", 1),
-        ("1.1 工程范围", 2),
-        ("2 施工方案", 1),
-        ("2.1 路基", 2),
-    ]
+    sections = build_sections(passages)
+    assert [s.level for s in sections] == [1, 2, 3, 4, 5]
+    assert sections[0].evidence_ids == tuple(f"e{n}" for n in range(1, 6))
+    assert sections[-1].parent_id == sections[-2].id
+    many = build_sections([_p(i, f"第{i}章 施工方法\n内容") for i in range(1, 82)])
+    assert len(many) == 81 and many[-1].title.startswith("第81章")
 
 
 def test_toc_lines_and_long_numbered_paragraphs_are_not_headings() -> None:

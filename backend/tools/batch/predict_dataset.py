@@ -821,7 +821,7 @@ TEMPLATE_CHARS = 300
 OUT_RULES, OUT_DIAGNOSIS, OUT_MAPPING, OUT_JUDGEMENT, OUT_COMPARISON = 1200, 350, 400, 700, 120
 SECTION_LINE_CHARS, ITEM_LINE_CHARS = 110, 80
 RETRY_FACTOR = 1.1
-MAX_RULES, MAX_SCORING, BODY_TOP_K = 200, predict.MAX_ITEMS, 5
+MAX_RULES, MAX_SCORING, BODY_TOP_K = 200, 200, 5
 _REQUIREMENT = re.compile(r"必须|不得|应当|须|严禁|否决|废标|无效|不予|\d+(?:\.\d+)?\s*分")
 _POINTS = re.compile(r"\d+(?:\.\d+)?\s*分")
 _SCORING_WORDS = re.compile(r"评分|得分|分值|满分|扣|得")
@@ -883,12 +883,14 @@ def estimate(samples: list[Sample], opts: Options, skipped: set[str], pack: Anch
         tokens_out += rules * OUT_DIAGNOSIS
         if scoring:
             sections = max(1, len(build_sections([Passage(f"c{i}", 1, c) for i, c in enumerate(body.chunks)])))
-            item_body = min(predict.CONTEXT_CHARS, max(predict.FALLBACK_TOP_K * avg_body, body.chars / sections * 2))
+            item_body = body.chars  # 映射失败会读全文，按全文估算，避免低估费用
+            reading_calls = math.ceil(item_body / predict.PART_CHARS) if item_body > predict.PART_CHARS else 0
+            mapping_calls = math.ceil(sections / predict.MAPPING_BATCH) * math.ceil(scoring / predict.MAPPING_BATCH)
             mapping_in = len(prompts.MAPPING_SYSTEM) + TEMPLATE_CHARS + sections * SECTION_LINE_CHARS + scoring * ITEM_LINE_CHARS
             judge_in = len(prompts.JUDGEMENT_SYSTEM) + TEMPLATE_CHARS + avg_tender + item_body
-            calls["prediction"] += 1 + scoring * repeats
-            tokens_in += (mapping_in + scoring * repeats * judge_in) * TOKENS_PER_CHAR
-            tokens_out += OUT_MAPPING + scoring * repeats * OUT_JUDGEMENT
+            calls["prediction"] += mapping_calls + scoring * repeats * (1 + reading_calls)
+            tokens_in += (mapping_in + scoring * repeats * (judge_in + reading_calls * TEMPLATE_CHARS + (predict.SYNTHESIS_CHARS if reading_calls else 0))) * TOKENS_PER_CHAR
+            tokens_out += mapping_calls * OUT_MAPPING + scoring * repeats * (1 + reading_calls) * OUT_JUDGEMENT
             compared = min(scoring, anchors.MAX_ITEMS) * anchors_per_item
             calls["anchors"] += compared
             compare_in = len(prompts.COMPARISON_SYSTEM) + TEMPLATE_CHARS + avg_tender + 2 * anchors.EXCERPT_CHARS

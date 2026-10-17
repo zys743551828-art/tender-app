@@ -100,7 +100,7 @@ def test_scope_and_missing_features() -> None:
     assert "coverage_mean" in (scoring_models.out_of_scope_reason(no_impute, feats, engineering_type=None, region=None) or "")
     assert scoring_models.scope_text(no_impute) == "工程类型：不限；地区：不限"
     assert (
-        scoring_models.calibrated_reason(model) == "已用 280 组官方成绩校准（交叉验证平均绝对误差 3.2 分，满分百分制）；区间约 80% 把握。"
+        scoring_models.calibrated_reason(model) == "已用 280 组官方成绩校准（留出验证平均绝对误差 3.2 分，满分百分制）；区间约 80% 把握。"
     )
 
 
@@ -113,3 +113,14 @@ def test_registration_gate() -> None:
     assert shadow.target == "technical_total" and shadow.member_count == 50
     with pytest.raises(Unprocessable):
         scoring_models.registration(b"not json", b"{}", "shadow")
+
+
+@pytest.mark.parametrize(
+    ("mode", "acceptance"), [("cv", {"status": "passed"}), ("holdout", None), ("holdout", {"status": "not_evaluable"})]
+)
+def test_complete_chapter_business_model_requires_independent_acceptance(mode: str, acceptance: dict[str, str] | None) -> None:
+    evaluation = {**scoring_bundle()["evaluation"], "mode": mode, "acceptance": acceptance}
+    raw = scoring_bundle(evaluation=evaluation)
+    with pytest.raises(Unprocessable) as rejected:
+        scoring_models.registration(json.dumps(raw).encode(), b"{}", "business")
+    assert rejected.value.code == "business_gate_not_met"

@@ -28,19 +28,43 @@ def _section(sid: str, ids: list[str]) -> Section:
     return Section(sid, sid, 1, None, tuple(ids), 0, 1, "")
 
 
-def test_context_keeps_section_heads_then_fills_by_relevance_in_document_order() -> None:
-    body = [EvidenceText(f"e{i}", ("关键线路" if i in (7, 18) else "一般内容") + "。" * 998) for i in range(20)]
-    position = {b.evidence_id: i for i, b in enumerate(body)}
-    small, cut = predict.item_context("关键线路", [_section("S1", ["e0", "e1"])], body, position)
-    assert [b.evidence_id for b in small] == ["e0", "e1"] and not cut
-    sections = [_section("S1", [f"e{i}" for i in range(10)]), _section("S2", [f"e{i}" for i in range(10, 20)])]
-    picked, cut = predict.item_context("关键线路", sections, body, position)
-    ids = [b.evidence_id for b in picked]
-    # 开头配额 14000×40%÷2 = 2800 字：每节各取前 2 块；余下篇幅按相关度补，关键线路两块先入选；最后按文档顺序
-    assert cut and ids[:2] == ["e0", "e1"] and "e10" in ids and "e11" in ids and "e7" in ids and "e18" in ids
-    assert ids == sorted(ids, key=lambda e: position[e]) and sum(len(b.quote) for b in picked) <= predict.CONTEXT_CHARS
-    fallback, cut = predict.item_context("关键线路", [], body, position)
-    assert [b.evidence_id for b in fallback] == ["e7", "e18"] and not cut  # 没有对应章节：全文检索
+def test_context_keeps_all_related_text_and_fallback_reads_whole_document() -> None:
+    body = [EvidenceText(f"e{i}", ("关键线路" if i == 19 else "一般内容") + "。" * 1998) for i in range(20)]
+    position = {block.evidence_id: i for i, block in enumerate(body)}
+    selected, partitioned = predict.item_context("关键线路", [_section("S1", list(position))], body, position)
+    assert selected == body and partitioned
+    parts = predict.context_parts(selected)
+    assert [block for part in parts for block in part] == body
+    assert all(sum(len(b.quote) for b in part) <= predict.PART_CHARS for part in parts)
+    assert predict.item_context("关键线路", [], body, position) == (body, True)
+    oversized = EvidenceText("huge", "长" * (predict.PART_CHARS * 2 + 7))
+    split = predict.context_parts([oversized])
+    assert "".join(b.quote for part in split for b in part) == oversized.quote
+    assert all(b.evidence_id == "huge" for part in split for b in part)
+
+
+def test_section_reading_failure_and_invented_citations_prevent_synthesis() -> None:
+    from types import SimpleNamespace
+
+    context = [EvidenceText("e1", "正文事实及施工措施"), EvidenceText("e2", "另一位置工期240天")]
+    ctx = SimpleNamespace(checkpoint=lambda: None)
+    good = ScriptedLlm(
+        lambda _s, _u: {"observations": [{"note": "原文措施", "quote": "正文事实", "evidence_ids": ["e1"]}], "limitations": ""}
+    )
+    text, ledger = predict._read_context(good, context, "施工方案", predict.Usage(), ctx, 0.0)
+    assert text and ledger[0]["state"] == "read" and ledger[0]["evidence_ids"] == ["e1", "e2"]
+    bad = ScriptedLlm(
+        lambda _s, _u: {"observations": [{"note": "虚构", "quote": "并不存在的工期", "evidence_ids": ["e1"]}], "limitations": ""}
+    )
+    text, ledger = predict._read_context(bad, context, "施工方案", predict.Usage(), ctx, 0.0)
+    assert text is None and ledger[0]["state"] == "failed"
+
+
+def test_quality_dimensions_require_two_distinct_citations_for_conflict() -> None:
+    out = _judgement(consistency={"status": "contradicted", "note": "工期互相矛盾", "evidence_ids": ["b1", "b1", "invented"]})
+    assert predict.ground(out, {"b1"}, Decimal(8)).consistency["status"] == "unclear"
+    out = _judgement(consistency={"status": "contradicted", "note": "工期互相矛盾", "evidence_ids": ["b1", "b2"]})
+    assert predict.ground(out, {"b1", "b2"}, Decimal(8)).consistency["status"] == "contradicted"
 
 
 def _judgement(**overrides: Any) -> prompts.ItemJudgement:
@@ -117,7 +141,7 @@ def test_repeats_use_temperature_and_fallbacks(api_factory, make_member, store, 
     judge_temps = [t for (s, _), t in zip(llm.calls, llm.temperatures, strict=True) if "评标专家" in s]
     assert judge_temps == [0.0, 0.0, 0.0, 0.7, 0.7]  # 第 1 次（含重发）温度 0，其余升温
     judge_prompt = next(u for s, u in llm.calls if "评标专家" in s)
-    assert "按关键词检索" in judge_prompt and any("总工期" in t for _, t in docs(judge_prompt))
+    assert "整份正文" in judge_prompt and any("总工期" in t for _, t in docs(judge_prompt))
 
 
 @pytest.mark.integration
@@ -234,3 +258,73 @@ def test_routed_anchor_pack_feeds_anchor_features(api_factory, make_member, stor
         and detail["features"]["anchor_agree"] == 1
         and detail["features"]["anchor_n"] == 2
     )
+
+
+@pytest.mark.integration
+def test_legacy_calibration_is_not_applied_to_complete_chapter_method(api_factory, make_member, store, engine, worker_container) -> None:  # type: ignore[no-untyped-def]
+    env = _env(api_factory, make_member, store, engine, worker_container, ScriptedLlm(_respond))
+    bundle = _bundle_bytes(input_method="legacy-truncated")
+    _register(engine, store, scoring_models.registration(bundle, b"{}", "business"), "business")
+    _upload(env.api, store, env.pid, TENDER)
+    _upload(env.api, store, env.pid, BODY, name="施工组织设计.pdf", role="body", key="body-upload-0001")
+    env.drain()
+    prediction = env.get("/report")["prediction"]
+    assert prediction["validation_status"] == "out_of_scope"
+    assert "章节读取方法" in prediction["reason"]
+    assert _detail(env)["input_method"] == predict.PREDICTION_METHOD
+
+
+def test_long_item_reads_tail_each_repeat_and_never_synthesizes_failed_parts(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(predict, "PART_CHARS", 100)
+    body = [EvidenceText("b1", "本工程总工期180天" + "甲" * 80), EvidenceText("b2", "末节工期240天" + "乙" * 80)]
+    position = {b.evidence_id: n for n, b in enumerate(body)}
+    calls = {"read": 0, "judge": 0}
+
+    def respond(system: str, user: str) -> Any:
+        if "分节阅读员" in system:
+            calls["read"] += 1
+            sid = "b2" if 'id="b2"' in user else "b1"
+            return {
+                "observations": [
+                    {"note": "工期数字", "quote": "末节工期240天" if sid == "b2" else "本工程总工期180天", "evidence_ids": [sid]}
+                ],
+                "limitations": "",
+            }
+        calls["judge"] += 1
+        assert "180天" in user and "240天" in user
+        return _judgement(consistency={"status": "contradicted", "note": "不同位置工期冲突", "evidence_ids": ["b1", "b2"]}).model_dump()
+
+    rule = {"id": "r1", "statement": "工期安排", "max_points": "8", "basis": "unconfirmed", "evidence_ids_json": []}
+    item, context, invalid = predict._judge_item(
+        ScriptedLlm(respond),
+        rule,
+        [_section("S1", ["b1", "b2"])],
+        body,
+        position,
+        SimpleNamespace(rule_evidence={}),
+        3,
+        predict.Usage(),
+        SimpleNamespace(checkpoint=lambda: None),
+    )
+    assert not item["failed"] and context == body and invalid == 0
+    assert calls == {"read": 6, "judge": 3}
+    assert all(len(run["parts"]) == 2 for run in item["context_coverage"]["readings"])
+    assert item["consistency"]["status"] == "contradicted"
+
+    def fail_read(_system: str, _user: str) -> Any:
+        return {"wrong": "output"}
+
+    failed, _, invalid = predict._judge_item(
+        ScriptedLlm(fail_read),
+        rule,
+        [],
+        body,
+        position,
+        SimpleNamespace(rule_evidence={}),
+        1,
+        predict.Usage(),
+        SimpleNamespace(checkpoint=lambda: None),
+    )
+    assert failed["failed"] and invalid == 1 and failed["context_coverage"]["readings"][0]["state"] == "failed"

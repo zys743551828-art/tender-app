@@ -2,11 +2,9 @@
 
 一次预测的步骤：
 
-1. **条款对应章节**（一次调用）：把正文目录（``ai.sections``）与全部评分条款交给模型，每条对应 0～4 节；
-   输出不合格时整体改用关键词检索。
-2. **组织上下文**：每条款取对应章节的全部内容，总长不超过 ``CONTEXT_CHARS``；超长时每节先保留开头（合计 40% 的篇幅，
-   各节均分），余下篇幅按条文检索（BM25）从这些章节里补段落，最后按文档顺序排列。没有对应章节的条款在全文检索前
-   ``FALLBACK_TOP_K`` 段。
+1. **条款对应章节**：目录分批映射，父章包含全部子节；无法映射时使用整份已解析正文。
+2. **组织上下文**：完整保留相关章节；超长按证据顺序分节读取并保留逐块清单，再综合原文引用做逐项判断。
+   读取失败或综合输入超限时该次判断失败，不静默截断。文字以外的表格结构、图页仍属于解析缺口。
 3. **逐项判断**：每条款独立判断 ``prediction_repeats`` 次（第 1 次温度 0，其余 ``REPEAT_TEMPERATURE``）：先定档、再档内给分，
    逐条判断得分要点，评估正文针对性。要点判为写到（covered／partial）却没有引用所给正文的，落地校验时降为没写（missing）。
    全部判断都不可用的条款按失败处理：估计取满分一半，区间 0 到满分。
@@ -27,10 +25,10 @@ from typing import Any
 
 from sqlalchemy import Connection
 
-from bidwb import checks, db, retrieval
+from bidwb import checks, db
 from bidwb.ai import anchors, features, prompts
 from bidwb.ai.anchors import AnchorSource
-from bidwb.ai.grounding import EvidenceText
+from bidwb.ai.grounding import EvidenceText, quote_supported
 from bidwb.ai.handlers import _evidence_rows, _load_evidence_by_ids, diagnosis_coverage
 from bidwb.ai.llm import IncompleteGeneration, LlmClient, Usage, call_validated
 from bidwb.ai.sections import Section, build_sections
@@ -42,10 +40,11 @@ from bidwb.services.rules import QUALIFICATION_KINDS
 from bidwb.util import decimal_text, new_id, utcnow
 from bidwb.workers.handlers import Handler, HandlerFailure, HandlerOutput, JobContext
 
-MAX_ITEMS = 40
-CONTEXT_CHARS = 14000
-HEAD_SHARE = Decimal("0.4")
-FALLBACK_TOP_K = 12
+PART_CHARS = 24000
+MAX_READING_PARTS = 128
+SYNTHESIS_CHARS = 60000
+MAPPING_BATCH = 60
+PREDICTION_METHOD = "complete-chapters-1"
 REPEAT_TEMPERATURE = 0.7
 MAX_ITEM_EVIDENCE = 5
 _PLACES = Decimal("0.01")
@@ -62,41 +61,78 @@ def _q(value: Decimal) -> Decimal:
 def item_context(
     statement: str, sections: Sequence[Section], body: Sequence[EvidenceText], position: dict[str, int]
 ) -> tuple[list[EvidenceText], bool]:
-    """一条评分条款交给模型的正文段落（按文档顺序）与是否截短。``position``：证据 ID → 在 ``body`` 中的下标。"""
-    if not sections:
-        ranked = retrieval.rank(statement, [b.quote for b in body], FALLBACK_TOP_K)
-        picked, used = [], 0
-        for scored in ranked:
-            block = body[scored.index]
-            if used + len(block.quote) <= CONTEXT_CHARS:
-                picked.append(scored.index)
-                used += len(block.quote)
-        return [body[i] for i in sorted(picked)], False
-    indices = sorted({position[e] for s in sections for e in s.evidence_ids if e in position})
-    if sum(len(body[i].quote) for i in indices) <= CONTEXT_CHARS:
-        return [body[i] for i in indices], False
-    head_quota = int(CONTEXT_CHARS * HEAD_SHARE) // len(sections)
-    chosen: set[int] = set()
-    used = 0
-    for section in sections:
-        taken = 0
-        for evidence_id in section.evidence_ids:
-            i = position.get(evidence_id)
-            if i is None or i in chosen:
-                continue
-            size = len(body[i].quote)
-            if (taken and taken + size > head_quota) or used + size > CONTEXT_CHARS:
-                break
-            chosen.add(i)
-            taken += size
-            used += size
-    rest = [i for i in indices if i not in chosen]
-    for scored in retrieval.rank(statement, [body[i].quote for i in rest], len(rest)):
-        i = rest[scored.index]
-        if used + len(body[i].quote) <= CONTEXT_CHARS:
-            chosen.add(i)
-            used += len(body[i].quote)
-    return [body[i] for i in sorted(chosen)], True
+    """完整相关章节，映射缺失时提供整份正文；返回值第二项表示是否需要分节读取。"""
+    indices = (
+        sorted({position[e] for section in sections for e in section.evidence_ids if e in position}) if sections else list(range(len(body)))
+    )
+    context = [body[i] for i in indices]
+    return context, sum(len(b.quote) for b in context) > PART_CHARS
+
+
+def context_parts(context: Sequence[EvidenceText]) -> list[list[EvidenceText]]:
+    """按原顺序分批，不丢字符；超长证据块保留原证据身份并分段读取。"""
+    parts: list[list[EvidenceText]] = []
+    used = PART_CHARS
+    for block in context:
+        for start in range(0, len(block.quote), PART_CHARS):
+            piece = EvidenceText(block.evidence_id, block.quote[start : start + PART_CHARS])
+            if used + len(piece.quote) > PART_CHARS:
+                parts.append([])
+                used = 0
+            parts[-1].append(piece)
+            used += len(piece.quote)
+    return parts
+
+
+def _read_context(
+    llm: LlmClient,
+    context: list[EvidenceText],
+    rule: str,
+    usage: Usage,
+    ctx: JobContext,
+    temperature: float,
+) -> tuple[str | None, list[dict[str, Any]]]:
+    parts = context_parts(context)
+    ledger: list[dict[str, Any]] = []
+    readings: list[dict[str, Any]] = []
+    for n, part in enumerate(parts, 1):
+        ctx.checkpoint()
+        entry: dict[str, Any] = {
+            "part": n,
+            "evidence_ids": [b.evidence_id for b in part],
+            "chars": sum(len(b.quote) for b in part),
+            "state": "unread",
+        }
+        ledger.append(entry)
+        if len(parts) > MAX_READING_PARTS:
+            entry["reason"] = "reading_parts_limit"
+            continue
+        try:
+            out = call_validated(
+                llm,
+                prompts.SectionReading,
+                system=prompts.SECTION_READING_SYSTEM,
+                user=f"评分条款：{rule}\n正文第 {n}/{len(parts)} 部分：\n{prompts.render_evidence(part)}",
+                usage=usage,
+                temperature=temperature,
+            )
+            offered = {b.evidence_id: b for b in part}
+            if any(
+                any(e not in offered for e in o.evidence_ids) or not quote_supported(o.quote, offered, o.evidence_ids)
+                for o in out.observations
+            ):
+                raise IncompleteGeneration("分节引用无法落地")
+        except IncompleteGeneration:
+            entry.update(state="failed", reason="invalid_reading")
+            continue
+        entry["state"] = "read"
+        readings.append({"part": n, **out.model_dump()})
+    if any(e["state"] != "read" for e in ledger):
+        return None, ledger
+    summary = json.dumps(readings, ensure_ascii=False)
+    if len(summary) > SYNTHESIS_CHARS:
+        return None, [*ledger, {"state": "failed", "reason": "synthesis_context_limit"}]
+    return summary, ledger
 
 
 # ------------------------------------------------------------------ 逐项判断
@@ -114,6 +150,8 @@ class Judged:
     downgraded: int
     specificity: float
     specificity_note: str
+    effectiveness: dict[str, Any]
+    consistency: dict[str, Any]
     assessment: str
     limitations: str
 
@@ -128,6 +166,14 @@ def ground(out: prompts.ItemJudgement, offered: set[str], points: Decimal) -> Ju
         if status != "missing" and not evidence:
             status, downgraded = "missing", downgraded + 1
         key_points.append({"point": kp.point, "status": status, "evidence_ids": evidence if status != "missing" else []})
+
+    def dimension(value: prompts.QualityDimension) -> dict[str, Any]:
+        ids = list(dict.fromkeys(e for e in value.evidence_ids if e in offered))
+        required = 2 if value.status == "contradicted" else 1
+        if value.status != "unclear" and len(ids) < required:
+            return {"status": "unclear", "note": "判断缺少可核对的正文引用", "evidence_ids": []}
+        return {**value.model_dump(), "evidence_ids": ids}
+
     interval = position = None
     if out.grade is not None:
         chosen = out.grades[out.grade]
@@ -144,6 +190,8 @@ def ground(out: prompts.ItemJudgement, offered: set[str], points: Decimal) -> Ju
         downgraded=downgraded,
         specificity=out.specificity,
         specificity_note=out.specificity_note,
+        effectiveness=dimension(out.effectiveness),
+        consistency=dimension(out.consistency),
         assessment=out.assessment,
         limitations=out.limitations,
     )
@@ -183,6 +231,8 @@ def aggregate(rule: db.Row, points: Decimal, judged: Sequence[Judged], *, mapped
             "coverage": None,
             "specificity": None,
             "specificity_note": "",
+            "effectiveness": {"status": "unclear", "note": "评估失败", "evidence_ids": []},
+            "consistency": {"status": "unclear", "note": "评估失败", "evidence_ids": []},
             "repeat_spread": None,
             "key_points": [],
             "missing_points": [],
@@ -192,7 +242,15 @@ def aggregate(rule: db.Row, points: Decimal, judged: Sequence[Judged], *, mapped
     bounds = [*scores, *(b for j in judged if j.interval for b in j.interval)]
     positions = [j.grade_position for j in judged if j.grade_position is not None]
     first = judged[0]
-    evidence = list(dict.fromkeys(e for k in first.key_points for e in k["evidence_ids"]))[:MAX_ITEM_EVIDENCE]
+    evidence = list(
+        dict.fromkeys(
+            [
+                *first.consistency["evidence_ids"],
+                *first.effectiveness["evidence_ids"],
+                *(e for k in first.key_points for e in k["evidence_ids"]),
+            ]
+        )
+    )[:MAX_ITEM_EVIDENCE]
     return {
         **base,
         "failed": False,
@@ -210,6 +268,8 @@ def aggregate(rule: db.Row, points: Decimal, judged: Sequence[Judged], *, mapped
         "coverage": round(statistics.fmean(j.coverage for j in judged), 4),
         "specificity": round(statistics.fmean(j.specificity for j in judged), 4),
         "specificity_note": first.specificity_note,
+        "effectiveness": first.effectiveness,
+        "consistency": first.consistency,
         "repeat_spread": round(float((max(scores) - min(scores)) / points), 4),
         "key_points": first.key_points,
         "missing_points": [k["point"] for k in first.key_points if k["status"] == "missing"],
@@ -258,7 +318,7 @@ def _load(conn: Connection, project_id: str, snapshot_id: str) -> Inputs | None:
         r
         for r in rules_service.effective_rules(conn, project_id, snap["rule_set_id"])
         if r["kind"] == "scoring" and r["max_points"] is not None
-    ][:MAX_ITEMS]
+    ]
     rule_evidence = {
         e.evidence_id: e for e in _load_evidence_by_ids(conn, project_id, sorted({e for r in scoring for e in r["evidence_ids_json"]}))
     }
@@ -315,6 +375,13 @@ def _apply_model(row: db.Row, feats: features.Features, inputs: Inputs, maximum:
     except Unprocessable as exc:
         return {**base, "model_id": row["components_json"].get("model_id"), "state": "out_of_scope", "reason": exc.message}
     base["model_id"] = model.model_id
+    if (
+        model.input_method != PREDICTION_METHOD
+        or model.evaluation.acceptance is None
+        or model.evaluation.acceptance.status != "passed"
+        or model.evaluation.mode != "holdout"
+    ):
+        return {**base, "state": "out_of_scope", "reason": "校准模型的章节读取方法或独立验收条件不适用于本轮，需要重新评测"}
     reason = scoring_models.out_of_scope_reason(model, feats, engineering_type=inputs.engineering_type, region=inputs.region)
     if reason is not None:
         return {**base, "state": "out_of_scope", "reason": reason, "scope": scoring_models.scope_text(model)}
@@ -357,20 +424,28 @@ def _text(value: Any) -> Any:
 
 # ------------------------------------------------------------------ 处理器
 def _map_sections(llm: LlmClient, scoring: Sequence[db.Row], sections: Sequence[Section], usage: Usage) -> dict[str, list[Section]] | None:
-    """规则 ID → 对应章节（按模型给出的相关程度）；输出不合格时为 ``None``（整体改用检索）。"""
-    refs = {f"R{n}": rule for n, rule in enumerate(scoring, 1)}
-    by_id = {s.id: s for s in sections}
-    try:
-        out = call_validated(
-            llm,
-            prompts.mapping_output(list(refs), list(by_id)),
-            system=prompts.MAPPING_SYSTEM,
-            user=prompts.mapping_user(sections, [(ref, decimal_text(r["max_points"]) or "0", r["statement"]) for ref, r in refs.items()]),
-            usage=usage,
-        )
-    except IncompleteGeneration:
-        return None
-    return {refs[m.item]["id"]: [by_id[s] for s in dict.fromkeys(m.sections)] for m in out.mapping}
+    """规则 ID → 对应章节（按模型给出的相关程度）；输出不合格时为 ``None``（整份正文回退）。"""
+    by_id = {section.id: section for section in sections}
+    selected: dict[str, list[Section]] = {rule["id"]: [] for rule in scoring}
+    for item_start in range(0, len(scoring), MAPPING_BATCH):
+        refs = {f"R{n}": rule for n, rule in enumerate(scoring[item_start : item_start + MAPPING_BATCH], 1)}
+        for start in range(0, len(sections), MAPPING_BATCH):
+            batch = list(sections[start : start + MAPPING_BATCH])
+            try:
+                out = call_validated(
+                    llm,
+                    prompts.mapping_output(list(refs), [section.id for section in batch]),
+                    system=prompts.MAPPING_SYSTEM,
+                    user=prompts.mapping_user(
+                        batch, [(ref, decimal_text(r["max_points"]) or "0", r["statement"]) for ref, r in refs.items()]
+                    ),
+                    usage=usage,
+                )
+            except IncompleteGeneration:
+                return None
+            for item in out.mapping:
+                selected[refs[item.item]["id"]].extend(by_id[sid] for sid in dict.fromkeys(item.sections))
+    return selected
 
 
 def _judge_item(
@@ -386,32 +461,67 @@ def _judge_item(
 ) -> tuple[dict[str, Any], list[EvidenceText], int]:
     """一条评分条款：组织上下文、重复判断、汇总。返回（汇总, 上下文, 不可用的判断次数）。"""
     points = Decimal(str(rule["max_points"]))
-    context, truncated = item_context(rule["statement"], mapped, body, position)
+    context, partitioned = item_context(rule["statement"], mapped, body, position)
     labels = [s.label for s in mapped]
     rule_evidence = _rule_evidence(rule, inputs)
     user = prompts.judgement_user(
-        rule["statement"], rule_evidence, decimal_text(points) or "0", context, sections=labels, truncated=truncated
+        rule["statement"], rule_evidence, decimal_text(points) or "0", context if not partitioned else [], sections=labels, truncated=False
     )
     offered = {b.evidence_id for b in context}
     judged: list[Judged] = []
     invalid = 0
+    readings: list[dict[str, Any]] = []
     for repeat in range(repeats):
         ctx.checkpoint()
+        temperature = 0.0 if repeat == 0 else REPEAT_TEMPERATURE
+        prompt = user
+        repeat_offered = offered
+        if partitioned:
+            notes, ledger = _read_context(llm, context, rule["statement"], usage, ctx, temperature)
+            readings.append({"repeat": repeat + 1, "parts": ledger, "state": "read" if notes is not None else "failed"})
+            if notes is None:
+                invalid += 1
+                continue
+            repeat_offered = {
+                eid for part in json.loads(notes) for observation in part["observations"] for eid in observation["evidence_ids"]
+            }
+            prompt = prompt.replace("（没有找到相关正文）", "（原文已分节读取，见以下记录）")
+            prompt += (
+                "\n以下是完整相关正文分节读取所得的带原页引用记录（不是整章原文）：\n"
+                + notes
+                + "\n请跨节综合判断并检查相互矛盾的数字、条件和措施；只引用记录提供的原证据 ID。"
+                "单节未发现不等于整章未响应。不要平均各节分数，也不要把摘要视为无损全文。"
+            )
         try:
             out = call_validated(
                 llm,
                 prompts.item_judgement(points),
                 system=prompts.JUDGEMENT_SYSTEM,
-                user=user,
+                user=prompt,
                 usage=usage,
-                temperature=0.0 if repeat == 0 else REPEAT_TEMPERATURE,
+                temperature=temperature,
             )
         except IncompleteGeneration:
             invalid += 1
             continue
-        judged.append(ground(out, offered, points))
+        judged.append(ground(out, repeat_offered, points))
     rubric = "\n".join(e.quote for e in rule_evidence)
-    return aggregate(rule, points, judged, mapped=bool(mapped), sections=labels, rubric=rubric), context, invalid
+    item = aggregate(rule, points, judged, mapped=bool(mapped), sections=labels, rubric=rubric)
+    item["context_coverage"] = {
+        "mode": "section_readings" if partitioned else "full_text",
+        "source": "mapped_sections" if mapped else "whole_document_fallback",
+        "evidence_ids": list(dict.fromkeys(b.evidence_id for b in context)),
+        "chars": sum(len(b.quote) for b in context),
+        "readings": readings,
+        "valid_judgements": len(judged),
+    }
+    item["limitations"] = "；".join(
+        filter(
+            None,
+            [item["limitations"], "仅含已解析文字，表格结构与图页未读取", "分节记录综合存在信息损失，质量未验证" if partitioned else ""],
+        )
+    )
+    return item, context, invalid
 
 
 def _rule_evidence(rule: db.Row, inputs: Inputs) -> list[EvidenceText]:
@@ -501,6 +611,7 @@ def make_prediction_handler(llm: LlmClient | None, anchor_source: AnchorSource |
             _text(
                 {
                     "prompt_version": prompts.PROMPT_VERSION,
+                    "input_method": PREDICTION_METHOD,
                     "model": llm.model,
                     "repeats": settings.prediction_repeats,
                     "usage": usage.__dict__,
@@ -508,7 +619,15 @@ def make_prediction_handler(llm: LlmClient | None, anchor_source: AnchorSource |
                     "mapping": {
                         "status": "none" if not loaded.scoring else "model" if mapping is not None else "fallback",
                         "sections": [
-                            {"id": s.id, "title": s.label, "level": s.level, "chars": s.chars, "first_page": s.first_page} for s in sections
+                            {
+                                "id": s.id,
+                                "title": s.label,
+                                "level": s.level,
+                                "parent_id": s.parent_id,
+                                "chars": s.chars,
+                                "first_page": s.first_page,
+                            }
+                            for s in sections
                         ],
                         "items": {i["rule_id"]: i["sections"] for i in items},
                     },
