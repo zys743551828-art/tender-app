@@ -75,10 +75,9 @@ describe('提交与结果页：登记前的检查', () => {
     backend([], { report: report({ categories: cats({ disqualification: 1, response: 1 }) }) });
     renderApp('/projects/prj-1/submit');
     expect(await screen.findByText('还有 2 个没有处理。')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '处理问题' })).toHaveAttribute(
-      'href',
-      '/projects/prj-1/findings?category=disqualification',
-    );
+    expect(
+      within(screen.getByRole('main')).getByRole('link', { name: '处理问题' }),
+    ).toHaveAttribute('href', '/projects/prj-1/findings?category=disqualification');
     expect(screen.getByText('上面 1 项处理好后，就可以在这里登记。')).toBeInTheDocument();
     expect(screen.queryByLabelText('实际提交时间')).not.toBeInTheDocument();
   });

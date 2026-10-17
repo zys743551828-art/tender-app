@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-17T03:36:49.761799+00:00",
+  "scope": "Frozen frontend10 exact215 compiled assets, nativeOrigin5184/proxy8816 independent task05 API, no overlay/no HMR, readonly existing synthetic task+Mock receipts",
+  "candidate_sha256": "d1be8aa67adfa75adaf7f904efcc626b720e5931b694adec8fca115126af3aee",
+  "source_files_verified_before_and_after": 128,
+  "assets_verified_before_and_after": 215,
+  "loaded_assets": {
+    "/assets/index-jD9WPLOk.css": "2fc5a96edefe7b63d7f833076bf6737e00c7299100e86f9c68216481b84ebcae",
+    "/assets/index-C9mWuFz1.js": "6214d928299b16cc0df82dc023a2980b984ad7f4f76201c63241166af16652b6",
+    "/assets/TaskPanel-Col0Xejm.js": "015c8c87ef376f7aebf93f5f6330b5385a75e8765e157cf013e431377b424124"
+  },
+  "runtime": {
+    "pid": 2979532,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/frozen-inputs/node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5184 --strictPort"
+  },
+  "runtime_session": 25465,
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "proxy_target": "http://127.0.0.1:8816",
+  "api_actual_objects_equal_fixed_task05": true,
+  "api_actual_frozen_sha256": "4af4b5d611539485be74aeed8b98f07d95fb4bc4e9c16572a781f219e5877ae2",
+  "backend_task05_candidate_sha256": "4f91d6aafcc397e89c19acbf626631853663a5c53e8ed95db300bc802856d650",
+  "backend_facility_binding": {
+    "path": "/workspace/tender-docs/04-验证与测试/assistant-browser-environment01/fixture05/final-result.json",
+    "sha256": "e670ca06308715dece1eaaec2254ff3cd2ccb927367e157bdd8ec4abf8fa8261"
+  },
+  "tasks_fixed_draft_and_run_refreshed": true,
+  "executed_action_receipt_no_second_button": true,
+  "unknown_billing_disables_new_attempt": true,
+  "mobile_no_overflow": true,
+  "drawer_escape_returns_focus": true,
+  "business_writes": [],
+  "page_errors": [],
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "shared_old_runtimes_unchanged": true
+}

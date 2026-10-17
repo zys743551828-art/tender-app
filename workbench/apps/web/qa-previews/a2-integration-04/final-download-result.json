@@ -1,0 +1,17 @@
+{
+  "scope": "final developer delta, original frozen build bytes with project/snapshot output filenames; no model/build request",
+  "downloads": [
+    {
+      "format": "Word",
+      "suggested_filename": "前端A2合成自查 1792173651663280145_投标正文_快照9fe74786-798.docx",
+      "unchanged_frozen_sha256": "f816a5636cab633a702ea383469bc0dfc6a3f147104ae5f6016c9b8a4a37a080"
+    },
+    {
+      "format": "PDF",
+      "suggested_filename": "前端A2合成自查 1792173651663280145_投标正文_快照9fe74786-798.pdf",
+      "unchanged_frozen_sha256": "f93a291a6f421af358c5c4e6b6f02bdf58fd864d7496365c2e82fa2a5da654e8"
+    }
+  ],
+  "mobile_navigation_hint_visible": true,
+  "mobile_no_overflow": true
+}

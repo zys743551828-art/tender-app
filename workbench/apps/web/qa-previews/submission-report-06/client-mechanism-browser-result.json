@@ -1,0 +1,96 @@
+{
+  "scope": "Chromium client-only explicit synthetic response mechanism; all business API routes intercepted, production capability module extended only inside this browser, no live business acceptance",
+  "checked_at": "2026-10-17T01:29:06.654453+00:00",
+  "mobile_width": 390,
+  "no_horizontal_overflow": true,
+  "submission_once_and_platform_unverified_notice": true,
+  "report_historical_body_and_pdf_annotations_only": true,
+  "pricing_unknown_not_zero_and_unknown_curve_gaps": true,
+  "real_business_requests": 0,
+  "paid_calls": 0,
+  "page_errors": [],
+  "unhandled_routes": [],
+  "test_only_requests": [
+    {
+      "method": "GET",
+      "path": "bids/bid/submission-gate"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submissions"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submission-gate"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submission-documents"
+    },
+    {
+      "method": "POST",
+      "path": "bids/bid/submission-facts"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submission-gate"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submissions"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/submission-documents"
+    },
+    {
+      "method": "GET",
+      "path": "reviews/review"
+    },
+    {
+      "method": "GET",
+      "path": "reviews/review/report-context"
+    },
+    {
+      "method": "GET",
+      "path": "reviews/review/report-exports"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/settings"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/pricing-formulas"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/pricing-plans"
+    },
+    {
+      "method": "GET",
+      "path": "bids/bid/pricing-formulas/formula"
+    },
+    {
+      "method": "POST",
+      "path": "bids/bid/pricing-simulations"
+    }
+  ],
+  "source_sha256": {
+    "SubmissionPanel.tsx": "393d514702ac78f6ca6252bf3b36728a34152426a92a6c060f95f9fc53155ee9",
+    "SubmissionDocuments.tsx": "5ba1f5f62b4813045152ae7817f538f483c594e2b8db2605c8da202120ff4597",
+    "useSubmissionDocuments.ts": "0fe0a5ebbdcbd874a496f374e01a87192cd2e1126c93c98c8629cd0026f258c9",
+    "ReportPanel.tsx": "b2879e4a146474a7b356d91e937bca55b7c806c6eb74982b3d967cb75930bfff",
+    "PricingPanel.tsx": "0fa53bb607dc7d1d4e25d5fdd459b5a6211658b255a07189650c47fc5625f1cf",
+    "PricingFormulaEditor.tsx": "1a9c9f6f705225ae8a9c782f8588529b012bdba4fc694889a13bc5d2e388b9bf",
+    "PricingResults.tsx": "669fb1025865605a1f8ba20a86959de4676f8facb0b195b113b10f3797adca60",
+    "pricingInput.ts": "7d849c2586c0252404e9958ab9dc31221a1735e2145603e1174bcef24fe2f2f7",
+    "useRecordedCommand.ts": "9f2066aef4b9881d41c1de4b7a9198a6484ba0c19a19465b9102fcead8f30981",
+    "useCursorList.ts": "ffaa8e6b8bdebf61bb28f1e34c5607655165cdfc442b802fc51a5830808b7a42",
+    "styles.css": "fd00c3389e66ef95e5d4feb3e72a365dbc6373fbc1bbcf51abfd7197d1092caf"
+  },
+  "fixture_sha256": {
+    "mechanism.html": "7df2200f0286f490a80c84ba9e5dc861d141dee1832fd18a6c1d6c69392f88d3",
+    "mechanism.tsx": "0c258146ef89bbf3997a74590d0755272aaa3be03525cb1a12168c0925da436b"
+  }
+}

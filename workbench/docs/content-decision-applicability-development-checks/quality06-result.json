@@ -1,0 +1,9 @@
+{
+  "ruff": "passed: 10 delta Python files",
+  "format": "passed: 10 delta Python files",
+  "mypy": "passed: 6 production files",
+  "bandit": "passed: 6 production files",
+  "paid_calls": 0,
+  "consumers_started": 0,
+  "new_sql_or_grants": 0
+}

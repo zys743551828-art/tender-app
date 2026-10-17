@@ -14,23 +14,43 @@ function backend() {
 }
 
 describe('导航与路由', () => {
-  it('项目内导航：报告、问题、依据、报价、提交与结果、资料；工具：检索、设置', async () => {
+  it('常用导航只显示报告、上传和处理问题；其余功能可以展开，当前页面有高亮', async () => {
     backend();
     renderApp('/projects/prj-1');
     const nav = within(await screen.findByRole('navigation', { name: '项目导航' }));
     expect(nav.getAllByRole('link').map((a) => a.textContent)).toEqual([
-      '报告',
-      '问题',
+      '评审报告',
+      '上传资料',
+      '处理问题',
+    ]);
+    const more = screen.getByText('更多功能').closest('details')!;
+    expect(more).not.toHaveAttribute('open');
+    expect(screen.getByRole('navigation', { name: '项目工具' })).not.toBeVisible();
+    await userEvent.click(screen.getByText('更多功能'));
+    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
+    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual([
       '依据',
       '报价',
       '提交与结果',
-      '资料',
+      '检索',
+      '设置',
     ]);
-    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
-    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual(['检索', '设置']);
     // 报告是落地页：只有它高亮
-    expect(nav.getByRole('link', { name: '报告' })).toHaveAttribute('aria-current', 'page');
-    expect(nav.getByRole('link', { name: '问题' })).not.toHaveAttribute('aria-current');
+    expect(nav.getByRole('link', { name: '评审报告' })).toHaveAttribute('aria-current', 'page');
+    expect(nav.getByRole('link', { name: '处理问题' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('直接打开更多功能里的页面时自动展开；回到常用页面后收起', async () => {
+    backend();
+    renderApp('/projects/prj-1/basis');
+    const tools = within(await screen.findByRole('navigation', { name: '项目工具' }));
+    expect(tools.getByRole('link', { name: '依据' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('更多功能').closest('details')).toHaveAttribute('open');
+    const nav = within(screen.getByRole('navigation', { name: '项目导航' }));
+    await userEvent.click(nav.getByRole('link', { name: '上传资料' }));
+    expect(await screen.findByRole('heading', { name: '资料' })).toBeInTheDocument();
+    expect(nav.getByRole('link', { name: '上传资料' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('更多功能').closest('details')).not.toHaveAttribute('open');
   });
 
   it('未知地址落到“页面不存在”', async () => {

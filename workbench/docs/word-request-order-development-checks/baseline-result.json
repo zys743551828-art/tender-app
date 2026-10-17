@@ -1,0 +1,10 @@
+{
+  "scope": "developer nonowner PG counterexample; 0 model/render/storage network",
+  "accepted_order": [
+    "ffbacf77-ff42-463f-b8dd-92cbc80ab63e",
+    "c2ea09bc-db2c-4ede-b2d7-ec33b37f8fe0"
+  ],
+  "expected_latest": "c2ea09bc-db2c-4ede-b2d7-ec33b37f8fe0",
+  "observed_latest": "ffbacf77-ff42-463f-b8dd-92cbc80ab63e",
+  "latest_matches": false
+}

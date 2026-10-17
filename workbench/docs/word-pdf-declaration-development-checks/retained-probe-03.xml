@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="1.945" timestamp="2026-10-17T04:26:48.682161+00:00" hostname="597cea30c71f"><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_closed_batch_reuse_keeps_declaration_and_only_allows_independent_file" time="1.049"><failure message="AssertionError: (503, 'DATABASE_TRANSACTION_FAILED')">tests/test_word_pdf_declaration_bindings.py:264: in test_closed_batch_reuse_keeps_declaration_and_only_allows_independent_file
+    assert accepted.status_code == 201, (accepted.status_code, accepted.json().get("code"))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: (503, 'DATABASE_TRANSACTION_FAILED')</failure></testcase></testsuite></testsuites>

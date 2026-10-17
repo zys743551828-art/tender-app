@@ -1,0 +1,338 @@
+diff --git a/frontend/src/features/materials/MaterialsPage.test.tsx b/frontend/src/features/materials/MaterialsPage.test.tsx
+index 9955501..6eff66d 100644
+--- a/frontend/src/features/materials/MaterialsPage.test.tsx
++++ b/frontend/src/features/materials/MaterialsPage.test.tsx
+@@ -61,6 +61,24 @@ describe('资料：解析状态与评审进度', () => {
+     expect(steps.getByText('进行中')).toBeInTheDocument();
+     expect(screen.queryByRole('link', { name: /下一步/ })).not.toBeInTheDocument();
+     expect(screen.queryByRole('button', { name: /下一步/ })).not.toBeInTheDocument();
++    expect(screen.getByRole('link', { name: '查看评审进度' })).toHaveAttribute(
++      'href',
++      '/projects/prj-1',
++    );
++  });
++
++  it('评审完成后直接提供查看报告的入口', async () => {
++    backend([], []);
++    server.use(
++      http.get('/api/v1/projects/prj-1/pipeline', () =>
++        HttpResponse.json(pipeline({ stage: 'done' })),
++      ),
++    );
++    renderApp('/projects/prj-1/materials');
++    expect(await screen.findByRole('link', { name: '查看评审报告' })).toHaveAttribute(
++      'href',
++      '/projects/prj-1',
++    );
+   });
+ 
+   it('解析失败：如实显示状态与原因', async () => {
+diff --git a/frontend/src/features/materials/MaterialsPage.tsx b/frontend/src/features/materials/MaterialsPage.tsx
+index 3049636..bd95ad5 100644
+--- a/frontend/src/features/materials/MaterialsPage.tsx
++++ b/frontend/src/features/materials/MaterialsPage.tsx
+@@ -109,7 +109,19 @@ export function MaterialsPage() {
+ 
+   return (
+     <>
+-      <PageHead title="资料" lede="招标文件和施组正文齐了会自动评审。" />
++      <PageHead
++        title="资料"
++        lede="把招标文件、补遗和施组正文放到这里，资料齐了会自动评审。"
++        actions={
++          pipeline.data && pipeline.data.stage !== 'waiting_materials' ? (
++            <Button asChild size="sm">
++              <Link to={`/projects/${project.project_id}`}>
++                {pipeline.data.stage === 'done' ? '查看评审报告' : '查看评审进度'}
++              </Link>
++            </Button>
++          ) : null
++        }
++      />
+       {pipeline.data ? <PipelineBanner pipeline={pipeline.data} showSteps /> : null}
+       <Card aria-labelledby="upload-h" className="mb-5">
+         <CardHeader>
+diff --git a/frontend/src/features/report/ReportPage.test.tsx b/frontend/src/features/report/ReportPage.test.tsx
+index a4ab350..f805ac8 100644
+--- a/frontend/src/features/report/ReportPage.test.tsx
++++ b/frontend/src/features/report/ReportPage.test.tsx
+@@ -167,7 +167,7 @@ describe('报告页：评审报告', () => {
+     expect(verdict.getByText('价格分 29')).toBeInTheDocument();
+   });
+ 
+-  it('下一步按后端顺序列出，按钮写明要做什么，第一条是主按钮；评审本身的动作交给顶部横幅', async () => {
++  it('下一步默认只突出最优先的一项，展开其余待办后保留后端顺序与具体入口', async () => {
+     backend(
+       report({
+         next_actions: [
+@@ -192,6 +192,13 @@ describe('报告页：评审报告', () => {
+     );
+     renderApp('/projects/prj-1');
+     const section = (await screen.findByRole('heading', { name: '下一步' })).closest('section')!;
++    expect(within(section).getByRole('link', { name: '确认规则' })).toBeVisible();
++    expect(within(section).getByRole('link', { name: '确认规则' })).toHaveAttribute(
++      'data-variant',
++      'primary',
++    );
++    expect(within(section).getByRole('link', { name: '登记结果' })).not.toBeVisible();
++    await userEvent.click(within(section).getByText('其余待办（2）'));
+     const items = within(section).getAllByRole('listitem');
+     expect(items.map((li) => li.querySelector('strong')?.textContent)).toEqual([
+       '确认 2 条规则',
+diff --git a/frontend/src/features/report/ReportPage.tsx b/frontend/src/features/report/ReportPage.tsx
+index cf1a585..1de4965 100644
+--- a/frontend/src/features/report/ReportPage.tsx
++++ b/frontend/src/features/report/ReportPage.tsx
+@@ -239,39 +239,44 @@ function NextActions({
+ }) {
+   const todo = actions.filter((a) => !PIPELINE_KEYS.has(a.key));
+   if (todo.length === 0) return null;
++  const row = (a: NextAction, i: number) => (
++    <li
++      key={a.key}
++      className="flex flex-col gap-3 border-b border-border px-5 py-3.5 last:border-0 sm:flex-row sm:items-center"
++    >
++      <div className="flex min-w-0 flex-1 gap-3">
++        <span
++          aria-hidden="true"
++          className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular"
++        >
++          {i + 1}
++        </span>
++        <div className="min-w-0 flex-1">
++          <strong className="block text-[13px] font-medium">{a.title}</strong>
++          <p className="m-0 text-xs text-muted-foreground">{a.detail}</p>
++        </div>
++      </div>
++      <Button asChild size="sm" variant={i === 0 && !bannerHasAction ? 'primary' : 'secondary'}>
++        <Link to={actionPath(base, a)}>{actionLabel(a)}</Link>
++      </Button>
++    </li>
++  );
+   return (
+     <Card aria-labelledby="next-h" className="mb-5">
+       <CardHeader>
+         <CardTitle id="next-h">下一步</CardTitle>
+       </CardHeader>
+-      <ol className="m-0 list-none border-t border-border p-0">
+-        {todo.map((a, i) => (
+-          <li
+-            key={a.key}
+-            className="flex flex-col gap-3 border-b border-border px-5 py-3.5 last:border-0 sm:flex-row sm:items-center"
+-          >
+-            <div className="flex min-w-0 flex-1 gap-3">
+-              <span
+-                aria-hidden="true"
+-                className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground tabular"
+-              >
+-                {i + 1}
+-              </span>
+-              <div className="min-w-0 flex-1">
+-                <strong className="block text-[13px] font-medium">{a.title}</strong>
+-                <p className="m-0 text-xs text-muted-foreground">{a.detail}</p>
+-              </div>
+-            </div>
+-            <Button
+-              asChild
+-              size="sm"
+-              variant={i === 0 && !bannerHasAction ? 'primary' : 'secondary'}
+-            >
+-              <Link to={actionPath(base, a)}>{actionLabel(a)}</Link>
+-            </Button>
+-          </li>
+-        ))}
+-      </ol>
++      <ol className="m-0 list-none border-t border-border p-0">{todo.slice(0, 1).map(row)}</ol>
++      {todo.length > 1 ? (
++        <details key={todo[0]?.key} className="border-t border-border">
++          <summary className="cursor-pointer rounded-b-lg px-5 py-3 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
++            其余待办（{todo.length - 1}）
++          </summary>
++          <ol start={2} className="m-0 list-none border-t border-border p-0">
++            {todo.slice(1).map((a, i) => row(a, i + 1))}
++          </ol>
++        </details>
++      ) : null}
+     </Card>
+   );
+ }
+diff --git a/frontend/src/features/submit/SubmitPage.test.tsx b/frontend/src/features/submit/SubmitPage.test.tsx
+index a8c8aa3..2ed805e 100644
+--- a/frontend/src/features/submit/SubmitPage.test.tsx
++++ b/frontend/src/features/submit/SubmitPage.test.tsx
+@@ -75,10 +75,9 @@ describe('提交与结果页：登记前的检查', () => {
+     backend([], { report: report({ categories: cats({ disqualification: 1, response: 1 }) }) });
+     renderApp('/projects/prj-1/submit');
+     expect(await screen.findByText('还有 2 个没有处理。')).toBeInTheDocument();
+-    expect(screen.getByRole('link', { name: '处理问题' })).toHaveAttribute(
+-      'href',
+-      '/projects/prj-1/findings?category=disqualification',
+-    );
++    expect(
++      within(screen.getByRole('main')).getByRole('link', { name: '处理问题' }),
++    ).toHaveAttribute('href', '/projects/prj-1/findings?category=disqualification');
+     expect(screen.getByText('上面 1 项处理好后，就可以在这里登记。')).toBeInTheDocument();
+     expect(screen.queryByLabelText('实际提交时间')).not.toBeInTheDocument();
+   });
+diff --git a/frontend/src/routes/App.test.tsx b/frontend/src/routes/App.test.tsx
+index c81e573..b80616c 100644
+--- a/frontend/src/routes/App.test.tsx
++++ b/frontend/src/routes/App.test.tsx
+@@ -14,23 +14,43 @@ function backend() {
+ }
+ 
+ describe('导航与路由', () => {
+-  it('项目内导航：报告、问题、依据、报价、提交与结果、资料；工具：检索、设置', async () => {
++  it('常用导航只显示报告、上传和处理问题；其余功能可以展开，当前页面有高亮', async () => {
+     backend();
+     renderApp('/projects/prj-1');
+     const nav = within(await screen.findByRole('navigation', { name: '项目导航' }));
+     expect(nav.getAllByRole('link').map((a) => a.textContent)).toEqual([
+-      '报告',
+-      '问题',
++      '评审报告',
++      '上传资料',
++      '处理问题',
++    ]);
++    const more = screen.getByText('更多功能').closest('details')!;
++    expect(more).not.toHaveAttribute('open');
++    expect(screen.getByRole('navigation', { name: '项目工具' })).not.toBeVisible();
++    await userEvent.click(screen.getByText('更多功能'));
++    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
++    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual([
+       '依据',
+       '报价',
+       '提交与结果',
+-      '资料',
++      '检索',
++      '设置',
+     ]);
+-    const tools = within(screen.getByRole('navigation', { name: '项目工具' }));
+-    expect(tools.getAllByRole('link').map((a) => a.textContent)).toEqual(['检索', '设置']);
+     // 报告是落地页：只有它高亮
+-    expect(nav.getByRole('link', { name: '报告' })).toHaveAttribute('aria-current', 'page');
+-    expect(nav.getByRole('link', { name: '问题' })).not.toHaveAttribute('aria-current');
++    expect(nav.getByRole('link', { name: '评审报告' })).toHaveAttribute('aria-current', 'page');
++    expect(nav.getByRole('link', { name: '处理问题' })).not.toHaveAttribute('aria-current');
++  });
++
++  it('直接打开更多功能里的页面时自动展开；回到常用页面后收起', async () => {
++    backend();
++    renderApp('/projects/prj-1/basis');
++    const tools = within(await screen.findByRole('navigation', { name: '项目工具' }));
++    expect(tools.getByRole('link', { name: '依据' })).toHaveAttribute('aria-current', 'page');
++    expect(screen.getByText('更多功能').closest('details')).toHaveAttribute('open');
++    const nav = within(screen.getByRole('navigation', { name: '项目导航' }));
++    await userEvent.click(nav.getByRole('link', { name: '上传资料' }));
++    expect(await screen.findByRole('heading', { name: '资料' })).toBeInTheDocument();
++    expect(nav.getByRole('link', { name: '上传资料' })).toHaveAttribute('aria-current', 'page');
++    expect(screen.getByText('更多功能').closest('details')).not.toHaveAttribute('open');
+   });
+ 
+   it('未知地址落到“页面不存在”', async () => {
+diff --git a/frontend/src/routes/ProjectNav.tsx b/frontend/src/routes/ProjectNav.tsx
+index 238ece2..fbe5e6b 100644
+--- a/frontend/src/routes/ProjectNav.tsx
++++ b/frontend/src/routes/ProjectNav.tsx
+@@ -1,18 +1,18 @@
+-import { NavLink } from 'react-router-dom';
++import { NavLink, useLocation } from 'react-router-dom';
+ import type { Project } from '../api/types';
+ import { Icon, type IconName } from '../components/Icon';
+ import { cn } from '../lib/cn';
+ import { deadlineText } from '../lib/format';
+ import { projectStateLabel } from '../lib/labels';
+ 
+-/** 项目内页面，顺序即流程：报告是落地页，其后是处理问题、核对依据、报价、提交与结果，资料放在最后。 */
++/** 常用页面直接显示，其他页面从更多功能或报告中的具体操作进入。 */
+ export const PROJECT_PAGES: { path: string; label: string; icon: IconName; end?: boolean }[] = [
+-  { path: '', label: '报告', icon: 'LayoutDashboard', end: true },
+-  { path: 'findings', label: '问题', icon: 'ListChecks' },
++  { path: '', label: '评审报告', icon: 'LayoutDashboard', end: true },
++  { path: 'materials', label: '上传资料', icon: 'FolderOpen' },
++  { path: 'findings', label: '处理问题', icon: 'ListChecks' },
+   { path: 'basis', label: '依据', icon: 'FileCheck2' },
+   { path: 'price', label: '报价', icon: 'ChartNoAxesCombined' },
+   { path: 'submit', label: '提交与结果', icon: 'Flag' },
+-  { path: 'materials', label: '资料', icon: 'FolderOpen' },
+ ];
+ export const PROJECT_TOOLS: { path: string; label: string; icon: IconName }[] = [
+   { path: 'search', label: '检索', icon: 'Search' },
+@@ -54,10 +54,16 @@ export function SideLink({
+   );
+ }
+ 
+-/** 项目层导航：项目名片 + 六个页面 + 工具入口。 */
++const PRIMARY_PATHS = new Set(['', 'materials', 'findings']);
++
++/** 三个常用入口；访问其他页面时自动展开更多功能，保留当前位置。 */
+ export function ProjectNav({ project, onNavigate }: { project: Project; onNavigate: () => void }) {
++  const location = useLocation();
+   const base = `/projects/${project.project_id}`;
+   const deadline = deadlineText(project.deadline);
++  const pages = visiblePages(project);
++  const extra = [...pages.filter((p) => !PRIMARY_PATHS.has(p.path)), ...PROJECT_TOOLS];
++  const moreActive = extra.some((p) => location.pathname === `${base}/${p.path}`);
+   return (
+     <>
+       <div className="px-2" aria-label="当前项目">
+@@ -73,31 +79,35 @@ export function ProjectNav({ project, onNavigate }: { project: Project; onNaviga
+         </p>
+       </div>
+       <nav className="flex flex-col gap-0.5" aria-label="项目导航">
+-        {visiblePages(project).map((p) => (
+-          <SideLink
+-            key={p.label}
+-            to={p.path ? `${base}/${p.path}` : base}
+-            end={p.end}
+-            icon={p.icon}
+-            label={p.label}
+-            onNavigate={onNavigate}
+-          />
+-        ))}
+-      </nav>
+-      <nav className="flex flex-col gap-0.5" aria-label="项目工具">
+-        <p className="m-0 px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground">
+-          工具
+-        </p>
+-        {PROJECT_TOOLS.map((p) => (
+-          <SideLink
+-            key={p.label}
+-            to={`${base}/${p.path}`}
+-            icon={p.icon}
+-            label={p.label}
+-            onNavigate={onNavigate}
+-          />
+-        ))}
++        {pages
++          .filter((p) => PRIMARY_PATHS.has(p.path))
++          .map((p) => (
++            <SideLink
++              key={p.label}
++              to={p.path ? `${base}/${p.path}` : base}
++              end={p.end}
++              icon={p.icon}
++              label={p.label}
++              onNavigate={onNavigate}
++            />
++          ))}
+       </nav>
++      <details key={location.pathname} open={moreActive} className="group">
++        <summary className="cursor-pointer rounded-md px-2 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
++          更多功能
++        </summary>
++        <nav className="mt-1 flex flex-col gap-0.5" aria-label="项目工具">
++          {extra.map((p) => (
++            <SideLink
++              key={p.label}
++              to={`${base}/${p.path}`}
++              icon={p.icon}
++              label={p.label}
++              onNavigate={onNavigate}
++            />
++          ))}
++        </nav>
++      </details>
+     </>
+   );
+ }

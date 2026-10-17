@@ -1,0 +1,15 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/WordOriginals.test.tsx src/AuthoringStructure.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordOriginals.test.tsx (3 tests) 188ms
+ ✓ src/AuthoringStructure.test.tsx (4 tests) 449ms
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  04:12:16
+   Duration  1.36s (transform 289ms, setup 232ms, collect 495ms, tests 637ms, environment 646ms, prepare 153ms)
+

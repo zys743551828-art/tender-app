@@ -1,0 +1,90 @@
+{
+  "name": "@gleanwork/local-mcp-server",
+  "version": "0.10.1",
+  "description": "MCP server for Glean API integration",
+  "keywords": [
+    "mcp",
+    "mcp-server"
+  ],
+  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/gleanwork/mcp-server.git",
+    "directory": "packages/local-mcp-server"
+  },
+  "license": "MIT",
+  "author": "Steve Calvert <steve.calvert@glean.com>",
+  "type": "module",
+  "exports": {
+    ".": "./build/index.js",
+    "./tools/chat": {
+      "types": "./build/tools/chat.d.ts",
+      "import": "./build/tools/chat.js",
+      "default": "./build/tools/chat.js"
+    }
+  },
+  "main": "./build/index.js",
+  "bin": {
+    "local-mcp-server": "./build/index.js"
+  },
+  "files": [
+    "build/**/*.js",
+    "build/**/*.d.ts",
+    "build/**/*.js.map",
+    "build/**/*.d.ts.map",
+    "!build/**/test/**",
+    "!build/test/**",
+    "!build/src/**",
+    "!build/vitest.config.*"
+  ],
+  "scripts": {
+    "build": "rimraf build && tsc",
+    "lint": "npm-run-all --sequential lint:*",
+    "lint:eslint": "eslint \"src/**/*.ts\" --fix",
+    "lint:package-json": "sort-package-json",
+    "lint:ts": "tsc --noEmit",
+    "prepare": "pnpm run build",
+    "test": "vitest run",
+    "test:all": "pnpm lint && pnpm lint:ts && pnpm test",
+    "test:watch": "vitest",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@gleanwork/api-client": "0.13.0",
+    "@gleanwork/mcp-server-utils": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "dotenv": "^17.2.3",
+    "meow": "^14.0.0",
+    "open": "^11.0.0",
+    "tldts": "^7.0.19",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.1",
+    "@gleanwork/mcp-test-utils": "workspace:*",
+    "@types/node": "^25.0.2",
+    "@types/node-fetch": "^2.6.13",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "console-test-helpers": "^0.3.3",
+    "eslint": "^9.39.1",
+    "fixturify": "^3.0.0",
+    "form-data": "^4.0.5",
+    "fs-extra": "^11.3.2",
+    "globals": "^16.5.0",
+    "msw": "^2.12.3",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.1.2",
+    "sort-package-json": "^3.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="4.511" timestamp="2026-10-17T01:23:39.439473+00:00" hostname="597cea30c71f"><testcase classname="tests.test_content_decision_applicability_integration" name="test_new_body_facts_require_new_decision_while_identical_frozen_body_may_reuse[False]" time="3.153" /><testcase classname="tests.test_content_decision_applicability_integration" name="test_new_body_facts_require_new_decision_while_identical_frozen_body_may_reuse[True]" time="0.859"><failure message="AssertionError">tests/test_content_decision_applicability_integration.py:176: in test_new_body_facts_require_new_decision_while_identical_frozen_body_may_reuse
+    assert lifecycle(c, actual) == "open"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError</failure></testcase></testsuite></testsuites>

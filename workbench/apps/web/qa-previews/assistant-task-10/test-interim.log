@@ -1,0 +1,65 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/PricingFormulaEditor.test.tsx (1 test) 3020ms
+   ✓ 原页逐字段选择使用可信身份，一次登记被单位证据拒绝后保留参数/摘录，不声称成功  3018ms
+ ✓ src/Knowledge.test.tsx (7 tests) 3336ms
+   ✓ 收起、离开后保留成员自己的候选输入，恢复本地输入不发创建请求  905ms
+   ✓ 原页与失败重试按钮不会提交版本；412后保留正文及旧令牌，明确比较才用新令牌  889ms
+   ✓ 创建请求尚未返回时离开页面，迟到ACK不把用户导航回知识对象  316ms
+   ✓ 引用上下文409后不普通重试，明确重读主体与原知识版本才以新命令继续，摘录不丢且不创建事实  388ms
+   ✓ 明确历史版本写入URL并保留查证上下文；返回/前进及刷新恢复原版本身份  516ms
+ ✓ src/PricingPanel.test.tsx (7 tests) 5761ms
+   ✓ 关闭模块时直接链接不请求公式/结果，历史不删除、不自动执行  612ms
+   ✓ 400ms情景更新保持dirty输入，迟到旧响应不替换新情景，未知分数不变零且试算不保存方案  1479ms
+   ✓ 来源变化409阻止自动重试，保留本方/对手输入，明确核对后才继续  1591ms
+   ✓ 保存条件412后旧模拟不能再次保存，重读公式后仍须明确重新试算取得新条件  1965ms
+ ✓ src/Identity.test.tsx (5 tests) 1414ms
+   ✓ 真实默认主体在表单可见，创建一次即绑定所选ID，无第二次确认且不按近似名合并  422ms
+   ✓ 有据纠正412保留选择和理由，读取影响并明确新基准后才重试；不重写旧记录  393ms
+   ✓ 目录加载后续轮次时保留工程绑定，已有轮次创建不误建新轮或要求手填编号  309ms
+ ✓ src/RetrievalDrawer.test.tsx (6 tests) 1323ms
+   ✓ 展示实际索引缺口和摘录，引用先验证原检索后打开精确版本物理页  332ms
+ ✓ src/BusinessResults.test.tsx (3 tests) 1137ms
+   ✓ 结果一次追加不自动核验；CAS失败保留候选输入并显式重读当前头  990ms
+ ✓ src/SubmissionPanel.test.tsx (4 tests) 1235ms
+   ✓ 线下补录选择真实原件及自身附件，一次保存并持续标明未完整检查/未核验平台  740ms
+   ✓ 412保留实际时间与附件，只在明确重读后使用新Gate身份；更正用Bid tag而非原记录tag  300ms
+ ✓ src/A1Recovery.test.tsx (12 tests) 1261ms
+ ✓ src/A1Workspace.test.tsx (9 tests) 899ms
+ ✓ src/KnowledgeRetrieval.test.tsx (3 tests) 628ms
+   ✓ 只在明确查证后执行，实际unit登记参考且固定链接恢复，不创建事实  487ms
+ ✓ src/AssistantWorkspace.test.tsx (8 tests) 905ms
+   ✓ 只显式创建同一主会话，保存讨论不请求AI，刷新能恢复服务器消息  397ms
+ ✓ src/Project.test.tsx (4 tests) 532ms
+ ✓ src/App.test.tsx (4 tests) 1329ms
+   ✓ 投标工作区 > 登录失败持续显示，成功后空工作区不展示模拟指标  585ms
+   ✓ 投标工作区 > 会话过期保留未提交名称；重新登录不自动重放写入  656ms
+ ✓ src/Research.test.tsx (3 tests) 680ms
+   ✓ 研究来源分组412保留输入，明确比较后才能按新令牌保存；不会启动收费批次  526ms
+ ✓ src/ReportPanel.test.tsx (4 tests) 589ms
+ ✓ src/UploadBatchDiscovery.test.tsx (2 tests) 303ms
+ ✓ src/Metrics.test.tsx (1 test) 499ms
+   ✓ 零分母与未知风险不补零；少于20对隐藏误差；筛选只读且按明确提交应用  498ms
+ ✓ src/NavigationGuard.test.tsx (2 tests) 386ms
+ ✓ src/OperationCenter.test.tsx (1 test) 327ms
+   ✓ 只折叠服务端成功处理；运行/失败常驻且UUID仅在详情显示  326ms
+ ✓ src/HistoryPanel.test.tsx (2 tests) 336ms
+   ✓ 从真实版本链找回旧文件名和身份，打开旧原件且不套用当前检查  320ms
+ ✓ src/AuthoringBuilds.test.tsx (3 tests) 434ms
+ ✓ src/useSaveQueue.test.tsx (4 tests) 75ms
+ ✓ src/uploadTransport.test.ts (6 tests) 161ms
+ ✓ src/UploadStatus.test.tsx (2 tests) 314ms
+ ✓ src/eventStream.test.tsx (2 tests) 61ms
+ ✓ src/api.test.ts (3 tests) 41ms
+ ✓ src/editorSchema.test.ts (4 tests) 15ms
+
+ Test Files  27 passed (27)
+      Tests  112 passed (112)
+   Start at  03:15:24
+   Duration  24.08s (transform 3.27s, setup 6.39s, collect 7.55s, tests 27.00s, environment 17.20s, prepare 3.49s)
+

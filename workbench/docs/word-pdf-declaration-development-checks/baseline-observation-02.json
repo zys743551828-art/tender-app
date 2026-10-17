@@ -1,0 +1,7 @@
+{
+  "status_code": 200,
+  "error_code": null,
+  "backend_main_path": "/workspace/tender-workbench/docs/application-composition-development-checks/runtime-preview-02/apps/api/main.py",
+  "backend_main_sha256": "a7764023f08bd8308a48969b956c49e2ce126673e6cbc7fc24114b2004edd419",
+  "scope": "Real nonowner HTTP bind after actual shared byte verification; explicit memory objects, no Docker/model"
+}

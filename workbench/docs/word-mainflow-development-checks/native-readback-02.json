@@ -1,0 +1,14 @@
+{
+  "scope": "post-execution exact native OSS GET readback of final adopted synthetic case; not model quality",
+  "bid_id": "4d4f7f6d-a1e4-4956-bbcb-ab5798d4be41",
+  "word_version_id": "98becc0e-a56b-4b7c-a23b-abee78cac5c5",
+  "pdf_version_id": "2195af71-b0ca-41f4-ac9b-5decec50dff0",
+  "conversion_operation_id": "23ac1fd5-8f52-4a48-8389-497d7306ee8d",
+  "parse_id": "227368cf-a9aa-4739-b67c-3c54b96a41b5",
+  "parse_coverage": "complete",
+  "render_profile_digest": "61284d08db2703f4d753a3d098e0e54d8d84926ec5fa65c7ee3d3cf1f14a406b",
+  "actual_bytes_sha_match": true,
+  "object_count": 2,
+  "model_calls_in_isolated_db": 0,
+  "raw_credentials_or_urls_in_result": false
+}

@@ -1,0 +1,16 @@
+node_modules
+dist
+package-lock.json
+*.tsbuildinfo
+
+public/pdfjs
+qa-previews/**/frozen-inputs
+
+qa-previews/**/*.openapi.json
+
+# Frozen candidate bytes and original evidence retain their recorded digests.
+qa-previews/multipart-knowledge-05/
+
+# Generated validation metadata and retained original failure observations.
+qa-previews/submission-report-06/final-quality-result.json
+qa-previews/submission-report-06/pre-final-regression/

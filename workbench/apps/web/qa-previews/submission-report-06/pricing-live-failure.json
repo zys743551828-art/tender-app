@@ -1,0 +1,46 @@
+{
+  "stage": "dirty-and-history",
+  "error_type": "AssertionError",
+  "project_id": "06c25da7-412b-4c0c-b56c-567da0729968",
+  "source_evidence_ids": [
+    "49ab7a98-dcb1-4fd7-8045-039eba8af810",
+    "54ee76bb-0692-4cfe-bca7-99d3206af979",
+    "57c565f9-5eef-4df9-8306-d25ff57ca953",
+    "707e15df-e403-438a-a289-0b316a17d6b2",
+    "e9d72e3a-80ba-4419-a3bf-2fd76ed89d6d"
+  ],
+  "first_rejection_preserved_input_and_same_sources": true,
+  "formula_version_id": "8075d38e-a332-4d60-b5a4-72928d054343",
+  "simulation_without_save": true,
+  "plan_id": "7360a5ef-2639-4626-b0d6-1a2bb9e7a066",
+  "frozen_input_digest": "87e8d8907daae277d058ef8546bf2161b79c79b85448370aca471c33c38203a0",
+  "formula_digest": "aecd611f6879206bb9076d21442744c2e5a4b45a076f2cec8e79e19191dee177",
+  "plan_body_sha256": "414142950fffae540394ee93559a976c086a296c249accf00be7b2592681b564",
+  "alerts": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-formulas"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-formulas"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-simulations"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-simulations"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-plans"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/pricing-simulations"
+    }
+  ]
+}

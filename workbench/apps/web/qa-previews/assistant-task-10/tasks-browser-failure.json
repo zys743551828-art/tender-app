@@ -1,0 +1,62 @@
+{
+  "stage": "notifications-390",
+  "error_type": "TimeoutError",
+  "writes": [
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184/runs",
+      "method": "POST",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definitions/f88588f2-6e50-432e-9c25-e0b543ea0184/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definition-drafts",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definition-drafts/031d30ac-248d-4f83-9d44-a0530cadd9bd",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definition-drafts/031d30ac-248d-4f83-9d44-a0530cadd9bd",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/071892ca-130c-4e4e-8a5e-d289f4d2e3b1/task-definition-drafts/031d30ac-248d-4f83-9d44-a0530cadd9bd/save",
+      "method": "POST",
+      "status": 201
+    }
+  ],
+  "errors": []
+}

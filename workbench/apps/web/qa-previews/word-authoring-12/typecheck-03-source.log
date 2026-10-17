@@ -1,0 +1,6 @@
+
+> @tender/workbench-web@0.1.0 typecheck
+> tsc -b --pretty false
+
+src/WordUploadBinding.test.tsx(29,18): error TS6133: 'url' is declared but its value is never read.
+src/WordUploadBinding.test.tsx(66,18): error TS6133: 'url' is declared but its value is never read.

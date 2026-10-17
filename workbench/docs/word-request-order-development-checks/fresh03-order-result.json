@@ -1,0 +1,10 @@
+{
+  "scope": "developer nonowner PG counterexample; 0 model/render/storage network",
+  "accepted_order": [
+    "992005ff-11bd-4913-91e2-ff6506dc862e",
+    "3f55f9e3-cc0b-4485-91d3-951f9a60006d"
+  ],
+  "expected_latest": "3f55f9e3-cc0b-4485-91d3-951f9a60006d",
+  "observed_latest": "3f55f9e3-cc0b-4485-91d3-951f9a60006d",
+  "latest_matches": true
+}

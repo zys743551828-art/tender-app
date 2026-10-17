@@ -1,0 +1,19 @@
+
+> @tender/workbench-web@0.1.0 prebuild
+> node scripts/copy-pdf-resources.mjs
+
+
+> @tender/workbench-web@0.1.0 build
+> tsc -b && vite build
+
+vite v6.3.5 building for production...
+transforming...
+✓ 60 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              0.55 kB │ gzip:   0.37 kB
+dist/assets/pdf.worker.min-CjEcRF4W.mjs  1,264.34 kB
+dist/assets/index-DbjNMNGt.css              38.63 kB │ gzip:   8.37 kB
+dist/assets/index-Bh4HFUN8.js              298.22 kB │ gzip:  92.75 kB
+dist/assets/pdf-BtCWNl9F.js                483.74 kB │ gzip: 144.80 kB
+✓ built in 2.64s

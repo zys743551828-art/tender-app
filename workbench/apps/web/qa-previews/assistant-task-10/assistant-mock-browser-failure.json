@@ -1,0 +1,32 @@
+{
+  "stage": "hold-cancel",
+  "error_type": "TimeoutError",
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/actions/0589c290-fad7-4ada-bbc1-b5c2b5fe76d5/resolve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/jobs/c210c181-84f7-4c04-8990-9d3dcc25b3ec/cancel",
+      "status": 202
+    }
+  ],
+  "page_errors": []
+}

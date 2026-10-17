@@ -1,0 +1,14 @@
+{
+  "scope": "Frontend developer checks, not independent acceptance or model validation",
+  "checks": {
+    "contracts:generate": "passed, actual implementation contract",
+    "format:check": "passed before manifest; final logged check follows",
+    "lint": "passed",
+    "typecheck": "passed",
+    "test": "25 passed across 6 files, explicit mocks for unimplemented A1/RAG routes",
+    "build": "passed"
+  },
+  "browser": "readonly-browser-result.json; actual dev API/S3/PDF.js bytes, no business writes or model requests",
+  "oss_application_proxy_end_to_end": "pending independent QA on external-release instance",
+  "a1_and_rag_backend_end_to_end": "not executed; actual contract has no corresponding registered reads/retrieval route"
+}

@@ -1,0 +1,9 @@
+{
+  "candidate": "submission-report-pricing-06",
+  "manifest_sha256": "9954c6e6f02450df944a7c5f75f8d7f80072ef12a25aa1082dd9a8900f039f6d",
+  "source_tree_sha256": "abb9de966a4202fa58d0fb1ce95cd2c6a122f6420d84bc4d53c4c860b16bbffd",
+  "source_files_verified": 104,
+  "status": "all_original_and_archived_bytes_match",
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "note": "Source archive only. Link the exact locked node_modules, set only public API_PROXY_TARGET=http://127.0.0.1:8806 and serve same-origin5176. Do not regenerate contracts inside this archived hierarchy."
+}

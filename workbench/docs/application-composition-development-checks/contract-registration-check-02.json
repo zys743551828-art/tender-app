@@ -1,0 +1,1422 @@
+{
+  "runtime_source_count": 432,
+  "paths": 227,
+  "operations": 258,
+  "schemas": 406,
+  "new_operations": [
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
+      "method": "get",
+      "operation_id": "tree_api_v1_bids__bid_id__drafts__draft_id__structure_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
+      "method": "post",
+      "operation_id": "preview_api_v1_bids__bid_id__drafts__draft_id__structure_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",
+      "method": "post",
+      "operation_id": "resolve_api_v1_bids__bid_id__authoring_structure_actions__action_id__resolve_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/plan",
+      "method": "put",
+      "operation_id": "plan_api_v1_bids__bid_id__drafts__draft_id__sections__section_id__plan_put"
+    },
+    {
+      "path": "/api/v1/authoring/templates",
+      "method": "get",
+      "operation_id": "catalog_api_v1_authoring_templates_get"
+    },
+    {
+      "path": "/api/v1/authoring/template-versions/{version_id}",
+      "method": "get",
+      "operation_id": "template_api_v1_authoring_template_versions__version_id__get"
+    },
+    {
+      "path": "/api/v1/authoring/template-families",
+      "method": "post",
+      "operation_id": "create_template_api_v1_authoring_template_families_post"
+    },
+    {
+      "path": "/api/v1/authoring/template-families/{family_id}/versions",
+      "method": "post",
+      "operation_id": "append_template_api_v1_authoring_template_families__family_id__versions_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/directory-template/preview",
+      "method": "post",
+      "operation_id": "directory_preview_api_v1_bids__bid_id__drafts__draft_id__directory_template_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/style-template/preview",
+      "method": "post",
+      "operation_id": "style_preview_api_v1_bids__bid_id__drafts__draft_id__style_template_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/restore-preview",
+      "method": "post",
+      "operation_id": "restore_preview_api_v1_bids__bid_id__drafts__draft_id__structure_restore_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/history",
+      "method": "get",
+      "operation_id": "history_api_v1_bids__bid_id__drafts__draft_id__structure_history_get"
+    },
+    {
+      "path": "/api/v1/technical-scale-capabilities",
+      "method": "get",
+      "operation_id": "capabilities_api_v1_technical_scale_capabilities_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scale-context",
+      "method": "get",
+      "operation_id": "context_api_v1_bids__bid_id__technical_scale_context_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scales",
+      "method": "post",
+      "operation_id": "register_api_v1_bids__bid_id__technical_scales_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scales",
+      "method": "get",
+      "operation_id": "list_versions_api_v1_bids__bid_id__technical_scales_get"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}",
+      "method": "get",
+      "operation_id": "get_api_v1_technical_scales__scale_id__get"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}/corrections",
+      "method": "post",
+      "operation_id": "correct_api_v1_technical_scales__scale_id__corrections_post"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}/withdrawals",
+      "method": "post",
+      "operation_id": "withdraw_api_v1_technical_scales__scale_id__withdrawals_post"
+    }
+  ],
+  "unchanged_base_schema_count": 373,
+  "changed_base_schemas": [
+    "BuildRequest",
+    "AuthoringSnapshot"
+  ],
+  "declared_response_models": [
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions",
+      "method": "GET",
+      "operation_id": "list_templates_api_v1_bids__bid_id__task_definitions_get",
+      "model": "<class 'packages.tasks.models.TemplatePage'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions",
+      "method": "POST",
+      "operation_id": "create_template_api_v1_bids__bid_id__task_definitions_post",
+      "model": "<class 'packages.tasks.models.TemplateView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions/{definition_id}",
+      "method": "GET",
+      "operation_id": "get_template_api_v1_bids__bid_id__task_definitions__definition_id__get",
+      "model": "<class 'packages.tasks.models.TemplateView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions/{definition_id}",
+      "method": "PUT",
+      "operation_id": "revise_template_api_v1_bids__bid_id__task_definitions__definition_id__put",
+      "model": "<class 'packages.tasks.models.TemplateView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions/{definition_id}/pause",
+      "method": "POST",
+      "operation_id": "pause_template_api_v1_bids__bid_id__task_definitions__definition_id__pause_post",
+      "model": "<class 'packages.tasks.models.TemplateView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions/{definition_id}/versions/{version_id}",
+      "method": "GET",
+      "operation_id": "get_template_version_api_v1_bids__bid_id__task_definitions__definition_id__versions__version_id__get",
+      "model": "<class 'packages.tasks.models.TemplateVersionView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definitions/{definition_id}/runs",
+      "method": "POST",
+      "operation_id": "run_template_api_v1_bids__bid_id__task_definitions__definition_id__runs_post",
+      "model": "<class 'packages.tasks.models.RunView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-runs/{run_id}",
+      "method": "GET",
+      "operation_id": "task_run_api_v1_bids__bid_id__task_runs__run_id__get",
+      "model": "<class 'packages.tasks.models.RunView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-runs",
+      "method": "GET",
+      "operation_id": "task_run_page_api_v1_bids__bid_id__task_runs_get",
+      "model": "<class 'packages.tasks.models.RunPage'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-notifications",
+      "method": "GET",
+      "operation_id": "task_notifications_api_v1_bids__bid_id__task_notifications_get",
+      "model": "<class 'packages.tasks.models.TaskNotificationPage'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-schedule-recoveries",
+      "method": "GET",
+      "operation_id": "task_recoveries_api_v1_bids__bid_id__task_schedule_recoveries_get",
+      "model": "<class 'packages.tasks.models.TaskScheduleRecoveryPage'>"
+    },
+    {
+      "path": "/api/v1/task-kinds",
+      "method": "GET",
+      "operation_id": "task_kinds_api_v1_task_kinds_get",
+      "model": "<class 'packages.tasks.models.TaskKindPage'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definition-drafts",
+      "method": "GET",
+      "operation_id": "list_drafts_api_v1_bids__bid_id__task_definition_drafts_get",
+      "model": "<class 'packages.tasks.drafts.TaskDraftPage'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definition-drafts",
+      "method": "POST",
+      "operation_id": "create_draft_api_v1_bids__bid_id__task_definition_drafts_post",
+      "model": "<class 'packages.tasks.drafts.TaskDraftView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definition-drafts/{draft_id}",
+      "method": "GET",
+      "operation_id": "get_draft_api_v1_bids__bid_id__task_definition_drafts__draft_id__get",
+      "model": "<class 'packages.tasks.drafts.TaskDraftView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definition-drafts/{draft_id}",
+      "method": "PUT",
+      "operation_id": "revise_draft_api_v1_bids__bid_id__task_definition_drafts__draft_id__put",
+      "model": "<class 'packages.tasks.drafts.TaskDraftView'>"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/task-definition-drafts/{draft_id}/save",
+      "method": "POST",
+      "operation_id": "save_draft_api_v1_bids__bid_id__task_definition_drafts__draft_id__save_post",
+      "model": "<class 'packages.tasks.models.TemplateView'>"
+    }
+  ],
+  "not_annotated_response_models": [
+    {
+      "path": "/api/v1/object-transfers/uploads/{upload_id}",
+      "method": "PUT",
+      "operation_id": "putPrivateUploadBytes"
+    },
+    {
+      "path": "/api/v1/object-transfers/versions/{version_id}",
+      "method": "GET",
+      "operation_id": "getPrivateVersionBytes"
+    },
+    {
+      "path": "/api/v1/retrievals",
+      "method": "POST",
+      "operation_id": "retrieveEvidence"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/content-checks",
+      "method": "GET",
+      "operation_id": "getReviewContentChecks"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/reviews",
+      "method": "POST",
+      "operation_id": "requestReview"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/review-state",
+      "method": "GET",
+      "operation_id": "getReviewState"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/reviews",
+      "method": "GET",
+      "operation_id": "listReviews"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}",
+      "method": "GET",
+      "operation_id": "getReview"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/manifest",
+      "method": "GET",
+      "operation_id": "getReviewManifest"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/matrix",
+      "method": "GET",
+      "operation_id": "getMatrix"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/findings",
+      "method": "GET",
+      "operation_id": "listFindings"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/rules",
+      "method": "GET",
+      "operation_id": "getRules"
+    },
+    {
+      "path": "/api/v1/rules/{rule_id}",
+      "method": "GET",
+      "operation_id": "getRule"
+    },
+    {
+      "path": "/api/v1/findings/{finding_id}",
+      "method": "GET",
+      "operation_id": "getFinding"
+    },
+    {
+      "path": "/api/v1/evidence/{evidence_id}",
+      "method": "GET",
+      "operation_id": "getEvidence"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/review-requests/{request_id}/cancel",
+      "method": "POST",
+      "operation_id": "cancelReviewRequest"
+    },
+    {
+      "path": "/api/v1/evidence/{evidence_id}/authoring-reference",
+      "method": "GET",
+      "operation_id": "getEvidenceAuthoringReference"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/settings",
+      "method": "GET",
+      "operation_id": "getSettings"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/settings",
+      "method": "PATCH",
+      "operation_id": "updateSettings"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/main",
+      "method": "POST",
+      "operation_id": "ensureMainWorkConversation"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/main",
+      "method": "GET",
+      "operation_id": "getMainWorkConversation"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/{conversation_id}",
+      "method": "GET",
+      "operation_id": "getWorkConversation"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/{conversation_id}/state",
+      "method": "POST",
+      "operation_id": "changeWorkConversationState"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/{conversation_id}/messages",
+      "method": "POST",
+      "operation_id": "recordWorkMessage"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/{conversation_id}/messages",
+      "method": "GET",
+      "operation_id": "listWorkMessages"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/main",
+      "method": "GET",
+      "operation_id": "getAssistantGlobalConversation_assistant_global-conversations_main"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/main",
+      "method": "POST",
+      "operation_id": "postAssistantGlobalConversation_assistant_global-conversations_main"
+    },
+    {
+      "path": "/api/v1/assistant/conversations",
+      "method": "GET",
+      "operation_id": "getAssistantConversationPage_assistant_conversations"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/{conversation_id}/state",
+      "method": "POST",
+      "operation_id": "postAssistantGlobalConversation_assistant_global-conversations_conversation_id_state"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/conversations/{conversation_id}/turns",
+      "method": "POST",
+      "operation_id": "postAssistantJob_bids_bid_id_conversations_conversation_id_turns"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/{conversation_id}/turns",
+      "method": "POST",
+      "operation_id": "postAssistantJob_assistant_global-conversations_conversation_id_turns"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/{conversation_id}/messages",
+      "method": "GET",
+      "operation_id": "getAssistantGlobalMessagePage_assistant_global-conversations_conversation_id_messages"
+    },
+    {
+      "path": "/api/v1/assistant/global-conversations/{conversation_id}/events",
+      "method": "GET",
+      "operation_id": "getAssistantGlobalEventPage_assistant_global-conversations_conversation_id_events"
+    },
+    {
+      "path": "/api/v1/assistant/sources",
+      "method": "GET",
+      "operation_id": "getAssistantSourcePage_assistant_sources"
+    },
+    {
+      "path": "/api/v1/assistant/jobs/{job_id}",
+      "method": "GET",
+      "operation_id": "getAssistantJob_assistant_jobs_job_id"
+    },
+    {
+      "path": "/api/v1/assistant/jobs",
+      "method": "GET",
+      "operation_id": "getAssistantJobPage_assistant_jobs"
+    },
+    {
+      "path": "/api/v1/assistant/jobs/{job_id}/cancel",
+      "method": "POST",
+      "operation_id": "postAssistantJob_assistant_jobs_job_id_cancel"
+    },
+    {
+      "path": "/api/v1/assistant/actions/{action_id}",
+      "method": "GET",
+      "operation_id": "getAssistantAction_assistant_actions_action_id"
+    },
+    {
+      "path": "/api/v1/assistant/actions/{action_id}/resolve",
+      "method": "POST",
+      "operation_id": "postAssistantAction_assistant_actions_action_id_resolve"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/authoring/generations",
+      "method": "POST",
+      "operation_id": "postAssistantJob_bids_bid_id_authoring_generations"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/comparisons",
+      "method": "POST",
+      "operation_id": "compareReviews"
+    },
+    {
+      "path": "/api/v1/comparisons/{comparison_id}",
+      "method": "GET",
+      "operation_id": "getReviewComparison"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/comparisons",
+      "method": "GET",
+      "operation_id": "listReviewComparisons"
+    },
+    {
+      "path": "/api/v1/authoring/capabilities",
+      "method": "GET",
+      "operation_id": "getAuthoringCapabilities"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts",
+      "method": "POST",
+      "operation_id": "createDraft"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}",
+      "method": "GET",
+      "operation_id": "getDraft"
+    },
+    {
+      "path": "/api/v1/sections/{section_id}",
+      "method": "GET",
+      "operation_id": "getSection"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}",
+      "method": "PATCH",
+      "operation_id": "saveDraft"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/sections",
+      "method": "POST",
+      "operation_id": "addAuthoringSection"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/draft-snapshots/{snapshot_id}",
+      "method": "GET",
+      "operation_id": "getAuthoringSnapshot"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/builds",
+      "method": "POST",
+      "operation_id": "createBuild"
+    },
+    {
+      "path": "/api/v1/builds/{build_id}",
+      "method": "GET",
+      "operation_id": "getBuild"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/sections/{section_id}/patch-previews",
+      "method": "POST",
+      "operation_id": "previewAuthoringPatch"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/authoring-actions/{action_id}/apply",
+      "method": "POST",
+      "operation_id": "applyAuthoringPatch"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts",
+      "method": "GET",
+      "operation_id": "listDrafts"
+    },
+    {
+      "path": "/api/v1/sections/{section_id}/revisions",
+      "method": "GET",
+      "operation_id": "listAuthoringSectionRevisions"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/sections/{section_id}/restore",
+      "method": "POST",
+      "operation_id": "restoreAuthoringSection"
+    },
+    {
+      "path": "/api/v1/research/capabilities",
+      "method": "GET",
+      "operation_id": "getResearchCapabilities"
+    },
+    {
+      "path": "/api/v1/history",
+      "method": "GET",
+      "operation_id": "searchHistoricalBids"
+    },
+    {
+      "path": "/api/v1/research/import-previews",
+      "method": "POST",
+      "operation_id": "previewHistoricalImport"
+    },
+    {
+      "path": "/api/v1/research/imports/{batch_id}",
+      "method": "GET",
+      "operation_id": "getHistoricalImport"
+    },
+    {
+      "path": "/api/v1/research/imports/{batch_id}/confirm",
+      "method": "POST",
+      "operation_id": "confirmHistoricalImport"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/outcomes",
+      "method": "GET",
+      "operation_id": "listBidOutcomes"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/outcome-context",
+      "method": "GET",
+      "operation_id": "getOutcomeRegistrationContext"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/outcomes",
+      "method": "POST",
+      "operation_id": "registerOfficialOutcome"
+    },
+    {
+      "path": "/api/v1/outcomes/{outcome_id}",
+      "method": "GET",
+      "operation_id": "getOfficialOutcome"
+    },
+    {
+      "path": "/api/v1/outcomes/{outcome_id}/corrections",
+      "method": "POST",
+      "operation_id": "correctOfficialOutcome"
+    },
+    {
+      "path": "/api/v1/outcomes/{outcome_id}/verification",
+      "method": "POST",
+      "operation_id": "verifyOfficialOutcome"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submissions/{submission_id}/sample-admission",
+      "method": "POST",
+      "operation_id": "checkSampleAdmission"
+    },
+    {
+      "path": "/api/v1/research/samples",
+      "method": "GET",
+      "operation_id": "listResearchSamples"
+    },
+    {
+      "path": "/api/v1/research/samples/{sample_id}/grouping",
+      "method": "GET",
+      "operation_id": "getSampleGrouping"
+    },
+    {
+      "path": "/api/v1/research/samples/{sample_id}/grouping",
+      "method": "POST",
+      "operation_id": "recordSampleGrouping"
+    },
+    {
+      "path": "/api/v1/research/datasets",
+      "method": "POST",
+      "operation_id": "freezeResearchDataset"
+    },
+    {
+      "path": "/api/v1/research/reviews/{review_id}/chapter-packages",
+      "method": "POST",
+      "operation_id": "prepareResearchChapters"
+    },
+    {
+      "path": "/api/v1/research/previews",
+      "method": "POST",
+      "operation_id": "previewResearchRun"
+    },
+    {
+      "path": "/api/v1/research/runs",
+      "method": "POST",
+      "operation_id": "startResearchRun"
+    },
+    {
+      "path": "/api/v1/research/runs/{run_id}",
+      "method": "GET",
+      "operation_id": "getResearchRun"
+    },
+    {
+      "path": "/api/v1/research/runs/{run_id}/items",
+      "method": "GET",
+      "operation_id": "listResearchRunItems"
+    },
+    {
+      "path": "/api/v1/research/runs/{run_id}/resume",
+      "method": "POST",
+      "operation_id": "resumeResearchRun"
+    },
+    {
+      "path": "/api/v1/research/runs/{run_id}/cancel",
+      "method": "POST",
+      "operation_id": "cancelResearchRun"
+    },
+    {
+      "path": "/api/v1/streams/{stream_id}/events",
+      "method": "GET",
+      "operation_id": "readEvents"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/builds",
+      "method": "GET",
+      "operation_id": "listBuilds"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/facts",
+      "method": "GET",
+      "operation_id": "getFacts"
+    },
+    {
+      "path": "/api/v1/facts/{fact_id}",
+      "method": "GET",
+      "operation_id": "getFact"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/facts",
+      "method": "POST",
+      "operation_id": "changeFacts"
+    },
+    {
+      "path": "/api/v1/facts/{fact_id}/decisions",
+      "method": "POST",
+      "operation_id": "decideFact"
+    },
+    {
+      "path": "/api/v1/facts/{fact_id}/withdrawals",
+      "method": "POST",
+      "operation_id": "withdrawFact"
+    },
+    {
+      "path": "/api/v1/rules/{rule_id}/decisions",
+      "method": "POST",
+      "operation_id": "decideRule"
+    },
+    {
+      "path": "/api/v1/findings/{finding_id}/decisions",
+      "method": "POST",
+      "operation_id": "decideFinding"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/rule-set-corrections",
+      "method": "POST",
+      "operation_id": "correctRuleSet"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/rules/decisions",
+      "method": "POST",
+      "operation_id": "confirmSelectedRules"
+    },
+    {
+      "path": "/api/v1/knowledge",
+      "method": "POST",
+      "operation_id": "createKnowledgeCandidate"
+    },
+    {
+      "path": "/api/v1/knowledge",
+      "method": "GET",
+      "operation_id": "searchKnowledge"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}",
+      "method": "GET",
+      "operation_id": "getKnowledge"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/versions",
+      "method": "POST",
+      "operation_id": "version_api_v1_knowledge__knowledge_id__versions_post"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/submit",
+      "method": "POST",
+      "operation_id": "submit_api_v1_knowledge__knowledge_id__submit_post"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/publish",
+      "method": "POST",
+      "operation_id": "publishKnowledge"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/withdraw",
+      "method": "POST",
+      "operation_id": "withdrawKnowledge"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/versions",
+      "method": "GET",
+      "operation_id": "versions_api_v1_knowledge__knowledge_id__versions_get"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/versions/{version_id}",
+      "method": "GET",
+      "operation_id": "historical_version_api_v1_knowledge__knowledge_id__versions__version_id__get"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/impacts",
+      "method": "GET",
+      "operation_id": "impacts_api_v1_knowledge__knowledge_id__impacts_get"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/references",
+      "method": "POST",
+      "operation_id": "reference_api_v1_knowledge__knowledge_id__references_post"
+    },
+    {
+      "path": "/api/v1/knowledge-references/{citation_id}",
+      "method": "GET",
+      "operation_id": "historical_reference_api_v1_knowledge_references__citation_id__get"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/source-positions",
+      "method": "GET",
+      "operation_id": "source_positions_api_v1_knowledge__knowledge_id__source_positions_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/knowledge-retrievals",
+      "method": "POST",
+      "operation_id": "postKnowledgeRetrievalResult"
+    },
+    {
+      "path": "/api/v1/knowledge-retrievals/{trace_id}",
+      "method": "GET",
+      "operation_id": "getKnowledgeRetrievalHistory"
+    },
+    {
+      "path": "/api/v1/knowledge-retrievals/{trace_id}/references",
+      "method": "POST",
+      "operation_id": "postKnowledgeUnitReference"
+    },
+    {
+      "path": "/api/v1/knowledge-unit-references/{citation_id}",
+      "method": "GET",
+      "operation_id": "getKnowledgeUnitReferenceHistory"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/indexes",
+      "method": "GET",
+      "operation_id": "getKnowledgeIndexPage"
+    },
+    {
+      "path": "/api/v1/knowledge/{knowledge_id}/indexes",
+      "method": "POST",
+      "operation_id": "postKnowledgeIndexAccepted"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/source-effectivity",
+      "method": "GET",
+      "operation_id": "getSourceEffectivity"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/source-effectivity-decisions",
+      "method": "POST",
+      "operation_id": "decideSourceEffectivity"
+    },
+    {
+      "path": "/api/v1/object-transfers/multipart/{upload_id}/parts/{part_number}",
+      "method": "PUT",
+      "operation_id": "putPrivateMultipartPart"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches",
+      "method": "GET",
+      "operation_id": "listUploadBatches"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/layout",
+      "method": "GET",
+      "operation_id": "getUploadLayout"
+    },
+    {
+      "path": "/api/v1/identity/bidders",
+      "method": "GET",
+      "operation_id": "listBiddingCompanies"
+    },
+    {
+      "path": "/api/v1/identity/bidders",
+      "method": "POST",
+      "operation_id": "registerBiddingCompany"
+    },
+    {
+      "path": "/api/v1/identity/default-bidder",
+      "method": "GET",
+      "operation_id": "getDefaultBiddingCompany"
+    },
+    {
+      "path": "/api/v1/identity/default-bidder",
+      "method": "PUT",
+      "operation_id": "selectDefaultBiddingCompany"
+    },
+    {
+      "path": "/api/v1/identity/engineering-projects",
+      "method": "GET",
+      "operation_id": "listEngineeringProjects"
+    },
+    {
+      "path": "/api/v1/identity/rounds",
+      "method": "GET",
+      "operation_id": "listEngineeringRounds"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/identity",
+      "method": "GET",
+      "operation_id": "getBidIdentity"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/identity",
+      "method": "PUT",
+      "operation_id": "correctBidIdentity"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-context",
+      "method": "GET",
+      "operation_id": "getPricingContext"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-formula-sources",
+      "method": "GET",
+      "operation_id": "listPricingFormulaSources"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-formulas",
+      "method": "POST",
+      "operation_id": "registerPricingFormula"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-formulas",
+      "method": "GET",
+      "operation_id": "listPricingFormulas"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-formulas/{formula_version_id}",
+      "method": "GET",
+      "operation_id": "getPricingFormula"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-simulations",
+      "method": "POST",
+      "operation_id": "simulatePricing"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-simulations/{simulation_id}",
+      "method": "GET",
+      "operation_id": "getPricingSimulation"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-plans",
+      "method": "POST",
+      "operation_id": "savePricingPlan"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-plans",
+      "method": "GET",
+      "operation_id": "listPricingPlans"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/pricing-plans/{plan_id}",
+      "method": "GET",
+      "operation_id": "getPricingPlan"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submission-gate",
+      "method": "GET",
+      "operation_id": "getSubmissionGate"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submissions",
+      "method": "POST",
+      "operation_id": "registerSubmission"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submission-facts",
+      "method": "POST",
+      "operation_id": "registerSubmissionFact"
+    },
+    {
+      "path": "/api/v1/submissions/{submission_id}/corrections",
+      "method": "POST",
+      "operation_id": "correctSubmission"
+    },
+    {
+      "path": "/api/v1/submissions/{submission_id}",
+      "method": "GET",
+      "operation_id": "getSubmission"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submissions",
+      "method": "GET",
+      "operation_id": "listSubmissions"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submission-documents",
+      "method": "GET",
+      "operation_id": "listSubmissionDocuments"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/report-exports",
+      "method": "GET",
+      "operation_id": "listReportExports"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/report-context",
+      "method": "GET",
+      "operation_id": "getReportContext"
+    },
+    {
+      "path": "/api/v1/reviews/{review_id}/report-exports",
+      "method": "POST",
+      "operation_id": "createReport"
+    },
+    {
+      "path": "/api/v1/report-exports/{report_id}",
+      "method": "GET",
+      "operation_id": "getReportExport"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submissions/{submission_id}/business-results",
+      "method": "GET",
+      "operation_id": "business_results_api_v1_bids__bid_id__submissions__submission_id__business_results_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/submissions/{submission_id}/business-results",
+      "method": "POST",
+      "operation_id": "register_result_api_v1_bids__bid_id__submissions__submission_id__business_results_post"
+    },
+    {
+      "path": "/api/v1/business-results/{result_id}",
+      "method": "GET",
+      "operation_id": "get_business_result_api_v1_business_results__result_id__get"
+    },
+    {
+      "path": "/api/v1/business-results/{result_id}/corrections",
+      "method": "POST",
+      "operation_id": "correct_business_result_api_v1_business_results__result_id__corrections_post"
+    },
+    {
+      "path": "/api/v1/business-results/{result_id}/verification-decisions",
+      "method": "POST",
+      "operation_id": "verify_business_result_api_v1_business_results__result_id__verification_decisions_post"
+    },
+    {
+      "path": "/api/v1/metrics",
+      "method": "GET",
+      "operation_id": "getBusinessMetrics"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/round-trends",
+      "method": "GET",
+      "operation_id": "getRoundTrends"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches/{batch_id}/retained-uploads",
+      "method": "POST",
+      "operation_id": "reuseRetainedUpload"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/word-originals",
+      "method": "GET",
+      "operation_id": "listWordOriginals"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/word-originals/{version_id}",
+      "method": "GET",
+      "operation_id": "getWordOriginal"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/word-originals/{version_id}/retry-conversion",
+      "method": "POST",
+      "operation_id": "retryWordConversion"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/word-materials/{version_id}",
+      "method": "GET",
+      "operation_id": "getWordMaterialAdoption"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
+      "method": "GET",
+      "operation_id": "tree_api_v1_bids__bid_id__drafts__draft_id__structure_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
+      "method": "POST",
+      "operation_id": "preview_api_v1_bids__bid_id__drafts__draft_id__structure_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",
+      "method": "POST",
+      "operation_id": "resolve_api_v1_bids__bid_id__authoring_structure_actions__action_id__resolve_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/plan",
+      "method": "PUT",
+      "operation_id": "plan_api_v1_bids__bid_id__drafts__draft_id__sections__section_id__plan_put"
+    },
+    {
+      "path": "/api/v1/authoring/templates",
+      "method": "GET",
+      "operation_id": "catalog_api_v1_authoring_templates_get"
+    },
+    {
+      "path": "/api/v1/authoring/template-versions/{version_id}",
+      "method": "GET",
+      "operation_id": "template_api_v1_authoring_template_versions__version_id__get"
+    },
+    {
+      "path": "/api/v1/authoring/template-families",
+      "method": "POST",
+      "operation_id": "create_template_api_v1_authoring_template_families_post"
+    },
+    {
+      "path": "/api/v1/authoring/template-families/{family_id}/versions",
+      "method": "POST",
+      "operation_id": "append_template_api_v1_authoring_template_families__family_id__versions_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/directory-template/preview",
+      "method": "POST",
+      "operation_id": "directory_preview_api_v1_bids__bid_id__drafts__draft_id__directory_template_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/style-template/preview",
+      "method": "POST",
+      "operation_id": "style_preview_api_v1_bids__bid_id__drafts__draft_id__style_template_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/restore-preview",
+      "method": "POST",
+      "operation_id": "restore_preview_api_v1_bids__bid_id__drafts__draft_id__structure_restore_preview_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure/history",
+      "method": "GET",
+      "operation_id": "history_api_v1_bids__bid_id__drafts__draft_id__structure_history_get"
+    },
+    {
+      "path": "/api/v1/technical-scale-capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_technical_scale_capabilities_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scale-context",
+      "method": "GET",
+      "operation_id": "context_api_v1_bids__bid_id__technical_scale_context_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scales",
+      "method": "POST",
+      "operation_id": "register_api_v1_bids__bid_id__technical_scales_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/technical-scales",
+      "method": "GET",
+      "operation_id": "list_versions_api_v1_bids__bid_id__technical_scales_get"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}",
+      "method": "GET",
+      "operation_id": "get_api_v1_technical_scales__scale_id__get"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}/corrections",
+      "method": "POST",
+      "operation_id": "correct_api_v1_technical_scales__scale_id__corrections_post"
+    },
+    {
+      "path": "/api/v1/technical-scales/{scale_id}/withdrawals",
+      "method": "POST",
+      "operation_id": "withdraw_api_v1_technical_scales__scale_id__withdrawals_post"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/lifecycle",
+      "method": "GET",
+      "operation_id": "getProjectLifecycle"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/lifecycle",
+      "method": "POST",
+      "operation_id": "changeProjectLifecycle"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches/{batch_id}/closure-state",
+      "method": "GET",
+      "operation_id": "getUploadBatchClosureState"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches/{batch_id}/close",
+      "method": "POST",
+      "operation_id": "closeUploadBatchKeepStaging"
+    },
+    {
+      "path": "/api/v1/model-governance/capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_model_governance_capabilities_get"
+    },
+    {
+      "path": "/api/v1/model-governance/training-protocols",
+      "method": "POST",
+      "operation_id": "create_protocol_api_v1_model_governance_training_protocols_post"
+    },
+    {
+      "path": "/api/v1/model-governance/training-protocols/{protocol_id}",
+      "method": "GET",
+      "operation_id": "get_protocol_api_v1_model_governance_training_protocols__protocol_id__get"
+    },
+    {
+      "path": "/api/v1/model-governance/cohort-previews",
+      "method": "POST",
+      "operation_id": "preview_cohort_api_v1_model_governance_cohort_previews_post"
+    },
+    {
+      "path": "/api/v1/model-governance/cohorts",
+      "method": "POST",
+      "operation_id": "create_cohort_api_v1_model_governance_cohorts_post"
+    },
+    {
+      "path": "/api/v1/model-governance/cohorts/{cohort_id}",
+      "method": "GET",
+      "operation_id": "get_cohort_api_v1_model_governance_cohorts__cohort_id__get"
+    },
+    {
+      "path": "/api/v1/model-governance/training-jobs",
+      "method": "POST",
+      "operation_id": "create_training_job_api_v1_model_governance_training_jobs_post"
+    },
+    {
+      "path": "/api/v1/model-governance/jobs/{job_id}",
+      "method": "GET",
+      "operation_id": "get_job_api_v1_model_governance_jobs__job_id__get"
+    },
+    {
+      "path": "/api/v1/model-governance/evaluations",
+      "method": "POST",
+      "operation_id": "create_evaluation_api_v1_model_governance_evaluations_post"
+    },
+    {
+      "path": "/api/v1/historical-proof/capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_historical_proof_capabilities_get"
+    },
+    {
+      "path": "/api/v1/historical-proof/submissions/{submission_id}/context",
+      "method": "GET",
+      "operation_id": "get_context_api_v1_historical_proof_submissions__submission_id__context_get"
+    },
+    {
+      "path": "/api/v1/historical-proof/subjects",
+      "method": "POST",
+      "operation_id": "save_subject_api_v1_historical_proof_subjects_post"
+    },
+    {
+      "path": "/api/v1/historical-proof/source-claims",
+      "method": "POST",
+      "operation_id": "save_claim_api_v1_historical_proof_source_claims_post"
+    },
+    {
+      "path": "/api/v1/historical-proof/subjects/{subject_id}",
+      "method": "GET",
+      "operation_id": "get_subject_api_v1_historical_proof_subjects__subject_id__get"
+    },
+    {
+      "path": "/api/v1/historical-proof/source-claims/{claim_id}",
+      "method": "GET",
+      "operation_id": "get_claim_api_v1_historical_proof_source_claims__claim_id__get"
+    },
+    {
+      "path": "/api/v1/historical-proof/subjects/{subject_id}/confirm",
+      "method": "POST",
+      "operation_id": "confirm_subject_api_v1_historical_proof_subjects__subject_id__confirm_post"
+    },
+    {
+      "path": "/api/v1/historical-proof/source-claims/{claim_id}/confirm",
+      "method": "POST",
+      "operation_id": "confirm_claim_api_v1_historical_proof_source_claims__claim_id__confirm_post"
+    },
+    {
+      "path": "/api/v1/historical-inputs/capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_historical_inputs_capabilities_get"
+    },
+    {
+      "path": "/api/v1/historical-inputs/submissions/{submission_id}/context",
+      "method": "GET",
+      "operation_id": "context_api_v1_historical_inputs_submissions__submission_id__context_get"
+    },
+    {
+      "path": "/api/v1/historical-inputs/{input_id}",
+      "method": "GET",
+      "operation_id": "get_input_api_v1_historical_inputs__input_id__get"
+    },
+    {
+      "path": "/api/v1/historical-inputs",
+      "method": "POST",
+      "operation_id": "create_input_api_v1_historical_inputs_post"
+    },
+    {
+      "path": "/api/v1/model-registry/capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_model_registry_capabilities_get"
+    },
+    {
+      "path": "/api/v1/model-registry/training-jobs/{training_job_id}/model-preview",
+      "method": "GET",
+      "operation_id": "model_preview_api_v1_model_registry_training_jobs__training_job_id__model_preview_get"
+    },
+    {
+      "path": "/api/v1/model-registry/models",
+      "method": "POST",
+      "operation_id": "register_model_api_v1_model_registry_models_post"
+    },
+    {
+      "path": "/api/v1/model-registry/models/{model_id}",
+      "method": "GET",
+      "operation_id": "get_model_api_v1_model_registry_models__model_id__get"
+    },
+    {
+      "path": "/api/v1/model-registry/routes/{lane}/{route_key}",
+      "method": "GET",
+      "operation_id": "get_route_api_v1_model_registry_routes__lane___route_key__get"
+    },
+    {
+      "path": "/api/v1/model-registry/routes/{lane}/{route_key}/changes",
+      "method": "POST",
+      "operation_id": "change_route_api_v1_model_registry_routes__lane___route_key__changes_post"
+    },
+    {
+      "path": "/api/v1/scoring-capabilities",
+      "method": "GET",
+      "operation_id": "capabilities_api_v1_scoring_capabilities_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/score-context",
+      "method": "GET",
+      "operation_id": "context_api_v1_bids__bid_id__score_context_get"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/score-inputs",
+      "method": "POST",
+      "operation_id": "create_input_api_v1_bids__bid_id__score_inputs_post"
+    },
+    {
+      "path": "/api/v1/score-inputs/{input_id}",
+      "method": "GET",
+      "operation_id": "get_input_api_v1_score_inputs__input_id__get"
+    },
+    {
+      "path": "/api/v1/score-inputs/{input_id}/jobs",
+      "method": "POST",
+      "operation_id": "start_job_api_v1_score_inputs__input_id__jobs_post"
+    },
+    {
+      "path": "/api/v1/score-jobs/{job_id}",
+      "method": "GET",
+      "operation_id": "get_job_api_v1_score_jobs__job_id__get"
+    },
+    {
+      "path": "/api/v1/score-jobs/{job_id}/state",
+      "method": "POST",
+      "operation_id": "change_job_api_v1_score_jobs__job_id__state_post"
+    },
+    {
+      "path": "/api/v1/score-jobs/{job_id}/result",
+      "method": "GET",
+      "operation_id": "get_result_api_v1_score_jobs__job_id__result_get"
+    },
+    {
+      "path": "/api/v1/score-jobs/{job_id}/shadow-context",
+      "method": "GET",
+      "operation_id": "get_shadow_context_api_v1_score_jobs__job_id__shadow_context_get"
+    },
+    {
+      "path": "/api/v1/score-jobs/{job_id}/shadows",
+      "method": "POST",
+      "operation_id": "save_shadow_api_v1_score_jobs__job_id__shadows_post"
+    },
+    {
+      "path": "/api/v1/score-shadows/{shadow_id}",
+      "method": "GET",
+      "operation_id": "get_shadow_api_v1_score_shadows__shadow_id__get"
+    },
+    {
+      "path": "/health/live",
+      "method": "GET",
+      "operation_id": "live_health_live_get"
+    },
+    {
+      "path": "/health/ready",
+      "method": "GET",
+      "operation_id": "ready_health_ready_get"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "method": "POST",
+      "operation_id": "login"
+    },
+    {
+      "path": "/api/v1/auth/session",
+      "method": "GET",
+      "operation_id": "getSession"
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "method": "POST",
+      "operation_id": "logout"
+    },
+    {
+      "path": "/api/v1/bids",
+      "method": "POST",
+      "operation_id": "createBid"
+    },
+    {
+      "path": "/api/v1/bids",
+      "method": "GET",
+      "operation_id": "listBids"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}",
+      "method": "GET",
+      "operation_id": "getBid"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches",
+      "method": "POST",
+      "operation_id": "createUploadBatch"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches/{batch_id}",
+      "method": "GET",
+      "operation_id": "getUploadBatch"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/uploads",
+      "method": "POST",
+      "operation_id": "createUpload"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}",
+      "method": "GET",
+      "operation_id": "getUpload"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/complete",
+      "method": "POST",
+      "operation_id": "completeUpload"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/bindings",
+      "method": "POST",
+      "operation_id": "rebindVerifiedUpload"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/upload-batches/{batch_id}/commit",
+      "method": "POST",
+      "operation_id": "commitBatch"
+    },
+    {
+      "path": "/api/v1/bids/{bid_id}/materials",
+      "method": "GET",
+      "operation_id": "getMaterials"
+    },
+    {
+      "path": "/api/v1/operations/{operation_id}",
+      "method": "GET",
+      "operation_id": "getOperation"
+    },
+    {
+      "path": "/api/v1/operations/{operation_id}/cancel",
+      "method": "POST",
+      "operation_id": "cancelOperation"
+    },
+    {
+      "path": "/api/v1/documents/{document_version_id}",
+      "method": "GET",
+      "operation_id": "getDocument"
+    },
+    {
+      "path": "/api/v1/documents/{document_version_id}/evidence",
+      "method": "GET",
+      "operation_id": "getDocumentEvidence"
+    },
+    {
+      "path": "/api/v1/artifacts/{artifact_id}/download",
+      "method": "GET",
+      "operation_id": "authorizeDownload"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/parts",
+      "method": "GET",
+      "operation_id": "getUploadParts"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/authorizations",
+      "method": "POST",
+      "operation_id": "refreshUploadAuthorization"
+    },
+    {
+      "path": "/api/v1/uploads/{upload_id}/abort",
+      "method": "POST",
+      "operation_id": "abortUpload"
+    }
+  ],
+  "response_check_scope": "All declared models expanded against final schemas; manual projections only selected real ASGI objects plus prior module evidence, not automatic validation of every response.",
+  "source_integrity": "all fixed input hashes matched",
+  "actual_sha256": "b65141d0db4afd51317e51a919c1582337bd260d858c27bfbeadc0b5c3cf9ab2"
+}

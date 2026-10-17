@@ -1,0 +1,92 @@
+{
+  "kind": "handoff_wip_inventory_not_frozen_candidate",
+  "date": "2026-10-17",
+  "root": "/workspace/tender-workbench",
+  "state": "stopped_for_user_requested_GitHub_handoff",
+  "sql03": "not_implemented",
+  "fresh_database_executions": 0,
+  "new_budget_hard_mock_executions": 0,
+  "new_budget_test_file_exists": false,
+  "files": [
+    {
+      "path": "packages/assistant/sql/intent-budget.sql",
+      "size": 35096,
+      "sha256": "ea53f1fe28afefea9fc81c0ad0b71f6c3ef8c9e804994521d71f2aef64b34403"
+    },
+    {
+      "path": "packages/assistant/intent_identity.py",
+      "size": 8121,
+      "sha256": "654a197fae3a257938b27916f730087fa473496ae4310a8d2df85768cbe669c8"
+    },
+    {
+      "path": "packages/assistant/budget.py",
+      "size": 13795,
+      "sha256": "b1ba63b02d28110ff9f619a5f359ead91b7b639609ccb1e6a056532db1167a8c"
+    },
+    {
+      "path": "packages/assistant/budget_math.py",
+      "size": 1142,
+      "sha256": "c6cf203c927a16dce39366033647984fb276b369aebcfecee7d347dff70ed919"
+    },
+    {
+      "path": "packages/assistant/paid_execution.py",
+      "size": 4955,
+      "sha256": "9b16064074107971c4a0921156d3d5330070ab6b7a335f0f74fdbb865518fe5d"
+    },
+    {
+      "path": "packages/assistant/budget_admin.py",
+      "size": 6114,
+      "sha256": "0d198e1e15f6235c0ee75a978a3e1c642e5aa552619acd5734b0a5d475f672c3"
+    },
+    {
+      "path": "packages/assistant/intent_capabilities.py",
+      "size": 6912,
+      "sha256": "546d8bc41fe3e6f17b692160bed778ead43ba5e96aee005a6f7f64f537cdf25a"
+    },
+    {
+      "path": "packages/assistant/budget_contracts.py",
+      "size": 6827,
+      "sha256": "0b57725a5f3970b2f332bfa1883897c58fddca1d76b39efa4a0ef61ea7d86e4c"
+    },
+    {
+      "path": "packages/assistant/jobs.py",
+      "size": 19529,
+      "sha256": "c9d4fc740554e4578564aae48c5e4f7cd39414a35a9f040eab806d74c9f6514e"
+    },
+    {
+      "path": "packages/assistant/protocol.py",
+      "size": 6119,
+      "sha256": "e81655803705f3b015d3092362a88a93ea41c9409fe1ad1cfed783a882614ec3"
+    },
+    {
+      "path": "packages/assistant/global_runtime.py",
+      "size": 15280,
+      "sha256": "12abf12e962729aa0bd12bec15127e3b9d4af6f6afbab26e538356bb7cc3b0de"
+    },
+    {
+      "path": "packages/assistant/tasks.py",
+      "size": 4084,
+      "sha256": "100f49be9c64834f52a4afe1a947f373954b6f184f885c587b6e5f2d7d8f3f33"
+    },
+    {
+      "path": "packages/assistant/generation.py",
+      "size": 12369,
+      "sha256": "6bff78ff157a2aded5b7895be573b05b4e0af50d4624095f7f2bc3393320c8a7"
+    },
+    {
+      "path": "packages/assistant/coordinator.py",
+      "size": 14653,
+      "sha256": "55e4fece7ed4d9eda9453f2b00d60f0a47db5c69f526cd55e195cb2701c27eeb"
+    },
+    {
+      "path": "packages/assistant/actual.py",
+      "size": 14855,
+      "sha256": "e1230b1bff80ba5584d28baad02c74296b377900cece82c93a95db3f6465d1e5"
+    },
+    {
+      "path": "apps/api/assistant_routes.py",
+      "size": 18427,
+      "sha256": "9b583e8731a48832becb947b9558c4cb0b7465366c3435448de54e798bb78f85"
+    }
+  ]
+}

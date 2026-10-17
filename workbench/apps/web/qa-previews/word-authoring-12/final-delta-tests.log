@@ -1,0 +1,23 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/AuthoringTemplateEditor.test.tsx src/DocumentRelationNotice.test.tsx src/AuthoringPlan.test.tsx src/AuthoringStructure.test.tsx src/WordOriginals.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordOriginals.test.tsx (3 tests) 327ms
+stderr | src/AuthoringStructure.test.tsx > 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag
+Received NaN for the `value` attribute. If this is expected, cast the value to a string.
+
+ ✓ src/AuthoringPlan.test.tsx (2 tests) 640ms
+   ✓ 人工预算保存走plan revision 0与draft11，不借section10冒充plan基准；空行不作事实  382ms
+ ✓ src/AuthoringStructure.test.tsx (4 tests) 1019ms
+   ✓ 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag  520ms
+ ✓ src/AuthoringTemplateEditor.test.tsx (2 tests) 230ms
+ ✓ src/DocumentRelationNotice.test.tsx (1 test) 79ms
+
+ Test Files  5 passed (5)
+      Tests  12 passed (12)
+   Start at  04:18:54
+   Duration  2.82s (transform 624ms, setup 649ms, collect 1.23s, tests 2.29s, environment 2.28s, prepare 463ms)
+

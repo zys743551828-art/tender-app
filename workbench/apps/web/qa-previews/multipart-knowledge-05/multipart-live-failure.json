@@ -1,0 +1,20 @@
+{
+  "stage": "resume-missing",
+  "error_type": "TypeError",
+  "parts": [2, 1],
+  "complete_attempts": 0,
+  "batch_id": "76294beb-e982-4ab7-a093-aa0c23815b4d",
+  "upload_id": "cba6e60c-e1e2-41c9-a5d0-18ce6df69a56",
+  "layout": {
+    "upload_id": "cba6e60c-e1e2-41c9-a5d0-18ce6df69a56",
+    "bid_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+    "mode": "multipart",
+    "part_size": 8388608,
+    "part_count": 2,
+    "byte_size": 9441426,
+    "declared_sha256": "eb9dad78eaf1be65ced74c8bfb39d1252ccd3d6d16d195f3d1052e14bda36262",
+    "revision": 1,
+    "state": "authorized",
+    "session_expires_at": "2026-10-17T19:40:40.883080+00:00"
+  }
+}

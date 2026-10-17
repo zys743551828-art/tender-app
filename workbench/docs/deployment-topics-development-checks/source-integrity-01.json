@@ -1,0 +1,24 @@
+{
+  "frozen_own_inputs_match": true,
+  "composition02_432_sources_unchanged": true,
+  "test_route_dependencies": [
+    {
+      "path": "apps/worker/engine.py",
+      "sha256": "8fa3fe1b04fc58aef2b6fa5915029a982d96f19a0b749824e1222de95b748b9b",
+      "composition02_sha256": "8fa3fe1b04fc58aef2b6fa5915029a982d96f19a0b749824e1222de95b748b9b",
+      "same_bytes": true
+    },
+    {
+      "path": "packages/assistant/transport.py",
+      "sha256": "975327b735146397e59dc81ead12dc76c53c9994c47550955c03e2e51b60c486",
+      "composition02_sha256": "975327b735146397e59dc81ead12dc76c53c9994c47550955c03e2e51b60c486",
+      "same_bytes": true
+    },
+    {
+      "path": "packages/research/batches.py",
+      "sha256": "cf0299442661730043f17d5c45b29027ed16547ca39ee813e465d460e5bc9565",
+      "composition02_sha256": "cf0299442661730043f17d5c45b29027ed16547ca39ee813e465d460e5bc9565",
+      "same_bytes": true
+    }
+  ]
+}

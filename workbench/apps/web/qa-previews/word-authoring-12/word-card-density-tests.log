@@ -1,0 +1,14 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/WordOriginals.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordOriginals.test.tsx (3 tests) 197ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  04:31:26
+   Duration  988ms (transform 150ms, setup 114ms, collect 202ms, tests 197ms, environment 286ms, prepare 63ms)
+

@@ -1,0 +1,68 @@
+{
+  "at": "2026-10-17T03:54:14.456490+00:00",
+  "mode": "development11asset_overlay_only",
+  "origin": "http://127.0.0.1:5184",
+  "api": "http://127.0.0.1:8816",
+  "checks": [
+    {
+      "viewport": 1440,
+      "cold_and_refresh_input_visible": true,
+      "initial_input_box": {
+        "x": 323,
+        "y": 825.875,
+        "width": 1014,
+        "height": 115.5625
+      },
+      "refreshed_input_box": {
+        "x": 323,
+        "y": 825.875,
+        "width": 1014,
+        "height": 115.5625
+      },
+      "history_scroll_preserved_after_poll": 0,
+      "keyboard_continue_focus": true,
+      "unknown_send_disabled": true,
+      "no_overflow": true
+    },
+    {
+      "viewport": 390,
+      "cold_and_refresh_input_visible": true,
+      "initial_input_box": {
+        "x": 35,
+        "y": 647.171875,
+        "width": 320,
+        "height": 115.5625
+      },
+      "refreshed_input_box": {
+        "x": 35,
+        "y": 647.171875,
+        "width": 320,
+        "height": 115.5625
+      },
+      "history_scroll_preserved_after_poll": 0,
+      "keyboard_continue_focus": true,
+      "unknown_send_disabled": true,
+      "no_overflow": true
+    },
+    {
+      "scoped_unsent_drafts_and_browser_back": true
+    },
+    {
+      "mobile_drawer_visible_input_and_draft": true,
+      "escape_returns_trigger": true
+    },
+    {
+      "explicit_action_link_preserves_position": true,
+      "executed_receipt_preserved": true
+    }
+  ],
+  "loaded_assets": {
+    "/assets/index-Biu_wSbQ.css": "5d908cee47999f7942e3e60a5e9878bcc99e8b40e91d8423ad636784b374cb64",
+    "/assets/index-CIczeqcA.js": "c457f35e1a77c41626c1f82f4ded94354e062819bd5eacc591913915c1a25ce2"
+  },
+  "blocked_business_writes": [],
+  "page_errors": [],
+  "model_calls": 0,
+  "control_changes": 0,
+  "task_runs": 0
+}

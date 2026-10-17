@@ -1,0 +1,40 @@
+{
+  "status": "passed_real_nonowner_read_only_guard_probes",
+  "database": "tender_checks_combined_delivery01",
+  "roles": [
+    {
+      "role": "api",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    },
+    {
+      "role": "worker",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    },
+    {
+      "role": "research_worker",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    },
+    {
+      "role": "score_read",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    },
+    {
+      "role": "model_train",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    },
+    {
+      "role": "model_evaluate",
+      "actual_identity_verified": true,
+      "wrong_expected_database_rejected": true
+    }
+  ],
+  "new_database_created": false,
+  "DDL_executed": false,
+  "old_profiles_modified": false,
+  "provider_requests": 0
+}

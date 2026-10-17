@@ -1,0 +1,66 @@
+{
+  "scope": "RAG独立用例计划，未执行；等待PM入口/固定权重/隔离PG",
+  "software_executed": 0,
+  "cases": [
+    {
+      "id": "RAG-Q01",
+      "status": "pending_implementation",
+      "expected": "真实tokenizer对中文/英文/数字/长段逐页分块；不跨parse或物理页；块数和token上限可独立复核"
+    },
+    {
+      "id": "RAG-Q02",
+      "status": "pending_implementation",
+      "expected": "实际BGE-m3固定revision/文件hash，本地只读权重，无运行时下载/远端代码；输出1024有限数且L2归一"
+    },
+    {
+      "id": "RAG-Q03",
+      "status": "pending_implementation",
+      "expected": "同1024维但revision/weights/preprocess/profile不同不能混用；1023/NaN/Inf/零向量拒绝"
+    },
+    {
+      "id": "RAG-Q04",
+      "status": "pending_implementation",
+      "expected": "实际PG词法与dense候选分别留证，融合去重稳定；实际BGE rerank重新排序，不以纯core排序冒充"
+    },
+    {
+      "id": "RAG-Q05",
+      "status": "pending_implementation",
+      "expected": "项目A不准入项目B私有来源；明确准入可复用知识有合法正向，不将全部跨项目知识一概禁止"
+    },
+    {
+      "id": "RAG-Q06",
+      "status": "pending_implementation",
+      "expected": "子来源合法而直接/多跳祖先future known_at仍拒绝，边界as_of前后正负互证"
+    },
+    {
+      "id": "RAG-Q07",
+      "status": "pending_implementation",
+      "expected": "直接/多跳祖先当前withdrawn或head停用拒绝，不以旧快照绕过当前撤回"
+    },
+    {
+      "id": "RAG-Q08",
+      "status": "pending_implementation",
+      "expected": "禁止来源/含官方标签同组/派生混入沿准入约束排除；score LOGIN实际不能读标签表"
+    },
+    {
+      "id": "RAG-Q09",
+      "status": "pending_implementation",
+      "expected": "业务as_of独立审计frozen_at，known_at<=、valid_from<=、valid_until上界排除；审计冻结变动不改合法集合"
+    },
+    {
+      "id": "RAG-Q10",
+      "status": "pending_implementation",
+      "expected": "真实引用citationID唯一且已供应，版本/parse/物理页/逐字quote一致；伪造页、旧revision、跨来源、外部citation拒绝"
+    },
+    {
+      "id": "RAG-Q11",
+      "status": "pending_implementation",
+      "expected": "检索后至使用前来源撤回/新增禁组或head更新，迟到引用不得形成有效当前结论；保留trace和失效原因"
+    },
+    {
+      "id": "RAG-Q12",
+      "status": "pending_implementation",
+      "expected": "无候选/embedding或rerank不可用如实缺口；正式评分仍完整相关章节与三判断，不以RAG片段完成评分"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/AuthoringStructure.test.tsx src/AuthoringPlan.test.tsx src/AuthoringTemplateEditor.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/AuthoringTemplateEditor.test.tsx (2 tests) 291ms
+ ✓ src/AuthoringPlan.test.tsx (2 tests) 307ms
+ ✓ src/AuthoringStructure.test.tsx (4 tests) 573ms
+   ✓ 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag  312ms
+
+ Test Files  3 passed (3)
+      Tests  8 passed (8)
+   Start at  04:19:58
+   Duration  1.55s (transform 448ms, setup 445ms, collect 769ms, tests 1.17s, environment 1.03s, prepare 191ms)
+

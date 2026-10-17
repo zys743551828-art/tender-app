@@ -1,0 +1,63 @@
+{
+  "scope": "Frontend07 isolated asset overlay; real unchanged API8806/Origin5176. Own synthetic project; stage statements explicitly synthetic, not real business effects or official verification",
+  "at": "2026-10-17T02:14:04.510471+00:00",
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "submission_id": "01283e54-4d37-4377-a7f1-643f6b4a12ef",
+  "initial_result_id": "fb7490dd-81de-401e-8525-bea88af1b412",
+  "candidate_metrics": {
+    "effective_submissions": 1,
+    "stage_counts": {
+      "technical_shortlisted": 0,
+      "not_shortlisted": 0,
+      "rejected": 0,
+      "candidate": 1,
+      "awarded": 0,
+      "not_awarded": 0,
+      "cancelled": 0,
+      "failed_tender": 0
+    },
+    "win_rate": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "verification_counts": {
+      "pending": 1,
+      "verified": 0,
+      "conflict": 0,
+      "rejected": 0
+    }
+  },
+  "original_candidate_id": "fb7490dd-81de-401e-8525-bea88af1b412",
+  "corrected_result_id": "d9e72cd3-0c64-4d13-aa19-395058e3321d",
+  "offline_check_label_preserved": true,
+  "user_reported_not_verified": true,
+  "candidate_not_awarded_zero_denominator_null": true,
+  "correction_keeps_original": true,
+  "lost_response_original_body_etag_key_replayed": true,
+  "transport_attempt_count": 2,
+  "request_body_sha256": "c7246dc4a0f5aa91ad5f41698686d845a30b8c5c73dd95c6f9542505a90d3d20",
+  "condition_and_key_hashes": {
+    "etag": "428aa57dd3b85cbabb47f6812334eaa557477e69ebe1e37b2bfacfbf2c90eace",
+    "key": "aea6d55856928c6a5c87183e92fffa5067182924ca9c734aef3de57a419d8518"
+  },
+  "result_rows_before": 4,
+  "result_rows_after": 5,
+  "one_new_result_after_multiple_attempts": true,
+  "current_head_only_in_metrics": true,
+  "verified_only_excludes_pending": true,
+  "unknown_risks_and_errors_not_zero": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "paid_calls": 0,
+  "writes": [
+    {
+      "method": "POST",
+      "path": "business-results/907a5916-49f7-4677-9a38-592532dc6b92/corrections"
+    },
+    {
+      "method": "POST",
+      "path": "business-results/907a5916-49f7-4677-9a38-592532dc6b92/corrections"
+    }
+  ]
+}

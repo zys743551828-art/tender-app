@@ -1,0 +1,520 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+··········x··x···x··x·······x································································
+
+ Test Files  2 failed | 20 passed (22)
+      Tests  5 failed | 88 passed (93)
+     Errors  5 errors
+   Start at  01:26:34
+   Duration  13.03s (transform 1.34s, setup 2.87s, collect 3.33s, tests 19.38s, environment 7.72s, prepare 1.42s)
+
+stderr | src/A1Recovery.test.tsx > 刷新后从服务端恢复准备请求与固定稿件，运行中不再次开始
+TypeError: Cannot read properties of undefined (reading 'pricing')
+    at /workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:29:40
+    at Array.filter (<anonymous>)
+    at WorkspaceNavigation (/workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:24:12)
+    at Object.react-stack-bottom-frame (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:23863:20)
+    at renderWithHooks (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:8897:19)
+    at beginWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+    at performUnitOfWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)
+    at workLoopSync (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)
+An error occurred in the <WorkspaceNavigation> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/A1Workspace.test.tsx > 显式历史轮次优先，不拿current指针替换所指review
+TypeError: Cannot read properties of undefined (reading 'pricing')
+    at /workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:29:40
+    at Array.filter (<anonymous>)
+    at WorkspaceNavigation (/workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:24:12)
+    at Object.react-stack-bottom-frame (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:23863:20)
+    at renderWithHooks (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:8897:19)
+    at beginWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+    at performUnitOfWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)
+    at workLoopSync (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)
+An error occurred in the <WorkspaceNavigation> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/A1Recovery.test.tsx > 未冻结旧请求已过期时保留V1身份，当前稿V2需要明确开始且不自动收费
+TypeError: Cannot read properties of undefined (reading 'pricing')
+    at /workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:29:40
+    at Array.filter (<anonymous>)
+    at WorkspaceNavigation (/workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:24:12)
+    at Object.react-stack-bottom-frame (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:23863:20)
+    at renderWithHooks (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:8897:19)
+    at beginWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+    at performUnitOfWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)
+    at workLoopSync (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)
+An error occurred in the <WorkspaceNavigation> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/A1Recovery.test.tsx > 准备失败保留范围，明确重试只发一次当前输入和真实bid ETag
+TypeError: Cannot read properties of undefined (reading 'pricing')
+    at /workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:29:40
+    at Array.filter (<anonymous>)
+    at WorkspaceNavigation (/workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:24:12)
+    at Object.react-stack-bottom-frame (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:23863:20)
+    at renderWithHooks (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:8897:19)
+    at beginWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+    at performUnitOfWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)
+    at workLoopSync (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)
+An error occurred in the <WorkspaceNavigation> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+stderr | src/A1Recovery.test.tsx > 新浏览器没有本地任务缓存仍能从服务器准备请求找到操作与失败详情入口
+TypeError: Cannot read properties of undefined (reading 'pricing')
+    at /workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:29:40
+    at Array.filter (<anonymous>)
+    at WorkspaceNavigation (/workspace/tender-workbench/apps/web/src/WorkspaceNavigation.tsx:24:12)
+    at Object.react-stack-bottom-frame (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:23863:20)
+    at renderWithHooks (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:5529:22)
+    at updateFunctionComponent (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:8897:19)
+    at beginWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:10522:18)
+    at runWithFiberInDEV (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:1522:13)
+    at performUnitOfWork (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:15140:22)
+    at workLoopSync (/workspace/tender-workbench/apps/web/node_modules/react-dom/cjs/react-dom-client.development.js:14956:41)
+An error occurred in the <WorkspaceNavigation> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/A1Recovery.test.tsx > 刷新后从服务端恢复准备请求与固定稿件，运行中不再次开始
+TestingLibraryElementError: Unable to find an element with the text: 正文V2.pdf · 文件版本 2. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-label[39m=[32m"本次评审进度"[39m
+  [33mclass[39m=[32m"panel review-progress "[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"section-heading"[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"eyebrow"[39m
+      [36m>[39m
+        [0m可恢复的本次处理[0m
+      [36m</span>[39m
+      [36m<h2>[39m
+        [0m正在准备本轮要求，完成后自动开始评审，可离开[0m
+      [36m</h2>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"muted"[39m
+      [36m>[39m
+        [0m受理、准备与任务结束均不等于核心核对通过。[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"badge "[39m
+    [36m>[39m
+      [0m明确发起[0m
+    [36m</span>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"loading"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"spinner"[39m
+    [36m/>[39m
+    [0m正在读取…[0m
+  [36m</div>[39m
+  [36m<p>[39m
+    [0m本次正文：[0m
+    [36m<strong>[39m
+      [0m正在读取实际版本身份…[0m
+    [36m</strong>[39m
+  [36m</p>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"small-note"[39m
+  [36m>[39m
+    [0m本次资料修订 [0m
+    [0m2[0m
+    [0m · 当前资料修订[0m
+    [0m [0m
+    [0m2[0m
+  [36m</p>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"loading"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"spinner"[39m
+    [36m/>[39m
+    [0m正在读取…[0m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"request-cancellation"[39m
+  [36m>[39m
+    [36m<button[39m
+      [33maria-expanded[39m=[32m"false"[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m取消本次准备请求[0m
+    [36m</button>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"review-shortcuts"[39m
+  [36m>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m查看处理记录与失败范围[0m
+    [36m</button>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m刷新实际进度[0m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</section>[39m
+
+Ignored nodes: comments, script, style
+[36m<section[39m
+  [33maria-label[39m=[32m"本次评审进度"[39m
+  [33mclass[39m=[32m"panel review-progress "[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"section-heading"[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"eyebrow"[39m
+      [36m>[39m
+        [0m可恢复的本次处理[0m
+      [36m</span>[39m
+      [36m<h2>[39m
+        [0m正在准备本轮要求，完成后自动开始评审，可离开[0m
+      [36m</h2>[39m
+      [36m<p[39m
+        [33mclass[39m=[32m"muted"[39m
+      [36m>[39m
+        [0m受理、准备与任务结束均不等于核心核对通过。[0m
+      [36m</p>[39m
+    [36m</div>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"badge "[39m
+    [36m>[39m
+      [0m明确发起[0m
+    [36m</span>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"loading"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"spinner"[39m
+    [36m/>[39m
+    [0m正在读取…[0m
+  [36m</div>[39m
+  [36m<p>[39m
+    [0m本次正文：[0m
+    [36m<strong>[39m
+      [0m正在读取实际版本身份…[0m
+    [36m</strong>[39m
+  [36m</p>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"small-note"[39m
+  [36m>[39m
+    [0m本次资料修订 [0m
+    [0m2[0m
+    [0m · 当前资料修订[0m
+    [0m [0m
+    [0m2[0m
+  [36m</p>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"loading"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33mclass[39m=[32m"spinner"[39m
+    [36m/>[39m
+    [0m正在读取…[0m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"request-cancellation"[39m
+  [36m>[39m
+    [36m<button[39m
+      [33maria-expanded[39m=[32m"false"[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m取消本次准备请求[0m
+    [36m</button>[39m
+  [36m</div>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"review-shortcuts"[39m
+  [36m>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m查看处理记录与失败范围[0m
+    [36m</button>[39m
+    [36m<button[39m
+      [33mclass[39m=[32m"text-button"[39m
+    [36m>[39m
+      [0m刷新实际进度[0m
+    [36m</button>[39m
+  [36m</div>[39m
+[36m</section>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/A1Recovery.test.tsx:195:7
+    193|     await within(
+    194|       screen.getByRole("region", { name: "本次评审进度" }),
+    195|     ).findByText("正文V2.pdf · 文件版本 2"),
+       |       ^
+    196|   ).toBeVisible();
+    197|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/A1Recovery.test.tsx > 未冻结旧请求已过期时保留V1身份，当前稿V2需要明确开始且不自动收费
+TestingLibraryElementError: Unable to find an element with the text: 正文V1.pdf · 文件版本 1. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/A1Recovery.test.tsx:315:23
+    313|   workspace();
+    314|   expect(await screen.findByText("资料已更新，原请求已过期")).toBeVisible();
+    315|   expect(await screen.findByText("正文V1.pdf · 文件版本 1")).toBeVisible();
+       |                       ^
+    316|   expect(screen.getByLabelText("本次评审正文")).toHaveValue("body-v2");
+    317|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/A1Recovery.test.tsx > 准备失败保留范围，明确重试只发一次当前输入和真实bid ETag
+Error: expect(element).toBeEnabled()
+
+Received element is not enabled:
+  <button
+  class="button primary"
+  disabled=""
+/>
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ src/A1Recovery.test.tsx:359:37
+    357|   expect(await screen.findByText("必要表页读取尚未完成")).toBeVisible();
+    358|   const retry = await screen.findByRole("button", { name: "重试并继续评审" });
+    359|   await waitFor(() => expect(retry).toBeEnabled());
+       |                                     ^
+    360|   await userEvent.click(retry);
+    361|   const writes = transport.mock.calls.filter(
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/A1Recovery.test.tsx > 新浏览器没有本地任务缓存仍能从服务器准备请求找到操作与失败详情入口
+TestingLibraryElementError: Unable to find an element with the text: 评审要求准备 · 记录 op-prepa. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/A1Recovery.test.tsx:540:23
+    538|     />,
+    539|   );
+    540|   expect(await screen.findByText("评审要求准备 · 记录 op-prepa")).toBeVisible(…
+       |                       ^
+    541|   expect(
+    542|     screen.getByRole("button", { name: "查看字段与范围详情" }),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/A1Workspace.test.tsx > 显式历史轮次优先，不拿current指针替换所指review
+TestingLibraryElementError: Unable to find an element with the text: 历史评审 · 输入已固定. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/A1Workspace.test.tsx:442:23
+    440|     />,
+    441|   );
+    442|   expect(await screen.findByText("历史评审 · 输入已固定")).toBeVisible();
+       |                       ^
+    443|   expect(
+    444|     fetchMock.mock.calls.some(([url]) => url === "/api/v1/reviews/revi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 5 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'pricing')
+ ❯ src/WorkspaceNavigation.tsx:29:40
+     27|               (pricingAvailable &&
+     28|                 settings.data?.bid_id === bidId &&
+     29|                 settings.data.settings.pricing &&
+       |                                        ^
+     30|                 !settings.error),
+     31|           )
+ ❯ WorkspaceNavigation src/WorkspaceNavigation.tsx:24:12
+ ❯ Object.react-stack-bottom-frame node_modules/react-dom/cjs/react-dom-client.development.js:23863:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:5529:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:8897:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:10522:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1522:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:15140:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+
+This error originated in "src/A1Recovery.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "刷新后从服务端恢复准备请求与固定稿件，运行中不再次开始". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'pricing')
+ ❯ src/WorkspaceNavigation.tsx:29:40
+     27|               (pricingAvailable &&
+     28|                 settings.data?.bid_id === bidId &&
+     29|                 settings.data.settings.pricing &&
+       |                                        ^
+     30|                 !settings.error),
+     31|           )
+ ❯ WorkspaceNavigation src/WorkspaceNavigation.tsx:24:12
+ ❯ Object.react-stack-bottom-frame node_modules/react-dom/cjs/react-dom-client.development.js:23863:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:5529:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:8897:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:10522:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1522:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:15140:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+
+This error originated in "src/A1Workspace.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "显式历史轮次优先，不拿current指针替换所指review". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'pricing')
+ ❯ src/WorkspaceNavigation.tsx:29:40
+     27|               (pricingAvailable &&
+     28|                 settings.data?.bid_id === bidId &&
+     29|                 settings.data.settings.pricing &&
+       |                                        ^
+     30|                 !settings.error),
+     31|           )
+ ❯ WorkspaceNavigation src/WorkspaceNavigation.tsx:24:12
+ ❯ Object.react-stack-bottom-frame node_modules/react-dom/cjs/react-dom-client.development.js:23863:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:5529:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:8897:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:10522:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1522:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:15140:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+
+This error originated in "src/A1Recovery.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "未冻结旧请求已过期时保留V1身份，当前稿V2需要明确开始且不自动收费". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'pricing')
+ ❯ src/WorkspaceNavigation.tsx:29:40
+     27|               (pricingAvailable &&
+     28|                 settings.data?.bid_id === bidId &&
+     29|                 settings.data.settings.pricing &&
+       |                                        ^
+     30|                 !settings.error),
+     31|           )
+ ❯ WorkspaceNavigation src/WorkspaceNavigation.tsx:24:12
+ ❯ Object.react-stack-bottom-frame node_modules/react-dom/cjs/react-dom-client.development.js:23863:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:5529:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:8897:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:10522:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1522:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:15140:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+
+This error originated in "src/A1Recovery.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "准备失败保留范围，明确重试只发一次当前输入和真实bid ETag". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of undefined (reading 'pricing')
+ ❯ src/WorkspaceNavigation.tsx:29:40
+     27|               (pricingAvailable &&
+     28|                 settings.data?.bid_id === bidId &&
+     29|                 settings.data.settings.pricing &&
+       |                                        ^
+     30|                 !settings.error),
+     31|           )
+ ❯ WorkspaceNavigation src/WorkspaceNavigation.tsx:24:12
+ ❯ Object.react-stack-bottom-frame node_modules/react-dom/cjs/react-dom-client.development.js:23863:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:5529:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:8897:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:10522:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:1522:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:15140:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:14956:41
+
+This error originated in "src/A1Recovery.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "新浏览器没有本地任务缓存仍能从服务器准备请求找到操作与失败详情入口". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+

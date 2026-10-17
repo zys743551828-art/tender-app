@@ -1,0 +1,15 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/useAssistantContinuation.test.tsx src/AssistantWorkspace.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/useAssistantContinuation.test.tsx (7 tests) 185ms
+ ✓ src/AssistantWorkspace.test.tsx (9 tests) 706ms
+
+ Test Files  2 passed (2)
+      Tests  16 passed (16)
+   Start at  03:54:02
+   Duration  1.90s (transform 350ms, setup 264ms, collect 559ms, tests 891ms, environment 724ms, prepare 152ms)
+

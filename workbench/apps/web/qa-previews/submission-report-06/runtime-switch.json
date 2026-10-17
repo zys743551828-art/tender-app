@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-10-17T01:30:30.269312+00:00",
+  "old_process": {
+    "pid": 1242449,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/node_modules/.bin/vite --host 127.0.0.1 --port 5173 --mode delivery06 --host 127.0.0.1 --port 5176 --strictPort"
+  },
+  "signal": "SIGTERM",
+  "new_runtime_root": "/workspace/tender-workbench/apps/web/qa-previews/submission-report-06/frozen-inputs",
+  "config": "public API_PROXY_TARGET=http://127.0.0.1:8806 only; Origin5176",
+  "other_ports_untouched": [
+    5173,
+    5175,
+    8802,
+    8804,
+    8806
+  ],
+  "candidate_manifest_sha256": "9954c6e6f02450df944a7c5f75f8d7f80072ef12a25aa1082dd9a8900f039f6d"
+}

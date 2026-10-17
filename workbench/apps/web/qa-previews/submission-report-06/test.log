@@ -1,0 +1,14 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+······························································································
+
+ Test Files  22 passed (22)
+      Tests  94 passed (94)
+   Start at  01:28:40
+   Duration  13.41s (transform 1.91s, setup 3.60s, collect 4.40s, tests 15.91s, environment 9.60s, prepare 1.86s)
+

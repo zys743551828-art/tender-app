@@ -14,3 +14,8 @@ __pycache__/
 deploy/.env
 deploy/secrets/*
 !deploy/secrets/README.md
+
+# New workbench private runtime and recoverable dependencies
+workbench/.env
+workbench/.local/
+workbench/.venv*/

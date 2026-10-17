@@ -167,7 +167,7 @@ describe('报告页：评审报告', () => {
     expect(verdict.getByText('价格分 29')).toBeInTheDocument();
   });
 
-  it('下一步按后端顺序列出，按钮写明要做什么，第一条是主按钮；评审本身的动作交给顶部横幅', async () => {
+  it('下一步默认只突出最优先的一项，展开其余待办后保留后端顺序与具体入口', async () => {
     backend(
       report({
         next_actions: [
@@ -192,6 +192,13 @@ describe('报告页：评审报告', () => {
     );
     renderApp('/projects/prj-1');
     const section = (await screen.findByRole('heading', { name: '下一步' })).closest('section')!;
+    expect(within(section).getByRole('link', { name: '确认规则' })).toBeVisible();
+    expect(within(section).getByRole('link', { name: '确认规则' })).toHaveAttribute(
+      'data-variant',
+      'primary',
+    );
+    expect(within(section).getByRole('link', { name: '登记结果' })).not.toBeVisible();
+    await userEvent.click(within(section).getByText('其余待办（2）'));
     const items = within(section).getAllByRole('listitem');
     expect(items.map((li) => li.querySelector('strong')?.textContent)).toEqual([
       '确认 2 条规则',

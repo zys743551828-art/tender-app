@@ -1,0 +1,22 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/RetrievalDrawer.test.tsx (5 tests) 1070ms
+   ✓ 网络失败后重试原输入与同一命令键，修改中的问题不悄悄替换失败命令  373ms
+ ✓ src/A1Workspace.test.tsx (8 tests) 681ms
+ ✓ src/App.test.tsx (4 tests) 950ms
+   ✓ 投标工作区 > 登录失败持续显示，成功后空工作区不展示模拟指标  524ms
+   ✓ 投标工作区 > 会话过期保留未提交名称；重新登录不自动重放写入  336ms
+ ✓ src/HistoryPanel.test.tsx (2 tests) 194ms
+ ✓ src/api.test.ts (3 tests) 12ms
+ ✓ src/Project.test.tsx (3 tests) 473ms
+
+ Test Files  6 passed (6)
+      Tests  25 passed (25)
+   Start at  17:08:19
+   Duration  3.56s (transform 941ms, setup 1.08s, collect 1.86s, tests 3.38s, environment 2.58s, prepare 474ms)
+

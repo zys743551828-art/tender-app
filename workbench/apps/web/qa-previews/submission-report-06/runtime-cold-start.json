@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-17T01:31:17.316072+00:00",
+  "candidate_manifest_sha256": "9954c6e6f02450df944a7c5f75f8d7f80072ef12a25aa1082dd9a8900f039f6d",
+  "source_tree_sha256": "abb9de966a4202fa58d0fb1ce95cd2c6a122f6420d84bc4d53c4c860b16bbffd",
+  "source_files_verified": 104,
+  "runtime_root": "/workspace/tender-workbench/apps/web/qa-previews/submission-report-06/frozen-inputs",
+  "origin": "http://127.0.0.1:5176",
+  "api_proxy_target": "http://127.0.0.1:8806",
+  "session_id": 53282,
+  "process": {
+    "pid": 1497602,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/qa-previews/submission-report-06/frozen-inputs/node_modules/.bin/vite --host 127.0.0.1 --port 5173 --mode delivery06 --host 127.0.0.1 --port 5176 --strictPort"
+  },
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "authenticated_known_new_QA_account": true,
+  "real_new_database_project_history_readable": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "business_writes": [],
+  "paid_calls": 0
+}

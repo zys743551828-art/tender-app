@@ -1,0 +1,63 @@
+{
+  "stage": "cross-context-batch-discovery",
+  "error_type": "AssertionError",
+  "project_id": "06c25da7-412b-4c0c-b56c-567da0729968",
+  "auto_review": false,
+  "initial_identity": "pending",
+  "body_version_id": "e47d142e-e044-4ae1-aa22-885c8e024f6f",
+  "tender_version_id": "b11f491b-4231-4e31-86bc-0d08920d3216",
+  "batch_id": "5e412ccf-c683-4dd2-904f-4457f6dfbb32",
+  "original_submission_id": "61e7d7aa-ac6d-458e-8f0e-0e5b159d139c",
+  "corrected_submission_id": "dd24a602-f910-4a55-a533-83219a8c7484",
+  "alerts": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids"
+    },
+    {
+      "method": "PATCH",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/settings"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/upload-batches"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/uploads"
+    },
+    {
+      "method": "PUT",
+      "path": "object-transfers/uploads/6d18af39-521c-456b-9d70-69ed571f1692"
+    },
+    {
+      "method": "POST",
+      "path": "uploads/6d18af39-521c-456b-9d70-69ed571f1692/complete"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/uploads"
+    },
+    {
+      "method": "PUT",
+      "path": "object-transfers/uploads/11519bbd-aa48-47b6-90a1-e8577c892d7e"
+    },
+    {
+      "method": "POST",
+      "path": "uploads/11519bbd-aa48-47b6-90a1-e8577c892d7e/complete"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/upload-batches/5e412ccf-c683-4dd2-904f-4457f6dfbb32/commit"
+    },
+    {
+      "method": "POST",
+      "path": "bids/06c25da7-412b-4c0c-b56c-567da0729968/submission-facts"
+    },
+    {
+      "method": "POST",
+      "path": "submissions/61e7d7aa-ac6d-458e-8f0e-0e5b159d139c/corrections"
+    }
+  ]
+}

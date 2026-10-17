@@ -1,0 +1,16 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/HistoryPanel.test.tsx (2 tests) 183ms
+ ✓ src/Project.test.tsx (3 tests) 401ms
+ ✓ src/App.test.tsx (4 tests) 533ms
+
+ Test Files  3 passed (3)
+      Tests  9 passed (9)
+   Start at  14:14:09
+   Duration  1.76s (transform 481ms, setup 598ms, collect 725ms, tests 1.12s, environment 1.42s, prepare 326ms)
+

@@ -1,0 +1,30 @@
+{
+  "scope": "actual read-only final-source delta: purpose/media guard + Chinese report gaps, no report regeneration",
+  "checked_at": "2026-10-17T01:29:13.106933+00:00",
+  "project_id": "606845b4-eb73-4b90-ba32-b275d71f6b01",
+  "review_id": "512ab15f-2261-41ba-aec4-5ec42690f72c",
+  "downloads": [
+    {
+      "report_id": "f09bd11b-5d01-44a5-a2b4-7e2052102f03",
+      "actual_artifact_kind_verified": "review_report",
+      "media_format_verified": "docx",
+      "sha256": "728b73d8814afc10e07ecf6f418d42b922923929036bcb4e0454aa44083b88b3"
+    },
+    {
+      "report_id": "dc94b07d-4a9a-4707-a39c-4ffc3dc10459",
+      "actual_artifact_kind_verified": "review_report",
+      "media_format_verified": "pdf",
+      "sha256": "ee02acf2df8785be899dad522895010f30bc82618838b9ef712f0b836449f9cc"
+    },
+    {
+      "report_id": "d65c29e6-e503-4d78-851f-5e9c00eb29fc",
+      "actual_artifact_kind_verified": "annotated_review_copy",
+      "media_format_verified": "pdf",
+      "sha256": "5e2f8fcdc7aab5e4102d692264b62b39d01c2430f6f045742b19ccd7fdcbb50c"
+    }
+  ],
+  "gaps_not_hidden_or_treated_as_page_violation": true,
+  "business_writes": [],
+  "paid_calls": 0,
+  "mobile_no_overflow": true
+}

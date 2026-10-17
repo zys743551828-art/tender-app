@@ -1,0 +1,39 @@
+{
+  "at": "2026-10-17T03:56:27.362979+00:00",
+  "candidate_path": "/workspace/tender-workbench/apps/web/qa-previews/assistant-continuation-11/frontend-candidate.json",
+  "candidate_sha256": "af1a992ec7539c465b873abd04bcc87e4bbc89901962f2f6c283e395ef8629e5",
+  "fixed_sources_verified_after_browser": 130,
+  "fixed_assets_verified_after_browser": 215,
+  "baseline10_sources_verified": 128,
+  "baseline10_assets_verified": 215,
+  "runtime": {
+    "pid": 3220759,
+    "uid": 1000,
+    "argv": "node node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5184 --strictPort"
+  },
+  "runtime_session": 92187,
+  "launch_workdir": "/workspace/tender-workbench/apps/web/qa-previews/assistant-continuation-11/frozen-inputs",
+  "launch_workdir_basis": "exec_command explicit workdir; process argv and HTTP assets independently checked, no environ read",
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "node_modules_symlink_target": "/workspace/tender-workbench/apps/web/node_modules",
+  "dist_symlink_target": "/workspace/tender-workbench/apps/web/qa-previews/assistant-continuation-11/frozen-dist",
+  "proxy_target": "http://127.0.0.1:8816",
+  "loaded_assets": {
+    "/assets/index-Biu_wSbQ.css": "5d908cee47999f7942e3e60a5e9878bcc99e8b40e91d8423ad636784b374cb64",
+    "/assets/index-CIczeqcA.js": "c457f35e1a77c41626c1f82f4ded94354e062819bd5eacc591913915c1a25ce2"
+  },
+  "api_live_equals_fixed_task05_actual": true,
+  "api_fixed_sha256": "4af4b5d611539485be74aeed8b98f07d95fb4bc4e9c16572a781f219e5877ae2",
+  "browser_result_sha256": "558c369c0629d21b21a2ea9d1947cfebafe86d4eb4ee0f84c1c887f13e7e7d15",
+  "browser_checks": 6,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "real_provider_calls": 0,
+  "control_changes": 0,
+  "old_10_process": {
+    "pid": 2979532,
+    "uid": 1000,
+    "verified_exact_argv_then_sigterm": true
+  },
+  "old10_files_preserved": true
+}

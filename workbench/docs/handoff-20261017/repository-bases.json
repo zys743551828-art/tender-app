@@ -1,0 +1,35 @@
+{
+  "note": "Previous commit ancestors retained; this file is created before coordinated commits. Final remote head receipts are recorded in tender-docs/00-项目管理/交接-20261017/.",
+  "repositories": [
+    {
+      "repository": "tender-app",
+      "base_commit": "88d35bb6a7e5e65a3870fe2f3cc103529a0f649d",
+      "remote": "https://github.com/zys743551828-art/tender-app.git",
+      "handoff_branch": "handoff/2026-10-17"
+    },
+    {
+      "repository": "tender-docs",
+      "base_commit": "afe99e4977a21df5be2fc5b4ab963084ad7f14fa",
+      "remote": "https://github.com/zys743551828-art/tender-docs.git",
+      "handoff_branch": "handoff/2026-10-17"
+    },
+    {
+      "repository": "tender-design",
+      "base_commit": "175b325e6b4eb83d4b132343cf5429a6f459afec",
+      "remote": "https://github.com/zys743551828-art/tender-design.git",
+      "handoff_branch": "handoff/2026-10-17"
+    },
+    {
+      "repository": "tender-research",
+      "base_commit": "007107df49b2dba60846b4d3855c1808b67c9cc6",
+      "remote": "https://github.com/zys743551828-art/tender-research.git",
+      "handoff_branch": "handoff/2026-10-17"
+    },
+    {
+      "repository": "tender-datasets",
+      "base_commit": "cad38ba76d7bb9494a57a3cc69559dd55e030e3e",
+      "remote": "https://github.com/zys743551828-art/tender-datasets.git",
+      "handoff_branch": "handoff/2026-10-17"
+    }
+  ]
+}

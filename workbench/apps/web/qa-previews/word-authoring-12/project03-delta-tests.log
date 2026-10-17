@@ -1,0 +1,15 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/Project.test.tsx src/WordUploadBinding.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordUploadBinding.test.tsx (2 tests) 281ms
+ ✓ src/Project.test.tsx (4 tests) 479ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  04:30:20
+   Duration  1.90s (transform 365ms, setup 350ms, collect 791ms, tests 760ms, environment 996ms, prepare 212ms)
+

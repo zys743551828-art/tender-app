@@ -1,0 +1,8 @@
+
+> @tender/workbench-web@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+[warn] qa-previews/submission-report-06/runtime-switch.json
+[warn] src/BusinessResults.test.tsx
+[warn] Code style issues found in 2 files. Run Prettier with --write to fix.

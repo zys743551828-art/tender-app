@@ -1,0 +1,46 @@
+{
+  "status": "development_verified_awaiting_independent_qa_and_architecture",
+  "scope": "multipart hooks + real PG/OSS/ASGI; main integration and browser scheduler pending owner wiring",
+  "tests": {
+    "passed": 9,
+    "unit_boundaries": 3,
+    "real_pg_oss_asgi": 6,
+    "failed": 0,
+    "skipped": 0,
+    "paid_model_calls": 0
+  },
+  "verified": [
+    "8MiB layout, max10000 parts,128 grant window bounds",
+    "Session/member/method/object/part/size/revision/digest/expiry ticket binding",
+    "ListParts storage observations and missing-part completion recovery",
+    "Real OSS completion success followed by injected response loss: exact HEAD + full SHA readback",
+    "Identical complete replay yields same operation; existing nonowner verify Worker creates only one version",
+    "Old-revision remote write really succeeded; stale publication rejected and wrong full SHA quarantined with no verification job",
+    "Real init succeeds then injected response loss: one init attempt, stable upload_id, no automatic reinit",
+    "Exact abort and duplicate abort of own synthetic remote session",
+    "Two simultaneous complete requests share one operation; completing blocks refresh and abort",
+    "Foreign authenticated session/wrong part token rejected before native upload",
+    "Remote call guard observes no idle-in-transaction API connection belonging to its calling thread"
+  ],
+  "quality": {
+    "ruff": "passed",
+    "ruff_format": "passed",
+    "mypy": "passed 5 source files",
+    "bandit": "passed"
+  },
+  "observed_warnings": [
+    "OSS SDK datetime.utcnow deprecation",
+    "Starlette anyio BlockingPortal alias deprecation"
+  ],
+  "limitations": [
+    "Main JSON routes not wired by this owner; needs centralized integration",
+    "Browser 4-concurrency/resume UX awaits browser validation",
+    "S3 multipart not implemented/claimed; prior S3 single remains unchanged",
+    "No bucket CORS/ACL/version setting mutation, no bucket ListObjects, no provider ID responses/logs",
+    "Synthetic completed/quarantined staging objects retained with database references; no global cleanup",
+    "Unknown init cannot recover lost native UploadId without broader listing; bounded safe failure and private candidate registry used"
+  ],
+  "evidence_sha256": {
+    "development-junit.xml": "7834417844ac7c889100c9ccf31f4a52a81960466c0742483b1dee9a8e76ca63"
+  }
+}

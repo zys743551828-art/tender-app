@@ -1,0 +1,8 @@
+{
+  "candidate": "a2-integration-04",
+  "manifest_sha256": "82356c8b4f85cd22c5b930c173941ce4e2cf96f9c880bd6dea400f358bfe737f",
+  "source_tree_sha256": "0adf1e7dcb238b6ee6be7a819bb4c077a64b125c341d5079a1f1545a95f3d160",
+  "source_files_verified": 76,
+  "status": "all_frozen_input_bytes_match",
+  "note": "Source archive only; generated PDF.js static resources are restored by npm predev script from locked ancestor node_modules. Use explicit API_PROXY_TARGET and independent Vite port; do not regenerate contracts inside this archived tree."
+}

@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-17T03:26:13.620896+00:00",
+  "scope": "Native5184 real8816 independent fixedtask04 API/DB, role-separated direct fixture worker/publisher, explicit MockTransport, local-original bytes; NOT real provider, NOT Kafka acceptance",
+  "actual_sha256": "4af4b5d611539485be74aeed8b98f07d95fb4bc4e9c16572a781f219e5877ae2",
+  "checks": [
+    {
+      "case": "global-real-api-mock-worker-published-and-refreshed",
+      "job_id": "9a6a1582-1026-4807-b414-22d20ceecea8",
+      "passed": true
+    },
+    {
+      "case": "trusted-project-document-at-and-action-one-confirm-persisted",
+      "job_id": "e1100e84-9274-4db3-9786-034a2b70ee4a",
+      "action_id": "90110e14-e937-43ca-a5bd-1cc209575ef1",
+      "knowledge_id": "99fc2670-8030-4a81-8a75-b791f2f7b449",
+      "passed": true
+    },
+    {
+      "case": "shared-action-receipt-but-global-conversation-private",
+      "passed": true
+    },
+    {
+      "case": "hold-accepted-then-real-cancel-terminal-without-model-call",
+      "job_id": "718bae3d-6cc2-45f9-a380-7bc0227933c6",
+      "passed": true
+    },
+    {
+      "case": "project-assistant-engine-publishes-to-same-main",
+      "job_id": "bf35c202-a6d0-447a-afb1-b9cd7b1b032b",
+      "passed": true
+    },
+    {
+      "case": "unknown-billing-persists-and-disables-new-attempt-after-refresh",
+      "job_id": "1a520efb-7a14-4b2d-8849-216fe666ed6f",
+      "passed": true
+    }
+  ],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/actions/90110e14-e937-43ca-a5bd-1cc209575ef1/resolve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/jobs/718bae3d-6cc2-45f9-a380-7bc0227933c6/cancel",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/c0de9e01-8d96-42e2-b1d2-1016e5a2d589/conversations/5329859d-8191-59fb-8b17-079a2ed710b0/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    }
+  ],
+  "control_modes": [
+    {
+      "mode": "answer",
+      "scope": "global"
+    },
+    {
+      "mode": "knowledge_action",
+      "scope": "global"
+    },
+    {
+      "mode": "hold",
+      "scope": "global"
+    },
+    {
+      "mode": "answer",
+      "scope": "global"
+    },
+    {
+      "mode": "answer",
+      "scope": "project"
+    },
+    {
+      "mode": "unknown",
+      "scope": "global"
+    },
+    {
+      "mode": "hold",
+      "scope": "global"
+    }
+  ],
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "real_provider_attempts": 0,
+  "paid_calls": 0
+}

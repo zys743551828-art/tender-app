@@ -1,0 +1,65 @@
+{
+  "scope": "Read-only runtime metadata; not a DB/volume backup or credential export",
+  "docker_query_exit": 0,
+  "containers": [
+    {
+      "ID": "16100ea856dc",
+      "Image": "apache/kafka",
+      "Names": "tender-workbench-protocol01-kafka",
+      "Status": "Up 9 hours (healthy)",
+      "Ports": "9092/tcp, 127.0.0.1:19097->19097/tcp"
+    },
+    {
+      "ID": "9af63e41147b",
+      "Image": "apache/kafka",
+      "Names": "tender-workbench-combined01-kafka-1",
+      "Status": "Up 15 hours (healthy)",
+      "Ports": "9092/tcp, 127.0.0.1:19096->19096/tcp"
+    },
+    {
+      "ID": "36b3d10208e5",
+      "Image": "apache/kafka",
+      "Names": "tender-workbench-external-kafka-1",
+      "Status": "Up 18 hours (healthy)",
+      "Ports": "9092/tcp, 127.0.0.1:19095->19095/tcp"
+    },
+    {
+      "ID": "e7e2037aaef1",
+      "Image": "pgvector/pgvector",
+      "Names": "tender-workbench-external-postgres-1",
+      "Status": "Up 18 hours (healthy)",
+      "Ports": "127.0.0.1:55441->5432/tcp"
+    },
+    {
+      "ID": "eec52daa4d24",
+      "Image": "apache/kafka",
+      "Names": "tender-workbench-qa-kafka-1",
+      "Status": "Up 21 hours (healthy)",
+      "Ports": "9092/tcp, 127.0.0.1:19094->19094/tcp"
+    },
+    {
+      "ID": "e10e66c3ea8f",
+      "Image": "pgvector/pgvector",
+      "Names": "tender-workbench-qa-postgres-1",
+      "Status": "Up 21 hours (healthy)",
+      "Ports": "127.0.0.1:55440->5432/tcp"
+    },
+    {
+      "ID": "e4db10cfb3f4",
+      "Image": "pgvector/pgvector",
+      "Names": "tender-workbench-dev-postgres-1",
+      "Status": "Up 21 hours (healthy)",
+      "Ports": "127.0.0.1:55439->5432/tcp"
+    },
+    {
+      "ID": "f65d9f3b4215",
+      "Image": "apache/kafka",
+      "Names": "tender-workbench-dev-kafka-1",
+      "Status": "Up 21 hours (healthy)",
+      "Ports": "9092/tcp, 127.0.0.1:19093->19093/tcp"
+    }
+  ],
+  "listeners_exit": 0,
+  "listeners": "State  Recv-Q Send-Q Local Address:Port  Peer Address:Port\nLISTEN 0      0          127.0.0.1:8812       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8810       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8808       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8806       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8804       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8802       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8801       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8800       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:8816       0.0.0.0:*   \nLISTEN 0      0            0.0.0.0:1040       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:19097      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:19096      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:19095      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:19094      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:19093      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5182       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5179       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5178       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5177       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5176       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5175       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:5184       0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:55439      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:55441      0.0.0.0:*   \nLISTEN 0      0          127.0.0.1:55440      0.0.0.0:*   \n",
+  "no_container_mutations": true
+}

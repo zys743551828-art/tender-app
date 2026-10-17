@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-17T02:17:26.241565+00:00",
+  "old_process_exact_identity": {
+    "pid": 1862202,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/node_modules/.bin/vite --host 127.0.0.1 --port 5173 --port 5177 --strictPort --mode delivery07"
+  },
+  "action": "SIGTERM exact owned07 Vite; no05/06/API processes touched",
+  "new_root": "/workspace/tender-workbench/apps/web/qa-previews/knowledge-metrics-07/frozen-inputs",
+  "new_compiled_assets": "/workspace/tender-workbench/apps/web/qa-previews/knowledge-metrics-07/frozen-dist",
+  "public_proxy_target": "http://127.0.0.1:8806",
+  "candidate_sha256": "3047525933873ffe0d611a76fe4bcaa8f2d111c5664ec26dfd44cb03adbf75af",
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "node_modules": "symlink to same lock dependencies; no credentials/environment copied"
+}

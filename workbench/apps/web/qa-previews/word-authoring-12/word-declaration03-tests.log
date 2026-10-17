@@ -1,0 +1,17 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/WordUploadBinding.test.tsx src/WordOriginals.test.tsx src/Project.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordOriginals.test.tsx (3 tests) 410ms
+ ✓ src/Project.test.tsx (4 tests) 555ms
+ ✓ src/WordUploadBinding.test.tsx (2 tests) 582ms
+   ✓ 旧批次画面不是声明判定依据；fresh GET有Word声明时拒旧PDF版本目标并保留原因  450ms
+
+ Test Files  3 passed (3)
+      Tests  9 passed (9)
+   Start at  04:27:21
+   Duration  1.80s (transform 327ms, setup 503ms, collect 914ms, tests 1.55s, environment 1.40s, prepare 183ms)
+

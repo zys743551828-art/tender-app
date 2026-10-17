@@ -1,0 +1,83 @@
+{
+  "scope": "Frontend07 asset overlay from5177 in isolated browser Origin5176; unchanged actualAPI8806+OSS+Kafka+Parser+local Knowledge RAG; synthetic own new project, no mocks",
+  "at": "2026-10-17T02:08:17.942867+00:00",
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "company_id": "178edb6e-a8b2-4287-9810-c6efc2c628cb",
+  "title": "前端07独立合成知识与指标 1792202827",
+  "document_version_id": "d4a6996c-5f34-4b5f-aa9c-4b1caf416cde",
+  "parse_id": "b3140657-ee2a-431d-bfc9-33df4b06e207",
+  "knowledge_id": "0347f05d-7380-4e7a-96ed-7f505fab947b",
+  "knowledge_version_id": "9d25f85b-2ca0-4d76-a4cd-aece413ed410",
+  "index_id": "f8792849-f147-4e22-b4c4-7b2821b4b08c",
+  "trace_id": "4d4732d4-13f3-4330-8476-ad6aaca21ab6",
+  "citation_id": "ee165c30-7982-41aa-b06a-a2c8fa8fe602",
+  "fixed_trace_reference_survives_reload": true,
+  "approved_original_page_canvas": true,
+  "withdraw_blocks_new_use_preserves_old_bytes": true,
+  "project_facts_unchanged": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "paid_calls": 0,
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids"
+    },
+    {
+      "method": "PATCH",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/settings"
+    },
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/upload-batches"
+    },
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/uploads"
+    },
+    {
+      "method": "PUT",
+      "path": "object-transfers/uploads/c3cab589-516b-49e6-a233-089f8c0ef2aa"
+    },
+    {
+      "method": "POST",
+      "path": "uploads/c3cab589-516b-49e6-a233-089f8c0ef2aa/complete"
+    },
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/upload-batches/bc40cc15-4fba-4de7-9ee9-7bc79dd73d3c/commit"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/submit"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/publish"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/indexes"
+    },
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/knowledge-retrievals"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge-retrievals/4d4732d4-13f3-4330-8476-ad6aaca21ab6/references"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/withdraw"
+    }
+  ]
+}

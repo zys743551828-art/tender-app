@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-16T20:05:34.378691+00:00",
+  "origin": "http://127.0.0.1:5175",
+  "runtime_root": "/workspace/tender-workbench/apps/web/qa-previews/multipart-knowledge-05/frozen-inputs",
+  "pm_vite_session": 93538,
+  "login_ui": true,
+  "source_readiness_status": 200,
+  "manifest_sha256": "3b91bb56ea766b94fd46edd161d85b67ef516cbc676abd10875ec202f8af8631",
+  "dependency_lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "config": "public API_PROXY_TARGET=http://127.0.0.1:8802 only",
+  "business_writes": 0,
+  "paid_calls": 0
+}

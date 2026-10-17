@@ -1,0 +1,35 @@
+{
+  "candidate": "upload-batch-discovery-01",
+  "scope": "authenticated server batch discovery and cursor/state boundaries; no live deployment or native multipart acceptance",
+  "sources": [
+    {
+      "path": "apps/api/upload_layout_routes.py",
+      "sha256": "f2d7f6c3183ab135def96267eec345ea76eda47a995d657186f0a177dc2c0ff8"
+    },
+    {
+      "path": "apps/api/upload_contracts.py",
+      "sha256": "9670fcf3c099fcccb80ed84795a38cdcafec418392d12cb893dfa35c8b641799"
+    },
+    {
+      "path": "tests/test_upload_layout_integration.py",
+      "sha256": "5d2308d7712f442975040414501020bcb22b6bf965f76b3b6a98e9f494fa85d3"
+    }
+  ],
+  "checks": {
+    "actual_nonowner_pg_asgi": {
+      "passed": 1,
+      "coverage": [
+        "two independent sessions",
+        "anonymous401",
+        "server batch/upload discovery",
+        "stable cursor no duplicates",
+        "state filter cursor mismatch422",
+        "missing project404",
+        "actual schema validation"
+      ]
+    },
+    "paid_calls": 0
+  },
+  "implementation_stage": "candidate; independent QA pending",
+  "sort": "UUID DESC; table has no creation timestamp"
+}

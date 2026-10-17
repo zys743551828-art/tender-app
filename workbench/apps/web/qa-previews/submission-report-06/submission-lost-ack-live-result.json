@@ -1,0 +1,20 @@
+{
+  "scope": "actual HTTP correction commits201, intentionally lost response then full browser reload exact request replay; no mock success",
+  "checked_at": "2026-10-17T01:16:23.403594+00:00",
+  "project_id": "06c25da7-412b-4c0c-b56c-567da0729968",
+  "old_submission_id": "111e7a8e-d50e-4dcf-8562-934d76713eab",
+  "new_submission_id": "1d3a39b5-c7c8-4abc-9f65-126b0ba003c3",
+  "actual_writes_added": 1,
+  "exact_key_etag_body_reused": true,
+  "request_fingerprint": {
+    "key": "50f75e3f-6685-4db1-9a20-43a329f811b6",
+    "etag": "\"bid:06c25da7-412b-4c0c-b56c-567da0729968:4c6f329f7f69101f226ea68360b250525d8a4f47fcc551d3e3590526478fdd1c\"",
+    "body_sha256": "21ab6ed87904bca294c0a449bfe7950fc56de307a424ea0f2c238513f4aa57ed"
+  },
+  "request_count": 2,
+  "records_before": 3,
+  "records_after": 4,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "paid_calls": 0
+}

@@ -1,0 +1,27 @@
+{
+  "stage": "trusted-at-action",
+  "error_type": "TimeoutError",
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/main",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/actions/cc03576f-9521-4a92-ab7d-d671fec93d34/resolve",
+      "status": 200
+    }
+  ],
+  "page_errors": []
+}

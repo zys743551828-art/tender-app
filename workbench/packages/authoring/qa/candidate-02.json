@@ -1,0 +1,45 @@
+{
+  "candidate": "authoring-backend-02",
+  "scope": "authoring_backend_modules_and_authenticated_HTTP_without_independent_Kafka_path",
+  "status": "developer_checks_passed_pending_team_review",
+  "sources": {
+    "apps/api/authoring.py": "d78748caa8a9d839d26a3d21afd8cb5e9e1711a6b9edf8f394a49f220508d6cd",
+    "packages/authoring/README.md": "5e06a39fd5cd66c7919e3ab01460a5fa122dfb40fedffe02e19119e47d391207",
+    "packages/authoring/__init__.py": "8185e8582bfb53bdf87f9d461447ccefcb14481eef72e6d4663a10bc9a0eb04e",
+    "packages/authoring/build.py": "9df0136d9001ce238038c5a3de012bd5876a62308eebb202fd22fac20a20e447",
+    "packages/authoring/build_repository.py": "b75811b4039307231377b9496e76aef007dd2308ea8da12cc515781f106bb6c1",
+    "packages/authoring/content.py": "a9b8ee88d103123aada39ebe5af6253e06ccde70d01334ccdb1c21fb86e02377",
+    "packages/authoring/contracts.py": "a4cae325908c616f4d95ec26e42560fa31d45b50ed688d997e666b5a3ed6b937",
+    "packages/authoring/generation.py": "b507f5abf7c73ced98eb517ca2a7172f189ab83c1edf5dac1ef7023d5f32b1f1",
+    "packages/authoring/patches.py": "c65859090493701e0ad95c84338b80cd493f3fd7ae5b4a51c0d98327cfe6d6ac",
+    "packages/authoring/repository.py": "0c63c761e1373cf8bd95d8f948ab3fc49bd8e960becb436e209f072c095cc70e",
+    "tests/test_authoring.py": "860534a8394e4ade6c5a9314d27f5e4e3f6407a61be09b5b87298f456a7d78a8",
+    "tests/test_authoring_integration.py": "9de78d362437b987cc00989a996023e0955751500cd9cc0ad872a7e7f3c195d9"
+  },
+  "frozen_source_root": "packages/authoring/qa/frozen-inputs",
+  "evidence": {
+    "packages/authoring/qa/synthetic-body.docx": "3aad0f7fd51defa3ff32394f5c72dcad76679c6a5a5a789b1849b987b6a6103a",
+    "packages/authoring/qa/synthetic-body.pdf": "ea6c3e9f58ec5c618bb3090e0f319beb198a9843ee66ba4c6f4f423bfc7a80b4",
+    "packages/authoring/qa/environment.json": "b224e30deca8c6c3b762efabddb1d1cb26c33641c9cee207780be3b9d04bcc4c",
+    "packages/authoring/qa/render-proof.json": "d04f1867a28d49dae5dd4566610d75ecaeb51e5477465e5db54f50f7f3c3c4a9",
+    "packages/authoring/qa/unit-result.xml": "70d8e5c3e5d4ffa5ba6e0c530e921b38f0bf5aa4ec1b8862cbe613fb5b3e4874",
+    "packages/authoring/qa/integration-result.xml": "1c3cf6e5a4906169e45b2e1eb37c09cd3d8283001d1bff8d47fd98d38206d462"
+  },
+  "checks": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "passed",
+    "bandit": "passed_with_reviewed_safe_subprocess_XML_serialization_exceptions",
+    "unit_and_real_LibreOffice": 13,
+    "real_PG_nonowner_S3_HTTP": 10
+  },
+  "not_claimed": [
+    "independent_QA",
+    "frontend",
+    "Kafka_export_end_to_end",
+    "real_model_authoring_quality",
+    "production_renderer_sandbox",
+    "unsupported_Word_features"
+  ],
+  "paid_model_calls": 0
+}

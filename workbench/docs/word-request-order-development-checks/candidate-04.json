@@ -1,0 +1,56 @@
+{
+  "candidate": "word-request-order04",
+  "status": "developer verified on fresh03; independent runtime review pending",
+  "sources": [
+    {
+      "path": "packages/word_intake/request_order.sql",
+      "sha256": "8a379cb1b7d4c8bb807892937e03f77d3f75304ebd3abe256a1cf44e06319277",
+      "frozen_path": "frozen-inputs-04-final/packages/word_intake/request_order.sql"
+    },
+    {
+      "path": "tests/test_word_request_order_counterexample.py",
+      "sha256": "b9de6c7f4a14d2c88a5e67bb9e39e3d2d54572eab90dc76744a5d806830c8d37",
+      "frozen_path": "frozen-inputs-04-final/tests/test_word_request_order_counterexample.py"
+    },
+    {
+      "path": "docs/word-request-order-development-checks/implementation-note.md",
+      "sha256": "6b30ef55123709f4e3602bef977853a4c8d67990ebb61f50016f8fe4888d3587",
+      "frozen_path": "frozen-inputs-04-final/docs/word-request-order-development-checks/implementation-note.md"
+    }
+  ],
+  "word03": {
+    "path": "/workspace/tender-docs/04-验证与测试/word-intake-development-checks/candidate-03/candidate.json",
+    "sha256": "b12e2e456ead217296510ae6fde3f7747198d75adffe42706bb3692c28406fa6"
+  },
+  "runtime_dependency": {
+    "path": "/workspace/tender-workbench/docs/word-mainflow-development-checks/source-preview-02.json",
+    "sha256": "d176e49a1e6a75ccb0ee5bac06d033689b1adf53e5a79ec7769ab4fabe8f6132"
+  },
+  "sql_static_candidate": {
+    "path": "/workspace/tender-workbench/docs/word-request-order-development-checks/candidate-04-static.json",
+    "sha256": "c4f9cb52278f891061ac75b38be7efa457090d2a33888d896fbd1e07c19777bd"
+  },
+  "ddl_applied_by": "PM fresh initialization only",
+  "application_role_grants_changed": false,
+  "checks": {
+    "real_API_Worker": 3,
+    "baseline_original_failure_preserved": true,
+    "API_created_at_INSERT_rejected": true,
+    "latest_failed_and_pending_no_old_green": true
+  },
+  "results": [
+    {
+      "path": "/workspace/tender-workbench/docs/word-request-order-development-checks/fixed-preview03.xml",
+      "sha256": "107fab254ae0e08d396f9f35beb72fd752f49574f9c011e7f815e6bdef25c8fa"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/word-request-order-development-checks/fixed-preview03-order-result.json",
+      "sha256": "2e3e4d93475bbebb93fa99b0382b3d29c95e010059bca60bf800b00af6c4e9a0"
+    }
+  ],
+  "model_calls": 0,
+  "fresh_environment_evidence": {
+    "path": "/workspace/tender-docs/04-验证与测试/word-mainflow-environment03/fresh-initialization.json",
+    "sha256": "bc3660ca0e58424dbec440f4b2b5efd5717af80cdbef691a9621e9b79198712b"
+  }
+}

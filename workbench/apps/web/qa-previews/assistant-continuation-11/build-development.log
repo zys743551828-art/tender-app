@@ -1,0 +1,21 @@
+
+> @tender/workbench-web@0.1.0 prebuild
+> node scripts/copy-pdf-resources.mjs
+
+
+> @tender/workbench-web@0.1.0 build
+> tsc -b && vite build
+
+vite v6.3.5 building for production...
+transforming...
+✓ 130 modules transformed.
+✗ Build failed in 3.67s
+error during build:
+ENOSPC: no space left on device, mkdir '/workspace/tender-workbench/apps/web/dist/pdfjs'
+    at Object.mkdirSync (node:fs:1411:26)
+    at copyDir (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:6860:15)
+    at copyDir (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:6869:7)
+    at prepareOutDir (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46262:7)
+    at buildEnvironment (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46208:7)
+    at async Object.defaultBuildApp [as buildApp] (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/chunks/dep-DBxKXgDP.js:46684:5)
+    at async CAC.<anonymous> (file:///workspace/tender-workbench/apps/web/node_modules/vite/dist/node/cli.js:863:7)

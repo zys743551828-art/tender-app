@@ -1,0 +1,17 @@
+{
+  "scope": "developer real browser + API manual A2 create/edit/save-ACK/section switch/refresh; no model or build requests",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "draft_id": "0dfa090c-4f35-4d27-90cd-a2be3fa4813d",
+  "initial_section_id": "58978847-6922-4eb1-92e0-ac26c0f3b5f6",
+  "draft_revision_after_two_chapters": 4,
+  "two_saved_sections": 2,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "business_writes": [
+    "POST bids",
+    "POST bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/drafts",
+    "PATCH bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/drafts/0dfa090c-4f35-4d27-90cd-a2be3fa4813d",
+    "POST bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/drafts/0dfa090c-4f35-4d27-90cd-a2be3fa4813d/sections",
+    "PATCH bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/drafts/0dfa090c-4f35-4d27-90cd-a2be3fa4813d"
+  ]
+}

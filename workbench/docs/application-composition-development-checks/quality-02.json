@@ -1,0 +1,10 @@
+{
+  "checks": {
+    "ruff": "passed",
+    "format_check": "passed",
+    "mypy_production_normal_imports": "passed (5 source files)",
+    "mypy_owned_tests_follow_imports_silent": "passed (4 source files)",
+    "bandit_production": "passed"
+  },
+  "no_fixed_source_format_mutation": true
+}

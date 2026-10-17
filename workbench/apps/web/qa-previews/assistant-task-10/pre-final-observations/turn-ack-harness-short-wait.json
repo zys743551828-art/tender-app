@@ -1,0 +1,27 @@
+{
+  "stage": "hold-cancel",
+  "error_type": "AssertionError",
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/actions/b8e013e6-69bd-4df8-9520-8cde9f16982b/resolve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    }
+  ],
+  "page_errors": []
+}

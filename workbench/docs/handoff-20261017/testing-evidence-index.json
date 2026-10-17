@@ -1,0 +1,67 @@
+{
+  "purpose": "Existing independent final-result file identities for handoff only; not a new test run or combined release approval",
+  "tender_docs_root_location": "/workspace/tender-docs",
+  "records": [
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/a1-ledger-independent-checks/final-result.json",
+      "sha256": "2416d504f85dba44c57c73bead9c28949edb459908c0d969c75b72fd32470b8e",
+      "bytes": 2402
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/assistant-independent-checks/implementation-01/final-result.json",
+      "sha256": "6fc91549c0224775949a0c41c7bd9cd1bc6711c732b7d5bd8c0d99474ef60704",
+      "bytes": 11273
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/authoring-complete-independent-checks/candidate-02/final-result.json",
+      "sha256": "bcaa389af2ef55c3577d9dbb550adf7ab172d27ec0ee01a0ba976cec7aa67ac0",
+      "bytes": 9068
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/backend07-independent-checks/final-result.json",
+      "sha256": "fc94f4ba0634ac37e529283cf918e5034ffd9e04a68a8db7a0e5a9ea697c021e",
+      "bytes": 13637
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/content-dismissal-independent-checks/candidate-06/final-result.json",
+      "sha256": "dc37824c878e051375a7c63c9eed96a4f9a97a4c8449d9323b18e1f260d4f7fd",
+      "bytes": 5689
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/historical-input-independent-checks/application01/final-result.json",
+      "sha256": "f1a6932b1646b4dd1519a09f9776f7a70473e82ec5fdbeb3a671da7ecc24c3cb",
+      "bytes": 10635
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/pricing-independent-checks/candidate-04/final-result.json",
+      "sha256": "cca7086b9bb00bca9162d5aade0f448add567627c032b4bc8f3b19c82a2a891d",
+      "bytes": 5798
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/pricing-independent-checks/candidate-05/final-result.json",
+      "sha256": "6238deaac8c0f74fa606217b057a8a1c56ee0498bbd757daf2ea2f8a0f9ce0f2",
+      "bytes": 4591
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/score-execution-independent-checks/candidate-01/final-result.json",
+      "sha256": "afea60c119d107cfb022d181f790e4d2f7070384529dfd08eb8d55d3e299fefb",
+      "bytes": 10136
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/sse-independent-checks/final-result.json",
+      "sha256": "9433bfaf1b06da5c52c5a248acba3ef2387bc4b5e7ede43771b1ce3ea7b5c25b",
+      "bytes": 1868
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/technical-scale-independent-checks/candidate-01/final-result.json",
+      "sha256": "891dbbb5417a5c420957a9bf2bbc81a3b1d7ec6ee0129e77e136989783a3484e",
+      "bytes": 11475
+    },
+    {
+      "path_relative_to_tender_docs": "04-验证与测试/word-mainflow-independent-checks/candidate-01/final-result.json",
+      "sha256": "b5ea12903f381722d1da765063a84427cef131f91d6bbfc75cbcc9a7c1087529",
+      "bytes": 13295
+    }
+  ],
+  "private_configuration_contents_included": false
+}

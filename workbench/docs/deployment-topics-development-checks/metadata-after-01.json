@@ -1,0 +1,160 @@
+{
+  "cluster_id": "N8d3T4cNR6Wt6Ba9RX3kgA",
+  "topics": {
+    "tender.domain.events.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "1209600000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.assistant-global.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.assistant.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.comparison.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.dead-letter.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "2592000000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.document.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.export.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.research.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    },
+    "tender.task.review.v1": {
+      "partitions": 6,
+      "replica_counts": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": "604800000",
+        "min.insync.replicas": "1",
+        "max.message.bytes": "262144"
+      }
+    }
+  },
+  "previous_six_unchanged": true,
+  "consumer_groups": 0
+}

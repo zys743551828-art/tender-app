@@ -1,0 +1,9 @@
+{
+  "stage": "report-server-history-refresh",
+  "project_id": "606845b4-eb73-4b90-ba32-b275d71f6b01",
+  "review_id": "512ab15f-2261-41ba-aec4-5ec42690f72c",
+  "fixture_scope": "synthetic API/Worker/Parser03/MockTransport mechanism fixture; not actual model quality",
+  "review_manifest_sha256": "f640fc530d6d88b9ec20c07e74a426aec35452e6f16e25acf4356c4b8c4ab55a",
+  "body_version_id": "3ff255dd-d363-4dcc-b2bf-4ef37ef9dafe",
+  "standard_submission_id": "3d570f82-831b-4b1e-a24b-c87b70e674f1"
+}

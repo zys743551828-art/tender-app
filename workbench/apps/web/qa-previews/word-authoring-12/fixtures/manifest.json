@@ -1,0 +1,15 @@
+{
+  "scope": "new public synthetic files only; no upload/conversion/provider invoked",
+  "fixtures": [
+    {
+      "path": "fixtures/frontend12-body.docx",
+      "sha256": "b40525df94be4fb85efce07cb08aa3194791a96af68662b4501d4c4310ef0488",
+      "byte_size": 981
+    },
+    {
+      "path": "fixtures/frontend12-declared-body.pdf",
+      "sha256": "15b9feacd5bc826b7ee46e838da38ac3a501ae665cfb6bfcfe1b09e5b8d8fce8",
+      "byte_size": 2508
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "tool": "ruff",
+    "exit_code": 0,
+    "file_count": 25,
+    "output": "All checks passed!\n"
+  },
+  {
+    "tool": "format",
+    "exit_code": 0,
+    "file_count": 25,
+    "output": "25 files already formatted\n"
+  },
+  {
+    "tool": "mypy",
+    "exit_code": 0,
+    "file_count": 22,
+    "output": "Success: no issues found in 22 source files\n"
+  },
+  {
+    "tool": "bandit",
+    "exit_code": 0,
+    "file_count": 22,
+    "output": ""
+  }
+]

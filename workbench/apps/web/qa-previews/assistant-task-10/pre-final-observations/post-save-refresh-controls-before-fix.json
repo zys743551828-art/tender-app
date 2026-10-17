@@ -1,0 +1,37 @@
+{
+  "stage": "cron-version",
+  "error_type": "TimeoutError",
+  "writes": [
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions/aa3dc43a-4803-4311-ae0b-92e83bad00ab/runs",
+      "method": "POST",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions/aa3dc43a-4803-4311-ae0b-92e83bad00ab",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions/aa3dc43a-4803-4311-ae0b-92e83bad00ab/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions/aa3dc43a-4803-4311-ae0b-92e83bad00ab",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/a67765ba-74d8-44a1-a5c8-954a08345040/task-definitions/aa3dc43a-4803-4311-ae0b-92e83bad00ab/pause",
+      "method": "POST",
+      "status": 412
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,27 @@
+{
+  "scope": "developer actual local Word/PDF build, follow_up none; not production converter attestation or review acceptance",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "draft_id": "0dfa090c-4f35-4d27-90cd-a2be3fa4813d",
+  "frozen_revision": 11,
+  "outputs": [
+    {
+      "format": "Word",
+      "filename": "投标正文.docx",
+      "bytes": 2313,
+      "sha256": "f816a5636cab633a702ea383469bc0dfc6a3f147104ae5f6016c9b8a4a37a080",
+      "header_valid": true
+    },
+    {
+      "format": "PDF",
+      "filename": "投标正文.pdf",
+      "bytes": 27433,
+      "sha256": "f93a291a6f421af358c5c4e6b6f02bdf58fd864d7496365c2e82fa2a5da654e8",
+      "header_valid": true
+    }
+  ],
+  "save_ack_before_build": true,
+  "post_build_edits_do_not_change_snapshot": true,
+  "real_pdf_canvas": true,
+  "mobile_no_overflow": true,
+  "page_errors": []
+}

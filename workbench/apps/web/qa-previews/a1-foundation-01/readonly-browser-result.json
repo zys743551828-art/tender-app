@@ -1,0 +1,18 @@
+{
+  "scope": "A1 foundation read-only browser developer regression; existing real PDF slice retained; no A1 backend or model claim",
+  "unregistered_modules_explicit": {
+    "rules": true,
+    "facts": true
+  },
+  "no_review_not_fake_success": true,
+  "body_missing_prevents_start": true,
+  "existing_pdf_canvas_visible": true,
+  "blank_page_2_accessible": true,
+  "download_sha256_matches_document": true,
+  "mobile_original_action_within_width": true,
+  "390px_no_overflow": true,
+  "focus_returns_to_original_action": true,
+  "cookie_refresh_preserves_material_route": true,
+  "business_write_requests": [],
+  "browser_page_errors": []
+}
