@@ -67,6 +67,9 @@ def test_migration_sql_is_identical_to_contract_schema():
     assert (root / "backend/migrations/sql/0006_rule_parse_identity.sql").read_bytes() == (
         root / "contracts/rule-parse-identity.sql"
     ).read_bytes()
+    assert (root / "backend/migrations/sql/0007_recognition_reviews.sql").read_bytes() == (
+        root / "contracts/recognition-reviews.sql"
+    ).read_bytes()
 
 
 def test_generated_contracts_are_current() -> None:

@@ -52,7 +52,7 @@ def _check_material_heads(conn: Connection, project_id: str, req: SnapshotReques
         raise Conflict("stale_inputs", "原稿或实际评审 PDF 已更新，请采用当前资料后重新评审")
 
 
-def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequest, versions: list[db.Row]) -> None:
+def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequest, versions: list[db.Row]) -> None:  # noqa: PLR0912
     """冻结前的“输入必须是当前最新且可用”校验：资料是各文件最新版本且已解析，规则包与事实集是最新的。"""
     stale = [f"{v['original_name']}（{v['id']}）" for v in versions if v["latest_id"] != v["id"]]
     if stale:
@@ -62,6 +62,8 @@ def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequ
             version_ids=[v["id"] for v in versions if v["latest_id"] != v["id"]],
         )
     _check_material_heads(conn, project_id, req, versions)
+    if any(gap.endswith(":recognition_verification_required") for gap in _coverage_gaps(conn, project_id, [v["id"] for v in versions])):
+        raise Conflict("recognition_verification_required", "资料仅有未完成核验的识别候选，请先核验或补交可复制文字的 PDF")
     unparsed = [v for v in versions if v["role"] in PARSED_ROLES and (v["coverage"] is None or v["coverage"] == "failed")]
     if unparsed:
         names = "、".join(f"“{v['original_name']}”" for v in unparsed)
@@ -104,6 +106,7 @@ def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequ
             raise NotFound("fact_set_not_found")
         if newest_facts is not None and newest_facts["id"] != req.fact_set_id:
             raise Conflict("stale_inputs", "该事实集已被更新的事实集取代，请改用最新的事实集", fact_set_id=newest_facts["id"])
+    parse_identity.require_fact_evidence_current(conn, project_id, req.fact_set_id)
 
 
 def freeze(conn: Connection, store: ObjectStore, actor: Actor, project_id: str, req: SnapshotRequest, request_id: str) -> InputSnapshot:

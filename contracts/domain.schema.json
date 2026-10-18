@@ -4878,6 +4878,196 @@
       ],
       "type": "object"
     },
+    "RecognitionCandidates": {
+      "additionalProperties": false,
+      "properties": {
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "parse_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "can_review": {
+          "type": "boolean"
+        },
+        "coverage_gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "total": {
+          "type": "integer"
+        },
+        "pending_count": {
+          "type": "integer"
+        },
+        "offset": {
+          "type": "integer"
+        },
+        "next_offset": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        },
+        "history": {
+          "items": {
+            "$ref": "#/$defs/RecognitionReview"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "version_id",
+        "parse_id",
+        "can_review",
+        "coverage_gaps",
+        "total",
+        "pending_count",
+        "offset",
+        "next_offset",
+        "items",
+        "history"
+      ],
+      "type": "object"
+    },
+    "RecognitionReview": {
+      "additionalProperties": false,
+      "properties": {
+        "review_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "parent_parse_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "result_parse_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "source_evidence_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "result_evidence_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "accept",
+            "correct",
+            "reject"
+          ],
+          "type": "string"
+        },
+        "original_quote": {
+          "type": "string"
+        },
+        "result_quote": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "actor_name": {
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "parent_parse_id",
+        "result_parse_id",
+        "source_evidence_id",
+        "result_evidence_id",
+        "decision",
+        "original_quote",
+        "result_quote",
+        "reason",
+        "actor_name",
+        "created_at"
+      ],
+      "type": "object"
+    },
+    "RecognitionReviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_parse_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "evidence_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "accept",
+            "correct",
+            "reject"
+          ],
+          "type": "string"
+        },
+        "corrected_quote": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reason": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reviewed_original": {
+          "type": "boolean"
+        },
+        "reviewed_numbers": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "expected_parse_id",
+        "evidence_id",
+        "decision",
+        "reason",
+        "reviewed_original",
+        "reviewed_numbers"
+      ],
+      "type": "object"
+    },
     "Report": {
       "additionalProperties": false,
       "properties": {

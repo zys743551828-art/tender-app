@@ -120,7 +120,7 @@ def _parse_state(conn: Connection, project_id: str, needed: list[db.Row]) -> tup
         {"p": project_id, "v": [v["id"] for v in needed]},
     )
     if pending:
-        return "failed", "资料只有待核验的识别结果，请对照原页核验后补交可复制文字的 PDF；不会用未核验文字启动评审"
+        return "failed", "资料只有待核验的识别结果，请在原件查看中核验候选；无法核验时补交可复制文字的 PDF"
     return "done", None
 
 

@@ -8,6 +8,7 @@ import { useProjectContext } from '../../routes/ProjectLayout';
 import { PdfViewer } from './PdfViewer';
 import { Icon } from '../../components/Icon';
 import { Button } from '../../components/ui/button';
+import { RecognitionPanel } from './RecognitionPanel';
 
 /** 单条证据的原页查看：/projects/:id/evidence/:evidenceId */
 export function EvidencePage() {
@@ -75,7 +76,17 @@ export function FileViewerPage() {
           </Button>
         }
       />
-      <PdfViewer versionId={versionId} page={page} bbox={null} />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="min-w-0 xl:sticky xl:top-4">
+          <PdfViewer versionId={versionId} page={page} bbox={null} />
+        </div>
+        <RecognitionPanel
+          key={versionId}
+          projectId={project.project_id}
+          versionId={versionId}
+          initiallyOpen={sp.get('verify') === '1'}
+        />
+      </div>
     </>
   );
 }

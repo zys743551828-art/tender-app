@@ -119,6 +119,14 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
     claim = ctx.claim
 
     def finalize(conn: Connection, artifact_id: str) -> None:
+        db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": claim.project_id})
+        if db.scalar(
+            conn,
+            """SELECT EXISTS(SELECT 1 FROM recognition_reviews r JOIN jobs j ON j.id=:job
+            WHERE r.project_id=:p AND r.file_version_id=:v AND r.created_at>=j.created_at)""",
+            {"job": claim.job_id, "p": claim.project_id, "v": version_id},
+        ):
+            return  # 晚到的旧解析任务保留产物，但不能覆盖人工核验后的当前解析。
         parse_id = new_id("prs")
         db.run(
             conn,

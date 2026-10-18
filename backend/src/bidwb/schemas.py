@@ -324,6 +324,43 @@ class EvidenceRef(Response):
     effectivity_notes: list[str] = Field(default_factory=list)
 
 
+class RecognitionReviewRequest(Request):
+    expected_parse_id: Id
+    evidence_id: Id
+    decision: Literal["accept", "correct", "reject"]
+    corrected_quote: Annotated[str, StringConstraints(min_length=1, max_length=2000, strip_whitespace=True)] | None = None
+    reason: Annotated[str, StringConstraints(min_length=1, max_length=1000, strip_whitespace=True)]
+    reviewed_original: bool
+    reviewed_numbers: bool
+
+
+class RecognitionReview(Response):
+    review_id: Id
+    parent_parse_id: Id
+    result_parse_id: Id
+    source_evidence_id: Id
+    result_evidence_id: Id
+    decision: Literal["accept", "correct", "reject"]
+    original_quote: str
+    result_quote: str
+    reason: str
+    actor_name: str
+    created_at: datetime
+
+
+class RecognitionCandidates(Response):
+    version_id: Id
+    parse_id: Id | None
+    can_review: bool
+    coverage_gaps: list[str]
+    total: int
+    pending_count: int
+    offset: int
+    next_offset: int | None
+    items: list[EvidenceRef]
+    history: list[RecognitionReview]
+
+
 class SearchRequest(Request):
     snapshot_id: Id | None = None  # 不给＝检索项目当前资料；给了＝限定在该轮诊断固定下来的文件版本内
     query: Annotated[str, StringConstraints(min_length=1, max_length=500, strip_whitespace=True)]

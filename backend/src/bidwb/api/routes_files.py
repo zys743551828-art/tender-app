@@ -6,7 +6,7 @@ from email.utils import formatdate
 from typing import Annotated
 from urllib.parse import quote
 
-from fastapi import APIRouter, Header, Request, Response
+from fastapi import APIRouter, Header, Query, Request, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Connection
 from starlette.concurrency import run_in_threadpool
@@ -18,6 +18,9 @@ from bidwb.logs import get_logger
 from bidwb.runtime import Container
 from bidwb.schemas import (
     FileVersion,
+    RecognitionCandidates,
+    RecognitionReview,
+    RecognitionReviewRequest,
     UploadComplete,
     UploadRequest,
     UploadResult,
@@ -26,11 +29,31 @@ from bidwb.schemas import (
     WordRetryRequest,
     WordStatus,
 )
-from bidwb.services import files, pipeline, word_materials
+from bidwb.services import files, pipeline, recognition, word_materials
 
 router = APIRouter(tags=["files"])
 log = get_logger(__name__)
 _INLINE_TYPES = frozenset({"application/pdf", "image/png", "image/jpeg", "text/plain"})
+
+
+@router.get("/files/{version_id}/recognition", response_model=RecognitionCandidates, operation_id="listRecognitionCandidates")
+def recognition_candidates(
+    version_id: str, session: CurrentSession, ctr: Ctr, offset: Annotated[int, Query(ge=0, le=1000000)] = 0
+) -> RecognitionCandidates:
+    with ctr.engine.connect() as conn:
+        return recognition.candidates(conn, session.actor, version_id, offset)
+
+
+@router.post("/files/{version_id}/recognition:review", response_model=RecognitionReview, operation_id="reviewRecognitionCandidate")
+def review_recognition(version_id: str, body: RecognitionReviewRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+    return mutate(
+        ctr,
+        session,
+        key,
+        f"POST /files/{version_id}/recognition:review",
+        body,
+        lambda conn: recognition.review(conn, ctr.store, session.actor, version_id, body, session.request_id),
+    )
 
 
 @router.post("/projects/{project_id}/uploads", response_model=UploadSession, operation_id="initUpload")

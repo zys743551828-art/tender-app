@@ -57,3 +57,34 @@ def is_current(conn: Connection, project_id: str, snapshot_id: str) -> bool:
         return False
     current, _ = capture(conn, project_id, sorted(row["parse_inputs_json"]))
     return bool(current == row["parse_inputs_json"])
+
+
+def require_fact_evidence_current(conn: Connection, project_id: str, fact_set_id: str | None) -> None:
+    if fact_set_id is None:
+        return
+    facts = db.all_(
+        conn,
+        """SELECT f.id,f.name,e.id AS evidence_id,e.quote FROM fact_items f JOIN evidence e
+        ON e.project_id=f.project_id AND f.evidence_ids_json ? e.id
+        WHERE f.project_id=:p AND f.fact_set_id=:f AND f.confirmation='confirmed'""",
+        {"p": project_id, "f": fact_set_id},
+    )
+    if not facts:
+        return
+    edges: dict[str, str] = {}
+    for row in db.all_(conn, "SELECT evidence_map_json FROM recognition_reviews WHERE project_id=:p", {"p": project_id}):
+        edges.update(row["evidence_map_json"])
+    changed: set[str] = set()
+    for fact in facts:
+        identity = fact["evidence_id"]
+        seen: set[str] = set()
+        while identity in edges and identity not in seen:
+            seen.add(identity)
+            identity = edges[identity]
+        if identity == fact["evidence_id"]:
+            continue
+        result = db.one(conn, "SELECT quote,semantic_review FROM evidence WHERE id=:i AND project_id=:p", {"i": identity, "p": project_id})
+        if result is None or result["quote"] != fact["quote"] or result["semantic_review"] == "unsupported":
+            changed.add(fact["name"])
+    if changed:
+        raise Conflict("recognition_facts_stale", "核验订正影响已确认事实，请到依据页核对并登记新的事实集", fact_names=sorted(changed))

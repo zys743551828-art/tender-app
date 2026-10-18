@@ -407,6 +407,128 @@
         }
       }
     },
+    "/api/v1/files/{version_id}/recognition": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Recognition Candidates",
+        "operationId": "listRecognitionCandidates",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecognitionCandidates"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{version_id}/recognition:review": {
+      "post": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Review Recognition",
+        "operationId": "reviewRecognitionCandidate",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecognitionReviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecognitionReview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/uploads": {
       "post": {
         "tags": [
@@ -7472,6 +7594,226 @@
         ],
         "title": "QualificationMetrics",
         "description": "废标／否决风险的闭环：评审发现了多少、提交前处理了多少、提交时仍未处理多少，以及招标方实际否决了多少。"
+      },
+      "RecognitionCandidates": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Version Id"
+          },
+          "parse_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Id"
+          },
+          "can_review": {
+            "type": "boolean",
+            "title": "Can Review"
+          },
+          "coverage_gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Coverage Gaps"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "pending_count": {
+            "type": "integer",
+            "title": "Pending Count"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RecognitionReview"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_id",
+          "parse_id",
+          "can_review",
+          "coverage_gaps",
+          "total",
+          "pending_count",
+          "offset",
+          "next_offset",
+          "items",
+          "history"
+        ],
+        "title": "RecognitionCandidates"
+      },
+      "RecognitionReview": {
+        "properties": {
+          "review_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Review Id"
+          },
+          "parent_parse_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Parent Parse Id"
+          },
+          "result_parse_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Result Parse Id"
+          },
+          "source_evidence_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Source Evidence Id"
+          },
+          "result_evidence_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Result Evidence Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "correct",
+              "reject"
+            ],
+            "title": "Decision"
+          },
+          "original_quote": {
+            "type": "string",
+            "title": "Original Quote"
+          },
+          "result_quote": {
+            "type": "string",
+            "title": "Result Quote"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "actor_name": {
+            "type": "string",
+            "title": "Actor Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "review_id",
+          "parent_parse_id",
+          "result_parse_id",
+          "source_evidence_id",
+          "result_evidence_id",
+          "decision",
+          "original_quote",
+          "result_quote",
+          "reason",
+          "actor_name",
+          "created_at"
+        ],
+        "title": "RecognitionReview"
+      },
+      "RecognitionReviewRequest": {
+        "properties": {
+          "expected_parse_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Expected Parse Id"
+          },
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Evidence Id"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "correct",
+              "reject"
+            ],
+            "title": "Decision"
+          },
+          "corrected_quote": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected Quote"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "reviewed_original": {
+            "type": "boolean",
+            "title": "Reviewed Original"
+          },
+          "reviewed_numbers": {
+            "type": "boolean",
+            "title": "Reviewed Numbers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_parse_id",
+          "evidence_id",
+          "decision",
+          "reason",
+          "reviewed_original",
+          "reviewed_numbers"
+        ],
+        "title": "RecognitionReviewRequest"
       },
       "RejectRevisionRequest": {
         "properties": {

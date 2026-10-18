@@ -1,5 +1,8 @@
 import { apiClient, toPage, type ApiClient, type RequestOptions } from './client';
 import type {
+  RecognitionCandidates,
+  RecognitionReview,
+  RecognitionReviewRequest,
   AdoptRequest,
   AssistantReply,
   Compliance,
@@ -57,6 +60,12 @@ type Idem = Pick<RequestOptions, 'idempotencyKey' | 'signal'>;
 /** 与 openapi.json 路径一一对应的类型化调用；路径前缀 /api/v1 由客户端添加。 */
 export function createEndpoints(c: ApiClient) {
   return {
+    recognition: {
+      list: (versionId: string, offset = 0) =>
+        c.get<RecognitionCandidates>(`/files/${versionId}/recognition?offset=${String(offset)}`),
+      review: (versionId: string, body: RecognitionReviewRequest, o?: Idem) =>
+        c.post<RecognitionReview>(`/files/${versionId}/recognition:review`, body, o),
+    },
     assistant: {
       ask: (projectId: string, message: string) =>
         c.post<AssistantReply>(`/projects/${projectId}/assistant`, { message }),

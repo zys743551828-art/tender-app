@@ -419,9 +419,17 @@ function FileRow({
       </td>
       <td>
         {isPdf ? (
-          <Link className={textLink} to={`/projects/${projectId}/files/${f.version_id}`}>
-            查看原件
-          </Link>
+          <div className="space-y-2">
+            <Link className={textLink} to={`/projects/${projectId}/files/${f.version_id}`}>
+              查看原件
+            </Link>
+            <Link
+              className={`${textLink} block`}
+              to={`/projects/${projectId}/files/${f.version_id}?verify=1`}
+            >
+              核验候选
+            </Link>
+          </div>
         ) : (
           <span className="text-muted-foreground">不能在线预览</span>
         )}

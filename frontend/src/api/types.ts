@@ -497,6 +497,41 @@ export interface Review {
 }
 
 /** $defs/SearchRequest（openapi 路径为 POST /projects/{id}/search） */
+export interface RecognitionReviewRequest {
+  expected_parse_id: Id;
+  evidence_id: Id;
+  decision: 'accept' | 'correct' | 'reject';
+  corrected_quote?: string | null;
+  reason: string;
+  reviewed_original: boolean;
+  reviewed_numbers: boolean;
+}
+export interface RecognitionReview {
+  review_id: Id;
+  parent_parse_id: Id;
+  result_parse_id: Id;
+  source_evidence_id: Id;
+  result_evidence_id: Id;
+  decision: 'accept' | 'correct' | 'reject';
+  original_quote: string;
+  result_quote: string;
+  reason: string;
+  actor_name: string;
+  created_at: IsoDateTime;
+}
+export interface RecognitionCandidates {
+  version_id: Id;
+  parse_id: Id | null;
+  can_review: boolean;
+  coverage_gaps: string[];
+  total: number;
+  pending_count: number;
+  offset: number;
+  next_offset: number | null;
+  items: EvidenceRef[];
+  history: RecognitionReview[];
+}
+
 export interface SearchRequest {
   /** 不给＝检索项目当前资料；给了＝限定在该轮评审的输入所含的文件版本内。 */
   snapshot_id?: Id | null;
