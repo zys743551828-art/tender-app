@@ -20,7 +20,6 @@ import { submissionKeys, useSubmissions } from '../outcomes/queries';
 import { invalidateProject } from '../projects/queries';
 import { PipelineBanner } from '../report/PipelineBanner';
 import { pipelineKey, reportKey, usePipeline, useReport } from '../report/queries';
-import { QUALIFICATION_KINDS } from '../rules/RulesPanel';
 import { snapshotKeys } from '../snapshots/queries';
 import { Button, textLink } from '../../components/ui/button';
 import { Input, Select } from '../../components/ui/input';
@@ -41,10 +40,8 @@ export function gateChecks(
   staleOrRunning: boolean,
   acceptRulesAsWritten = false,
 ): Check[] {
-  const rows = report?.qualification.rows ?? [];
-  const unconfirmed = rows.filter(
-    (r) => QUALIFICATION_KINDS.includes(r.kind) && r.rule_basis === 'unconfirmed',
-  ).length;
+  // 服务端的下一步按当前有效规则及确认状态计算；响应矩阵保留评审时的依据状态。
+  const unconfirmed = report?.next_actions.find((a) => a.key === 'confirm_rules')?.count ?? 0;
   const open = (c: string) => report?.categories.find((x) => x.category === c)?.open ?? 0;
   const critical = open('disqualification') + open('response');
   return [

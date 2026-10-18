@@ -16,6 +16,13 @@ import { ME, apiError, project, renderApp } from '../../test/helpers';
 import { server } from '../../test/server';
 
 type Cat = Report['categories'][number];
+const confirmRulesAction: Report['next_actions'][number] = {
+  key: 'confirm_rules',
+  title: '确认 1 条废标／否决／强制类规则',
+  detail: '按原文核对后确认。',
+  target: 'rules',
+  count: 1,
+};
 
 function cats(over: Partial<Record<Cat['category'], number>> = {}): Cat[] {
   return (['disqualification', 'response', 'consistency', 'scope', 'improvement'] as const).map(
@@ -83,7 +90,13 @@ describe('提交与结果页：登记前的检查', () => {
   });
   it('废标／否决／强制类规则未确认：该项未通过并链接到依据页', async () => {
     const rows = [verdictRow({ kind: 'disqualification', rule_basis: 'unconfirmed' })];
-    backend([], { report: report({ qualification: compliance(rows), categories: cats() }) });
+    backend([], {
+      report: report({
+        qualification: compliance(rows),
+        categories: cats(),
+        next_actions: [confirmRulesAction],
+      }),
+    });
     renderApp('/projects/prj-1/submit');
     expect(await screen.findByText('还有 1 条没有核对。')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '确认规则' })).toHaveAttribute(
@@ -97,6 +110,30 @@ describe('提交与结果页：登记前的检查', () => {
     backend([], { report: report({ qualification: compliance(rows), categories: cats() }) });
     renderApp('/projects/prj-1/submit');
     expect(await screen.findByRole('button', { name: '登记提交' })).toBeInTheDocument();
+  });
+
+  it('本轮评审后确认规则，历史矩阵仍未核对时也按当前规则状态通过检查', async () => {
+    const rows = [verdictRow({ kind: 'mandatory', rule_basis: 'unconfirmed' })];
+    backend([], {
+      report: report({ qualification: compliance(rows), categories: cats(), next_actions: [] }),
+    });
+    renderApp('/projects/prj-1/submit');
+    expect(await screen.findByRole('button', { name: '登记提交' })).toBeEnabled();
+    expect(screen.queryByText('还有 1 条没有核对。')).not.toBeInTheDocument();
+  });
+
+  it('历史矩阵已核对，但当前规则待确认时仍阻止登记', async () => {
+    const rows = [verdictRow({ kind: 'mandatory', rule_basis: 'confirmed' })];
+    backend([], {
+      report: report({
+        qualification: compliance(rows),
+        categories: cats(),
+        next_actions: [confirmRulesAction],
+      }),
+    });
+    renderApp('/projects/prj-1/submit');
+    expect(await screen.findByText('还有 1 条没有核对。')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '登记提交' })).not.toBeInTheDocument();
   });
 
   it('项目设置为规则按原文接受时，未核对的废标／强制类规则不挡提交', async () => {
