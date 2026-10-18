@@ -15,7 +15,7 @@ from bidwb import db, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import ArtifactRef, Outcome, OutcomeRequest, OutcomeVerifyRequest, Submission, SubmissionRequest
-from bidwb.services import audit, current_materials, files, projects, rules
+from bidwb.services import audit, current_materials, files, parse_identity, projects, rules
 from bidwb.services.findings import OPEN_STATES
 from bidwb.util import new_id, utcnow
 
@@ -90,6 +90,8 @@ def _require_snapshot_inputs_current(conn: Connection, project_id: str, snapshot
     missing = [h["id"] for h in heads if h["id"] not in included]
     if missing:
         raise Conflict("snapshot_stale", "资料在这一轮诊断之后有新版本，请重新诊断后再登记提交", version_ids=missing)
+    if not parse_identity.is_current(conn, project_id, snapshot_id):
+        raise Conflict("snapshot_parse_stale", "解析与证据身份已变化或未冻结，请发起新版评审后再登记提交")
 
 
 def _require_submittable_snapshot(conn: Connection, project_id: str, snapshot_id: str) -> None:

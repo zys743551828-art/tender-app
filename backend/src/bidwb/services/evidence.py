@@ -12,7 +12,7 @@ from bidwb.config import Settings
 from bidwb.embeddings import EmbeddingUnavailable, get_embedder
 from bidwb.errors import NotFound
 from bidwb.schemas import EvidenceRef, SearchHit, SearchRequest, SearchResult
-from bidwb.services import current_materials, vector_index
+from bidwb.services import current_materials, parse_identity, vector_index
 
 _EVIDENCE_SQL = """SELECT e.id,e.project_id,e.file_version_id,a.sha256 AS source_sha256,e.physical_page,e.printed_page,e.quote,e.kind,
        p.parser_version,e.bbox_json,e.semantic_review,f.role AS file_role,fv.original_name AS file_name
@@ -103,14 +103,18 @@ def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest, 
     require_project(conn, actor, project_id)
     if req.snapshot_id is None:
         versions = current_version_ids(conn, project_id)
+        inputs, _ = parse_identity.capture(conn, project_id, versions)
+        allowed_ids = [identity for value in inputs.values() for identity in value["evidence_ids"]]
     else:
         versions = snapshot_version_ids(conn, project_id, req.snapshot_id)
         if not versions:
             raise NotFound("snapshot_not_found")
+        allowed_ids = parse_identity.evidence_ids(conn, project_id, req.snapshot_id, versions)
     rows = db.all_(
         conn,
-        _EVIDENCE_SQL + "WHERE e.project_id=:p AND e.file_version_id = ANY(:v) ORDER BY fv.obtained_at, fv.id, e.seq, e.id",
-        {"p": project_id, "v": versions},
+        _EVIDENCE_SQL
+        + "WHERE e.project_id=:p AND e.file_version_id = ANY(:v) AND e.id=ANY(:ids) ORDER BY fv.obtained_at, fv.id, e.seq, e.id",
+        {"p": project_id, "v": versions, "ids": allowed_ids},
     )
     refs: Sequence[EvidenceRef] = annotate_effectivity(conn, project_id, [_ref(r) for r in rows])
     if req.mode == "hybrid" and settings is not None and settings.retrieval_backend == "pgvector":

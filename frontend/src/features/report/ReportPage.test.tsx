@@ -24,6 +24,13 @@ function backend(rep: Report | null) {
 }
 
 describe('报告页：没有完成的评审', () => {
+  it('历史报告明确提示未冻结解析身份，仍可读取原结论', async () => {
+    const original = report();
+    backend({ ...original, basis: { ...original.basis, parse_identity: 'legacy_unfrozen' } });
+    renderApp('/projects/prj-1');
+    expect(await screen.findByRole('note')).toHaveTextContent('该轮未冻结解析与证据身份');
+    expect(screen.getByRole('link', { name: '下载评审报告（Word）' })).toBeInTheDocument();
+  });
   it('生效关系待核实时引导核实依据，不显示无效的重试按钮', async () => {
     backend(null);
     server.use(

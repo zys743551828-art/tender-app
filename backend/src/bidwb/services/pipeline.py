@@ -20,7 +20,7 @@ from bidwb.access import Actor, require_project
 from bidwb.errors import DomainError
 from bidwb.logs import get_logger
 from bidwb.schemas import PipelineStatus, PipelineStep, SnapshotRequest
-from bidwb.services import action_context, audit, current_materials, snapshots
+from bidwb.services import action_context, audit, current_materials, parse_identity, snapshots
 from bidwb.services import findings as findings_service
 from bidwb.services import projects as projects_service
 from bidwb.services import rules as rules_service
@@ -151,6 +151,8 @@ def _inspect(conn: Connection, project_id: str) -> _Plan:
            ORDER BY s.as_of DESC, s.id DESC LIMIT 1""",
         {"p": project_id, "b": plan.body_id, "r": plan.package_id, "f": plan.fact_set_id, "ids": sorted([*plan.tender_ids, plan.body_id])},
     )
+    if snap is not None and not parse_identity.is_current(conn, project_id, snap["id"]):
+        snap = None
     shown = snap["id"] if snap is not None else None
     if snap is not None:
         plan.snapshot_id = snap["id"]
@@ -331,7 +333,7 @@ def _freeze_blocker(conn: Connection, project_id: str, plan: _Plan) -> tuple[Ste
     return "running", None
 
 
-StaleReason = Literal["body_updated", "tender_updated", "rules_changed", "facts_changed"]
+StaleReason = Literal["body_updated", "tender_updated", "rules_changed", "facts_changed", "parse_identity_changed"]
 
 
 def _stale_reasons(conn: Connection, project_id: str, plan: _Plan, last: db.Row | None) -> list[StaleReason]:
@@ -350,6 +352,8 @@ def _stale_reasons(conn: Connection, project_id: str, plan: _Plan, last: db.Row 
     newest_facts = db.one(conn, "SELECT id FROM fact_sets WHERE project_id=:p ORDER BY created_at DESC, id DESC LIMIT 1", {"p": project_id})
     if (newest_facts["id"] if newest_facts else None) != last["fact_set_id"]:
         stale.append("facts_changed")
+    if not parse_identity.is_current(conn, project_id, last["id"]):
+        stale.append("parse_identity_changed")
     return stale
 
 

@@ -3498,7 +3498,10 @@
           "type": "string"
         },
         "contract_version": {
-          "const": "input-v1",
+          "enum": [
+            "input-v1",
+            "input-v2"
+          ],
           "type": "string"
         },
         "file_version_ids": {
@@ -3558,6 +3561,27 @@
             "type": "object"
           },
           "type": "array"
+        },
+        "parse_identity": {
+          "default": "legacy_unfrozen",
+          "enum": [
+            "frozen",
+            "legacy_unfrozen"
+          ],
+          "type": "string"
+        },
+        "parse_ids": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": "object"
         }
       },
       "required": [
@@ -3944,7 +3968,8 @@
               "body_updated",
               "tender_updated",
               "rules_changed",
-              "facts_changed"
+              "facts_changed",
+              "parse_identity_changed"
             ],
             "type": "string"
           },
@@ -4926,6 +4951,14 @@
     "ReportBasis": {
       "additionalProperties": false,
       "properties": {
+        "parse_identity": {
+          "default": "legacy_unfrozen",
+          "enum": [
+            "frozen",
+            "legacy_unfrozen"
+          ],
+          "type": "string"
+        },
         "rules_total": {
           "type": "integer"
         },

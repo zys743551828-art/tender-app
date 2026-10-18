@@ -5285,7 +5285,10 @@
           },
           "contract_version": {
             "type": "string",
-            "const": "input-v1",
+            "enum": [
+              "input-v1",
+              "input-v2"
+            ],
             "title": "Contract Version"
           },
           "file_version_ids": {
@@ -5354,6 +5357,29 @@
             },
             "type": "array",
             "title": "Word Sources"
+          },
+          "parse_identity": {
+            "type": "string",
+            "enum": [
+              "frozen",
+              "legacy_unfrozen"
+            ],
+            "title": "Parse Identity",
+            "default": "legacy_unfrozen"
+          },
+          "parse_ids": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Parse Ids"
           }
         },
         "additionalProperties": false,
@@ -6066,7 +6092,8 @@
                 "body_updated",
                 "tender_updated",
                 "rules_changed",
-                "facts_changed"
+                "facts_changed",
+                "parse_identity_changed"
               ]
             },
             "type": "array",
@@ -7545,6 +7572,15 @@
       },
       "ReportBasis": {
         "properties": {
+          "parse_identity": {
+            "type": "string",
+            "enum": [
+              "frozen",
+              "legacy_unfrozen"
+            ],
+            "title": "Parse Identity",
+            "default": "legacy_unfrozen"
+          },
           "rules_total": {
             "type": "integer",
             "title": "Rules Total"

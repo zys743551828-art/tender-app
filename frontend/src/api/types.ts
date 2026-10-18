@@ -249,7 +249,7 @@ export interface EvidenceRef {
 export interface InputSnapshot {
   snapshot_id: Id;
   project_id: Id;
-  contract_version: 'input-v1';
+  contract_version: 'input-v1' | 'input-v2';
   file_version_ids: Id[];
   body_version_id: Id;
   rule_set_id: Id;
@@ -259,6 +259,8 @@ export interface InputSnapshot {
   coverage_gaps: string[];
   sha256: string;
   word_sources?: Record<string, unknown>[];
+  parse_identity?: 'frozen' | 'legacy_unfrozen';
+  parse_ids?: Record<string, string | null>;
 }
 
 /** $defs/SnapshotRequest */
@@ -955,7 +957,8 @@ export interface PipelineStep {
   message: string | null;
 }
 
-export type StaleReason = 'body_updated' | 'tender_updated' | 'rules_changed' | 'facts_changed';
+export type StaleReason =
+  'body_updated' | 'tender_updated' | 'rules_changed' | 'facts_changed' | 'parse_identity_changed';
 
 export interface PipelineStatus {
   project_id: Id;
@@ -1011,6 +1014,7 @@ export interface NextAction {
 }
 
 export interface ReportBasis {
+  parse_identity?: 'frozen' | 'legacy_unfrozen';
   rules_total: number;
   rules_confirmed: number;
   rules_unconfirmed: number;

@@ -241,7 +241,7 @@ class SnapshotRequest(Request):
 class InputSnapshot(Response):
     snapshot_id: Id
     project_id: Id
-    contract_version: Literal["input-v1"]
+    contract_version: Literal["input-v1", "input-v2"]
     file_version_ids: list[Id]
     body_version_id: Id
     rule_set_id: Id
@@ -251,6 +251,8 @@ class InputSnapshot(Response):
     coverage_gaps: list[str]
     sha256: Sha256
     word_sources: list[dict[str, Any]] = Field(default_factory=list)
+    parse_identity: Literal["frozen", "legacy_unfrozen"] = "legacy_unfrozen"
+    parse_ids: dict[str, str | None] = Field(default_factory=dict)
 
 
 # ------------------------------------------------------------------ 任务
@@ -930,7 +932,7 @@ class PipelineStatus(Response):
     missing: list[Literal["tender", "body"]]
     snapshot_id: Id | None  # 最近一次已完成评审的输入快照
     round_no: int | None
-    stale_reasons: list[Literal["body_updated", "tender_updated", "rules_changed", "facts_changed"]]
+    stale_reasons: list[Literal["body_updated", "tender_updated", "rules_changed", "facts_changed", "parse_identity_changed"]]
     rules_total: int
     rules_unconfirmed: int
     input_verification_required: bool = False
@@ -996,6 +998,7 @@ class NextAction(Response):
 
 
 class ReportBasis(Response):
+    parse_identity: Literal["frozen", "legacy_unfrozen"] = "legacy_unfrozen"
     rules_total: int
     rules_confirmed: int
     rules_unconfirmed: int

@@ -32,7 +32,7 @@ from bidwb.ai.grounding import EvidenceText, quote_supported
 from bidwb.ai.handlers import _evidence_rows, _load_evidence_by_ids, diagnosis_coverage
 from bidwb.ai.llm import IncompleteGeneration, LlmClient, Usage, call_validated
 from bidwb.ai.sections import Section, build_sections
-from bidwb.errors import Unprocessable
+from bidwb.errors import Conflict, Unprocessable
 from bidwb.services import anchor_packs, model_registry, scoring_models
 from bidwb.services import rules as rules_service
 from bidwb.services.model_registry import TARGET_SCORING
@@ -322,12 +322,15 @@ def _load(conn: Connection, project_id: str, snapshot_id: str) -> Inputs | None:
     rule_evidence = {
         e.evidence_id: e for e in _load_evidence_by_ids(conn, project_id, sorted({e for r in scoring for e in r["evidence_ids_json"]}))
     }
-    body = [checks.Passage(r["id"], r["physical_page"], r["quote"]) for r in _evidence_rows(conn, project_id, [snap["body_version_id"]])]
+    body = [
+        checks.Passage(r["id"], r["physical_page"], r["quote"])
+        for r in _evidence_rows(conn, project_id, [snap["body_version_id"]], snapshot_id)
+    ]
     version = db.one(
         conn,
-        """SELECT a.sha256, (SELECT page_count FROM parses WHERE file_version_id=fv.id ORDER BY created_at DESC, id DESC LIMIT 1) AS pages
-           FROM file_versions fv JOIN artifacts a ON a.id=fv.artifact_id WHERE fv.id=:v""",
-        {"v": snap["body_version_id"]},
+        """SELECT a.sha256, (s.parse_inputs_json->fv.id->>'page_count')::integer AS pages
+           FROM file_versions fv JOIN artifacts a ON a.id=fv.artifact_id JOIN input_snapshots s ON s.id=:s AND s.project_id=fv.project_id WHERE fv.id=:v""",
+        {"v": snap["body_version_id"], "s": snapshot_id},
     )
     project = db.one(conn, "SELECT region, engineering_type FROM projects WHERE id=:p", {"p": project_id})
     assert version is not None
@@ -555,7 +558,10 @@ def make_prediction_handler(llm: LlmClient | None, anchor_source: AnchorSource |
             return HandlerFailure("invalid_job_input")
         settings = ctx.settings
         with ctx.engine.connect() as conn:
-            loaded = _load(conn, project_id, snapshot_id)
+            try:
+                loaded = _load(conn, project_id, snapshot_id)
+            except Conflict as exc:
+                return HandlerFailure(exc.code, exc.message)
             pack = source(conn, ctx.store, project_id) if loaded is not None and settings.prediction_anchors > 0 else None
         if loaded is None:
             return HandlerFailure("snapshot_not_found")

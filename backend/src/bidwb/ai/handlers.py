@@ -18,8 +18,10 @@ from bidwb.ai import grounding, prompts
 from bidwb.ai.grounding import EvidenceText
 from bidwb.ai.llm import IncompleteGeneration, LlmClient, Usage, call_validated
 from bidwb.checks import consistency, scope
+from bidwb.errors import Conflict
 from bidwb.logs import get_logger
 from bidwb.services import findings as findings_service
+from bidwb.services import parse_identity
 from bidwb.services import projects as projects_service
 from bidwb.services import rules as rules_service
 from bidwb.util import new_id, utcnow
@@ -38,15 +40,20 @@ MAX_RULES_PER_PACKAGE = 200
 EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote,e.file_version_id FROM evidence e
    JOIN file_versions fv ON fv.id=e.file_version_id AND fv.project_id=e.project_id
    WHERE e.project_id=:p AND e.file_version_id = ANY(:v) AND (e.kind='text' OR e.semantic_review='supported')
-   ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
+   AND e.id=ANY(:eids) ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
 
 
-def _evidence_rows(conn: Connection, project_id: str, version_ids: Sequence[str]) -> list[db.Row]:
-    return db.all_(conn, EVIDENCE_IN_ORDER_SQL, {"p": project_id, "v": list(version_ids)})
+def _evidence_rows(conn: Connection, project_id: str, version_ids: Sequence[str], snapshot_id: str | None = None) -> list[db.Row]:
+    if snapshot_id is not None:
+        ids = parse_identity.evidence_ids(conn, project_id, snapshot_id, version_ids)
+    else:
+        inputs, _ = parse_identity.capture(conn, project_id, version_ids)
+        ids = [identity for value in inputs.values() for identity in value["evidence_ids"]]
+    return db.all_(conn, EVIDENCE_IN_ORDER_SQL, {"p": project_id, "v": list(version_ids), "eids": ids})
 
 
-def _load_evidence(conn: Connection, project_id: str, version_ids: Sequence[str]) -> list[EvidenceText]:
-    return [EvidenceText(r["id"], r["quote"]) for r in _evidence_rows(conn, project_id, version_ids)]
+def _load_evidence(conn: Connection, project_id: str, version_ids: Sequence[str], snapshot_id: str | None = None) -> list[EvidenceText]:
+    return [EvidenceText(r["id"], r["quote"]) for r in _evidence_rows(conn, project_id, version_ids, snapshot_id)]
 
 
 CARRIED_REASON_PREFIX = rules_service.CARRIED_REASON_PREFIX
@@ -264,8 +271,8 @@ def _category(kind: str) -> tuple[str, str]:
     return "improvement", "technical"
 
 
-def _passages(conn: Connection, project_id: str, version_ids: Sequence[str]) -> list[checks.Passage]:
-    return [checks.Passage(r["id"], r["physical_page"], r["quote"]) for r in _evidence_rows(conn, project_id, version_ids)]
+def _passages(conn: Connection, project_id: str, version_ids: Sequence[str], snapshot_id: str | None = None) -> list[checks.Passage]:
+    return [checks.Passage(r["id"], r["physical_page"], r["quote"]) for r in _evidence_rows(conn, project_id, version_ids, snapshot_id)]
 
 
 def _load_diagnosis_inputs(conn: Connection, project_id: str, snapshot_id: str) -> tuple[Any, ...] | None:
@@ -287,8 +294,8 @@ def _load_diagnosis_inputs(conn: Connection, project_id: str, snapshot_id: str) 
         if snap["fact_set_id"]
         else []
     )
-    body = _load_evidence(conn, project_id, [snap["body_version_id"]])
-    body_passages = _passages(conn, project_id, [snap["body_version_id"]])
+    body = _load_evidence(conn, project_id, [snap["body_version_id"]], snapshot_id)
+    body_passages = _passages(conn, project_id, [snap["body_version_id"]], snapshot_id)
     tender_versions = db.all_(
         conn,
         """SELECT sf.file_version_id AS id FROM snapshot_files sf
@@ -297,7 +304,7 @@ def _load_diagnosis_inputs(conn: Connection, project_id: str, snapshot_id: str) 
            WHERE sf.snapshot_id=:s AND sf.project_id=:p AND f.role IN ('tender','supplement')""",
         {"s": snapshot_id, "p": project_id},
     )
-    tender_passages = _passages(conn, project_id, [v["id"] for v in tender_versions])
+    tender_passages = _passages(conn, project_id, [v["id"] for v in tender_versions], snapshot_id)
     rule_ev_ids = sorted({e for r in rules for e in r["evidence_ids_json"]})
     rule_ev = {e.evidence_id: e for e in _load_evidence_by_ids(conn, project_id, rule_ev_ids)}
     settings = projects_service.settings_of(conn, project_id)
@@ -305,14 +312,17 @@ def _load_diagnosis_inputs(conn: Connection, project_id: str, snapshot_id: str) 
 
 
 def make_diagnosis_handler(llm: LlmClient | None) -> Handler:
-    def handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
+    def handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:  # noqa: PLR0911
         if llm is None:
             return HandlerFailure("llm_not_configured")
         snapshot_id, project_id = ctx.claim.snapshot_id, ctx.claim.project_id
         if snapshot_id is None:
             return HandlerFailure("invalid_job_input")
         with ctx.engine.connect() as conn:
-            loaded = _load_diagnosis_inputs(conn, project_id, snapshot_id)
+            try:
+                loaded = _load_diagnosis_inputs(conn, project_id, snapshot_id)
+            except Conflict as exc:
+                return HandlerFailure(exc.code, exc.message)
         if loaded is None:
             return HandlerFailure("snapshot_not_found")
         rules, facts, body, body_passages, tender_passages, rule_ev, settings = loaded
@@ -617,7 +627,12 @@ def make_revision_handler(llm: LlmClient | None) -> Handler:
                 "SELECT id,statement,required_facts_json FROM findings WHERE project_id=:p AND id = ANY(:i) ORDER BY id",
                 {"p": project_id, "i": finding_ids},
             )
-            body = _load_evidence(conn, project_id, [base_version_id])
+            if ctx.claim.snapshot_id is None:
+                return HandlerFailure("invalid_job_input")
+            try:
+                body = _load_evidence(conn, project_id, [base_version_id], ctx.claim.snapshot_id)
+            except Conflict as exc:
+                return HandlerFailure(exc.code, exc.message)
             facts = db.all_(
                 conn,
                 "SELECT id,statement,value_decimal,unit FROM fact_items WHERE project_id=:p AND confirmation='confirmed' AND id = ANY(:i) ORDER BY id",

@@ -71,6 +71,11 @@ export function ReportPage() {
         actions={<ExportButtons projectId={pid} />}
       />
       <PipelineBanner pipeline={status ?? r.pipeline} requiredAction={r.next_actions[0]} />
+      {r.basis.parse_identity === 'legacy_unfrozen' ? (
+        <p role="note" className="my-4 text-sm text-muted-foreground">
+          此历史报告保留原有结论与引用。该轮未冻结解析与证据身份，如需重新评审，请检查新版并生成新报告。
+        </p>
+      ) : null}
       <Verdict report={r} base={base} settings={project.settings} />
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0">

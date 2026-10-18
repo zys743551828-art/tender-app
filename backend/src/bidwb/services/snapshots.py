@@ -14,12 +14,12 @@ from bidwb import db, source_effectivity, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import InputSnapshot, SnapshotRequest
-from bidwb.services import audit, current_materials, rules
+from bidwb.services import audit, current_materials, parse_identity, rules
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
 from bidwb.util import canonical_json, new_id, sha256_hex, utcnow
 
-SNAPSHOT_CONTRACT = "input-v1"
+SNAPSHOT_CONTRACT = "input-v2"
 TENDER_ROLES = frozenset({"tender", "supplement"})
 PARSED_ROLES = frozenset(
     {"tender", "supplement", "body", "submission"}
@@ -27,19 +27,7 @@ PARSED_ROLES = frozenset(
 
 
 def _coverage_gaps(conn: Connection, project_id: str, version_ids: list[str]) -> list[str]:
-    gaps: list[str] = []
-    for version_id in version_ids:
-        parse = db.one(
-            conn,
-            "SELECT coverage,gaps_json FROM parses WHERE file_version_id=:v AND project_id=:p ORDER BY created_at DESC LIMIT 1",
-            {"v": version_id, "p": project_id},
-        )
-        if parse is None:
-            gaps.append(f"{version_id}:unparsed")
-        elif parse["coverage"] != "complete":
-            gaps.append(f"{version_id}:{parse['coverage']}")
-            gaps.extend(f"{version_id}:{g}" for g in parse["gaps_json"])
-    return gaps
+    return parse_identity.capture(conn, project_id, version_ids)[1]
 
 
 def _require_complete_tender_inputs(conn: Connection, project_id: str, versions: list[db.Row]) -> None:
@@ -166,7 +154,7 @@ def freeze_inputs(
     version_ids = check_inputs(conn, project_id, req)
     now = utcnow()
 
-    gaps = _coverage_gaps(conn, project_id, version_ids)
+    parse_inputs, gaps = parse_identity.capture(conn, project_id, version_ids)
     snapshot_id = new_id("snp")
     manifest = {
         "snapshot_id": snapshot_id,
@@ -179,6 +167,7 @@ def freeze_inputs(
         "as_of": now.isoformat(),
         "reference_dataset_id": None,
         "coverage_gaps": gaps,
+        "parse_inputs": parse_inputs,
         "word_sources": [dict(row) for row in current_materials.lineage(conn, project_id, version_ids)],
     }
     payload = canonical_json(manifest).encode()
@@ -194,8 +183,8 @@ def freeze_inputs(
     )
     db.run(
         conn,
-        """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,fact_set_id,as_of,contract_version,sha256,manifest_artifact_id,word_sources_json)
-           VALUES (:i,:p,:b,:r,:f,:now,:cv,:sha,:art,CAST(:word AS jsonb))""",
+        """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,fact_set_id,as_of,contract_version,sha256,manifest_artifact_id,word_sources_json,parse_inputs_json,coverage_gaps_json)
+           VALUES (:i,:p,:b,:r,:f,:now,:cv,:sha,:art,CAST(:word AS jsonb),CAST(:parses AS jsonb),CAST(:gaps AS jsonb))""",
         {
             "i": snapshot_id,
             "p": project_id,
@@ -207,6 +196,8 @@ def freeze_inputs(
             "sha": digest,
             "art": artifact_id,
             "word": json.dumps(manifest["word_sources"]),
+            "parses": json.dumps(parse_inputs),
+            "gaps": json.dumps(gaps),
         },
     )
     for version_id in version_ids:
@@ -228,17 +219,22 @@ def freeze_inputs(
     return snapshot_id
 
 
-def get_snapshot(conn: Connection, actor: Actor, snapshot_id: str) -> InputSnapshot:
+def get_snapshot(conn: Connection, actor: Actor, snapshot_id: str, store: ObjectStore | None = None) -> InputSnapshot:
     row = db.one(conn, "SELECT * FROM input_snapshots WHERE id=:i", {"i": snapshot_id})
     if row is None:
         raise NotFound("snapshot_not_found")
     require_project(conn, actor, row["project_id"])
     files = db.all_(conn, "SELECT file_version_id FROM snapshot_files WHERE snapshot_id=:s ORDER BY file_version_id", {"s": snapshot_id})
-    gaps = _coverage_gaps(conn, row["project_id"], [f["file_version_id"] for f in files])
+    gaps = row["coverage_gaps_json"] if row["coverage_gaps_json"] is not None else ["legacy_parse_identity_unfrozen"]
+    if row["parse_inputs_json"] is None and store is not None:
+        manifest = manifest_json(store, conn, snapshot_id)
+        original_gaps = manifest.get("coverage_gaps", [])
+        if isinstance(original_gaps, list):
+            gaps = [str(gap) for gap in original_gaps] + ["legacy_parse_identity_unfrozen"]
     return InputSnapshot(
         snapshot_id=row["id"],
         project_id=row["project_id"],
-        contract_version=SNAPSHOT_CONTRACT,
+        contract_version=row["contract_version"],
         file_version_ids=[f["file_version_id"] for f in files],
         body_version_id=row["body_version_id"],
         rule_set_id=row["rule_set_id"],
@@ -248,13 +244,15 @@ def get_snapshot(conn: Connection, actor: Actor, snapshot_id: str) -> InputSnaps
         coverage_gaps=gaps,
         sha256=row["sha256"],
         word_sources=row["word_sources_json"],
+        parse_identity="frozen" if row["parse_inputs_json"] is not None else "legacy_unfrozen",
+        parse_ids={key: value["parse_id"] for key, value in (row["parse_inputs_json"] or {}).items()},
     )
 
 
-def list_snapshots(conn: Connection, actor: Actor, project_id: str) -> list[InputSnapshot]:
+def list_snapshots(conn: Connection, actor: Actor, project_id: str, store: ObjectStore | None = None) -> list[InputSnapshot]:
     require_project(conn, actor, project_id)
     rows = db.all_(conn, "SELECT id FROM input_snapshots WHERE project_id=:p ORDER BY as_of DESC, id DESC", {"p": project_id})
-    return [get_snapshot(conn, actor, r["id"]) for r in rows]
+    return [get_snapshot(conn, actor, r["id"], store) for r in rows]
 
 
 def manifest_json(store: ObjectStore, conn: Connection, snapshot_id: str) -> dict[str, object]:

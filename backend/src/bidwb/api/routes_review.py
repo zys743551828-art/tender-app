@@ -73,13 +73,13 @@ def freeze_input(project_id: str, body: SnapshotRequest, session: CurrentSession
 @router.get("/projects/{project_id}/snapshots", response_model=list[InputSnapshot], operation_id="listSnapshots")
 def list_snapshots(project_id: str, session: CurrentSession, ctr: Ctr) -> list[InputSnapshot]:
     with ctr.engine.connect() as conn:
-        return snapshots.list_snapshots(conn, session.actor, project_id)
+        return snapshots.list_snapshots(conn, session.actor, project_id, ctr.store)
 
 
 @router.get("/snapshots/{snapshot_id}", response_model=InputSnapshot, operation_id="getSnapshot")
 def get_snapshot(snapshot_id: str, session: CurrentSession, ctr: Ctr) -> InputSnapshot:
     with ctr.engine.connect() as conn:
-        return snapshots.get_snapshot(conn, session.actor, snapshot_id)
+        return snapshots.get_snapshot(conn, session.actor, snapshot_id, ctr.store)
 
 
 # ---- 规则与事实

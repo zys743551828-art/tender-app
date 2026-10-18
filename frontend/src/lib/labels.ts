@@ -141,6 +141,7 @@ export const pipelineStateLabel = dict({
   failed: '失败',
 });
 export const staleReasonLabel = dict({
+  parse_identity_changed: '解析依据需要重新核对',
   body_updated: '技术标正文有了新版本',
   tender_updated: '招标文件或补遗有了新版本',
   rules_changed: '规则已更正',

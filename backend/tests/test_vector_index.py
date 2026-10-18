@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
@@ -11,7 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from bidwb import db, tasks
 from bidwb.embeddings import DIMENSIONS, EmbeddingUnavailable, Encoded
 from bidwb.messaging import InMemoryBus
-from bidwb.services import evidence, vector_index
+from bidwb.services import evidence, parse_identity, vector_index
 from bidwb.workers.handlers import default_handlers
 from bidwb.workers.runner import WorkerRunner
 from tests.pdfs import make_pdf
@@ -59,9 +60,15 @@ def materials(api_factory: Any, make_member: Any, store: Any, engine: Engine, wo
         )
         db.run(
             conn,
-            """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,as_of,contract_version,sha256,manifest_artifact_id)
-               VALUES ('snp_test',:p,:v,'rpk_test',now(),'test',:h,:a)""",
-            {"p": pid, "v": first["version_id"], "h": "a" * 64, "a": artifact},
+            """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,as_of,contract_version,sha256,manifest_artifact_id,parse_inputs_json,coverage_gaps_json)
+               VALUES ('snp_test',:p,:v,'rpk_test',now(),'input-v2',:h,:a,CAST(:inputs AS jsonb),'[]')""",
+            {
+                "p": pid,
+                "v": first["version_id"],
+                "h": "a" * 64,
+                "a": artifact,
+                "inputs": json.dumps(parse_identity.capture(conn, pid, [first["version_id"]])[0]),
+            },
         )
         db.run(conn, "INSERT INTO snapshot_files VALUES ('snp_test',:p,:v)", {"p": pid, "v": first["version_id"]})
     return api, pid, other_pid, first["version_id"], current["version_id"]

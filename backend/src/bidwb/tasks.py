@@ -22,7 +22,7 @@ from bidwb.config import LEASE_SECONDS_MAX, LEASE_SECONDS_MIN
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.messaging import Producer
 from bidwb.schemas import ArtifactRef, Task, TaskCoverage, TaskEvent, TaskRequest
-from bidwb.services import audit
+from bidwb.services import audit, parse_identity
 from bidwb.util import canonical_json, new_id, new_token, sha256_hex, utcnow
 
 KIND_CLASS = {
@@ -234,6 +234,7 @@ def enqueue_diagnosis(conn: Connection, project_id: str, snapshot_id: str, idemp
     snapshot = db.one(conn, "SELECT sha256 FROM input_snapshots WHERE id=:s AND project_id=:p", {"s": snapshot_id, "p": project_id})
     if snapshot is None:
         raise NotFound("snapshot_not_found")
+    parse_identity.frozen(conn, project_id, snapshot_id)
     return enqueue(
         conn,
         project_id=project_id,

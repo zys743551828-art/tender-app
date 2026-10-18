@@ -380,6 +380,9 @@ def get_report(conn: Connection, store: ObjectStore, actor: Actor, project_id: s
         snapshot_id=r.snapshot_id,
         round_no=status_.round_no or 1,
         basis=ReportBasis(
+            parse_identity="frozen"
+            if db.scalar(conn, "SELECT parse_inputs_json IS NOT NULL FROM input_snapshots WHERE id=:s", {"s": r.snapshot_id})
+            else "legacy_unfrozen",
             rules_total=len(r.effective),
             rules_confirmed=len(r.effective) - unconfirmed,
             rules_unconfirmed=unconfirmed,

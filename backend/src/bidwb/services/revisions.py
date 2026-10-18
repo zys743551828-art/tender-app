@@ -16,7 +16,7 @@ from bidwb import db, tasks
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import AdoptRequest, ArtifactRef, RejectRevisionRequest, Revision, RevisionRequest, Task
-from bidwb.services import audit
+from bidwb.services import audit, parse_identity
 from bidwb.storage import ObjectStore
 from bidwb.util import canonical_json, new_id, sha256_hex, utcnow
 
@@ -46,6 +46,7 @@ def propose(conn: Connection, actor: Actor, project_id: str, req: RevisionReques
     )
     if snapshot is None:
         raise NotFound("snapshot_not_found")
+    parse_identity.frozen(conn, project_id, req.snapshot_id)
     if snapshot["body_version_id"] != req.base_version_id:
         raise Unprocessable("base_version_mismatch", "基础版本必须是快照里的正文版本")
     if not _latest_version(conn, project_id, req.base_version_id):

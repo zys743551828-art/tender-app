@@ -45,9 +45,11 @@ WHERE NOT EXISTS (SELECT 1 FROM submissions t WHERE t.supersedes=s.id)
 ORDER BY s.submitted_at, s.id
 """
 
-_VERSION_SQL = """SELECT fv.id, f.role, a.sha256, a.object_key, ps.page_count, ps.coverage, pa.object_key AS parse_key
+_VERSION_SQL = """SELECT fv.id, f.role, a.sha256, a.object_key, ps.page_count, ps.coverage, pa.object_key AS parse_key,
+ sn.parse_inputs_json IS NOT NULL AS parse_identity_frozen
 FROM file_versions fv JOIN files f ON f.id=fv.file_id JOIN artifacts a ON a.id=fv.artifact_id
-LEFT JOIN LATERAL (SELECT page_count, coverage, artifact_id FROM parses WHERE file_version_id=fv.id ORDER BY created_at DESC, id DESC LIMIT 1) ps ON true
+JOIN input_snapshots sn ON sn.id=:s AND sn.project_id=fv.project_id
+LEFT JOIN parses ps ON ps.id=sn.parse_inputs_json->fv.id->>'parse_id' AND ps.project_id=fv.project_id AND ps.file_version_id=fv.id
 LEFT JOIN artifacts pa ON pa.id=ps.artifact_id """
 
 
@@ -175,6 +177,8 @@ def _format_b(conn: Connection, store: ObjectStore, pair: db.Row, sample_id: str
         record["artifact_extra"] = jsonable({k: v for k, v in detail.items() if k not in {"items", "usage"}})
     if snapshot["body_version_id"] != pair["body_version_id"]:
         record["error"] = "body_mismatch: 提交的正文与该轮评审所用的正文不同，预测不是针对被打分的那份正文"
+    elif not body["parse_identity_frozen"]:
+        record["error"] = "snapshot_parse_identity_unknown: 历史快照未冻结解析身份，保留记录但不能作为精确输入的预测样本"
     else:
         record["status"] = "succeeded"
     return record
@@ -196,7 +200,7 @@ def export(conn: Connection, store: ObjectStore, out: Path) -> dict[str, int]:
                  WHERE sf.snapshot_id=:s AND f.role IN ('tender','supplement') ORDER BY fv.obtained_at, fv.id""",
             {"s": pair["snapshot_id"]},
         )
-        body = db.one(conn, _VERSION_SQL + "WHERE fv.id=:v", {"v": pair["body_version_id"]})
+        body = db.one(conn, _VERSION_SQL + "WHERE fv.id=:v", {"v": pair["body_version_id"], "s": pair["snapshot_id"]})
         assert body is not None
         sample_id = pair["submission_id"]
         duplicate = body["sha256"] in seen_bodies
