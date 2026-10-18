@@ -72,7 +72,7 @@ export function gateChecks(
       ok: report !== null && critical === 0,
       title: '可能导致否决的问题已处理',
       problem: `还有 ${String(critical)} 个没有处理。`,
-      to: 'findings?category=disqualification',
+      to: 'findings?priority=qualification',
       cta: '处理问题',
     },
   ];

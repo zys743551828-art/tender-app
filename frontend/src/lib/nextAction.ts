@@ -6,7 +6,7 @@ const CTA: Record<NextActionKey, string> = {
   start_analysis: '开始评审',
   wait_analysis: '查看进度',
   retry_analysis: '重新评审',
-  handle_disqualification: '处理否决风险',
+  handle_disqualification: '处理否决／强制风险',
   handle_critical: '处理关键风险',
   verify_facts: '核实事实',
   improve_score: '查看评分缺口',
@@ -27,7 +27,7 @@ export function actionLabel(a: Pick<NextAction, 'key'>): string {
 
 /** 下一步 → 项目内路径（base 为 /projects/:id）。落点尽量具体：否决风险直达对应分类，待核对条款直达响应矩阵。 */
 export function actionPath(base: string, a: Pick<NextAction, 'key' | 'target'>): string {
-  if (a.key === 'handle_disqualification') return `${base}/findings?category=disqualification`;
+  if (a.key === 'handle_disqualification') return `${base}/findings?priority=qualification`;
   if (a.key === 'review_unclear') return `${base}#matrix`;
   if (a.key === 'verify_facts') return `${base}/basis?tab=facts`;
   if (a.key === 'improve_score') return `${base}#pred-h`;

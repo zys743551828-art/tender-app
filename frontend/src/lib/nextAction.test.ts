@@ -3,13 +3,13 @@ import { actionLabel, actionPath, coverageText } from './nextAction';
 
 describe('下一步', () => {
   it('按钮文字说明要做什么', () => {
-    expect(actionLabel({ key: 'handle_disqualification' })).toBe('处理否决风险');
+    expect(actionLabel({ key: 'handle_disqualification' })).toBe('处理否决／强制风险');
     expect(actionLabel({ key: 'confirm_rules' })).toBe('确认规则');
   });
 
   it('落点具体到分类或响应矩阵', () => {
     expect(actionPath('/p', { key: 'handle_disqualification', target: 'findings' })).toBe(
-      '/p/findings?category=disqualification',
+      '/p/findings?priority=qualification',
     );
     expect(actionPath('/p', { key: 'review_unclear', target: 'report' })).toBe('/p#matrix');
     expect(actionPath('/p', { key: 'confirm_rules', target: 'rules' })).toBe('/p/basis');

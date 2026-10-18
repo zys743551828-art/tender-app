@@ -48,15 +48,36 @@ export function FindingsPage() {
   const { project } = useProjectContext();
   const pid = project.project_id;
   const [sp, setSp] = useSearchParams();
-  const category = asCategory(sp.get('category'));
   const [status, setStatus] = useState('');
   const pipeline = usePipeline(pid);
   const report = useReport(pid);
+  const qualificationEntry = sp.get('priority') === 'qualification' && !sp.has('category');
+  const priorityCategory = report.data?.categories.some(
+    (c) => c.category === 'disqualification' && c.open > 0,
+  )
+    ? 'disqualification'
+    : report.data?.categories.some((c) => c.category === 'response' && c.open > 0)
+      ? 'response'
+      : 'disqualification';
+  const category = qualificationEntry ? priorityCategory : asCategory(sp.get('category'));
+  // 只在入口解析一次，审核后仍留在原分类，显式分类链接也不受影响。
+  useEffect(() => {
+    if (!qualificationEntry || !report.isSuccess) return;
+    setSp(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('priority');
+        next.set('category', priorityCategory);
+        return next;
+      },
+      { replace: true },
+    );
+  }, [qualificationEntry, report.isSuccess, priorityCategory, setSp]);
   const snapshotId = pipeline.data?.snapshot_id ?? undefined;
   const q = useFindings(
     pid,
     { snapshotId, status: status || undefined, category },
-    { enabled: snapshotId !== undefined },
+    { enabled: snapshotId !== undefined && (!qualificationEntry || report.isSuccess) },
   );
   const base = `/projects/${pid}`;
 
@@ -130,7 +151,11 @@ export function FindingsPage() {
       <p className="-mt-2 mb-4 text-[13px] text-muted-foreground">
         {findingCategoryHint(category)}
       </p>
-      {q.isPending && snapshotId !== undefined ? <Loading /> : null}
+      {qualificationEntry && report.isPending ? <Loading /> : null}
+      {qualificationEntry && report.isError ? (
+        <ErrorNotice error={report.error} onRetry={() => void report.refetch()} />
+      ) : null}
+      {q.isPending && snapshotId !== undefined && !qualificationEntry ? <Loading /> : null}
       {q.isError ? <ErrorNotice error={q.error} onRetry={() => void q.refetch()} /> : null}
       {q.isSuccess && shown.length === 0 && !status ? (
         <EmptyState

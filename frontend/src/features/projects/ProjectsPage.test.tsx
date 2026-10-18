@@ -67,9 +67,9 @@ describe('项目总览', () => {
     expect(first.getByText(/4–8/)).toBeInTheDocument();
     expect(first.getByText('只覆盖 8 / 60 分')).toBeInTheDocument();
     expect(first.getByText(/还剩 2 天/)).toBeInTheDocument();
-    expect(first.getByRole('link', { name: '处理否决风险' })).toHaveAttribute(
+    expect(first.getByRole('link', { name: '处理否决／强制风险' })).toHaveAttribute(
       'href',
-      '/projects/prj-1/findings?category=disqualification',
+      '/projects/prj-1/findings?priority=qualification',
     );
     const second = within(rows[1]!);
     expect(second.getAllByText('尚未评审')).toHaveLength(2);

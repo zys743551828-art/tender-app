@@ -39,7 +39,7 @@ with sync_playwright() as p:
     # 项目总览：每行给出否决风险、预计技术分与下一步
     row = page.get_by_role("list", name="项目清单").get_by_role("listitem").first
     expect(row.get_by_text("1 个未处理")).to_be_visible(timeout=20000)
-    expect(row.get_by_role("link", name="处理否决风险")).to_be_visible()
+    expect(row.get_by_role("link", name="处理否决／强制风险")).to_be_visible()
     shot(page, "projects")
 
     # 报告：结论、下一步、逐条响应、技术分预测（未校准、覆盖程度）
@@ -55,7 +55,7 @@ with sync_playwright() as p:
     assert dl.value.suggested_filename.endswith(".docx"), dl.value.suggested_filename
 
     # 下一步 → 否决风险分类；招标要求与正文写法并排，确认问题
-    page.get_by_role("link", name="处理否决风险").first.click()
+    page.get_by_role("link", name="处理否决／强制风险").first.click()
     expect(page.get_by_role("heading", name="施组正文写法")).to_be_visible(timeout=10000)
     page.get_by_label("理由").first.fill("确认超期，需要改进度计划")
     page.get_by_role("button", name="确认问题").click()

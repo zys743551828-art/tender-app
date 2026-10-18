@@ -43,6 +43,61 @@ function backend(findings: Finding[], o: Backend = {}) {
 }
 
 describe('问题审核页', () => {
+  it.each([
+    { disqualification: 0, response: 1, expected: 'response', tab: '强制性要求（1）' },
+    { disqualification: 1, response: 1, expected: 'disqualification', tab: '废标／否决风险（1）' },
+  ] as const)(
+    '优先处理资格风险：否决 $disqualification、强制 $response 时进入 $expected',
+    async (c) => {
+      backend([]);
+      const requests: (string | null)[] = [];
+      const summary = report({
+        categories: report().categories.map((row) => ({
+          ...row,
+          open:
+            row.category === 'disqualification'
+              ? c.disqualification
+              : row.category === 'response'
+                ? c.response
+                : 0,
+        })),
+      });
+      server.use(
+        http.get('/api/v1/projects/prj-1/report', () => HttpResponse.json(summary)),
+        http.get('/api/v1/projects/prj-1/findings', ({ request }) => {
+          requests.push(new URL(request.url).searchParams.get('category'));
+          return HttpResponse.json({
+            items: [finding({ category: c.expected })],
+            next_cursor: null,
+          });
+        }),
+      );
+      renderApp('/projects/prj-1/findings?priority=qualification');
+      expect(await screen.findByRole('complementary', { name: '问题列表' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: c.tab })).toHaveAttribute('aria-selected', 'true');
+      expect(requests.length).toBeGreaterThan(0);
+      expect(requests.every((category) => category === c.expected)).toBe(true);
+      await userEvent.click(screen.getByRole('tab', { name: '改进建议（0）' }));
+      await waitFor(() => {
+        expect(requests.at(-1)).toBe('improvement');
+      });
+      expect(screen.getByRole('tab', { name: '改进建议（0）' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    },
+  );
+
+  it('显式分类链接保持用户选择，即使同时带优先参数', async () => {
+    backend([]);
+    server.use(http.get('/api/v1/projects/prj-1/report', () => HttpResponse.json(report())));
+    renderApp('/projects/prj-1/findings?priority=qualification&category=scope');
+    expect(await screen.findByRole('tab', { name: '范围残留（0）' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
   it('列出发现，待核实的标“待核实”；招标要求与正文写法并排对照', async () => {
     backend([
       finding(),
