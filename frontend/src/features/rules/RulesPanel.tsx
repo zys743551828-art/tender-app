@@ -10,6 +10,7 @@ import { ruleKindLabel } from '../../lib/labels';
 import { useProjectContext } from '../../routes/ProjectLayout';
 import { useConfirmPending, useReviewRule } from './actions';
 import { useRuleSet } from './queries';
+import { useRestartAnalysis } from '../report/queries';
 import { TermConflicts } from './TermConflicts';
 import { SourceEffectivity } from './SourceEffectivity';
 import { Button, textLink } from '../../components/ui/button';
@@ -64,6 +65,7 @@ export function RulesPanel() {
   const pid = project.project_id;
   const toast = useToast();
   const q = useRuleSet(pid);
+  const restart = useRestartAnalysis(pid);
   const [deciding, setDeciding] = useState<{ rule: Rule; decision: Decision } | null>(null);
   const [corrected, setCorrected] = useState(false);
   const review = useReviewRule(pid, (v) => {
@@ -84,6 +86,7 @@ export function RulesPanel() {
     );
   }
   const set = q.data;
+  const canReview = !set.source_parse_state || set.source_parse_state === 'current';
   const groups = groupRules(set.rules);
   const pending = set.rules.filter(
     (r) => r.confirmation === 'pending' && (!r.source_status || r.source_status === 'active'),
@@ -91,10 +94,24 @@ export function RulesPanel() {
   const open = unconfirmedQualification(set.rules);
   return (
     <>
-      <TermConflicts projectId={pid} set={set} />
-      <SourceEffectivity projectId={pid} set={set} />
+      {!canReview ? (
+        <Notice>
+          <p>
+            {set.source_parse_state === 'legacy_unfrozen'
+              ? '此历史规则包未冻结识别依据，原条款与决定保留。'
+              : '招标资料或识别依据已变化，原条款与决定保留。'}
+            重新提取规则后再核对，评审将生成新报告。
+          </p>
+          <Button disabled={restart.isPending} onClick={() => restart.mutate(null)}>
+            {restart.isPending ? '正在提交…' : '重新提取并评审'}
+          </Button>
+          {restart.isError ? <ErrorNotice error={restart.error} /> : null}
+        </Notice>
+      ) : null}
+      {canReview ? <TermConflicts projectId={pid} set={set} /> : null}
+      {canReview ? <SourceEffectivity projectId={pid} set={set} /> : null}
       <BidTermsNote set={set} projectId={pid} />
-      {pending.length > 0 ? (
+      {canReview && pending.length > 0 ? (
         <div className="mb-5 flex flex-col gap-3 rounded-lg border border-ai-border bg-ai-soft px-4 py-3 text-[13px] text-ai-foreground sm:flex-row sm:items-center">
           <Icon name="Sparkles" className="hidden shrink-0 sm:block" />
           <p className="m-0 flex-1">
@@ -139,7 +156,7 @@ export function RulesPanel() {
                   key={r.rule_id}
                   rule={r}
                   projectId={pid}
-                  busy={review.isPending || bulk.isPending}
+                  busy={!canReview || review.isPending || bulk.isPending}
                   onConfirm={() => {
                     review.mutate({
                       ruleId: r.rule_id,
@@ -157,7 +174,7 @@ export function RulesPanel() {
         ))
       )}
       {review.isError ? <ErrorNotice error={review.error} title="没有保存" /> : null}
-      {deciding ? (
+      {deciding && canReview ? (
         <RuleReasonDialog
           projectId={pid}
           ruleSet={set}

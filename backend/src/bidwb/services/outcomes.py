@@ -92,6 +92,8 @@ def _require_snapshot_inputs_current(conn: Connection, project_id: str, snapshot
         raise Conflict("snapshot_stale", "资料在这一轮诊断之后有新版本，请重新诊断后再登记提交", version_ids=missing)
     if not parse_identity.is_current(conn, project_id, snapshot_id):
         raise Conflict("snapshot_parse_stale", "解析与证据身份已变化或未冻结，请发起新版评审后再登记提交")
+    if newest_rules is not None:
+        rules.require_current_sources(conn, project_id, newest_rules)
 
 
 def _require_submittable_snapshot(conn: Connection, project_id: str, snapshot_id: str) -> None:

@@ -83,6 +83,24 @@ describe('依据页：规则分组', () => {
 });
 
 describe('依据页：规则确认', () => {
+  it.each(['legacy_unfrozen', 'stale'] as const)(
+    '来源 %s 时保留条款，禁止旧确认并提供重新提取',
+    async (state) => {
+      backend();
+      server.use(
+        http.get('/api/v1/projects/prj-1/rules', () =>
+          HttpResponse.json({ ...ruleSet(), source_parse_state: state }),
+        ),
+      );
+      renderApp('/projects/prj-1/basis');
+      expect(await screen.findByRole('button', { name: '重新提取并评审' })).toBeInTheDocument();
+      expect(screen.getByText('投标人须承诺总工期不超过 180 日历天。')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /全部按原文确认/ })).not.toBeInTheDocument();
+      for (const button of screen.queryAllByRole('button', { name: /^(确认|驳回|暂缓)$/ })) {
+        expect(button).toBeDisabled();
+      }
+    },
+  );
   it('还没有规则：说明会自动提取，没有手动提取按钮', async () => {
     server.use(
       http.get('/api/v1/me', () => HttpResponse.json(ME)),

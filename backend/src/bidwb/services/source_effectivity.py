@@ -38,6 +38,7 @@ def _scope(
         raise PreconditionFailed("stale_version", "规则包已有更新，请重新查看补遗影响")
     if sorted(package["source_versions_json"]) != rules.current_tender_version_ids(conn, project_id):
         raise PreconditionFailed("stale_inputs", "招标文件或补遗已有更新，请先等待当前规则提取完成")
+    rules.require_current_sources(conn, project_id, package)
     if request.old_version_id == request.new_version_id:
         raise Unprocessable("effectivity_same_source", "请选择不同的原资料和补遗")
     versions = db.all_(

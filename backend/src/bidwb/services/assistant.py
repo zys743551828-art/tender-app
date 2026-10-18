@@ -59,7 +59,7 @@ def ask(ctr: Container, actor: Actor, project_id: str, req: AssistantRequest) ->
                 expected_context=token,
             )
         )
-    if "确认规则" in req.message and package and package.status != "conflict" and not blocked:
+    if "确认规则" in req.message and package and package.source_parse_state == "current" and package.status != "conflict" and not blocked:
         pending = [r for r in package.rules if r.confirmation == "pending" and r.source_status == "active"][:20]
         if pending:
             cards.append(

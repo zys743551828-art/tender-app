@@ -36,7 +36,7 @@ from bidwb.schemas import (
     TermAlternative,
     TermConflict,
 )
-from bidwb.services import action_context, audit, current_materials, evidence
+from bidwb.services import action_context, audit, current_materials, evidence, parse_identity
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
 from bidwb.util import canonical_json, decimal_text, new_id, sha256_hex, utcnow
@@ -81,6 +81,21 @@ def latest_package(conn: Connection, project_id: str, package_id: str | None = N
     )
 
 
+def sources_current(conn: Connection, project_id: str, package: db.Row) -> bool:
+    if package["parse_inputs_json"] is None:
+        return False
+    versions = current_tender_version_ids(conn, project_id)
+    current, _ = parse_identity.capture(conn, project_id, versions)
+    return bool(sorted(package["source_versions_json"]) == versions and current == package["parse_inputs_json"])
+
+
+def require_current_sources(conn: Connection, project_id: str, package: db.Row) -> None:
+    if package["parse_inputs_json"] is None:
+        raise Conflict("rule_parse_identity_unknown", "该历史规则包未冻结解析来源，请重新提取规则后继续")
+    if not sources_current(conn, project_id, package):
+        raise Conflict("rules_parse_stale", "招标资料或识别依据已变化，请重新提取规则后继续")
+
+
 def get_rules(conn: Connection, actor: Actor, project_id: str) -> RuleSet:
     require_project(conn, actor, project_id)
     package = latest_package(conn, project_id)
@@ -109,6 +124,9 @@ def get_rules(conn: Connection, actor: Actor, project_id: str) -> RuleSet:
             )
         )
     return RuleSet(
+        source_parse_state="legacy_unfrozen"
+        if package["parse_inputs_json"] is None
+        else ("current" if sources_current(conn, project_id, package) else "stale"),
         rule_set_id=package["id"],
         project_id=project_id,
         source_version_ids=list(package["source_versions_json"]),
@@ -202,8 +220,8 @@ def _clone_package(
     now = utcnow()
     db.run(
         conn,
-        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,created_at)
-           VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),:now)""",
+        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,parse_inputs_json,created_at)
+           VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),CAST(:inputs AS jsonb),:now)""",
         {
             "i": new_package,
             "p": project_id,
@@ -212,6 +230,7 @@ def _clone_package(
             "s": json.dumps(package["source_versions_json"]),
             "t": json.dumps(package["terms_json"] if terms is None else terms, ensure_ascii=False),
             "ef": json.dumps(package["effectivity_json"] if effectivity is None else effectivity, ensure_ascii=False),
+            "inputs": json.dumps(package["parse_inputs_json"]) if package["parse_inputs_json"] is not None else None,
             "now": now,
         },
     )
@@ -272,6 +291,7 @@ def resolve_term(conn: Connection, actor: Actor, project_id: str, req: ResolveTe
         raise PreconditionFailed("stale_version", "规则包已有更新，请刷新后重新核实", current_version=str(package["revision"]))
     if sorted(package["source_versions_json"]) != current_tender_version_ids(conn, project_id):
         raise PreconditionFailed("stale_inputs", "招标文件或补遗已有更新，请等待规则重新提取后核实")
+    require_current_sources(conn, project_id, package)
     terms = dict(package["terms_json"])
     alternatives = term_conflicts.pending(terms).get(req.term, [])
     candidate = next((item for item in alternatives if term_conflicts.option_id(item) == req.option_id), None)
@@ -311,6 +331,8 @@ def review_rule(conn: Connection, actor: Actor, rule_id: str, req: ReviewRequest
     latest_pkg = latest_package(conn, project_id)
     if latest_pkg is not None and latest_pkg["id"] != item["package_id"]:
         raise PreconditionFailed("stale_version", "该规则属于旧版规则包", current_version=str(latest_pkg["revision"]))
+    if latest_pkg is not None:
+        require_current_sources(conn, project_id, latest_pkg)
     current_rule = db.one(conn, "SELECT * FROM rule_items WHERE id=:i AND project_id=:p", {"i": rule_id, "p": project_id})
     if (
         latest_pkg is not None
@@ -379,6 +401,7 @@ def confirm_pending(conn: Connection, actor: Actor, project_id: str, req: Confir
         raise NotFound("rules_not_extracted", "该项目尚未提取规则")
     if req.object_version != str(package["revision"]):
         raise PreconditionFailed("stale_version", "规则包已有新版本，请刷新后重新确认", current_version=str(package["revision"]))
+    require_current_sources(conn, project_id, package)
     ids = list(dict.fromkeys(req.rule_ids))
     known = {
         r["id"]

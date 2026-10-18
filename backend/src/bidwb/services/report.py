@@ -343,7 +343,9 @@ def _actions_before_report(status_: PipelineStatus) -> list[NextAction]:
         ]
     if status_.stage == "waiting_start":
         return [
-            NextAction(key="start_analysis", title="开始评审", detail="资料已齐，本项目设置为手动开始评审。", target="report", count=None)
+            NextAction(
+                key="start_analysis", title="开始评审", detail="资料已齐，点击开始后按当前资料提取规则并评审。", target="report", count=None
+            )
         ]
     if status_.stage == "failed":
         return [NextAction(key="retry_analysis", title="评审中断，重新评审", detail="已完成的环节不会重做。", target="report", count=None)]

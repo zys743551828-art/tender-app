@@ -85,6 +85,7 @@ def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequ
             rule_source_version_ids=sorted(package["source_versions_json"]),
             snapshot_version_ids=source_versions,
         )
+    rules.require_current_sources(conn, project_id, package)
     if term_conflicts.pending(package["terms_json"]):
         raise Conflict("rule_terms_conflict", "招标文件与补遗中的投标条件存在不同候选，请到依据页核实采用哪一项后重新评审")
     package_rules = db.all_(conn, "SELECT * FROM rule_items WHERE package_id=:k AND project_id=:p", {"k": package["id"], "p": project_id})

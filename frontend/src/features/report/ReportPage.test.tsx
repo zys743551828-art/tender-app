@@ -594,10 +594,25 @@ describe('响应矩阵辅助函数', () => {
 });
 
 describe('报告页：项目功能开关', () => {
+  it('自动开始项目遇到旧识别依据时提示重新评审，不误称手动设置', async () => {
+    backend(
+      report({
+        pipeline: pipeline({ stage: 'waiting_start', stale_reasons: ['parse_identity_changed'] }),
+      }),
+    );
+    renderApp('/projects/prj-1');
+    expect(
+      await screen.findByText('当前规则的识别依据需要重新核对，请按当前资料发起新版评审。'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/本项目设置为手动开始评审/)).not.toBeInTheDocument();
+  });
   it('手动开始评审：资料就绪时给出“开始评审”，点击发起 POST /analysis', async () => {
     backend(null);
     let posted = 0;
     server.use(
+      http.get('/api/v1/projects/prj-1', () =>
+        HttpResponse.json(project({ settings: { ...project().settings, auto_start: false } })),
+      ),
       http.get('/api/v1/projects/prj-1/pipeline', () =>
         HttpResponse.json(
           pipeline({

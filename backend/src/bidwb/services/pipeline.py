@@ -44,6 +44,7 @@ class _Plan:
     parse: StepState = "waiting"
     parse_message: str | None = None
     package_id: str | None = None
+    rules_refresh_needed: bool = False
     rules_job: db.Row | None = None
     fact_set_id: str | None = None
     snapshot_id: str | None = None
@@ -69,11 +70,14 @@ def _latest_job(
             "SELECT id,state,error_code,coverage_json->>'status' AS coverage FROM jobs WHERE project_id=:p AND kind=:k AND snapshot_id=:s ORDER BY created_at DESC, id DESC LIMIT 1",
             {"p": project_id, "k": kind, "s": snapshot_id},
         )
+    inputs, _ = parse_identity.capture(conn, project_id, input_ids or [])
     return db.one(
         conn,
         """SELECT id,state,error_code,coverage_json->>'status' AS coverage FROM jobs WHERE project_id=:p AND kind=:k
-           AND input_json->'file_version_ids' = CAST(:ids AS jsonb) ORDER BY created_at DESC, id DESC LIMIT 1""",
-        {"p": project_id, "k": kind, "ids": json.dumps(input_ids or [])},
+           AND input_json->'file_version_ids' = CAST(:ids AS jsonb)
+           AND input_json->'parse_inputs'=CAST(:inputs AS jsonb) AND input_json->>'input_contract'='rules-input-v2'
+           ORDER BY created_at DESC, id DESC LIMIT 1""",
+        {"p": project_id, "k": kind, "ids": json.dumps(input_ids or []), "inputs": json.dumps(inputs)},
     )
 
 
@@ -136,9 +140,10 @@ def _inspect(conn: Connection, project_id: str) -> _Plan:
     if plan.parse != "done":
         return plan
     package = rules_service.latest_package(conn, project_id)
-    if package is not None and sorted(package["source_versions_json"]) == plan.tender_ids:
+    if package is not None and rules_service.sources_current(conn, project_id, package):
         plan.package_id = package["id"]
     else:
+        plan.rules_refresh_needed = package is not None
         plan.rules_job = _latest_job(conn, project_id, "rules", input_ids=plan.tender_ids)
         return plan
     facts = db.one(conn, "SELECT id FROM fact_sets WHERE project_id=:p ORDER BY created_at DESC, id DESC LIMIT 1", {"p": project_id})
@@ -192,7 +197,7 @@ def _needs_new_round(plan: _Plan) -> bool:
     if plan.missing or plan.parse != "done":
         return False
     if plan.package_id is None:
-        return plan.rules_job is None
+        return plan.rules_job is None or (plan.rules_refresh_needed and _job_state(plan.rules_job) == "done")
     return plan.snapshot_id is None and plan.held_snapshot_id is None
 
 
@@ -352,7 +357,9 @@ def _stale_reasons(conn: Connection, project_id: str, plan: _Plan, last: db.Row 
     newest_facts = db.one(conn, "SELECT id FROM fact_sets WHERE project_id=:p ORDER BY created_at DESC, id DESC LIMIT 1", {"p": project_id})
     if (newest_facts["id"] if newest_facts else None) != last["fact_set_id"]:
         stale.append("facts_changed")
-    if not parse_identity.is_current(conn, project_id, last["id"]):
+    if not parse_identity.is_current(conn, project_id, last["id"]) or (
+        latest_pkg is not None and not rules_service.sources_current(conn, project_id, latest_pkg)
+    ):
         stale.append("parse_identity_changed")
     return stale
 
@@ -375,6 +382,8 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
     steps.append(_step("prediction", _job_state(plan.prediction_job) if review_state == "done" else "waiting", plan.prediction_job))
     if plan.missing:
         stage: Literal["waiting_materials", "waiting_start", "running", "done", "failed"] = "waiting_materials"
+    elif plan.rules_refresh_needed and (plan.rules_job is None or _job_state(plan.rules_job) == "done"):
+        stage = "waiting_start"
     elif _needs_new_round(plan) and not _may_start(conn, project_id, restart=False):
         stage = "waiting_start"
         if review_state == "running":
@@ -400,7 +409,7 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
         total = len(effective)
         unconfirmed = sum(1 for r in effective if r["basis"] == "unconfirmed")
         all_rules = db.all_(conn, "SELECT * FROM rule_items WHERE package_id=:k AND project_id=:p", {"k": package["id"], "p": project_id})
-        verification_required = bool(
+        verification_required = plan.package_id == package["id"] and bool(
             term_conflicts.pending(package["terms_json"]) or source_effectivity.pending_count(package["effectivity_json"], all_rules)
         )
     return PipelineStatus(

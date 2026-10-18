@@ -113,19 +113,25 @@ def _write_rule_package(
     version_ids: Sequence[str],
     accepted: Sequence[prompts.RuleCandidate],
     terms: dict[str, dict[str, Any]],
+    parse_inputs: dict[str, Any],
 ) -> None:
     """新规则包入库，并沿用上一版规则包里同一条款（性质＋规范化条文相同）的人工决定。"""
     revision = (db.scalar(conn, "SELECT COALESCE(MAX(revision),0) FROM rule_packages WHERE project_id=:p", {"p": project_id}) or 0) + 1
     previous = db.one(
         conn,
-        "SELECT id,effectivity_json FROM rule_packages WHERE project_id=:p ORDER BY revision DESC,created_at DESC LIMIT 1",
+        "SELECT id,effectivity_json,source_versions_json,parse_inputs_json FROM rule_packages WHERE project_id=:p ORDER BY revision DESC,created_at DESC LIMIT 1",
         {"p": project_id},
     )
     package_id = new_id("rpk")
+    carry_sources = (
+        previous is not None
+        and previous["parse_inputs_json"] is not None
+        and all(value == parse_inputs[version] for version, value in previous["parse_inputs_json"].items() if version in parse_inputs)
+    )
     db.run(
         conn,
-        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,created_at)
-                    VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),:now)""",
+        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,parse_inputs_json,created_at)
+                    VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),CAST(:inputs AS jsonb),:now)""",
         {
             "i": package_id,
             "p": project_id,
@@ -133,11 +139,12 @@ def _write_rule_package(
             "a": artifact_id,
             "s": json.dumps(sorted(version_ids)),
             "t": json.dumps(terms, ensure_ascii=False),
-            "ef": json.dumps(previous["effectivity_json"] if previous else {}),
+            "ef": json.dumps(previous["effectivity_json"] if previous is not None and carry_sources else {}),
+            "inputs": json.dumps(parse_inputs),
             "now": utcnow(),
         },
     )
-    carry = _previous_decisions(conn, project_id, previous["id"]) if previous else {}
+    carry = _previous_decisions(conn, project_id, previous["id"]) if previous is not None and carry_sources else {}
     now = utcnow()
     rows: list[dict[str, Any]] = []
     reviews: list[dict[str, Any]] = []
@@ -186,16 +193,23 @@ def _write_rule_package(
 
 
 # ------------------------------------------------------------------ 规则提取
-def make_rules_handler(llm: LlmClient | None) -> Handler:
-    def handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
+def make_rules_handler(llm: LlmClient | None) -> Handler:  # noqa: PLR0915
+    def handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:  # noqa: PLR0911, PLR0912
         if llm is None:
             return HandlerFailure("llm_not_configured")
         version_ids = ctx.claim.input_json.get("file_version_ids")
         if not isinstance(version_ids, list) or not version_ids:
             return HandlerFailure("invalid_job_input")
         project_id = ctx.claim.project_id
+        parse_inputs = ctx.claim.input_json.get("parse_inputs")
+        if ctx.claim.input_json.get("input_contract") != "rules-input-v2" or not isinstance(parse_inputs, dict):
+            return HandlerFailure("rules_parse_identity_unknown", "该历史提取任务没有冻结解析身份，请基于当前资料重新提取")
         with ctx.engine.connect() as conn:
-            evidence_rows = _evidence_rows(conn, project_id, version_ids)
+            current, _ = parse_identity.capture(conn, project_id, version_ids)
+            if current != parse_inputs:
+                return HandlerFailure("rules_inputs_stale", "提取任务所见的解析或证据已变化，请重新提取")
+            ids = [identity for value in parse_inputs.values() for identity in value["evidence_ids"]]
+            evidence_rows = db.all_(conn, EVIDENCE_IN_ORDER_SQL, {"p": project_id, "v": version_ids, "eids": ids})
             chunks = [EvidenceText(row["id"], row["quote"]) for row in evidence_rows]
         if not chunks:
             return HandlerFailure("no_evidence")
@@ -247,14 +261,18 @@ def make_rules_handler(llm: LlmClient | None) -> Handler:
                 "rules": [r.model_dump() for r in accepted],
                 "terms": terms,
                 "dropped": dropped,
+                "parse_inputs": parse_inputs,
+                "input_sha256": ctx.claim.input_sha256,
             }
         )
 
         def finalize(conn: Connection, artifact_id: str) -> None:
             # 提取期间又上传了招标文件或补遗：这批规则基于过时的资料，不作为规则包入库（产物仍保留可审计），
             # 流水线会针对最新资料重新提取。
-            if rules_service.current_tender_version_ids(conn, project_id) == sorted(version_ids):
-                _write_rule_package(conn, project_id, artifact_id, version_ids, accepted, terms)
+            db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+            current, _ = parse_identity.capture(conn, project_id, version_ids)
+            if rules_service.current_tender_version_ids(conn, project_id) == sorted(version_ids) and current == parse_inputs:
+                _write_rule_package(conn, project_id, artifact_id, version_ids, accepted, terms, parse_inputs)
 
         return HandlerOutput(artifact, "application/json", "rules-v1", finalize)
 

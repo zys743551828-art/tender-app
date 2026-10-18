@@ -145,7 +145,9 @@ export function PipelineBanner({
     title = pipeline.round_no ? '资料有更新，等待开始新一轮评审' : '资料已就绪，等待开始评审';
     detail = (
       <>
-        本项目设置为手动开始评审，可以在项目设置里改为自动。
+        {project.settings.auto_start
+          ? '当前规则的识别依据需要重新核对，请按当前资料发起新版评审。'
+          : '本项目设置为手动开始评审，可以在项目设置里改为自动。'}
         {pipeline.stale_reasons.length > 0 ? (
           <ul className="my-1 list-disc pl-5">
             {pipeline.stale_reasons.map((r) => (

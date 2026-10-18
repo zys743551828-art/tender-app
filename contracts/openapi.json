@@ -8126,6 +8126,16 @@
       },
       "RuleSet": {
         "properties": {
+          "source_parse_state": {
+            "type": "string",
+            "enum": [
+              "current",
+              "stale",
+              "legacy_unfrozen"
+            ],
+            "title": "Source Parse State",
+            "default": "legacy_unfrozen"
+          },
           "rule_set_id": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_-]{2,80}$",

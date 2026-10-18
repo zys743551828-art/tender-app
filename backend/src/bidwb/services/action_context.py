@@ -12,9 +12,11 @@ from bidwb.util import sha256_hex
 
 
 def fingerprint(conn: Connection, project_id: str) -> str:
-    parts: list[object] = [db.scalar(conn, "SELECT revision FROM projects WHERE id=:p", {"p": project_id})]
+    parts: list[object] = [project_id, db.scalar(conn, "SELECT revision FROM projects WHERE id=:p", {"p": project_id})]
     for query in (
         "SELECT id FROM file_versions WHERE project_id=:p ORDER BY id",
+        "SELECT id FROM parses WHERE project_id=:p ORDER BY id",
+        "SELECT parse_id,count(*) AS evidence_count FROM evidence WHERE project_id=:p GROUP BY parse_id ORDER BY parse_id",
         "SELECT id FROM rule_packages WHERE project_id=:p ORDER BY id",
         "SELECT id FROM fact_sets WHERE project_id=:p ORDER BY id",
         "SELECT id FROM input_snapshots WHERE project_id=:p ORDER BY id",

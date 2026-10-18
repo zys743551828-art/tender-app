@@ -5081,6 +5081,15 @@
     "RuleSet": {
       "additionalProperties": false,
       "properties": {
+        "source_parse_state": {
+          "default": "legacy_unfrozen",
+          "enum": [
+            "current",
+            "stale",
+            "legacy_unfrozen"
+          ],
+          "type": "string"
+        },
         "rule_set_id": {
           "pattern": "^[a-z][a-z0-9_-]{2,80}$",
           "type": "string"

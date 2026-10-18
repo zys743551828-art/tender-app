@@ -74,6 +74,8 @@ docker compose -f compose.yml -f compose.local-oss.yml -f compose.word.yml up -d
 
 输入解析身份保护需要 0005 迁移：升级前备份并在独立数据库演练恢复与迁移，随后运行 `migrate`，统一更新后端和前端。新评审冻结 `input-v2` 的解析、证据集合与缺口；旧快照保留原校验值和历史报告，标记未冻结身份，不按时间补写。旧输入的新检索／重跑会被拒绝，应由用户发起新版评审；已登记的提交与成绩保留。详见[解析身份契约](../contracts/snapshot-parse-identity.md)。
 
+规则提取来源保护需要 0006 迁移，同样先备份并独立演练，再统一更新。旧规则包保持历史条款与决定，来源标记为未冻结；用户需在依据页点击“重新提取并评审”才按当前来源生成新规则和报告。遗留提取任务缺少精确身份会明确失败，不补写当前解析。详见[规则解析身份契约](../contracts/rule-parse-identity.md)。
+
 只有解析 worker 挂载输入可写、输出只读队列；API 仅拿到方法指纹。转换器非 root、无网络／端口／业务密钥、只读根、逐任务 Landlock 隔离。不加载此覆盖文件时仍可保存 Word 并逐稿补交 PDF，不能自动转换。成功转换、复杂版式核对、失败补交与历史身份规则见 `contracts/word-materials.md`。普通页码、目录等动态域同样需要补交 PDF；生成 PDF 不等于 Word 原稿合格。
 
 阿里云 OSS 的 boto3 兼容配置使用 `OSS_SIGNATURE_VERSION=s3`；AWS S3 等服务可设置 `s3v4`，MinIO 开发覆盖文件固定使用 `s3v4`。依据：[阿里云 AWS SDK 接入说明](https://www.alibabacloud.com/help/en/oss/developer-reference/use-aws-sdks-to-access-oss)。

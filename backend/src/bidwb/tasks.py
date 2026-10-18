@@ -184,6 +184,7 @@ def start_rules_extraction(conn: Connection, actor: Actor, project_id: str, idem
     """对项目当前的招标文件与补遗（每个文件的最新版本）发起规则提取。"""
     require_project(conn, actor, project_id)
     # 每个招标文件/补遗只取最新版本；最新版本没有解析成功时明确失败，而不是悄悄退回旧版本
+    db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
     versions = db.all_(
         conn,
         """SELECT DISTINCT ON (f.id) fv.id, fv.original_name,
@@ -220,13 +221,17 @@ def start_rules_extraction(conn: Connection, actor: Actor, project_id: str, idem
 
 
 def enqueue_rules(conn: Connection, project_id: str, version_ids: list[str], idempotency_key: str) -> tuple[str, bool]:
+    inputs, _ = parse_identity.capture(conn, project_id, sorted(version_ids))
+    payload = {"file_version_ids": sorted(version_ids), "parse_inputs": inputs, "input_contract": "rules-input-v2"}
+    digest = sha256_hex(canonical_json(payload))
     return enqueue(
         conn,
         project_id=project_id,
         kind="rules",
         purpose="business",
-        idempotency_key=idempotency_key,
-        input_json={"file_version_ids": sorted(version_ids)},
+        idempotency_key=f"{idempotency_key}:{digest}",
+        input_json=payload,
+        input_sha256=digest,
     )
 
 

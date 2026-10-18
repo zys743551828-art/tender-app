@@ -534,6 +534,7 @@ class EffectivityDecision(Response):
 
 
 class RuleSet(Response):
+    source_parse_state: Literal["current", "stale", "legacy_unfrozen"] = "legacy_unfrozen"
     rule_set_id: Id
     project_id: Id
     source_version_ids: list[Id]

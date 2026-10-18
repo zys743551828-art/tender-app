@@ -294,6 +294,7 @@ export interface Rule {
 
 /** $defs/RuleSet（revision 作为规则审核的 object_version） */
 export interface RuleSet {
+  source_parse_state?: 'current' | 'stale' | 'legacy_unfrozen';
   rule_set_id: Id;
   project_id: Id;
   source_version_ids: Id[];
