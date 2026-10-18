@@ -37,4 +37,6 @@ DOCX 不解压到文件系统、不跟随关系；分别限制 ZIP 大小、条�
 
 服务逐个处理请求。业务端结束等待后删除自己创建的请求及原件；服务仅在请求已不存在且输出超过 120 秒时回收对应输出。原件、采用决定和历史输入的正式保存须由业务层完成，共享卷不承担档案存储。
 
+产品队列客户端 `bidwb.word_conversion.convert_word` 接受已核对的固定方法指纹，不将队列自报的方法自动登记为可信。发布前核对方法、隔离状态和心跳，等待期间与收件后调用任务租约检查。接收时再次验证操作、原件、方法、状态、页面范围、缺口一致性及 PDF 字节摘要；失败回执只交付原因。取消或超时只清理本操作输入，输出由只读挂载保护。清理为尽力执行；进程崩溃后的输入回收与业务回执事务尚待业务层接入，不应把临时队列当永久档案。
+
 官方依据：[LibreOffice 启动参数](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html)、[7.4 分支通信路径实现](https://github.com/LibreOffice/core/blob/libreoffice-7-4/sal/osl/unx/pipe.cxx)、[Landlock 内核文档](https://docs.kernel.org/userspace-api/landlock.html)。边界依据实现与实测共同核对，文字对应不能证明完整视觉一致。
