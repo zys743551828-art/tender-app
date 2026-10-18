@@ -359,6 +359,9 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
     materials: StepState = "waiting" if plan.missing else plan.parse
     steps = [_step("materials", materials, message=plan.parse_message)]
     rules_state: StepState = "done" if plan.package_id else (_job_state(plan.rules_job) if materials == "done" else "waiting")
+    if plan.package_id is None and rules_state == "done":
+        # READ COMMITTED 下任务可在读取规则包之后完成；本次轮询先等待下一次一致读取。
+        rules_state = "running"
     steps.append(_step("rules", rules_state, plan.rules_job))
     review_state: StepState = _job_state(plan.diagnosis_job) if (plan.snapshot_id or plan.held_snapshot_id) else "waiting"
     review_message: str | None = None
