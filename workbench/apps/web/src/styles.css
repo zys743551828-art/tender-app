@@ -1,5 +1,9 @@
+@import "./fusion-fonts.css";
+
 :root {
-  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-family:
+    "Inter Variable", "Noto Sans SC Variable", "PingFang SC", "Microsoft YaHei",
+    system-ui, sans-serif;
   color: var(--foreground);
   background: var(--background);
   font-synthesis: none;
