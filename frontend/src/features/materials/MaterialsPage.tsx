@@ -20,7 +20,8 @@ import { MAX_FILE_BYTES, type UploadPhase } from '../upload/uploader';
 import { useUploads, type UploadItem } from '../upload/useUploads';
 import { STATE_TONE, errorHint } from '../tasks/shared';
 import { useProjectTasks } from '../tasks/queries';
-import { defaultTarget, guessRole } from './classify';
+import { defaultTarget, guessRole, mediaFamily } from './classify';
+import { WordActions } from './WordActions';
 import { groupFiles, useFiles, versionNumberOf, type FileGroup } from './queries';
 import { PARSED_ROLES, extractReadiness, parseTaskByVersion } from './parse';
 import { PipelineBanner } from '../report/PipelineBanner';
@@ -68,7 +69,10 @@ export function MaterialsPage() {
     [files.data, tasks.data],
   );
   const readiness = extractReadiness(files.data ?? [], parse);
-  const groups = useMemo(() => groupFiles(files.data ?? []), [files.data]);
+  const groups = useMemo(
+    () => groupFiles((files.data ?? []).filter((f) => !f.source_word_version_id)),
+    [files.data],
+  );
   const [staged, setStaged] = useState<Staged[]>([]);
   const seq = useRef(0);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -268,15 +272,18 @@ export function MaterialsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {files.data.map((f) => (
-                      <FileRow
-                        key={f.version_id}
-                        file={f}
-                        projectId={project.project_id}
-                        parseTask={parse.get(f.version_id)}
-                        tasksLoaded={tasks.isSuccess}
-                      />
-                    ))}
+                    {files.data
+                      .filter((f) => !f.source_word_version_id)
+                      .map((f) => (
+                        <FileRow
+                          key={f.version_id}
+                          file={f}
+                          onWordPdf={(pdf) => uploads.add(pdf, f.role, null, f.version_id)}
+                          projectId={project.project_id}
+                          parseTask={parse.get(f.version_id)}
+                          tasksLoaded={tasks.isSuccess}
+                        />
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -299,7 +306,11 @@ function StagedRow({
   onChange: (patch: Partial<Staged>) => void;
   onRemove: () => void;
 }) {
-  const same = groups.filter((g) => g.role === item.role);
+  const same = groups.filter(
+    (g) =>
+      g.role === item.role &&
+      mediaFamily(g.latest.original_name ?? g.names[0] ?? '') === mediaFamily(item.file.name),
+  );
   const id = `staged-${String(item.key)}`;
   return (
     <li className="grid items-center gap-2 px-3 py-2.5 sm:grid-cols-[minmax(0,1fr)_150px_minmax(0,220px)_auto] sm:gap-3">
@@ -382,7 +393,9 @@ function FileRow({
   projectId,
   parseTask,
   tasksLoaded,
+  onWordPdf,
 }: {
+  onWordPdf: (pdf: File) => void;
   file: FileVersion;
   projectId: string;
   parseTask: Task | undefined;
@@ -399,7 +412,11 @@ function FileRow({
       <td data-label="版本">第 {f.version_number} 版</td>
       <td data-label="上传于">{formatDateTime(f.obtained_at)}</td>
       <td data-label="解析" className="[&>small]:mt-1">
-        <ParseCell file={f} task={parseTask} tasksLoaded={tasksLoaded} />
+        {f.word ? (
+          <WordActions file={f} onUpload={onWordPdf} />
+        ) : (
+          <ParseCell file={f} task={parseTask} tasksLoaded={tasksLoaded} />
+        )}
       </td>
       <td>
         {isPdf ? (

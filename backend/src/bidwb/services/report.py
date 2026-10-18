@@ -67,7 +67,19 @@ def _next_actions(
     settings: ProjectSettings,
 ) -> list[NextAction]:
     """按项目开关裁剪：关闭的模块不出现在“下一步”里，规则按原文接受时不催确认。"""
-    actions: list[NextAction] = []
+    actions: list[NextAction] = (
+        [
+            NextAction(
+                key="upload_materials",
+                title="核对或补交此稿的 PDF",
+                detail="在对应 Word 原稿处处理，无需重传其他资料。",
+                target="materials",
+                count=None,
+            )
+        ]
+        if status_.word_pdf_required
+        else []
+    )
     open_by = {c.category: c.open for c in categories}
     qualification_open = open_by["disqualification"] + open_by["response"]
     if status_.input_verification_required:
@@ -80,7 +92,7 @@ def _next_actions(
                 count=None,
             )
         )
-    if status_.stage == "failed" and not status_.input_verification_required:
+    if status_.stage == "failed" and not status_.input_verification_required and not status_.word_pdf_required:
         actions.append(
             NextAction(
                 key="retry_analysis",
@@ -90,7 +102,7 @@ def _next_actions(
                 count=None,
             )
         )
-    elif status_.stage == "waiting_start" and not status_.input_verification_required:
+    elif status_.stage == "waiting_start" and not status_.input_verification_required and not status_.word_pdf_required:
         actions.append(
             NextAction(
                 key="start_analysis",
@@ -221,6 +233,16 @@ def _round(conn: Connection, actor: Actor, project_id: str, status_: PipelineSta
 
 def _actions_before_report(status_: PipelineStatus) -> list[NextAction]:
     """还没有完成的评审：下一步只取决于流水线走到哪里。"""
+    if status_.word_pdf_required:
+        return [
+            NextAction(
+                key="upload_materials",
+                title="核对或补交此稿的 PDF",
+                detail="在对应 Word 原稿处处理，无需重传其他资料。",
+                target="materials",
+                count=None,
+            )
+        ]
     if status_.input_verification_required:
         return [
             NextAction(

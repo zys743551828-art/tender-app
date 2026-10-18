@@ -14,7 +14,7 @@ from bidwb import db
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import ArtifactRef, Outcome, OutcomeRequest, OutcomeVerifyRequest, Submission, SubmissionRequest
-from bidwb.services import audit, files, projects, rules
+from bidwb.services import audit, current_materials, files, projects, rules
 from bidwb.services.findings import OPEN_STATES
 from bidwb.util import new_id, utcnow
 
@@ -68,13 +68,8 @@ def _require_snapshot_inputs_current(conn: Connection, project_id: str, snapshot
     included = {
         r["file_version_id"] for r in db.all_(conn, "SELECT file_version_id FROM snapshot_files WHERE snapshot_id=:s", {"s": snapshot_id})
     }
-    heads = db.all_(
-        conn,
-        """SELECT fv.id FROM file_versions fv JOIN files f ON f.id=fv.file_id
-           WHERE fv.project_id=:p AND f.role IN ('tender','supplement','body')
-             AND fv.id = (SELECT l.id FROM file_versions l WHERE l.file_id=fv.file_id ORDER BY l.obtained_at DESC, l.id DESC LIMIT 1)""",
-        {"p": project_id},
-    )
+    body = current_materials.active_body(conn, project_id)
+    heads = [r for r in current_materials.heads(conn, project_id) if r["role"] in {"tender", "supplement"} or r["id"] == body]
     missing = [h["id"] for h in heads if h["id"] not in included]
     if missing:
         raise Conflict("snapshot_stale", "资料在这一轮诊断之后有新版本，请重新诊断后再登记提交", version_ids=missing)

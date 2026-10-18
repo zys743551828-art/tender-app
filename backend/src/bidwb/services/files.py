@@ -17,6 +17,7 @@ import math
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import Any
 
 from sqlalchemy import Connection
 
@@ -26,7 +27,7 @@ from bidwb.config import Settings
 from bidwb.errors import Conflict, ContentMismatch, NotFound, Unavailable, Unprocessable
 from bidwb.logs import get_logger
 from bidwb.schemas import ArtifactRef, FileVersion, PartUrl, UploadComplete, UploadRequest, UploadResult, UploadSession
-from bidwb.services import audit
+from bidwb.services import audit, word_materials
 from bidwb.storage import ObjectStore, ObjectStoreError, content_key, staging_key
 from bidwb.util import canonical_json, new_id, sha256_hex, utcnow
 
@@ -72,6 +73,38 @@ def _session_response(store: ObjectStore, settings: Settings, row: db.Row) -> Up
     return UploadSession(upload_id=row["id"], part_bytes=row["part_bytes"], part_count=count, parts=parts, expires_at=row["expires_at"])
 
 
+def _check_upload_target(conn: Connection, project_id: str, req: UploadRequest) -> None:
+    if req.version_of_file_id is not None:
+        if db.scalar(
+            conn,
+            """SELECT count(*) FROM word_pdf_links l JOIN file_versions fv ON fv.id=l.pdf_version_id
+            WHERE fv.file_id=:f""",
+            {"f": req.version_of_file_id},
+        ):
+            raise Unprocessable("word_pdf_version_locked", "请在对应 Word 原稿处补交 PDF，或将独立 PDF 作为新文件保存")
+        target = db.one(conn, "SELECT project_id, role FROM files WHERE id=:f", {"f": req.version_of_file_id})
+        if target is None or target["project_id"] != project_id or target["role"] != req.role:
+            raise Unprocessable(
+                "version_of_invalid", "version_of_file_id 必须是本项目内同一用途的文件", version_of_file_id=req.version_of_file_id
+            )
+        latest = db.one(
+            conn,
+            """SELECT fv.original_name,a.media_type FROM file_versions fv JOIN artifacts a ON a.id=fv.artifact_id
+            WHERE fv.file_id=:f ORDER BY fv.obtained_at DESC,fv.id DESC LIMIT 1""",
+            {"f": req.version_of_file_id},
+        )
+        if latest and word_materials.family(latest["original_name"], latest["media_type"]) != word_materials.family(
+            req.original_name, req.media_type
+        ):
+            raise Unprocessable("version_media_family_mismatch", "Word 与实际 PDF 请分别保存，不能互作文件版本")
+    if req.source_word_version_id:
+        original = word_materials.source(conn, project_id, req.source_word_version_id)
+        if req.version_of_file_id or req.media_type != "application/pdf" or original["role"] != req.role:
+            raise Unprocessable("word_pdf_upload_invalid", "请为该原稿上传同用途、独立保存的 PDF")
+        if not word_materials.current(conn, original):
+            raise Conflict("word_source_stale", "该 Word 已有新版本，请为最新原稿上传 PDF")
+
+
 def init_upload(
     conn: Connection,
     store: ObjectStore,
@@ -89,12 +122,7 @@ def init_upload(
         raise Unprocessable("media_type_not_allowed", "不支持的文件类型", media_type=req.media_type)
     if math.ceil(req.byte_size / PART_BYTES) > MAX_PARTS:
         raise Unprocessable("too_many_parts", "文件分片数超过上限")
-    if req.version_of_file_id is not None:
-        target = db.one(conn, "SELECT project_id, role FROM files WHERE id=:f", {"f": req.version_of_file_id})
-        if target is None or target["project_id"] != project_id or target["role"] != req.role:
-            raise Unprocessable(
-                "version_of_invalid", "version_of_file_id 必须是本项目内同一用途的文件", version_of_file_id=req.version_of_file_id
-            )
+    _check_upload_target(conn, project_id, req)
     request_hash = sha256_hex(canonical_json(req.model_dump()))
     existing = db.one(
         conn,
@@ -117,8 +145,8 @@ def init_upload(
     db.run(
         conn,
         """INSERT INTO upload_sessions(id,project_id,actor_id,role,original_name,expected_sha256,expected_bytes,expires_at,state,
-                                       idempotency_key,request_hash,staging_key,oss_upload_id,part_bytes,created_at,media_type,version_of_file_id)
-           VALUES (:id,:p,:a,:role,:name,:sha,:bytes,:exp,'open',:idem,:rh,:key,:oss,:pb,:now,:mt,:vof)""",
+                                       idempotency_key,request_hash,staging_key,oss_upload_id,part_bytes,created_at,media_type,version_of_file_id,source_word_version_id)
+           VALUES (:id,:p,:a,:role,:name,:sha,:bytes,:exp,'open',:idem,:rh,:key,:oss,:pb,:now,:mt,:vof,:word)""",
         {
             "id": upload_id,
             "p": project_id,
@@ -136,6 +164,7 @@ def init_upload(
             "now": now,
             "mt": req.media_type,
             "vof": req.version_of_file_id,
+            "word": req.source_word_version_id,
         },
     )
     audit.record(
@@ -262,8 +291,12 @@ def complete_upload(
         store.copy_if_absent(key, final_key)
     except ObjectStoreError as exc:
         raise Unavailable("storage_unavailable", "对象存储暂不可用，请稍后重试") from exc
+    word_materials.lock(conn, row["project_id"])
+    if row["source_word_version_id"] and not store.get(final_key).startswith(b"%PDF-"):
+        raise Unprocessable("word_pdf_required", "补交文件必须是实际 PDF")
     artifact_id = _artifact_for(conn, sha256=actual_sha, size=info.size, media_type=row["media_type"], key=final_key, status="committed")
     version_id, duplicate = _commit_version(conn, row, artifact_id)
+    _link_uploaded_pdf(conn, row, version_id, actor)
     db.run(
         conn,
         "UPDATE upload_sessions SET state='completed', version_id=:v, duplicate=:d WHERE id=:i",
@@ -307,9 +340,19 @@ def complete_upload(
     return _result(get_version(conn, actor, version_id), duplicate=duplicate)
 
 
+def _link_uploaded_pdf(conn: Connection, row: db.Row, version_id: str, actor: Actor) -> None:
+    if row["source_word_version_id"]:
+        original = word_materials.source(conn, row["project_id"], row["source_word_version_id"])
+        link = word_materials.link_pdf(conn, row["project_id"], original, version_id, "user_declared", actor.member_id)
+        if word_materials.current(conn, original):
+            word_materials.adopt(
+                conn, row["project_id"], original["id"], link, actor.member_id, "用户声明这是此稿的实际评审 PDF；对应关系未经系统核实"
+            )
+
+
 def _commit_version(conn: Connection, row: db.Row, artifact_id: str) -> tuple[str, bool]:
     """返回 ``(版本 ID, 是否命中字节去重)``；去重命中不新建版本。"""
-    existing = _identical_latest(conn, row, artifact_id)
+    existing = None if row["source_word_version_id"] else _identical_latest(conn, row, artifact_id)
     if existing is not None:
         return str(existing["id"]), True
     previous = _latest_of_file(conn, row["version_of_file_id"]) if row["version_of_file_id"] else None
@@ -377,7 +420,7 @@ def is_latest_version(conn: Connection, project_id: str, version_id: str) -> boo
     return latest is not None and latest["id"] == version_id
 
 
-def _insert_version(conn: Connection, row: db.Row, artifact_id: str, previous: db.Row | None) -> str:
+def _insert_version(conn: Connection, row: db.Row | dict[str, Any], artifact_id: str, previous: db.Row | None) -> str:
     now = utcnow()
     if previous is None:
         file_id = new_id("fil")
@@ -441,7 +484,7 @@ def get_version(conn: Connection, actor: Actor, version_id: str) -> FileVersion:
     if row is None:
         raise NotFound("file_not_found")
     require_project(conn, actor, row["project_id"])
-    return _version_from(row)
+    return _with_word(conn, _version_from(row))
 
 
 def list_versions(conn: Connection, actor: Actor, project_id: str) -> list[FileVersion]:
@@ -449,7 +492,16 @@ def list_versions(conn: Connection, actor: Actor, project_id: str) -> list[FileV
     rows = db.all_(
         conn, _VERSION_SQL + "WHERE fv.project_id=:p AND a.status='committed' ORDER BY fv.obtained_at DESC, fv.id DESC", {"p": project_id}
     )
-    return [_version_from(r) for r in rows]
+    return [_with_word(conn, _version_from(r)) for r in rows]
+
+
+def _with_word(conn: Connection, version: FileVersion) -> FileVersion:
+    if word_materials.is_word(version.original_name, version.artifact.media_type):
+        version.word = word_materials.status(conn, version.project_id, version.version_id)
+    version.source_word_version_id = db.scalar(
+        conn, "SELECT source_version_id FROM word_pdf_links WHERE pdf_version_id=:v", {"v": version.version_id}
+    )
+    return version
 
 
 def locate_content(conn: Connection, actor: Actor, version_id: str) -> StoredContent:

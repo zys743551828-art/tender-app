@@ -24,6 +24,10 @@ REVISION_KIND = "revision"
 
 
 def _latest_version(conn: Connection, project_id: str, version_id: str) -> bool:
+    from bidwb.services import current_materials  # noqa: PLC0415
+
+    if db.scalar(conn, "SELECT count(*) FROM word_pdf_links WHERE pdf_version_id=:v", {"v": version_id}):
+        return current_materials.active_body(conn, project_id) == version_id
     row = db.one(
         conn,
         """SELECT fv.id FROM file_versions fv WHERE fv.project_id=:p AND fv.file_id=(SELECT file_id FROM file_versions WHERE id=:v)

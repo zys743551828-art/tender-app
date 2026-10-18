@@ -35,9 +35,18 @@ export function defaultTarget(
   role: FileRole,
   groups: readonly FileGroup[],
 ): string | null {
-  const same = groups.filter((g) => g.role === role);
+  const same = groups.filter(
+    (g) =>
+      g.role === role &&
+      mediaFamily(g.latest.original_name ?? g.names[0] ?? '') === mediaFamily(name),
+  );
   const byName = same.find((g) => g.names.includes(name));
   if (byName) return byName.fileId;
   if (role === 'body' && same.length === 1) return same[0]?.fileId ?? null;
   return null;
+}
+
+export function mediaFamily(name: string): string {
+  if (/\.docx?$/i.test(name)) return 'word';
+  return /\.pdf$/i.test(name) ? 'pdf' : 'other';
 }

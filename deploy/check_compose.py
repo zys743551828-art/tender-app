@@ -217,6 +217,7 @@ def main() -> int:
     tls_raw = load_yaml(HERE / "compose.tls.yml")
     dev_raw = load_yaml(HERE / "compose.dev.yml")
     vector_raw = load_yaml(HERE / "compose.pgvector.yml")
+    word_raw = load_yaml(HERE / "compose.word.yml")
     env_example = parse_env_example(HERE / ".env.example")
 
     prod = merge_compose(base_raw)
@@ -226,7 +227,7 @@ def main() -> int:
     dev_only = set(prod_dev["services"]) - base_names
 
     rep = Report()
-    variants = {"生产": prod, "生产+TLS": prod_tls, "生产+开发": prod_dev, "生产+pgvector": merge_compose(base_raw, vector_raw)}
+    variants = {"生产": prod, "生产+TLS": prod_tls, "生产+开发": prod_dev, "生产+pgvector": merge_compose(base_raw, vector_raw), "生产+Word": merge_compose(base_raw, word_raw)}
 
     # ---- 1. 结构 ------------------------------------------------------------------------------
     def structure():
@@ -529,7 +530,7 @@ def main() -> int:
                 cmd_text = " ".join(map(str, cmd)) if isinstance(cmd, list) else str(cmd or "")
                 if URL_WITH_CREDS.search(cmd_text) or re.search(r"(?i)(password|secret)=\S{4,}", cmd_text.replace("$$(", "")):
                     probs.append(f"[{vname}] {name} 的 command 含明文凭据")
-        for fname in ("compose.yml", "compose.tls.yml", "compose.dev.yml", "compose.pgvector.yml"):
+        for fname in ("compose.yml", "compose.tls.yml", "compose.dev.yml", "compose.pgvector.yml", "compose.word.yml"):
             text = (HERE / fname).read_text(encoding="utf-8")
             if URL_WITH_CREDS.search(text):
                 probs.append(f"{fname} 文本中出现 用户:口令@ 形式的连接串")
@@ -545,7 +546,7 @@ def main() -> int:
     # ---- 9. 变量双向一致 --------------------------------------------------------------------------------------
     def env_consistency():
         probs = []
-        compose_text = "\n".join((HERE / f).read_text(encoding="utf-8") for f in ("compose.yml", "compose.tls.yml", "compose.dev.yml", "compose.pgvector.yml"))
+        compose_text = "\n".join((HERE / f).read_text(encoding="utf-8") for f in ("compose.yml", "compose.tls.yml", "compose.dev.yml", "compose.pgvector.yml", "compose.word.yml"))
         # 去掉 YAML 注释行里的 ${...} 示例，避免把说明文字当成引用
         code_text = "\n".join(line for line in compose_text.splitlines() if not line.lstrip().startswith("#"))
         used_in_compose = {n for n in env_names_in_text(code_text) if n not in COMPOSE_NATIVE_VARS}
@@ -641,6 +642,7 @@ def main() -> int:
         probs = []
         combos = {"生产": ["compose.yml"], "生产+TLS": ["compose.yml", "compose.tls.yml"], "生产+开发": ["compose.yml", "compose.dev.yml"]}
         combos["生产+pgvector"] = ["compose.yml", "compose.pgvector.yml"]
+        combos["生产+Word"] = ["compose.yml", "compose.word.yml"]
         for label, files in combos.items():
             cmd = ["docker", "compose", "--env-file", ".env.example"]
             for f in files:

@@ -64,6 +64,14 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 访问 `http://localhost:8080`。覆盖文件仅把 web 发布在 `127.0.0.1:8080`，API 使用开发环境的 HTTP 会话配置，数据库不发布端口，可与测试数据库并存。该命令启动核心评审服务，不启动尚未接入业务代码的 Milvus 和 MLflow；生产部署不要使用此覆盖文件。登录成员通过第 4 节的建号流程创建。
 
+外部 Word 转换可加 `-f compose.word.yml`。先按 `deploy/word/README.md` 核对并构建 `WORD_IMAGE`，登记实际 `WORD_RENDERER_FINGERPRINT`，备份业务库并执行 0004 迁移，再统一更新后端和前端。完整本机核心命令：
+
+```bash
+docker compose -f compose.yml -f compose.local-oss.yml -f compose.word.yml up -d web relay reaper worker-parse worker-ai worker-experiment worker-export word-converter
+```
+
+只有解析 worker 挂载输入可写、输出只读队列；API 仅拿到方法指纹。转换器非 root、无网络／端口／业务密钥、只读根、逐任务 Landlock 隔离。不加载此覆盖文件时仍可保存 Word 并逐稿补交 PDF，不能自动转换。成功转换、复杂版式核对、失败补交与历史身份规则见 `contracts/word-materials.md`。普通页码、目录等动态域同样需要补交 PDF；生成 PDF 不等于 Word 原稿合格。
+
 阿里云 OSS 的 boto3 兼容配置使用 `OSS_SIGNATURE_VERSION=s3`；AWS S3 等服务可设置 `s3v4`，MinIO 开发覆盖文件固定使用 `s3v4`。依据：[阿里云 AWS SDK 接入说明](https://www.alibabacloud.com/help/en/oss/developer-reference/use-aws-sdks-to-access-oss)。
 
 本机验证范围与未完成项统一见 tender-docs《验证报告》第 2.9 节。

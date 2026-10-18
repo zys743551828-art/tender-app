@@ -12,7 +12,7 @@ from bidwb.config import Settings
 from bidwb.embeddings import EmbeddingUnavailable, get_embedder
 from bidwb.errors import NotFound
 from bidwb.schemas import EvidenceRef, SearchHit, SearchRequest, SearchResult
-from bidwb.services import vector_index
+from bidwb.services import current_materials, vector_index
 
 _EVIDENCE_SQL = """SELECT e.id,e.project_id,e.file_version_id,a.sha256 AS source_sha256,e.physical_page,e.printed_page,e.quote,e.kind,
        p.parser_version,e.bbox_json,e.semantic_review,f.role AS file_role,fv.original_name AS file_name
@@ -92,15 +92,9 @@ def snapshot_version_ids(conn: Connection, project_id: str, snapshot_id: str) ->
 
 def current_version_ids(conn: Connection, project_id: str) -> list[str]:
     """项目当前资料：每个文件的最新已提交版本（官方成绩资料不在其中，它不能进入分析）。"""
-    rows = db.all_(
-        conn,
-        """SELECT fv.id FROM file_versions fv JOIN files f ON f.id=fv.file_id JOIN artifacts a ON a.id=fv.artifact_id
-           WHERE fv.project_id=:p AND a.status='committed' AND f.role <> 'official_result'
-             AND fv.id = (SELECT l.id FROM file_versions l WHERE l.file_id=fv.file_id ORDER BY l.obtained_at DESC, l.id DESC LIMIT 1)
-           ORDER BY fv.id""",
-        {"p": project_id},
-    )
-    return [r["id"] for r in rows]
+    versions = current_materials.heads(conn, project_id)
+    body = current_materials.active_body(conn, project_id)
+    return sorted(r["id"] for r in versions if r["role"] != "official_result" and (r["role"] != "body" or r["id"] == body))
 
 
 def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest, settings: Settings | None = None) -> SearchResult:

@@ -20,10 +20,10 @@ from bidwb.access import Actor, require_project
 from bidwb.errors import DomainError
 from bidwb.logs import get_logger
 from bidwb.schemas import PipelineStatus, PipelineStep, SnapshotRequest
+from bidwb.services import current_materials, snapshots
 from bidwb.services import findings as findings_service
 from bidwb.services import projects as projects_service
 from bidwb.services import rules as rules_service
-from bidwb.services import snapshots
 from bidwb.storage import ObjectStore
 from bidwb.util import new_id, sha256_hex
 
@@ -79,22 +79,20 @@ def _latest_job(
 
 def _current_versions(conn: Connection, project_id: str) -> tuple[list[db.Row], db.Row | None]:
     """招标文件与补遗各取最新版本；正文取最近上传的正文文件的最新版本。"""
-    latest = db.all_(
-        conn,
-        """SELECT DISTINCT ON (f.id) fv.id, fv.original_name, fv.obtained_at, f.role,
-                  (SELECT ps.coverage FROM parses ps WHERE ps.file_version_id=fv.id ORDER BY ps.created_at DESC, ps.id DESC LIMIT 1) AS coverage
-           FROM file_versions fv JOIN files f ON f.id=fv.file_id
-           WHERE fv.project_id=:p AND f.role IN ('tender','supplement','body')
-           ORDER BY f.id, fv.obtained_at DESC, fv.id DESC""",
-        {"p": project_id},
-    )
+    latest = current_materials.heads(conn, project_id)
     tender = [v for v in latest if v["role"] in snapshots.TENDER_ROLES]
-    bodies = sorted((v for v in latest if v["role"] == "body"), key=lambda v: (v["obtained_at"], v["id"]), reverse=True)
+    bodies = sorted((v for v in latest if v["role"] == "body"), key=lambda v: (v["source_obtained_at"], v["source_id"]), reverse=True)
     return tender, (bodies[0] if bodies else None)
 
 
 def _parse_state(conn: Connection, project_id: str, needed: list[db.Row]) -> tuple[StepState, str | None]:
     """所需资料的解析进度：任一份解析失败（含解析任务本身失败）→ failed；仍有未解析的 → running。"""
+    if db.scalar(
+        conn,
+        "SELECT count(*) FROM word_conversions WHERE project_id=:p AND source_version_id=ANY(:v)",
+        {"p": project_id, "v": [v["id"] for v in needed]},
+    ):
+        return "failed", "请在对应 Word 原稿处核对并采用生成的 PDF，或只补交此稿的 PDF"
     dead = {
         r["version_id"]
         for r in db.all_(
@@ -409,6 +407,13 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
         rules_total=total,
         rules_unconfirmed=unconfirmed,
         input_verification_required=verification_required,
+        word_pdf_required=bool(
+            db.scalar(
+                conn,
+                "SELECT count(*) FROM word_conversions WHERE project_id=:p AND source_version_id=ANY(:v)",
+                {"p": project_id, "v": [*plan.tender_ids, *([plan.body_id] if plan.body_id else [])]},
+            )
+        ),
     )
 
 

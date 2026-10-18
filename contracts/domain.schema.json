@@ -28,32 +28,27 @@
       "additionalProperties": false
     },
     "ArtifactRef": {
-      "type": "object",
-      "description": "",
+      "additionalProperties": false,
       "properties": {
         "artifact_id": {
-          "type": "string",
           "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
+          "type": "string"
         },
         "sha256": {
-          "type": "string",
           "pattern": "^[0-9a-f]{64}$",
-          "description": "原始字节 SHA-256"
+          "type": "string"
         },
         "media_type": {
-          "type": "string",
-          "description": "产物 MIME 类型",
-          "minLength": 1
+          "minLength": 1,
+          "type": "string"
         },
         "byte_size": {
-          "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "type": "integer"
         },
         "contract_version": {
-          "type": "string",
-          "description": "具体契约版本",
-          "minLength": 1
+          "minLength": 1,
+          "type": "string"
         }
       },
       "required": [
@@ -63,7 +58,7 @@
         "byte_size",
         "contract_version"
       ],
-      "additionalProperties": false
+      "type": "object"
     },
     "BidTerms": {
       "additionalProperties": false,
@@ -829,97 +824,6 @@
       ],
       "additionalProperties": false
     },
-    "FileVersion": {
-      "type": "object",
-      "description": "",
-      "properties": {
-        "version_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "project_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "file_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "version_number": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "该版本在其逻辑文件内的序号，从 1 起"
-        },
-        "original_name": {
-          "type": "string",
-          "description": "上传原名",
-          "minLength": 1
-        },
-        "role": {
-          "type": "string",
-          "description": "资料用途",
-          "enum": [
-            "tender",
-            "supplement",
-            "drawing",
-            "boq",
-            "body",
-            "submission",
-            "official_result",
-            "other"
-          ]
-        },
-        "artifact": {
-          "$ref": "#/$defs/ArtifactRef"
-        },
-        "obtained_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "含时区的取得／核实／运行时间"
-        },
-        "document_date": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "文内日期，未知为空"
-        },
-        "association_status": {
-          "type": "string",
-          "description": "关联核实状态",
-          "enum": [
-            "pending",
-            "confirmed",
-            "conflict"
-          ]
-        },
-        "supersedes": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        }
-      },
-      "required": [
-        "version_id",
-        "project_id",
-        "file_id",
-        "version_number",
-        "original_name",
-        "role",
-        "artifact",
-        "obtained_at",
-        "document_date",
-        "association_status",
-        "supersedes"
-      ],
-      "additionalProperties": false
-    },
     "FullScoreTerm": {
       "additionalProperties": false,
       "description": "评标办法写明的技术标满分。",
@@ -943,97 +847,6 @@
         "evidence"
       ],
       "type": "object"
-    },
-    "InputSnapshot": {
-      "type": "object",
-      "description": "",
-      "properties": {
-        "snapshot_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "project_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "contract_version": {
-          "const": "input-v1"
-        },
-        "file_version_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-            "description": "服务端分配的稳定 ID，非展示名称"
-          },
-          "description": "本项目且在截止前已取得的输入版本",
-          "minItems": 1,
-          "uniqueItems": true
-        },
-        "body_version_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "rule_set_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "fact_set_id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "as_of": {
-          "type": "string",
-          "format": "date-time",
-          "description": "含时区的取得／核实／运行时间"
-        },
-        "reference_dataset_id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "coverage_gaps": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "description": "具体缺口",
-            "minLength": 1
-          },
-          "description": "本次无法检查项",
-          "minItems": 0,
-          "uniqueItems": true
-        },
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "原始字节 SHA-256"
-        }
-      },
-      "required": [
-        "snapshot_id",
-        "project_id",
-        "contract_version",
-        "file_version_ids",
-        "body_version_id",
-        "rule_set_id",
-        "fact_set_id",
-        "as_of",
-        "reference_dataset_id",
-        "coverage_gaps",
-        "sha256"
-      ],
-      "additionalProperties": false
     },
     "Me": {
       "type": "object",
@@ -2929,163 +2742,6 @@
       ],
       "additionalProperties": false
     },
-    "UploadRequest": {
-      "type": "object",
-      "description": "",
-      "properties": {
-        "original_name": {
-          "type": "string",
-          "description": "原名",
-          "minLength": 1
-        },
-        "role": {
-          "type": "string",
-          "description": "资料用途",
-          "enum": [
-            "tender",
-            "supplement",
-            "drawing",
-            "boq",
-            "body",
-            "submission",
-            "official_result",
-            "other"
-          ]
-        },
-        "byte_size": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 104857600
-        },
-        "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$",
-          "description": "原始字节 SHA-256"
-        },
-        "media_type": {
-          "type": "string",
-          "description": "声明类型，服务端核实",
-          "minLength": 1
-        },
-        "version_of_file_id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "可选。给出则本次上传成为该文件的下一版本（须是同项目、同用途的文件，否则 422 version_of_invalid）；缺省或为空则总是新的逻辑文件"
-        }
-      },
-      "required": [
-        "original_name",
-        "role",
-        "byte_size",
-        "sha256",
-        "media_type"
-      ],
-      "additionalProperties": false
-    },
-    "UploadResult": {
-      "type": "object",
-      "description": "上传完成的结果：文件版本加去重与新建标志",
-      "properties": {
-        "version_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "project_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "file_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "version_number": {
-          "type": "integer",
-          "minimum": 1,
-          "description": "该版本在其逻辑文件内的序号，从 1 起"
-        },
-        "original_name": {
-          "type": "string",
-          "description": "上传原名",
-          "minLength": 1
-        },
-        "role": {
-          "type": "string",
-          "description": "资料用途",
-          "enum": [
-            "tender",
-            "supplement",
-            "drawing",
-            "boq",
-            "body",
-            "submission",
-            "official_result",
-            "other"
-          ]
-        },
-        "artifact": {
-          "$ref": "#/$defs/ArtifactRef"
-        },
-        "obtained_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "含时区的取得／核实／运行时间"
-        },
-        "document_date": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "文内日期，未知为空"
-        },
-        "association_status": {
-          "type": "string",
-          "description": "关联核实状态",
-          "enum": [
-            "pending",
-            "confirmed",
-            "conflict"
-          ]
-        },
-        "supersedes": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "duplicate": {
-          "type": "boolean",
-          "description": "字节与已有最新版本完全相同，返回已有版本，未新建版本、不再解析"
-        },
-        "new_file": {
-          "type": "boolean",
-          "description": "本次上传新建了逻辑文件（该版本是其第 1 版且非重复）"
-        }
-      },
-      "required": [
-        "version_id",
-        "project_id",
-        "file_id",
-        "version_number",
-        "original_name",
-        "role",
-        "artifact",
-        "obtained_at",
-        "document_date",
-        "association_status",
-        "supersedes",
-        "duplicate",
-        "new_file"
-      ],
-      "additionalProperties": false
-    },
     "UploadSession": {
       "type": "object",
       "description": "",
@@ -3274,6 +2930,39 @@
         "report_artifact_id"
       ],
       "additionalProperties": false
+    },
+    "WordPdfCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "link_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "pdf_version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "controlled_render",
+            "user_declared"
+          ],
+          "type": "string"
+        },
+        "gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "link_id",
+        "pdf_version_id",
+        "method",
+        "gaps"
+      ],
+      "type": "object"
     },
     "BenchmarkSpec": {
       "additionalProperties": false,
@@ -3519,6 +3208,116 @@
       ],
       "type": "object"
     },
+    "FileVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "file_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "version_number": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "original_name": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ],
+          "type": "string"
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "obtained_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "document_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "association_status": {
+          "enum": [
+            "pending",
+            "confirmed",
+            "conflict"
+          ],
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "word": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WordStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_word_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "version_id",
+        "project_id",
+        "file_id",
+        "version_number",
+        "original_name",
+        "role",
+        "artifact",
+        "obtained_at",
+        "document_date",
+        "association_status",
+        "supersedes"
+      ],
+      "type": "object"
+    },
     "Finding": {
       "additionalProperties": false,
       "properties": {
@@ -3658,6 +3457,95 @@
         "required_facts",
         "status",
         "revision"
+      ],
+      "type": "object"
+    },
+    "InputSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "input-v1",
+          "type": "string"
+        },
+        "file_version_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "body_version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "rule_set_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "fact_set_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "as_of": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "reference_dataset_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage_gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "word_sources": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "project_id",
+        "contract_version",
+        "file_version_ids",
+        "body_version_id",
+        "rule_set_id",
+        "fact_set_id",
+        "as_of",
+        "reference_dataset_id",
+        "coverage_gaps",
+        "sha256"
       ],
       "type": "object"
     },
@@ -3878,6 +3766,10 @@
           "type": "integer"
         },
         "input_verification_required": {
+          "default": false,
+          "type": "boolean"
+        },
+        "word_pdf_required": {
           "default": false,
           "type": "boolean"
         }
@@ -5109,6 +5001,191 @@
       ],
       "type": "object"
     },
+    "UploadRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "original_name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ],
+          "type": "string"
+        },
+        "byte_size": {
+          "maximum": 104857600,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "media_type": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "version_of_file_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_word_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "original_name",
+        "role",
+        "byte_size",
+        "sha256",
+        "media_type"
+      ],
+      "type": "object"
+    },
+    "UploadResult": {
+      "additionalProperties": false,
+      "properties": {
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "file_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "version_number": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "original_name": {
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "tender",
+            "supplement",
+            "drawing",
+            "boq",
+            "body",
+            "submission",
+            "official_result",
+            "other"
+          ],
+          "type": "string"
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "obtained_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "document_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "association_status": {
+          "enum": [
+            "pending",
+            "confirmed",
+            "conflict"
+          ],
+          "type": "string"
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "word": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WordStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_word_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "new_file": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "version_id",
+        "project_id",
+        "file_id",
+        "version_number",
+        "original_name",
+        "role",
+        "artifact",
+        "obtained_at",
+        "document_date",
+        "association_status",
+        "supersedes",
+        "duplicate",
+        "new_file"
+      ],
+      "type": "object"
+    },
     "VerdictCounts": {
       "additionalProperties": false,
       "properties": {
@@ -5134,6 +5211,85 @@
         "violated",
         "unclear",
         "failed"
+      ],
+      "type": "object"
+    },
+    "WordAdoptRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "link_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "reviewed_pdf": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "link_id",
+        "reason",
+        "reviewed_pdf"
+      ],
+      "type": "object"
+    },
+    "WordRetryRequest": {
+      "additionalProperties": false,
+      "properties": {},
+      "type": "object"
+    },
+    "WordStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "current": {
+          "type": "boolean"
+        },
+        "state": {
+          "enum": [
+            "waiting",
+            "converted",
+            "needs_review",
+            "failed"
+          ],
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "adopted_pdf_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/WordPdfCandidate"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "current",
+        "state",
+        "error_code",
+        "adopted_pdf_version_id",
+        "candidates"
       ],
       "type": "object"
     }

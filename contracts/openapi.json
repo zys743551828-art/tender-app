@@ -692,6 +692,142 @@
         }
       }
     },
+    "/api/v1/files/{version_id}/word:adopt": {
+      "post": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Adopt Word Pdf",
+        "operationId": "adoptWordPdf",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WordAdoptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/{version_id}/word:retry": {
+      "post": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Retry Word",
+        "operationId": "retryWordConversion",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WordRetryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/files/{version_id}/content": {
       "get": {
         "tags": [
@@ -4560,6 +4696,28 @@
               }
             ],
             "title": "Supersedes"
+          },
+          "word": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WordStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_word_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Word Version Id"
           }
         },
         "additionalProperties": false,
@@ -4882,6 +5040,14 @@
             "type": "string",
             "pattern": "^[0-9a-f]{64}$",
             "title": "Sha256"
+          },
+          "word_sources": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Word Sources"
           }
         },
         "additionalProperties": false,
@@ -5578,6 +5744,11 @@
           "input_verification_required": {
             "type": "boolean",
             "title": "Input Verification Required",
+            "default": false
+          },
+          "word_pdf_required": {
+            "type": "boolean",
+            "title": "Word Pdf Required",
             "default": false
           }
         },
@@ -8416,6 +8587,18 @@
               }
             ],
             "title": "Version Of File Id"
+          },
+          "source_word_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Word Version Id"
           }
         },
         "additionalProperties": false,
@@ -8508,6 +8691,28 @@
               }
             ],
             "title": "Supersedes"
+          },
+          "word": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WordStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_word_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Word Version Id"
           },
           "duplicate": {
             "type": "boolean",
@@ -8651,6 +8856,134 @@
           "failed"
         ],
         "title": "VerdictCounts"
+      },
+      "WordAdoptRequest": {
+        "properties": {
+          "link_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Link Id"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "reviewed_pdf": {
+            "type": "boolean",
+            "title": "Reviewed Pdf"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "link_id",
+          "reason",
+          "reviewed_pdf"
+        ],
+        "title": "WordAdoptRequest"
+      },
+      "WordPdfCandidate": {
+        "properties": {
+          "link_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Link Id"
+          },
+          "pdf_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Pdf Version Id"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "controlled_render",
+              "user_declared"
+            ],
+            "title": "Method"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "link_id",
+          "pdf_version_id",
+          "method",
+          "gaps"
+        ],
+        "title": "WordPdfCandidate"
+      },
+      "WordRetryRequest": {
+        "properties": {},
+        "additionalProperties": false,
+        "type": "object",
+        "title": "WordRetryRequest"
+      },
+      "WordStatus": {
+        "properties": {
+          "current": {
+            "type": "boolean",
+            "title": "Current"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "converted",
+              "needs_review",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "adopted_pdf_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adopted Pdf Version Id"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/WordPdfCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current",
+          "state",
+          "error_code",
+          "adopted_pdf_version_id",
+          "candidates"
+        ],
+        "title": "WordStatus"
       }
     }
   }

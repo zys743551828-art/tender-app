@@ -156,6 +156,7 @@ class UploadRequest(Request):
     sha256: Sha256
     media_type: NonEmpty
     version_of_file_id: Id | None = None
+    source_word_version_id: Id | None = None
 
 
 class PartUrl(Response):
@@ -182,6 +183,31 @@ class UploadComplete(Request):
     parts: Annotated[list[CompletedPart], Field(min_length=1, max_length=13)]
 
 
+class WordPdfCandidate(Response):
+    link_id: Id
+    pdf_version_id: Id
+    method: Literal["controlled_render", "user_declared"]
+    gaps: list[str]
+
+
+class WordStatus(Response):
+    current: bool
+    state: Literal["waiting", "converted", "needs_review", "failed"]
+    error_code: str | None
+    adopted_pdf_version_id: Id | None
+    candidates: list[WordPdfCandidate]
+
+
+class WordAdoptRequest(Request):
+    link_id: Id
+    reason: NonEmpty
+    reviewed_pdf: bool
+
+
+class WordRetryRequest(Request):
+    pass
+
+
 class FileVersion(Response):
     version_id: Id
     project_id: Id
@@ -194,6 +220,8 @@ class FileVersion(Response):
     document_date: str | None
     association_status: Literal["pending", "confirmed", "conflict"]
     supersedes: Id | None
+    word: WordStatus | None = None
+    source_word_version_id: Id | None = None
 
 
 class UploadResult(FileVersion):
@@ -222,6 +250,7 @@ class InputSnapshot(Response):
     reference_dataset_id: Id | None
     coverage_gaps: list[str]
     sha256: Sha256
+    word_sources: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # ------------------------------------------------------------------ 任务
@@ -857,6 +886,7 @@ class PipelineStatus(Response):
     rules_total: int
     rules_unconfirmed: int
     input_verification_required: bool = False
+    word_pdf_required: bool = False
 
 
 class PredictionBrief(Response):

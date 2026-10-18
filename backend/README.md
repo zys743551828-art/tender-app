@@ -23,7 +23,7 @@ python -m tools.smoke.deployed_stack --password-file ../deploy/secrets/admin_ini
 | `src/bidwb/ai/` | 模型适配器、提示词、证据落地校验；规则提取、核对、评分预测（`predict`：正文章节 `sections`、特征 `features`、比较式锚定 `anchors`）、改稿处理器 |
 | `src/bidwb/checks/` | 不调用模型的确定性检测：正文数值前后矛盾与大段重复、超范围残留 |
 | `src/bidwb/pricing.py` | 报价模拟（评标基准价与价格分），纯函数 |
-| `migrations/` | Alembic；只有一个迁移，内容即 `contracts/schema.sql`，二者逐字一致（测试守护） |
+| `migrations/` | Alembic；初始结构与 `contracts/schema.sql` 及后续增量 SQL 契约逐字一致（测试守护） |
 | `tools/export_contracts.py` | 由代码生成 `contracts/openapi.json`，并写入 `contracts/domain.schema.json` 中由代码定义的部分；`--check` 只比对（测试调用） |
 | `tools/batch/` | 系统批量预测 `predict_dataset`：评分配对集（格式 A）逐份跑产品流水线，输出格式 B（见“系统批量预测”）；锚点包构建 `build_anchor_pack` |
 

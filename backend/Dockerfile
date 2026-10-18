@@ -128,6 +128,9 @@ COPY --from=builder /opt/venv /opt/venv
 WORKDIR /backend
 COPY alembic.ini ./
 COPY migrations ./migrations
+RUN mkdir -p /word-input /word-output \
+ && chown 10001:10001 /word-input \
+ && chown 65534:65534 /word-output
 
 USER ${APP_UID}:${APP_GID}
 EXPOSE 8000

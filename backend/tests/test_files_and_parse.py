@@ -13,7 +13,7 @@ from bidwb.messaging import InMemoryBus
 from bidwb.runtime import Container
 from bidwb.services.pipeline import _parse_state
 from bidwb.services.snapshots import _coverage_gaps
-from bidwb.storage import MemoryObjectStore, content_key
+from bidwb.storage import MemoryObjectStore, content_key, staging_key
 from bidwb.workers.handlers import default_handlers
 from bidwb.workers.runner import WorkerRunner
 from tests.pdfs import make_pdf
@@ -49,6 +49,7 @@ def _upload(
     declared_sha: str | None = None,
     key: str | None = None,
     version_of: str | None = None,
+    source_word: str | None = None,
 ):
     init = api.post(
         f"/projects/{pid}/uploads",
@@ -59,12 +60,13 @@ def _upload(
             "sha256": declared_sha or hashlib.sha256(data).hexdigest(),
             "media_type": media,
             **({"version_of_file_id": version_of} if version_of else {}),
+            **({"source_word_version_id": source_word} if source_word else {}),
         },
         key=key,
     )
     assert init.status_code == 200, init.text
     session = init.json()
-    oss_id = next(iter(store._uploads))
+    oss_id = next(identity for identity, upload in store._uploads.items() if upload.key == staging_key(session["upload_id"]))
     part_size = session["part_bytes"]
     etags = []
     for part in session["parts"]:

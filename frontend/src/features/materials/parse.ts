@@ -69,9 +69,14 @@ export function extractReadiness(
 ): ExtractReadiness {
   const superseded = new Set(files.flatMap((f) => (f.supersedes ? [f.supersedes] : [])));
   const heads = files.filter(
-    (f) => (f.role === 'tender' || f.role === 'supplement') && !superseded.has(f.version_id),
+    (f) =>
+      (f.role === 'tender' || f.role === 'supplement') &&
+      !superseded.has(f.version_id) &&
+      !f.source_word_version_id,
   );
   const hasTender = heads.some((f) => f.role === 'tender');
-  const waiting = heads.filter((f) => !parseOk(parse.get(f.version_id))).length;
+  const waiting = heads.filter(
+    (f) => !parseOk(parse.get(f.word ? (f.word.adopted_pdf_version_id ?? '') : f.version_id)),
+  ).length;
   return { ready: hasTender && waiting === 0, hasTender, waiting };
 }

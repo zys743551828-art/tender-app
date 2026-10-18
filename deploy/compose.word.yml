@@ -1,0 +1,47 @@
+# 显式启用隔离 Word 转换；只给解析 worker 挂载输入及只读输出。
+services:
+  api:
+    environment:
+      BIDWB_WORD_RENDERER_FINGERPRINT: ${WORD_RENDERER_FINGERPRINT:?设置已核对的转换方法指纹}
+  word-converter:
+    image: ${WORD_IMAGE:?设置已核对的Word转换镜像}
+    build: ./word
+    init: true
+    user: "65534:65534"
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1
+    pids_limit: 128
+    stop_grace_period: 70s
+    healthcheck:
+      test: ["CMD", "python", "/app/service.py", "--health"]
+      interval: 15s
+      timeout: 3s
+      start_period: 20s
+      retries: 3
+    tmpfs:
+      - /tmp:ro,noexec,nosuid,nodev,size=1m,mode=0555
+      - /work:rw,noexec,nosuid,nodev,size=256m,uid=65534,gid=65534,mode=0700
+    volumes:
+      - word-input:/word-input:ro
+      - word-output:/word-output:rw
+    logging:
+      driver: json-file
+      options: {max-size: "5m", max-file: "3"}
+  worker-parse:
+    environment:
+      BIDWB_WORD_INPUT_DIR: /word-input
+      BIDWB_WORD_OUTPUT_DIR: /word-output
+      BIDWB_WORD_RENDERER_FINGERPRINT: ${WORD_RENDERER_FINGERPRINT:?设置已核对的转换方法指纹}
+    volumes:
+      - word-input:/word-input:rw
+      - word-output:/word-output:ro
+    depends_on:
+      word-converter: {condition: service_healthy}
+volumes:
+  word-input: {}
+  word-output: {}

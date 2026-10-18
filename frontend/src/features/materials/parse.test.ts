@@ -102,3 +102,33 @@ describe('extractReadiness', () => {
     expect(extractReadiness(files, new Map([['t2', bad]])).ready).toBe(false);
   });
 });
+
+it('Word 招标只按已采用的实际 PDF 判断就绪，忽略未采用的转换候选', () => {
+  const original = {
+    ...f('word', 'tender', '2026-10-02T00:00:00Z'),
+    word: {
+      current: true,
+      state: 'converted' as const,
+      error_code: null,
+      adopted_pdf_version_id: 'pdf',
+      candidates: [],
+    },
+  };
+  const pdf = { ...f('pdf', 'tender', '2026-10-03T00:00:00Z'), source_word_version_id: 'word' };
+  const candidate = {
+    ...f('candidate', 'tender', '2026-10-04T00:00:00Z'),
+    source_word_version_id: 'word',
+  };
+  expect(
+    extractReadiness(
+      [original, pdf, candidate],
+      new Map([['pdf', task({ kind: 'parse', state: 'succeeded' })]]),
+    ).ready,
+  ).toBe(true);
+  expect(
+    extractReadiness(
+      [{ ...original, word: { ...original.word, adopted_pdf_version_id: null } }, pdf],
+      new Map([['pdf', task({ kind: 'parse', state: 'succeeded' })]]),
+    ).ready,
+  ).toBe(false);
+});

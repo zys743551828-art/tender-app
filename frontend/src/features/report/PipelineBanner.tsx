@@ -111,7 +111,16 @@ export function PipelineBanner({
   let detail: ReactNode = null;
   let action: ReactNode = null;
   let tone: 'warning' | 'danger' | 'ai' | 'neutral' = 'neutral';
-  if (pipeline.input_verification_required) {
+  if (pipeline.word_pdf_required) {
+    tone = 'warning';
+    title = '先核对或补交此稿的 PDF';
+    detail = '在对应 Word 原稿处处理，其他资料与历史报告保留。';
+    action = (
+      <Button asChild size="sm">
+        <Link to={`${base}/materials`}>处理此稿的 PDF</Link>
+      </Button>
+    );
+  } else if (pipeline.input_verification_required) {
     tone = 'warning';
     title = '先核实补遗或投标条件，再继续评审';
     detail = '原文的生效关系尚待核实，已有报告保持原来的依据。';

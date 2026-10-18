@@ -11,6 +11,7 @@ import type {
   FactRequest,
   FactSetResult,
   FileVersion,
+  WordStatus,
   Finding,
   InputSnapshot,
   LoginRequest,
@@ -69,6 +70,13 @@ export function createEndpoints(c: ApiClient) {
         c.patch<Project>(`/projects/${id}`, b, { ...o, ifMatch: revision }),
     },
     files: {
+      adoptWordPdf: (
+        versionId: string,
+        body: { link_id: string; reason: string; reviewed_pdf: boolean },
+        o?: Idem,
+      ) => c.post<WordStatus>(`/files/${versionId}/word:adopt`, body, o),
+      retryWord: (versionId: string, o?: Idem) =>
+        c.post<WordStatus>(`/files/${versionId}/word:retry`, {}, o),
       list: async (projectId: string, o?: { signal?: AbortSignal }) =>
         c.get<FileVersion[]>(`/projects/${projectId}/files`, o),
       /** PDF.js 直接读取此地址（同源 cookie 鉴权，Range）。 */

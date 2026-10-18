@@ -13,11 +13,20 @@ from starlette.concurrency import run_in_threadpool
 
 from bidwb import db
 from bidwb.api.deps import Body, Ctr, CurrentSession, IdemKey, Session, mutate
-from bidwb.errors import Unprocessable
+from bidwb.errors import Conflict, Unavailable, Unprocessable
 from bidwb.logs import get_logger
 from bidwb.runtime import Container
-from bidwb.schemas import FileVersion, UploadComplete, UploadRequest, UploadResult, UploadSession
-from bidwb.services import files, pipeline
+from bidwb.schemas import (
+    FileVersion,
+    UploadComplete,
+    UploadRequest,
+    UploadResult,
+    UploadSession,
+    WordAdoptRequest,
+    WordRetryRequest,
+    WordStatus,
+)
+from bidwb.services import files, pipeline, word_materials
 
 router = APIRouter(tags=["files"])
 log = get_logger(__name__)
@@ -94,6 +103,44 @@ def _complete_and_advance(conn: Connection, ctr: Container, session: Session, up
 def list_files(project_id: str, session: CurrentSession, ctr: Ctr) -> list[FileVersion]:
     with ctr.engine.connect() as conn:
         return files.list_versions(conn, session.actor, project_id)
+
+
+@router.post("/files/{version_id}/word:adopt", response_model=WordStatus, operation_id="adoptWordPdf")
+def adopt_word_pdf(version_id: str, body: WordAdoptRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+    def apply(conn: Connection) -> WordStatus:
+        version = files.get_version(conn, session.actor, version_id)
+        if not body.reviewed_pdf:
+            raise Unprocessable("pdf_review_required", "请先查看并核对实际 PDF")
+        word_materials.adopt(conn, version.project_id, version_id, body.link_id, session.actor.member_id, body.reason)
+        if ctr.settings.auto_analysis:
+            pipeline.advance(conn, ctr.store, version.project_id)
+        return word_materials.status(conn, version.project_id, version_id)
+
+    return mutate(ctr, session, key, f"POST /files/{version_id}/word:adopt", body, apply)
+
+
+@router.post("/files/{version_id}/word:retry", response_model=WordStatus, operation_id="retryWordConversion")
+def retry_word(version_id: str, body: WordRetryRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+    def apply(conn: Connection) -> WordStatus:
+        version = files.get_version(conn, session.actor, version_id)
+        settings = ctr.settings
+        if not settings.word_renderer_fingerprint:
+            raise Unavailable("word_renderer_not_configured", "转换服务尚未启用，请为此稿补交 PDF")
+        word_materials.lock(conn, version.project_id)
+        original = word_materials.source(conn, version.project_id, version_id)
+        if not word_materials.current(conn, original):
+            raise Conflict("word_source_stale", "该 Word 已有新版本")
+        if db.scalar(
+            conn,
+            """SELECT count(*) FROM jobs WHERE project_id=:p AND kind='parse'
+            AND input_json->>'file_version_id'=:v AND state IN ('queued','running','cancel_requested')""",
+            {"p": version.project_id, "v": version_id},
+        ):
+            raise Conflict("word_conversion_running", "此稿转换仍在进行")
+        word_materials.enqueue_parse(conn, version.project_id, version_id, f"word-retry:{session.actor.member_id}:{key}")
+        return word_materials.status(conn, version.project_id, version_id)
+
+    return mutate(ctr, session, key, f"POST /files/{version_id}/word:retry", body, apply)
 
 
 @router.get(

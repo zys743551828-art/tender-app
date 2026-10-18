@@ -10,6 +10,7 @@ export function useFiles(projectId: string) {
   return useQuery<FileVersion[]>({
     queryKey: fileKeys.list(projectId),
     queryFn: ({ signal }) => api.files.list(projectId, { signal }),
+    refetchInterval: (query) => (query.state.data?.some((f) => f.word?.current) ? 10000 : false),
   });
 }
 

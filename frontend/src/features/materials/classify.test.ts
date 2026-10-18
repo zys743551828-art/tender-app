@@ -23,6 +23,14 @@ describe('guessRole', () => {
 });
 
 describe('defaultTarget', () => {
+  it('Word 和 PDF 各自选择版本链，转换 PDF 不参与原稿默认目标', () => {
+    const groups = [group('pdf', 'body', '施组.pdf')];
+    expect(defaultTarget('施组.docx', 'body', groups)).toBeNull();
+    expect(defaultTarget('施组.pdf', 'body', [group('word', 'body', '施组.docx')])).toBeNull();
+    expect(
+      defaultTarget('施组-二.docx', 'body', [group('word', 'body', '施组.docx'), ...groups]),
+    ).toBe('word');
+  });
   it('同用途同名 → 该文件的新版本；唯一一份正文 → 正文的新版本；其余为新文件', () => {
     const groups = [group('f1', 'tender', '招标文件.pdf'), group('f2', 'body', '施组.pdf')];
     expect(defaultTarget('招标文件.pdf', 'tender', groups)).toBe('f1');

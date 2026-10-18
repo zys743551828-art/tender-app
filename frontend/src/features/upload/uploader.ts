@@ -91,6 +91,7 @@ export interface UploadInput {
   role: FileRole;
   /** 作为该已有文件（file_id）的新版本；null／省略表示新文件。 */
   versionOfFileId?: string | null;
+  sourceWordVersionId?: string | null;
 }
 
 const defaultSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
@@ -229,8 +230,13 @@ export class Uploader {
             role,
             byte_size: file.size,
             sha256: this.sha256,
-            media_type: file.type || 'application/octet-stream',
+            media_type: this.input.sourceWordVersionId
+              ? 'application/pdf'
+              : file.type || 'application/octet-stream',
             version_of_file_id: versionOfFileId ?? null,
+            ...(this.input.sourceWordVersionId
+              ? { source_word_version_id: this.input.sourceWordVersionId }
+              : {}),
           },
           { idempotencyKey: this.initKey },
         );

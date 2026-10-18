@@ -70,7 +70,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
     with ctx.engine.connect() as conn:
         row = db.one(
             conn,
-            """SELECT a.object_key,a.media_type,a.status,a.sha256 FROM file_versions fv JOIN artifacts a ON a.id=fv.artifact_id
+            """SELECT a.object_key,a.media_type,a.status,a.sha256,fv.original_name FROM file_versions fv JOIN artifacts a ON a.id=fv.artifact_id
                WHERE fv.id=:v AND fv.project_id=:p""",
             {"v": version_id, "p": ctx.claim.project_id},
         )
@@ -80,6 +80,12 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
     if hashlib.sha256(data).hexdigest() != row["sha256"]:
         return HandlerFailure("parse_source_mismatch", "原件校验失败，请重新上传")
     ctx.checkpoint()
+    from bidwb.services.word_materials import is_word  # noqa: PLC0415
+
+    if is_word(row["original_name"], row["media_type"]):
+        from bidwb.workers.word_handler import convert_handler  # noqa: PLC0415
+
+        return convert_handler(ctx, version_id, row["original_name"], data)
     document: parsing.ParsedDocument
     if row["media_type"] != "application/pdf" and not data.startswith(b"%PDF"):
         document = parsing.ParsedDocument(page_count=0, gaps=["unsupported_media_type"])
@@ -93,9 +99,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
     if document.coverage == "failed":
         # 读不出文字（非 PDF、加密、纯扫描件）：确定性失败，重试也不会好。任务标记失败并说明原因，
         # 不写解析记录——这样界面显示“解析失败”，快照也不会把它当作可用输入。
-        if "unsupported_media_type" in document.gaps:
-            return HandlerFailure("parse_unsupported", "只支持 PDF 格式，请转换为 PDF 后重新上传")
-        return HandlerFailure("parse_unreadable", "没有读到文字（可能是扫描件或加密文件），请提供可复制文字的 PDF 后重新上传")
+        return _parse_failure(document)
     encoded, retrieval_index = _embed_parse(ctx, document)
     summary = {
         "parser_version": parsing.PARSER_VERSION,
@@ -158,6 +162,12 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
                 )
 
     return HandlerOutput(json.dumps(summary, ensure_ascii=False, sort_keys=True).encode(), "application/json", "parse-v1", finalize)
+
+
+def _parse_failure(document: parsing.ParsedDocument) -> HandlerFailure:
+    if "unsupported_media_type" in document.gaps:
+        return HandlerFailure("parse_unsupported", "只支持 PDF 格式，请转换为 PDF 后重新上传")
+    return HandlerFailure("parse_unreadable", "没有读到文字（可能是扫描件或加密文件），请提供可复制文字的 PDF 后重新上传")
 
 
 def _embed_parse(ctx: JobContext, document: parsing.ParsedDocument) -> tuple[Encoded | None, dict[str, Any]]:

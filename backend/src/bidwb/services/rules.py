@@ -36,7 +36,7 @@ from bidwb.schemas import (
     TermAlternative,
     TermConflict,
 )
-from bidwb.services import audit, evidence
+from bidwb.services import audit, current_materials, evidence
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
 from bidwb.util import canonical_json, decimal_text, new_id, sha256_hex, utcnow
@@ -70,13 +70,7 @@ def _effective_status(package_status: str, items: list[db.Row], reviews: dict[st
 
 def current_tender_version_ids(conn: Connection, project_id: str) -> list[str]:
     """项目当前的招标文件与补遗：每个文件的最新版本，按 ID 排序。"""
-    rows = db.all_(
-        conn,
-        """SELECT DISTINCT ON (f.id) fv.id FROM file_versions fv JOIN files f ON f.id=fv.file_id
-           WHERE fv.project_id=:p AND f.role IN ('tender','supplement') ORDER BY f.id, fv.obtained_at DESC, fv.id DESC""",
-        {"p": project_id},
-    )
-    return sorted(r["id"] for r in rows)
+    return sorted(r["id"] for r in current_materials.heads(conn, project_id) if r["role"] in {"tender", "supplement"})
 
 
 def latest_package(conn: Connection, project_id: str, package_id: str | None = None) -> db.Row | None:

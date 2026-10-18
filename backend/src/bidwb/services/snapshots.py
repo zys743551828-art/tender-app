@@ -14,7 +14,7 @@ from bidwb import db, source_effectivity, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import InputSnapshot, SnapshotRequest
-from bidwb.services import audit, rules
+from bidwb.services import audit, current_materials, rules
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
 from bidwb.util import canonical_json, new_id, sha256_hex, utcnow
@@ -46,12 +46,7 @@ def _require_complete_tender_inputs(conn: Connection, project_id: str, versions:
     """快照必须含招标文件，并覆盖项目里每个招标文件/补遗的当前最新版本：漏掉补遗会让诊断基于不完整的要求。"""
     if not any(v["role"] == "tender" for v in versions):
         raise Conflict("tender_missing", "快照必须包含招标文件，没有招标文件无法核对规则")
-    current = db.all_(
-        conn,
-        """SELECT DISTINCT ON (f.id) fv.id, fv.original_name FROM file_versions fv JOIN files f ON f.id=fv.file_id
-           WHERE fv.project_id=:p AND f.role IN ('tender','supplement') ORDER BY f.id, fv.obtained_at DESC, fv.id DESC""",
-        {"p": project_id},
-    )
+    current = [r for r in current_materials.heads(conn, project_id) if r["role"] in TENDER_ROLES]
     chosen = {v["id"] for v in versions}
     missing = [c for c in current if c["id"] not in chosen]
     if missing:
@@ -63,6 +58,12 @@ def _require_complete_tender_inputs(conn: Connection, project_id: str, versions:
         )
 
 
+def _check_material_heads(conn: Connection, project_id: str, req: SnapshotRequest, versions: list[db.Row]) -> None:
+    current_ids = {r["id"] for r in current_materials.heads(conn, project_id)}
+    if any(v["id"] not in current_ids for v in versions) or req.body_version_id != current_materials.active_body(conn, project_id):
+        raise Conflict("stale_inputs", "原稿或实际评审 PDF 已更新，请采用当前资料后重新评审")
+
+
 def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequest, versions: list[db.Row]) -> None:
     """冻结前的“输入必须是当前最新且可用”校验：资料是各文件最新版本且已解析，规则包与事实集是最新的。"""
     stale = [f"{v['original_name']}（{v['id']}）" for v in versions if v["latest_id"] != v["id"]]
@@ -72,6 +73,7 @@ def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequ
             f"以下资料已有更新版本，请改用最新版本后再冻结：{'、'.join(stale)}",
             version_ids=[v["id"] for v in versions if v["latest_id"] != v["id"]],
         )
+    _check_material_heads(conn, project_id, req, versions)
     unparsed = [v for v in versions if v["role"] in PARSED_ROLES and (v["coverage"] is None or v["coverage"] == "failed")]
     if unparsed:
         names = "、".join(f"“{v['original_name']}”" for v in unparsed)
@@ -148,7 +150,8 @@ def check_inputs(conn: Connection, project_id: str, req: SnapshotRequest) -> lis
         raise Unprocessable("official_result_not_allowed", "官方成绩资料不能进入分析输入")
     project = db.one(conn, "SELECT deadline FROM projects WHERE id=:p", {"p": project_id})
     if project and project["deadline"] is not None:
-        late = [v["id"] for v in versions if v["obtained_at"] > project["deadline"]]
+        effective_times = {r["id"]: r["obtained_at"] for r in current_materials.heads(conn, project_id)}
+        late = [v["id"] for v in versions if effective_times.get(v["id"], v["obtained_at"]) > project["deadline"]]
         if late:
             raise Unprocessable("version_after_deadline", "存在截止后才取得的资料版本，不能进入输入", version_ids=late)
     _require_current_inputs(conn, project_id, req, versions)
@@ -159,6 +162,7 @@ def freeze_inputs(
     conn: Connection, store: ObjectStore, actor_id: str | None, project_id: str, req: SnapshotRequest, request_id: str
 ) -> str:
     """冻结输入并返回快照 ID。授权由调用方负责；``actor_id`` 为 None 表示由自动流水线冻结（审计里记为系统）。"""
+    db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
     version_ids = check_inputs(conn, project_id, req)
     now = utcnow()
 
@@ -175,6 +179,7 @@ def freeze_inputs(
         "as_of": now.isoformat(),
         "reference_dataset_id": None,
         "coverage_gaps": gaps,
+        "word_sources": [dict(row) for row in current_materials.lineage(conn, project_id, version_ids)],
     }
     payload = canonical_json(manifest).encode()
     digest = sha256_hex(payload)
@@ -189,8 +194,8 @@ def freeze_inputs(
     )
     db.run(
         conn,
-        """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,fact_set_id,as_of,contract_version,sha256,manifest_artifact_id)
-           VALUES (:i,:p,:b,:r,:f,:now,:cv,:sha,:art)""",
+        """INSERT INTO input_snapshots(id,project_id,body_version_id,rule_set_id,fact_set_id,as_of,contract_version,sha256,manifest_artifact_id,word_sources_json)
+           VALUES (:i,:p,:b,:r,:f,:now,:cv,:sha,:art,CAST(:word AS jsonb))""",
         {
             "i": snapshot_id,
             "p": project_id,
@@ -201,6 +206,7 @@ def freeze_inputs(
             "cv": SNAPSHOT_CONTRACT,
             "sha": digest,
             "art": artifact_id,
+            "word": json.dumps(manifest["word_sources"]),
         },
     )
     for version_id in version_ids:
@@ -241,6 +247,7 @@ def get_snapshot(conn: Connection, actor: Actor, snapshot_id: str) -> InputSnaps
         reference_dataset_id=None,
         coverage_gaps=gaps,
         sha256=row["sha256"],
+        word_sources=row["word_sources_json"],
     )
 
 

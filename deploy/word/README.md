@@ -1,6 +1,6 @@
 # 独立 DOCX 转换器
 
-用途及队列消息见 [转换契约](../../contracts/word-conversion.md)。这是独立运行的基础设施，尚未接入产品上传／评审。不要将任意转换输出直接作为当前材料。
+用途及队列消息见 [转换契约](../../contracts/word-conversion.md)。这是独立运行的基础设施；产品接入使用上级 `compose.word.yml`，材料身份与采用见 [Word 材料契约](../../contracts/word-materials.md)。队列字节须先登记为业务档案并通过采用校验。
 
 在本目录执行 `docker compose build`，然后 `docker compose up -d`。默认创建本项目的输入、输出卷；不会启动或修改业务服务。输入目录所有者为业务 worker 的 UID 10001，输出为转换器 UID 65534。首次建卷后核实权限，再给业务端挂载输入可写、输出只读。不要挂载业务密钥、宿主 Docker socket 或真实资料根目录。
 

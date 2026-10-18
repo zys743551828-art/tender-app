@@ -23,7 +23,7 @@ from bidwb.schemas import (
     EvidenceRef,
     RuleSet,
 )
-from bidwb.services import audit, evidence, rules
+from bidwb.services import audit, current_materials, evidence, rules
 from bidwb.storage import ObjectStore, ObjectStoreError
 from bidwb.util import new_id
 
@@ -83,13 +83,7 @@ def _scope(
 
 
 def _related_sections(conn: Connection, project_id: str, affected: list[db.Row]) -> list[AffectedSection]:
-    version = db.scalar(
-        conn,
-        """SELECT fv.id FROM file_versions fv JOIN files f ON f.id=fv.file_id AND f.project_id=fv.project_id
-           JOIN artifacts a ON a.id=fv.artifact_id WHERE fv.project_id=:p AND f.role='body' AND a.status='committed'
-           ORDER BY fv.obtained_at DESC,fv.id DESC LIMIT 1""",
-        {"p": project_id},
-    )
+    version = current_materials.active_body(conn, project_id)
     if version is None:
         return []
     rows = db.all_(

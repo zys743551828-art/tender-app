@@ -33,7 +33,12 @@ export function useUploads(projectId: string) {
   }, []);
 
   const add = useCallback(
-    (file: File, role: FileRole, versionOfFileId: string | null = null) => {
+    (
+      file: File,
+      role: FileRole,
+      versionOfFileId: string | null = null,
+      sourceWordVersionId: string | null = null,
+    ) => {
       const id = ++seq.current;
       const uploader = new Uploader(
         {
@@ -42,7 +47,7 @@ export function useUploads(projectId: string) {
           complete: (uploadId, b, o) => api.uploads.complete(uploadId, b, o),
           putPart: (url, body, signal) => fetchPutPart(url, body, signal),
         },
-        { file, role, versionOfFileId },
+        { file, role, versionOfFileId, sourceWordVersionId },
       );
       const item: UploadItem = {
         id,

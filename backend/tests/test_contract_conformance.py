@@ -57,6 +57,7 @@ def test_migration_sql_is_identical_to_contract_schema():
     assert (root / "backend/migrations/sql/0002_evidence_embeddings.sql").read_bytes() == (
         root / "contracts/evidence-embeddings.sql"
     ).read_bytes()
+    assert (root / "backend/migrations/sql/0004_word_materials.sql").read_bytes() == (root / "contracts/word-materials.sql").read_bytes()
     assert (root / "backend/migrations/sql/0003_rule_effectivity.sql").read_bytes() == (
         root / "contracts/rule-effectivity.sql"
     ).read_bytes()

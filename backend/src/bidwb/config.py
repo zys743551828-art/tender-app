@@ -105,6 +105,9 @@ class Settings(BaseSettings):
     parse_enrichment_total_seconds: Annotated[float, Field(ge=1, le=3600)] = 180.0
 
     worker_id: str = "worker-local"
+    word_input_dir: Path | None = None
+    word_output_dir: Path | None = None
+    word_renderer_fingerprint: str | None = None
 
     @field_validator("public_base_url")
     @classmethod

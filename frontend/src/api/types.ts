@@ -155,6 +155,19 @@ export interface ProjectCreate {
 /** $defs/ProjectUpdate（全部可选，settings 整体替换；更新需 If-Match: project.revision） */
 export type ProjectUpdate = Partial<ProjectCreate>;
 
+export interface WordStatus {
+  current: boolean;
+  state: 'waiting' | 'converted' | 'needs_review' | 'failed';
+  error_code: string | null;
+  adopted_pdf_version_id: Id | null;
+  candidates: {
+    link_id: Id;
+    pdf_version_id: Id;
+    method: 'controlled_render' | 'user_declared';
+    gaps: string[];
+  }[];
+}
+
 /** $defs/FileVersion */
 export interface FileVersion {
   version_id: Id;
@@ -169,6 +182,8 @@ export interface FileVersion {
   document_date: string | null;
   association_status: 'pending' | 'confirmed' | 'conflict';
   supersedes: Id | null;
+  word?: WordStatus | null;
+  source_word_version_id?: Id | null;
 }
 
 /** $defs/UploadRequest */
@@ -180,6 +195,7 @@ export interface UploadRequest {
   media_type: string;
   /** 给出时，本次上传记为该已有文件的下一版（须同项目、同用途，否则 422 version_of_invalid）；省略／null 一律是新文件。 */
   version_of_file_id?: Id | null;
+  source_word_version_id?: Id | null;
 }
 
 /** $defs/PartUrl */
@@ -242,6 +258,7 @@ export interface InputSnapshot {
   reference_dataset_id: Id | null;
   coverage_gaps: string[];
   sha256: string;
+  word_sources?: Record<string, unknown>[];
 }
 
 /** $defs/SnapshotRequest */
@@ -918,6 +935,7 @@ export interface PipelineStatus {
   rules_total: number;
   rules_unconfirmed: number;
   input_verification_required?: boolean;
+  word_pdf_required?: boolean;
 }
 
 export interface CategoryCount {
