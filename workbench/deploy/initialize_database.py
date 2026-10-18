@@ -44,12 +44,15 @@ def main() -> None:
         for name in (
             "core.sql",
             "domain.sql",
+            "bid-packages.sql",
             "retrieval.sql",
             "worker-functions.sql",
             "roles.sql",
         ):
             connection.execute((ROOT / "packages/contracts/sql" / name).read_text())
             print(f"Initialized {name}")
+        connection.execute((ROOT / "deploy/sql/bid-package-runtime-grants.sql").read_text())
+        print("Initialized restricted package parse-freeze visibility")
         connection.execute((ROOT / "deploy/sql/vector-runtime-grants.sql").read_text())
         print("Initialized restricted vector runtime capabilities")
         connection.execute((ROOT / "deploy/sql/research-source-qualification.sql").read_text())
