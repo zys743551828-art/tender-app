@@ -8,11 +8,13 @@ from typing import Any
 
 import pytest
 
+from bidwb import parse_enrichment, tasks
 from bidwb.ai import anchors, predict, prompts
 from bidwb.ai.grounding import EvidenceText
 from bidwb.ai.sections import Section
 from bidwb.services import anchor_packs, model_registry, scoring_models
 from tests.fakes import ScriptedLlm, docs, scoring_bundle
+from tests.pdfs import make_pdf
 from tests.test_auto_pipeline import (
     BODY,
     TENDER,
@@ -21,7 +23,7 @@ from tests.test_auto_pipeline import (
     judgement_reply,
     settings,  # noqa: F401  自动评审打开的配置夹具（pytest 按名注入）
 )
-from tests.test_files_and_parse import _upload
+from tests.test_files_and_parse import _recognition_result, _upload
 
 
 def _section(sid: str, ids: list[str]) -> Section:
@@ -119,6 +121,111 @@ def _run(api_factory, make_member, store, engine, worker_container, respond):  #
     _upload(env.api, store, env.pid, BODY, name="施工组织设计.pdf", role="body", key="body-upload-0001")
     env.drain()
     return env, llm
+
+
+@pytest.mark.integration
+def test_verified_table_uses_whole_frozen_body_and_never_becomes_heading(
+    api_factory, make_member, store, engine, worker_container, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    chosen: list[str] = []
+
+    def respond(system: str, user: str) -> Any:
+        if "评标专家" in system and chosen:
+            result = judgement_reply(user)
+            result["key_points"] = [{"point": "计划工期", "status": "covered", "evidence_ids": chosen}]
+            return result
+        return _respond(system, user)
+
+    def enrichment(*args):  # type: ignore[no-untyped-def]
+        result = _recognition_result(*args)
+        result["pages"][0]["tables"][0]["rows"] = [["1", "工期180日历天"]]
+        return result
+
+    monkeypatch.setattr(parse_enrichment, "enrich_document", enrichment)
+    worker_container.settings.parse_enrichment_enabled = True
+    llm = ScriptedLlm(respond)
+    env = _env(api_factory, make_member, store, engine, worker_container, llm)
+    _upload(env.api, store, env.pid, TENDER)
+    uploaded = _upload(
+        env.api,
+        store,
+        env.pid,
+        make_pdf(
+            [
+                ["第一章 施工进度", "本工程计划总工期180日历天。"],
+                ["第二章 质量保障", "工程质量合格。"],
+            ]
+        ),
+        name="含表格的施工组织设计.pdf",
+        role="body",
+        key="table-body-upload",
+    )[1].json()
+    env.drain()
+    version = uploaded["version_id"]
+    listed = env.api.get(f"/files/{version}/recognition").json()
+    table = next(item for item in listed["items"] if item["kind"] == "table")
+    request = {
+        "expected_parse_id": listed["parse_id"],
+        "evidence_id": table["evidence_id"],
+        "decision": "accept",
+        "reason": "逐字核对工期，章节归属未确认",
+        "reviewed_original": True,
+        "reviewed_numbers": True,
+    }
+    accepted = env.api.post(f"/files/{version}/recognition:review", request).json()
+    chosen.append(accepted["result_evidence_id"])
+    old = env.get("/snapshots")[0]
+    frozen = env.api.post(
+        f"/projects/{env.pid}/snapshots",
+        {
+            key: old[key]
+            for key in (
+                "body_version_id",
+                "rule_set_id",
+                "fact_set_id",
+                "file_version_ids",
+                "reference_dataset_id",
+            )
+        },
+    )
+    assert frozen.status_code == 200, frozen.text
+    snapshot = frozen.json()
+    later = env.api.post(
+        f"/files/{version}/recognition:review",
+        {
+            **request,
+            "expected_parse_id": accepted["result_parse_id"],
+            "evidence_id": chosen[0],
+            "decision": "correct",
+            "corrected_quote": "1 | 工期240日历天",
+        },
+    ).json()
+    with engine.begin() as conn:
+        loaded = predict._load(conn, env.pid, snapshot["snapshot_id"])
+        assert loaded is not None
+        assert [p.page for p in loaded.body] == sorted(p.page for p in loaded.body)
+        assert {p.evidence_id for p in loaded.body if p.kind != "text"} == set(chosen)
+        tasks.enqueue(
+            conn,
+            project_id=env.pid,
+            kind="prediction",
+            purpose="research",
+            snapshot_id=snapshot["snapshot_id"],
+            idempotency_key="frozen-table-prediction",
+            input_json={"snapshot_id": snapshot["snapshot_id"]},
+            input_sha256=snapshot["sha256"],
+        )
+    calls_before = len(llm.calls)
+    env.drain()
+    detail = _detail(env)
+    assert detail["mapping"]["status"] == "fallback" and detail["mapping"]["reason"] == "verified_nontext_section_unknown"
+    assert detail["mapping"]["verified_nontext_evidence_ids"] == chosen
+    assert all("1 | 工期" not in section["title"] for section in detail["mapping"]["sections"])
+    after_calls = llm.calls[calls_before:]
+    assert not any("目录分析员" in system for system, _ in after_calls)
+    judges = [user for system, user in after_calls if "评标专家" in system]
+    assert judges and all(chosen[0] in user and "工期180日历天" in user and later["result_evidence_id"] not in user for user in judges)
+    assert detail["items"][0]["key_points"][0]["evidence_ids"] == chosen
 
 
 @pytest.mark.integration
@@ -261,9 +368,12 @@ def test_routed_anchor_pack_feeds_anchor_features(api_factory, make_member, stor
 
 
 @pytest.mark.integration
-def test_legacy_calibration_is_not_applied_to_complete_chapter_method(api_factory, make_member, store, engine, worker_container) -> None:  # type: ignore[no-untyped-def]
+@pytest.mark.parametrize("method", ["legacy-truncated", "complete-chapters-1"])
+def test_legacy_calibration_is_not_applied_to_complete_chapter_method(
+    api_factory, make_member, store, engine, worker_container, method
+) -> None:  # type: ignore[no-untyped-def]
     env = _env(api_factory, make_member, store, engine, worker_container, ScriptedLlm(_respond))
-    bundle = _bundle_bytes(input_method="legacy-truncated")
+    bundle = _bundle_bytes(input_method=method)
     _register(engine, store, scoring_models.registration(bundle, b"{}", "business"), "business")
     _upload(env.api, store, env.pid, TENDER)
     _upload(env.api, store, env.pid, BODY, name="施工组织设计.pdf", role="body", key="body-upload-0001")

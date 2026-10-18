@@ -263,7 +263,7 @@ def registration(bundle_bytes: bytes, report_bytes: bytes, environment: Environm
     extra = model.evaluation.model_extra or {}
     if (
         environment == "business"
-        and model.input_method == "complete-chapters-1"
+        and model.input_method in {"complete-chapters-1", "complete-chapters-2"}
         and (model.evaluation.acceptance is None or model.evaluation.acceptance.status != "passed" or model.evaluation.mode != "holdout")
     ):
         raise Unprocessable("business_gate_not_met", "完整章节方法须在独立时间留出中通过全部融合验收门槛（含整轮复跑）")

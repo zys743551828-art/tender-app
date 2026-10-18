@@ -44,7 +44,7 @@ PART_CHARS = 24000
 MAX_READING_PARTS = 128
 SYNTHESIS_CHARS = 60000
 MAPPING_BATCH = 60
-PREDICTION_METHOD = "complete-chapters-1"
+PREDICTION_METHOD = "complete-chapters-2"
 REPEAT_TEMPERATURE = 0.7
 MAX_ITEM_EVIDENCE = 5
 _PLACES = Decimal("0.01")
@@ -323,9 +323,10 @@ def _load(conn: Connection, project_id: str, snapshot_id: str) -> Inputs | None:
         e.evidence_id: e for e in _load_evidence_by_ids(conn, project_id, sorted({e for r in scoring for e in r["evidence_ids_json"]}))
     }
     body = [
-        checks.Passage(r["id"], r["physical_page"], r["quote"])
+        checks.Passage(r["id"], r["physical_page"], r["quote"], r["kind"])
         for r in _evidence_rows(conn, project_id, [snap["body_version_id"]], snapshot_id)
     ]
+    body.sort(key=lambda passage: passage.page)
     version = db.one(
         conn,
         """SELECT a.sha256, (s.parse_inputs_json->fv.id->>'page_count')::integer AS pages
@@ -521,7 +522,11 @@ def _judge_item(
     item["limitations"] = "；".join(
         filter(
             None,
-            [item["limitations"], "仅含已解析文字，表格结构与图页未读取", "分节记录综合存在信息损失，质量未验证" if partitioned else ""],
+            [
+                item["limitations"],
+                "只读原生文字与已核验摘录，表格结构和图形语义未读取",
+                "分节记录综合存在信息损失，质量未验证" if partitioned else "",
+            ],
         )
     )
     return item, context, invalid
@@ -568,10 +573,12 @@ def make_prediction_handler(llm: LlmClient | None, anchor_source: AnchorSource |
         if not loaded.body:
             return HandlerFailure("body_has_no_evidence")
         usage = Usage()
-        sections = build_sections(loaded.body)
+        verified_nontext = [p.evidence_id for p in loaded.body if p.kind != "text"]
+        sections = build_sections([p for p in loaded.body if p.kind == "text"])
         body = [EvidenceText(p.evidence_id, p.text) for p in loaded.body]
         position = {b.evidence_id: i for i, b in enumerate(body)}
-        mapping = _map_sections(llm, loaded.scoring, sections, usage) if loaded.scoring else None
+        # 核验只确认摘录，未确认章节归属；完整正文回退避免把追加表格误挂到末章或漏掉它。
+        mapping = _map_sections(llm, loaded.scoring, sections, usage) if loaded.scoring and not verified_nontext else None
         items: list[dict[str, Any]] = []
         contexts: list[list[EvidenceText]] = []
         failed: list[str] = []
@@ -624,6 +631,8 @@ def make_prediction_handler(llm: LlmClient | None, anchor_source: AnchorSource |
                     "coverage": {**coverage, "failed_rule_ids": failed, "invalid_outputs": invalid_outputs},
                     "mapping": {
                         "status": "none" if not loaded.scoring else "model" if mapping is not None else "fallback",
+                        "reason": "verified_nontext_section_unknown" if verified_nontext else None,
+                        "verified_nontext_evidence_ids": verified_nontext,
                         "sections": [
                             {
                                 "id": s.id,

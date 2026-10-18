@@ -40,7 +40,7 @@ def scoring_bundle(**overrides: Any) -> dict[str, Any]:
         "schema": "scoring-model/1",
         "target": "technical_total",
         "feature_spec": "pf-1",
-        "input_method": "complete-chapters-1",
+        "input_method": "complete-chapters-2",
         "method": "ridge+isotonic",
         "features": ["raw_pct", "coverage_mean", "anchor_pct"],
         "standardize": {

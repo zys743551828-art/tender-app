@@ -17,6 +17,7 @@ class Passage:
     evidence_id: str
     page: int
     text: str
+    kind: Literal["text", "table", "visual_observation"] = "text"
 
 
 @dataclass(frozen=True)

@@ -37,7 +37,7 @@ MAX_RULES_PER_PACKAGE = 200
 
 
 # 文档顺序：资料按入库先后（招标文件在补遗之前），同一资料内按解析时的块顺序
-EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote,e.file_version_id FROM evidence e
+EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote,e.file_version_id,e.kind FROM evidence e
    JOIN file_versions fv ON fv.id=e.file_version_id AND fv.project_id=e.project_id
    WHERE e.project_id=:p AND e.file_version_id = ANY(:v) AND (e.kind='text' OR e.semantic_review='supported')
    AND e.id=ANY(:eids) ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
