@@ -45,7 +45,7 @@ SQL `assistant_check_target` 仅查询 identity.bound、profile/round、fact_hea
 | global_runtime.reserve | before_native_reserve 取90129，再 locked_execution(run)；发送路径先run再90129 | reserve 先锁run、核来源，再取预算锁；原调用重放仍复用原 call |
 | global_runtime.failure / 成功保存 | native call UPDATE后同事务 settle取90129；observe RPC先90129后UPDATE同call | native写账先提交；独立事务settle。保留 usage，异常不补发 |
 | paid_execution成功保存 | 同上 | 同上；初次native预留前先核来源，保持执行→graph→预算 |
-| queue_generation / budget.prepare | 已锁bid后 budget.prepare先90129，resolve/confirmed_fact可能再取90127 | 后续明确在 prepare前完成所有bid/graph锁和目标资格，不直接改SQL持预算后取graph |
+| queue_generation / budget.prepare | 已锁bid后 budget.prepare先90129，resolve/confirmed_fact可能再取90127 | queue_generation 在 prepare前调用 context.lock_scope(c,[bid])，先完成当前入口实际bid/graph锁，不在SQL持预算后补取graph。该入口freeze_generation_plan当前仅接受本bid资料 |
 
 queue_answer 已在 budget.prepare 前调用 context.lock_scope，不能笼统声称全部 API 都倒序；global reserve 与 native写账的上述两个具体反例成立。
 
@@ -61,8 +61,10 @@ queue_answer 已在 budget.prepare 前调用 context.lock_scope，不能笼统�
 
 测试夹具中每个独立问题使用不同 intent digest。曾复用同一 digest 的 fresh-call 用例被真实 unresolved 守卫正确拒绝；只修正夹具身份，没有放宽生产守卫。
 
+编制入口补充 `tests/test_assistant_generation_lock_order.py` 三项真实 PG 检查通过：旧 graph/预算逆序实际 DeadlockDetected；实际 queue_generation 到 budget.prepare 前已持 graph锁，与合法 graph→预算竞争有界完成并复用原job；closed项目仍在预算受理前拒绝。这里对 require_schema 及 reuse-only prepare/view 使用显式测试替身，不执行完整新job受理、模型、五事实资格或三scope聚合。与8项锁/恢复及11项原助手合计22项通过。
+
 ## 仍保留的边界
 
 global dispatch 已补 call 初建时的 reservation owner/fence 冻结，不变 RPC 两参签名，SQL 与当前 run 比较，不给旧 call 补造租约。普通Python locked_execution 的原守卫继续保留。项目分支保持既有 reservation fence/owner 校验。此边界的实际 RPC 用例覆盖移交后旧 call 和缺/错误类型的 lease 证明；完整受限 Worker INSERT usage 权限仍须全schema角色链验证。
 
-上述来源/跨项目锁序与三scope并发未通过前，只允许独立合成反例和受控硬Mock开发验证，不授完整预算生产或真实模型费用资格。
+上述来源/跨项目资格与三scope并发未通过前，只允许独立合成反例和受控硬Mock开发验证，不授完整预算生产或真实模型费用资格。

@@ -463,6 +463,9 @@ def queue_generation(c, bid, actor, body, command_id, origin_action=None, *, exp
     require_schema(c)
     validate("AssistantGenerationRequest", body)
     assert_work_writable(c, bid)
+    # Resolve confirmed facts and freeze sources under the graph mutex before
+    # budget.prepare takes 90129; never acquire source authority in reverse order.
+    context.lock_scope(c, [bid])
     prepared = budget.prepare(
         c,
         actor,
