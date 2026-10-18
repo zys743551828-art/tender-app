@@ -1,6 +1,6 @@
 # 三范围聚合预算真实机制检查
 
-`tests/test_assistant_budget_aggregate.py` 在独立 PG17 `fusion_budget_aggregate` 库运行，11 项通过；结束后确认自建 design schema 已清理。没有业务资料、供应商调用、真实价格配置或部署。
+`tests/test_assistant_budget_aggregate.py` 在独立 PG17 `fusion_budget_aggregate` 库运行，16 项通过；结束后确认自建 design schema 已清理。没有业务资料、供应商调用、真实价格配置或部署。
 
 使用当前源码中真实五张预算表及 normalize/obligation/reserve 三函数逐字摘录，不执行完整归档初始化。job/member/native 等依赖使用最小合成表；`assistant_check_target` 是唯一明确的资格 no-op，不验证五事实、身份或来源效力。未安装完整角色/append-only/其他业务 schema，因此不授权限、配置变更API或完整助手链资格。
 
@@ -10,6 +10,7 @@
 - global 合并不同成员和项目；project 合并不同成员；member 合并不同项目。不同成员/项目各自限额不错误互相占用。
 - 新窗口仍累计旧窗口 unknown 的原20预留；不足额度继续拒绝，没有清零。
 - 缺少 member 限额或币种不一致均暂停受理。
+- general与项目目标在 REPEATABLE READ / SERIALIZABLE 下直接调用 reserve，均由现有SQL入口拒绝；无新增预留或事件，既有intent不变。有效general在 READ COMMITTED 正常预留，防止负例仅因目标本身无效而通过。本片未修改生产隔离守卫。
 
 目标对象和成员均为自建合成记录。资格 no-op意味着这些用例只证明预算会计边界，不证明自由填写ID可以成为独立真实问题；正式 target guard 保持待验。
 

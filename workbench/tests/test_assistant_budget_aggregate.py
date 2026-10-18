@@ -127,12 +127,13 @@ def world(aggregate_database):
     }
 
 
-def candidate(world, actor=None, project=None):
+def candidate(world, actor=None, project=None, *, general=False):
     actor, project = actor or world["actor"], project or world["project"]
     job, intent, target_id = uuid4(), uuid4(), uuid4()
-    target_key = project + ":finding:" + str(target_id)
+    target_key = "general:" + str(actor) if general else project + ":finding:" + str(target_id)
+    purpose = "general_reference" if general else "finding_explanation"
     normalized, coarse, anti = keys(
-        "synthetic independent finding " + str(target_id), target_key, "finding_explanation"
+        "synthetic independent finding " + str(target_id), target_key, purpose
     )
     target = {
         "kind": "finding",
@@ -141,6 +142,16 @@ def candidate(world, actor=None, project=None):
         "target_key": target_key,
         "canonical_project_key": project,
     }
+    if general:
+        project = None
+        target = {
+            "kind": "general",
+            "id": None,
+            "proof": None,
+            "purpose": purpose,
+            "target_key": target_key,
+            "canonical_project_key": None,
+        }
     manifest = {
         "request": {"text": normalized, "max_tokens": 10},
         "logical_intent": {
@@ -157,8 +168,19 @@ def candidate(world, actor=None, project=None):
         )
         c.execute(
             """INSERT INTO assistant_logical_intents(id,job_id,actor_id,request_mode,normalized_question,purpose,target_key,coarse_key,anti_resend_key,canonical_project_key,target,explicit_send)
-            VALUES(%s,%s,%s,'new_question',%s,'finding_explanation',%s,%s,%s,%s,%s,true)""",
-            (intent, job, actor, normalized, target_key, coarse, anti, project, Jsonb(target)),
+            VALUES(%s,%s,%s,'new_question',%s,%s,%s,%s,%s,%s,%s,true)""",
+            (
+                intent,
+                job,
+                actor,
+                normalized,
+                purpose,
+                target_key,
+                coarse,
+                anti,
+                project,
+                Jsonb(target),
+            ),
         )
     return job
 
@@ -292,3 +314,37 @@ def test_global_budget_combines_distinct_members_and_projects(world):
         )
         == "ASSISTANT_BUDGET_EXHAUSTED"
     )
+
+
+@pytest.mark.parametrize("general", [False, True])
+@pytest.mark.parametrize("isolation", ["REPEATABLE READ", "SERIALIZABLE"])
+def test_non_read_committed_rpc_rejects_general_and_project_before_side_effects(
+    world, general, isolation
+):
+    job = candidate(world, general=general)
+    with psycopg.connect(world["dsn"]) as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL " + isolation)
+        with (
+            pytest.raises(
+                psycopg.errors.InvalidTransactionState, match="ASSISTANT_REQUIRES_READ_COMMITTED"
+            ),
+            c.transaction(),
+        ):
+            c.execute("SELECT design.assistant_reserve_budget(%s)", (job,))
+    with connect(world["dsn"]) as c:
+        assert (
+            c.execute("SELECT count(*) AS n FROM assistant_budget_reservations").fetchone()["n"]
+            == 0
+        )
+        assert c.execute("SELECT count(*) AS n FROM assistant_budget_events").fetchone()["n"] == 0
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM assistant_logical_intents WHERE job_id=%s", (job,)
+            ).fetchone()["n"]
+            == 1
+        )
+
+
+def test_general_target_is_valid_under_read_committed(world):
+    result = reserve(world["dsn"], candidate(world, general=True))
+    assert isinstance(result, dict) and result["reserved_minor"] == 20
