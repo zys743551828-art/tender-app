@@ -19,6 +19,38 @@ MAX_SOURCE = 100 * 1024 * 1024
 MAX_PDF = 50 * 1024 * 1024
 MAX_REPORT = 2 * 1024 * 1024
 MIN_LANDLOCK_ABI = 6
+ORPHAN_INPUT_SECONDS = 600  # 超过客户端最长等待 120 秒；只回收共享队列临时副本。
+
+
+def cleanup_stale_inputs(incoming: Path) -> int:
+    """回收崩溃遗留的本方队列文件；整组均为旧普通文件才删除，先撤请求。"""
+    if incoming.is_symlink():
+        raise OSError("word_input_directory_symlink")
+    owner = incoming.stat().st_uid
+    if hasattr(os, "getuid") and owner != os.getuid():
+        raise OSError("word_input_directory_owner")
+    groups: dict[str, list[tuple[Path, os.stat_result]]] = {}
+    for path in incoming.iterdir():
+        match = re.fullmatch(r"([0-9a-f]{32})\.(?:docx|request\.json|request\.tmp)", path.name)
+        if match:
+            with suppress(FileNotFoundError):
+                groups.setdefault(match[1], []).append((path, path.lstat()))
+    removed = 0
+    now = time.time()
+    for entries in groups.values():
+        if any(
+            not stat.S_ISREG(meta.st_mode) or meta.st_uid != owner or now - meta.st_mtime <= ORPHAN_INPUT_SECONDS for _, meta in entries
+        ):
+            continue
+        try:
+            if any(path.lstat() != meta for path, meta in entries):
+                continue
+            for path, _ in sorted(entries, key=lambda item: (not item[0].name.endswith(".request.json"), item[0].name)):
+                path.unlink(missing_ok=True)
+                removed += 1
+        except FileNotFoundError:  # 另一个 worker 或客户端已完成清理。
+            continue
+    return removed
 
 
 class ConversionUnavailable(Exception):

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -25,6 +26,7 @@ from bidwb.services import pipeline
 from bidwb.storage import ObjectStoreError, artifact_key
 from bidwb.tasks import Claim
 from bidwb.util import new_id, sha256_hex, utcnow
+from bidwb.word_conversion import cleanup_stale_inputs
 from bidwb.workers.handlers import Handler, HandlerFailure, HandlerOutput, JobContext, LeaseLost
 
 log = get_logger(__name__)
@@ -211,8 +213,17 @@ class WorkerRunner:
     # ---- 主循环
     def run_forever(self, stop: threading.Event) -> None:
         log.info("worker_started", job_class=self.job_class, worker_id=self.ctr.settings.worker_id)
+        next_word_cleanup = 0.0
         while not stop.is_set():
             try:
+                if self.job_class == "parse" and self.ctr.settings.word_input_dir is not None and time.monotonic() >= next_word_cleanup:
+                    next_word_cleanup = time.monotonic() + 60
+                    try:
+                        removed = cleanup_stale_inputs(self.ctr.settings.word_input_dir)
+                        if removed:
+                            log.info("word_orphan_inputs_removed", files=removed)
+                    except OSError:
+                        log.warning("word_orphan_cleanup_unavailable")
                 self.poll_once(1.0)
             except Exception:
                 log.error("worker_loop_error", exc_info=True)
