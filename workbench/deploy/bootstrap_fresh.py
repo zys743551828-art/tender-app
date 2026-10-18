@@ -15,20 +15,9 @@ import psycopg
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
-from deploy.initialize_database import ROOT, file_configuration
+from deploy.initialize_database import file_configuration
+from deploy.schema_plan import BASE_SQL, ROOT
 
-BASE_SQL = (
-    "packages/contracts/sql/core.sql",
-    "packages/contracts/sql/domain.sql",
-    "packages/contracts/sql/bid-packages.sql",
-    "packages/identity/sql/stable-lot-identity.sql",
-    "packages/contracts/sql/retrieval.sql",
-    "packages/contracts/sql/worker-functions.sql",
-    "packages/contracts/sql/roles.sql",
-    "deploy/sql/bid-package-runtime-grants.sql",
-    "deploy/sql/vector-runtime-grants.sql",
-    "deploy/sql/research-source-qualification.sql",
-)
 CAPABILITIES = ("api", "worker", "research_worker", "score_read")
 PURPOSES = ("model_train", "model_evaluate")
 GROUPS = (
