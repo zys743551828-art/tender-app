@@ -7,9 +7,11 @@ import json
 
 import pytest
 
-from bidwb import db, tasks
+from bidwb import db, parse_enrichment, tasks
+from bidwb.ai.handlers import _evidence_rows, _load_evidence_by_ids
 from bidwb.messaging import InMemoryBus
 from bidwb.runtime import Container
+from bidwb.services.pipeline import _parse_state
 from bidwb.services.snapshots import _coverage_gaps
 from bidwb.storage import MemoryObjectStore, content_key
 from bidwb.workers.handlers import default_handlers
@@ -242,7 +244,7 @@ def test_image_gap_persists_in_artifact_and_snapshot_coverage(api_factory, make_
         key = db.scalar(conn, "SELECT object_key FROM artifacts WHERE id=:a", {"a": parse["artifact_id"]})
         payload = json.loads(store.get(key))
         assert payload["source_sha256"] == done.json()["artifact"]["sha256"]
-        assert payload["file_version_id"] == version_id and payload["parser_version"] == "pdfium-1.2"
+        assert payload["file_version_id"] == version_id and payload["parser_version"] == "pdfium-1.3"
         assert payload["coverage_scope"] == "native_text_and_raster_presence"
         assert [p["physical_page"] for p in payload["pages"]] == [1, 2]
         assert payload["pages"][0]["issues"] == ["raster_images_unread"]
@@ -267,6 +269,95 @@ def test_unreadable_file_fails_parse_task_with_reason_and_no_parse_record(
         assert db.scalar(conn, "SELECT count(*) FROM parses") == 0
     listed = api.get(f"/projects/{pid}/tasks").json()
     assert listed[0]["state"] == "failed" and "扫描件" in (listed[0]["message"] or "")
+
+
+def _recognition_result(data: bytes, document, settings, checkpoint):  # type: ignore[no-untyped-def]
+    return {
+        "failure": None,
+        "pages": [
+            {
+                "physical_page": 1,
+                "source_sha256": hashlib.sha256(data).hexdigest(),
+                "ocr_status": "recognized_pending",
+                "table_status": "extracted_pending",
+                "lines": [{"text": "费用15.12万元", "confidence": 0.98, "bbox": [0.1, 0.1, 0.9, 0.2]}],
+                "tables": [{"bbox": [0.1, 0.3, 0.9, 0.8], "rows": [["费用", "18万元"]]}],
+            }
+        ],
+    }
+
+
+def _run_parse(worker_container: Container) -> None:
+    bus = InMemoryBus()
+    with worker_container.engine.begin() as conn:
+        tasks.relay_outbox(conn, bus.producer())
+    assert WorkerRunner(
+        worker_container, "parse", bus.consumer(["job.parse"]), default_handlers(), consumer_name="worker-parse"
+    ).poll_once()
+
+
+def test_pending_candidates_are_searchable_but_excluded_from_ai(
+    api_factory, make_member, store, engine, worker_container: Container, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    worker_container.settings.parse_enrichment_enabled = True
+    monkeypatch.setattr(parse_enrichment, "enrich_document", _recognition_result)
+    api, pid = _setup(api_factory, make_member)
+    _, uploaded = _upload(api, store, pid, make_pdf([["原生施工条款内容"]], image_first=True))
+    version = uploaded.json()["version_id"]
+    _run_parse(worker_container)
+    with engine.connect() as conn:
+        rows = db.all_(conn, "SELECT id,kind,semantic_review FROM evidence ORDER BY seq")
+        assert [r["kind"] for r in rows] == ["text", "visual_observation", "table"]
+        assert all(r["semantic_review"] == "pending" for r in rows)
+        assert len(_evidence_rows(conn, pid, [version])) == 1
+        assert _load_evidence_by_ids(conn, pid, [r["id"] for r in rows[1:]]) == []
+        payload = json.loads(store.get(db.scalar(conn, "SELECT a.object_key FROM parses p JOIN artifacts a ON a.id=p.artifact_id")))
+        assert payload["candidate_evidence"][0]["numeric_review_required"] is True
+        assert payload["candidate_evidence"][0]["seq"] == 1
+    found = api.post(f"/projects/{pid}/search", {"query": "15.12万元", "top_k": 5, "mode": "keyword"}).json()["hits"]
+    assert any(h["evidence"]["kind"] == "visual_observation" and h["evidence"]["semantic_review"] == "pending" for h in found)
+
+
+def test_ocr_only_input_retains_candidates_and_blocks_automatic_review(
+    api_factory, make_member, store, engine, worker_container: Container, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    worker_container.settings.parse_enrichment_enabled = True
+    monkeypatch.setattr(parse_enrichment, "enrich_document", _recognition_result)
+    api, pid = _setup(api_factory, make_member)
+    _, uploaded = _upload(api, store, pid, make_pdf([[]], image_first=True))
+    version = uploaded.json()["version_id"]
+    _run_parse(worker_container)
+    with engine.connect() as conn:
+        parsed = db.one(conn, "SELECT coverage,gaps_json FROM parses")
+        assert parsed["coverage"] == "partial" and "recognition_verification_required" in parsed["gaps_json"]
+        state, message = _parse_state(conn, pid, [{"id": version, "coverage": "partial", "original_name": "扫描件.pdf"}])
+        assert state == "failed" and message and "核验" in message
+        assert _evidence_rows(conn, pid, [version]) == []
+        assert db.scalar(conn, "SELECT count(*) FROM jobs WHERE kind='rules'") == 0
+
+
+def test_enrichment_timeout_keeps_native_evidence(
+    api_factory, make_member, store, engine, worker_container: Container, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    worker_container.settings.parse_enrichment_enabled = True
+    monkeypatch.setattr(parse_enrichment, "enrich_document", lambda *args: {"failure": "page_timeout", "pages": []})
+    api, pid = _setup(api_factory, make_member)
+    _upload(api, store, pid, make_pdf([["原生文字工期180天"]]))
+    _run_parse(worker_container)
+    with engine.connect() as conn:
+        assert db.scalar(conn, "SELECT state FROM jobs") == "succeeded"
+        assert db.scalar(conn, "SELECT gaps_json FROM parses") == ["enrichment:page_timeout"]
+        assert "180" in db.scalar(conn, "SELECT quote FROM evidence")
+
+
+def test_parse_checks_stored_source_hash(api_factory, make_member, store, engine, worker_container: Container) -> None:  # type: ignore[no-untyped-def]
+    api, pid = _setup(api_factory, make_member)
+    _, uploaded = _upload(api, store, pid, make_pdf([["上传时的原件"]]))
+    store.objects[content_key(uploaded.json()["artifact"]["sha256"])] = b"different stored bytes"
+    _run_parse(worker_container)
+    with engine.connect() as conn:
+        assert db.scalar(conn, "SELECT error_code FROM jobs") == "parse_source_mismatch"
+        assert db.scalar(conn, "SELECT count(*) FROM parses") == 0
 
 
 def test_search_without_snapshot_covers_current_materials(api_factory, make_member, store, engine, worker_container: Container) -> None:  # type: ignore[no-untyped-def]

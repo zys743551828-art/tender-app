@@ -20,7 +20,7 @@ import pypdfium2 as pdfium
 
 from bidwb.util import xml_safe
 
-PARSER_VERSION = "pdfium-1.2"
+PARSER_VERSION = "pdfium-1.3"
 MAX_CHUNK_CHARS = 400
 MIN_PAGE_CHARS = 3  # 文字层为空的低字符阈值；有页码或标题不能证明业务内容已覆盖。
 
@@ -42,7 +42,10 @@ class Chunk:
     physical_page: int
     quote: str
     bbox: list[float] | None
-    kind: Literal["text"] = "text"
+    kind: Literal["text", "table", "visual_observation"] = "text"
+    source: Literal["native", "ocr", "native_table"] = "native"
+    confidence: float | None = None
+    numeric_review_required: bool = False
 
 
 @dataclass

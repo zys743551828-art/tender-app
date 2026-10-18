@@ -10,3 +10,12 @@ services:
       BIDWB_PUBLIC_BASE_URL: http://localhost:8080
       BIDWB_COOKIE_SECURE: "false"
       BIDWB_SESSION_COOKIE_NAME: sid
+  worker-parse:
+    environment:
+      BIDWB_PARSE_ENRICHMENT_ENABLED: "true"
+      BIDWB_PARSE_MODEL_DIR: /models/rapidocr
+    volumes:
+      - type: bind
+        source: ../../tender-research/.runtime/parsing/cache/rapidocr
+        target: /models/rapidocr
+        read_only: true

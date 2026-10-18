@@ -70,6 +70,10 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 上传统一走同源 API，不需要配置存储桶 CORS，也不需要为 CSP 增加 OSS 域名。
 
+本机覆盖文件启用本地 OCR／原生表格候选，要求同级研究仓库已备妥 `.runtime/parsing/cache/rapidocr/` 中的三个 ONNX 模型；覆盖文件将其只读挂载到解析 worker，模型及其哈希见 `contracts/parsing-artifacts.md` 和 `backend/src/bidwb/parse_enrichment.py`。先检查已有缓存，不在运行时下载。后端镜像安装已锁定的 `parsing` 可选依赖；生产基础编排默认不启用本地识别，需要显式设置 `BIDWB_PARSE_ENRICHMENT_ENABLED=true`、`BIDWB_PARSE_MODEL_DIR` 及只读模型挂载后使用。
+
+OCR／表格候选仍待核验，不能自动当作业务证据。部署此能力时须统一更新 API 与全部后端 worker，确保业务证据过滤逻辑一致；不要只更新解析 worker。原件哈希、识别预算、超时、坐标和恢复约定以解析产物契约为准。
+
 ### 2.1 服务器
 
 | 项 | 要求 | 说明 |

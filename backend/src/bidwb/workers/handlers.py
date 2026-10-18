@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -14,7 +15,7 @@ from typing import Any, Protocol
 
 from sqlalchemy import Connection, Engine, text
 
-from bidwb import db, parsing
+from bidwb import db, parse_enrichment, parsing
 from bidwb.config import Settings
 from bidwb.storage import ObjectStore
 from bidwb.tasks import Claim
@@ -73,6 +74,8 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
     if row is None or row["status"] != "committed":
         return HandlerFailure("file_version_not_found")
     data = ctx.store.get(row["object_key"])  # 存储异常向上抛，由运行器按暂时性故障重试
+    if hashlib.sha256(data).hexdigest() != row["sha256"]:
+        return HandlerFailure("parse_source_mismatch", "原件校验失败，请重新上传")
     ctx.checkpoint()
     document: parsing.ParsedDocument
     if row["media_type"] != "application/pdf" and not data.startswith(b"%PDF"):
@@ -83,6 +86,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         except parsing.ParseError:
             document = parsing.ParsedDocument(page_count=0, gaps=["unreadable_pdf"])
     ctx.checkpoint()
+    enrichment = _enrich_parse(ctx, data, document)
     if document.coverage == "failed":
         # 读不出文字（非 PDF、加密、纯扫描件）：确定性失败，重试也不会好。任务标记失败并说明原因，
         # 不写解析记录——这样界面显示“解析失败”，快照也不会把它当作可用输入。
@@ -100,6 +104,8 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         "page_text_chars": document.page_text_chars,
         "coverage_scope": "native_text_and_raster_presence",
         "pages": [asdict(page) for page in document.pages],
+        "enrichment": enrichment,
+        "candidate_evidence": [{"seq": seq, **asdict(c)} for seq, c in enumerate(document.chunks) if c.source != "native"],
     }
     claim = ctx.claim
 
@@ -124,7 +130,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         if document.chunks:
             conn.execute(
                 text("""INSERT INTO evidence(id,project_id,file_version_id,parse_id,physical_page,printed_page,quote,kind,seq,bbox_json,semantic_review)
-                        VALUES (:id,:p,:v,:parse,:page,NULL,:quote,'text',:seq,CAST(:bbox AS jsonb),'pending')"""),
+                        VALUES (:id,:p,:v,:parse,:page,NULL,:quote,:kind,:seq,CAST(:bbox AS jsonb),'pending')"""),
                 [
                     {
                         "id": new_id("evd"),
@@ -133,6 +139,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
                         "parse": parse_id,
                         "page": c.physical_page,
                         "quote": c.quote,
+                        "kind": c.kind,
                         "seq": seq,
                         "bbox": json.dumps(c.bbox) if c.bbox is not None else None,
                     }
@@ -141,6 +148,21 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
             )
 
     return HandlerOutput(json.dumps(summary, ensure_ascii=False, sort_keys=True).encode(), "application/json", "parse-v1", finalize)
+
+
+def _enrich_parse(ctx: JobContext, data: bytes, document: parsing.ParsedDocument) -> dict[str, Any] | None:
+    if not ctx.settings.parse_enrichment_enabled or not document.pages:
+        return None
+    enrichment = parse_enrichment.enrich_document(data, document, ctx.settings, ctx.checkpoint)
+    recognized = parse_enrichment.candidate_chunks(enrichment)
+    if recognized:
+        if not document.chunks:
+            document.gaps.append("recognition_verification_required")
+        document.chunks.extend(recognized)
+        document.gaps.append("recognition_candidates_pending")
+    if enrichment["failure"]:
+        document.gaps.append(f"enrichment:{enrichment['failure']}")
+    return enrichment
 
 
 def default_handlers() -> dict[str, Handler]:

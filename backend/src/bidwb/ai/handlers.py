@@ -37,7 +37,8 @@ MAX_RULES_PER_PACKAGE = 200
 # 文档顺序：资料按入库先后（招标文件在补遗之前），同一资料内按解析时的块顺序
 EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote FROM evidence e
    JOIN file_versions fv ON fv.id=e.file_version_id AND fv.project_id=e.project_id
-   WHERE e.project_id=:p AND e.file_version_id = ANY(:v) ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
+   WHERE e.project_id=:p AND e.file_version_id = ANY(:v) AND (e.kind='text' OR e.semantic_review='supported')
+   ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
 
 
 def _evidence_rows(conn: Connection, project_id: str, version_ids: Sequence[str]) -> list[db.Row]:
@@ -559,7 +560,11 @@ def _facts_covered(required: Sequence[str], facts: Sequence[Any]) -> bool:
 def _load_evidence_by_ids(conn: Connection, project_id: str, ids: list[str]) -> list[EvidenceText]:
     if not ids:
         return []
-    rows = db.all_(conn, "SELECT id,quote FROM evidence WHERE project_id=:p AND id = ANY(:i)", {"p": project_id, "i": ids})
+    rows = db.all_(
+        conn,
+        "SELECT id,quote FROM evidence WHERE project_id=:p AND id = ANY(:i) AND (kind='text' OR semantic_review='supported')",
+        {"p": project_id, "i": ids},
+    )
     return [EvidenceText(r["id"], r["quote"]) for r in rows]
 
 

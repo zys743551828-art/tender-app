@@ -95,6 +95,14 @@ class Settings(BaseSettings):
     # 比较结果折算为分数时的尺度（百分制分差）：越大，单次“更好／更差”对估计的拉动越平缓
     prediction_anchor_tau: Annotated[float, Field(gt=0, le=50)] = 6.0
 
+    # 本地识别结果先作待核验候选，不能直接进入业务评分。
+    parse_enrichment_enabled: bool = False
+    parse_enrichment_python: str | None = None
+    parse_model_dir: str | None = None
+    parse_enrichment_max_pages: Annotated[int, Field(ge=1, le=1000)] = 32
+    parse_enrichment_page_seconds: Annotated[float, Field(ge=1, le=300)] = 45.0
+    parse_enrichment_total_seconds: Annotated[float, Field(ge=1, le=3600)] = 180.0
+
     worker_id: str = "worker-local"
 
     @field_validator("public_base_url")

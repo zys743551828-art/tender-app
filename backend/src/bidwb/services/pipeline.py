@@ -109,6 +109,16 @@ def _parse_state(conn: Connection, project_id: str, needed: list[db.Row]) -> tup
         return "failed", "、".join(f"“{v['original_name']}”" for v in failed) + " 解析失败，请重新上传"
     if any(v["coverage"] is None for v in needed):
         return "running", None
+    pending = db.all_(
+        conn,
+        """SELECT file_version_id FROM (
+             SELECT DISTINCT ON (file_version_id) file_version_id,gaps_json FROM parses
+             WHERE project_id=:p AND file_version_id = ANY(:v) ORDER BY file_version_id,created_at DESC,id DESC
+           ) latest WHERE gaps_json ? 'recognition_verification_required'""",
+        {"p": project_id, "v": [v["id"] for v in needed]},
+    )
+    if pending:
+        return "failed", "资料只有待核验的识别结果，请对照原页核验后补交可复制文字的 PDF；不会用未核验文字启动评审"
     return "done", None
 
 

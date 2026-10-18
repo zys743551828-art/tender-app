@@ -26,6 +26,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+parsing = [
+  "rapidocr==3.10.0",
+  "onnxruntime==1.31.0",
+  "pdfplumber==0.11.9",
+]
 dev = [
   "pytest>=8.2",
   "moto[s3]>=5.0",
@@ -80,5 +85,5 @@ mypy_path = "src"
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*"]
+module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*", "rapidocr.*", "pdfplumber.*"]
 ignore_missing_imports = true
