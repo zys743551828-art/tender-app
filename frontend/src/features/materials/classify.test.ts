@@ -3,7 +3,13 @@ import type { FileGroup } from './queries';
 import { defaultTarget, guessRole } from './classify';
 
 const group = (fileId: string, role: FileGroup['role'], name: string): FileGroup =>
-  ({ fileId, role, names: [name], versionNo: 1, latest: {} }) as unknown as FileGroup;
+  ({
+    fileId,
+    role,
+    names: [name],
+    versionNo: 1,
+    latest: { original_name: name },
+  }) as unknown as FileGroup;
 
 describe('guessRole', () => {
   it('按文件名关键词判断用途', () => {

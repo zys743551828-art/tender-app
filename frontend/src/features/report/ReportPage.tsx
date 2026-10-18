@@ -12,6 +12,7 @@ import { useProjectContext } from '../../routes/ProjectLayout';
 import { ComplianceTable } from './ComplianceTable';
 import { PipelineBanner } from './PipelineBanner';
 import { PredictionPanel } from './PredictionPanel';
+import { ProjectAssistant } from './ProjectAssistant';
 import { usePipeline, useReport } from './queries';
 import { Button, textLink } from '../../components/ui/button';
 
@@ -41,6 +42,9 @@ export function ReportPage() {
       <>
         <PageHead title="评审报告" />
         {status ? <PipelineBanner pipeline={status} showSteps /> : null}
+        <div className="my-5 max-w-lg">
+          <ProjectAssistant key={pid} projectId={pid} />
+        </div>
         {status?.stage === 'waiting_materials' || !status ? (
           <EmptyState
             icon="FileText"
@@ -82,7 +86,10 @@ export function ReportPage() {
             showScore={project.settings.show_score}
           />
         </div>
-        <CategoryLine report={r} base={base} settings={project.settings} />
+        <div className="space-y-5 xl:sticky xl:top-6">
+          <CategoryLine report={r} base={base} settings={project.settings} />
+          <ProjectAssistant key={pid} projectId={pid} />
+        </div>
       </div>
     </>
   );

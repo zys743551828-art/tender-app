@@ -18,7 +18,7 @@ export function WordActions({
 }) {
   const word = file.word;
   const qc = useQueryClient();
-  const [mode, setMode] = useState<'upload' | string | null>(null);
+  const [mode, setMode] = useState<string | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
   const [checked, setChecked] = useState(false);
   const [reason, setReason] = useState('');
@@ -148,9 +148,13 @@ export function WordActions({
                 />
               </label>
             ) : (
-              <label>
+              <label htmlFor={`word-adopt-reason-${file.version_id}`}>
                 采用依据
-                <Textarea value={reason} onChange={(e) => setReason(e.target.value)} />
+                <Textarea
+                  id={`word-adopt-reason-${file.version_id}`}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                />
               </label>
             )}
             <label className="flex items-start gap-2">

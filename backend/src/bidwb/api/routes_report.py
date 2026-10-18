@@ -8,11 +8,27 @@ from fastapi import APIRouter, Response
 
 from bidwb import db, pricing
 from bidwb.api.deps import Body, Ctr, CurrentSession, IdemKey, mutate
-from bidwb.schemas import Compliance, Metrics, Prediction, PricePlan, PricePlanRequest, PricePlanWithSimulation, PriceSimulation, Report
-from bidwb.services import compliance, export, metrics, predictions, price, report
+from bidwb.schemas import (
+    AssistantReply,
+    AssistantRequest,
+    Compliance,
+    Metrics,
+    Prediction,
+    PricePlan,
+    PricePlanRequest,
+    PricePlanWithSimulation,
+    PriceSimulation,
+    Report,
+)
+from bidwb.services import assistant, compliance, export, metrics, predictions, price, report
 
 router = APIRouter(tags=["report"])
 _DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+
+@router.post("/projects/{project_id}/assistant", response_model=AssistantReply, operation_id="askProjectAssistant")
+def ask_assistant(project_id: str, body: AssistantRequest, session: CurrentSession, ctr: Ctr) -> AssistantReply:
+    return assistant.ask(ctr, session.actor, project_id, body)
 
 
 @router.get("/projects/{project_id}/report", response_model=Report, operation_id="getReport")

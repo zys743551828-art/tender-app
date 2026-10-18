@@ -139,10 +139,13 @@ services:
         VERSION: ${APP_VERSION:-dev}
     command: ["bidwb-api"]
     networks: [edge, data, egress]   # edge：web 反代；data：库与 Kafka/Milvus；egress：访问 OSS
-    secrets: [db_url_api, oss_access_key_id, oss_secret_access_key]
+    secrets: [db_url_api, oss_access_key_id, oss_secret_access_key, llm_api_key]
     environment:
       <<: *app-env
       BIDWB_DATABASE_URL_FILE: /run/secrets/db_url_api
+      BIDWB_LLM_BASE_URL: ${LLM_BASE_URL:-}
+      BIDWB_LLM_MODEL: ${LLM_MODEL:-}
+      BIDWB_LLM_API_KEY_FILE: /run/secrets/llm_api_key
       BIDWB_STORAGE_ACCESS_KEY_ID_FILE: /run/secrets/oss_access_key_id
       BIDWB_STORAGE_SECRET_ACCESS_KEY_FILE: /run/secrets/oss_secret_access_key
       # API 只与 web 同处 edge 网络，信任其转发头（uvicorn 读取该变量决定信任哪些代理地址）

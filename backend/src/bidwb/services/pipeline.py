@@ -20,7 +20,7 @@ from bidwb.access import Actor, require_project
 from bidwb.errors import DomainError
 from bidwb.logs import get_logger
 from bidwb.schemas import PipelineStatus, PipelineStep, SnapshotRequest
-from bidwb.services import current_materials, snapshots
+from bidwb.services import action_context, audit, current_materials, snapshots
 from bidwb.services import findings as findings_service
 from bidwb.services import projects as projects_service
 from bidwb.services import rules as rules_service
@@ -417,11 +417,24 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
     )
 
 
-def restart(conn: Connection, store: ObjectStore, actor: Actor, project_id: str) -> PipelineStatus:
+def restart(
+    conn: Connection, store: ObjectStore, actor: Actor, project_id: str, expected_context: str | None = None, request_id: str = "pipeline"
+) -> PipelineStatus:
     """开始或重新评审：失败的环节重试；资料、规则或事实有更新时，基于最新输入开始新一轮。"""
     require_project(conn, actor, project_id)
     db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    action_context.require_current(conn, project_id, expected_context)
     if _needs_new_round(_inspect(conn, project_id)):  # 记下“要开始新一轮”，提取规则等异步环节完成后据此继续
         db.run(conn, "UPDATE projects SET analysis_requested_at=now() WHERE id=:p", {"p": project_id})
     advance(conn, store, project_id, restart=True)
+    audit.record(
+        conn,
+        actor_id=actor.member_id,
+        project_id=project_id,
+        action="analysis.request",
+        object_kind="project",
+        object_id=project_id,
+        request_id=request_id,
+        details={"expected_context": expected_context},
+    )
     return status(conn, actor, project_id)

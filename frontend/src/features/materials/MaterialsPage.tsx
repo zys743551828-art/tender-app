@@ -308,8 +308,7 @@ function StagedRow({
 }) {
   const same = groups.filter(
     (g) =>
-      g.role === item.role &&
-      mediaFamily(g.latest.original_name ?? g.names[0] ?? '') === mediaFamily(item.file.name),
+      g.role === item.role && mediaFamily(g.latest.original_name) === mediaFamily(item.file.name),
   );
   const id = `staged-${String(item.key)}`;
   return (

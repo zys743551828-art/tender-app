@@ -349,6 +349,44 @@ class ConfirmRulesRequest(Request):
 
     object_version: NonEmpty
     rule_ids: Annotated[list[Id], Field(min_length=1, max_length=200)]
+    expected_context: Sha256 | None = None
+
+
+class AnalysisRequest(Request):
+    expected_context: Sha256 | None = None
+
+
+class AssistantRequest(Request):
+    message: Annotated[str, StringConstraints(min_length=1, max_length=1000, strip_whitespace=True)]
+
+
+class AssistantCard(Response):
+    kind: Literal["analysis", "confirm_rules"]
+    title: NonEmpty
+    detail: NonEmpty
+    expected_context: Sha256
+    object_version: str | None = None
+    rule_ids: list[Id] = Field(default_factory=list)
+    rule_statements: list[str] = Field(default_factory=list)
+
+
+class AssistantMaterial(Response):
+    version_id: Id
+    filename: str
+
+
+class AssistantReply(Response):
+    project_id: Id
+    project_title: str
+    lot: str | None
+    round: int
+    snapshot_id: Id | None
+    body_version_id: Id | None
+    materials: list[AssistantMaterial]
+    answer: str
+    mode: Literal["model", "project_summary"]
+    cards: list[AssistantCard]
+    links: list[Literal["materials", "basis", "findings", "submit", "outcomes"]]
 
 
 class ConfirmRulesResult(Response):

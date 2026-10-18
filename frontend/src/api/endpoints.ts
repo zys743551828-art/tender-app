@@ -1,6 +1,7 @@
 import { apiClient, toPage, type ApiClient, type RequestOptions } from './client';
 import type {
   AdoptRequest,
+  AssistantReply,
   Compliance,
   ConfirmRulesRequest,
   ConfirmRulesResult,
@@ -56,6 +57,10 @@ type Idem = Pick<RequestOptions, 'idempotencyKey' | 'signal'>;
 /** 与 openapi.json 路径一一对应的类型化调用；路径前缀 /api/v1 由客户端添加。 */
 export function createEndpoints(c: ApiClient) {
   return {
+    assistant: {
+      ask: (projectId: string, message: string) =>
+        c.post<AssistantReply>(`/projects/${projectId}/assistant`, { message }),
+    },
     auth: {
       login: (b: LoginRequest, o?: Idem) =>
         c.post<Me>('/auth/login', b, { ...o, skipAuthRedirect: true, noCsrf: true }),
@@ -149,6 +154,8 @@ export function createEndpoints(c: ApiClient) {
         c.post<SearchResult>(`/projects/${projectId}/search`, b, o),
     },
     pipeline: {
+      confirmStart: (projectId: string, expected_context: string, o?: Idem) =>
+        c.post<PipelineStatus>(`/projects/${projectId}/analysis`, { expected_context }, o),
       get: (projectId: string, o?: { signal?: AbortSignal }) =>
         c.get<PipelineStatus>(`/projects/${projectId}/pipeline`, o),
       /** 重新评审：基于最新资料、规则与事实再走一遍；202 返回新的流水线状态。 */

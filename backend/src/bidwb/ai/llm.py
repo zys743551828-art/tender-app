@@ -68,6 +68,9 @@ class OpenAICompatClient:
             headers={"Authorization": f"Bearer {key}"} if key else {},
         )
 
+    def close(self) -> None:
+        self._http.close()
+
     def complete(self, *, system: str, user: str, max_tokens: int = 4096, temperature: float = 0.0) -> LlmResult:
         payload = {
             "model": self.model,

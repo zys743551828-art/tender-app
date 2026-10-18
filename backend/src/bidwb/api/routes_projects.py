@@ -9,7 +9,7 @@ from bidwb.access import Actor
 from bidwb.api.deps import Body, Ctr, CurrentSession, IdemKey, IfMatch, mutate
 from bidwb.logs import get_logger
 from bidwb.runtime import Container
-from bidwb.schemas import PipelineStatus, Project, ProjectCreate, ProjectOverview, ProjectUpdate
+from bidwb.schemas import AnalysisRequest, PipelineStatus, Project, ProjectCreate, ProjectOverview, ProjectUpdate
 from bidwb.services import pipeline, projects, report
 
 router = APIRouter(tags=["projects"])
@@ -71,13 +71,13 @@ def get_pipeline(project_id: str, session: CurrentSession, ctr: Ctr) -> Pipeline
 
 
 @router.post("/projects/{project_id}/analysis", response_model=PipelineStatus, status_code=202, operation_id="restartAnalysis")
-def restart_analysis(project_id: str, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+def restart_analysis(project_id: str, session: CurrentSession, key: IdemKey, ctr: Ctr, body: AnalysisRequest | None = None) -> Body:
     """重新评审：失败的环节重试；资料、规则或事实有更新时基于最新输入开始新一轮。"""
     return mutate(
         ctr,
         session,
         key,
         f"POST /projects/{project_id}/analysis",
-        {},
-        lambda c: pipeline.restart(c, ctr.store, session.actor, project_id),
+        body or AnalysisRequest(),
+        lambda c: pipeline.restart(c, ctr.store, session.actor, project_id, body.expected_context if body else None, session.request_id),
     )

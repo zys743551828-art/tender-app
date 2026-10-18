@@ -388,6 +388,31 @@ export interface ResolveTermRequest {
 export interface ConfirmRulesRequest {
   object_version: string;
   rule_ids: Id[];
+  expected_context?: string | null;
+}
+
+export interface AssistantCard {
+  kind: 'analysis' | 'confirm_rules';
+  title: string;
+  detail: string;
+  expected_context: string;
+  object_version: string | null;
+  rule_ids: Id[];
+  rule_statements: string[];
+}
+
+export interface AssistantReply {
+  project_id: Id;
+  project_title: string;
+  lot: string | null;
+  round: number;
+  snapshot_id: Id | null;
+  body_version_id: Id | null;
+  answer: string;
+  mode: 'model' | 'project_summary';
+  materials: { version_id: string; filename: string }[];
+  cards: AssistantCard[];
+  links: ('materials' | 'basis' | 'findings' | 'submit' | 'outcomes')[];
 }
 
 /** $defs/ConfirmRulesResult */

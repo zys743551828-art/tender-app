@@ -60,6 +60,23 @@
       ],
       "type": "object"
     },
+    "AssistantMaterial": {
+      "additionalProperties": false,
+      "properties": {
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version_id",
+        "filename"
+      ],
+      "type": "object"
+    },
     "BidTerms": {
       "additionalProperties": false,
       "description": "从评标办法提取的投标条件，带原文出处；没有提取到的项为空。",
@@ -2964,6 +2981,189 @@
       ],
       "type": "object"
     },
+    "AnalysisRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_context": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "type": "object"
+    },
+    "AssistantCard": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "analysis",
+            "confirm_rules"
+          ],
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "detail": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "expected_context": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "object_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rule_statements": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "title",
+        "detail",
+        "expected_context"
+      ],
+      "type": "object"
+    },
+    "AssistantReply": {
+      "additionalProperties": false,
+      "properties": {
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_title": {
+          "type": "string"
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "round": {
+          "type": "integer"
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "body_version_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "materials": {
+          "items": {
+            "$ref": "#/$defs/AssistantMaterial"
+          },
+          "type": "array"
+        },
+        "answer": {
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "model",
+            "project_summary"
+          ],
+          "type": "string"
+        },
+        "cards": {
+          "items": {
+            "$ref": "#/$defs/AssistantCard"
+          },
+          "type": "array"
+        },
+        "links": {
+          "items": {
+            "enum": [
+              "materials",
+              "basis",
+              "findings",
+              "submit",
+              "outcomes"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "project_id",
+        "project_title",
+        "lot",
+        "round",
+        "snapshot_id",
+        "body_version_id",
+        "materials",
+        "answer",
+        "mode",
+        "cards",
+        "links"
+      ],
+      "type": "object"
+    },
+    "AssistantRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "message"
+      ],
+      "type": "object"
+    },
     "BenchmarkSpec": {
       "additionalProperties": false,
       "description": "评标基准价的取法：固定值，或竞争对手（可含己方）报价的平均值／去极值平均值乘以系数。",
@@ -3158,6 +3358,18 @@
           "maxItems": 200,
           "minItems": 1,
           "type": "array"
+        },
+        "expected_context": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [

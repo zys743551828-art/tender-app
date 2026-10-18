@@ -36,7 +36,7 @@ from bidwb.schemas import (
     TermAlternative,
     TermConflict,
 )
-from bidwb.services import audit, current_materials, evidence
+from bidwb.services import action_context, audit, current_materials, evidence
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
 from bidwb.util import canonical_json, decimal_text, new_id, sha256_hex, utcnow
@@ -373,6 +373,7 @@ def confirm_pending(conn: Connection, actor: Actor, project_id: str, req: Confir
     """批量确认未审核的规则。未审核的规则本来就参与评审，确认不改变评审所用的规则集合，所以不必复制规则包。"""
     require_project(conn, actor, project_id)
     db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    action_context.require_current(conn, project_id, req.expected_context)
     package = latest_package(conn, project_id)
     if package is None:
         raise NotFound("rules_not_extracted", "该项目尚未提取规则")

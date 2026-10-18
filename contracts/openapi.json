@@ -366,6 +366,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AnalysisRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "202": {
             "description": "Successful Response",
@@ -2291,6 +2308,58 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/assistant": {
+      "post": {
+        "tags": [
+          "report"
+        ],
+        "summary": "Ask Assistant",
+        "operationId": "askProjectAssistant",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantReply"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/report": {
       "get": {
         "tags": [
@@ -3566,6 +3635,25 @@
         ],
         "title": "AffectedSection"
       },
+      "AnalysisRequest": {
+        "properties": {
+          "expected_context": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Context"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AnalysisRequest"
+      },
       "ArtifactRef": {
         "properties": {
           "artifact_id": {
@@ -3604,6 +3692,212 @@
           "contract_version"
         ],
         "title": "ArtifactRef"
+      },
+      "AssistantCard": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "analysis",
+              "confirm_rules"
+            ],
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Detail"
+          },
+          "expected_context": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Context"
+          },
+          "object_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Object Version"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "title": "Rule Ids"
+          },
+          "rule_statements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rule Statements"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "title",
+          "detail",
+          "expected_context"
+        ],
+        "title": "AssistantCard"
+      },
+      "AssistantMaterial": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Version Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_id",
+          "filename"
+        ],
+        "title": "AssistantMaterial"
+      },
+      "AssistantReply": {
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Project Id"
+          },
+          "project_title": {
+            "type": "string",
+            "title": "Project Title"
+          },
+          "lot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "snapshot_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Id"
+          },
+          "body_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Version Id"
+          },
+          "materials": {
+            "items": {
+              "$ref": "#/components/schemas/AssistantMaterial"
+            },
+            "type": "array",
+            "title": "Materials"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "model",
+              "project_summary"
+            ],
+            "title": "Mode"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/AssistantCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "links": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "materials",
+                "basis",
+                "findings",
+                "submit",
+                "outcomes"
+              ]
+            },
+            "type": "array",
+            "title": "Links"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "project_title",
+          "lot",
+          "round",
+          "snapshot_id",
+          "body_version_id",
+          "materials",
+          "answer",
+          "mode",
+          "cards",
+          "links"
+        ],
+        "title": "AssistantReply"
+      },
+      "AssistantRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "AssistantRequest"
       },
       "BenchmarkSpec": {
         "properties": {
@@ -3880,6 +4174,18 @@
             "maxItems": 200,
             "minItems": 1,
             "title": "Rule Ids"
+          },
+          "expected_context": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Context"
           }
         },
         "additionalProperties": false,

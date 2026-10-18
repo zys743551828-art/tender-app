@@ -36,9 +36,7 @@ export function defaultTarget(
   groups: readonly FileGroup[],
 ): string | null {
   const same = groups.filter(
-    (g) =>
-      g.role === role &&
-      mediaFamily(g.latest.original_name ?? g.names[0] ?? '') === mediaFamily(name),
+    (g) => g.role === role && mediaFamily(g.latest.original_name) === mediaFamily(name),
   );
   const byName = same.find((g) => g.names.includes(name));
   if (byName) return byName.fileId;
