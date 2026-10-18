@@ -198,7 +198,7 @@ GRANT UPDATE(state,revision,resolved_by,resolved_at,error_code) ON design.assist
 GRANT SELECT ON design.assistant_jobs,design.assistant_global_runs,design.assistant_global_calls,
  design.assistant_global_outbox,design.assistant_outputs TO tender_worker;
 GRANT UPDATE(state,fence,owner_token,lease_until,finished_at,error_code) ON design.assistant_global_runs TO tender_worker;
-GRANT INSERT(id,run_id,intent_digest,request_digest,profile_digest,max_tokens) ON design.assistant_global_calls TO tender_worker;
+GRANT INSERT(id,run_id,intent_digest,request_digest,profile_digest,max_tokens,usage) ON design.assistant_global_calls TO tender_worker;
 GRANT UPDATE(state,provider_request_id,usage,response_ref) ON design.assistant_global_calls TO tender_worker;
 GRANT UPDATE(published_at,claim_token,lease_until,publish_attempts) ON design.assistant_global_outbox TO tender_worker;
 GRANT INSERT ON design.assistant_outputs TO tender_worker;

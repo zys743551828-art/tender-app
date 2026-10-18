@@ -133,13 +133,16 @@ def heartbeat(message, lease):
 
 def reserve(row, lease, request, profile):
     with connection(True) as c:
+        # Match the dispatch order: execution -> source graph -> aggregate budget.
+        # A replay must never hold the budget mutex while waiting on this run.
+        run = locked_execution(c, row["id"], lease)
+        assert_source_guards(c, row["input_manifest"])
         budget.before_native_reserve(c, row, profile, request["max_tokens"])
         # All same logical calls, even in distinct runs, serialize before querying the ledger.
         c.execute(
             "SELECT pg_advisory_xact_lock(hashtextextended(%s,0))",
             ("assistant-global-call:" + row["intent_digest"] + ":" + sha(profile),),
         )
-        run = locked_execution(c, row["id"], lease)
         old = c.execute(
             "SELECT * FROM assistant_global_calls WHERE run_id=%s FOR UPDATE", (row["id"],)
         ).fetchone()
@@ -167,8 +170,8 @@ def reserve(row, lease, request, profile):
             raise DomainError("MODEL_BUDGET_EXHAUSTED", "请求超出冻结的单次输出预算", 409)
         call = fetch(
             c,
-            """INSERT INTO assistant_global_calls(id,run_id,intent_digest,request_digest,profile_digest,max_tokens)
-            VALUES(%s,%s,%s,%s,%s,%s) RETURNING *""",
+            """INSERT INTO assistant_global_calls(id,run_id,intent_digest,request_digest,profile_digest,max_tokens,usage)
+            VALUES(%s,%s,%s,%s,%s,%s,%s) RETURNING *""",
             (
                 uid(),
                 row["id"],
@@ -176,6 +179,7 @@ def reserve(row, lease, request, profile):
                 sha(request),
                 sha(profile),
                 request["max_tokens"],
+                Jsonb({"reservation": {"owner": str(lease["owner"]), "fence": lease["fence"]}}),
             ),
         )
         return call, True
@@ -209,6 +213,9 @@ def failure(call_id, error, *, sent, result=None):
         identity = fetch(c, "SELECT run_id FROM assistant_global_calls WHERE id=%s", (call_id,))[
             "run_id"
         ]
+    # Native writes commit before taking the aggregate mutex. A crash in this
+    # conservative window is recovered by coordinator.tick -> terminal_tick.
+    with connection(True) as c:
         budget.settle(c, identity)
 
 
@@ -295,6 +302,7 @@ def compute(message, lease):
                     call["id"],
                 ),
             )
+        with connection(True) as c:
             budget.settle(c, row["id"])
         return {
             "job_id": row["id"],

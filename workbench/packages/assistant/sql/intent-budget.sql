@@ -200,16 +200,33 @@ BEGIN
 END $$;
 CREATE FUNCTION design.assistant_dispatch_budget(job uuid,call_id uuid) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,design AS $$
 DECLARE j record;i record;r record;p record;native record;policy record;scope_name text;
+ expected_profile jsonb;profile_hash text;step_hash text;expected_step text;expected_handler text;expected_purpose text;
 BEGIN
  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION 'ASSISTANT_REQUIRES_READ_COMMITTED' USING ERRCODE='25000'; END IF;
  PERFORM pg_advisory_xact_lock(90129,1);
  SELECT * INTO j FROM design.assistant_jobs WHERE id=job;
  SELECT * INTO i FROM design.assistant_logical_intents WHERE job_id=job;
  SELECT * INTO r FROM design.assistant_budget_reservations WHERE job_id=job FOR UPDATE;
- IF r.job_id IS NULL OR r.state<>'held' OR r.dispatched_at IS NOT NULL THEN RAISE EXCEPTION 'ASSISTANT_CALL_REQUIRES_RECONCILIATION' USING ERRCODE='23514'; END IF;
+ IF r.job_id IS NULL OR r.state IS DISTINCT FROM 'held' OR r.dispatched_at IS NOT NULL THEN RAISE EXCEPTION 'ASSISTANT_CALL_REQUIRES_RECONCILIATION' USING ERRCODE='23514'; END IF;
+ IF j.id IS NULL OR i.id IS NULL OR r.intent_id IS DISTINCT FROM i.id OR r.actor_id IS DISTINCT FROM i.actor_id
+  OR i.actor_id IS DISTINCT FROM j.actor_id OR (j.scope IN ('global','project')) IS DISTINCT FROM true
+  OR (j.kind IN ('answer','authoring')) IS DISTINCT FROM true OR (j.scope='global' AND j.kind<>'answer')
+  OR i.id::text IS DISTINCT FROM j.input_manifest->'logical_intent'->>'id'
+  THEN RAISE EXCEPTION 'ASSISTANT_BUDGET_IDENTITY_INVALID' USING ERRCODE='23514'; END IF;
  PERFORM design.assistant_check_target(i.target,i.actor_id);
  SELECT * INTO p FROM design.assistant_price_versions WHERE id=r.price_id;
- IF p.valid_until<=clock_timestamp() THEN RAISE EXCEPTION 'ASSISTANT_PRICE_UNAVAILABLE' USING ERRCODE='23514'; END IF;
+ IF p.id IS NULL OR p.valid_from>clock_timestamp() OR p.valid_until<=clock_timestamp() THEN RAISE EXCEPTION 'ASSISTANT_PRICE_UNAVAILABLE' USING ERRCODE='23514'; END IF;
+ expected_purpose=CASE WHEN j.kind='answer' THEN 'assistant' ELSE 'authoring' END;
+ expected_profile=jsonb_build_object('provider',p.provider,'model',p.model,'port','generation/1','purpose',expected_purpose,'formal_scoring_eligible',false);
+ -- This closed ASCII profile has the exact sorted compact JSON bytes used by runtime.sha.
+ profile_hash=encode(sha256(convert_to('{"formal_scoring_eligible":false,"model":'||to_jsonb(p.model)::text||',"port":"generation/1","provider":'||to_jsonb(p.provider)::text||',"purpose":'||to_jsonb(expected_purpose)::text||'}','UTF8')),'hex');
+ IF j.input_manifest->'logical_intent'->'profile' IS DISTINCT FROM expected_profile
+  OR r.price_id::text IS DISTINCT FROM j.input_manifest->'logical_intent'->>'price_version_id'
+  OR to_jsonb(r.output_upper) IS DISTINCT FROM coalesce(j.input_manifest->'request'->'max_tokens','2048'::jsonb)
+  OR (r.output_upper BETWEEN 1 AND p.output_hard_ceiling) IS DISTINCT FROM true
+  OR r.input_upper IS DISTINCT FROM p.input_hard_ceiling OR r.currency IS DISTINCT FROM p.currency
+  OR r.reserved_minor IS DISTINCT FROM ceil((r.input_upper::numeric*p.input_per_million_minor+r.output_upper::numeric*p.output_per_million_minor)/1000000)::bigint
+  THEN RAISE EXCEPTION 'ASSISTANT_BUDGET_IDENTITY_INVALID' USING ERRCODE='23514'; END IF;
  FOR policy IN SELECT * FROM design.assistant_budget_versions WHERE id IN(r.member_budget_id,r.project_budget_id,r.global_budget_id) LOOP
   IF policy.window_from>clock_timestamp() OR policy.window_until<=clock_timestamp()
    OR EXISTS(SELECT FROM design.assistant_budget_versions newer WHERE newer.scope=policy.scope AND newer.owner_key=policy.owner_key AND newer.revision>policy.revision)
@@ -217,9 +234,29 @@ BEGIN
  END LOOP;
  IF i.origin_action_id IS NOT NULL AND NOT EXISTS(SELECT FROM design.action_consumptions a WHERE a.action_id=i.origin_action_id AND a.result->'assistant_resolution'->>'state'='executed' AND a.result->'assistant_resolution'->'domain_result'->>'id'=job::text) THEN RAISE EXCEPTION 'ASSISTANT_EFFECT_IDENTITY_INVALID' USING ERRCODE='23514'; END IF;
  IF j.scope='global' THEN
-  SELECT c.state,rn.state AS execution_state,rn.cancel_requested_at,rn.lease_until INTO native FROM design.assistant_global_calls c JOIN design.assistant_global_runs rn ON rn.id=c.run_id WHERE c.id=call_id AND c.run_id=job;
+  SELECT c.state,rn.state AS execution_state,rn.cancel_requested_at,rn.lease_until INTO native FROM design.assistant_global_calls c JOIN design.assistant_global_runs rn ON rn.id=c.run_id
+   WHERE c.id=call_id AND c.run_id=job AND c.profile_digest=profile_hash AND c.intent_digest=j.intent_digest
+    AND c.max_tokens=r.output_upper AND rn.max_tokens=r.output_upper AND rn.input_digest=j.input_digest
+    AND c.usage->'reservation'->>'owner'=rn.owner_token::text
+    AND c.usage->'reservation'->'fence'=to_jsonb(rn.fence);
  ELSE
-  SELECT c.state,o.state AS execution_state,o.cancel_requested_at,s.lease_until INTO native FROM design.model_calls c JOIN design.operations o ON o.id=c.operation_id JOIN design.step_receipts s ON s.operation_id=o.id AND s.state='running' WHERE c.id=call_id AND c.operation_id=j.operation_id;
+  expected_step=CASE WHEN j.kind='answer' THEN 'assistant-answer' ELSE 'authoring-generate' END;
+  expected_handler=CASE WHEN j.kind='answer' THEN 'assistant/1' ELSE 'authoring-generate/1' END;
+  step_hash=encode(sha256(convert_to('{"digest":'||to_jsonb(j.input_digest)::text||',"id":'||to_jsonb(j.id::text)::text||'}','UTF8')),'hex');
+  SELECT c.state,o.state AS execution_state,o.cancel_requested_at,s.lease_until INTO native
+   FROM design.model_calls c JOIN design.operations o ON o.id=c.operation_id
+   JOIN design.step_receipts s ON s.operation_id=o.id AND s.state='running'
+   JOIN design.operation_steps os ON os.operation_id=s.operation_id AND os.step_key=s.step_key AND os.input_digest=s.input_digest
+   WHERE c.id=call_id AND c.operation_id=j.operation_id AND o.bid_id=j.bid_id
+    AND c.profile_digest=profile_hash AND c.logical_call_key=CASE WHEN j.kind='answer' THEN 'assistant.answer/1' ELSE 'authoring.generate/1' END
+    AND c.attempt_no=1 AND c.research_run_id IS NULL AND c.reserved_amount IS NULL
+    AND o.handler_version=expected_handler AND os.handler_version=expected_handler
+    AND s.step_key=expected_step AND s.input_digest=step_hash
+    AND c.usage->'reservation'->'max_tokens'=to_jsonb(r.output_upper)
+    AND c.usage->'reservation'->>'step_key'=s.step_key AND c.usage->'reservation'->>'input_digest'=s.input_digest
+    AND c.usage->'reservation'->'generation'=to_jsonb(os.dispatch_generation)
+    AND c.usage->'reservation'->'fence'=to_jsonb(s.fence)
+    AND c.usage->'reservation'->>'owner'=s.owner_token::text;
  END IF;
  IF native.state IS DISTINCT FROM 'reserved' OR native.execution_state IS DISTINCT FROM 'running' OR native.cancel_requested_at IS NOT NULL OR native.lease_until IS NULL OR native.lease_until<=clock_timestamp() THEN RAISE EXCEPTION 'MODEL_EXECUTION_STALE' USING ERRCODE='23514'; END IF;
  UPDATE design.assistant_budget_reservations SET state='sent',dispatched_at=clock_timestamp(),global_call_id=CASE WHEN j.scope='global' THEN call_id END,project_call_id=CASE WHEN j.scope='project' THEN call_id END WHERE job_id=job;
@@ -313,15 +350,20 @@ BEGIN
  PERFORM pg_advisory_xact_lock(90129,1);
  SELECT * INTO r FROM design.assistant_budget_reservations WHERE job_id=job FOR UPDATE;
  SELECT * INTO j FROM design.assistant_jobs WHERE id=job;
- IF r.job_id IS NULL OR decision NOT IN ('confirmed_not_sent','confirmed_billed','confirmed_zero_charge_failure') OR length(btrim(proof_reference))<10 OR amount<0 OR amount>r.reserved_minor OR (decision<>'confirmed_billed' AND amount<>0) THEN RAISE EXCEPTION 'ASSISTANT_RECONCILIATION_INVALID' USING ERRCODE='23514'; END IF;
- IF r.state NOT IN ('unknown','sent') THEN RAISE EXCEPTION 'ASSISTANT_RECONCILIATION_INVALID' USING ERRCODE='23514'; END IF;
+ IF r.job_id IS NULL OR j.id IS NULL OR (j.scope IN ('global','project')) IS DISTINCT FROM true
+  OR decision IS NULL OR amount IS NULL OR proof_reference IS NULL OR proof_sha IS NULL
+  OR decision NOT IN ('confirmed_not_sent','confirmed_billed','confirmed_zero_charge_failure')
+  OR length(btrim(proof_reference))<10 OR proof_reference !~ '[^[:space:]]'
+  OR amount<0 OR amount>r.reserved_minor OR (decision<>'confirmed_billed' AND amount<>0)
+  THEN RAISE EXCEPTION 'ASSISTANT_RECONCILIATION_INVALID' USING ERRCODE='23514'; END IF;
+ IF (r.state IN ('unknown','sent')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'ASSISTANT_RECONCILIATION_INVALID' USING ERRCODE='23514'; END IF;
  IF j.scope='global' THEN
   SELECT * INTO native FROM design.assistant_global_runs WHERE id=job;
-  IF native.state NOT IN ('failed','cancelled') THEN RAISE EXCEPTION 'ASSISTANT_EXECUTION_NOT_TERMINAL' USING ERRCODE='23514'; END IF;
+  IF (native.state IN ('failed','cancelled')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'ASSISTANT_EXECUTION_NOT_TERMINAL' USING ERRCODE='23514'; END IF;
   UPDATE design.assistant_global_calls SET state='failed',usage=coalesce(usage,'{}'::jsonb)||jsonb_build_object('billing_state','trusted_reconciled','reconciliation',decision) WHERE id=r.global_call_id;
  ELSE
   SELECT * INTO native FROM design.operations WHERE id=j.operation_id;
-  IF native.state NOT IN ('failed','cancelled') THEN RAISE EXCEPTION 'ASSISTANT_EXECUTION_NOT_TERMINAL' USING ERRCODE='23514'; END IF;
+  IF (native.state IN ('failed','cancelled')) IS DISTINCT FROM true THEN RAISE EXCEPTION 'ASSISTANT_EXECUTION_NOT_TERMINAL' USING ERRCODE='23514'; END IF;
   UPDATE design.model_calls SET state='failed',usage=coalesce(usage,'{}'::jsonb)||jsonb_build_object('billing_state','trusted_reconciled','reconciliation',decision) WHERE id=r.project_call_id;
  END IF;
  INSERT INTO design.assistant_budget_events(job_id,event_type,payload) VALUES(job,'reconciled',jsonb_build_object('decision',decision,'billed_minor',amount,'currency',r.currency,'proof_reference',proof_reference,'proof_sha256',proof_sha,'previous_reservation',to_jsonb(r),'original_execution_unchanged',true));

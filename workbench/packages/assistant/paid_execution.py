@@ -30,6 +30,7 @@ def generate_project(row, message, lease, *, messages, schema, max_tokens):
     }
     with connection(True) as c:
         model_calls.lock_execution(c, message, lease)
+        assert_source_guards(c, row["input_manifest"])
         budget.before_native_reserve(c, row, profile, max_tokens)
     call, created = model_calls.reserve(
         message,
@@ -94,6 +95,9 @@ def generate_project(row, message, lease, *, messages, schema, max_tokens):
                     call["id"],
                 ),
             )
+        # Do not wait on the budget mutex while holding a native call write lock.
+        # The committed native usage remains recoverable by terminal_tick.
+        with connection(True) as c:
             budget.settle(c, row["id"])
         return value, call["id"]
     except Exception as error:
