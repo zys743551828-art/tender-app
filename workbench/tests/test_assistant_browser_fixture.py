@@ -5,14 +5,22 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from uuid import uuid4
 
 import httpx
 import pytest
 
+from qa.assistant_browser_fixture import safety
 from qa.assistant_browser_fixture.local_storage import LocalObjects
 from qa.assistant_browser_fixture.mock_provider import answer, client_for, install_api_profile_only
-from qa.assistant_browser_fixture.safety import MARKER, environment, read_control, verify_candidate
+from qa.assistant_browser_fixture.safety import (
+    MARKER,
+    environment,
+    process_environment,
+    read_control,
+    verify_candidate,
+)
 
 
 def test_role_environment_is_positive_and_single_dsn(monkeypatch):
@@ -37,6 +45,43 @@ def test_role_environment_is_positive_and_single_dsn(monkeypatch):
         assert env["WORKBENCH_ENV_FILE"] == "/dev/null"
         if mode != "api":
             assert "SESSION_SECRET" not in env and "CSRF_SECRET" not in env
+
+
+def test_isolated_child_imports_asyncio_without_ambient_credentials(monkeypatch):
+    for key in ("OWNER_DATABASE_DSN", "DEEPSEEK_API_KEY", "AWS_SECRET_ACCESS_KEY", "PYTHONPATH"):
+        monkeypatch.setenv(key, "must-not-reach-child")
+    env = process_environment()
+    assert set(env) == ({"PATH", "SYSTEMROOT"} if os.name == "nt" else {"PATH"})
+    code = """
+import asyncio, json, os, sys
+for name in ('OWNER_DATABASE_DSN','DEEPSEEK_API_KEY','AWS_SECRET_ACCESS_KEY','PYTHONPATH'):
+    assert name not in os.environ
+assert sys.flags.isolated and sys.flags.utf8_mode
+print(json.dumps({'asyncio_imported':True,'text':'隔离子进程'}))
+"""
+    result = subprocess.run(
+        [sys.executable, "-I", "-X", "utf8", "-c", code],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=20,
+        env=env,
+    )
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"asyncio_imported": True, "text": "隔离子进程"}
+
+
+def test_posix_environment_does_not_forward_windows_or_ambient_settings(monkeypatch):
+    monkeypatch.setattr(
+        safety,
+        "os",
+        SimpleNamespace(
+            name="posix",
+            defpath=os.defpath,
+            environ={"SYSTEMROOT": "windows-only", "DEEPSEEK_API_KEY": "must-not-forward"},
+        ),
+    )
+    assert process_environment() == {"PATH": os.defpath}
 
 
 @pytest.mark.parametrize(
@@ -140,11 +185,12 @@ async def probe():
 asyncio.run(probe())
 """
     result = subprocess.run(
-        [sys.executable, "-I", "-c", code, str(facility)],
+        [sys.executable, "-I", "-X", "utf8", "-c", code, str(facility)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=20,
-        env={"PATH": os.defpath},
+        env=process_environment(),
     )
     assert result.returncode == 0, result.stderr
 

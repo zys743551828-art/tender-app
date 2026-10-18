@@ -79,11 +79,20 @@ def verify_candidate(value: dict) -> dict:
     }
 
 
+def process_environment() -> dict[str, str]:
+    result = {"PATH": os.defpath}
+    if os.name == "nt":
+        system_root = os.environ.get("SYSTEMROOT")
+        if not system_root:
+            raise ValueError("Windows SYSTEMROOT is required for the isolated fixture process")
+        result["SYSTEMROOT"] = system_root
+    return result
+
+
 def environment(value: dict, mode: str) -> dict[str, str]:
     role = "worker" if mode == "worker" else "api"
     # Do not copy arbitrary parent env (including proxies, owner/logins, keys or PYTHONPATH).
-    result = {
-        "PATH": os.defpath,
+    result = process_environment() | {
         "LANG": "C.UTF-8",
         "TZ": "UTC",
         "WORKBENCH_ENV_FILE": "/dev/null",
