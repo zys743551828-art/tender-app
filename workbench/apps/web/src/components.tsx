@@ -8,7 +8,7 @@ export function Brand() {
         投
       </span>
       <span>
-        投标工作台<small>市政工程 · AI WORKSPACE</small>
+        投标工作台<small>整份标书 · AI 辅助</small>
       </span>
     </div>
   );

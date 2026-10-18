@@ -412,14 +412,14 @@ function Login({
             更好的投标。
           </h1>
           <p>
-            从招标资料到投标正文，集中保存原件、版本和解析依据，为有据可查的评审做好准备。
+            从招标资料到投标标书，集中保存原件、版本和解析依据，为有据可查的评审做好准备。
           </p>
           <div className="story-line">
             <Icon name="file" />
             私有资料 · 清晰版本 · 原页依据
           </div>
         </div>
-        <small>市政工程 AI 投标工作台</small>
+        <small>AI 投标标书工作台</small>
       </div>
       <section className="login-panel">
         <form onSubmit={(event) => void submit(event)} className="login-form">
