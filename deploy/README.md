@@ -502,53 +502,28 @@ scripts/restore.sh --backup <批次> --in-place --yes
 
 ## 10. 未验证项
 
-本手册与全部部署文件是在**没有 Docker 守护进程**的沙箱里编写的：没有构建过任何镜像、没有启动过任何容器。已验证与未验证的边界如下，请在真机首次部署时逐项确认并把结果回填。
+本机 Windows Docker Desktop 的核心镜像构建、服务启动、迁移、同源上传、真实模型合成评审、导出与故障恢复已有实测。完整方法和结果统一见同级 `tender-docs/04-验证与测试/验证报告.md`；不能用本机合成场景替代生产主机和真实标书验收。
 
 ### 10.1 已验证（含方法）
 
-| 项 | 方法 | 结果 |
-| --- | --- | --- |
-| compose 语法（生产 / 生产+TLS / 生产+开发） | `docker compose --env-file .env.example [-f ...] config -q`（Docker Compose v5.1.3，仅 CLI） | 通过 |
-| 编排的安全与稳定性约束 | `python3 check_compose.py`（21 项静态检查，含白名单、变量双向一致、明文口令、资源总和）；并对故意破坏的副本做了反向测试，确认能报出违规 | 通过 |
-| shell 脚本 | `shellcheck`（0.11.0）全部干净；`bash -n`；`--help` | 通过 |
-| nginx 配置 | 在 nginx 1.24（沙箱可装版本，**非镜像里的 1.30**）上渲染模板并 `nginx -t`（HTTP 与 TLS 两种模式，TLS 模式去掉了 1.25.1 才有的 `http2 on;`）；并用本地假 API 做了功能测试：SPA 路由回退、静态资源长缓存/index.html 不缓存、缺失资源 404、Range 与转发头透传、SSE 逐条实时转发（不缓冲）、登录限流（第 7 次起 429）、`/nginx-health`、隐藏文件 404、不可信来源的 `X-Forwarded-*` 被忽略 | 通过 |
-| PostgreSQL 初始化脚本 + 迁移 | 在真实 PostgreSQL 16.13（Ubuntu 软件包，**非 postgres:16.15 镜像**）上用相同口令文件运行 `10-roles-and-databases.sh`，再以 `bidwb_owner` 执行真实的 `alembic upgrade head`（0001，42 张表含 alembic_version）；核对角色、成员关系、`CONNECT` 授权，以及 `app_api` 能更新 `jobs`、`app_worker` 不能读 `members` | 通过 |
-| 备份/恢复脚本逻辑 | 用一个把 `docker compose exec postgres` 转发到上述本地集群的垫片，实跑 `backup.sh`（含空库、校验、清单、保留策略模拟）、`restore.sh` 演练与 `--in-place --yes`（含不带 `--yes` 被拒绝）；恢复后角色授权仍然有效 | 通过 |
-| 后端依赖可纯 wheel 安装 | 在 Python 3.11 / x86_64 上 `pip wheel` 本项目并以 `--only-binary=:all:` 安装依赖，导入 fastapi、psycopg、confluent_kafka、pypdfium2、argon2、boto3（该次安装发生在 `python-docx` 加入依赖列表之前，见 10.2 第 1 项） | 通过 |
-| 部署文件与后端源码的一致性 | 逐项对照 `pyproject.toml`、`entrypoints.py`、`admin.py`、`config.py`、`api/app.py`、`messaging.py`、`storage.py`、`tasks.py`、`workers/` 与 compose / 脚本中的命令、环境变量、端点、主题、对象键前缀（仅读源码，未运行后端） | 一致（11.2 逐项列出） |
-| `gen-secrets.sh` | 实跑：幂等、不覆盖、权限、连接串与口令一致 | 通过 |
-| 版本号 | postgres `16.15-bookworm`、python `3.11-slim-bookworm`、node `22-alpine` 取自 docker-library 官方清单；Milvus `v2.6.10` 与 MinIO 镜像取自 Milvus 官方仓库的 compose 文件；MLflow `3.17.0` 取自 PyPI（并核对了 `MLFLOW_SERVER_ALLOWED_HOSTS`、`db` 额外依赖、`--serve-artifacts` 存在） | 见下 |
+| 项 | 方法与边界 |
+| --- | --- |
+| 编排 | `check_compose.py` 及 `docker compose config -q`，包含本机、TLS、开发与 Word 覆盖的结构检查；不等同真实证书及公网运行 |
+| 后端／web 构建 | 实际 Docker 多阶段构建，后端纯 wheel 依赖安装、前端构建及核心服务健康检查通过；MLflow 不在当前运行栈 |
+| 核心运行链路 | PostgreSQL 16.15、迁移至 0004、Kafka、API、relay、reaper、全部业务 worker 与 web；真实 OSS、模型、同源分片上传、合成评审与 Word／PDF 导出；大文件容量另测 |
+| Word 隔离 | 无网络、输入只读、非 root、只读根目录、Landlock 子进程隔离、转换方法指纹、逐稿补交与崩溃队列回收；真实复杂版式准确率另测 |
+| 数据库恢复副本 | 既有迁移前备份恢复至一次性 PostgreSQL 库、前进迁移、旧记录行数、外键、只追加保护和角色读取权限，见验证报告 2.28 节；未恢复原属主或 OSS 对象 |
+| 静态脚本与配置 | shellcheck／bash 语法、配置白名单、变量对应、敏感信息检查及命令入口核对；具体启动和恢复结果见验证报告 |
 
-### 10.2 未验证（必须在真机核对）
+### 10.2 未验证（必须在目标环境核对）
 
-**镜像与构建**
-1. 三个自建镜像（`bidwb-backend`、`bidwb-web`、`bidwb-mlflow`）从未真正 `docker build`；`python-docx` 及其依赖在 `--only-binary=:all:` 下能否安装未验证；前端 `npm ci && npm run build` 在容器内的结果、`pip install mlflow[db]==3.17.0` 的体积与耗时未知。
-2. `apache/kafka:4.0.0`、`nginxinc/nginx-unprivileged:1.30.5-alpine` 两个标签**未能在线核对存在**（沙箱访问不了 Docker Hub）；前者是已知的官方发布版本，后者由 nginx stable 线版本推断。首次部署前用 `docker manifest inspect` 确认，不存在则换同线存在的标签。
-3. `milvusdb/milvus:v2.6.10` 来自 Milvus 官方 v2.6.11 标签下 compose 文件的引用，镜像本身未拉取验证；官方主线已到 v3.0.x，一期选用 2.6 稳定线是判断，不是实测结论。
-
-**运行行为**
-4. 只读根文件系统 + `cap_drop: ALL` + 非 root 在 **postgres**（uid 999、命名卷属主继承、tmpfs `/run/postgresql`）、**nginx-unprivileged**（tmpfs `/etc/nginx/conf.d` 供 envsubst 渲染）、**mlflow** 上能否正常启动，未实测。失败时先查 `docker compose logs <服务>` 的 `Read-only file system` / `Permission denied`，再按需放宽并同步更新 `check_compose.py` 白名单与理由。
-5. **Kafka**：环境变量命名（`CLUSTER_ID`、`KAFKA_*`）取自 Apache Kafka 官方 Docker 镜像文档的常见形态；`/var/lib/kafka/data` 命名卷属主、`kafka-broker-api-versions.sh` 健康检查路径、堆设置 `-Xmx768m`、4.0 版本下的行为均未实测。
-6. **Milvus 内嵌 etcd + 本地存储**（`ETCD_USE_EMBED`、`COMMON_STORAGETYPE=local`、`embedEtcd.yaml`）取自官方 `standalone_embed.sh`（v2.6.11 标签）；`seccomp:unconfined` 是否仍必要、可否只读根文件系统/非 root 均未实测；内存 6 GiB 低于官方推荐 16 GiB，Milvus 通道启用前必须压测。
-7. **MLflow 产物写 OSS**：MLflow 官方文档未列出 OSS 的 S3 兼容接入（架构文档 INF-006）；`aws-config`（virtual-hosted）与 `AWS_REQUEST_CHECKSUM_CALCULATION=when_required` 的组合能否通过需联调（后端代码本身不调用 MLflow，只有研究侧使用）；不通时回退到本地卷（`MLFLOW_ARTIFACT_URI=file:///mlflow/artifacts`，需自行备份该卷）。
-8. **OSS 联调**：同源分片转传、RAM 策略动作集、生命周期规则写法、虚拟主机寻址、后端 `s3v4` 与 OSS 的 aws-chunked 兼容性、“禁止覆盖”对 CopyObject/CompleteMultipartUpload 的支持，均只对照了文档，未实际访问 OSS。验证方法：按第 6 节上传多片大文件并触发解析，再抽查 OSS 中 `staging/`、`objects/`、`artifacts/` 前缀。
-9. **资源限额**（`mem_limit`、`cpus`、`pids_limit`、PostgreSQL 参数、tmpfs 大小）是估计值，合计约 26.75 GiB/15.25 CPU 上限，压测前不能当容量承诺。`cpus` 总和超过 8 是有意的（上限而非预留）。
-10. **TLS 模式**：nginx 1.30 上的 `http2 on;`、证书热加载、80→443 跳转未在真实容器里验证（沙箱用 1.24 做了语法检查，TLS 块去掉了 `http2 on`）。
-11. **CSP**：`script-src 'wasm-unsafe-eval'`、`style-src 'unsafe-inline'`、`worker-src blob:` 是为兼容 PDF.js/React 预留的放宽，没有拿真实前端页面验证过是否都需要或是否还缺（例如 PDF 以 blob 在 iframe 中预览需要 `frame-src`）；PDF.js worker 的 `.mjs` MIME 已在 nginx 配置补充。
-12. **secrets 文件权限**：采用“目录 700 + 文件 444”，依据是 Compose（非 Swarm）不改写 bind mount 属主权限这一已知行为；在你们的 Docker/Compose 版本上需实测容器内用户确实可读。
-13. **开发环境**（`compose.dev.yml`）：MinIO 的 `MINIO_ROOT_USER_FILE` 支持、vite 容器热更新、`mc ready local` 健康检查，均未实测。
-
-**与后端/前端的接口（已对照源码，未联调运行，见第 11 节）**
-14. 后端入口（`bidwb-api` 等）、`bidwb-admin ensure-topics / create-member`、`/healthz`、`/readyz` 的参数与行为已按源码核对，但没有在容器里实际运行过。验证方法：首次部署后执行 `docker compose run --rm --no-deps api bidwb-admin --help`、`scripts/create-admin.sh`、`scripts/healthcheck.sh`。
-15. relay 不需要 OSS，但后端对所有进程统一构造对象存储客户端；relay 以空凭据构造该客户端，不会发起 OSS 请求。未验证：boto3 在空凭据下构造客户端不报错；验证方法：`docker compose logs relay` 无启动异常。
-16. 备份脚本通过 `docker compose exec` 调用容器内 `pg_dump`/`pg_restore`，这一层在沙箱里用垫片模拟，未经真实 Docker。
-17. 评审报告的 Word/PDF 导出在 API 进程内同步生成；API 容器内存上限 2 GiB、nginx 对 `/api/` 的读超时 120 秒，大项目（数百页原件的批注版 PDF）能否在限额内完成未测。验证方法：用真实大文件导出并观察 `docker stats` 与响应耗时。
-18. `BIDWB_AUTO_ANALYSIS` 开启时 reaper 需要访问 OSS（冻结输入快照），compose 已为其配置凭据与 egress 网络；端到端（上传 → 自动解析 → 规则 → 评审 → 报告）未在真机跑通。
-
-**流程**
-19. `upgrade.sh` 的滚动重启、等待健康、回退，以及 `healthcheck.sh` 对真实容器状态的解析（`docker compose ps --format` 模板）未在真实 Docker 上跑过。
-20. 恢复目标（RPO ≤ 24h、RTO ≤ 4h）未测；`restore.sh` 的耗时需用真实数据量演练。
-21. Docker/Compose 的最低版本（24 / 2.24）是建议值，只在 29.4.3 / 5.1.3 上做过语法校验。
+1. 正式 Linux 主机上的资源限额、数百页解析／导出、长时间并发评审、检索规模与磁盘容量。当前 CPU／内存限制仍是估计值。
+2. 正式 TLS 证书、续期与热加载、域名／反向代理、实际来源 IP、生产 cookie 与安全头的整轮浏览器验证。
+3. Milvus 镜像、内嵌 etcd、存储及只读例外；MLflow 镜像构建、数据库升级、工件代理、实验队列及其资源容量。当前均未启用，不得由核心服务健康推断已验证。
+4. 完整灾难恢复：原属主与全局角色、密钥、OSS 实际对象、历史原页／稿件／快照／结果与发布关联、任务租约，以及真实数据量下的 RPO ≤ 24h／RTO ≤ 4h。独立数据库恢复通过不能替代它。
+5. `upgrade.sh` 的完整编排与失败回退、`backup.sh`／`restore.sh` 的定时生产流程、保留策略和实际对象存储断连场景；不得在正式库直接试验覆盖恢复。
+6. 开发覆盖组合中的 MinIO `mc` 初始化、Vite 热更新、全部绑定挂载权限及共享开发资源隔离。
+7. 浏览器交互与视觉、真实标书检测准确率、官方技术分独立配对精度。组件／API／合成模型测试不代替这些验收。
 
 ---
 
