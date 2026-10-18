@@ -17,6 +17,7 @@ from psycopg.types.json import Jsonb
 from apps.api.assistant_routes import router as assistant_router
 from apps.api.auth import COOKIE, auth, auth_view, csrf, origin, password_ok
 from apps.api.authoring import router as authoring_router
+from apps.api.bid_package_routes import router as bid_package_router
 from apps.api.comparison_routes import router as comparison_router
 from apps.api.composition import mount as mount_composition
 from apps.api.event_routes import router as event_router
@@ -122,6 +123,7 @@ app.include_router(effectivity_router)
 app.include_router(multipart_router)
 app.include_router(upload_layout_router)
 app.include_router(identity_router)
+app.include_router(bid_package_router)
 app.include_router(pricing_router)
 app.include_router(submission_router)
 app.include_router(report_router)

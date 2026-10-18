@@ -1,6 +1,30 @@
 # 整份标书资料包领域契约
 
-本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已接入真实主数据，稳定标段身份目录／关联 API 与受限非 owner 存储已在独立 PG17 验证；**整包上传／评审／提交 API、Worker 业务编排及对应前端尚未接入，不能据此宣称 F01-08 全链验收通过。**
+本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已接入真实主数据，稳定标段身份目录／关联 API 与受限非 owner 存储已在独立 PG17 验证；整包创建、追加修订、当前与历史读取 API 已接入该存储。**整包多原件上传交互／评审／实交 API、Worker 业务编排及对应前端尚未接入，不能据此宣称 F01-08 全链验收通过。**
+
+## 整包存储 API 首切片
+
+实际接口与请求／响应 Schema 位于 `apps/api/bid_package_routes.py`、`packages/contracts/bid_package_api.py`，均在现有 `/api/v1` 登录会话内运行：
+
+| 方法 | 路径（省略 `/api/v1/bids/{bid_id}`） | 语义 |
+| --- | --- | --- |
+| POST | `/packages` | 明确选择已提交文件版本，建立新包首修订，返回 201 与当前包 ETag |
+| GET | `/packages/{package_id}` | 当前 head、冻结 manifest、冻结身份与 head ETag |
+| POST | `/packages/{package_id}/revisions` | 完整替换成员选择的新修订；必须精确 `If-Match` 当前 head |
+| GET | `/packages/{package_id}/revisions/{revision_id}` | 包与业务范围限定的不可变历史及当时冻结身份 |
+| GET | `/packages/{package_id}/revisions/{revision_id}/manifest` | 保存 manifest 的规范 UTF-8 JSON 字节；SHA256 与 `X-Manifest-SHA256` 相等 |
+
+写入请求必须有 `Origin`、`X-CSRF-Token`、`Idempotency-Key`；追加缺少 `If-Match` 返回 428，ETag 已过期返回 412。同一 actor／命令／目标／幂等键的相同内容重放返回原 ACK 与 `Idempotent-Replayed: true`，不同内容返回 409；重放不回退当前 head。新包和追加修订均复用现有生命周期写入守卫，closed／terminated／archived 拒绝新工作，旧 ACK 与历史仍可读取。此处沿用当前应用会话权限，不引入新的工作区或多租户权限体系。
+
+请求只能提交 kind（新包）、有序 members；每个成员只允许 `member_id`、`document_version_id`、可选精确 `parse_run_id`、`purposes`、`parts`。服务端从真实 profile 与 `bid-identity/2` 派生工程／稳定标段／轮次／主体，派生已提交文件的角色、字节摘要与来源引用，并匹配已有 verified upload 的角色／摘要／大小。权威包仅允许 tender／supplement／drawing／boq 的 source_original；本方包仅允许 body 的 bid_body。official_result、other、非原件、未提交版本、未核验上传以及已知包含 official_label／post_outcome／derived_mixed 的来源或祖先均拒绝。当前效力与发布授权的新评审资格仍由后续来源门禁决定，不能从这里的存储成功推导。
+
+新 API 的开放文本（成员 ID、用途、逻辑部分 ID 与分类）在 Schema 与实际请求校验中均拒绝 NUL 和孤立 Unicode 高／低代理码位；返回非 retryable 的 `422 INVALID_REQUEST`，在登记命令／包之前失败。合法中文与非 BMP 字符可原样保存。此输入边界不改变冻结的旧纯模型／评审 hash 或历史协议。
+
+新写沿用来源模块的事务锁 `sources.lock_graph()`；顺序为 bid／生命周期 → 来源图 `90127,1` → 成员文件／解析。来源图先写时 API 等待锁释放后以 READ COMMITTED 新快照检查新增祖先，不使用等待前的政策判断；只保护已知来源政策隔离，不代替正式来源效力资格核验。
+
+未提供 parse_run_id 时明确保存 `not_frozen`、未知页数与空 parts，即便已有其它成功解析也不推测选择。指定解析时核真实 run、完整物理页与证据身份；失败／缺页解析不可冒充正式精确冻结。完整合订本可指定多个逻辑页段，分册以多个明确成员保存；不会自动选择最后一个 body，也不改 `current_body_id`。不同主体／标段／轮次必须建立新包；旧包当前 head 和历史身份仍按原冻结值读取。API 的 `storage_eligible` 只表示纯模型存储条件，`review_ready` 固定 false，不表示效力、合规、评分或实交就绪。
+
+manifest 端点不读取当前资料或当前身份重造历史，而是验证持久化 manifest 并按同一 canonical 协议编码，摘要与原冻结摘要相等；JSONB 不承诺保留上传请求的空格和键顺序。历史 identity 响应使用严格 v1／v2 union，不给旧 v1 快照补 stable lot 或改摘要。`tests/test_bid_package_api.py` 在专用临时 `fusion_package_api` 上执行完整 BASE_SQL，使用只继承 tender_api 的 `fusion_package_service_api` LOGIN 与真实登录／CSRF／ASGI；合成库记录不等同于真实 OSS 上传、OCR 准确率或整包评审验收。本切片无新 DDL，也不改变已记录 SQL 指纹。
 
 ## 身份与现有结构
 
@@ -13,9 +37,9 @@
 ## 不可变修订与解析
 
 - 一个包修订持有有序成员元组。成员冻结文档版本、字节 SHA256、用途、来源、范围、原物理页数、逻辑部分与解析身份。成员、文件版本和逻辑部分 ID 分别唯一；共享附件只保存一次物理成员，多条要求可引用同一逻辑部分。
-- `next_revision()` 使用新修订 ID，增加修订号，并冻结前修订摘要。替换成员、改变用途、顺序、逻辑范围或解析证据都产生新摘要；原值对象与旧报告摘要不变。防止跨请求重用 revision ID、保证父修订真实存在等持久化约束留待 DDL 接入。
+- `next_revision()` 使用新修订 ID，增加修订号，并冻结前修订摘要。替换成员、改变用途、顺序、逻辑范围或解析证据都产生新摘要；原值对象与旧报告摘要不变。防止跨请求重用 revision ID、保证父修订真实存在与 CAS 前进等约束已由仓储及整包 DDL 执行。
 - 精确解析身份包含 `parse_run_id`、`parser_digest`、`config_digest`、`evidence_digest`。同字节订正必须产生新的解析身份和新包修订，不能改写旧解析输出。
-- 同一包内 `parse_run_id` 不可重复绑定不同文件版本；文件版本本身也不可重复。`next_revision()` 保持已有 run 的文档版本、字节摘要、原页数、解析器／配置／证据摘要一致，订正必须使用新 run ID。跨任意包和全部历史修订的全局 run 唯一约束仍须由解析存储及数据库执行；值对象不能替代持久化身份注册表。
+- 同一包内 `parse_run_id` 不可重复绑定不同文件版本；文件版本本身也不可重复。`next_revision()` 保持已有 run 的文档版本、字节摘要、原页数、解析器／配置／证据摘要一致，订正必须使用新 run ID。跨任意包和全部历史修订的全局 run 唯一约束已由解析存储及数据库注册表执行；值对象不能替代持久化身份注册表。
 - `not_frozen` 仅记录缺失原因，其他解析字段必须为空。它不是 `pending_parse` 的同义词，不能根据时间猜一个旧 parse ID；也不能正式使用。新包摘要不冒充旧协议的历史摘要，旧 manifest 原文及其哈希必须原样保存，历史兼容读写与证据取回仍属于 F01-07/F03-05 后续工作。
 - 摘要复用现有 `review_identity.digest()` 的规范 JSON 子集；不更改 `review-content/1` 固定向量。数组顺序有效，浮点数不进入包协议。
 - 所有整数取值不得超过 `9007199254740991`（`2^53−1`）：包修订号、原件页数、逻辑页段两端、标题路径的每个数字、要求最低数量及受检页段两端。构造时即以相应 `PACKAGE_*` 错误拒绝越界／布尔值，Schema 同步 maximum，避免先接受值对象、直到计算摘要才出现底层 `unsafe_integer`。
@@ -74,12 +98,14 @@
 
 首批仓储在专用 `fusion_package_repo` 临时库按以下已审依赖初始化。真实非 owner／身份 API 验证还在专用 `fusion_package_acl`／`fusion_identity_api` 库按 `bootstrap_fresh.BASE_SQL` 加载检索、运行权限等基础 SQL，见[运行权限说明](../../docs/bid-package-permissions.md)；没有运行归档 WIP SQL，也未修改业务部署：
 
-| 顺序 | SQL | SHA256 |
+| 顺序 | SQL | 首批验证时 Windows 原文件 SHA256 |
 | --- | --- | --- |
 | 1 | `sql/core.sql` | `accb37248ba097d0992924b4977786932f167b04c105031b4e6acc3be698e098` |
 | 2 | `sql/domain.sql` | `c8a1a595b6b855bdfe80671dd5719ed9c7f752d5f7b7f7d9ae8f153d286e115a` |
 | 3 | `sql/bid-packages.sql` | `f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319` |
 | 4 | `../identity/sql/stable-lot-identity.sql` | `3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738` |
+
+上表保留当时执行输入的 Windows 原文件字节摘要；当前活跃 SQL 已锁定 Git LF。Git 规范字节摘要与原 Windows 字节摘要的映射见 [`docs/fusion-sql-input-bytes.json`](../../docs/fusion-sql-input-bytes.json)，不把换行规范化当成 SQL 行为修改或重写旧验证预期值。
 
 `tests/test_bid_package_repository.py` 使用真实既有主体登记／绑定函数与原始 core／domain 主表，覆盖两类包、跨范围、历史重放、身份更正、pending 快照、同字节新解析、未知页数、直接 SQL 伪造、延迟完整性、数据库不可变守卫、双连接 CAS 及撤销后的旧隔离快照。测试账号为专用临时库 owner，用于关系／事务机制验证，不代表正式非 owner 权限、实际 API 或整包业务已验收。
 

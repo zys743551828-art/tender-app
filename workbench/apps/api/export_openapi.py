@@ -14,6 +14,7 @@ from apps.api.submission_contracts import extend_openapi as extend_submissions
 from apps.api.upload_contracts import extend_openapi as extend_uploads
 from packages.assistant.contracts import extend_openapi as extend_assistant
 from packages.authoring.contracts import extend_openapi as extend_authoring
+from packages.contracts.bid_package_api import extend_openapi as extend_bid_packages
 from packages.domain.runtime import ROOT
 from packages.identity.contracts import extend_openapi as extend_identity
 from packages.knowledge.contracts import extend_openapi as extend_knowledge
@@ -112,6 +113,7 @@ def implemented_openapi(app):
     extend_knowledge(actual)
     extend_knowledge_rag(actual)
     extend_identity(actual)
+    extend_bid_packages(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)
