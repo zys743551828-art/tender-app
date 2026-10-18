@@ -677,6 +677,7 @@ def test_graph_writer_wins_then_waiting_api_rechecks_new_label_ancestor(world):
         ).fetchone()["n"]
         == 0
     )
+
     assert (
         owner.execute(
             "SELECT count(*) AS n FROM design.commands WHERE actor_id=%s AND command_kind='create_bid_package'",
@@ -684,3 +685,128 @@ def test_graph_writer_wins_then_waiting_api_rechecks_new_label_ancestor(world):
         ).fetchone()["n"]
         == 0
     )
+
+
+def test_package_and_history_discovery_scoped_signed_pages(world):
+    values = [created(world) for _ in range(3)]
+    response = world["client"].get(world["base"] + "?kind=bid&limit=1")
+    assert response.status_code == 200
+    validate_response(world, "/api/v1/bids/{bid_id}/packages", "get", response)
+    first = response.json()
+    assert first["has_more"] and first["next_cursor"]
+    second = world["client"].get(
+        world["base"], params={"kind": "bid", "limit": 2, "cursor": first["next_cursor"]}
+    )
+    assert len(second.json()["items"]) == 2 and not second.json()["has_more"]
+    assert len({p["id"] for p in first["items"] + second.json()["items"]}) == 3
+    assert world["client"].get(world["base"] + "?kind=authority").json()["items"] == []
+    for params in (
+        {"kind": "authority", "cursor": first["next_cursor"]},
+        {"kind": "bid", "cursor": first["next_cursor"] + "x"},
+        {"limit": 0},
+    ):
+        assert world["client"].get(world["base"], params=params).status_code == 422
+    otherbid = post(world, "/bids", {"title": "other discovery bid"}).json()["id"]
+    assert (
+        world["client"]
+        .get(
+            f"/api/v1/bids/{otherbid}/packages",
+            params={"kind": "bid", "cursor": first["next_cursor"]},
+        )
+        .status_code
+        == 422
+    )
+    package = values[0].json()["manifest"]["package_id"]
+    path = world["base"] + "/" + package + "/revisions"
+    append = world["client"].post(
+        path,
+        json={"members": [world["item"]]},
+        headers=headers(world, etag=values[0].headers["etag"]),
+    )
+    assert append.status_code == 201
+    page = world["client"].get(path + "?limit=1")
+    validate_response(world, "/api/v1/bids/{bid_id}/packages/{package_id}/revisions", "get", page)
+    assert page.json()["items"][0]["revision"] == 2 and page.json()["has_more"]
+    older = world["client"].get(path, params={"cursor": page.json()["next_cursor"]})
+    assert [r["revision"] for r in older.json()["items"]] == [1]
+    assert (
+        world["client"]
+        .get(
+            world["base"] + "/" + values[1].json()["manifest"]["package_id"] + "/revisions",
+            params={"cursor": page.json()["next_cursor"]},
+        )
+        .status_code
+        == 422
+    )
+
+
+def test_discovery_enumerates_committed_versions_and_exact_parse_runs_without_choosing_latest(
+    world,
+):
+    from test_bid_package_repository import add_document
+
+    c = world["database"]["owner"]
+    with c.transaction():
+        second = add_document(c, world["scope"], world["actor"])
+        attach(c, world["scope"].bid_id, world["actor"], second, verified=False)
+    docpath = f"/api/v1/bids/{world['scope'].bid_id}/package-documents"
+    docs = world["client"].get(docpath + "?kind=bid&limit=1")
+    validate_response(world, "/api/v1/bids/{bid_id}/package-documents", "get", docs)
+    more = world["client"].get(
+        docpath, params={"kind": "bid", "cursor": docs.json()["next_cursor"]}
+    )
+    all_docs = docs.json()["items"] + more.json()["items"]
+    assert {d["id"] for d in all_docs} == {
+        second.document_version_id,
+        world["member"].document_version_id,
+    }
+    assert {d["id"]: d["verified_upload"] for d in all_docs}[second.document_version_id] is False
+    assert (
+        world["client"]
+        .get(docpath, params={"kind": "authority", "cursor": docs.json()["next_cursor"]})
+        .status_code
+        == 422
+    )
+    for coverage in ("partial", "failed"):
+        c.execute(
+            "INSERT INTO design.parse_runs(id,bid_id,document_version_id,parser_digest,config_digest,page_count,coverage,gaps) VALUES(%s,%s,%s,%s,%s,0,%s,'[]')",
+            (
+                uid(),
+                world["scope"].bid_id,
+                world["member"].document_version_id,
+                "a" * 64,
+                "b" * 64,
+                coverage,
+            ),
+        )
+    parsepath = docpath + "/" + world["member"].document_version_id + "/parses"
+    parses = world["client"].get(parsepath + "?limit=1")
+    validate_response(
+        world, "/api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses", "get", parses
+    )
+    remaining = world["client"].get(parsepath, params={"cursor": parses.json()["next_cursor"]})
+    assert {p["coverage"] for p in parses.json()["items"] + remaining.json()["items"]} == {
+        "complete",
+        "partial",
+        "failed",
+    }
+    assert (
+        world["client"]
+        .get(
+            docpath + "/" + second.document_version_id + "/parses",
+            params={"cursor": parses.json()["next_cursor"]},
+        )
+        .status_code
+        == 422
+    )
+    assert world["client"].get(docpath + "/" + uid() + "/parses").status_code == 404
+    assert (
+        c.execute(
+            "SELECT count(*) AS n FROM design.bid_packages WHERE bid_id=%s",
+            (world["scope"].bid_id,),
+        ).fetchone()["n"]
+        == 0
+    )
+    world["client"].cookies.clear()
+    for path in (world["base"], docpath, parsepath):
+        assert world["client"].get(path).status_code == 401

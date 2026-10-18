@@ -9067,15 +9067,102 @@
             "SessionCookie": []
           }
         ]
-      }
-    },
-    "/api/v1/bids/{bid_id}/packages/{package_id}": {
+      },
       "get": {
         "tags": [
           "bid-packages"
         ],
-        "summary": "Get Head",
-        "operationId": "getBidPackageHead",
+        "summary": "List Packages",
+        "operationId": "listBidPackages",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "authority",
+                    "bid"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped explicit discovery; parse coverage does not establish freezing eligibility.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidPackageHeadPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions": {
+      "get": {
+        "tags": [
+          "bid-packages"
+        ],
+        "summary": "List Revisions",
+        "operationId": "listBidPackageRevisions",
         "parameters": [
           {
             "name": "bid_id",
@@ -9096,22 +9183,43 @@
               "format": "uuid",
               "title": "Package Id"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Frozen package and identity; storage eligibility does not prove business readiness.",
-            "headers": {
-              "ETag": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
+            "description": "Scoped explicit discovery; parse coverage does not establish freezing eligibility.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BidPackageStoredView"
+                  "$ref": "#/components/schemas/BidPackageRevisionSummaryPage"
                 }
               }
             }
@@ -9125,9 +9233,7 @@
             "SessionCookie": []
           }
         ]
-      }
-    },
-    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions": {
+      },
       "post": {
         "tags": [
           "bid-packages"
@@ -9200,6 +9306,64 @@
         },
         "responses": {
           "201": {
+            "description": "Frozen package and identity; storage eligibility does not prove business readiness.",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidPackageStoredView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}": {
+      "get": {
+        "tags": [
+          "bid-packages"
+        ],
+        "summary": "Get Head",
+        "operationId": "getBidPackageHead",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
             "description": "Frozen package and identity; storage eligibility does not prove business readiness.",
             "headers": {
               "ETag": {
@@ -9348,6 +9512,168 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BidPackageManifest"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/package-documents": {
+      "get": {
+        "tags": [
+          "bid-packages"
+        ],
+        "summary": "List Documents",
+        "operationId": "listBidPackageDocuments",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "authority",
+                "bid"
+              ],
+              "type": "string",
+              "default": "bid",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped explicit discovery; parse coverage does not establish freezing eligibility.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidPackageDocumentPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses": {
+      "get": {
+        "tags": [
+          "bid-packages"
+        ],
+        "summary": "List Parses",
+        "operationId": "listBidPackageParses",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "document_version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Version Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped explicit discovery; parse coverage does not establish freezing eligibility.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidPackageParsePage"
                 }
               }
             }
@@ -38259,6 +38585,290 @@
           "identity",
           "storage_eligible",
           "review_ready"
+        ]
+      },
+      "BidPackageHead": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "enum": [
+              "authority",
+              "bid"
+            ]
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "digest": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "bid_id",
+          "kind",
+          "revision_id",
+          "revision",
+          "digest"
+        ]
+      },
+      "BidPackageRevisionSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "package_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "digest": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "package_id",
+          "revision",
+          "digest",
+          "created_at"
+        ]
+      },
+      "BidPackageDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "file_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "file_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "filename": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "tender",
+              "supplement",
+              "drawing",
+              "boq",
+              "body"
+            ]
+          },
+          "artifact_kind": {
+            "enum": [
+              "bid_body",
+              "review_report",
+              "annotated_review_copy",
+              "source_original",
+              "research_artifact"
+            ]
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "verified_upload": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "bid_id",
+          "file_id",
+          "file_revision",
+          "filename",
+          "role",
+          "artifact_kind",
+          "sha256",
+          "verified_upload"
+        ]
+      },
+      "BidPackageParse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "document_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "coverage": {
+            "enum": [
+              "complete",
+              "partial",
+              "failed"
+            ]
+          },
+          "page_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "gaps": {
+            "type": "array",
+            "items": {}
+          },
+          "parser_digest": {
+            "type": "string"
+          },
+          "config_digest": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "document_version_id",
+          "coverage",
+          "page_count",
+          "gaps",
+          "parser_digest",
+          "config_digest",
+          "created_at"
+        ]
+      },
+      "BidPackageHeadPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BidPackageHead"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "BidPackageRevisionSummaryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BidPackageRevisionSummary"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "BidPackageDocumentPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BidPackageDocument"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "BidPackageParsePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BidPackageParse"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor"
         ]
       },
       "PricingEvidenceQuote": {

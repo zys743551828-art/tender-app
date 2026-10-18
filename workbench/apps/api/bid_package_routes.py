@@ -1,9 +1,10 @@
 """Whole-bid immutable package storage API; no review or paid execution implied."""
 
 from contextlib import contextmanager
+from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse, Response
 
 from apps.api.auth import auth
@@ -14,6 +15,9 @@ from packages.domain.bid_packages import PackageError
 from packages.domain.runtime import DomainError, connection
 
 router = APIRouter(prefix="/api/v1/bids/{bid_id}/packages", tags=["bid-packages"])
+discovery_router = APIRouter(
+    prefix="/api/v1/bids/{bid_id}/package-documents", tags=["bid-packages"]
+)
 
 
 @contextmanager
@@ -44,6 +48,62 @@ def create_package(bid_id: UUID, r: Request, body: dict = Body(...)):
             return saved(cmd.replay, True)
         package = service.create_revision(c, bid_id, body)
         return saved(cmd.finish(service.view(c, package), 201, {"ETag": service.head_tag(package)}))
+
+
+@router.get("")
+def list_packages(
+    bid_id: UUID,
+    r: Request,
+    kind: Literal["authority", "bid"] | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with connection() as c:
+        return service.directory(c, bid_id, "heads", limit=limit, cursor=cursor, kind=kind)
+
+
+@router.get("/{package_id}/revisions")
+def list_revisions(
+    bid_id: UUID,
+    package_id: UUID,
+    r: Request,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with connection() as c:
+        return service.directory(
+            c, bid_id, "revisions", limit=limit, cursor=cursor, package_id=package_id
+        )
+
+
+@discovery_router.get("")
+def list_documents(
+    bid_id: UUID,
+    r: Request,
+    kind: Literal["authority", "bid"] = "bid",
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with connection() as c:
+        return service.directory(c, bid_id, "documents", limit=limit, cursor=cursor, kind=kind)
+
+
+@discovery_router.get("/{document_version_id}/parses")
+def list_parses(
+    bid_id: UUID,
+    document_version_id: UUID,
+    r: Request,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with connection() as c:
+        return service.directory(
+            c, bid_id, "parses", limit=limit, cursor=cursor, document_id=document_version_id
+        )
 
 
 @router.get("/{package_id}")

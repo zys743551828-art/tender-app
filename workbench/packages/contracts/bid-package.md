@@ -1,6 +1,6 @@
 # 整份标书资料包领域契约
 
-本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已接入真实主数据，稳定标段身份目录／关联 API 与受限非 owner 存储已在独立 PG17 验证；整包创建、追加修订、当前与历史读取 API 已接入该存储。**整包多原件上传交互／评审／实交 API、Worker 业务编排及对应前端尚未接入，不能据此宣称 F01-08 全链验收通过。**
+本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已接入真实主数据，稳定标段身份目录／关联 API 与受限非 owner 存储已在独立 PG17 验证；整包创建、追加修订、当前与历史读取 API 已接入该存储，资料页已接整包发现与明确选择原件／解析／逻辑范围的编辑组件。**整包上传编排／评审／实交 API、Worker 业务编排及全流程前端联动尚未完成，不能据此宣称 F01-08 全链验收通过。**
 
 ## 整包存储 API 首切片
 
@@ -13,6 +13,12 @@
 | POST | `/packages/{package_id}/revisions` | 完整替换成员选择的新修订；必须精确 `If-Match` 当前 head |
 | GET | `/packages/{package_id}/revisions/{revision_id}` | 包与业务范围限定的不可变历史及当时冻结身份 |
 | GET | `/packages/{package_id}/revisions/{revision_id}/manifest` | 保存 manifest 的规范 UTF-8 JSON 字节；SHA256 与 `X-Manifest-SHA256` 相等 |
+| GET | `/packages` | 以包 ID 稳定分页列当前 head 摘要，可按 kind 筛选 |
+| GET | `/packages/{package_id}/revisions` | 按修订号倒序分页查历史入口，不重造历史内容 |
+| GET | `/package-documents` | 按 kind 列本项目所有已提交原件版本，不限当前资料快照／单正文指针 |
+| GET | `/package-documents/{document_version_id}/parses` | 分页列精确 run 身份、时间、页数、coverage 和 gaps，不推断最新 run |
+
+发现接口均需登录，以 `limit=1…100` 和不透明 `cursor` 分页。签名游标绑定目录种类、bid、包／文件范围及 kind 筛选，错用或篡改返回 `422 INVALID_CURSOR`；不存在的范围返回 404。目录只返回已存记录，不建立替代包、不写单正文指针。文件目录的 `verified_upload` 只说明当前已匹配核验上传依据，不能代替正式来源资格；parse 的 complete／partial／failed 是原记录 coverage，complete 不证明实际页完整性或正式冻结资格，保存仍执行仓储核验。
 
 写入请求必须有 `Origin`、`X-CSRF-Token`、`Idempotency-Key`；追加缺少 `If-Match` 返回 428，ETag 已过期返回 412。同一 actor／命令／目标／幂等键的相同内容重放返回原 ACK 与 `Idempotent-Replayed: true`，不同内容返回 409；重放不回退当前 head。新包和追加修订均复用现有生命周期写入守卫，closed／terminated／archived 拒绝新工作，旧 ACK 与历史仍可读取。此处沿用当前应用会话权限，不引入新的工作区或多租户权限体系。
 
@@ -25,6 +31,8 @@
 未提供 parse_run_id 时明确保存 `not_frozen`、未知页数与空 parts，即便已有其它成功解析也不推测选择。指定解析时核真实 run、完整物理页与证据身份；失败／缺页解析不可冒充正式精确冻结。完整合订本可指定多个逻辑页段，分册以多个明确成员保存；不会自动选择最后一个 body，也不改 `current_body_id`。不同主体／标段／轮次必须建立新包；旧包当前 head 和历史身份仍按原冻结值读取。API 的 `storage_eligible` 只表示纯模型存储条件，`review_ready` 固定 false，不表示效力、合规、评分或实交就绪。
 
 manifest 端点不读取当前资料或当前身份重造历史，而是验证持久化 manifest 并按同一 canonical 协议编码，摘要与原冻结摘要相等；JSONB 不承诺保留上传请求的空格和键顺序。历史 identity 响应使用严格 v1／v2 union，不给旧 v1 快照补 stable lot 或改摘要。`tests/test_bid_package_api.py` 在专用临时 `fusion_package_api` 上执行完整 BASE_SQL，使用只继承 tender_api 的 `fusion_package_service_api` LOGIN 与真实登录／CSRF／ASGI；合成库记录不等同于真实 OSS 上传、OCR 准确率或整包评审验收。本切片无新 DDL，也不改变已记录 SQL 指纹。
+
+资料页独立组件 `apps/web/src/BidPackages.tsx` 提供两类包目录、当前／历史重开、文件版本与精确解析分页发现、用途／逻辑页段／共享范围编辑及规范 manifest 下载。默认不冻结解析；选择明确 run 后才可划逻辑范围，切换 run 清空本地旧页段而不改服务器历史。用途支持中文资格／商务／技术／报价／附件及自定义，输入原文保留分隔符。旧历史编辑明确重读当前 head，不把旧历史 ETag 当当前基线；412 保留本地选择，读取并展示最新记录后需用户明确采用其基线，再另行保存。网络结果不明的相同请求沿用原幂等键，不自动重试。切项目后旧异步响应不能覆盖新工作区。已归档／结束项目仍允许历史读取，新写由界面与服务器生命周期守卫共同阻断。组件行为测试为明确合成 HTTP fixture，不代替真实浏览器、上传或评审链验收。
 
 ## 身份与现有结构
 

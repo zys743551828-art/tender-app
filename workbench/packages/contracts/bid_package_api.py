@@ -80,6 +80,76 @@ SCHEMAS = {
     ),
 }
 
+SCHEMAS.update(
+    {
+        "BidPackageHead": object_schema(
+            {
+                "id": UUID,
+                "bid_id": UUID,
+                "kind": {"enum": ["authority", "bid"]},
+                "revision_id": UUID,
+                "revision": {"type": "integer", "minimum": 1},
+                "digest": {"type": "string"},
+            }
+        ),
+        "BidPackageRevisionSummary": object_schema(
+            {
+                "id": UUID,
+                "package_id": UUID,
+                "revision": {"type": "integer", "minimum": 1},
+                "digest": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+            }
+        ),
+        "BidPackageDocument": object_schema(
+            {
+                "id": UUID,
+                "bid_id": UUID,
+                "file_id": UUID,
+                "file_revision": {"type": "integer", "minimum": 1},
+                "filename": {"type": "string"},
+                "role": {"enum": ["tender", "supplement", "drawing", "boq", "body"]},
+                "artifact_kind": {
+                    "enum": [
+                        "bid_body",
+                        "review_report",
+                        "annotated_review_copy",
+                        "source_original",
+                        "research_artifact",
+                    ]
+                },
+                "sha256": {"type": "string"},
+                "verified_upload": {"type": "boolean"},
+            }
+        ),
+        "BidPackageParse": object_schema(
+            {
+                "id": UUID,
+                "document_version_id": UUID,
+                "coverage": {"enum": ["complete", "partial", "failed"]},
+                "page_count": {"type": "integer", "minimum": 0},
+                "gaps": {"type": "array", "items": {}},
+                "parser_digest": {"type": "string"},
+                "config_digest": {"type": "string"},
+                "created_at": {"type": "string", "format": "date-time"},
+            }
+        ),
+    }
+)
+for _name in (
+    "BidPackageHead",
+    "BidPackageRevisionSummary",
+    "BidPackageDocument",
+    "BidPackageParse",
+):
+    SCHEMAS[_name + "Page"] = object_schema(
+        {
+            "items": {"type": "array", "items": {"$ref": "#/components/schemas/" + _name}},
+            "has_more": {"type": "boolean"},
+            "next_cursor": {"type": ["string", "null"]},
+        }
+    )
+
 
 def validate(name, body):
     if not Draft202012Validator(SCHEMAS[name], format_checker=FormatChecker()).is_valid(body):
@@ -125,6 +195,36 @@ def extend_openapi(actual):
                             + ("BidPackageManifest" if raw else "BidPackageStoredView")
                         }
                     }
+                },
+            },
+            "default": {"$ref": "#/components/responses/DomainError"},
+        }
+    for path, operation_id, schema in [
+        (base, "listBidPackages", "BidPackageHeadPage"),
+        (
+            base + "/{package_id}/revisions",
+            "listBidPackageRevisions",
+            "BidPackageRevisionSummaryPage",
+        ),
+        (
+            "/api/v1/bids/{bid_id}/package-documents",
+            "listBidPackageDocuments",
+            "BidPackageDocumentPage",
+        ),
+        (
+            "/api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
+            "listBidPackageParses",
+            "BidPackageParsePage",
+        ),
+    ]:
+        op = actual["paths"][path]["get"]
+        op["operationId"] = operation_id
+        op["security"] = [{"SessionCookie": []}]
+        op["responses"] = {
+            "200": {
+                "description": "Scoped explicit discovery; parse coverage does not establish freezing eligibility.",
+                "content": {
+                    "application/json": {"schema": {"$ref": "#/components/schemas/" + schema}}
                 },
             },
             "default": {"$ref": "#/components/responses/DomainError"},

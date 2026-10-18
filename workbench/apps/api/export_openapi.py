@@ -113,7 +113,18 @@ def implemented_openapi(app):
     extend_knowledge(actual)
     extend_knowledge_rag(actual)
     extend_identity(actual)
-    extend_bid_packages(actual)
+    package_bases = (
+        "/api/v1/bids/{bid_id}/packages",
+        "/api/v1/bids/{bid_id}/package-documents",
+    )
+    if any(
+        path == base or path.startswith(base + "/")
+        for path in actual["paths"]
+        for base in package_bases
+    ):
+        # Partial apps need no package contracts; registered package routes still
+        # undergo the extender's complete operation/schema checks.
+        extend_bid_packages(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)

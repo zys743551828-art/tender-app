@@ -14,13 +14,91 @@ from packages.domain.bid_packages import (
     require,
 )
 from packages.domain.review_identity import canonical
-from packages.domain.runtime import etag, fetch
+from packages.domain.runtime import clean, etag, fetch, sha
+from packages.identity import pagination
 from packages.knowledge import sources
 from packages.lifecycle.service import assert_work_writable
 
 
 def lock_bid(c, bid_id):
     fetch(c, "SELECT id FROM design.bids WHERE id=%s FOR UPDATE", (bid_id,))
+
+
+def directory(
+    c, bid_id, collection, *, limit=20, cursor=None, kind=None, package_id=None, document_id=None
+):
+    """Signed keyset discovery; exact IDs, never choose latest parse or body."""
+    fetch(c, "SELECT id FROM design.bids WHERE id=%s", (bid_id,))
+    scope = sha(
+        {
+            "directory": "bid-package-" + collection + "/1",
+            "bid_id": str(bid_id),
+            "package_id": str(package_id) if package_id else None,
+            "document_id": str(document_id) if document_id else None,
+            "kind": kind,
+        }
+    )
+    after = pagination.decode(cursor, scope)
+    last_id = after[-1] if after else None
+    if collection == "heads":
+        rows = repository._all(
+            c,
+            """SELECT p.id,p.bid_id,p.kind,h.revision_id,h.revision,h.digest
+        FROM design.bid_packages p JOIN design.bid_package_heads h ON h.package_id=p.id
+        WHERE p.bid_id=%s AND (%s::text IS NULL OR p.kind=%s) AND (%s::uuid IS NULL OR p.id>%s)
+        ORDER BY p.id LIMIT %s""",
+            (bid_id, kind, kind, last_id, last_id, limit + 1),
+        )
+    elif collection == "revisions":
+        fetch(
+            c, "SELECT id FROM design.bid_packages WHERE bid_id=%s AND id=%s", (bid_id, package_id)
+        )
+        rows = repository._all(
+            c,
+            """SELECT r.id,r.package_id,r.revision,r.digest,r.created_at
+        FROM design.bid_package_revisions r WHERE r.package_id=%s
+        AND (%s::uuid IS NULL OR (r.revision,r.id)<(%s::bigint,%s))
+        ORDER BY r.revision DESC,r.id DESC LIMIT %s""",
+            (package_id, last_id, after[0] if after else None, last_id, limit + 1),
+        )
+    elif collection == "documents":
+        roles = ["tender", "supplement", "drawing", "boq"] if kind == "authority" else ["body"]
+        rows = repository._all(
+            c,
+            """SELECT d.id,d.bid_id,v.file_id,v.revision AS file_revision,
+        d.original_name AS filename,f.role,d.artifact_kind,b.digest AS sha256,
+        EXISTS(SELECT 1 FROM design.uploads u WHERE u.bid_id=d.bid_id AND u.verified_version_id=d.id
+        AND u.state='verified' AND u.role=f.role AND u.declared_digest=b.digest AND u.declared_size=b.byte_size) AS verified_upload
+        FROM design.document_file_versions v JOIN design.document_files f ON f.id=v.file_id
+        JOIN design.document_versions d ON d.id=v.version_id AND d.bid_id=v.bid_id
+        JOIN design.blobs b ON b.id=d.blob_id WHERE d.bid_id=%s AND f.role=ANY(%s)
+        AND (%s::uuid IS NULL OR d.id>%s) ORDER BY d.id LIMIT %s""",
+            (bid_id, roles, last_id, last_id, limit + 1),
+        )
+    else:
+        fetch(
+            c,
+            "SELECT id FROM design.document_versions WHERE bid_id=%s AND id=%s",
+            (bid_id, document_id),
+        )
+        rows = repository._all(
+            c,
+            """SELECT id,document_version_id,coverage,page_count,gaps,
+        parser_digest,config_digest,created_at FROM design.parse_runs WHERE bid_id=%s AND document_version_id=%s
+        AND (%s::uuid IS NULL OR id>%s) ORDER BY id LIMIT %s""",
+            (bid_id, document_id, last_id, last_id, limit + 1),
+        )
+    items = clean(rows[:limit])
+    return {
+        "items": items,
+        "has_more": len(rows) > limit,
+        "next_cursor": pagination.encode(
+            scope,
+            [str(items[-1]["revision"]) if collection == "revisions" else "", items[-1]["id"]],
+        )
+        if len(rows) > limit
+        else None,
+    }
 
 
 def head(c, bid_id, package_id):
