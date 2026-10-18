@@ -39,6 +39,10 @@ import {
 } from "./useAssistantFeed";
 import { useProjectStream } from "./useProjectStream";
 import { useBidChoices } from "./useBidChoices";
+import {
+  AssistantIntentRecovery,
+  type AssistantRecoverySelection,
+} from "./AssistantIntentRecovery";
 
 export function AssistantHub({
   memberId,
@@ -377,14 +381,17 @@ function ConversationContent({
   const ended = validJobs.filter(
     (job) => !ongoing.some((item) => item.id === job.id),
   );
-  const blocked =
+  const unresolved = validJobs.filter(
+    (job) => job.requires_billing_reconciliation,
+  );
+  const hardBlocked =
     foreign ||
+    jobs.loading ||
+    jobs.unavailable ||
     !!jobs.error ||
     !jobs.data ||
-    validJobs.some(
-      (job) =>
-        job.requires_billing_reconciliation ||
-        ["queued", "running", "cancel_requested"].includes(job.operation.state),
+    validJobs.some((job) =>
+      ["queued", "running", "cancel_requested"].includes(job.operation.state),
     );
   const continuation = useAssistantContinuation(
     (!!messages.data || !!messages.error) && !messages.loading && !jobs.loading,
@@ -476,7 +483,9 @@ function ConversationContent({
         path={path}
         etag={etag}
         memberId={memberId}
-        busyJob={blocked}
+        busyJob={hardBlocked || unresolved.length > 0}
+        hardBlocked={hardBlocked}
+        unresolvedJobs={unresolved}
         onChanged={() => {
           onChanged();
           void messages.reload();
@@ -494,6 +503,8 @@ function AssistantComposer({
   etag,
   memberId,
   busyJob,
+  hardBlocked,
+  unresolvedJobs,
   onChanged,
 }: {
   conversation: AssistantConversation;
@@ -501,6 +512,8 @@ function AssistantComposer({
   etag: string | null;
   memberId: string;
   busyJob: boolean;
+  hardBlocked: boolean;
+  unresolvedJobs: AssistantJob[];
   inputRef: RefObject<HTMLTextAreaElement | null>;
   onChanged: () => void;
 }) {
@@ -524,6 +537,11 @@ function AssistantComposer({
   const [sectionId, setSectionId] = useKnowledgeInput(key + "section", "");
   const [showSources, setShowSources] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
+  const [acknowledgement, setAcknowledgement] = useState("");
+  const [recovery, setRecovery] = useState<AssistantRecoverySelection>({
+    active: false,
+    intent: null,
+  });
   const turn = useRecordedCommand(
     `assistant-turn:${memberId}:${conversation.id}`,
   );
@@ -532,13 +550,39 @@ function AssistantComposer({
   );
   const locked = turn.busy || !!turn.pending || note.busy || !!note.pending;
   const active = conversation.state === "active";
-  const accept = (value: AssistantJob | WorkMessageView | undefined) => {
+  const continuing = recovery.intent?.request_mode === "continue";
+  const sendBlocked =
+    hardBlocked || (recovery.active ? !recovery.intent : busyJob);
+  const accept = (
+    value: AssistantJob | WorkMessageView | undefined,
+    request?: AssistantTurnRequest,
+  ) => {
     if (!value) return;
     if (
       value.conversation_id !== conversation.id ||
       value.bid_id !== conversation.bid_id
     ) {
       setFailure(new Error("写入结果的会话身份不一致，请刷新核对。"));
+      return;
+    }
+    if (
+      "operation" in value &&
+      request?.request_mode === "continue" &&
+      value.id !== request.related_job_id
+    ) {
+      setFailure(new Error("返回的处理不是所选原任务，草稿保留，请刷新核对。"));
+      return;
+    }
+    if (
+      "operation" in value &&
+      ((request?.request_mode === "continue" &&
+        value.id === request.related_job_id) ||
+        unresolvedJobs.some((job) => job.id === value.id))
+    ) {
+      setAcknowledgement(
+        "已读回原处理状态，未创建新任务或模型调用；下方草稿保留。",
+      );
+      onChanged();
       return;
     }
     setText("");
@@ -553,16 +597,17 @@ function AssistantComposer({
   }
   async function send(asNote: boolean) {
     if (
-      !text.trim() ||
+      (!text.trim() && (asNote || !continuing)) ||
       !basis ||
       !active ||
       locked ||
       turn.conflict ||
       note.conflict ||
-      (!asNote && busyJob)
+      (!asNote && sendBlocked)
     )
       return;
     setFailure(null);
+    setAcknowledgement("");
     if (asNote) {
       const request: WorkMessageRequest = {
         client_message_id: clientId,
@@ -578,22 +623,27 @@ function AssistantComposer({
     } else {
       const request: AssistantTurnRequest = {
         client_message_id: clientId,
-        text: text.trim(),
-        source_selection: sources.map((source) => source.reference),
-        section_id: sources.some(
-          (source) =>
-            source.reference.kind === "section" &&
-            source.reference.id === sectionId,
-        )
-          ? sectionId
-          : null,
+        text: continuing ? "查看原任务状态" : text.trim(),
+        source_selection: continuing
+          ? []
+          : sources.map((source) => source.reference),
+        section_id:
+          !continuing &&
+          sources.some(
+            (source) =>
+              source.reference.kind === "section" &&
+              source.reference.id === sectionId,
+          )
+            ? sectionId
+            : null,
+        ...(recovery.active ? recovery.intent : {}),
       };
       const value = await turn.run<AssistantJob>(
         `${path}/turns`,
         request,
         basis,
       );
-      accept(value?.data);
+      accept(value?.data, request);
     }
   }
   async function rebase() {
@@ -721,6 +771,19 @@ function AssistantComposer({
             </select>
           </label>
         )}
+        <AssistantIntentRecovery
+          bidId={conversation.bid_id}
+          jobs={unresolvedJobs}
+          sources={sources}
+          disabled={locked || !active || hardBlocked || !etag}
+          onInteract={capture}
+          onChange={setRecovery}
+        />
+        {acknowledgement && (
+          <p className="notice neutral" role="status">
+            {acknowledgement}
+          </p>
+        )}
         <ErrorNotice error={failure ?? turn.error ?? note.error} />
         {(turn.conflict || note.conflict) && (
           <p className="notice warning">
@@ -741,14 +804,22 @@ function AssistantComposer({
             disabled={
               locked ||
               !active ||
-              busyJob ||
-              !text.trim() ||
+              sendBlocked ||
+              (!text.trim() && !continuing) ||
               !basis ||
               !!turn.conflict ||
               !!note.conflict
             }
           >
-            {turn.busy ? "正在取得受理结果…" : "发送给助手"}
+            {turn.busy
+              ? "正在取得受理结果…"
+              : continuing
+                ? "关联原任务并查看状态"
+                : recovery.active
+                  ? recovery.intent
+                    ? "提交明确的新问题"
+                    : "请先完成请求选择"
+                  : "发送给助手"}
           </button>
           {conversation.bid_id && (
             <button
@@ -788,7 +859,12 @@ function AssistantComposer({
             onClick={() =>
               void turn
                 .retry<AssistantJob>()
-                .then((value) => accept(value?.data))
+                .then((value) =>
+                  accept(
+                    value?.data,
+                    turn.pending?.body as AssistantTurnRequest,
+                  ),
+                )
             }
           >
             恢复原提问受理结果
