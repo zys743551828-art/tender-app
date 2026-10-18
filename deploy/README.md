@@ -90,6 +90,10 @@ docker compose -f compose.yml -f compose.local-oss.yml -f compose.word.yml up -d
 
 OCR／表格候选仍待核验，不能自动当作业务证据。部署此能力时须统一更新 API 与全部后端 worker，确保业务证据过滤逻辑一致；不要只更新解析 worker。原件哈希、识别预算、超时、坐标和恢复约定以解析产物契约为准。
 
+扫描网格结构与可能续表预览无需新增迁移，数据库仍为 0007；统一更新后新解析使用 `pdfium-1.4`，在原件页“核验候选”内按需打开“查看表格结构候选”。旧解析显示未执行，既有报告保持；不在部署时自动重解析资料。该预览只对照原始识别结果，不确认整张表或合并跨页证据，详见[结构契约](../contracts/table-structures.md)。
+
+`backend/constraints.txt` 固定现有 Linux／Python 3.11 部署的 76 个运行包版本，标准 Dockerfile 自动使用此锁；本机镜像已逐包核对相同，未同时升级识别运行时。此锁的其他平台／Python 版本尚未验证。
+
 ### 2.1 服务器
 
 | 项 | 要求 | 说明 |

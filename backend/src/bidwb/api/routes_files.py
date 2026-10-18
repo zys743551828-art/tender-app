@@ -21,6 +21,7 @@ from bidwb.schemas import (
     RecognitionCandidates,
     RecognitionReview,
     RecognitionReviewRequest,
+    TableStructurePreview,
     UploadComplete,
     UploadRequest,
     UploadResult,
@@ -42,6 +43,19 @@ def recognition_candidates(
 ) -> RecognitionCandidates:
     with ctr.engine.connect() as conn:
         return recognition.candidates(conn, session.actor, version_id, offset)
+
+
+@router.get("/files/{version_id}/table-structures", response_model=TableStructurePreview, operation_id="getTableStructurePreview")
+def table_structure_preview(
+    version_id: str,
+    session: CurrentSession,
+    ctr: Ctr,
+    table_index: Annotated[int, Query(ge=0, le=1000000)] = 0,
+    row_offset: Annotated[int, Query(ge=0, le=1000000)] = 0,
+    expected_parse_id: str | None = None,
+) -> TableStructurePreview:
+    with ctr.engine.connect() as conn:
+        return recognition.table_preview(conn, ctr.store, session.actor, version_id, table_index, row_offset, expected_parse_id)
 
 
 @router.post("/files/{version_id}/recognition:review", response_model=RecognitionReview, operation_id="reviewRecognitionCandidate")

@@ -12,13 +12,15 @@ import tempfile
 import threading
 import time
 from collections.abc import Callable
+from itertools import pairwise
 from pathlib import Path
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from bidwb.config import Settings
 from bidwb.parsing import Chunk, ParsedDocument
+from bidwb.table_candidates import SCHEMA
 from bidwb.util import xml_safe
 
 MODEL_FILES = {
@@ -48,6 +50,28 @@ class CandidateLine(LocatedCandidate):
 
 class CandidateTable(LocatedCandidate):
     rows: Annotated[list[Annotated[list[str | None], Field(max_length=100)]], Field(max_length=1000)]
+    source: Literal["native_table", "raster_grid"] = "native_table"
+    column_boundaries: Annotated[list[Annotated[float, Field(ge=0, le=1)]], Field(max_length=101)] | None = None
+    row_boundaries: Annotated[list[Annotated[float, Field(ge=0, le=1)]], Field(max_length=1001)] | None = None
+    cell_line_indices: list[list[list[Annotated[int, Field(ge=0)]]]] | None = None
+    unassigned_line_indices: list[Annotated[int, Field(ge=0)]] = Field(default_factory=list)
+    issues: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _geometry(self) -> Self:
+        for boundaries in (self.column_boundaries, self.row_boundaries):
+            if boundaries is not None and (len(boundaries) < 2 or any(a >= b for a, b in pairwise(boundaries))):
+                raise ValueError("invalid table boundaries")
+        if self.source == "raster_grid":
+            if self.column_boundaries is None or self.row_boundaries is None or self.cell_line_indices is None:
+                raise ValueError("raster grid geometry missing")
+            if len(self.row_boundaries) != len(self.rows) + 1 or len(self.cell_line_indices) != len(self.rows):
+                raise ValueError("raster grid rows mismatch")
+            if any(len(row) + 1 != len(self.column_boundaries) for row in self.rows):
+                raise ValueError("raster grid columns mismatch")
+            if any(len(indices) != len(row) for row, indices in zip(self.rows, self.cell_line_indices, strict=True)):
+                raise ValueError("raster cell mapping mismatch")
+        return self
 
 
 class PageEnrichment(BaseModel):
@@ -62,6 +86,14 @@ class PageEnrichment(BaseModel):
     render_sha256: str | None = None
     render_size: list[int] | None = None
     engines: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _line_references(self) -> Self:
+        for table in self.tables:
+            references = [*table.unassigned_line_indices, *(i for row in (table.cell_line_indices or []) for cell in row for i in cell)]
+            if any(i >= len(self.lines) for i in references) or len(references) != len(set(references)):
+                raise ValueError("invalid OCR line references")
+        return self
 
 
 def _reader(stream: Any, messages: queue.Queue[str | None]) -> None:
@@ -131,6 +163,7 @@ def enrich_document(data: bytes, document: ParsedDocument, settings: Settings, c
     selected = [p.physical_page for p in ordered[: settings.parse_enrichment_max_pages]]
     result: dict[str, Any] = {
         "schema": "local-enrichment-1",
+        "table_structure_schema": SCHEMA,
         "source_sha256": source_sha,
         "selected_pages": selected,
         "skipped_pages": [p.physical_page for p in ordered[settings.parse_enrichment_max_pages :]],
@@ -212,6 +245,8 @@ def candidate_chunks(enrichment: dict[str, Any]) -> list[Chunk]:
                     )
         for table in page.tables:
             for row in table.rows:
+                if not any(cell and cell.strip() for cell in row):
+                    continue
                 value = " | ".join(xml_safe(c).strip() if c else "" for c in row).strip()
                 for offset in range(0, len(value), 400):
                     quote = value[offset : offset + 400]
@@ -222,7 +257,7 @@ def candidate_chunks(enrichment: dict[str, Any]) -> list[Chunk]:
                                 quote,
                                 table.bbox,
                                 "table",
-                                "native_table",
+                                table.source,
                                 None,
                                 any(c.isdigit() or c in "%‰" for c in quote),
                             )

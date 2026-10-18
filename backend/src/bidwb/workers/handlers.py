@@ -101,6 +101,15 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         # 不写解析记录——这样界面显示“解析失败”，快照也不会把它当作可用输入。
         return _parse_failure(document)
     encoded, retrieval_index = _embed_parse(ctx, document)
+    structures = None
+    if enrichment is not None and enrichment.get("table_structure_schema"):
+        from bidwb.table_candidates import structure_catalog  # noqa: PLC0415
+
+        structures = structure_catalog(enrichment)
+        if structures["tables"]:
+            document.gaps.append("table_structure_not_verified")
+        if structures["cross_page_candidates"]:
+            document.gaps.append("cross_page_tables_not_verified")
     summary = {
         "parser_version": parsing.PARSER_VERSION,
         "file_version_id": version_id,
@@ -116,6 +125,8 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         "retrieval_index": retrieval_index,
         "candidate_evidence": [{"seq": seq, **asdict(c)} for seq, c in enumerate(document.chunks) if c.source != "native"],
     }
+    if structures is not None:
+        summary["table_structures"] = structures
     claim = ctx.claim
 
     def finalize(conn: Connection, artifact_id: str) -> None:

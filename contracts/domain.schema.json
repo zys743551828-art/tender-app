@@ -5556,6 +5556,233 @@
       ],
       "type": "object"
     },
+    "TableContinuation": {
+      "additionalProperties": false,
+      "properties": {
+        "from_table_id": {
+          "type": "string"
+        },
+        "to_table_id": {
+          "type": "string"
+        },
+        "from_page": {
+          "type": "integer"
+        },
+        "to_page": {
+          "type": "integer"
+        },
+        "reason": {
+          "const": "adjacent_pages_repeated_header_aligned_columns",
+          "type": "string"
+        },
+        "review": {
+          "const": "pending",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_table_id",
+        "to_table_id",
+        "from_page",
+        "to_page",
+        "reason",
+        "review"
+      ],
+      "type": "object"
+    },
+    "TableStructurePreview": {
+      "additionalProperties": false,
+      "properties": {
+        "version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "parse_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "not_evaluated",
+            "candidate_preview"
+          ],
+          "type": "string"
+        },
+        "table_count": {
+          "type": "integer"
+        },
+        "table_index": {
+          "type": "integer"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "physical_page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "native_table",
+                "raster_grid"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "row_count": {
+          "default": 0,
+          "type": "integer"
+        },
+        "row_offset": {
+          "default": 0,
+          "type": "integer"
+        },
+        "next_row_offset": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "array"
+          },
+          "type": "array"
+        },
+        "cell_line_indices": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unassigned_line_indices": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "column_boundaries": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "row_boundaries": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "issues": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "continuations": {
+          "items": {
+            "$ref": "#/$defs/TableContinuation"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "version_id",
+        "parse_id",
+        "state",
+        "table_count",
+        "table_index"
+      ],
+      "type": "object"
+    },
     "UploadRequest": {
       "additionalProperties": false,
       "properties": {

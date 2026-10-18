@@ -13,6 +13,7 @@ from typing import Any
 import pypdfium2 as pdfium
 
 from bidwb.parse_enrichment import MODEL_FILES
+from bidwb.table_candidates import raster_tables
 
 MAX_RENDER_PIXELS = 12_000_000
 MAX_OCR_LINES = 2000
@@ -73,6 +74,22 @@ def _read_ocr(pdf: pdfium.PdfDocument, number: int, engine: Any, output: dict[st
                 output["issues"].append("ocr_line_length_limit")
                 continue
             output["lines"].append({"text": text, "confidence": float(score), "bbox": _bbox(box, image.width, image.height)})
+        try:
+            detected = raster_tables(image, output["lines"])
+        except Exception:
+            output["issues"].append("raster_grid_failed")
+            if not output["tables"]:
+                output["table_status"] = "failed"
+            return
+        for table in detected:
+            if any(max(abs(a - b) for a, b in zip(table["bbox"], old["bbox"], strict=True)) < 0.02 for old in output["tables"]):
+                continue
+            if len(output["tables"]) >= MAX_TABLES:
+                output["issues"].append("tables_limit")
+                break
+            output["tables"].append(table)
+        if any(table.get("source") == "raster_grid" for table in output["tables"]):
+            output["table_status"] = "extracted_pending"
 
 
 def _read_tables(pdf: Any, number: int, output: dict[str, Any]) -> None:
@@ -91,7 +108,15 @@ def _read_tables(pdf: Any, number: int, output: dict[str, Any]) -> None:
             output["issues"].append("table_cells_limit")
             continue
         x0, top, x1, bottom = table.bbox
-        output["tables"].append({"rows": rows, "bbox": _bbox([(x0, top), (x1, bottom)], page.width, page.height)})
+        output["tables"].append(
+            {
+                "rows": rows,
+                "bbox": _bbox([(x0, top), (x1, bottom)], page.width, page.height),
+                "source": "native_table",
+                "column_boundaries": sorted({round(v / page.width, 6) for cell in table.cells for v in (cell[0], cell[2])}),
+                "row_boundaries": sorted({round(v / page.height, 6) for cell in table.cells for v in (cell[1], cell[3])}),
+            }
+        )
     page.close()
 
 

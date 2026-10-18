@@ -461,6 +461,88 @@
         }
       }
     },
+    "/api/v1/files/{version_id}/table-structures": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Table Structure Preview",
+        "operationId": "getTableStructurePreview",
+        "parameters": [
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "table_index",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Table Index"
+            }
+          },
+          {
+            "name": "row_offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Row Offset"
+            }
+          },
+          {
+            "name": "expected_parse_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Parse Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TableStructurePreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/files/{version_id}/recognition:review": {
       "post": {
         "tags": [
@@ -9012,6 +9094,252 @@
           "receipt_artifact_id"
         ],
         "title": "SubmissionRequest"
+      },
+      "TableContinuation": {
+        "properties": {
+          "from_table_id": {
+            "type": "string",
+            "title": "From Table Id"
+          },
+          "to_table_id": {
+            "type": "string",
+            "title": "To Table Id"
+          },
+          "from_page": {
+            "type": "integer",
+            "title": "From Page"
+          },
+          "to_page": {
+            "type": "integer",
+            "title": "To Page"
+          },
+          "reason": {
+            "type": "string",
+            "const": "adjacent_pages_repeated_header_aligned_columns",
+            "title": "Reason"
+          },
+          "review": {
+            "type": "string",
+            "const": "pending",
+            "title": "Review"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "from_table_id",
+          "to_table_id",
+          "from_page",
+          "to_page",
+          "reason",
+          "review"
+        ],
+        "title": "TableContinuation"
+      },
+      "TableStructurePreview": {
+        "properties": {
+          "version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Version Id"
+          },
+          "parse_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_evaluated",
+              "candidate_preview"
+            ],
+            "title": "State"
+          },
+          "table_count": {
+            "type": "integer",
+            "title": "Table Count"
+          },
+          "table_index": {
+            "type": "integer",
+            "title": "Table Index"
+          },
+          "table_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Table Id"
+          },
+          "physical_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Physical Page"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "native_table",
+                  "raster_grid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "row_count": {
+            "type": "integer",
+            "title": "Row Count",
+            "default": 0
+          },
+          "row_offset": {
+            "type": "integer",
+            "title": "Row Offset",
+            "default": 0
+          },
+          "next_row_offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Row Offset"
+          },
+          "rows": {
+            "items": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "cell_line_indices": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "items": {
+                      "type": "integer"
+                    },
+                    "type": "array"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cell Line Indices"
+          },
+          "unassigned_line_indices": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Unassigned Line Indices"
+          },
+          "column_boundaries": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Boundaries"
+          },
+          "row_boundaries": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Row Boundaries"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "continuations": {
+            "items": {
+              "$ref": "#/components/schemas/TableContinuation"
+            },
+            "type": "array",
+            "title": "Continuations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version_id",
+          "parse_id",
+          "state",
+          "table_count",
+          "table_index"
+        ],
+        "title": "TableStructurePreview"
       },
       "Task": {
         "properties": {

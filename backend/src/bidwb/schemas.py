@@ -348,6 +348,37 @@ class RecognitionReview(Response):
     created_at: datetime
 
 
+class TableContinuation(Response):
+    from_table_id: str
+    to_table_id: str
+    from_page: int
+    to_page: int
+    reason: Literal["adjacent_pages_repeated_header_aligned_columns"]
+    review: Literal["pending"]
+
+
+class TableStructurePreview(Response):
+    version_id: Id
+    parse_id: Id | None
+    state: Literal["not_evaluated", "candidate_preview"]
+    table_count: int
+    table_index: int
+    table_id: str | None = None
+    physical_page: int | None = None
+    source: Literal["native_table", "raster_grid"] | None = None
+    bbox: list[float] | None = None
+    row_count: int = 0
+    row_offset: int = 0
+    next_row_offset: int | None = None
+    rows: list[list[str | None]] = Field(default_factory=list)
+    cell_line_indices: list[list[list[int]]] | None = None
+    unassigned_line_indices: list[int] = Field(default_factory=list)
+    column_boundaries: list[float] | None = None
+    row_boundaries: list[float] | None = None
+    issues: list[str] = Field(default_factory=list)
+    continuations: list[TableContinuation] = Field(default_factory=list)
+
+
 class RecognitionCandidates(Response):
     version_id: Id
     parse_id: Id | None

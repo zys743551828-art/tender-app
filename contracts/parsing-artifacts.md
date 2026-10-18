@@ -1,8 +1,8 @@
 # 解析产物
 
-解析任务的 `parse-v1` JSON 绑定 `file_version_id`、原件 `source_sha256` 与 `parser_version`。`pdfium-1.3` 提供原生文字提取和图片对象检查；启用本地识别时，增加 OCR 和原生表格的待核验候选，不执行图形语义理解。读取对象存储字节后复核原件哈希，不符时任务以 `parse_source_mismatch` 失败。
+解析任务的 `parse-v1` JSON 绑定 `file_version_id`、原件 `source_sha256` 与 `parser_version`。`pdfium-1.4` 提供原生文字提取和图片对象检查；启用本地识别时增加 OCR、原生表格及扫描网格的待核验候选，不执行图形语义理解。读取对象存储字节后复核原件哈希，不符时任务以 `parse_source_mismatch` 失败。
 
-现有 `page_count`、`coverage`、`gaps`、`chunk_count`、`page_text_chars` 保留。`coverage_scope=native_text_and_raster_presence` 和 `pages` 记录原生检查；`enrichment` 与 `candidate_evidence` 记录识别候选。没有这些字段的旧产物按其原解析版本解释，不能推断相应检查已执行。无需数据库迁移或 API 字段变化。
+现有 `page_count`、`coverage`、`gaps`、`chunk_count`、`page_text_chars` 保留。`coverage_scope=native_text_and_raster_presence` 和 `pages` 记录原生检查；`enrichment` 与 `candidate_evidence` 记录识别候选，`table_structures` 提供[表格结构预览](table-structures.md)。没有这些字段的旧产物按其原解析版本解释，不能推断相应检查已执行。无需数据库迁移。
 
 `pages` 按物理页排序，每页一项：
 
@@ -26,7 +26,7 @@
 
 `enrichment` 的 `schema=local-enrichment-1`，包含 `source_sha256`、`selected_pages`、`skipped_pages`、`unfinished_pages`、`failure`、逐页 `pages`、模型文件 SHA-256 和执行耗时。`review=pending`，坐标空间为 `rendered_page_normalized`；原件按 2 倍渲染，`render_sha256` 对 RGB 像素计算，`render_size` 保存像素宽高。
 
-每页保存 OCR 状态 `not_needed/recognized_pending/empty/failed/unavailable/limited`，以及表格状态 `extracted_pending/none_detected/failed/limited`。OCR 行保存原始文字、置信度、归一化范围；表格保存原生单元格数组（空单元格按引擎输出保留 null 或空串）、表范围和引擎版本。未检测到表格不证明原页没有表格，扫描表只可能产生 OCR 行。跨页关系不自动猜测。行、表、渲染像素和消息大小均有限制，超限明确保留状态。
+每页保存 OCR 状态 `not_needed/recognized_pending/empty/failed/unavailable/limited`，以及表格状态 `extracted_pending/none_detected/failed/limited`。OCR 行保存原始文字、置信度、归一化范围；表格保存单元格数组（空单元格按引擎输出保留 null 或空串）、表范围和引擎版本。扫描网格额外保存 OCR 行归属及未归属清单，原生／扫描表保留可用的行列边界；未检测到不证明原页无表。跨页仅提示相邻页重复表头、列位置一致的候选对，不合并证据；详细范围见表格结构契约。行、表、渲染像素和消息大小均有限制，超限明确保留状态。
 
 `retrieval_index` 记录本次解析的派生向量状态：`disabled/ready/unavailable`。启用 pgvector 时，本地向量按 32 条一批生成并续租，丢失租约不提交；向量与新证据在同一结果事务写入。`ready` 附模型指纹、块数和截断数；编码不可用保留文字解析，附错误码。此状态不证明识别结果已经核验，不改变证据的 `semantic_review`。
 

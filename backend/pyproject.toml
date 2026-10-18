@@ -89,5 +89,5 @@ mypy_path = "src"
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*", "rapidocr.*", "pdfplumber.*", "onnxruntime.*", "tokenizers.*", "numpy.*"]
+module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*", "rapidocr.*", "pdfplumber.*", "onnxruntime.*", "tokenizers.*", "numpy.*", "cv2.*"]
 ignore_missing_imports = true

@@ -3,6 +3,7 @@ import type {
   RecognitionCandidates,
   RecognitionReview,
   RecognitionReviewRequest,
+  TableStructurePreview,
   AdoptRequest,
   AssistantReply,
   Compliance,
@@ -61,6 +62,10 @@ type Idem = Pick<RequestOptions, 'idempotencyKey' | 'signal'>;
 export function createEndpoints(c: ApiClient) {
   return {
     recognition: {
+      tables: (versionId: string, tableIndex = 0, rowOffset = 0, parseId: string | null = null) =>
+        c.get<TableStructurePreview>(
+          `/files/${versionId}/table-structures?table_index=${String(tableIndex)}&row_offset=${String(rowOffset)}${parseId ? `&expected_parse_id=${encodeURIComponent(parseId)}` : ''}`,
+        ),
       list: (versionId: string, offset = 0) =>
         c.get<RecognitionCandidates>(`/files/${versionId}/recognition?offset=${String(offset)}`),
       review: (versionId: string, body: RecognitionReviewRequest, o?: Idem) =>

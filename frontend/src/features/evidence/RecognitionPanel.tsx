@@ -8,6 +8,7 @@ import { Button, textLink } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/input';
 import { useIdempotentAction } from '../../lib/useIdempotentAction';
 import { refreshRules } from '../rules/actions';
+import { TableStructures } from './TableStructures';
 
 const decisionLabel = { accept: '确认摘录', correct: '订正摘录', reject: '排除此候选' };
 
@@ -45,6 +46,12 @@ export function RecognitionPanel({
               <p>
                 共 {q.data.total} 条候选，{q.data.pending_count} 条待核验。
               </p>
+              <TableStructures
+                key={q.data.parse_id}
+                projectId={projectId}
+                versionId={versionId}
+                parseId={q.data.parse_id}
+              />
               {!q.data.can_review && q.data.items.length > 0 ? (
                 <Notice>
                   当前稿件或解析已变化，或解析仍在进行。请返回资料列表选择当前采用稿，等待解析完成后刷新。

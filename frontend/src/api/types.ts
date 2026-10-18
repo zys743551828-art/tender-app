@@ -532,6 +532,35 @@ export interface RecognitionCandidates {
   history: RecognitionReview[];
 }
 
+export interface TableStructurePreview {
+  version_id: Id;
+  parse_id: Id | null;
+  state: 'not_evaluated' | 'candidate_preview';
+  table_count: number;
+  table_index: number;
+  table_id: string | null;
+  physical_page: number | null;
+  source: 'native_table' | 'raster_grid' | null;
+  bbox: number[] | null;
+  row_count: number;
+  row_offset: number;
+  next_row_offset: number | null;
+  rows: (string | null)[][];
+  cell_line_indices: number[][][] | null;
+  unassigned_line_indices: number[];
+  column_boundaries: number[] | null;
+  row_boundaries: number[] | null;
+  issues: string[];
+  continuations: {
+    from_table_id: string;
+    to_table_id: string;
+    from_page: number;
+    to_page: number;
+    reason: 'adjacent_pages_repeated_header_aligned_columns';
+    review: 'pending';
+  }[];
+}
+
 export interface SearchRequest {
   /** 不给＝检索项目当前资料；给了＝限定在该轮评审的输入所含的文件版本内。 */
   snapshot_id?: Id | null;

@@ -22,6 +22,8 @@ DOMAIN = ROOT / "contracts/domain.schema.json"
 
 # 由代码生成的领域结构；其余结构（平台侧的数据集、实验、放行等）在 domain.schema.json 中手工维护
 GENERATED = (
+    "TableStructurePreview",
+    "TableContinuation",
     "RecognitionReviewRequest",
     "RecognitionReview",
     "RecognitionCandidates",

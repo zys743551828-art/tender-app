@@ -246,7 +246,7 @@ def test_image_gap_persists_in_artifact_and_snapshot_coverage(api_factory, make_
         key = db.scalar(conn, "SELECT object_key FROM artifacts WHERE id=:a", {"a": parse["artifact_id"]})
         payload = json.loads(store.get(key))
         assert payload["source_sha256"] == done.json()["artifact"]["sha256"]
-        assert payload["file_version_id"] == version_id and payload["parser_version"] == "pdfium-1.3"
+        assert payload["file_version_id"] == version_id and payload["parser_version"] == "pdfium-1.4"
         assert payload["coverage_scope"] == "native_text_and_raster_presence"
         assert [p["physical_page"] for p in payload["pages"]] == [1, 2]
         assert payload["pages"][0]["issues"] == ["raster_images_unread"]
@@ -318,6 +318,83 @@ def test_pending_candidates_are_searchable_but_excluded_from_ai(
         assert payload["candidate_evidence"][0]["seq"] == 1
     found = api.post(f"/projects/{pid}/search", {"query": "15.12万元", "top_k": 5, "mode": "keyword"}).json()["hits"]
     assert any(h["evidence"]["kind"] == "visual_observation" and h["evidence"]["semantic_review"] == "pending" for h in found)
+
+
+def test_table_preview_pagination_identity_and_immutable_original(
+    api_factory, make_member, store, engine, worker_container: Container, monkeypatch
+) -> None:  # type: ignore[no-untyped-def]
+    def enriched(*args):  # type: ignore[no-untyped-def]
+        result = _recognition_result(*args)
+        result["table_structure_schema"] = "table-candidates-1"
+        page = result["pages"][0]
+        page["tables"] = [
+            {
+                "bbox": [0.1, 0.5, 0.9, 0.95],
+                "rows": [["项目", "金额"], *[[f"项目{i}", "15.12"] for i in range(24)]],
+                "column_boundaries": [0.1, 0.5, 0.9],
+            }
+        ]
+        result["pages"].append({**page, "physical_page": 2, "tables": [{**page["tables"][0], "bbox": [0.1, 0.05, 0.9, 0.5]}]})
+        return result
+
+    worker_container.settings.parse_enrichment_enabled = True
+    monkeypatch.setattr(parse_enrichment, "enrich_document", enriched)
+    api, pid = _setup(api_factory, make_member)
+    version = _upload(api, store, pid, make_pdf([["原生条款内容"], ["第二页内容"]]))[1].json()["version_id"]
+    _run_parse(worker_container)
+    path = f"/files/{version}/table-structures"
+    assert api_factory().get(path).status_code == 401
+    assert api.get(path + "?row_offset=-1").status_code == 422
+    first = api.get(path).json()
+    assert first["state"] == "candidate_preview" and first["table_count"] == 2
+    assert len(first["rows"]) == 20 and first["row_count"] == 25 and first["next_row_offset"] == 20
+    assert first["continuations"][0]["review"] == "pending"
+    tail = api.get(path + "?row_offset=20").json()
+    assert len(tail["rows"]) == 5 and tail["next_row_offset"] is None
+    assert api.get(path + "?table_index=1").json()["physical_page"] == 2
+    assert api.get(path + "?row_offset=1000").json()["rows"] == []
+    assert api.get(path + "?table_index=1000").json()["table_id"] is None
+    old_parse = first["parse_id"]
+    with engine.connect() as conn:
+        artifact = db.scalar(
+            conn, "SELECT a.object_key FROM parses p JOIN artifacts a ON a.id=p.artifact_id WHERE p.id=:p", {"p": old_parse}
+        )
+        payload = store.get(artifact)
+        assert "table_structure_not_verified" in db.scalar(conn, "SELECT gaps_json FROM parses WHERE id=:p", {"p": old_parse})
+    candidates = api.get(f"/files/{version}/recognition").json()
+    reviewed = api.post(
+        f"/files/{version}/recognition:review",
+        {
+            "expected_parse_id": old_parse,
+            "evidence_id": candidates["items"][0]["evidence_id"],
+            "decision": "correct",
+            "corrected_quote": "费用15.21万元",
+            "reason": "原页订正，原结构候选不改写",
+            "reviewed_original": True,
+            "reviewed_numbers": True,
+        },
+    )
+    assert reviewed.status_code == 200, reviewed.text
+    assert store.get(artifact) == payload
+    current = api.get(path).json()
+    assert current["rows"] == first["rows"] and current["continuations"] == first["continuations"]
+    assert current["parse_id"] != old_parse
+    assert api.get(path + f"?expected_parse_id={old_parse}").status_code == 409
+    with engine.connect() as conn:
+        key = db.scalar(
+            conn, "SELECT a.object_key FROM parses p JOIN artifacts a ON a.id=p.artifact_id WHERE p.id=:p", {"p": current["parse_id"]}
+        )
+    store.objects[key] = b"corrupted"
+    corrupt = api.get(path)
+    assert corrupt.status_code == 409 and corrupt.json()["code"] == "recognition_artifact_corrupt"
+
+
+def test_old_parse_does_not_claim_table_structure_check(api_factory, make_member, store, worker_container: Container) -> None:  # type: ignore[no-untyped-def]
+    api, pid = _setup(api_factory, make_member)
+    version = _upload(api, store, pid, make_pdf([["旧解析不包含新结构候选"]]))[1].json()["version_id"]
+    _run_parse(worker_container)
+    result = api.get(f"/files/{version}/table-structures").json()
+    assert result["state"] == "not_evaluated" and result["table_count"] == 0
 
 
 def test_ocr_only_input_retains_candidates_and_blocks_automatic_review(

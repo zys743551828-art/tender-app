@@ -11,7 +11,7 @@ from sqlalchemy import Connection, text
 from bidwb import db
 from bidwb.access import Actor
 from bidwb.errors import Conflict, NotFound, Unprocessable
-from bidwb.schemas import RecognitionCandidates, RecognitionReview, RecognitionReviewRequest
+from bidwb.schemas import RecognitionCandidates, RecognitionReview, RecognitionReviewRequest, TableContinuation, TableStructurePreview
 from bidwb.services import audit, current_materials, evidence, files, pipeline
 from bidwb.services.files import CONTRACT_VERSION
 from bidwb.storage import ObjectStore, artifact_key
@@ -20,6 +20,67 @@ from bidwb.util import canonical_json, new_id, sha256_hex, utcnow, xml_safe
 PARSER = "human-verified-1"
 PAGE_SIZE = 20
 MAX_EVIDENCE = 20000
+
+
+def table_preview(
+    conn: Connection,
+    store: ObjectStore,
+    actor: Actor,
+    version_id: str,
+    table_index: int = 0,
+    row_offset: int = 0,
+    expected_parse_id: str | None = None,
+) -> TableStructurePreview:
+    version = files.get_version(conn, actor, version_id)
+    parse = _latest(conn, version.project_id, version_id)
+    if expected_parse_id is not None and (parse is None or expected_parse_id != parse["id"]):
+        raise Conflict("recognition_parse_stale", "识别依据已有变化，请刷新候选后重新核对")
+    result = TableStructurePreview(
+        version_id=version_id,
+        parse_id=parse["id"] if parse else None,
+        state="not_evaluated",
+        table_count=0,
+        table_index=table_index,
+        row_offset=row_offset,
+    )
+    if parse is None or parse["artifact_id"] is None:
+        return result
+    artifact = db.one(conn, "SELECT object_key,sha256 FROM artifacts WHERE id=:i", {"i": parse["artifact_id"]})
+    if artifact is None:
+        return result
+    payload = store.get(artifact["object_key"])
+    if sha256_hex(payload) != artifact["sha256"]:
+        raise Conflict("recognition_artifact_corrupt", "原解析产物校验失败，无法展示结构候选")
+    summary = json.loads(payload)
+    catalog = summary.get("table_structures") if isinstance(summary, dict) else None
+    if not isinstance(catalog, dict) or catalog.get("schema") != "table-candidates-1":
+        return result
+    tables = catalog["tables"]
+    result.state, result.table_count = "candidate_preview", len(tables)
+    result.issues = ["original_structure_not_verified", "selected_pages_only"]
+    if table_index >= len(tables):
+        return result
+    selected = tables[table_index]
+    rows = selected["rows"]
+    indices = selected.get("cell_line_indices")
+    result.table_id = selected["table_id"]
+    result.physical_page = selected["physical_page"]
+    result.source = selected.get("source", "native_table")
+    result.bbox = selected["bbox"]
+    result.row_count = len(rows)
+    result.rows = rows[row_offset : row_offset + PAGE_SIZE]
+    result.next_row_offset = row_offset + PAGE_SIZE if row_offset + PAGE_SIZE < len(rows) else None
+    result.cell_line_indices = indices[row_offset : row_offset + PAGE_SIZE] if indices is not None else None
+    result.unassigned_line_indices = selected.get("unassigned_line_indices", [])
+    result.column_boundaries = selected.get("column_boundaries")
+    result.row_boundaries = selected.get("row_boundaries")
+    result.issues.extend(selected.get("issues", []))
+    result.continuations = [
+        TableContinuation.model_validate(link)
+        for link in catalog.get("cross_page_candidates", [])
+        if selected["table_id"] in (link["from_table_id"], link["to_table_id"])
+    ]
+    return TableStructurePreview.model_validate(result.model_dump())
 
 
 def numbers_required(quote: str) -> bool:
