@@ -1,6 +1,6 @@
 # 预算 helper05 / 非 owner 原生硬 Mock 验证
 
-2026-10-18，最终候选 `tests/test_assistant_budget_nonowner.py` 在独立 Linux **Python 3.12.15 / PG17.11 + pgvector** 上 **5 passed in 16.71s**。没有生产代码修改、owner 补权、真实供应商请求或费用。
+2026-10-18，首切片 `fa31462` 的 `tests/test_assistant_budget_nonowner.py` 在独立 Linux **Python 3.12.15 / PG17.11 + pgvector** 上 **5 passed in 16.71s**，主代理独立复跑 **5 passed in 16.79s**。没有生产代码修改、owner 补权、真实供应商请求或费用。后续 F08-02 增量的 25 项验证独立记录于文末，不改写首切片证据。
 
 ## 环境与初始化
 
@@ -49,3 +49,27 @@
 ruff/format、mypy（Linux 目标）通过。Bandit 对本测试除 assert 与固定 argv subprocess 的预期 B101/B404/B603 外无发现；没有生产代码新增需扫描。Windows 直接 mypy 还会涉及原有 `authoring.build` 的 POSIX killpg/SIGKILL 属性，正式检查使用 `--platform linux`。
 
 这关闭受限角色完整 fresh/原生助手预算机制这一边界。真实 Kafka broker/消费者传输、对象存储服务、供应商质量/费用、生产部署及浏览器视觉仍未验；不能由本结果授真实模型费用资格。
+
+## F08-02：unknown 恢复与独立意图服务端增量
+
+沿用上述已锁镜像和 SQL 字节，新建相同隔离规则的全新 tmpfs PG17 与内部网络。**25 passed in 121.04s**（原 5 项 + 新增 20 项）；测试源实际字节 SHA256：`3a86e3eb73fceb0af3e02995ffe5d868e5814ebe6390c7b3d0c62836e7f0a1c0`。本增量只改测试和本文，没有修改 SQL、Python 业务机制或前端。
+
+| 实际受限角色场景 | 结果 |
+| --- | --- |
+| 同一未知项目请求换 nonce、上下文、模型 profile 或 max_tokens | 复用原 job；改问题措辞仍是同对象/用途时返回 `ASSISTANT_INDEPENDENCE_UNPROVEN`；原预算、native、事件及三 scope 责任不变 |
+| 新工程/标段/轮次/项目 UUID 壳，重新确认同五个业务事实值 | canonical key 与原项目一致；相同问题复用原 job，不同措辞不能绕过；没有把新 UUID 当独立证据 |
+| 显式 retry / continue | 缺原 job 引用拒绝；带原 job 时即使夹带另一个目标标签也优先关联原请求，不重新执行 |
+| 同成员、不同已确认业务身份的真实项目 | 无 `new_question` 或仅写“继续”均拒绝；明确新问题且不同 canonical 身份才受理并执行一次；原 unknown 金额继续占额 |
+| 同项目中的不同实际 rule 对象/用途 | 把 project 用途随意改为 rule_explanation 拒绝；目标为实际 rule 且用途为 rule_explanation 才允许独立受理一次 |
+| global / member / project 各一条有界限额反例 | 将该 scope 新限额设为当前实际 obligation，旧 unknown 占满；即使是已证明独立的 rule 请求也被 `ASSISTANT_BUDGET_EXHAUSTED` 拒绝；无新 call、dispatch、预算事件 |
+| project / global × 三种可信核清 | 专用预算管理 CLI 的 confirmed_not_sent/0 → released；confirmed_zero_charge_failure/0 → settled；confirmed_billed/17 → settled/17。只追加一次 reconciled 事件，native 仍为失败，原操作仍失败，不生成回答 |
+| 重复核清与冲突金额核清 | 两者都明确拒绝 `ASSISTANT_RECONCILIATION_INVALID`，原核清结果及事件不变。该 CLI 合同是重复拒绝，未称幂等成功；HTTP 原请求仍读回原 job，原 Worker 消息零再发送 |
+| 可信核清 17 后，实际 Worker observe_usage 迟到报告 32 | 恢复 unknown 及原 reserved 2099200，置 sticky manual flag；native 仍失败，未增加 dispatch/call。真实 API coordinator.tick 不清除 manual；API 读回要求核清、不授权自动重试 |
+
+新测试全部由真实 API/Worker LOGIN 建立事实依据、调用 ASGI/原生 Worker/预算 RPC，并由独立管理进程核清。rule 是 API 身份按实际领域表/FK建立的合成目标，使用真实证据 ID；并未把此用例冒充原件条款抽取/人工正式确认质量。所有五事实和 live 来源仍走原生 human basis、carryover 与完整 SQL 权威，没有 no-op。
+
+`assistant_budget_obligation` 在 API 身份下读取真实最新 policy 及历史责任，检查旧 unknown 在换限额版本后不消失；新独立对象的 32 合成 minor 与原 held 并存。核清证明地址/摘要为明确合成可信管理输入，不表示拿到了供应商账单。
+
+增量原始证据保存在 `.local/nonowner-recovery-evidence/nonowner.xml` 与 `nonowner-receipt.jsonl`，旧五项及主代理收据保持原目录。实际累计 **25 次离线 Mock HTTP**、重复执行新增 **0 次**、真实供应商 **0 次/0 费用**。finally 凭证确认 nonce 库、五个 LOGIN 及私有 profile 均已清理，能力组不变；专用 PG/内部网络在主代理独立复验窗口暂留，随后单独清理。
+
+ruff/format、mypy（`--platform linux`）通过；既有测试 Bandit 规则口径不变。本增量没有发现需要修正的生产机制。剩余产品缺口是将上述 `request_mode`、可信目标/允许用途及原 job 引用接入 unknown 下的显式 UI 流程；现 UI 的整体 busy gate 不能由后端测试视为已完成。真实 Kafka、外部对象存储/供应商及生产放行仍属于独立验收。

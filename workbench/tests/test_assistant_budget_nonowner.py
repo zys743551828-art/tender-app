@@ -72,7 +72,7 @@ def run_child(world, role, mode, payload=None):
     # Child errors contain only synthetic SQL/identifiers; never include its environment/DSN.
     assert result.returncode == 0, result.stderr
     value = json.loads(result.stdout)
-    if mode in {"execute", "inspect", "publish", "probe", "tick"}:
+    if mode in {"execute", "inspect", "publish", "probe", "tick", "view", "observe"}:
         record_evidence(role + ":" + mode, value)
     return value
 
@@ -195,7 +195,7 @@ def restricted_world():
         )
 
 
-def configure(world, kind, value, source=None):
+def configure(world, kind, value, source=None, *, rejected=None):
     path = world["private"] / ("mock-budget-" + uuid4().hex + ".json")
     path.write_text(json.dumps(value), encoding="utf-8")
     path.chmod(0o600)
@@ -223,13 +223,18 @@ def configure(world, kind, value, source=None):
         result = subprocess.run(
             args, cwd=fresh.ROOT, env=env, capture_output=True, text=True, timeout=20, check=False
         )
-        assert result.returncode == 0, result.stderr
-        assert (
-            json.loads(result.stdout.replace("'", '"').replace("True", "true"))[
-                "real_provider_attempts"
-            ]
-            == 0
-        )
+        if rejected:
+            assert result.returncode != 0 and rejected in result.stderr, result.stderr
+            record_evidence("admin:rejected", {"kind": kind, "code": rejected})
+        else:
+            assert result.returncode == 0, result.stderr
+            assert (
+                json.loads(result.stdout.replace("'", '"').replace("True", "true"))[
+                    "real_provider_attempts"
+                ]
+                == 0
+            )
+            record_evidence("admin:configured", {"kind": kind, "real_provider_attempts": 0})
     finally:
         path.unlink()
         if source_path:
@@ -266,10 +271,12 @@ def tariff(restricted_world):
     return restricted_world
 
 
-def prepared(world):
-    identifiers = run_child(world, "api", "seed_api")
+def prepared(world, *, actor=None, fact_namespace=None):
+    identifiers = run_child(world, "api", "seed_api", {"actor": actor})
     identifiers |= run_child(world, "worker", "seed_worker", identifiers)
-    identifiers |= run_child(world, "api", "confirm_api", identifiers)
+    identifiers |= run_child(
+        world, "api", "confirm_api", identifiers | {"fact_namespace": fact_namespace}
+    )
     clock = datetime.now(timezone.utc)
     for scope, owner in [
         ("global", "assistant"),
@@ -284,7 +291,7 @@ def prepared(world):
                 "scope": scope,
                 "owner_key": owner,
                 "currency": "USD",
-                "revision": 1 if scope != "global" else int(clock.timestamp() * 1000000),
+                "revision": int(clock.timestamp() * 1000000),
                 "limit_minor": 1000000000,
                 "window_from": (clock - timedelta(hours=1)).isoformat(),
                 "window_until": (clock + timedelta(hours=1)).isoformat(),
@@ -353,15 +360,290 @@ def test_unknown_native_result_remains_held_and_duplicate_never_reissues(tariff)
     assert replay["status"] == 202 and replay["id"] == accepted["id"]
 
 
-def _seed_api():
+def unknown_request(world, *, scope="project"):
+    ids = prepared(world)
+    accepted = run_child(world, "api", "accept", ids | {"scope": scope})
+    assert accepted["status"] == 202, accepted
+    sent = run_child(world, "worker", "execute", accepted | {"scope": scope, "timeout": True})
+    assert sent["calls"] == 1 and sent["second_calls"] == 0
+    state = run_child(world, "api", "inspect", accepted | {"scope": scope})
+    assert state["budget_state"] == "unknown"
+    return ids, accepted, state
+
+
+@pytest.mark.parametrize("change", ["nonce", "question", "context", "profile", "output_limit"])
+def test_unknown_same_object_changes_cannot_buy_a_second_attempt(tariff, change):
+    ids, original, before = unknown_request(tariff)
+    turn = {"text": original["body"]["text"], "request_mode": "new_question"}
+    options = {}
+    if change == "question":
+        turn["text"] = "Different wording does not prove an independent business object"
+    elif change == "context":
+        turn["source_selection"] = [run_child(tariff, "api", "reference", ids)]
+    elif change == "profile":
+        options["profile_model"] = "deepseek-v4-pro"
+    elif change == "output_limit":
+        turn["max_tokens"] = 4096
+    candidate = run_child(
+        tariff, "api", "accept", ids | {"scope": "project", "turn": turn} | options
+    )
+    if change == "question":
+        assert candidate["status"] == 409
+        assert candidate["response"]["code"] == "ASSISTANT_INDEPENDENCE_UNPROVEN"
+    else:
+        assert candidate["status"] == 202 and candidate["id"] == original["id"]
+    assert run_child(tariff, "api", "inspect", original | {"scope": "project"}) == before
+    duplicate = run_child(tariff, "worker", "execute", original | {"scope": "project"})
+    assert duplicate["calls"] == duplicate["second_calls"] == 0
+
+
+def test_fresh_project_alias_with_same_evidenced_business_identity_is_not_independent(tariff):
+    ids, original, before = unknown_request(tariff)
+    alias = prepared(tariff, actor=ids["actor"], fact_namespace=ids["bid"])
+    assert alias["bid"] != ids["bid"]
+    assert alias["canonical_project_key"] == ids["canonical_project_key"]
+    turn = {"text": original["body"]["text"], "request_mode": "new_question"}
+    candidate = run_child(tariff, "api", "accept", alias | {"scope": "project", "turn": turn})
+    assert candidate["status"] == 202 and candidate["id"] == original["id"]
+    candidate = run_child(
+        tariff,
+        "api",
+        "accept",
+        alias | {"scope": "project", "turn": turn | {"text": "New wording on the alias"}},
+    )
+    assert candidate["status"] == 409
+    assert candidate["response"]["code"] == "ASSISTANT_INDEPENDENCE_UNPROVEN"
+    assert run_child(tariff, "api", "inspect", original | {"scope": "project"}) == before
+
+
+@pytest.mark.parametrize("mode", ["retry", "continue"])
+def test_explicit_continuation_requires_original_and_cannot_relabel_it(tariff, mode):
+    ids, original, before = unknown_request(tariff)
+    turn = {"request_mode": mode, "text": "Explicit continuation"}
+    missing = run_child(tariff, "api", "accept", ids | {"scope": "project", "turn": turn})
+    assert missing["status"] == 422
+    assert missing["response"]["code"] == "ASSISTANT_ORIGINAL_REFERENCE_REQUIRED"
+    related = run_child(
+        tariff,
+        "api",
+        "accept",
+        ids
+        | {
+            "scope": "project",
+            "turn": turn
+            | {"related_job_id": original["id"], "target": {"kind": "project", "id": str(uuid4())}},
+        },
+    )
+    assert related["status"] == 202 and related["id"] == original["id"]
+    assert run_child(tariff, "api", "inspect", original | {"scope": "project"}) == before
+
+
+def test_unknown_allows_only_explicit_proven_different_project_question(tariff):
+    ids, original, before = unknown_request(tariff)
+    other = prepared(tariff, actor=ids["actor"])
+    assert other["canonical_project_key"] != ids["canonical_project_key"]
+    for turn in [{}, {"text": "继续", "request_mode": "new_question"}]:
+        blocked = run_child(tariff, "api", "accept", other | {"scope": "project", "turn": turn})
+        assert blocked["status"] == 409
+        assert blocked["response"]["code"] == "ASSISTANT_ORIGINAL_REFERENCE_REQUIRED"
+    accepted = run_child(
+        tariff,
+        "api",
+        "accept",
+        other
+        | {
+            "scope": "project",
+            "turn": {
+                "request_mode": "new_question",
+                "text": "Explain this distinct evidenced procurement object",
+            },
+        },
+    )
+    assert accepted["status"] == 202 and accepted["id"] != original["id"]
+    sent = run_child(tariff, "worker", "execute", accepted | {"scope": "project"})
+    assert sent["calls"] == 1 and sent["second_calls"] == 0
+    state = run_child(tariff, "api", "inspect", original | {"scope": "project"})
+    assert state["budget_state"] == "unknown" and state["held_minor"] == before["held_minor"]
+    assert state["dispatch_events"] == state["native_calls"] == 1
+    assert state["obligations"]["project"] == before["held_minor"]
+    assert state["obligations"]["member"] == before["held_minor"] + 32
+
+
+def test_unknown_different_object_requires_actual_allowed_purpose(tariff):
+    ids, original, before = unknown_request(tariff)
+    rule = run_child(tariff, "api", "add_rule", ids)
+    invalid = run_child(
+        tariff,
+        "api",
+        "accept",
+        ids
+        | {
+            "scope": "project",
+            "turn": {"request_mode": "new_question", "intent_purpose": "rule_explanation"},
+        },
+    )
+    assert invalid["status"] == 422
+    assert invalid["response"]["code"] == "ASSISTANT_INTENT_PURPOSE_INVALID"
+    accepted = run_child(
+        tariff,
+        "api",
+        "accept",
+        ids
+        | {
+            "scope": "project",
+            "turn": {
+                "request_mode": "new_question",
+                "intent_purpose": "rule_explanation",
+                "target": {"kind": "rule", "id": rule["rule_id"]},
+            },
+        },
+    )
+    assert accepted["status"] == 202 and accepted["id"] != original["id"]
+    sent = run_child(tariff, "worker", "execute", accepted | {"scope": "project"})
+    assert sent["calls"] == 1 and sent["second_calls"] == 0
+    state = run_child(tariff, "api", "inspect", original | {"scope": "project"})
+    assert state["budget_state"] == "unknown" and state["held_minor"] == before["held_minor"]
+    for scope in ("global", "member", "project"):
+        assert state["obligations"][scope] == before["obligations"][scope] + 32
+
+
+@pytest.mark.parametrize("scope", ["global", "member", "project"])
+def test_original_unknown_still_consumes_each_scope_for_independent_target(tariff, scope):
+    ids, original, before = unknown_request(tariff)
+    rule = run_child(tariff, "api", "add_rule", ids)
+    clock = datetime.now(timezone.utc)
+    owner = {
+        "global": "assistant",
+        "member": ids["actor"],
+        "project": ids["canonical_project_key"],
+    }[scope]
+    configure(
+        tariff,
+        "limit",
+        {
+            "id": str(uuid4()),
+            "scope": scope,
+            "owner_key": owner,
+            "currency": "USD",
+            "revision": int(clock.timestamp() * 1000000),
+            "limit_minor": before["obligations"][scope],
+            "window_from": (clock - timedelta(hours=1)).isoformat(),
+            "window_until": (clock + timedelta(hours=1)).isoformat(),
+            "configured_reason": "explicit offline unknown hold boundary",
+        },
+    )
+    rejected = run_child(
+        tariff,
+        "api",
+        "accept",
+        ids
+        | {
+            "scope": "project",
+            "turn": {
+                "request_mode": "new_question",
+                "intent_purpose": "rule_explanation",
+                "target": {"kind": "rule", "id": rule["rule_id"]},
+            },
+        },
+    )
+    assert rejected["status"] == 409
+    assert rejected["response"]["code"] == "ASSISTANT_BUDGET_EXHAUSTED"
+    assert run_child(tariff, "api", "inspect", original | {"scope": "project"}) == before
+
+
+def reconciliation(job_id, decision, amount):
+    return {
+        "job_id": job_id,
+        "decision": decision,
+        "amount_minor": amount,
+        "proof_reference": "https://synthetic.invalid/trusted-billing-proof",
+        "proof_sha256": hashlib.sha256(b"explicit synthetic trusted billing proof").hexdigest(),
+    }
+
+
+@pytest.mark.parametrize("scope", ["project", "global"])
+@pytest.mark.parametrize(
+    "decision,amount,state",
+    [
+        ("confirmed_not_sent", 0, "released"),
+        ("confirmed_zero_charge_failure", 0, "settled"),
+        ("confirmed_billed", 17, "settled"),
+    ],
+)
+def test_real_admin_reconcile_duplicate_and_conflict_never_reexecute(
+    tariff, scope, decision, amount, state
+):
+    ids, original, before = unknown_request(tariff, scope=scope)
+    proof = reconciliation(original["id"], decision, amount)
+    configure(tariff, "reconcile", proof)
+    after = run_child(tariff, "api", "inspect", original | {"scope": scope})
+    assert after["budget_state"] == state and after["settled_minor"] == amount
+    assert after["call_state"] == "failed" and after["billing_state"] == "trusted_reconciled"
+    assert after["event_counts"]["reconciled"] == 1
+    assert after["dispatch_events"] == after["native_calls"] == 1
+    assert after["obligations"]["member"] == amount
+    assert (
+        after["obligations"]["global"]
+        == before["obligations"]["global"] - before["held_minor"] + amount
+    )
+    configure(tariff, "reconcile", proof, rejected="ASSISTANT_RECONCILIATION_INVALID")
+    configure(
+        tariff,
+        "reconcile",
+        reconciliation(original["id"], "confirmed_billed", 19),
+        rejected="ASSISTANT_RECONCILIATION_INVALID",
+    )
+    assert run_child(tariff, "api", "inspect", original | {"scope": scope}) == after
+    view = run_child(tariff, "api", "view", ids | original | {"scope": scope})
+    assert view["operation_state"] == "failed" and view["candidate"] is None
+    assert not view["requires_billing_reconciliation"] and not view["automatic_retry_authorized"]
+    duplicate = run_child(tariff, "worker", "execute", original | {"scope": scope})
+    assert duplicate["calls"] == duplicate["second_calls"] == 0
+    assert (
+        run_child(tariff, "api", "replay", ids | original | {"scope": scope})["id"]
+        == original["id"]
+    )
+
+
+def test_late_usage_conflict_restores_original_hold_and_stays_manual(tariff):
+    ids, original, before = unknown_request(tariff)
+    configure(tariff, "reconcile", reconciliation(original["id"], "confirmed_billed", 17))
+    run_child(
+        tariff,
+        "worker",
+        "observe",
+        original
+        | {"call_id": before["call_id"], "usage": {"prompt_tokens": 12, "completion_tokens": 20}},
+    )
+    conflict = run_child(tariff, "api", "inspect", original | {"scope": "project"})
+    assert conflict["budget_state"] == "unknown" and conflict["manual_reconciliation"]
+    assert conflict["settled_minor"] is None and conflict["held_minor"] == before["held_minor"]
+    assert (
+        conflict["call_state"] == "failed"
+        and conflict["dispatch_events"] == conflict["native_calls"] == 1
+    )
+    assert conflict["event_counts"]["reconciliation_conflict"] == 1
+    ticked = run_child(tariff, "api", "tick", original | {"scope": "project"})
+    assert ticked == conflict
+    duplicate = run_child(tariff, "worker", "execute", original | {"scope": "project"})
+    assert duplicate["calls"] == duplicate["second_calls"] == 0
+    view = run_child(tariff, "api", "view", ids | original | {"scope": "project"})
+    assert view["requires_billing_reconciliation"] and not view["automatic_retry_authorized"]
+
+
+def _seed_api(payload):
     from packages.domain.runtime import connection, secret_hash
     from packages.identity.repository import record_binding, register_bidder
 
     actor, bid, project, lot, round_id, blob, version = [uuid4() for _ in range(7)]
+    if payload.get("actor"):
+        actor = UUID(payload["actor"])
     with connection() as c:
-        c.execute(
-            "INSERT INTO members(id,display_name) VALUES(%s,'synthetic nonowner actor')", (actor,)
-        )
+        if not payload.get("actor"):
+            c.execute(
+                "INSERT INTO members(id,display_name) VALUES(%s,'synthetic nonowner actor')",
+                (actor,),
+            )
         bidder = register_bidder(
             c, actor, "synthetic nonowner bidder", "explicit test registration", None
         )["id"]
@@ -401,15 +683,16 @@ def _seed_api():
             "INSERT INTO document_versions(id,bid_id,blob_id,original_name,obtained_at,artifact_kind,created_by) VALUES(%s,%s,%s,'synthetic.pdf',now(),'bid_body',%s)",
             (version, bid, blob, actor),
         )
-        c.execute(
-            "INSERT INTO sessions(id,member_id,token_digest,csrf_digest,expires_at) VALUES(%s,%s,%s,%s,now()+interval '1 hour')",
-            (
-                uuid4(),
-                actor,
-                secret_hash(str(actor) + SYNTHETIC_SESSION),
-                hashlib.sha256(SYNTHETIC_CSRF.encode()).hexdigest(),
-            ),
-        )
+        if not payload.get("actor"):
+            c.execute(
+                "INSERT INTO sessions(id,member_id,token_digest,csrf_digest,expires_at) VALUES(%s,%s,%s,%s,now()+interval '1 hour')",
+                (
+                    uuid4(),
+                    actor,
+                    secret_hash(str(actor) + SYNTHETIC_SESSION),
+                    hashlib.sha256(SYNTHETIC_CSRF.encode()).hexdigest(),
+                ),
+            )
     return {"actor": actor, "bid": bid, "version": version}
 
 
@@ -455,7 +738,10 @@ def _confirm_api(payload):
                     "subject": "project",
                     "scope": "current bid",
                     "name": name,
-                    "value": "synthetic-" + name + ":" + payload["bid"],
+                    "value": "synthetic-"
+                    + name
+                    + ":"
+                    + (payload.get("fact_namespace") or payload["bid"]),
                     "unit": None,
                     "evidence_ids": [payload["evidence"]],
                     "reason": "native original-page confirmation",
@@ -480,7 +766,9 @@ def _api(payload, mode):
         raise AssertionError("API cannot make model HTTP requests")
 
     provider = DeepSeekClient(
-        api_key="explicit-offline-only", transport=httpx.MockTransport(no_api_http)
+        api_key="explicit-offline-only",
+        model=payload.get("profile_model", "deepseek-flash"),
+        transport=httpx.MockTransport(no_api_http),
     )
     patch = pytest.MonkeyPatch()
     patch.setattr(DeepSeekClient, "from_env", classmethod(lambda cls: provider))
@@ -515,7 +803,7 @@ def _api(payload, mode):
                 "text": "Explicit synthetic question " + uuid4().hex,
                 "source_selection": [],
                 "max_tokens": 2048,
-            }
+            } | payload.get("turn", {})
             path = base + "/" + main.json()["id"] + "/turns"
             headers |= {"If-Match": main.headers["etag"], "Idempotency-Key": uuid4().hex}
             response = client.post(path, json=body, headers=headers)
@@ -547,6 +835,18 @@ def _api(payload, mode):
                 payload["path"], json=payload["body"], headers=payload["headers"]
             )
             return {"status": response.status_code, "id": response.json().get("id")}
+        if mode == "view":
+            response = client.get("/api/v1/assistant/jobs/" + payload["id"], headers=headers)
+            assert response.status_code == 200, response.json()
+            value = response.json()
+            return {
+                "id": value["id"],
+                "operation_state": value["operation"]["state"],
+                "requires_billing_reconciliation": value["requires_billing_reconciliation"],
+                "automatic_retry_authorized": value["automatic_retry_authorized"],
+                "candidate": value["candidate"],
+                "budget_state": value["budget"]["state"],
+            }
         result = coordinator.publish(UUID(payload["id"]))
         history = client.get(base + "/" + payload["conversation_id"] + "/messages", headers=headers)
         assert history.status_code == 200
@@ -563,7 +863,7 @@ def _inspect(payload):
 
     with connection() as c:
         reservation = c.execute(
-            "SELECT state,reserved_minor AS held_minor,charged_minor AS settled_minor FROM assistant_budget_reservations WHERE job_id=%s",
+            "SELECT state,reserved_minor AS held_minor,charged_minor AS settled_minor,requires_manual_reconciliation FROM assistant_budget_reservations WHERE job_id=%s",
             (UUID(payload["id"]),),
         ).fetchone()
         events = c.execute(
@@ -580,18 +880,39 @@ def _inspect(payload):
             if payload["scope"] == "global"
             else payload["response"]["operation"]["id"]
         )
-        count = c.execute(
-            sql.SQL("SELECT count(*) AS n FROM {} WHERE {}=%s").format(
+        calls = c.execute(
+            sql.SQL("SELECT id,state,usage FROM {} WHERE {}=%s ORDER BY id").format(
                 sql.Identifier(table), sql.Identifier(column)
             ),
             (UUID(target),),
-        ).fetchone()["n"]
+        ).fetchall()
+        audit_counts = c.execute(
+            "SELECT event_type,count(*)::int AS n FROM assistant_budget_events WHERE job_id=%s GROUP BY event_type",
+            (UUID(payload["id"]),),
+        ).fetchall()
+        intent = c.execute(
+            "SELECT actor_id,canonical_project_key FROM assistant_logical_intents WHERE job_id=%s",
+            (UUID(payload["id"]),),
+        ).fetchone()
+        policies = c.execute(
+            """SELECT DISTINCT ON(scope) scope,id,owner_key,design.assistant_budget_obligation(id)::bigint AS obligation
+          FROM assistant_budget_versions WHERE (scope='global' AND owner_key='assistant')
+          OR (scope='member' AND owner_key=%s) OR (scope='project' AND owner_key=%s)
+          ORDER BY scope,revision DESC""",
+            (str(intent["actor_id"]), intent["canonical_project_key"]),
+        ).fetchall()
     return {
         "budget_state": reservation["state"],
         "held_minor": reservation["held_minor"],
         "settled_minor": reservation["settled_minor"],
         "dispatch_events": events,
-        "native_calls": count,
+        "native_calls": len(calls),
+        "call_id": str(calls[0]["id"]) if calls else None,
+        "call_state": calls[0]["state"] if calls else None,
+        "billing_state": calls[0]["usage"].get("billing_state") if calls else None,
+        "manual_reconciliation": reservation["requires_manual_reconciliation"],
+        "event_counts": {row["event_type"]: row["n"] for row in audit_counts},
+        "obligations": {row["scope"]: row["obligation"] for row in policies},
     }
 
 
@@ -661,17 +982,57 @@ def _child(mode, payload):
     )
     assert_role(worker)
     if mode == "seed_api":
-        return _seed_api()
+        return _seed_api(payload)
     if mode == "seed_worker":
         return _seed_worker(payload)
     if mode == "confirm_api":
         return _confirm_api(payload)
-    if mode in {"accept", "replay", "publish"}:
+    if mode in {"accept", "replay", "publish", "view"}:
         return _api(payload, mode)
     if mode == "execute":
         return _execute(payload)
     if mode == "inspect":
         return _inspect(payload)
+    if mode == "reference":
+        from packages.assistant import context
+
+        with connection() as c:
+            ref = {"kind": "project", "id": payload["bid"], "trace_id": None}
+            value = context.resolve(c, ref)
+            return ref | {"version": value["version"]}
+    if mode == "add_rule":
+        from packages.domain.runtime import sha
+
+        rule, rule_set, material = uuid4(), uuid4(), uuid4()
+        with connection() as c:
+            bid = UUID(payload["bid"])
+            c.execute(
+                "INSERT INTO material_snapshots(id,bid_id,revision,manifest,digest) VALUES(%s,%s,1,'{}',%s)",
+                (material, bid, sha({})),
+            )
+            c.execute(
+                "INSERT INTO rule_sets(id,bid_id,material_id,revision,digest,coverage) VALUES(%s,%s,%s,1,%s,'complete')",
+                (rule_set, bid, material, sha(str(rule_set))),
+            )
+            c.execute(
+                "INSERT INTO rule_items(id,bid_id,rule_set_id,kind,statement,conditions,exceptions,max_points,evidence_ids,bands) VALUES(%s,%s,%s,'advisory','Synthetic original rule','[]','[]',NULL,%s,'[]')",
+                (rule, bid, rule_set, [UUID(payload["evidence"])]),
+            )
+        return {"rule_id": str(rule)}
+    if mode == "observe":
+        from psycopg.types.json import Jsonb
+
+        with connection(True) as c:
+            c.execute(
+                "SELECT design.assistant_observe_usage(%s,%s,%s,%s)",
+                (
+                    UUID(payload["id"]),
+                    UUID(payload["call_id"]),
+                    Jsonb(payload["usage"]),
+                    "explicit-late-synthetic-usage",
+                ),
+            )
+        return {"observed": True, "real_provider_attempts": 0}
     if mode == "tick":
         from packages.assistant import coordinator
 
