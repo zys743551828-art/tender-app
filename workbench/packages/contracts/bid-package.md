@@ -1,10 +1,10 @@
 # 整份标书资料包领域契约
 
-本契约对应融合任务 F01-01—05 的首批纯领域实现，版本 `bid-package/1`。实现位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。**尚未接入数据库、API、Worker、前端类型或现有评审／提交链，不能据此宣称 F01-08 全链验收通过。**
+本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已由 `packages/domain/bid_package_repository.py` 接入真实主数据，并以独立 PG17 验证；**尚未接入 API、Worker、前端类型或现有评审／提交链，正式非 owner 角色授权尚待验收，不能据此宣称 F01-08 全链验收通过。**
 
 ## 身份与现有结构
 
-现有 `contracts/sql/domain.sql` 的 `engineering_projects`、`bid_rounds`、`bidders`、`bid_profiles` 保留业务概念；其中 `bid_rounds.lot` 目前只是文本，`bid_profiles.current_body_id` 仍为单正文。新 `BidScope` 显式冻结工程、稳定标段 ID、轮次 ID、`bid_id`、本方 `bidder_id` 及其核验状态。后续 DDL 必须给标段稳定身份并检查工程→标段→轮次→profile 的关联，不能由近名自动归并。此纯模型检查范围完全相等，不能替代数据库外键或服务器授权。
+现有 `contracts/sql/domain.sql` 的 `engineering_projects`、`bid_rounds`、`bidders`、`bid_profiles` 保留业务概念；原 `bid_rounds.lot` 是文本，`bid_profiles.current_body_id` 仍为单正文。新 `BidScope` 显式冻结工程、稳定标段 ID、轮次 ID、`bid_id`、本方 `bidder_id` 及其核验状态。新增 `sql/bid-packages.sql` 给真实工程增加 `engineering_lots`，真实 `bid_rounds` 以复合外键绑定 `lot_id`，并以工程＋稳定标段 ID＋轮次号唯一；同标段换显示别名不能重复造同轮次，不同稳定标段可以同名。原文本唯一仅保留为 `lot_id` 为空的过渡部分索引，标签不作新身份主键。存储入口核对实际 profile／轮次／主体及绑定依据，不能由近名自动归并。现有身份 API 尚未接入新标段字段，`lot_id` 暂可空以明确保留其原适用范围；整包新写拒绝未登记稳定标段的轮次。领域检查与外键都不能替代服务器授权。
 
 权威包是在此本方投标范围下选择的招标文件、补遗等依据，不表示招标文件的发布主体是投标人。`source_kind=authority` 与本方 `source_kind=own` 在不同包中；成员携带 `source_ref`，来源发布者、效力和当前授权仍由来源效力模块校验。模型不会从最后上传时间或最后一份 body 推断整包成员。
 
@@ -58,4 +58,26 @@
 
 `tests/test_bid_packages.py` 覆盖单 PDF、多册、缺册、共享附件、跨主体／标段／轮次、补遗追加、同字节解析订正和旧包重开九类，并增加未知枚举、不适用、空清单、深标题、重叠和结构契约反例。独立评审发现的同 ID 要求偷换、parse run 跨文件重用／跨修订改写、未知页数／已知页数待分段及全部整数边界均有正反例。测试不连接业务库，不读取密钥、不调用模型。
 
-下一步依赖：服务端验证真实工程关系／来源效力／解析与文档外键；不可变持久化及全新库 DDL；F01-06 去单正文中心；F01-07 旧 manifest 原样保留与新摘要影响链；F01-08 实际接口、前端类型与错误码一致验收。业务通过、分数和提交闸门仍由各自领域规则判定。
+下一步依赖：正式角色与接口授权、来源效力及所有发布入口重核；F01-06 去单正文中心；F01-07 旧 manifest 原样保留与新摘要影响链；F01-08 实际接口、前端类型与错误码一致验收。业务通过、分数和提交闸门仍由各自领域规则判定。
+
+## 首批持久化协议
+
+`save_revision(connection, package, expected_digest=...)` 使用调用方连接与事务，不读取业务配置或另行连接库。写入限定 `READ COMMITTED`，先按既有身份模块顺序锁实际 bid，再检查真实 profile、工程、稳定标段、轮次和主体；不新增可写的身份确认状态。`confirmed` 必须由最新 `identity.bound` 的 `after` 与当前 association 全量一致，且有原主体登记审计支撑。包修订额外冻结 `identity_snapshot`、`identity_authority_id`、`identity_digest`；pending 快照也保留当时实际名称和范围，不能只靠旧 authority 或当前 profile 重建。
+
+一个包固定其工程、标段、轮次、本方主体和类型；当前 profile 改绑后，旧包可读和同键历史重放，新写须重新建立相应范围的包。头表以锁与 `expected_digest` 做 CAS，修订号、前修订摘要与头同时前进；同 revision ID 与相同内容重放返回原结果，不把当前头回退。相同 ID 不同内容拒绝。修订、成员、逻辑部分、解析绑定与工程标段为不可变记录；数据库检查成员／部分必须逐项对应 manifest，延迟约束要求提交时所有成员／部分齐全。规范 JSON 和 SHA256 由数据库独立核算，字段缺失、JSON null、错误类型不能靠 SQL CHECK 的 UNKNOWN 通过；数据库行 ID 与 manifest ID 必须一致。
+
+精确解析取指定 run，不按最新时间选择。冻结前核真实文件字节摘要、run 的文档版本／解析器／配置、实际原页及证据文字 SHA；以 `package-parse-evidence/1` 将排序的 pages／blocks 构成证据 manifest。几何、结构及缺口 JSONB 使用 PostgreSQL 原文字符串进入规范协议，避免浮点数进入身份摘要。SQL 与 Python 使用同一规范 JSON，新增绑定的直接 SQL 同样核实际解析与证据摘要。run 冻结后禁止迟到追加原页／证据；订正用新 run，新包修订引用新身份。
+
+该存储切片只接受 `coverage=complete`、原页 1…N 齐全、每页 usable 且没有解析／页缺口的正式 frozen 输入。failed／partial／缺页原件仍可通过 not_frozen 加原因保存；“精确冻结 partial 身份同时保留不完整资格”需要后续扩展模型，不能把现有身份精确误当解析完整。纯模型构造本身不能核数据库解析质量，实际业务必须经存储及后续输入资格核验。
+
+`load_revision(connection,bid_id,revision_id)` 校验保存的结构及摘要后恢复原值对象，损坏数据返回 `PACKAGE_STORED_MANIFEST_CORRUPT`；`load_frozen_identity()` 返回保存时的完整身份快照及摘要。两者不以当前 profile 覆写历史。API 对新用／重用仍须重核当前身份与来源资格，不能把历史重放当作新用授权。
+
+本批真实验证仅在专用 `fusion_package_repo` 临时库执行以下已审清单，未运行其他归档 SQL，也未对业务部署授权角色：
+
+| 顺序 | SQL | SHA256 |
+| --- | --- | --- |
+| 1 | `sql/core.sql` | `accb37248ba097d0992924b4977786932f167b04c105031b4e6acc3be698e098` |
+| 2 | `sql/domain.sql` | `c8a1a595b6b855bdfe80671dd5719ed9c7f752d5f7b7f7d9ae8f153d286e115a` |
+| 3 | `sql/bid-packages.sql` | `f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319` |
+
+`tests/test_bid_package_repository.py` 使用真实既有主体登记／绑定函数与原始 core／domain 主表，覆盖两类包、跨范围、历史重放、身份更正、pending 快照、同字节新解析、未知页数、直接 SQL 伪造、延迟完整性、数据库不可变守卫、双连接 CAS 及撤销后的旧隔离快照。测试账号为专用临时库 owner，用于关系／事务机制验证，不代表正式非 owner 权限、实际 API 或整包业务已验收。
