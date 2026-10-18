@@ -5888,6 +5888,28 @@
             "type": "string",
             "minLength": 1,
             "title": "Source Description"
+          },
+          "score_unknown": {
+            "type": "boolean",
+            "title": "Score Unknown",
+            "default": false
+          },
+          "expected_project_revision": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Project Revision"
+          },
+          "acknowledge_identity_difference": {
+            "type": "boolean",
+            "title": "Acknowledge Identity Difference",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -8464,6 +8486,78 @@
               }
             ],
             "title": "Supersedes"
+          },
+          "body_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Name"
+          },
+          "body_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Sha256"
+          },
+          "technical_maximum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technical Maximum"
+          },
+          "superseded": {
+            "type": "boolean",
+            "title": "Superseded",
+            "default": false
+          },
+          "project_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Title"
+          },
+          "lot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lot"
+          },
+          "round": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Round"
           }
         },
         "additionalProperties": false,

@@ -680,6 +680,13 @@ class Submission(Response):
     confirmation_review_id: Id
     receipt_artifact: ArtifactRef | None
     supersedes: Id | None
+    body_name: str | None = None
+    body_sha256: Sha256 | None = None
+    technical_maximum: str | None = None
+    superseded: bool = False
+    project_title: str | None = None
+    lot: str | None = None
+    round: int | None = None
 
 
 StageResult = Literal[
@@ -703,6 +710,9 @@ class OutcomeRequest(Request):
     supersedes: Id | None
     source_artifact_id: Id | None
     source_description: NonEmpty
+    score_unknown: bool = False
+    expected_project_revision: Annotated[int, Field(ge=1)] | None = None
+    acknowledge_identity_difference: bool = False
 
 
 class OutcomeVerifyRequest(Request):

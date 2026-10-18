@@ -1170,127 +1170,6 @@
       ],
       "additionalProperties": false
     },
-    "OutcomeRequest": {
-      "type": "object",
-      "description": "",
-      "properties": {
-        "submission_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "source_kind": {
-          "type": "string",
-          "description": "结果来源",
-          "enum": [
-            "user_reported",
-            "official"
-          ]
-        },
-        "target": {
-          "type": "string",
-          "description": "成绩口径",
-          "enum": [
-            "technical_total",
-            "composite_total",
-            "no_score"
-          ]
-        },
-        "value": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
-          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
-        },
-        "maximum": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
-          "description": "非负十进制字符串，应用层 Decimal 核验量尺；未知用状态和 null"
-        },
-        "aggregation": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "聚合方式，未知为空"
-        },
-        "stage_result": {
-          "type": "string",
-          "description": "结果阶段",
-          "enum": [
-            "pending",
-            "technical_shortlisted",
-            "not_shortlisted",
-            "rejected",
-            "candidate",
-            "awarded",
-            "not_awarded",
-            "cancelled",
-            "failed_tender"
-          ]
-        },
-        "source_page": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "minimum": 1
-        },
-        "published_at": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "date-time",
-              "description": "含时区的取得／核实／运行时间"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "supersedes": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "source_artifact_id": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "source_description": {
-          "type": "string",
-          "description": "原件出处或报送说明",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "submission_id",
-        "source_kind",
-        "target",
-        "value",
-        "maximum",
-        "aggregation",
-        "stage_result",
-        "source_page",
-        "published_at",
-        "supersedes",
-        "source_artifact_id",
-        "source_description"
-      ],
-      "additionalProperties": false
-    },
     "OutcomeVerifyRequest": {
       "type": "object",
       "description": "",
@@ -2207,71 +2086,6 @@
         "fact_set_id",
         "file_version_ids",
         "reference_dataset_id"
-      ],
-      "additionalProperties": false
-    },
-    "Submission": {
-      "type": "object",
-      "description": "",
-      "properties": {
-        "submission_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "project_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "body_version_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "snapshot_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "submitted_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "含时区的取得／核实／运行时间"
-        },
-        "confirmation_review_id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        },
-        "receipt_artifact": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ArtifactRef"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "supersedes": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
-          "description": "服务端分配的稳定 ID，非展示名称"
-        }
-      },
-      "required": [
-        "submission_id",
-        "project_id",
-        "body_version_id",
-        "snapshot_id",
-        "submitted_at",
-        "confirmation_review_id",
-        "receipt_artifact",
-        "supersedes"
       ],
       "additionalProperties": false
     },
@@ -3905,6 +3719,161 @@
       ],
       "type": "object"
     },
+    "OutcomeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "submission_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "source_kind": {
+          "enum": [
+            "user_reported",
+            "official"
+          ],
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "technical_total",
+            "composite_total",
+            "no_score"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "maxLength": 24,
+              "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "aggregation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "stage_result": {
+          "enum": [
+            "pending",
+            "technical_shortlisted",
+            "not_shortlisted",
+            "rejected",
+            "candidate",
+            "awarded",
+            "not_awarded",
+            "cancelled",
+            "failed_tender"
+          ],
+          "type": "string"
+        },
+        "source_page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_description": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "score_unknown": {
+          "default": false,
+          "type": "boolean"
+        },
+        "expected_project_revision": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "acknowledge_identity_difference": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "submission_id",
+        "source_kind",
+        "target",
+        "value",
+        "maximum",
+        "aggregation",
+        "stage_result",
+        "source_page",
+        "published_at",
+        "supersedes",
+        "source_artifact_id",
+        "source_description"
+      ],
+      "type": "object"
+    },
     "PipelineStatus": {
       "additionalProperties": false,
       "properties": {
@@ -5210,6 +5179,138 @@
         "pairs",
         "mae",
         "scope"
+      ],
+      "type": "object"
+    },
+    "Submission": {
+      "additionalProperties": false,
+      "properties": {
+        "submission_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "body_version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "snapshot_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "confirmation_review_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "receipt_artifact": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtifactRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedes": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "body_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "body_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "technical_maximum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "superseded": {
+          "default": false,
+          "type": "boolean"
+        },
+        "project_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "round": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "submission_id",
+        "project_id",
+        "body_version_id",
+        "snapshot_id",
+        "submitted_at",
+        "confirmation_review_id",
+        "receipt_artifact",
+        "supersedes"
       ],
       "type": "object"
     },

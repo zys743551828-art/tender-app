@@ -668,6 +668,13 @@ export interface Submission {
   confirmation_review_id: Id;
   receipt_artifact: ArtifactRef | null;
   supersedes: Id | null;
+  body_name?: string | null;
+  body_sha256?: string | null;
+  technical_maximum?: string | null;
+  superseded?: boolean;
+  project_title?: string | null;
+  lot?: string | null;
+  round?: number | null;
 }
 
 export type OutcomeTarget = 'technical_total' | 'composite_total' | 'no_score';
@@ -696,6 +703,9 @@ export interface OutcomeRequest {
   supersedes: Id | null;
   source_artifact_id: Id | null;
   source_description: string;
+  score_unknown?: boolean;
+  expected_project_revision?: number | null;
+  acknowledge_identity_difference?: boolean;
 }
 
 /** $defs/Outcome */

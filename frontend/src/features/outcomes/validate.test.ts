@@ -27,8 +27,8 @@ describe('结果录入校验', () => {
   });
   it('有分值的类型必须同时填分值与满分；留空不当作“未知”，并提示改选“无分值”', () => {
     const e = validateOutcome(scored);
-    expect(e.value).toBe('请填写分值；未公布请选「无分值（仅阶段结果）」');
-    expect(e.maximum).toBe('请填写满分；未公布请选「无分值（仅阶段结果）」');
+    expect(e.value).toBe('请填写分值；未公布请勾选「分值未知」');
+    expect(e.maximum).toBe('请填写满分；未公布请勾选「分值未知」');
     expect(validateOutcome({ ...scored, value: '80' }).maximum).toMatch(/请填写满分/);
     expect(validateOutcome({ ...scored, maximum: '100' }).value).toMatch(/请填写分值/);
     expect(validateOutcome({ ...scored, target: 'composite_total' }).value).toBeTruthy();

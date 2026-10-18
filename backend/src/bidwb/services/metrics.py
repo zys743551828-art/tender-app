@@ -25,6 +25,7 @@ _LATEST_OUTCOME = """
 SELECT DISTINCT ON (s.id) s.id AS submission_id, s.project_id, s.snapshot_id, o.stage_result, o.target, o.value_decimal, o.maximum_decimal
 FROM submissions s JOIN outcomes o ON o.submission_id=s.id AND o.project_id=s.project_id
 WHERE s.project_id = ANY(:ids) AND o.verification_status <> 'conflict' AND NOT EXISTS (SELECT 1 FROM outcomes x WHERE x.supersedes=o.id)
+AND NOT EXISTS (SELECT 1 FROM submissions newer WHERE newer.supersedes=s.id)
 ORDER BY s.id, o.known_at DESC, o.id DESC
 """
 

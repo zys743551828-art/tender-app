@@ -117,6 +117,9 @@ export function submission(over: Partial<Submission> = {}): Submission {
     confirmation_review_id: 'rev-9',
     receipt_artifact: null,
     supersedes: null,
+    project_title: '城市支路及排水改造',
+    lot: '一标段',
+    round: 1,
     ...over,
   };
 }

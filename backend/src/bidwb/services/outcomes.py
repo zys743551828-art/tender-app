@@ -7,10 +7,11 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Any
 
 from sqlalchemy import Connection
 
-from bidwb import db
+from bidwb import db, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import ArtifactRef, Outcome, OutcomeRequest, OutcomeVerifyRequest, Submission, SubmissionRequest
@@ -38,6 +39,15 @@ def _artifact_ref(conn: Connection, artifact_id: str | None) -> ArtifactRef | No
 
 
 def _submission(conn: Connection, row: db.Row) -> Submission:
+    frozen_identity = _submission_identity(conn, row["id"])
+    identity = db.one(
+        conn,
+        """SELECT fv.original_name,a.sha256,p.terms_json FROM file_versions fv
+        JOIN artifacts a ON a.id=fv.artifact_id JOIN input_snapshots sn ON sn.id=:s
+        JOIN rule_packages p ON p.id=sn.rule_set_id WHERE fv.id=:v AND fv.project_id=:p""",
+        {"s": row["snapshot_id"], "v": row["body_version_id"], "p": row["project_id"]},
+    )
+    term = term_conflicts.effective(identity["terms_json"]).get("technical_full_score") if identity else None
     return Submission(
         submission_id=row["id"],
         project_id=row["project_id"],
@@ -47,6 +57,13 @@ def _submission(conn: Connection, row: db.Row) -> Submission:
         confirmation_review_id=row["confirmation_review_id"],
         receipt_artifact=_artifact_ref(conn, row["receipt_artifact_id"]),
         supersedes=row["supersedes"],
+        body_name=identity["original_name"] if identity else None,
+        body_sha256=identity["sha256"] if identity else None,
+        technical_maximum=str(term["value"]) if term else None,
+        superseded=bool(db.scalar(conn, "SELECT EXISTS(SELECT 1 FROM submissions WHERE supersedes=:s)", {"s": row["id"]})),
+        project_title=frozen_identity.get("title") if frozen_identity else None,
+        lot=frozen_identity.get("lot") if frozen_identity else None,
+        round=frozen_identity.get("round") if frozen_identity else None,
     )
 
 
@@ -121,6 +138,8 @@ def _require_submittable_snapshot(conn: Connection, project_id: str, snapshot_id
 
 def freeze_submission(conn: Connection, actor: Actor, project_id: str, req: SubmissionRequest, request_id: str) -> Submission:
     require_project(conn, actor, project_id)
+    project_identity = db.one(conn, "SELECT title,lot,round FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    assert project_identity is not None
     if req.submitted_at.tzinfo is None or req.submitted_at.utcoffset() is None:
         raise Unprocessable("submitted_at_naive", "提交时间必须带时区（例如 2026-10-01T08:00:00+08:00）")
     if req.submitted_at > utcnow():
@@ -148,7 +167,11 @@ def freeze_submission(conn: Connection, actor: Actor, project_id: str, req: Subm
         )
         if in_project is None:
             raise Unprocessable("receipt_artifact_invalid", "回执必须是本项目已上传并通过核验的文件")
-    previous = db.one(conn, "SELECT id FROM submissions WHERE project_id=:p ORDER BY submitted_at DESC, id DESC LIMIT 1", {"p": project_id})
+    previous = db.one(
+        conn,
+        "SELECT s.id FROM submissions s WHERE s.project_id=:p AND NOT EXISTS(SELECT 1 FROM submissions n WHERE n.supersedes=s.id) ORDER BY s.submitted_at DESC,s.id DESC LIMIT 1",
+        {"p": project_id},
+    )
     submission_id = new_id("sub")
     # 登记提交本身就是登记人对“提交这一版”的确认：同事务写一条确认记录，随提交一并留存。
     review_id = new_id("rev")
@@ -182,6 +205,7 @@ def freeze_submission(conn: Connection, actor: Actor, project_id: str, req: Subm
         object_kind="submission",
         object_id=submission_id,
         request_id=request_id,
+        details={"project_identity": dict(project_identity)},
     )
     row = db.one(conn, "SELECT * FROM submissions WHERE id=:i", {"i": submission_id})
     assert row is not None
@@ -220,6 +244,10 @@ def _outcome(conn: Connection, row: db.Row) -> Outcome:
 
 
 def _check_scale(req: OutcomeRequest) -> None:
+    if req.score_unknown:
+        if req.target == "no_score" or req.value is not None or (req.maximum is not None and Decimal(req.maximum) <= 0):
+            raise Unprocessable("score_scale_invalid", "未知分值须保留成绩类型且不填分值；已知满分必须大于 0")
+        return
     if req.target == "no_score":
         if req.value is not None or req.maximum is not None:
             raise Unprocessable("score_scale_invalid", "“无分数”结果不能带分值或满分")
@@ -233,9 +261,16 @@ def _check_scale(req: OutcomeRequest) -> None:
 
 def record_outcome(conn: Connection, actor: Actor, project_id: str, req: OutcomeRequest, request_id: str) -> Outcome:
     require_project(conn, actor, project_id)
+    project = db.one(conn, "SELECT revision,title,lot,round FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    assert project is not None
+    if req.expected_project_revision is not None and project["revision"] != req.expected_project_revision:
+        raise Conflict("outcome_identity_stale", "项目身份或状态已有变化，请核对当前项目与提交稿后重新登记")
     _check_scale(req)
-    if db.one(conn, "SELECT 1 AS x FROM submissions WHERE id=:s AND project_id=:p", {"s": req.submission_id, "p": project_id}) is None:
-        raise NotFound("submission_not_found")
+    submission = _require_current_submission(conn, project_id, req.submission_id)
+    frozen_identity = _submission_identity(conn, req.submission_id)
+    identity_differs = frozen_identity is None or any(frozen_identity.get(k) != project[k] for k in ("title", "lot", "round"))
+    if req.expected_project_revision is not None and identity_differs and not req.acknowledge_identity_difference:
+        raise Conflict("outcome_identity_conflict", "当前项目身份与提交时不同或提交时身份未留存，请核对实际提交稿并明确确认差异")
     if req.supersedes is not None:
         if (
             db.one(
@@ -282,7 +317,18 @@ def record_outcome(conn: Connection, actor: Actor, project_id: str, req: Outcome
         object_kind="outcome",
         object_id=outcome_id,
         request_id=request_id,
-        details={"source_kind": req.source_kind, "target": req.target},
+        details={
+            "source_kind": req.source_kind,
+            "target": req.target,
+            "score_unknown": req.score_unknown,
+            "expected_project_revision": req.expected_project_revision,
+            "submission_id": req.submission_id,
+            "body_version_id": submission["body_version_id"],
+            "snapshot_id": submission["snapshot_id"],
+            "project_identity": dict(project),
+            "submission_identity": frozen_identity,
+            "identity_difference_acknowledged": req.acknowledge_identity_difference,
+        },
     )
     row = db.one(conn, "SELECT * FROM outcomes WHERE id=:i", {"i": outcome_id})
     assert row is not None
@@ -317,6 +363,10 @@ def verify_outcome(conn: Connection, actor: Actor, outcome_id: str, req: Outcome
         raise NotFound("outcome_not_found")
     project_id = old["project_id"]
     require_project(conn, actor, project_id)
+    db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    _require_current_submission(conn, project_id, old["submission_id"])
+    if old["target"] != "no_score" and old["value_decimal"] is None:
+        raise Conflict("outcome_score_unknown", "分值仍未知，请补充实际分值并更正登记后再核实")
     if old["source_kind"] != "official":
         raise Conflict("outcome_not_official", "只有官方来源的结果可以核实；用户报送的结果请先补充官方原件并重新登记")
     if old["verification_status"] == "verified":
@@ -372,3 +422,21 @@ def list_outcomes(conn: Connection, actor: Actor, project_id: str) -> list[Outco
     require_project(conn, actor, project_id)
     rows = db.all_(conn, "SELECT * FROM outcomes WHERE project_id=:p ORDER BY known_at DESC, id DESC", {"p": project_id})
     return [_outcome(conn, r) for r in rows]
+
+
+def _require_current_submission(conn: Connection, project_id: str, submission_id: str) -> db.Row:
+    row = db.one(conn, "SELECT * FROM submissions WHERE id=:s AND project_id=:p", {"s": submission_id, "p": project_id})
+    if row is None:
+        raise NotFound("submission_not_found")
+    if db.one(conn, "SELECT 1 FROM submissions WHERE supersedes=:s AND project_id=:p", {"s": submission_id, "p": project_id}):
+        raise Conflict("submission_superseded", "此提交已被更正，请选择更正后的实际提交；已有成绩记录仍作为历史保留")
+    return row
+
+
+def _submission_identity(conn: Connection, submission_id: str) -> dict[str, Any] | None:
+    identity = db.scalar(
+        conn,
+        "SELECT details_json->'project_identity' FROM audit_events WHERE action='submission.freeze' AND object_id=:s ORDER BY created_at,id LIMIT 1",
+        {"s": submission_id},
+    )
+    return dict(identity) if isinstance(identity, dict) else None

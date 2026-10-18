@@ -1,11 +1,12 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import type { FileVersion, Outcome } from '../../api/types';
+import type { FileVersion, Outcome, Submission } from '../../api/types';
 import { formatDateTime } from '../../lib/format';
 import { fileVersion, outcome as baseOutcome, submission } from '../../test/fixtures';
-import { ME, project, renderApp } from '../../test/helpers';
+import { ME, overview, project, renderApp, renderAppWithClient } from '../../test/helpers';
+import { submissionKeys } from './queries';
 import { server } from '../../test/server';
 
 /** 界面不显示记录编号：测试里按登记时间区分记录，每个编号对应一个不同的登记时间。 */
@@ -24,20 +25,91 @@ function backend(
   over: {
     outcomes?: Outcome[];
     files?: FileVersion[];
+    submissions?: Submission[];
   } = {},
 ) {
   server.use(
+    http.get('/api/v1/projects', () => HttpResponse.json([overview()])),
     http.get('/api/v1/me', () => HttpResponse.json(ME)),
     http.get('/api/v1/projects/prj-1', () => HttpResponse.json(project())),
     http.get('/api/v1/projects/prj-1/files', () => HttpResponse.json(over.files ?? [])),
     http.get('/api/v1/projects/prj-1/submissions', () =>
-      HttpResponse.json([submission(), submission({ submission_id: 'sub-2' })]),
+      HttpResponse.json(
+        over.submissions ?? [
+          submission({ supersedes: 'sub-2' }),
+          submission({ submission_id: 'sub-2', superseded: true }),
+        ],
+      ),
     ),
     http.get('/api/v1/projects/prj-1/outcomes', () => HttpResponse.json(over.outcomes ?? [])),
   );
 }
 
 describe('结果登记（提交与结果页“开标结果”标签）', () => {
+  it('提交时轮次与当前项目不同，先显示差异，明确核对后才允许登记', async () => {
+    backend({ submissions: [submission({ round: 2 })] });
+    const user = userEvent.setup();
+    renderApp('/projects/prj-1/submit?tab=outcomes');
+    await waitFor(() => expect(screen.getByLabelText('关联的实际提交')).toHaveValue('sub-1'));
+    expect(screen.getByLabelText('成绩登记身份')).toHaveTextContent('第 2 轮');
+    expect(screen.getByRole('button', { name: '登记结果' })).toBeDisabled();
+    await user.click(screen.getByRole('checkbox', { name: /当前项目身份与提交时不同/ }));
+    expect(screen.getByRole('button', { name: '登记结果' })).toBeEnabled();
+  });
+  it('唯一当前提交复用稿件身份和满分，分值未知保持待核验且不补零', async () => {
+    backend({
+      submissions: [submission({ body_name: '正式提交稿.pdf', technical_maximum: '80' })],
+    });
+    let body: unknown;
+    server.use(
+      http.post('/api/v1/projects/prj-1/outcomes', async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json(outcome({ value: null, maximum: '80' }));
+      }),
+    );
+    const user = userEvent.setup();
+    renderApp('/projects/prj-1/submit?tab=outcomes');
+    expect(await screen.findByLabelText('满分')).toHaveValue('80');
+    expect(screen.getByLabelText('关联的实际提交')).toHaveValue('sub-1');
+    expect(screen.getByLabelText('成绩登记身份')).toHaveTextContent('正式提交稿.pdf');
+    await user.click(screen.getByRole('checkbox', { name: '分值未知，先保存待核验记录' }));
+    await user.type(screen.getByLabelText('来源说明'), '成绩尚未公布');
+    await user.click(screen.getByRole('button', { name: '登记结果' }));
+    await waitFor(() =>
+      expect(body).toMatchObject({
+        submission_id: 'sub-1',
+        target: 'technical_total',
+        score_unknown: true,
+        value: null,
+        maximum: '80',
+        expected_project_revision: 3,
+      }),
+    );
+  });
+
+  it('刷新出现更正提交时保留正在登记的旧身份并拦截，不自动切换', async () => {
+    backend({ submissions: [submission()] });
+    const { qc } = renderAppWithClient('/projects/prj-1/submit?tab=outcomes');
+    await waitFor(() => expect(screen.getByLabelText('关联的实际提交')).toHaveValue('sub-1'));
+    act(() => {
+      qc.setQueryData(submissionKeys.list('prj-1'), [
+        submission({ submission_id: 'sub-new', supersedes: 'sub-1' }),
+        submission({ superseded: true }),
+      ]);
+    });
+    expect(
+      await screen.findByText('此提交已被更正，请选择更正后的实际提交；不会自动切换稿件。'),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('关联的实际提交')).toHaveValue('sub-1');
+    expect(screen.getByRole('button', { name: '登记结果' })).toBeDisabled();
+  });
+
+  it('多个当前提交时要求选择，不根据列表次序猜稿件', async () => {
+    backend({ submissions: [submission(), submission({ submission_id: 'sub-2' })] });
+    renderApp('/projects/prj-1/submit?tab=outcomes');
+    await screen.findByText('请选择对应的实际提交；多份提交不会自动猜测。');
+    expect(screen.getByLabelText('关联的实际提交')).toHaveValue('');
+  });
   it('列出后端保存的全部结果，刷新页面后仍在', async () => {
     backend({ outcomes: [outcome(), outcome({ outcome_id: 'out-2', stage_result: 'awarded' })] });
     renderApp('/projects/prj-1/submit?tab=outcomes');
@@ -96,12 +168,11 @@ describe('结果登记（提交与结果页“开标结果”标签）', () => {
     await screen.findByText(/暂无已登记的结果/);
     // 分值未公布时引导改选“无分值”，而不是留空
     expect(screen.queryByText('未知请留空')).not.toBeInTheDocument();
-    expect(screen.getAllByText('未公布请选「无分值（仅阶段结果）」')).toHaveLength(2);
+    expect(screen.getByText('未公布可勾选「分值未知」；仅阶段结果可选无分值')).toBeInTheDocument();
     await userEvent.type(screen.getByLabelText('来源说明'), '公示');
     await userEvent.click(screen.getByRole('button', { name: '登记结果' }));
-    expect(await screen.findAllByText(/未公布请选「无分值（仅阶段结果）」/)).toHaveLength(2);
-    expect(screen.getByText('请填写分值；未公布请选「无分值（仅阶段结果）」')).toBeInTheDocument();
-    expect(screen.getByText('请填写满分；未公布请选「无分值（仅阶段结果）」')).toBeInTheDocument();
+    expect(await screen.findByText('请填写分值；未公布请勾选「分值未知」')).toBeInTheDocument();
+    expect(screen.getByText('请填写满分；未公布请勾选「分值未知」')).toBeInTheDocument();
     expect(posted).toBe(0);
   });
 

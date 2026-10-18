@@ -14,21 +14,26 @@ export interface OutcomeDraft {
   sourcePage: string;
   sourceDescription: string;
   supersedes: string;
+  scoreUnknown?: boolean;
 }
 
-const needScoreText = (what: string) => `请填写${what}；未公布请选「无分值（仅阶段结果）」`;
+const needScoreText = (what: string) => `请填写${what}；未公布请勾选「分值未知」`;
 
 export type OutcomeErrors = Partial<Record<keyof OutcomeDraft, string>>;
 
-/** 分值只做十进制字符串校验与比较，不转 number；未公布时选“无分值”，绝不补 0。 */
+/** 分值只做十进制字符串校验与比较；未知须显式选择，保留成绩类型与 null。 */
 export function validateOutcome(d: OutcomeDraft): OutcomeErrors {
   const e: OutcomeErrors = {};
   if (!d.submissionId.trim()) e.submissionId = '请先关联实际提交（填写提交 ID）';
   const scored = d.target !== 'no_score';
   const value = d.value.trim();
   const max = d.maximum.trim();
-  if (scored) {
-    // 有分值的类型必须同时给出分值与满分（后端同样要求）；未公布的成绩改选“无分值”，不留空、不补 0。
+  if (scored && d.scoreUnknown) {
+    if (value) e.value = '分值未知时不能填写分值';
+    if (max && (!DECIMAL_RE.test(max) || compareDecimal(max, '0') <= 0))
+      e.maximum = '已知满分须为大于 0 的十进制数字';
+  } else if (scored) {
+    // 没有明确选择未知时，仍要求同时给出分值与满分。
     if (!value) e.value = needScoreText('分值');
     else if (!DECIMAL_RE.test(value)) e.value = '分值须为十进制数字，如 86.5';
     if (!max) e.maximum = needScoreText('满分');
@@ -68,5 +73,6 @@ export function toOutcomeRequest(
     supersedes: d.supersedes.trim() || null,
     source_artifact_id: d.sourceArtifactId || null,
     source_description: d.sourceDescription.trim(),
+    score_unknown: scored && !!d.scoreUnknown,
   };
 }

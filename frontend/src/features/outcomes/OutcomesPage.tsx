@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/endpoints';
 import type { Outcome, OutcomeTarget, StageResult } from '../../api/types';
@@ -47,6 +47,9 @@ export function OutcomesSection() {
   const outcomes = useOutcomes(pid);
   const files = useFiles(pid);
   const [verifying, setVerifying] = useState<Outcome | null>(null);
+  const [identity, setIdentity] = useState(project);
+  const [identityAck, setIdentityAck] = useState(false);
+  const initialized = useRef(false);
 
   const [d, setD] = useState<OutcomeDraft>({
     submissionId: sp.get('submission') ?? '',
@@ -63,7 +66,42 @@ export function OutcomesSection() {
     supersedes: '',
   });
   const [touched, setTouched] = useState(false);
-  const submissionValue = d.submissionId || (submissions.data?.[0]?.submission_id ?? '');
+  const replaced = new Set(
+    (submissions.data ?? []).flatMap((s) => (s.supersedes ? [s.supersedes] : [])),
+  );
+  const currentSubmissions = (submissions.data ?? []).filter(
+    (s) => !s.superseded && !replaced.has(s.submission_id),
+  );
+  useEffect(() => {
+    if (initialized.current || !submissions.isSuccess) return;
+    initialized.current = true;
+    const selected = d.submissionId
+      ? submissions.data.find((s) => s.submission_id === d.submissionId)
+      : currentSubmissions.length === 1
+        ? currentSubmissions[0]
+        : undefined;
+    if (selected)
+      setD((draft) => ({
+        ...draft,
+        submissionId: draft.submissionId || selected.submission_id,
+        maximum:
+          draft.maximum ||
+          (draft.target === 'technical_total' ? (selected.technical_maximum ?? '') : ''),
+      }));
+  }, [submissions.isSuccess, submissions.data, currentSubmissions, d.submissionId]);
+  const submissionValue = d.submissionId;
+  const selectedSubmission = (submissions.data ?? []).find(
+    (s) => s.submission_id === submissionValue,
+  );
+  const identityStale = identity.revision !== project.revision;
+  const identityDiffers =
+    !!selectedSubmission &&
+    (selectedSubmission.project_title !== identity.title ||
+      selectedSubmission.lot !== identity.lot ||
+      selectedSubmission.round !== identity.round);
+  const submissionStale =
+    !!selectedSubmission &&
+    (selectedSubmission.superseded === true || replaced.has(selectedSubmission.submission_id));
   const errs = touched ? validateOutcome({ ...d, submissionId: submissionValue }) : {};
   const set = <K extends keyof OutcomeDraft>(k: K, v: OutcomeDraft[K]) => {
     setD((x) => ({ ...x, [k]: v }));
@@ -105,8 +143,18 @@ export function OutcomesSection() {
     e.preventDefault();
     setTouched(true);
     const draft = { ...d, submissionId: submissionValue };
-    if (Object.keys(validateOutcome(draft)).length > 0) return;
-    create.mutate(toOutcomeRequest(draft, localInputToIso));
+    if (
+      Object.keys(validateOutcome(draft)).length > 0 ||
+      identityStale ||
+      submissionStale ||
+      (identityDiffers && !identityAck)
+    )
+      return;
+    create.mutate({
+      ...toOutcomeRequest(draft, localInputToIso),
+      expected_project_revision: identity.revision,
+      acknowledge_identity_difference: identityAck,
+    });
   };
 
   const scored = d.target !== 'no_score';
@@ -120,6 +168,64 @@ export function OutcomesSection() {
           <Notice tone="plain">
             报送结果与官方核验分开保存；迟到或更正会生成新记录，历史记录始终可查。
           </Notice>
+          <div className="my-3 rounded-md bg-muted p-3 text-[13px]" aria-label="成绩登记身份">
+            <p>
+              {identity.title} · {identity.lot ?? '未填标段'} · 第 {identity.round} 轮
+            </p>
+            {selectedSubmission ? (
+              <>
+                <p>
+                  提交时身份：{selectedSubmission.project_title ?? '未留存项目名称'} ·{' '}
+                  {selectedSubmission.lot ?? '未填标段'} ·{' '}
+                  {selectedSubmission.round == null
+                    ? '轮次未知'
+                    : `第 ${selectedSubmission.round} 轮`}
+                </p>
+                <p>
+                  实际提交稿：{selectedSubmission.body_name ?? selectedSubmission.body_version_id} ·{' '}
+                  {formatDateTime(selectedSubmission.submitted_at)}
+                </p>
+                <p className="break-all">
+                  正文 {selectedSubmission.body_version_id} · 评审输入{' '}
+                  {selectedSubmission.snapshot_id}
+                </p>
+                {selectedSubmission.body_sha256 ? (
+                  <p className="break-all text-xs text-muted-foreground">
+                    SHA-256 {selectedSubmission.body_sha256}
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <p>请选择对应的实际提交；多份提交不会自动猜测。</p>
+            )}
+            {identityStale ? (
+              <>
+                <p role="alert">项目身份或状态已更新，请核对后重新载入。</p>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setIdentity(project);
+                    setIdentityAck(false);
+                  }}
+                >
+                  重新载入登记身份
+                </Button>
+              </>
+            ) : null}
+            {submissionStale ? (
+              <p role="alert">此提交已被更正，请选择更正后的实际提交；不会自动切换稿件。</p>
+            ) : null}
+            {identityDiffers ? (
+              <label className="mt-2 flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={identityAck}
+                  onChange={(e) => setIdentityAck(e.target.checked)}
+                />
+                当前项目身份与提交时不同或未留存；我已核对原件，此成绩对应上方实际提交稿
+              </label>
+            ) : null}
+          </div>
           <form onSubmit={submit} noValidate>
             <div className="grid gap-x-4 sm:grid-cols-2">
               <Field label="关联的实际提交" error={errs.submissionId} hint="选择这份结果对应的提交">
@@ -129,15 +235,28 @@ export function OutcomesSection() {
                     value={submissionValue}
                     onChange={(e) => {
                       // 换了提交，之前选的“更正的原记录”可能属于另一次提交，必须清掉。
-                      setD((x) => ({ ...x, submissionId: e.target.value, supersedes: '' }));
+                      const selected = submissions.data?.find(
+                        (s) => s.submission_id === e.target.value,
+                      );
+                      setIdentityAck(false);
+                      setD((x) => ({
+                        ...x,
+                        submissionId: e.target.value,
+                        supersedes: '',
+                        value: '',
+                        maximum:
+                          x.target === 'technical_total' ? (selected?.technical_maximum ?? '') : '',
+                        scoreUnknown: false,
+                      }));
                     }}
                   >
-                    {(submissions.data ?? []).length === 0 ? (
-                      <option value="">没有已登记的提交</option>
-                    ) : null}
+                    <option value="">
+                      {currentSubmissions.length ? '请选择实际提交' : '没有可登记的当前提交'}
+                    </option>
                     {(submissions.data ?? []).map((x) => (
                       <option key={x.submission_id} value={x.submission_id}>
-                        提交于 {formatDateTime(x.submitted_at)}
+                        {x.body_name ?? '正文'} · 提交于 {formatDateTime(x.submitted_at)}
+                        {x.superseded || replaced.has(x.submission_id) ? '（已更正）' : ''}
                       </option>
                     ))}
                   </Select>
@@ -170,7 +289,17 @@ export function OutcomesSection() {
                     {...p}
                     value={d.target}
                     onChange={(e) => {
-                      set('target', e.target.value as OutcomeTarget);
+                      const target = e.target.value as OutcomeTarget;
+                      setD((x) => ({
+                        ...x,
+                        target,
+                        value: '',
+                        maximum:
+                          target === 'technical_total'
+                            ? (selectedSubmission?.technical_maximum ?? '')
+                            : '',
+                        scoreUnknown: false,
+                      }));
                     }}
                   >
                     {TARGETS.map((t) => (
@@ -181,6 +310,18 @@ export function OutcomesSection() {
                   </Select>
                 )}
               </Field>
+              {scored ? (
+                <label className="my-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={!!d.scoreUnknown}
+                    onChange={(e) =>
+                      setD((x) => ({ ...x, scoreUnknown: e.target.checked, value: '' }))
+                    }
+                  />
+                  分值未知，先保存待核验记录
+                </label>
+              ) : null}
               <Field label="阶段结果" error={errs.stageResult}>
                 {(p) => (
                   <Select
@@ -201,13 +342,13 @@ export function OutcomesSection() {
               <Field
                 label="分值"
                 error={errs.value}
-                hint={scored ? '未公布请选「无分值（仅阶段结果）」' : '无分值类型不填'}
+                hint={scored ? '未公布可勾选「分值未知」；仅阶段结果可选无分值' : '无分值类型不填'}
               >
                 {(p) => (
                   <Input
                     {...p}
                     inputMode="decimal"
-                    disabled={!scored}
+                    disabled={!scored || !!d.scoreUnknown}
                     value={d.value}
                     onChange={(e) => {
                       set('value', e.target.value);
@@ -218,7 +359,13 @@ export function OutcomesSection() {
               <Field
                 label="满分"
                 error={errs.maximum}
-                hint={scored ? '未公布请选「无分值（仅阶段结果）」' : '无分值类型不填'}
+                hint={
+                  scored
+                    ? selectedSubmission?.technical_maximum && d.target === 'technical_total'
+                      ? '预填本次提交评审的满分候选；请按官方量尺核对，可修改'
+                      : '满分未知可在勾选「分值未知」后留空'
+                    : '无分值类型不填'
+                }
               >
                 {(p) => (
                   <Input
@@ -336,7 +483,16 @@ export function OutcomesSection() {
               </p>
             ) : null}
             {create.isError ? <ErrorNotice error={create.error} title="结果未登记" /> : null}
-            <Button variant="primary" type="submit" disabled={create.isPending}>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={
+                create.isPending ||
+                identityStale ||
+                submissionStale ||
+                (identityDiffers && !identityAck)
+              }
+            >
               {create.isPending ? '正在登记…' : '登记结果'}
             </Button>
           </form>
@@ -403,7 +559,11 @@ export function OutcomesSection() {
                             报送结果需以官方来源重新登记
                           </small>
                         ) : null}
-                        {o.source_kind === 'official' &&
+                        {o.target !== 'no_score' && o.value === null ? (
+                          <small>分值未知，补齐后再核验</small>
+                        ) : null}
+                        {(o.target === 'no_score' || o.value !== null) &&
+                        o.source_kind === 'official' &&
                         o.verification_status !== 'verified' &&
                         !supersededIds.has(o.outcome_id) ? (
                           <button
