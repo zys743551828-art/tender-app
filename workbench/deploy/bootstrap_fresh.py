@@ -200,6 +200,70 @@ def verify_connection(c, *, database, user, restricted=False):
             raise BootstrapError("CONNECTED_LOGIN_OWNS_BUSINESS_TABLES")
 
 
+def verify_budget_group_isolation(c):
+    """No upstream role is needed by this capability, including NOINHERIT/SET paths."""
+    ancestors = c.execute(
+        """WITH RECURSIVE ancestors(oid) AS (
+          SELECT m.roleid FROM pg_auth_members m
+          JOIN pg_roles r ON r.oid=m.member WHERE r.rolname=%s
+          UNION
+          SELECT m.roleid FROM pg_auth_members m JOIN ancestors a ON m.member=a.oid
+        ) SELECT r.rolname FROM ancestors a JOIN pg_roles r ON r.oid=a.oid""",
+        ("tender_assistant_budget_admin",),
+    ).fetchall()
+    if ancestors:
+        raise BootstrapError("BUDGET_ADMIN_GROUP_HAS_UPSTREAM_MEMBERSHIP")
+
+
+def verify_budget_login_isolation(c):
+    """Check effective rights as the actual LOGIN, never as the bootstrap owner."""
+    verify_budget_group_isolation(c)
+    memberships = c.execute(
+        """SELECT r.rolname,m.admin_option FROM pg_auth_members m
+        JOIN pg_roles r ON r.oid=m.roleid
+        WHERE m.member=(SELECT oid FROM pg_roles WHERE rolname=current_user)"""
+    ).fetchall()
+    if memberships != [("tender_assistant_budget_admin", False)]:
+        raise BootstrapError("BUDGET_ADMIN_LOGIN_MEMBERSHIP_NOT_EXACT")
+    # Table-level checks alone miss column grants. PUBLIC and inherited rights are
+    # included by PostgreSQL's effective privilege helpers, even with no role edge.
+    forbidden = c.execute(
+        """SELECT EXISTS (
+          SELECT FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+          CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE',
+                                  'REFERENCES','TRIGGER','MAINTAIN']) p(privilege)
+          WHERE n.nspname IN ('design','retrieval','model_governance')
+            AND c.relkind IN ('r','p','v','m','f')
+            AND (has_table_privilege(current_user,c.oid,p.privilege)
+              OR CASE WHEN p.privilege IN ('SELECT','INSERT','UPDATE','REFERENCES')
+                THEN has_any_column_privilege(current_user,c.oid,p.privilege)
+                ELSE false END)
+            AND NOT (n.nspname='design' AND (
+              (c.relname IN ('assistant_price_versions','assistant_budget_versions')
+                AND p.privilege IN ('SELECT','INSERT')) OR
+              (c.relname IN ('assistant_logical_intents','assistant_budget_reservations',
+                            'assistant_budget_events') AND p.privilege='SELECT')))
+          UNION ALL
+          SELECT FROM pg_namespace n
+          WHERE n.nspname IN ('design','retrieval','model_governance')
+            AND has_schema_privilege(current_user,n.oid,'CREATE')
+          UNION ALL
+          SELECT FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+          WHERE n.nspname IN ('design','retrieval','model_governance') AND c.relkind='S'
+            AND has_sequence_privilege(current_user,c.oid,'USAGE,SELECT,UPDATE')
+          UNION ALL
+          SELECT FROM pg_proc f JOIN pg_namespace n ON n.oid=f.pronamespace
+          WHERE n.nspname IN ('design','retrieval','model_governance')
+            AND (pg_has_role(current_user,f.proowner,'MEMBER')
+              OR (has_function_privilege(current_user,f.oid,'EXECUTE')
+                AND f.oid IS DISTINCT FROM
+                  to_regprocedure('design.assistant_reconcile_budget(uuid,text,bigint,text,design.sha256)')))
+        )"""
+    ).fetchone()
+    if forbidden is None or forbidden[0]:
+        raise BootstrapError("BUDGET_ADMIN_HAS_FORBIDDEN_EFFECTIVE_BUSINESS_PRIVILEGES")
+
+
 def bootstrap(
     *,
     base_profile,
@@ -329,6 +393,7 @@ def bootstrap(
             ).fetchone()
             if group is None or any(group):
                 raise BootstrapError("BUDGET_ADMIN_NOLOGIN_GROUP_MISSING_OR_UNSAFE")
+            verify_budget_group_isolation(fresh)
         with fresh.transaction():
             for role, (login, password, _) in accounts.items():
                 fresh.execute(
@@ -356,9 +421,11 @@ def bootstrap(
                         sql.Identifier(database), sql.Identifier(login)
                     )
                 )
-    for login, _, dsn in accounts.values():
+    for role, (login, _, dsn) in accounts.items():
         with psycopg.connect(dsn) as verifier:
             verify_connection(verifier, database=database, user=login, restricted=True)
+            if role == "assistant_budget_admin":
+                verify_budget_login_isolation(verifier)
     write_private(paths["business"], business_configuration(values))
     for purpose in purposes:
         key = purpose.upper() + "_DATABASE_DSN"

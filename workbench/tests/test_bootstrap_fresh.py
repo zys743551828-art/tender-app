@@ -384,6 +384,8 @@ def test_fresh_purpose_logins_and_private_profiles_are_separate(
                 rows = [(group, False, False, False, False, False, False) for group in params[0]]
             elif "WHERE rolname=%s" in rendered:
                 rows = [(False,) * 6]
+            elif "WHERE m.member=(SELECT oid" in rendered:
+                rows = [("tender_assistant_budget_admin", False)]
             elif "rolsuper,rolbypassrls" in rendered:
                 rows = [(False,) * 5]
             elif "SELECT EXISTS" in rendered:
