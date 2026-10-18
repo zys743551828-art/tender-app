@@ -10,6 +10,7 @@ import { ruleKindLabel } from '../../lib/labels';
 import { useProjectContext } from '../../routes/ProjectLayout';
 import { useConfirmPending, useReviewRule } from './actions';
 import { useRuleSet } from './queries';
+import { TermConflicts } from './TermConflicts';
 import { Button, textLink } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/input';
 
@@ -82,6 +83,7 @@ export function RulesPanel() {
   const open = unconfirmedQualification(set.rules);
   return (
     <>
+      <TermConflicts projectId={pid} set={set} />
       <BidTermsNote set={set} projectId={pid} />
       {pending.length > 0 ? (
         <div className="mb-5 flex flex-col gap-3 rounded-lg border border-ai-border bg-ai-soft px-4 py-3 text-[13px] text-ai-foreground sm:flex-row sm:items-center">

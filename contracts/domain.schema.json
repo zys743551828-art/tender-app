@@ -88,6 +88,12 @@
               "type": "null"
             }
           ]
+        },
+        "conflicts": {
+          "items": {
+            "$ref": "#/$defs/TermConflict"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -2730,6 +2736,60 @@
         "bundle_id"
       ],
       "additionalProperties": false
+    },
+    "TermAlternative": {
+      "additionalProperties": false,
+      "properties": {
+        "option_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "values": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "option_id",
+        "values",
+        "quote",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "TermConflict": {
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "enum": [
+            "technical_full_score",
+            "price_rule"
+          ],
+          "type": "string"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/TermAlternative"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "term",
+        "alternatives"
+      ],
+      "type": "object"
     },
     "UploadComplete": {
       "type": "object",

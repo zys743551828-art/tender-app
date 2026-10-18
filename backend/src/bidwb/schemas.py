@@ -389,11 +389,31 @@ class PriceRuleTerm(Response):
     evidence: list[EvidenceRef]
 
 
+class TermAlternative(Response):
+    option_id: Id
+    values: dict[str, str]
+    quote: str
+    evidence: list[EvidenceRef]
+
+
+class TermConflict(Response):
+    term: Literal["technical_full_score", "price_rule"]
+    alternatives: list[TermAlternative]
+
+
+class ResolveTermRequest(Request):
+    object_version: NonEmpty
+    term: Literal["technical_full_score", "price_rule"]
+    option_id: Id
+    reason: NonEmpty
+
+
 class BidTerms(Response):
     """从评标办法提取的投标条件，带原文出处；没有提取到的项为空。"""
 
     technical_full_score: FullScoreTerm | None
     price_rule: PriceRuleTerm | None
+    conflicts: list[TermConflict] = Field(default_factory=list)
 
 
 class RuleSet(Response):

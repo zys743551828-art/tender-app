@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/endpoints';
-import type { Decision } from '../../api/types';
+import type { Decision, ResolveTermRequest } from '../../api/types';
 import { useIdempotentAction } from '../../lib/useIdempotentAction';
 import { invalidateProject } from '../projects/queries';
 import { reportKey } from '../report/queries';
@@ -14,6 +14,19 @@ export function refreshRules(qc: ReturnType<typeof useQueryClient>, projectId: s
     qc.invalidateQueries({ queryKey: ['projects', projectId, 'pipeline'] }),
     invalidateProject(qc, projectId),
   ]);
+}
+
+export function useResolveTerm(projectId: string, onDone: () => void) {
+  const qc = useQueryClient();
+  return useIdempotentAction(
+    (request: ResolveTermRequest, options) => api.rules.resolveTerm(projectId, request, options),
+    {
+      onSuccess: async () => {
+        await refreshRules(qc, projectId);
+        onDone();
+      },
+    },
+  );
 }
 
 /** 对一条规则做决定（确认不要求理由）。返回的审核对象编号与原规则不同，说明后端复制出了新规则包。 */

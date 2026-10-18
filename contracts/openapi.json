@@ -923,6 +923,74 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/rules/terms:resolve": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Resolve Rule Term",
+        "operationId": "resolveRuleTerm",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveTermRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/rules": {
       "get": {
         "tags": [
@@ -3266,6 +3334,13 @@
                 "type": "null"
               }
             ]
+          },
+          "conflicts": {
+            "items": {
+              "$ref": "#/components/schemas/TermConflict"
+            },
+            "type": "array",
+            "title": "Conflicts"
           }
         },
         "additionalProperties": false,
@@ -6525,6 +6600,42 @@
         ],
         "title": "ReportBasis"
       },
+      "ResolveTermRequest": {
+        "properties": {
+          "object_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Object Version"
+          },
+          "term": {
+            "type": "string",
+            "enum": [
+              "technical_full_score",
+              "price_rule"
+            ],
+            "title": "Term"
+          },
+          "option_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Option Id"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "object_version",
+          "term",
+          "option_id",
+          "reason"
+        ],
+        "title": "ResolveTermRequest"
+      },
       "Review": {
         "properties": {
           "review_id": {
@@ -7678,6 +7789,68 @@
           "bundle_id"
         ],
         "title": "TaskRequest"
+      },
+      "TermAlternative": {
+        "properties": {
+          "option_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Option Id"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Values"
+          },
+          "quote": {
+            "type": "string",
+            "title": "Quote"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "option_id",
+          "values",
+          "quote",
+          "evidence"
+        ],
+        "title": "TermAlternative"
+      },
+      "TermConflict": {
+        "properties": {
+          "term": {
+            "type": "string",
+            "enum": [
+              "technical_full_score",
+              "price_rule"
+            ],
+            "title": "Term"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/TermAlternative"
+            },
+            "type": "array",
+            "title": "Alternatives"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "term",
+          "alternatives"
+        ],
+        "title": "TermConflict"
       },
       "UploadComplete": {
         "properties": {

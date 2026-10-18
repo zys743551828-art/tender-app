@@ -307,6 +307,26 @@ export interface PriceRuleTerm {
 export interface BidTerms {
   technical_full_score: FullScoreTerm | null;
   price_rule: PriceRuleTerm | null;
+  conflicts?: TermConflict[];
+}
+
+export interface TermAlternative {
+  option_id: Id;
+  values: Record<string, string>;
+  quote: string;
+  evidence: EvidenceRef[];
+}
+
+export interface TermConflict {
+  term: 'technical_full_score' | 'price_rule';
+  alternatives: TermAlternative[];
+}
+
+export interface ResolveTermRequest {
+  object_version: string;
+  term: TermConflict['term'];
+  option_id: Id;
+  reason: string;
 }
 
 /** $defs/ConfirmRulesRequest：一次确认多条还没有人看过的规则。 */

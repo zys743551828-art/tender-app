@@ -14,7 +14,7 @@ from typing import Any
 
 from sqlalchemy import Connection
 
-from bidwb import db
+from bidwb import db, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, PreconditionFailed, Unprocessable
 from bidwb.schemas import (
@@ -28,10 +28,13 @@ from bidwb.schemas import (
     FactWithdrawRequest,
     FullScoreTerm,
     PriceRuleTerm,
+    ResolveTermRequest,
     Review,
     ReviewRequest,
     Rule,
     RuleSet,
+    TermAlternative,
+    TermConflict,
 )
 from bidwb.services import audit, evidence
 from bidwb.services.files import CONTRACT_VERSION
@@ -114,7 +117,7 @@ def get_rules(conn: Connection, actor: Actor, project_id: str) -> RuleSet:
         rule_set_id=package["id"],
         project_id=project_id,
         source_version_ids=list(package["source_versions_json"]),
-        status=_effective_status(package["status"], items, reviews),
+        status="conflict" if term_conflicts.pending(package["terms_json"]) else _effective_status(package["status"], items, reviews),
         revision=package["revision"],
         rules=rules,
         terms=bid_terms(conn, project_id, package["terms_json"]),
@@ -126,16 +129,32 @@ def bid_terms(conn: Connection, project_id: str, terms: dict[str, Any]) -> BidTe
         rest = {k: v for k, v in term.items() if k != "evidence_ids"}
         return {**rest, "evidence": evidence.evidence_for_ids(conn, project_id, term["evidence_ids"])}
 
-    full, price = terms.get("technical_full_score"), terms.get("price_rule")
+    active = term_conflicts.effective(terms)
+    full, price = active.get("technical_full_score"), active.get("price_rule")
     return BidTerms(
         technical_full_score=FullScoreTerm.model_validate(ev(full)) if full else None,
         price_rule=PriceRuleTerm.model_validate(ev(price)) if price else None,
+        conflicts=[
+            TermConflict(
+                term=key,
+                alternatives=[
+                    TermAlternative(
+                        option_id=term_conflicts.option_id(candidate),
+                        values=term_conflicts.values(candidate),
+                        quote=candidate["quote"],
+                        evidence=evidence.evidence_for_ids(conn, project_id, candidate["evidence_ids"]),
+                    )
+                    for candidate in candidates
+                ],
+            )
+            for key, candidates in term_conflicts.pending(terms).items()
+        ],
     )
 
 
 def terms_of_package(conn: Connection, package_id: str) -> dict[str, Any]:
     row = db.one(conn, "SELECT terms_json FROM rule_packages WHERE id=:k", {"k": package_id})
-    return dict(row["terms_json"]) if row else {}
+    return term_conflicts.effective(dict(row["terms_json"])) if row else {}
 
 
 def effective_rules(conn: Connection, project_id: str, package_id: str) -> list[db.Row]:
@@ -165,7 +184,9 @@ def _is_frozen(conn: Connection, package_id: str) -> bool:
     return db.one(conn, "SELECT 1 AS x FROM input_snapshots WHERE rule_set_id=:k LIMIT 1", {"k": package_id}) is not None
 
 
-def _clone_package(conn: Connection, project_id: str, package: db.Row) -> tuple[str, dict[str, str]]:
+def _clone_package(
+    conn: Connection, project_id: str, package: db.Row, *, terms: dict[str, Any] | None = None
+) -> tuple[str, dict[str, str]]:
     """规则包已被某一轮评审引用而不可改：复制出新规则包（条款相同、决定沿用），之后的更正落在新包上。
 
     返回（新规则包 ID, 旧规则 ID → 新规则 ID）。调用方须已锁项目行。
@@ -183,7 +204,7 @@ def _clone_package(conn: Connection, project_id: str, package: db.Row) -> tuple[
             "r": revision,
             "a": package["artifact_id"],
             "s": json.dumps(package["source_versions_json"]),
-            "t": json.dumps(package["terms_json"], ensure_ascii=False),
+            "t": json.dumps(package["terms_json"] if terms is None else terms, ensure_ascii=False),
             "now": now,
         },
     )
@@ -232,6 +253,37 @@ def _clone_package(conn: Connection, project_id: str, package: db.Row) -> tuple[
                 },
             )
     return new_package, mapping
+
+
+def resolve_term(conn: Connection, actor: Actor, project_id: str, req: ResolveTermRequest, request_id: str) -> RuleSet:
+    require_project(conn, actor, project_id)
+    db.one(conn, "SELECT id FROM projects WHERE id=:p FOR UPDATE", {"p": project_id})
+    package = latest_package(conn, project_id)
+    if package is None:
+        raise NotFound("rules_not_extracted")
+    if req.object_version != str(package["revision"]):
+        raise PreconditionFailed("stale_version", "规则包已有更新，请刷新后重新核实", current_version=str(package["revision"]))
+    if sorted(package["source_versions_json"]) != current_tender_version_ids(conn, project_id):
+        raise PreconditionFailed("stale_inputs", "招标文件或补遗已有更新，请等待规则重新提取后核实")
+    terms = dict(package["terms_json"])
+    alternatives = term_conflicts.pending(terms).get(req.term, [])
+    candidate = next((item for item in alternatives if term_conflicts.option_id(item) == req.option_id), None)
+    if candidate is None:
+        raise Unprocessable("term_option_not_found", "该候选不属于当前待核实条件，请刷新后重试")
+    terms[req.term] = candidate
+    terms["_resolved"] = {**terms.get("_resolved", {}), req.term: req.option_id}
+    new_package, _ = _clone_package(conn, project_id, package, terms=terms)
+    audit.record(
+        conn,
+        actor_id=actor.member_id,
+        project_id=project_id,
+        action="rule_term.resolve",
+        object_kind="rule_package",
+        object_id=new_package,
+        request_id=request_id,
+        details={"from_package": package["id"], "term": req.term, "option_id": req.option_id, "reason": req.reason},
+    )
+    return get_rules(conn, actor, project_id)
 
 
 def review_rule(conn: Connection, actor: Actor, rule_id: str, req: ReviewRequest, request_id: str) -> Review:

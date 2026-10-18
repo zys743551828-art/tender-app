@@ -22,6 +22,7 @@ from bidwb.schemas import (
     Outcome,
     OutcomeRequest,
     OutcomeVerifyRequest,
+    ResolveTermRequest,
     Review,
     ReviewRequest,
     RuleSet,
@@ -79,6 +80,18 @@ def get_snapshot(snapshot_id: str, session: CurrentSession, ctr: Ctr) -> InputSn
 
 
 # ---- 规则与事实
+@router.post("/projects/{project_id}/rules/terms:resolve", response_model=RuleSet, operation_id="resolveRuleTerm")
+def resolve_rule_term(project_id: str, body: ResolveTermRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+    return mutate(
+        ctr,
+        session,
+        key,
+        f"POST /projects/{project_id}/rules/terms:resolve",
+        body,
+        lambda c: _settled(c, project_id, rules.resolve_term(c, session.actor, project_id, body, session.request_id)),
+    )
+
+
 @router.get("/projects/{project_id}/rules", response_model=RuleSet, operation_id="getRules")
 def get_rules(project_id: str, session: CurrentSession, ctr: Ctr) -> RuleSet:
     with ctr.engine.connect() as conn:

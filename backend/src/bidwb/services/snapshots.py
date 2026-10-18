@@ -10,7 +10,7 @@ import json
 
 from sqlalchemy import Connection
 
-from bidwb import db
+from bidwb import db, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, Unprocessable
 from bidwb.schemas import InputSnapshot, SnapshotRequest
@@ -95,6 +95,8 @@ def _require_current_inputs(conn: Connection, project_id: str, req: SnapshotRequ
             rule_source_version_ids=sorted(package["source_versions_json"]),
             snapshot_version_ids=source_versions,
         )
+    if term_conflicts.pending(package["terms_json"]):
+        raise Conflict("rule_terms_conflict", "招标文件与补遗中的投标条件存在不同候选，请到依据页核实采用哪一项后重新评审")
     newest_facts = db.one(conn, "SELECT id FROM fact_sets WHERE project_id=:p ORDER BY created_at DESC, id DESC LIMIT 1", {"p": project_id})
     if req.fact_set_id is None:
         if newest_facts is not None:

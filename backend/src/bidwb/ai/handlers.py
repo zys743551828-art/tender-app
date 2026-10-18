@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Connection, text
 
-from bidwb import checks, db, retrieval
+from bidwb import checks, db, retrieval, term_conflicts
 from bidwb.ai import grounding, prompts
 from bidwb.ai.grounding import EvidenceText
 from bidwb.ai.llm import IncompleteGeneration, LlmClient, Usage, call_validated
@@ -35,7 +35,7 @@ MAX_RULES_PER_PACKAGE = 200
 
 
 # 文档顺序：资料按入库先后（招标文件在补遗之前），同一资料内按解析时的块顺序
-EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote FROM evidence e
+EVIDENCE_IN_ORDER_SQL = """SELECT e.id,e.physical_page,e.quote,e.file_version_id FROM evidence e
    JOIN file_versions fv ON fv.id=e.file_version_id AND fv.project_id=e.project_id
    WHERE e.project_id=:p AND e.file_version_id = ANY(:v) AND (e.kind='text' OR e.semantic_review='supported')
    ORDER BY fv.obtained_at, fv.id, e.seq, e.id"""
@@ -78,10 +78,10 @@ def _ground_terms(
     out: prompts.RulesOutput, allowed: dict[str, EvidenceText], terms: dict[str, dict[str, Any]], dropped: list[dict[str, Any]]
 ) -> None:
     """投标条件（技术分满分、评标价规则）：引文必须逐字出自所引片段，每个数值必须出现在引文里；
-    不落地的数值单独丢弃，其余保留。同一项取第一处落地的提取结果。"""
+    不落地的数值单独丢弃，其余保留；不一致的候选交给人工核实，不能按抽取顺序取值。"""
     for key, model in (("technical_full_score", prompts.FullScoreTerm), ("price_rule", prompts.PriceRuleTerm)):
         raw = getattr(out, key)
-        if raw is None or key in terms:
+        if raw is None:
             continue
         valid, bad = prompts.validate_items(model, [raw])
         dropped.extend({**b, "term": key} for b in bad)
@@ -96,7 +96,7 @@ def _ground_terms(
         kept = {k: v for k, v in values.items() if k == "method" or v in numbers}
         dropped.extend({"reason": "invented_number", "term": key, "field": k} for k in sorted(set(values) - set(kept)))
         if kept and (key != "price_rule" or set(kept) - {"method"}):
-            terms[key] = {**kept, "evidence_ids": term.evidence_ids, "quote": term.quote}
+            term_conflicts.add_candidate(terms, key, {**kept, "evidence_ids": term.evidence_ids, "quote": term.quote})
 
 
 def _write_rule_package(
@@ -187,7 +187,8 @@ def make_rules_handler(llm: LlmClient | None) -> Handler:
             return HandlerFailure("invalid_job_input")
         project_id = ctx.claim.project_id
         with ctx.engine.connect() as conn:
-            chunks = _load_evidence(conn, project_id, version_ids)
+            evidence_rows = _evidence_rows(conn, project_id, version_ids)
+            chunks = [EvidenceText(row["id"], row["quote"]) for row in evidence_rows]
         if not chunks:
             return HandlerFailure("no_evidence")
         by_id = {c.evidence_id: c for c in chunks}
@@ -196,13 +197,17 @@ def make_rules_handler(llm: LlmClient | None) -> Handler:
         accepted: list[prompts.RuleCandidate] = []
         terms: dict[str, dict[str, Any]] = {}
         seen: set[str] = set()
-        for start in range(0, len(chunks), RULES_BATCH):
+        # 每批只读同一文件版本，使招标文件与补遗的同类条件分别抽取，再比较候选。
+        by_version: dict[str, list[EvidenceText]] = {}
+        for row, chunk in zip(evidence_rows, chunks, strict=True):
+            by_version.setdefault(row["file_version_id"], []).append(chunk)
+        batches = [group[start : start + RULES_BATCH] for group in by_version.values() for start in range(0, len(group), RULES_BATCH)]
+        for batch_number, batch in enumerate(batches):
             ctx.checkpoint()
-            batch = chunks[start : start + RULES_BATCH]
             try:
                 out = call_validated(llm, prompts.RulesOutput, system=prompts.RULES_SYSTEM, user=prompts.rules_user(batch), usage=usage)
             except IncompleteGeneration:
-                dropped.append({"reason": "invalid_output", "batch_start": start})
+                dropped.append({"reason": "invalid_output", "batch_number": batch_number})
                 continue
             allowed = {c.evidence_id: c for c in batch}
             _ground_terms(out, allowed, terms, dropped)
@@ -228,6 +233,7 @@ def make_rules_handler(llm: LlmClient | None) -> Handler:
         artifact = _dump(
             {
                 "prompt_version": prompts.PROMPT_VERSION,
+                "extraction_policy": "per-file-terms-conflict-1",
                 "model": llm.model,
                 "usage": usage.__dict__,
                 "rules": [r.model_dump() for r in accepted],

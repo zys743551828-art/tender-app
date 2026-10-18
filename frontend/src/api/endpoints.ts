@@ -31,6 +31,7 @@ import type {
   Report,
   Review,
   ReviewRequest,
+  ResolveTermRequest,
   Revision,
   RevisionDiff,
   RevisionRequest,
@@ -85,6 +86,8 @@ export function createEndpoints(c: ApiClient) {
     },
     rules: {
       get: (projectId: string) => c.get<RuleSet>(`/projects/${projectId}/rules`),
+      resolveTerm: (projectId: string, b: ResolveTermRequest, o?: Idem) =>
+        c.post<RuleSet>(`/projects/${projectId}/rules/terms:resolve`, b, o),
       review: (ruleId: string, b: ReviewRequest, o?: Idem) =>
         c.post<Review>(`/rules/${ruleId}/reviews`, b, o),
       /** 一次确认多条未审核的规则（按原文接受）；已有决定的不受影响。 */
