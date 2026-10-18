@@ -39,6 +39,7 @@ import {
 } from "./uploadTransport";
 import { UploadStatus } from "./UploadStatus";
 import { UploadBatchDiscovery } from "./UploadBatchDiscovery";
+import { BidPackages } from "./BidPackages";
 
 type DraftFile = {
   key: string;
@@ -1012,6 +1013,16 @@ export function Project({
           </div>
         )}
       </section>
+      <BidPackages
+        bidId={id}
+        memberId={memberId}
+        disabled={
+          busy ||
+          !!bid?.archived_at ||
+          bid?.phase === "closed" ||
+          bid?.phase === "terminated"
+        }
+      />
       <WordOriginals
         bidId={id}
         memberId={memberId}

@@ -168,9 +168,9 @@ export function App() {
         <aside className="sidebar" inert={expired} aria-hidden={expired}>
           <Brand />
           <div className="workspace-name">
-            <span className="workspace-avatar">市</span>
+            <span className="workspace-avatar">标</span>
             <span>
-              市政投标工作区<small>内部协作空间</small>
+              标书工作区<small>内部协作空间</small>
             </span>
           </div>
           <p className="nav-label">投标工作</p>

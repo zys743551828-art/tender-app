@@ -402,6 +402,72 @@ a svg {
   margin-bottom: 22px;
   overflow: hidden;
 }
+.bid-package-workspace {
+  padding: 24px;
+  overflow-wrap: anywhere;
+}
+.bid-package-workspace .panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.bid-package-workspace .panel-heading p {
+  margin-top: 8px;
+}
+.bid-package-workspace > label {
+  max-width: 380px;
+  margin: 18px 0;
+}
+.bid-package-workspace h3 {
+  margin: 22px 0 12px;
+}
+.bid-package-workspace fieldset {
+  min-width: 0;
+  padding: 18px;
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.bid-package-workspace fieldset > label {
+  margin-top: 14px;
+}
+.bid-package-workspace legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+.bid-package-workspace ul {
+  padding-left: 22px;
+  margin: 12px 0;
+}
+.bid-package-workspace details {
+  margin: 12px 0;
+}
+.bid-package-workspace .text-button {
+  display: inline-block;
+  margin-right: 12px;
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+.bid-package-workspace pre {
+  max-width: 100%;
+  max-height: 280px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+@media (max-width: 600px) {
+  .bid-package-workspace {
+    padding: 18px;
+  }
+  .bid-package-workspace .panel-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .bid-package-workspace fieldset {
+    padding: 12px;
+  }
+}
 .section-heading {
   padding: 22px 23px 18px;
   display: flex;

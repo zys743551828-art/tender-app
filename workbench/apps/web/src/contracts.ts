@@ -1,5 +1,114 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type CreateBidPackage = {
+  kind: "authority" | "bid";
+  members: {
+    member_id: string;
+    document_version_id: string;
+    parse_run_id?: string;
+    purposes: string[];
+    parts: {
+      part_id: string;
+      category: string;
+      first_page: number;
+      last_page: number;
+      shared_attachment: boolean;
+      heading_path: number[];
+    }[];
+  }[];
+};
+
+export type AppendBidPackage = {
+  members: {
+    member_id: string;
+    document_version_id: string;
+    parse_run_id?: string;
+    purposes: string[];
+    parts: {
+      part_id: string;
+      category: string;
+      first_page: number;
+      last_page: number;
+      shared_attachment: boolean;
+      heading_path: number[];
+    }[];
+  }[];
+};
+
+export type BidPackageStoredView = {
+  manifest: BidPackageManifest;
+  digest: string;
+  identity:
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version?: "bid-identity/1";
+      }
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        lot_id: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version: "bid-identity/2";
+      };
+  storage_eligible: boolean;
+  review_ready: false;
+};
+
+export type BidPackageManifest = {
+  package_id: string;
+  revision_id: string;
+  revision: number;
+  kind: "authority" | "bid";
+  scope: BidPackage_scope;
+  members: BidPackage_member[];
+  predecessor_digest: string | null;
+  identity_version: "bid-package/1";
+};
+
+export type BidPackageHeadPage = {
+  items: BidPackageHead[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type BidPackageRevisionSummaryPage = {
+  items: BidPackageRevisionSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type BidPackageDocumentPage = {
+  items: BidPackageDocument[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type BidPackageParsePage = {
+  items: BidPackageParse[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
 export type AuthoringTemplateCreate = {
   name: string;
   kind: "outline" | "layout";
@@ -2816,6 +2925,73 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type BidPackage_scope = {
+  engineering_project_id: string;
+  lot_id: string;
+  round_id: string;
+  bid_id: string;
+  bidder_id: string;
+  bidder_status: "confirmed" | "pending";
+};
+
+export type BidPackage_member = {
+  member_id: string;
+  document_version_id: string;
+  file_digest: string;
+  source_kind: "authority" | "own";
+  source_ref: string;
+  scope: BidPackage_scope;
+  purposes: string[];
+  page_count: number | null;
+  parse: BidPackage_parseIdentity;
+  parts: BidPackage_part[];
+};
+
+export type BidPackageHead = {
+  id: string;
+  bid_id: string;
+  kind: "authority" | "bid";
+  revision_id: string;
+  revision: number;
+  digest: string;
+};
+
+export type BidPackageRevisionSummary = {
+  id: string;
+  package_id: string;
+  revision: number;
+  digest: string;
+  created_at: string;
+};
+
+export type BidPackageDocument = {
+  id: string;
+  bid_id: string;
+  file_id: string;
+  file_revision: number;
+  filename: string;
+  role: "tender" | "supplement" | "drawing" | "boq" | "body";
+  artifact_kind:
+    | "bid_body"
+    | "review_report"
+    | "annotated_review_copy"
+    | "source_original"
+    | "research_artifact";
+  sha256: string;
+  verified_upload: boolean;
+};
+
+export type BidPackageParse = {
+  id: string;
+  document_version_id: string;
+  coverage: "complete" | "partial" | "failed";
+  page_count: number;
+  gaps: unknown[];
+  parser_digest: string;
+  config_digest: string;
+  created_at: string;
+};
+
 export type WordInspectionView = {
   schema: "word-intake-inspection/1";
   container_validated: true;
@@ -3768,6 +3944,24 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type BidPackage_parseIdentity = {
+  status: "frozen" | "not_frozen";
+  parse_run_id: string | null;
+  parser_digest: string | null;
+  config_digest: string | null;
+  evidence_digest: string | null;
+  reason: string | null;
+};
+
+export type BidPackage_part = {
+  part_id: string;
+  category: string;
+  first_page: number;
+  last_page: number;
+  shared_attachment: boolean;
+  heading_path: number[];
+};
+
 export type TaskNotificationPayload = {
   key: string;
   run_id: string;
@@ -3997,10 +4191,14 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/identity",
   "PUT /api/v1/bids/{bid_id}/identity",
   "POST /api/v1/bids/{bid_id}/packages",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}",
+  "GET /api/v1/bids/{bid_id}/packages",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/manifest",
+  "GET /api/v1/bids/{bid_id}/package-documents",
+  "GET /api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
   "GET /api/v1/bids/{bid_id}/pricing-context",
   "GET /api/v1/bids/{bid_id}/pricing-formula-sources",
   "POST /api/v1/bids/{bid_id}/pricing-formulas",
