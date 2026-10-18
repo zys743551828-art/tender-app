@@ -433,7 +433,7 @@ scripts/restore.sh --backup <批次> --in-place --yes
 换新主机的流程：恢复 `secrets/`（若丢失则重新 `gen-secrets.sh` 并 `ALTER ROLE` 对齐）→ 起 `postgres`（初始化脚本建角色与空库）→ `scripts/restore.sh --backup <批次> --in-place --yes` → `docker compose up -d` →
 按核对清单验收。Kafka 主题由 `kafka-init` 重建，未完成任务由回收器重发。
 
-**Milvus 索引（范围外 / 未实现）**：后端没有 `rebuild-index` 之类的索引重建命令（`bidwb-admin` 只有 `create-member` 与 `ensure-topics`），也没有写入 Milvus 的代码；当前检索只走关键词通道，直接读取库里的解析产物，因此恢复数据库后无需重建任何索引，丢失 `milvusdata` 卷不影响业务。影响：Milvus 通道上线前不存在可恢复的向量数据；通道接入时须同时提供重建命令并更新本节。替代做法：如有人在 Milvus 里手工做过评测，数据从解析产物重新导入，不属于本系统的恢复范围。
+**派生检索索引**：默认 keyword 直接读取已恢复的证据，无需重建向量。可选 pgvector 通道的 `evidence_embeddings` 随业务库备份恢复，也可按本节后的“可选 pgvector 检索”用 `bidwb-admin rebuild-vectors` 按项目回填；缺块、模型指纹或文本摘要不匹配时明确回退关键词。Milvus 没有业务读写实现，丢失 `milvusdata` 卷不影响当前业务；手工评测数据不在恢复范围内。
 
 ### 7.5 升级与回退
 
@@ -623,3 +623,5 @@ docker compose -f compose.yml -f compose.pgvector.yml exec worker-parse bidwb-ad
 ```
 
 回填分批提交、可重跑；未完全回填的查询保留关键词结果并声明缺口。索引可重建，不替代原件或核验结论。大库性能、真实工程检索质量与 Milvus 退出尚未验收。
+
+候选确认、订正或排除会追加整组新证据 ID，不在核验请求内编码向量。在已启用 pgvector 的环境中，核验后使用上述命令回填该项目，再通过检索接口请求 `mode=hybrid`，检查 `mode_used=hybrid,index_state=ready`。回填覆盖该项目各次解析，保留旧快照所需索引；查询仍只使用当前或指定快照允许的证据 ID。原解析产物中的 `retrieval_index=needs_rebuild` 是当次派生时的记录，不随回填改写，当前可用性以检索响应为准。默认 keyword 环境无需为核验安装模型或切换数据库镜像。
