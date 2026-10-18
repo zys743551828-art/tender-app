@@ -3,6 +3,9 @@ dist
 package-lock.json
 *.tsbuildinfo
 
+# Retained verification records and frozen candidates preserve their original bytes.
+qa-previews/**
+
 public/pdfjs
 qa-previews/**/frozen-inputs
 

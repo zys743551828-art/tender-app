@@ -19,3 +19,4 @@ deploy/secrets/*
 workbench/.env
 workbench/.local/
 workbench/.venv*/
+backend/.venv/

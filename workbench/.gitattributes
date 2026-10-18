@@ -1,0 +1,10 @@
+# Keep active implementation bytes portable without rewriting frozen evidence.
+/apps/web/src/** text eol=lf
+/apps/web/*.json text eol=lf
+/apps/web/*.ts text eol=lf
+/apps/web/*.html text eol=lf
+/apps/web/*.js text eol=lf
+/apps/web/*.mjs text eol=lf
+/apps/web/*.md text eol=lf
+/apps/web/scripts/** text eol=lf
+/apps/web/.prettierignore text eol=lf

@@ -1,5 +1,7 @@
 # AI投标工作台（当前开发检查点）
 
+当前开发使用 `fusion/bid-workbench`，以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/fusion/bid-workbench/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
+
 请先阅读 [完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
 
 GitHub发布位置为`tender-app/workbench/`；文档主记录在独立`tender-docs`仓库。本次是用户要求的工作交接，非最终发布。
