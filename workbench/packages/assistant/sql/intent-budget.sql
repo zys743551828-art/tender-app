@@ -142,6 +142,7 @@ CREATE FUNCTION design.assistant_reserve_budget(job uuid) RETURNS jsonb LANGUAGE
 DECLARE j record;i record;p record;policy record;m uuid;project uuid;g uuid;amount bigint;output_tokens integer;scope_name text;owner text;
 BEGIN
  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION 'ASSISTANT_REQUIRES_READ_COMMITTED' USING ERRCODE='25000'; END IF;
+ PERFORM design.assistant_assert_job_authority(job);
  PERFORM pg_advisory_xact_lock(90129,1);
  SELECT * INTO j FROM design.assistant_jobs WHERE id=job;
  SELECT * INTO i FROM design.assistant_logical_intents WHERE job_id=job;
@@ -157,7 +158,6 @@ BEGIN
   OR i.coarse_key<>encode(sha256(convert_to(i.target_key||chr(31)||i.purpose,'UTF8')),'hex')
   OR i.anti_resend_key<>encode(sha256(convert_to(i.target_key||chr(31)||i.purpose||chr(31)||i.normalized_question,'UTF8')),'hex')
   THEN RAISE EXCEPTION 'ASSISTANT_INTENT_INVALID' USING ERRCODE='23514'; END IF;
- PERFORM design.assistant_check_target(i.target,i.actor_id);
  IF EXISTS(SELECT FROM design.assistant_budget_reservations WHERE job_id=job) THEN RETURN (SELECT to_jsonb(r) FROM design.assistant_budget_reservations r WHERE r.job_id=job); END IF;
  IF EXISTS(SELECT FROM design.assistant_jobs old LEFT JOIN design.assistant_budget_reservations r ON r.job_id=old.id
   WHERE r.job_id IS NULL AND (EXISTS(SELECT FROM design.assistant_global_calls c WHERE c.run_id=old.id AND c.state IN ('reserved','unknown'))
@@ -189,6 +189,7 @@ BEGIN
   IF design.assistant_budget_obligation(policy.id)+amount>policy.limit_minor THEN RAISE EXCEPTION 'ASSISTANT_BUDGET_EXHAUSTED' USING ERRCODE='23514'; END IF;
   IF scope_name='global' THEN g=policy.id; ELSIF scope_name='member' THEN m=policy.id; ELSE project=policy.id; END IF;
  END LOOP;
+ PERFORM design.assistant_assert_job_authority(job);
  INSERT INTO design.assistant_budget_reservations(job_id,intent_id,actor_id,coarse_key,price_id,member_budget_id,project_budget_id,global_budget_id,currency,reserved_minor,input_upper,output_upper)
  VALUES(job,i.id,i.actor_id,i.coarse_key,p.id,m,project,g,p.currency,amount,p.input_hard_ceiling,output_tokens);
  INSERT INTO design.assistant_budget_events(job_id,event_type,payload) VALUES(job,'reserved',jsonb_build_object('worst_case_minor',amount,'currency',p.currency,'price_version_id',p.id,'estimate_not_provider_spend_cap',true));
@@ -199,6 +200,7 @@ DECLARE j record;i record;r record;p record;native record;policy record;scope_na
  expected_profile jsonb;profile_hash text;step_hash text;expected_step text;expected_handler text;expected_purpose text;
 BEGIN
  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION 'ASSISTANT_REQUIRES_READ_COMMITTED' USING ERRCODE='25000'; END IF;
+ PERFORM design.assistant_assert_job_authority(job);
  PERFORM pg_advisory_xact_lock(90129,1);
  SELECT * INTO j FROM design.assistant_jobs WHERE id=job;
  SELECT * INTO i FROM design.assistant_logical_intents WHERE job_id=job;
@@ -209,7 +211,6 @@ BEGIN
   OR (j.kind IN ('answer','authoring')) IS DISTINCT FROM true OR (j.scope='global' AND j.kind<>'answer')
   OR i.id::text IS DISTINCT FROM j.input_manifest->'logical_intent'->>'id'
   THEN RAISE EXCEPTION 'ASSISTANT_BUDGET_IDENTITY_INVALID' USING ERRCODE='23514'; END IF;
- PERFORM design.assistant_check_target(i.target,i.actor_id);
  SELECT * INTO p FROM design.assistant_price_versions WHERE id=r.price_id;
  IF p.id IS NULL OR p.valid_from>clock_timestamp() OR p.valid_until<=clock_timestamp() THEN RAISE EXCEPTION 'ASSISTANT_PRICE_UNAVAILABLE' USING ERRCODE='23514'; END IF;
  expected_purpose=CASE WHEN j.kind='answer' THEN 'assistant' ELSE 'authoring' END;
@@ -255,6 +256,7 @@ BEGIN
     AND c.usage->'reservation'->>'owner'=s.owner_token::text;
  END IF;
  IF native.state IS DISTINCT FROM 'reserved' OR native.execution_state IS DISTINCT FROM 'running' OR native.cancel_requested_at IS NOT NULL OR native.lease_until IS NULL OR native.lease_until<=clock_timestamp() THEN RAISE EXCEPTION 'MODEL_EXECUTION_STALE' USING ERRCODE='23514'; END IF;
+ PERFORM design.assistant_assert_job_authority(job);
  UPDATE design.assistant_budget_reservations SET state='sent',dispatched_at=clock_timestamp(),global_call_id=CASE WHEN j.scope='global' THEN call_id END,project_call_id=CASE WHEN j.scope='project' THEN call_id END WHERE job_id=job;
  INSERT INTO design.assistant_budget_events(job_id,event_type,payload) VALUES(job,'dispatched',jsonb_build_object('call_id',call_id,'scope',j.scope));
  RETURN (SELECT to_jsonb(row) FROM design.assistant_budget_reservations row WHERE row.job_id=job);

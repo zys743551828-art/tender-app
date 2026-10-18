@@ -49,6 +49,8 @@ def keys(question: str, target_key: str, purpose: str):
 
 
 def project_identity(c, bid):
+    from packages.domain.fact_sets import decision_basis
+    from packages.domain.review_data import source_closure
     from packages.domain.rule_sets import current_decision
     from packages.identity.repository import snapshot
     from packages.knowledge.bridge import confirmed_fact
@@ -79,6 +81,10 @@ def project_identity(c, bid):
         fact = facts[0]
         values[name] = fact["value"]
         decision = current_decision(c, bid, "fact", fact["id"])
+        basis = decision_basis(c, decision["id"])
+        closure = source_closure(
+            c, [{"id": ref["source_id"]} for ref in basis["evidence"]["references"]], lock=True
+        )
         proofs.append(
             {
                 "id": str(fact["id"]),
@@ -86,6 +92,8 @@ def project_identity(c, bid):
                 "value": fact["value"],
                 "decision_id": str(decision["id"]),
                 "evidence_ids": sorted(map(str, fact["evidence_ids"])),
+                "basis": basis,
+                "source_closure": closure,
             }
         )
     canonical = association_key(values)

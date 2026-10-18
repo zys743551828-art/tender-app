@@ -10,7 +10,7 @@ from uuid import UUID
 from psycopg.types.json import Jsonb
 
 from packages.assistant import budget
-from packages.assistant.authority import assert_source_guards
+from packages.assistant.authority import assert_source_guards, lock_job_target
 from packages.assistant.generation import request_for, validate_answer
 from packages.assistant.jobs import job, require_schema
 from packages.domain import storage
@@ -135,6 +135,7 @@ def reserve(row, lease, request, profile):
     with connection(True) as c:
         # Match the dispatch order: execution -> source graph -> aggregate budget.
         # A replay must never hold the budget mutex while waiting on this run.
+        lock_job_target(c, row)
         run = locked_execution(c, row["id"], lease)
         assert_source_guards(c, row["input_manifest"])
         budget.before_native_reserve(c, row, profile, request["max_tokens"])
@@ -265,6 +266,7 @@ def compute(message, lease):
     result = None
     try:
         with connection(True) as c:
+            lock_job_target(c, row)
             locked_execution(c, row["id"], lease)
             assert_source_guards(c, manifest)
             budget.before_send(c, row, call["id"], request, client)

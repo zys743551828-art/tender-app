@@ -6,6 +6,17 @@ from packages.domain.runtime import DomainError
 from packages.knowledge.sources import authority_manifest, lock_graph, lock_heads
 
 
+def lock_job_target(c, row):
+    """Lock the immutable logical target before a global run or graph mutex."""
+    target = row["input_manifest"].get("logical_intent", {}).get("target")
+    if not target:
+        raise DomainError(
+            "ASSISTANT_TARGET_IDENTITY_UNPROVEN", "旧任务缺目标依据，不能继续发送", 409
+        )
+    if target["kind"] != "general":
+        c.execute("SELECT design.lock_worker_bid(%s)", (UUID(target["bid_id"]),))
+
+
 def assert_source_guards(c, manifest):
     lock_graph(c)
     if manifest["kind"] == "authoring":

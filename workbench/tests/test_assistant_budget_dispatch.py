@@ -45,6 +45,9 @@ def dispatch_database():
             "CREATE FUNCTION design.assistant_check_target(jsonb,uuid) RETURNS void LANGUAGE plpgsql AS $$ BEGIN RETURN; END $$"
         )
         c.execute(
+            "CREATE FUNCTION design.assistant_assert_job_authority(uuid) RETURNS void LANGUAGE plpgsql AS $$ BEGIN RETURN; END $$"
+        )
+        c.execute(
             "CREATE FUNCTION design.assistant_budget_obligation(uuid) RETURNS bigint LANGUAGE sql AS $$ SELECT 0::bigint $$"
         )
         source = (Path(__file__).parents[1] / "packages/assistant/sql/intent-budget.sql").read_text(

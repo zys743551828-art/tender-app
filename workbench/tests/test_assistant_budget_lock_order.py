@@ -100,6 +100,7 @@ def seed(dsn, billing="unknown"):
                 "id": str(intent),
                 "price_version_id": str(price),
                 "profile": profile,
+                "target": {"kind": "general"},
             },
         },
     }
