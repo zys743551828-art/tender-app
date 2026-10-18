@@ -1,0 +1,30 @@
+name: bidwb-word
+services:
+  converter:
+    image: bidwb-word:7.4.7
+    build: .
+    init: true
+    user: "65534:65534"
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1
+    pids_limit: 128
+    stop_grace_period: 70s
+    tmpfs:
+      - /tmp:ro,noexec,nosuid,nodev,size=1m,mode=0555
+      - /work:rw,noexec,nosuid,nodev,size=256m,uid=65534,gid=65534,mode=0700
+    volumes:
+      - word-input:/word-input:ro
+      - word-output:/word-output:rw
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+volumes:
+  word-input: {}
+  word-output: {}
