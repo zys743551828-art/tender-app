@@ -46,6 +46,8 @@ const job: AssistantJob = {
   candidate: null,
   formal_scoring_input: false,
   automatic_retry_authorized: false,
+  logical_intent: null,
+  budget: null,
 };
 function json(value: unknown, status = 200, etag = '"conversation:1"') {
   return new Response(JSON.stringify(value), {

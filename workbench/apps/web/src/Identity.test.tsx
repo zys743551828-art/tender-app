@@ -34,6 +34,8 @@ const identity: BidIdentityView = {
     region: "浙江",
     engineering_type: "市政",
     lot: "一标段",
+    lot_id: "stable-lot-one",
+    identity_version: "bid-identity/2",
     round_no: 1,
     binding_status: "pending",
     authority_id: null,

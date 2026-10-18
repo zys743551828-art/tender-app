@@ -167,16 +167,31 @@ def list_rounds(
     engineering_project_id: UUID,
     limit: int = Query(default=50, ge=1, le=100),
     cursor: str | None = None,
+    lot_id: UUID | None = None,
 ):
     auth(r)
-    scope = sha({"directory": "rounds/1", "engineering_project_id": str(engineering_project_id)})
+    scope = sha(
+        {
+            "directory": "rounds/2",
+            "engineering_project_id": str(engineering_project_id),
+            "lot_id": str(lot_id) if lot_id else None,
+        }
+    )
     after = pagination.decode(cursor, scope, rounds=True)
     with connection() as c:
         fetch(c, "SELECT id FROM engineering_projects WHERE id=%s", (engineering_project_id,))
+        if lot_id:
+            lot = fetch(
+                c, "SELECT engineering_project_id FROM engineering_lots WHERE id=%s", (lot_id,)
+            )
+            if lot["engineering_project_id"] != engineering_project_id:
+                raise DomainError("LOT_ENGINEERING_MISMATCH", "所选标段不属于所选工程", 422)
         rows = c.execute(
-            "SELECT r.*,e.title AS engineering_title,e.region,e.engineering_type FROM bid_rounds r JOIN engineering_projects e ON e.id=r.engineering_project_id WHERE engineering_project_id=%s AND (%s::text IS NULL OR (coalesce(r.lot,''),-r.round_no,r.id)>(%s,%s,%s)) ORDER BY coalesce(r.lot,''),r.round_no DESC,r.id LIMIT %s",
+            "SELECT r.*,e.title AS engineering_title,e.region,e.engineering_type FROM bid_rounds r JOIN engineering_projects e ON e.id=r.engineering_project_id WHERE engineering_project_id=%s AND (%s::uuid IS NULL OR r.lot_id=%s) AND (%s::text IS NULL OR (coalesce(r.lot,''),-r.round_no,r.id)>(%s,%s,%s)) ORDER BY coalesce(r.lot,''),r.round_no DESC,r.id LIMIT %s",
             (
                 engineering_project_id,
+                lot_id,
+                lot_id,
                 after[0] if after else None,
                 *(after or [None, None, None]),
                 limit + 1,
@@ -196,6 +211,76 @@ def list_rounds(
             if len(rows) > limit
             else None,
         }
+
+
+@router.get("/identity/lots")
+def list_lots(
+    r: Request,
+    engineering_project_id: UUID,
+    limit: int = Query(default=50, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    scope = sha({"directory": "lots/1", "engineering_project_id": str(engineering_project_id)})
+    after = pagination.decode(cursor, scope)
+    with connection() as c:
+        fetch(c, "SELECT id FROM engineering_projects WHERE id=%s", (engineering_project_id,))
+        rows = c.execute(
+            """SELECT id,engineering_project_id,label FROM engineering_lots
+            WHERE engineering_project_id=%s AND (%s::text IS NULL OR (label,id)>(%s,%s))
+            ORDER BY label,id LIMIT %s""",
+            (
+                engineering_project_id,
+                after[0] if after else None,
+                *(after or [None, None]),
+                limit + 1,
+            ),
+        ).fetchall()
+        return {
+            "items": clean(rows[:limit]),
+            "has_more": len(rows) > limit,
+            "next_cursor": pagination.encode(
+                scope, [rows[limit - 1]["label"], str(rows[limit - 1]["id"])]
+            )
+            if len(rows) > limit
+            else None,
+        }
+
+
+@router.post("/identity/engineering-projects")
+def register_engineering(r: Request, body: dict = Body(...)):
+    actor = auth(r, True)
+    validate("RegisterEngineering", body)
+    with connection() as c:
+        cmd = command(c, r, actor, "register_engineering", UUID(int=0), body)
+        if cmd.replay:
+            return saved(cmd.replay, True)
+        value = identities.register_engineering(c, actor["member_id"], body, cmd.id)
+        return saved(cmd.finish(value, 201))
+
+
+@router.post("/identity/lots")
+def register_lot(r: Request, body: dict = Body(...)):
+    actor = auth(r, True)
+    validate("RegisterLot", body)
+    with connection() as c:
+        cmd = command(c, r, actor, "register_lot", UUID(body["engineering_project_id"]), body)
+        if cmd.replay:
+            return saved(cmd.replay, True)
+        value = identities.register_lot(c, actor["member_id"], body, cmd.id)
+        return saved(cmd.finish(value, 201))
+
+
+@router.post("/identity/rounds")
+def register_round(r: Request, body: dict = Body(...)):
+    actor = auth(r, True)
+    validate("RegisterRound", body)
+    with connection() as c:
+        cmd = command(c, r, actor, "register_round", UUID(body["engineering_project_id"]), body)
+        if cmd.replay:
+            return saved(cmd.replay, True)
+        value = identities.register_round(c, actor["member_id"], body, cmd.id)
+        return saved(cmd.finish(value, 201))
 
 
 @router.get("/bids/{bid_id}/identity")

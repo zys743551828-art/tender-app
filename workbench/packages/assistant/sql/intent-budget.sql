@@ -82,7 +82,7 @@ CREATE FUNCTION design.assistant_normalize_question(value text) RETURNS text LAN
  SELECT btrim(regexp_replace(normalize(replace(replace(value,chr(13)||chr(10),chr(10)),chr(13),chr(10)),NFKC),'[[:space:]]+',' ','g'));
 $$;
 CREATE FUNCTION design.assistant_check_target(target jsonb,actor uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,design AS $$
-DECLARE proof jsonb;fact jsonb;record_fact record;bound record;kind text;bid uuid;canonical text;assembled text='';name text;object_id uuid;stable text;object_row record;
+DECLARE proof jsonb;fact jsonb;record_fact record;current_identity jsonb;kind text;bid uuid;canonical text;assembled text='';identity_fact_name text;object_id uuid;stable text;object_row record;
 BEGIN
  kind=target->>'kind';
  IF kind='general' THEN
@@ -91,28 +91,24 @@ BEGIN
  END IF;
  IF kind NOT IN ('project','finding','rule','section') THEN RAISE EXCEPTION 'ASSISTANT_TARGET_INVALID' USING ERRCODE='23514'; END IF;
  proof=target->'proof';bid=(target->>'bid_id')::uuid;object_id=(target->>'id')::uuid;
- SELECT a.id,a.payload,p.round_id,p.bidder_id,r.engineering_project_id INTO bound
- FROM design.bid_profiles p JOIN design.bid_rounds r ON r.id=p.round_id
- JOIN LATERAL(SELECT id,payload FROM design.audit_entries WHERE bid_id=p.bid_id AND event_type='identity.bound' ORDER BY coalesce((payload->>'identity_epoch')::bigint,0) DESC,created_at DESC,id DESC LIMIT 1)a ON true WHERE p.bid_id=bid;
- IF bound.id IS NULL OR bound.id::text IS DISTINCT FROM proof->>'identity_authority_id'
-  OR (bound.payload->>'confirmed')::boolean IS DISTINCT FROM true
-  OR bound.payload->'after'->>'round_id' IS DISTINCT FROM bound.round_id::text
-  OR bound.payload->'after'->>'bidder_id' IS DISTINCT FROM bound.bidder_id::text
-  OR bound.payload->'after'->>'engineering_project_id' IS DISTINCT FROM bound.engineering_project_id::text
+ current_identity=design.identity_snapshot_v2(bid);
+ IF current_identity IS NULL OR current_identity->>'identity_version' IS DISTINCT FROM 'bid-identity/2'
+  OR current_identity->>'binding_status' IS DISTINCT FROM 'confirmed'
+  OR current_identity->>'authority_id' IS DISTINCT FROM proof->>'identity_authority_id'
   OR NOT EXISTS(SELECT FROM design.fact_heads h WHERE h.bid_id=bid AND h.fact_set_id=(proof->>'fact_set_id')::uuid)
   OR jsonb_array_length(proof->'identity_facts') IS DISTINCT FROM 5 THEN RAISE EXCEPTION 'ASSISTANT_TARGET_IDENTITY_UNPROVEN' USING ERRCODE='23514'; END IF;
- FOREACH name IN ARRAY ARRAY['procurement_issuer_identifier','procurement_project_identifier','procurement_lot_identifier','procurement_round_identifier','bidder_identity_identifier'] LOOP
-  SELECT value INTO fact FROM jsonb_array_elements(proof->'identity_facts') WHERE value->>'name'=name;
+ FOREACH identity_fact_name IN ARRAY ARRAY['procurement_issuer_identifier','procurement_project_identifier','procurement_lot_identifier','procurement_round_identifier','bidder_identity_identifier'] LOOP
+  SELECT value INTO fact FROM jsonb_array_elements(proof->'identity_facts') WHERE value->>'name'=identity_fact_name;
   SELECT f.*,d.id AS decision_id,d.decision,d.evidence_ids AS decision_evidence INTO record_fact FROM design.fact_items f
   JOIN design.decision_heads h ON h.bid_id=f.bid_id AND h.object_kind='fact' AND h.object_id=f.id
   JOIN design.decisions d ON d.id=h.decision_id
-  WHERE f.id=(fact->>'id')::uuid AND f.bid_id=bid AND f.fact_set_id=(proof->>'fact_set_id')::uuid AND f.name=name;
+  WHERE f.id=(fact->>'id')::uuid AND f.bid_id=bid AND f.fact_set_id=(proof->>'fact_set_id')::uuid AND f.name=identity_fact_name;
   IF record_fact.id IS NULL OR record_fact.decision<>'confirmed' OR record_fact.decision_id::text IS DISTINCT FROM fact->>'decision_id'
    OR record_fact.value IS DISTINCT FROM fact->'value' OR jsonb_typeof(record_fact.value)<>'string'
    OR NOT(record_fact.evidence_ids<@record_fact.decision_evidence AND record_fact.evidence_ids@>record_fact.decision_evidence) OR cardinality(record_fact.evidence_ids)=0
    THEN RAISE EXCEPTION 'ASSISTANT_TARGET_IDENTITY_UNPROVEN' USING ERRCODE='23514'; END IF;
   IF assembled<>'' THEN assembled=assembled||chr(31); END IF;
-  assembled=assembled||name||'='||design.assistant_normalize_question(record_fact.value#>>'{}');
+  assembled=assembled||identity_fact_name||'='||design.assistant_normalize_question(record_fact.value#>>'{}');
  END LOOP;
  canonical=encode(sha256(convert_to(assembled,'UTF8')),'hex');
  IF canonical IS DISTINCT FROM target->>'canonical_project_key' OR canonical IS DISTINCT FROM proof->>'canonical_project_key' THEN RAISE EXCEPTION 'ASSISTANT_TARGET_INVALID' USING ERRCODE='23514'; END IF;

@@ -21,6 +21,7 @@ BASE_SQL = (
     "packages/contracts/sql/core.sql",
     "packages/contracts/sql/domain.sql",
     "packages/contracts/sql/bid-packages.sql",
+    "packages/identity/sql/stable-lot-identity.sql",
     "packages/contracts/sql/retrieval.sql",
     "packages/contracts/sql/worker-functions.sql",
     "packages/contracts/sql/roles.sql",

@@ -5,11 +5,12 @@ from uuid import UUID
 from psycopg.types.json import Jsonb
 
 from packages.domain.input_changes import invalidate_pending
-from packages.domain.runtime import DomainError, clean, fetch, sha, uid
+from packages.domain.runtime import DomainError, clean, fetch, uid
 
 REGISTERED = "identity.bidder_registered"
 BOUND = "identity.bound"
 DEFAULT = "identity.default_changed"
+VERSION = "bid-identity/2"
 
 
 def record(c, actor, bid, event, payload, command):
@@ -98,27 +99,17 @@ def set_default(c, actor, bidder_id, command_id):
 
 
 def association(c, bid):
-    return clean(
-        fetch(
-            c,
-            "SELECT p.bidder_id,b.name AS bidder_name,p.round_id,r.engineering_project_id,e.title AS engineering_title,e.region,e.engineering_type,r.lot,r.round_no FROM bid_profiles p JOIN bidders b ON b.id=p.bidder_id JOIN bid_rounds r ON r.id=p.round_id JOIN engineering_projects e ON e.id=r.engineering_project_id WHERE p.bid_id=%s",
-            (bid,),
-        )
-    )
+    value = fetch(c, "SELECT design.identity_association_v2(%s) AS value", (bid,))["value"]
+    if value is None:
+        raise DomainError("IDENTITY_NOT_FOUND", "项目身份尚未建立", 404)
+    return value
 
 
 def snapshot(c, bid):
-    current = association(c, bid)
-    row = c.execute(
-        "SELECT id,payload FROM audit_entries WHERE bid_id=%s AND event_type=%s ORDER BY coalesce((payload->>'identity_epoch')::bigint,0) DESC,created_at DESC,id DESC LIMIT 1",
-        (bid, BOUND),
-    ).fetchone()
-    confirmed = bool(row and row["payload"]["after"] == current and row["payload"]["confirmed"])
-    value = current | {
-        "binding_status": "confirmed" if confirmed else "pending",
-        "authority_id": str(row["id"]) if row else None,
-    }
-    return value | {"digest": sha(value)}
+    value = fetch(c, "SELECT design.identity_snapshot_v2(%s) AS value", (bid,))["value"]
+    if value is None:
+        raise DomainError("IDENTITY_NOT_FOUND", "项目身份尚未建立", 404)
+    return value
 
 
 def at_time(c, bid, as_of):
@@ -138,17 +129,27 @@ def at_time(c, bid, as_of):
         "authority_id": str(row["id"]),
         "qualification_evidence": False,
         "notice": "审计时点观察不代替实交或评审中冻结的身份依据",
+        "identity_version": row["payload"].get("identity_version", "bid-identity/1"),
+        "stable_lot_frozen": row["payload"].get("identity_version") == VERSION
+        and bool(row["payload"]["after"].get("lot_id")),
     }
 
 
 def record_binding(c, bid, actor, command_id, *, before=None, reason, confirmed):
     after = association(c, bid)
+    confirmed = bool(confirmed and after.get("lot_id"))
     record(
         c,
         actor,
         bid,
         BOUND,
-        {"before": before, "after": after, "confirmed": confirmed, "reason": reason},
+        {
+            "before": before,
+            "after": after,
+            "confirmed": confirmed,
+            "reason": reason,
+            "identity_version": VERSION,
+        },
         command_id,
     )
     return snapshot(c, bid)
@@ -167,10 +168,13 @@ def create_association(c, body):
     engineering = (
         UUID(body["engineering_project_id"]) if body.get("engineering_project_id") else None
     )
+    selected_lot = UUID(body["lot_id"]) if body.get("lot_id") else None
     if body.get("round_id"):
         row = fetch(c, "SELECT * FROM bid_rounds WHERE id=%s", (UUID(body["round_id"]),))
         if engineering and row["engineering_project_id"] != engineering:
             raise DomainError("ROUND_ENGINEERING_MISMATCH", "所选轮次不属于所选工程", 422)
+        if selected_lot and row["lot_id"] != selected_lot:
+            raise DomainError("ROUND_LOT_MISMATCH", "所选轮次不属于所选稳定标段", 422)
         if body.get("lot") is not None and body["lot"] != row["lot"]:
             raise DomainError("ROUND_LOT_MISMATCH", "所选轮次的标段与表单不一致", 422)
         project = fetch(
@@ -188,8 +192,19 @@ def create_association(c, body):
             "engineering_project_id": row["engineering_project_id"],
             "round_id": row["id"],
             "bidder_id": bidder_id,
-            "confirmed": confirmed,
+            "confirmed": confirmed and row["lot_id"] is not None,
         }
+    lot_row = (
+        fetch(c, "SELECT * FROM engineering_lots WHERE id=%s", (selected_lot,))
+        if selected_lot
+        else None
+    )
+    if lot_row:
+        if engineering and engineering != lot_row["engineering_project_id"]:
+            raise DomainError("LOT_ENGINEERING_MISMATCH", "所选标段不属于所选工程", 422)
+        engineering = lot_row["engineering_project_id"]
+        if body.get("lot") is not None and body["lot"] != lot_row["label"]:
+            raise DomainError("LOT_LABEL_MISMATCH", "稳定标段与显示名称不一致，请重新选择", 422)
     if engineering:
         project = fetch(
             c, "SELECT * FROM engineering_projects WHERE id=%s FOR UPDATE", (engineering,)
@@ -208,21 +223,106 @@ def create_association(c, body):
             "INSERT INTO engineering_projects(id,title,region,engineering_type) VALUES(%s,%s,%s,%s)",
             (engineering, body["title"], body.get("region"), body.get("engineering_type")),
         )
+    if selected_lot is None and body.get("lot"):
+        # An explicitly entered new lot is a new identity, never a name-based lookup.
+        selected_lot = uid()
+        c.execute(
+            "INSERT INTO engineering_lots(id,engineering_project_id,label) VALUES(%s,%s,%s)",
+            (selected_lot, engineering, body["lot"].strip()),
+        )
+    lot_label = lot_row["label"] if lot_row else body["lot"].strip() if body.get("lot") else None
     round_no = c.execute(
-        "SELECT coalesce(max(round_no),0)+1 AS n FROM bid_rounds WHERE engineering_project_id=%s AND lot IS NOT DISTINCT FROM %s",
-        (engineering, body.get("lot")),
+        "SELECT coalesce(max(round_no),0)::bigint+1 AS n FROM bid_rounds WHERE engineering_project_id=%s AND lot_id IS NOT DISTINCT FROM %s::uuid",
+        (engineering, selected_lot),
     ).fetchone()["n"]
+    if round_no > 2147483647:
+        raise DomainError("ROUND_NUMBER_LIMIT", "轮次号超出当前存储范围", 422)
     round_id = uid()
     c.execute(
-        "INSERT INTO bid_rounds(id,engineering_project_id,lot,round_no) VALUES(%s,%s,%s,%s)",
-        (round_id, engineering, body.get("lot"), round_no),
+        "INSERT INTO bid_rounds(id,engineering_project_id,lot,lot_id,round_no) VALUES(%s,%s,%s,%s,%s)",
+        (round_id, engineering, lot_label, selected_lot, round_no),
     )
     return {
         "engineering_project_id": engineering,
         "round_id": round_id,
         "bidder_id": bidder_id,
-        "confirmed": confirmed,
+        "confirmed": confirmed and selected_lot is not None,
     }
+
+
+def register_engineering(c, actor, body, command_id):
+    identity = uid()
+    value = {
+        "id": identity,
+        "title": body["title"].strip(),
+        "region": body.get("region"),
+        "engineering_type": body.get("engineering_type"),
+    }
+    c.execute(
+        "INSERT INTO engineering_projects(id,title,region,engineering_type) VALUES(%s,%s,%s,%s)",
+        tuple(value.values()),
+    )
+    record(
+        c,
+        actor,
+        None,
+        "identity.engineering_registered",
+        value | {"reason": body["reason"]},
+        command_id,
+    )
+    return clean(value)
+
+
+def register_lot(c, actor, body, command_id):
+    project = UUID(body["engineering_project_id"])
+    fetch(c, "SELECT id FROM engineering_projects WHERE id=%s FOR UPDATE", (project,))
+    value = {"id": uid(), "engineering_project_id": project, "label": body["label"].strip()}
+    c.execute(
+        "INSERT INTO engineering_lots(id,engineering_project_id,label) VALUES(%s,%s,%s)",
+        tuple(value.values()),
+    )
+    record(
+        c, actor, None, "identity.lot_registered", value | {"reason": body["reason"]}, command_id
+    )
+    return clean(value)
+
+
+def register_round(c, actor, body, command_id):
+    project = UUID(body["engineering_project_id"])
+    fetch(c, "SELECT id FROM engineering_projects WHERE id=%s FOR UPDATE", (project,))
+    lot = fetch(c, "SELECT * FROM engineering_lots WHERE id=%s", (UUID(body["lot_id"]),))
+    if lot["engineering_project_id"] != project:
+        raise DomainError("LOT_ENGINEERING_MISMATCH", "所选标段不属于所选工程", 422)
+    number = body.get("round_no")
+    if number is None:
+        number = c.execute(
+            "SELECT coalesce(max(round_no),0)::bigint+1 AS n FROM bid_rounds WHERE engineering_project_id=%s AND lot_id=%s",
+            (project, lot["id"]),
+        ).fetchone()["n"]
+    if number > 2147483647:
+        raise DomainError("ROUND_NUMBER_LIMIT", "轮次号超出当前存储范围", 422)
+    if c.execute(
+        "SELECT id FROM bid_rounds WHERE engineering_project_id=%s AND lot_id=%s AND round_no=%s",
+        (project, lot["id"], number),
+    ).fetchone():
+        raise DomainError("ROUND_NUMBER_CONFLICT", "该稳定标段的轮次已经存在，请选择已有轮次", 409)
+    identity = uid()
+    c.execute(
+        "INSERT INTO bid_rounds(id,engineering_project_id,lot,lot_id,round_no) VALUES(%s,%s,%s,%s,%s)",
+        (identity, project, lot["label"], lot["id"], number),
+    )
+    value = clean(
+        fetch(
+            c,
+            """SELECT r.*,e.title AS engineering_title,e.region,e.engineering_type
+        FROM bid_rounds r JOIN engineering_projects e ON e.id=r.engineering_project_id WHERE r.id=%s""",
+            (identity,),
+        )
+    )
+    record(
+        c, actor, None, "identity.round_registered", value | {"reason": body["reason"]}, command_id
+    )
+    return value
 
 
 def impact(c, bid):
@@ -244,7 +344,13 @@ def correct(c, bid, actor, command_id, body):
     old = snapshot(c, bid)
     require_bidder(c, body["bidder_id"])
     round_id = UUID(body["round_id"]) if body.get("round_id") else UUID(old["round_id"])
-    fetch(c, "SELECT id FROM bid_rounds WHERE id=%s", (round_id,))
+    selected = fetch(c, "SELECT id,lot_id FROM bid_rounds WHERE id=%s", (round_id,))
+    if selected["lot_id"] is None:
+        raise DomainError(
+            "STABLE_LOT_REQUIRED", "请先明确登记标段并选择对应轮次，再确认本次身份", 409
+        )
+    if body.get("lot_id") and str(selected["lot_id"]) != body["lot_id"]:
+        raise DomainError("ROUND_LOT_MISMATCH", "所选轮次不属于所选稳定标段", 422)
     if (
         old["binding_status"] == "confirmed"
         and str(round_id) == old["round_id"]

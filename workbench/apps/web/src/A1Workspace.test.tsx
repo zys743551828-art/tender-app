@@ -47,6 +47,8 @@ const bid: Bid = {
     region: null,
     engineering_type: null,
     lot: null,
+    lot_id: null,
+    identity_version: "bid-identity/2",
     round_no: 1,
     binding_status: "pending",
     authority_id: null,

@@ -7,14 +7,14 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--openapi", type=Path, default=root / "packages/contracts/implemented.openapi.json"
+    "--openapi", type=Path, default=root / "packages/contracts/fusion-implemented.openapi.json"
 )
 parser.add_argument("--output", type=Path, default=root / "apps/web/src/contracts.ts")
 parser.add_argument(
     "--schemas", help="Generate only these comma-separated schema roots, without capability flags"
 )
 args = parser.parse_args()
-contract = json.loads(args.openapi.read_text())
+contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
     "AuthoringTemplateCreate",
@@ -248,8 +248,8 @@ def render(s):
 
 
 source = (
-    "packages/contracts/implemented.openapi.json"
-    if args.openapi == root / "packages/contracts/implemented.openapi.json"
+    "packages/contracts/fusion-implemented.openapi.json"
+    if args.openapi == root / "packages/contracts/fusion-implemented.openapi.json"
     else str(args.openapi)
 )
 lines = [f"// Generated from {source}. Run python scripts/generate-contracts.py.\n"]
@@ -257,7 +257,7 @@ for name in wanted:
     if name not in seen:
         seen.add(name)
         lines.append(f"export type {name} = {render(schemas[name])};\n")
-args.output.write_text("\n".join(lines))
+args.output.write_text("\n".join(lines), encoding="utf-8")
 if args.schemas:
     raise SystemExit(0)
 
@@ -267,18 +267,18 @@ operations = [
     for method in methods
     if method in {"get", "post", "patch", "put", "delete"}
 ]
-with args.output.open("a") as output:
+with args.output.open("a", encoding="utf-8") as output:
     output.write(
         "\nexport const implementedOperations: readonly string[] = "
         + json.dumps(operations, ensure_ascii=False)
         + ";\n"
     )
 
-with args.output.open("a") as output:
+with args.output.open("a", encoding="utf-8") as output:
     batch_limit = schemas["BatchRuleConfirmation"]["properties"]["rule_ids"]["maxItems"]
     output.write(f"\nexport const ruleConfirmationLimit: number = {batch_limit};\n")
 
-with args.output.open("a") as output:
+with args.output.open("a", encoding="utf-8") as output:
     task_create = (
         contract["paths"].get("/api/v1/bids/{bid_id}/task-definitions", {}).get("post", {})
     )

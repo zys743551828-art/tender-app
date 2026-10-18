@@ -5,6 +5,7 @@ from copy import deepcopy
 from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.domain.runtime import DomainError
+from packages.identity.contracts import LEGACY_SNAPSHOT
 from packages.identity.contracts import SNAPSHOT as IDENTITY_SNAPSHOT
 
 
@@ -199,6 +200,9 @@ def schemas():
     context_identity = deepcopy(IDENTITY_SNAPSHOT)
     context_identity["properties"]["binding_status"] = {"const": "confirmed"}
     context_identity["properties"]["authority_id"] = ID
+    legacy_identity = deepcopy(LEGACY_SNAPSHOT)
+    legacy_identity["properties"]["binding_status"] = {"const": "confirmed"}
+    legacy_identity["properties"]["authority_id"] = ID
     impactentry = obj(
         {
             "citation_id": ID,
@@ -223,7 +227,7 @@ def schemas():
                 "fact_set_id": NULLID,
                 "fact_revision": {"type": "integer", "minimum": 0},
                 "decision_heads_digest": HASH,
-                "identity": context_identity,
+                "identity": {"oneOf": [context_identity, legacy_identity]},
             }
         ),
         "KnowledgeSourcePosition": source,

@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 
-from packages.identity.contracts import SNAPSHOT
+from packages.identity.contracts import HISTORICAL_SNAPSHOT
 
 UUID = {"type": "string", "format": "uuid"}
 NULL_UUID = {"type": ["string", "null"], "format": "uuid"}
@@ -81,7 +81,7 @@ def extend_openapi(actual):
     additions = {
         "current": {"type": "boolean"},
         "supersedes_id": NULL_UUID,
-        "identity": {"anyOf": [deepcopy(SNAPSHOT), {"type": "null"}]},
+        "identity": {"anyOf": [deepcopy(HISTORICAL_SNAPSHOT), {"type": "null"}]},
         "original_name": TEXT,
         "artifact_kind": TEXT,
         "checks_label": TEXT,

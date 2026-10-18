@@ -118,7 +118,8 @@ def test_new_helpers_have_no_public_execute_and_no_security_definer(database):
         EXISTS(SELECT FROM aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a
           WHERE a.grantee=0 AND a.privilege_type='EXECUTE') AS public_execute
         FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-        WHERE n.nspname='design' AND (p.proname LIKE 'package_%' OR p.proname='frozen_package_parse_guard')""").fetchall()
+        WHERE n.nspname='design' AND (p.proname LIKE 'package_%'
+          OR p.proname IN ('frozen_package_parse_guard','identity_association_v2','identity_snapshot_v2'))""").fetchall()
     assert rows
     assert all(not row["public_execute"] and not row["prosecdef"] for row in rows)
 
@@ -128,8 +129,26 @@ def test_package_ddl_precedes_public_revoke_and_worker_grant_follows_it():
         "packages/contracts/sql/bid-packages.sql"
     )
     assert BASE_SQL.index("packages/contracts/sql/bid-packages.sql") < BASE_SQL.index(
+        "packages/identity/sql/stable-lot-identity.sql"
+    )
+    assert BASE_SQL.index("packages/identity/sql/stable-lot-identity.sql") < BASE_SQL.index(
         "packages/contracts/sql/roles.sql"
     )
     assert BASE_SQL.index("packages/contracts/sql/roles.sql") < BASE_SQL.index(
         "deploy/sql/bid-package-runtime-grants.sql"
     )
+
+
+def test_api_lot_catalog_allows_registration_and_reading_without_mutation(database):
+    with connect("fusion_package_api") as api:
+        for privilege, allowed in (
+            ("SELECT", True),
+            ("INSERT", True),
+            ("UPDATE", False),
+            ("DELETE", False),
+        ):
+            row = api.execute(
+                "SELECT has_table_privilege(current_user,'design.engineering_lots',%s) AS p",
+                (privilege,),
+            ).fetchone()
+            assert row["p"] is allowed

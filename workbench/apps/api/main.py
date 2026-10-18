@@ -358,7 +358,9 @@ def logout(r: Request):
 @app.post("/api/v1/bids")
 def create_bid(r: Request, body: dict = Body(...)):
     a = auth(r, True)
-    validate("CreateBid", body)
+    from packages.identity.contracts import validate as validate_identity
+
+    validate_identity("CreateBid", body)
     with connection() as c:
         cmd = command(c, r, a, "create_bid", UUID(int=0), body)
         if cmd.replay:

@@ -72,7 +72,7 @@ def identity_snapshot(c: Any, scope: BidScope) -> dict[str, Any]:
     if row is None:
         raise PackageError("PACKAGE_PROFILE_NOT_FOUND")
     current = _strings(row)
-    require(current.pop("lot_id") == scope.lot_id, "PACKAGE_LOT_BINDING_MISMATCH")
+    require(current["lot_id"] == scope.lot_id, "PACKAGE_LOT_BINDING_MISMATCH")
     require(
         all(
             current[field] == getattr(scope, field)
@@ -80,33 +80,16 @@ def identity_snapshot(c: Any, scope: BidScope) -> dict[str, Any]:
         ),
         "PACKAGE_PROFILE_SCOPE_MISMATCH",
     )
-    authority = _one(
+    frozen = _one(
         c,
-        """SELECT id,payload FROM design.audit_entries
-        WHERE bid_id=%s AND event_type='identity.bound'
-        ORDER BY coalesce((payload->>'identity_epoch')::bigint,0) DESC,created_at DESC,id DESC LIMIT 1""",
+        "SELECT design.identity_snapshot_v2(%s) AS value",
         (scope.bid_id,),
     )
-    confirmed = bool(
-        authority
-        and authority["payload"].get("after") == current
-        and authority["payload"].get("confirmed") is True
-    )
-    if confirmed:
-        registered = _one(
-            c,
-            """SELECT id FROM design.audit_entries
-            WHERE event_type='identity.bidder_registered' AND payload->>'bidder_id'=%s LIMIT 1""",
-            (scope.bidder_id,),
-        )
-        require(registered is not None, "PACKAGE_BIDDER_REGISTRATION_REQUIRED")
-    status = "confirmed" if confirmed else "pending"
-    require(scope.bidder_status == status, "PACKAGE_BINDING_STATUS_MISMATCH")
-    value = current | {
-        "binding_status": status,
-        "authority_id": str(authority["id"]) if authority else None,
-    }
-    return value | {"digest": digest(value)}
+    if frozen is None or not isinstance(frozen["value"], dict):
+        raise PackageError("PACKAGE_PROFILE_NOT_FOUND")
+    value = frozen["value"]
+    require(scope.bidder_status == value["binding_status"], "PACKAGE_BINDING_STATUS_MISMATCH")
+    return value
 
 
 def read_parse_identity(

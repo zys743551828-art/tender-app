@@ -49,6 +49,8 @@ def env():
 
 def new_project(c, env, body=None):
     data = {"title": "合成身份测试工程"} | (body or {})
+    if not any(field in data for field in ("round_id", "lot_id", "lot")):
+        data["lot"] = "明确登记的合成标段"
     selected = identities.create_association(c, data)
     bid, stream = uid(), uid()
     c.execute(
@@ -99,7 +101,7 @@ def test_new_lot_and_new_round_do_not_reuse_work_units(env):
             "engineering_project_id": original["engineering_project_id"],
         }
         second = new_project(c, env, common | {"lot": "二标段"})
-        rebid = new_project(c, env, common | {"lot": "一标段"})
+        rebid = new_project(c, env, common | {"lot_id": original["lot_id"]})
         same_round = new_project(
             c, env, {"bidder_id": env["other"]["id"], "round_id": original["round_id"]}
         )

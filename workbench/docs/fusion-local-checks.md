@@ -36,3 +36,12 @@ $env:FUSION_RECONCILIATION_TEST_DSN='<仅限独立预算测试库>'
 POSIX 0600／0700及symlink守卫需在真实Linux文件系统验证。可复用现有本机Linux镜像，将源码只读挂载后复制到容器临时目录；不在Windows共享挂载上把权限位失败当产品逻辑失败，也不放宽守卫。
 
 全量基线的原云端固定证据路径缺失、POSIX差异及未恢复输入必须登记具体失败。静态契约导出、局部PG检查、Mock链路、浏览器、真实模型和业务精度分层记录，未通过的全量检查不能因局部测试通过而关闭。
+
+## 实际接口与前端类型
+
+融合实际接口清单位于 `packages/contracts/fusion-implemented.openapi.json`，从已注册路由及当前实现契约导出。前端 `scripts/generate-contracts.py` 默认读取此文件，使用 UTF-8 生成 `src/contracts.ts`；原目标快照和旧验证输入保持原字节。新增目录的契约存在不表示界面已接入相应操作。
+
+```powershell
+& .venv/Scripts/python.exe -X utf8 -m apps.api.export_openapi > packages/contracts/fusion-implemented.openapi.json
+& .venv/Scripts/python.exe -X utf8 apps/web/scripts/generate-contracts.py
+```

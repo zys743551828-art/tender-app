@@ -1,4 +1,4 @@
-// Generated from ../../docs/word-pdf-declaration-development-checks/actual-03.openapi.json. Run python scripts/generate-contracts.py.
+// Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
 export type AuthoringTemplateCreate = {
   name: string;
@@ -676,6 +676,26 @@ export type AssistantTurnRequest = {
   }[];
   section_id?: string | null;
   max_tokens?: number;
+  request_mode?: "new_question" | "retry" | "continue";
+  related_job_id?: string | null;
+  related_action_id?: string | null;
+  target?:
+    | {
+        kind: "general";
+        id: null;
+      }
+    | {
+        kind: "project" | "finding" | "rule" | "section";
+        id: string;
+      }
+    | null;
+  intent_purpose?:
+    | "general_reference"
+    | "project_reference"
+    | "finding_explanation"
+    | "rule_explanation"
+    | "section_reference"
+    | "section_draft";
 };
 
 export type AssistantJob = {
@@ -750,6 +770,8 @@ export type AssistantJob = {
     | null;
   formal_scoring_input: false;
   automatic_retry_authorized: false;
+  logical_intent: AssistantLogicalIntent | null;
+  budget: AssistantBudgetReservation | null;
 };
 
 export type AssistantJobPage = {
@@ -1491,20 +1513,41 @@ export type SubmissionView = {
   evidence_ref: string | null;
   current: boolean;
   supersedes_id: string | null;
-  identity: {
-    bidder_id: string;
-    bidder_name: string;
-    round_id: string;
-    engineering_project_id: string;
-    engineering_title: string;
-    region: string | null;
-    engineering_type: string | null;
-    lot: string | null;
-    round_no: number;
-    binding_status: "confirmed" | "pending";
-    authority_id: string | null;
-    digest: string;
-  } | null;
+  identity:
+    | (
+        | {
+            bidder_id: string;
+            bidder_name: string;
+            round_id: string;
+            engineering_project_id: string;
+            engineering_title: string;
+            region: string | null;
+            engineering_type: string | null;
+            lot: string | null;
+            round_no: number;
+            binding_status: "confirmed" | "pending";
+            authority_id: string | null;
+            digest: string;
+            identity_version?: "bid-identity/1";
+          }
+        | {
+            bidder_id: string;
+            bidder_name: string;
+            round_id: string;
+            engineering_project_id: string;
+            engineering_title: string;
+            region: string | null;
+            engineering_type: string | null;
+            lot: string | null;
+            lot_id: string | null;
+            round_no: number;
+            binding_status: "confirmed" | "pending";
+            authority_id: string | null;
+            digest: string;
+            identity_version: "bid-identity/2";
+          }
+      )
+    | null;
   original_name: string;
   artifact_kind: string;
   checks_label: string;
@@ -1972,6 +2015,7 @@ export type EngineeringRoundPage = {
     id: string;
     engineering_project_id: string;
     lot: string | null;
+    lot_id: string | null;
     round_no: number;
     engineering_title: string;
     region: string | null;
@@ -1991,10 +2035,12 @@ export type BidIdentityView = {
     region: string | null;
     engineering_type: string | null;
     lot: string | null;
+    lot_id: string | null;
     round_no: number;
     binding_status: "confirmed" | "pending";
     authority_id: string | null;
     digest: string;
+    identity_version: "bid-identity/2";
   };
   affected: {
     reviews: number;
@@ -2018,10 +2064,12 @@ export type BidIdentityCorrection = {
     region: string | null;
     engineering_type: string | null;
     lot: string | null;
+    lot_id: string | null;
     round_no: number;
     binding_status: "confirmed" | "pending";
     authority_id: string | null;
     digest: string;
+    identity_version: "bid-identity/2";
   };
   affected: {
     reviews: number;
@@ -2040,6 +2088,7 @@ export type BidIdentityCorrection = {
 export type CorrectBidIdentity = {
   bidder_id: string;
   round_id?: string;
+  lot_id?: string;
   reason: string;
 };
 
@@ -2576,6 +2625,7 @@ export type CreateBid = {
   region?: string;
   engineering_type?: string;
   deadline?: string | null;
+  lot_id?: string;
 };
 
 export type UploadGrant = {
@@ -2848,6 +2898,59 @@ export type AssistantExecution = {
   error_code?: string | null;
 };
 
+export type AssistantLogicalIntent = {
+  id: string;
+  request_mode: "new_question";
+  normalized_question: string;
+  coarse_key: string;
+  anti_resend_key: string;
+  price_version_id: string;
+  origin_action_id: string | null;
+  target: {
+    kind: "general" | "project" | "finding" | "rule" | "section";
+    id: string | null;
+    purpose:
+      | "general_reference"
+      | "project_reference"
+      | "finding_explanation"
+      | "rule_explanation"
+      | "section_reference"
+      | "section_draft";
+    bid_id: string | null;
+    canonical_project_key: string | null;
+  };
+};
+
+export type AssistantBudgetReservation = {
+  job_id: string;
+  intent_id: string;
+  actor_id: string;
+  coarse_key: string;
+  price_id: string;
+  member_budget_id: string;
+  project_budget_id: string | null;
+  global_budget_id: string;
+  currency: "CNY" | "USD";
+  reserved_minor: number;
+  input_upper: number;
+  output_upper: number;
+  state: "held" | "sent" | "unknown" | "settled" | "released";
+  requires_manual_reconciliation: boolean;
+  charged_minor: number | null;
+  project_call_id: string | null;
+  global_call_id: string | null;
+  dispatched_at: string | null;
+  settled_at: string | null;
+  created_at: string;
+  price_version: string;
+  amount_scale: 1000000000;
+  source_kind: "official_tariff_and_context_limit" | "explicit_mock_fixture";
+  input_per_million_minor: number;
+  output_per_million_minor: number;
+  estimate_not_provider_spend_cap: true;
+  unknown_hold_released_automatically: false;
+};
+
 export type AssistantGlobalMessage = {
   id: string;
   bid_id: null;
@@ -3016,20 +3119,38 @@ export type KnowledgeProjectContext = {
   fact_set_id: string | null;
   fact_revision: number;
   decision_heads_digest: string;
-  identity: {
-    bidder_id: string;
-    bidder_name: string;
-    round_id: string;
-    engineering_project_id: string;
-    engineering_title: string;
-    region: string | null;
-    engineering_type: string | null;
-    lot: string | null;
-    round_no: number;
-    binding_status: "confirmed";
-    authority_id: string;
-    digest: string;
-  };
+  identity:
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        lot_id: string | null;
+        round_no: number;
+        binding_status: "confirmed";
+        authority_id: string;
+        digest: string;
+        identity_version: "bid-identity/2";
+      }
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        round_no: number;
+        binding_status: "confirmed";
+        authority_id: string;
+        digest: string;
+        identity_version?: "bid-identity/1";
+      };
 };
 
 export type SubmissionRiskSnapshot = {
@@ -3603,10 +3724,12 @@ export type BidIdentitySnapshot = {
   region: string | null;
   engineering_type: string | null;
   lot: string | null;
+  lot_id: string | null;
   round_no: number;
   binding_status: "confirmed" | "pending";
   authority_id: string | null;
   digest: string;
+  identity_version: "bid-identity/2";
 };
 
 export type UploadPartGrant = {
@@ -3783,6 +3906,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/assistant/actions/{action_id}",
   "POST /api/v1/assistant/actions/{action_id}/resolve",
   "POST /api/v1/bids/{bid_id}/authoring/generations",
+  "GET /api/v1/assistant/intent-capabilities",
+  "GET /api/v1/assistant/intent-targets",
   "POST /api/v1/bids/{bid_id}/comparisons",
   "GET /api/v1/bids/{bid_id}/comparisons",
   "GET /api/v1/comparisons/{comparison_id}",
@@ -3864,7 +3989,11 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/identity/default-bidder",
   "PUT /api/v1/identity/default-bidder",
   "GET /api/v1/identity/engineering-projects",
+  "POST /api/v1/identity/engineering-projects",
   "GET /api/v1/identity/rounds",
+  "POST /api/v1/identity/rounds",
+  "GET /api/v1/identity/lots",
+  "POST /api/v1/identity/lots",
   "GET /api/v1/bids/{bid_id}/identity",
   "PUT /api/v1/bids/{bid_id}/identity",
   "GET /api/v1/bids/{bid_id}/pricing-context",

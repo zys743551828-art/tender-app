@@ -51,6 +51,11 @@ def main() -> None:
         ):
             connection.execute((ROOT / "packages/contracts/sql" / name).read_text())
             print(f"Initialized {name}")
+            if name == "bid-packages.sql":
+                connection.execute(
+                    (ROOT / "packages/identity/sql/stable-lot-identity.sql").read_text()
+                )
+                print("Initialized authoritative stable-lot identity")
         connection.execute((ROOT / "deploy/sql/bid-package-runtime-grants.sql").read_text())
         print("Initialized restricted package parse-freeze visibility")
         connection.execute((ROOT / "deploy/sql/vector-runtime-grants.sql").read_text())

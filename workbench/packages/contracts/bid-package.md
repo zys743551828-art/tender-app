@@ -1,10 +1,10 @@
 # 整份标书资料包领域契约
 
-本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已由 `packages/domain/bid_package_repository.py` 接入真实主数据，并以独立 PG17 验证；**尚未接入 API、Worker、前端类型或现有评审／提交链，正式非 owner 角色授权尚待验收，不能据此宣称 F01-08 全链验收通过。**
+本契约对应融合任务 F01-01—05 的首批领域实现，版本 `bid-package/1`。纯模型位于 `packages/domain/bid_packages.py`；结构契约位于 `schemas/bid-package.schema.json`，其中 `$defs.requirement`、`$defs.coverage` 可独立引用。首批存储已接入真实主数据，稳定标段身份目录／关联 API 与受限非 owner 存储已在独立 PG17 验证；**整包上传／评审／提交 API、Worker 业务编排及对应前端尚未接入，不能据此宣称 F01-08 全链验收通过。**
 
 ## 身份与现有结构
 
-现有 `contracts/sql/domain.sql` 的 `engineering_projects`、`bid_rounds`、`bidders`、`bid_profiles` 保留业务概念；原 `bid_rounds.lot` 是文本，`bid_profiles.current_body_id` 仍为单正文。新 `BidScope` 显式冻结工程、稳定标段 ID、轮次 ID、`bid_id`、本方 `bidder_id` 及其核验状态。新增 `sql/bid-packages.sql` 给真实工程增加 `engineering_lots`，真实 `bid_rounds` 以复合外键绑定 `lot_id`，并以工程＋稳定标段 ID＋轮次号唯一；同标段换显示别名不能重复造同轮次，不同稳定标段可以同名。原文本唯一仅保留为 `lot_id` 为空的过渡部分索引，标签不作新身份主键。存储入口核对实际 profile／轮次／主体及绑定依据，不能由近名自动归并。现有身份 API 尚未接入新标段字段，`lot_id` 暂可空以明确保留其原适用范围；整包新写拒绝未登记稳定标段的轮次。领域检查与外键都不能替代服务器授权。
+现有 `contracts/sql/domain.sql` 的 `engineering_projects`、`bid_rounds`、`bidders`、`bid_profiles` 保留业务概念；原 `bid_rounds.lot` 是文本，`bid_profiles.current_body_id` 仍为单正文。新 `BidScope` 显式冻结工程、稳定标段 ID、轮次 ID、`bid_id`、本方 `bidder_id` 及其核验状态。新增 `sql/bid-packages.sql` 给真实工程增加 `engineering_lots`，真实 `bid_rounds` 以复合外键绑定 `lot_id`，并以工程＋稳定标段 ID＋轮次号唯一；同标段换显示别名不能重复造同轮次，不同稳定标段可以同名。原文本唯一仅保留为 `lot_id` 为空的过渡部分索引，标签不作新身份主键。身份 API 已支持显式登记工程／标段／轮次与按 ID 选择；未明确标段的草稿仍允许 `lot_id=null` 并保持 pending，不生成假标段。存储入口核对真实 profile／轮次／主体及绑定依据，整包新写拒绝未登记稳定标段的轮次。领域检查与外键都不能替代服务器授权。
 
 权威包是在此本方投标范围下选择的招标文件、补遗等依据，不表示招标文件的发布主体是投标人。`source_kind=authority` 与本方 `source_kind=own` 在不同包中；成员携带 `source_ref`，来源发布者、效力和当前授权仍由来源效力模块校验。模型不会从最后上传时间或最后一份 body 推断整包成员。
 
@@ -62,7 +62,7 @@
 
 ## 首批持久化协议
 
-`save_revision(connection, package, expected_digest=...)` 使用调用方连接与事务，不读取业务配置或另行连接库。写入限定 `READ COMMITTED`，先按既有身份模块顺序锁实际 bid，再检查真实 profile、工程、稳定标段、轮次和主体；不新增可写的身份确认状态。`confirmed` 必须由最新 `identity.bound` 的 `after` 与当前 association 全量一致，且有原主体登记审计支撑。包修订额外冻结 `identity_snapshot`、`identity_authority_id`、`identity_digest`；pending 快照也保留当时实际名称和范围，不能只靠旧 authority 或当前 profile 重建。
+`save_revision(connection, package, expected_digest=...)` 使用调用方连接与事务，不读取业务配置或另行连接库。写入限定 `READ COMMITTED`，先按既有身份模块顺序锁实际 bid，再检查真实 profile、工程、稳定标段、轮次和主体；不新增可写的身份确认状态。身份模块、仓储与数据库守卫共用 `identity_association_v2()`／`identity_snapshot_v2()`，`confirmed` 必须由最新 `identity.bound` 标明 `identity_version=bid-identity/2`、其 `after`（包含真实 `lot_id`）与当前 association 全量一致，且有原主体登记审计支撑。旧绑定缺稳定标段身份只保持历史可读，新用 pending，不按当前轮次补造当时的精确冻结。包修订额外冻结 `identity_snapshot`、`identity_authority_id`、`identity_digest`；pending 快照也保留当时实际名称和范围，不能只靠旧 authority 或当前 profile 重建。
 
 一个包固定其工程、标段、轮次、本方主体和类型；当前 profile 改绑后，旧包可读和同键历史重放，新写须重新建立相应范围的包。头表以锁与 `expected_digest` 做 CAS，修订号、前修订摘要与头同时前进；同 revision ID 与相同内容重放返回原结果，不把当前头回退。相同 ID 不同内容拒绝。修订、成员、逻辑部分、解析绑定与工程标段为不可变记录；数据库检查成员／部分必须逐项对应 manifest，延迟约束要求提交时所有成员／部分齐全。规范 JSON 和 SHA256 由数据库独立核算，字段缺失、JSON null、错误类型不能靠 SQL CHECK 的 UNKNOWN 通过；数据库行 ID 与 manifest ID 必须一致。
 
@@ -72,12 +72,15 @@
 
 `load_revision(connection,bid_id,revision_id)` 校验保存的结构及摘要后恢复原值对象，损坏数据返回 `PACKAGE_STORED_MANIFEST_CORRUPT`；`load_frozen_identity()` 返回保存时的完整身份快照及摘要。两者不以当前 profile 覆写历史。API 对新用／重用仍须重核当前身份与来源资格，不能把历史重放当作新用授权。
 
-本批真实验证仅在专用 `fusion_package_repo` 临时库执行以下已审清单，未运行其他归档 SQL，也未对业务部署授权角色：
+首批仓储在专用 `fusion_package_repo` 临时库按以下已审依赖初始化。真实非 owner／身份 API 验证还在专用 `fusion_package_acl`／`fusion_identity_api` 库按 `bootstrap_fresh.BASE_SQL` 加载检索、运行权限等基础 SQL，见[运行权限说明](../../docs/bid-package-permissions.md)；没有运行归档 WIP SQL，也未修改业务部署：
 
 | 顺序 | SQL | SHA256 |
 | --- | --- | --- |
 | 1 | `sql/core.sql` | `accb37248ba097d0992924b4977786932f167b04c105031b4e6acc3be698e098` |
 | 2 | `sql/domain.sql` | `c8a1a595b6b855bdfe80671dd5719ed9c7f752d5f7b7f7d9ae8f153d286e115a` |
 | 3 | `sql/bid-packages.sql` | `f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319` |
+| 4 | `../identity/sql/stable-lot-identity.sql` | `3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738` |
 
 `tests/test_bid_package_repository.py` 使用真实既有主体登记／绑定函数与原始 core／domain 主表，覆盖两类包、跨范围、历史重放、身份更正、pending 快照、同字节新解析、未知页数、直接 SQL 伪造、延迟完整性、数据库不可变守卫、双连接 CAS 及撤销后的旧隔离快照。测试账号为专用临时库 owner，用于关系／事务机制验证，不代表正式非 owner 权限、实际 API 或整包业务已验收。
+
+`tests/test_stable_lot_identity.py` 另用真实 API LOGIN、main ASGI、登录／会话／Origin／CSRF、幂等、关联 ETag 与 SQL 双连接阻塞反例，核对“工程→稳定标段→轮次→profile→binding v2→资料包”的闭环。读取函数采用 VOLATILE，使触发器等待 bid 锁后重新取得当前数据库快照；不能以旧 INSERT statement snapshot 通过新身份校验。身份更正保留旧绑定和旧包，历史实交及知识引用的冻结身份响应使用显式 v1/v2 union，旧摘要与旧字节不变。API 目录身份登记不代表资格核验，收费模型消费者与整包业务另按其验收门放行。
