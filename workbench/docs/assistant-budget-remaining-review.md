@@ -1,6 +1,6 @@
 # 预算硬 Mock 链路状态与剩余验证
 
-本记录承接 RPC 边界修复与 live 来源切片。当前独立 PG17 合成验证合计 **199 项通过**，覆盖真实来源资格、三 scope 聚合、锁序及恢复机制；尚未证明 helper05 完整 fresh 初始化后的真实非 owner API/Worker 链路、真实 Kafka 或供应商调用。所有收费消费者继续关闭。
+本记录承接 RPC 边界修复与 live 来源切片。独立 PG17 合成验证 **199 项通过**，覆盖真实来源资格、三 scope 聚合、锁序及恢复机制；随后 Linux3.12 / 全新 PG17 的 **5 项非 owner 完整 fresh 链路通过**，见 [受限角色验证](assistant-budget-nonowner-checks.md)。真实 Kafka 与供应商调用仍未验，所有收费消费者继续关闭。
 
 ## 已验证机制
 
@@ -30,7 +30,7 @@ fresh helper 的 BASE_SQL 顺序：
 
 纯助手预算组合再按顺序加载 `packages/assistant/sql/assistant.sql`、`packages/assistant/sql/live-facts.sql`、`packages/assistant/sql/intent-budget.sql`。使用知识来源选择时在助手 SQL 前加入 `packages/knowledge/sql/rag.sql`；章节树/生成需要 `packages/authoring/sql/structure.sql`。不为本切片加载评分、模型治理或历史回测 SQL。PG17 必须具有 pgvector，不改字段类型绕过。
 
-25 项 live 测试已执行完整 BASE_SQL 与上述三个助手 SQL，固定实际文件输入，未使用资格 no-op；这些测试目前使用 owner 连接执行，不能替代受限角色完整 fresh 验收。
+25 项 live 测试已执行完整 BASE_SQL 与上述三个助手 SQL，固定实际文件输入，未使用资格 no-op；其使用 owner 连接的边界保留。随后 5 项测试直接通过 helper 创建受限 LOGIN，以实际 API/Worker/预算管理独立子进程完成原生链路；两层验证分别记录，不能回写为前一测试已使用非 owner。
 
 ## 原反例及闭合情况
 
@@ -50,6 +50,6 @@ fresh helper 的 BASE_SQL 顺序：
 
 合计 199 项：25 项完整 schema live、14 项 identity/2 target、16 项三 scope/隔离级别、67 项 reconcile、55 项 dispatch、8 项预算锁/恢复、3 项 generation 锁、11 项原助手。部分叶测试显式隔离非目标资格依赖，不能单独宣称完整链路；25 项 live 使用真实资格。
 
-剩余下一切片是 helper05 完整 fresh 的受限 LOGIN 组合：独立预算管理身份配置、API 受理、Worker 原生执行、结果发布与重放，并以显式离线 MockTransport 证明没有真实费用。须实际验证 Worker INSERT usage、内部 helper 权限与管理 DSN 隔离，不由 owner 补权掩盖。
+helper05 完整 fresh 的受限 LOGIN 组合已通过：独立预算管理身份配置、API 受理、Worker 原生执行、usage 入账、结果发布与重放；来源撤回零发送及 unknown 零重发并实际 coordinator.tick 核账。内部 helper 权限与管理 DSN 隔离由真实受限连接检查，没有 owner 补权。显式离线 MockTransport 与内部隔离网络保证真实供应商请求/费用为 0；不替代真实模型质量与账单验收。
 
 尚未验证真实 Kafka 传输/消费者、真实供应商、生产部署及浏览器视觉验收。这些边界不影响已通过机制的结论，也不授生产收费资格。
