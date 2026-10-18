@@ -226,6 +226,7 @@ export interface EvidenceRef {
   parser_version: string;
   bbox: number[] | null;
   semantic_review: 'pending' | 'supported' | 'unsupported';
+  effectivity_notes?: string[];
 }
 
 /** $defs/InputSnapshot */
@@ -269,6 +270,7 @@ export interface Rule {
   carried_from_rule_id?: Id | null;
   /** 评分条款的满分值（十进制字符串）；没有分值或不是评分条款时为 null。 */
   max_points?: DecimalString | null;
+  source_status?: 'active' | 'superseded' | 'needs_confirmation';
 }
 
 /** $defs/RuleSet（revision 作为规则审核的 object_version） */
@@ -280,6 +282,42 @@ export interface RuleSet {
   revision: number;
   rules: Rule[];
   terms: BidTerms;
+  effectivity_decisions?: EffectivityDecision[];
+}
+
+export type EffectivityAction = 'whole_replace' | 'partial_replace' | 'defer' | 'retain';
+export interface EffectivityQuote {
+  evidence_id: Id;
+  quote: string;
+}
+export interface EffectivityPreviewRequest {
+  object_version: string;
+  old_version_id: Id;
+  new_version_id: Id;
+  action: EffectivityAction;
+  rule_ids: Id[];
+}
+export interface EffectivityRequest extends EffectivityPreviewRequest {
+  scope_basis: EffectivityQuote[];
+  reason: string;
+}
+export interface EffectivityPreview {
+  rule_set_id: Id;
+  revision: number;
+  affected_rule_ids: Id[];
+  mixed_source_rule_ids: Id[];
+  related_sections: { title: string; evidence: EvidenceRef[] }[];
+  gaps: string[];
+}
+export interface EffectivityDecision {
+  decision_id: Id;
+  old_version_id: Id;
+  new_version_id: Id;
+  action: EffectivityAction;
+  reason: string;
+  scope_basis: EffectivityQuote[];
+  ended_rule_ids: Id[];
+  pending_rule_ids: Id[];
 }
 
 /** $defs/FullScoreTerm：评标办法写明的技术标满分。 */
@@ -879,6 +917,7 @@ export interface PipelineStatus {
   stale_reasons: StaleReason[];
   rules_total: number;
   rules_unconfirmed: number;
+  input_verification_required?: boolean;
 }
 
 export interface CategoryCount {
@@ -898,6 +937,7 @@ export type NextActionKey =
   | 'reanalyze'
   | 'review_unclear'
   | 'confirm_rules'
+  | 'verify_sources'
   | 'set_price'
   | 'submit'
   | 'record_outcome';

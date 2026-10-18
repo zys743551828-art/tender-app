@@ -923,6 +923,192 @@
         }
       }
     },
+    "/api/v1/projects/{project_id}/rules/effectivity:preview": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Preview Source Effectivity",
+        "operationId": "previewSourceEffectivity",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EffectivityPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectivityPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/rules/source-evidence/{version_id}": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Source Effectivity Evidence",
+        "operationId": "sourceEffectivityEvidence",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Version Id"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "default": "",
+              "title": "Query"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EvidenceRef"
+                  },
+                  "title": "Response Sourceeffectivityevidence"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{project_id}/rules/effectivity:decide": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Decide Source Effectivity",
+        "operationId": "decideSourceEffectivity",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EffectivityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleSet"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{project_id}/rules/terms:resolve": {
       "post": {
         "tags": [
@@ -3222,6 +3408,28 @@
         ],
         "title": "AdoptRequest"
       },
+      "AffectedSection": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "type": "array",
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "evidence"
+        ],
+        "title": "AffectedSection"
+      },
       "ArtifactRef": {
         "properties": {
           "artifact_id": {
@@ -3653,6 +3861,259 @@
         ],
         "title": "DiffEdit"
       },
+      "EffectivityDecision": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Decision Id"
+          },
+          "old_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Old Version Id"
+          },
+          "new_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "New Version Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "whole_replace",
+              "partial_replace",
+              "defer",
+              "retain"
+            ],
+            "title": "Action"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "scope_basis": {
+            "items": {
+              "$ref": "#/components/schemas/EffectivityQuote"
+            },
+            "type": "array",
+            "title": "Scope Basis"
+          },
+          "ended_rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "title": "Ended Rule Ids"
+          },
+          "pending_rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "title": "Pending Rule Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_id",
+          "old_version_id",
+          "new_version_id",
+          "action",
+          "reason",
+          "scope_basis",
+          "ended_rule_ids",
+          "pending_rule_ids"
+        ],
+        "title": "EffectivityDecision"
+      },
+      "EffectivityPreview": {
+        "properties": {
+          "rule_set_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Rule Set Id"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "affected_rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "title": "Affected Rule Ids"
+          },
+          "mixed_source_rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "title": "Mixed Source Rule Ids"
+          },
+          "related_sections": {
+            "items": {
+              "$ref": "#/components/schemas/AffectedSection"
+            },
+            "type": "array",
+            "title": "Related Sections"
+          },
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Gaps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_set_id",
+          "revision",
+          "affected_rule_ids",
+          "mixed_source_rule_ids",
+          "related_sections",
+          "gaps"
+        ],
+        "title": "EffectivityPreview"
+      },
+      "EffectivityPreviewRequest": {
+        "properties": {
+          "object_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Object Version"
+          },
+          "old_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Old Version Id"
+          },
+          "new_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "New Version Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "whole_replace",
+              "partial_replace",
+              "defer",
+              "retain"
+            ],
+            "title": "Action"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Rule Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "object_version",
+          "old_version_id",
+          "new_version_id",
+          "action"
+        ],
+        "title": "EffectivityPreviewRequest"
+      },
+      "EffectivityQuote": {
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Evidence Id"
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Quote"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "quote"
+        ],
+        "title": "EffectivityQuote"
+      },
+      "EffectivityRequest": {
+        "properties": {
+          "object_version": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Object Version"
+          },
+          "old_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "Old Version Id"
+          },
+          "new_version_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "title": "New Version Id"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "whole_replace",
+              "partial_replace",
+              "defer",
+              "retain"
+            ],
+            "title": "Action"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{2,80}$"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Rule Ids"
+          },
+          "scope_basis": {
+            "items": {
+              "$ref": "#/components/schemas/EffectivityQuote"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Scope Basis"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "object_version",
+          "old_version_id",
+          "new_version_id",
+          "action",
+          "reason"
+        ],
+        "title": "EffectivityRequest"
+      },
       "EvidenceRef": {
         "properties": {
           "evidence_id": {
@@ -3748,6 +4209,13 @@
               "unsupported"
             ],
             "title": "Semantic Review"
+          },
+          "effectivity_notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Effectivity Notes"
           }
         },
         "additionalProperties": false,
@@ -4525,6 +4993,7 @@
               "handle_findings",
               "reanalyze",
               "confirm_rules",
+              "verify_sources",
               "set_price",
               "submit",
               "record_outcome"
@@ -5105,6 +5574,11 @@
           "rules_unconfirmed": {
             "type": "integer",
             "title": "Rules Unconfirmed"
+          },
+          "input_verification_required": {
+            "type": "boolean",
+            "title": "Input Verification Required",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -7077,6 +7551,16 @@
               }
             ],
             "title": "Max Points"
+          },
+          "source_status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "superseded",
+              "needs_confirmation"
+            ],
+            "title": "Source Status",
+            "default": "active"
           }
         },
         "additionalProperties": false,
@@ -7137,6 +7621,13 @@
           },
           "terms": {
             "$ref": "#/components/schemas/BidTerms"
+          },
+          "effectivity_decisions": {
+            "items": {
+              "$ref": "#/components/schemas/EffectivityDecision"
+            },
+            "type": "array",
+            "title": "Effectivity Decisions"
           }
         },
         "additionalProperties": false,

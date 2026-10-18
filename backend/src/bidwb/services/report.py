@@ -70,7 +70,17 @@ def _next_actions(
     actions: list[NextAction] = []
     open_by = {c.category: c.open for c in categories}
     qualification_open = open_by["disqualification"] + open_by["response"]
-    if status_.stage == "failed":
+    if status_.input_verification_required:
+        actions.append(
+            NextAction(
+                key="verify_sources",
+                title="先核实补遗或投标条件",
+                detail="原文的生效关系尚未核实，处理后再重新评审。",
+                target="rules",
+                count=None,
+            )
+        )
+    if status_.stage == "failed" and not status_.input_verification_required:
         actions.append(
             NextAction(
                 key="retry_analysis",
@@ -80,7 +90,7 @@ def _next_actions(
                 count=None,
             )
         )
-    elif status_.stage == "waiting_start":
+    elif status_.stage == "waiting_start" and not status_.input_verification_required:
         actions.append(
             NextAction(
                 key="start_analysis",
@@ -211,6 +221,16 @@ def _round(conn: Connection, actor: Actor, project_id: str, status_: PipelineSta
 
 def _actions_before_report(status_: PipelineStatus) -> list[NextAction]:
     """还没有完成的评审：下一步只取决于流水线走到哪里。"""
+    if status_.input_verification_required:
+        return [
+            NextAction(
+                key="verify_sources",
+                title="先核实补遗或投标条件",
+                detail="原文的生效关系尚未核实，处理后再重新评审。",
+                target="rules",
+                count=None,
+            )
+        ]
     if status_.stage == "waiting_materials":
         missing = "、".join({"tender": "招标文件", "body": "施组正文"}[m] for m in status_.missing)
         return [

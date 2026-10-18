@@ -12,6 +12,9 @@ from bidwb.api.deps import Body, Ctr, CurrentSession, IdemKey, mutate
 from bidwb.schemas import (
     ConfirmRulesRequest,
     ConfirmRulesResult,
+    EffectivityPreview,
+    EffectivityPreviewRequest,
+    EffectivityRequest,
     EvidenceRef,
     FactList,
     FactRequest,
@@ -32,7 +35,7 @@ from bidwb.schemas import (
     Submission,
     SubmissionRequest,
 )
-from bidwb.services import evidence, findings, outcomes, pipeline, rules, snapshots
+from bidwb.services import evidence, findings, outcomes, pipeline, rules, snapshots, source_effectivity
 
 router = APIRouter(tags=["review"])
 
@@ -80,6 +83,34 @@ def get_snapshot(snapshot_id: str, session: CurrentSession, ctr: Ctr) -> InputSn
 
 
 # ---- 规则与事实
+@router.post("/projects/{project_id}/rules/effectivity:preview", response_model=EffectivityPreview, operation_id="previewSourceEffectivity")
+def preview_source_effectivity(project_id: str, body: EffectivityPreviewRequest, session: CurrentSession, ctr: Ctr) -> EffectivityPreview:
+    with ctr.engine.connect() as conn:
+        return source_effectivity.preview(conn, session.actor, project_id, body)
+
+
+@router.get(
+    "/projects/{project_id}/rules/source-evidence/{version_id}", response_model=list[EvidenceRef], operation_id="sourceEffectivityEvidence"
+)
+def source_effectivity_evidence(
+    project_id: str, version_id: str, session: CurrentSession, ctr: Ctr, query: Annotated[str, Query(max_length=500)] = ""
+) -> list[EvidenceRef]:
+    with ctr.engine.connect() as conn:
+        return source_effectivity.source_evidence(conn, session.actor, project_id, version_id, query)
+
+
+@router.post("/projects/{project_id}/rules/effectivity:decide", response_model=RuleSet, operation_id="decideSourceEffectivity")
+def decide_source_effectivity(project_id: str, body: EffectivityRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
+    return mutate(
+        ctr,
+        session,
+        key,
+        f"POST /projects/{project_id}/rules/effectivity:decide",
+        body,
+        lambda c: _settled(c, project_id, source_effectivity.decide(c, ctr.store, session.actor, project_id, body, session.request_id)),
+    )
+
+
 @router.post("/projects/{project_id}/rules/terms:resolve", response_model=RuleSet, operation_id="resolveRuleTerm")
 def resolve_rule_term(project_id: str, body: ResolveTermRequest, session: CurrentSession, key: IdemKey, ctr: Ctr) -> Body:
     return mutate(

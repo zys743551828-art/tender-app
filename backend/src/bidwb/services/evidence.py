@@ -6,7 +6,7 @@ from collections.abc import Iterable, Sequence
 
 from sqlalchemy import Connection
 
-from bidwb import db, retrieval
+from bidwb import db, retrieval, source_effectivity
 from bidwb.access import Actor, require_project
 from bidwb.config import Settings
 from bidwb.embeddings import EmbeddingUnavailable, get_embedder
@@ -38,22 +38,47 @@ def _ref(row: db.Row) -> EvidenceRef:
     )
 
 
+def annotate_effectivity(conn: Connection, project_id: str, refs: Sequence[EvidenceRef]) -> list[EvidenceRef]:
+    """原文仍可查；提示当前包内具体条款的效力，不把同一证据块的其他要求一起宣告失效。"""
+    if not refs:
+        return []
+    package = db.one(
+        conn,
+        "SELECT id,effectivity_json FROM rule_packages WHERE project_id=:p ORDER BY revision DESC,created_at DESC LIMIT 1",
+        {"p": project_id},
+    )
+    if package is None or not (package["effectivity_json"].get("ended") or package["effectivity_json"].get("pending")):
+        return list(refs)
+    items = db.all_(conn, "SELECT * FROM rule_items WHERE package_id=:k AND project_id=:p", {"k": package["id"], "p": project_id})
+    notes: dict[str, list[str]] = {}
+    for item in items:
+        state = source_effectivity.state(package["effectivity_json"], item)
+        if state == "active":
+            continue
+        status = "已被补遗替代" if state == "superseded" else "生效关系待核实"
+        note = f"按当前规则版本，“{item['statement'][:150]}”{status}；原文和历史报告保留，同页其他要求不因此失效。"
+        for identity in item["evidence_ids_json"]:
+            notes.setdefault(identity, []).append(note)
+    return [ref.model_copy(update={"effectivity_notes": list(dict.fromkeys(notes.get(ref.evidence_id, [])))}) for ref in refs]
+
+
 def get_evidence(conn: Connection, actor: Actor, evidence_id: str) -> EvidenceRef:
     row = db.one(conn, _EVIDENCE_SQL + "WHERE e.id=:i", {"i": evidence_id})
     if row is None:
         raise NotFound("evidence_not_found")
     require_project(conn, actor, row["project_id"])
-    return _ref(row)
+    return annotate_effectivity(conn, row["project_id"], [_ref(row)])[0]
 
 
-def evidence_for_ids(conn: Connection, project_id: str, evidence_ids: Iterable[str]) -> list[EvidenceRef]:
+def evidence_for_ids(conn: Connection, project_id: str, evidence_ids: Iterable[str], *, annotate: bool = True) -> list[EvidenceRef]:
     """按给定顺序返回本项目内的证据；不属于本项目的 ID 被忽略（调用方应已验权）。"""
     ids = list(dict.fromkeys(evidence_ids))
     if not ids:
         return []
     rows = db.all_(conn, _EVIDENCE_SQL + "WHERE e.project_id=:p AND e.id = ANY(:ids)", {"p": project_id, "ids": ids})
     by_id = {r["id"]: _ref(r) for r in rows}
-    return [by_id[i] for i in ids if i in by_id]
+    refs = [by_id[i] for i in ids if i in by_id]
+    return annotate_effectivity(conn, project_id, refs) if annotate else refs
 
 
 def snapshot_version_ids(conn: Connection, project_id: str, snapshot_id: str) -> list[str]:
@@ -93,7 +118,7 @@ def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest, 
         _EVIDENCE_SQL + "WHERE e.project_id=:p AND e.file_version_id = ANY(:v) ORDER BY fv.obtained_at, fv.id, e.seq, e.id",
         {"p": project_id, "v": versions},
     )
-    refs: Sequence[EvidenceRef] = [_ref(r) for r in rows]
+    refs: Sequence[EvidenceRef] = annotate_effectivity(conn, project_id, [_ref(r) for r in rows])
     if req.mode == "hybrid" and settings is not None and settings.retrieval_backend == "pgvector":
         try:
             if not settings.embedding_model_dir:

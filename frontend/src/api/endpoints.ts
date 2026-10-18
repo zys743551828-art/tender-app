@@ -4,6 +4,9 @@ import type {
   Compliance,
   ConfirmRulesRequest,
   ConfirmRulesResult,
+  EffectivityPreview,
+  EffectivityPreviewRequest,
+  EffectivityRequest,
   FactList,
   FactRequest,
   FactSetResult,
@@ -88,6 +91,14 @@ export function createEndpoints(c: ApiClient) {
       get: (projectId: string) => c.get<RuleSet>(`/projects/${projectId}/rules`),
       resolveTerm: (projectId: string, b: ResolveTermRequest, o?: Idem) =>
         c.post<RuleSet>(`/projects/${projectId}/rules/terms:resolve`, b, o),
+      previewEffectivity: (projectId: string, b: EffectivityPreviewRequest) =>
+        c.post<EffectivityPreview>(`/projects/${projectId}/rules/effectivity:preview`, b),
+      decideEffectivity: (projectId: string, b: EffectivityRequest, o?: Idem) =>
+        c.post<RuleSet>(`/projects/${projectId}/rules/effectivity:decide`, b, o),
+      sourceEvidence: (projectId: string, versionId: string, query = '') =>
+        c.get<EvidenceRef[]>(`/projects/${projectId}/rules/source-evidence/${versionId}`, {
+          query: { query },
+        }),
       review: (ruleId: string, b: ReviewRequest, o?: Idem) =>
         c.post<Review>(`/rules/${ruleId}/reviews`, b, o),
       /** 一次确认多条未审核的规则（按原文接受）；已有决定的不受影响。 */

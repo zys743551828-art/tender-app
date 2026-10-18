@@ -109,11 +109,16 @@ def _write_rule_package(
 ) -> None:
     """新规则包入库，并沿用上一版规则包里同一条款（性质＋规范化条文相同）的人工决定。"""
     revision = (db.scalar(conn, "SELECT COALESCE(MAX(revision),0) FROM rule_packages WHERE project_id=:p", {"p": project_id}) or 0) + 1
+    previous = db.one(
+        conn,
+        "SELECT id,effectivity_json FROM rule_packages WHERE project_id=:p ORDER BY revision DESC,created_at DESC LIMIT 1",
+        {"p": project_id},
+    )
     package_id = new_id("rpk")
     db.run(
         conn,
-        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,created_at)
-                    VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),:now)""",
+        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,created_at)
+                    VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),:now)""",
         {
             "i": package_id,
             "p": project_id,
@@ -121,13 +126,9 @@ def _write_rule_package(
             "a": artifact_id,
             "s": json.dumps(sorted(version_ids)),
             "t": json.dumps(terms, ensure_ascii=False),
+            "ef": json.dumps(previous["effectivity_json"] if previous else {}),
             "now": utcnow(),
         },
-    )
-    previous = db.one(
-        conn,
-        "SELECT id FROM rule_packages WHERE project_id=:p AND revision<:r ORDER BY revision DESC LIMIT 1",
-        {"p": project_id, "r": revision},
     )
     carry = _previous_decisions(conn, project_id, previous["id"]) if previous else {}
     now = utcnow()

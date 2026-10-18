@@ -35,6 +35,22 @@ const RESULT: SearchResult = {
 };
 
 describe('校验与文案', () => {
+  it('被替代条款的原文仍可查，具体效力提示随检索结果显示', async () => {
+    backend();
+    const note = '按当前规则版本，该工期已被补遗替代，同页其他要求不因此失效。';
+    server.use(
+      http.post('/api/v1/projects/prj-1/search', () =>
+        HttpResponse.json({
+          ...RESULT,
+          hits: [{ ...RESULT.hits[0]!, evidence: evidence({ effectivity_notes: [note] }) }],
+        }),
+      ),
+    );
+    renderApp('/projects/prj-1/search');
+    await userEvent.type(await screen.findByLabelText('检索内容'), '工期{Enter}');
+    expect(await screen.findByText(note)).toBeInTheDocument();
+    expect(screen.getByText('总工期为 180 日历天')).toBeInTheDocument();
+  });
   it('validateSearch', () => {
     const ok = { query: '工期', topK: '10', mode: 'hybrid' as const };
     expect(validateSearch(ok)).toEqual({});

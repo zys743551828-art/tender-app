@@ -217,11 +217,18 @@ function Verdict({
 }
 
 /** 评审本身的动作（开始、重试、重新评审、等待）由顶部的流水线横幅承担，这里只列要人去做的事。 */
-const PIPELINE_KEYS = new Set(['start_analysis', 'retry_analysis', 'reanalyze', 'wait_analysis']);
+const PIPELINE_KEYS = new Set([
+  'start_analysis',
+  'retry_analysis',
+  'reanalyze',
+  'wait_analysis',
+  'verify_sources',
+]);
 
 /** 流水线横幅自带“开始／重新评审”主按钮时，下一步不再用实心按钮，保证一屏只有一个主按钮。 */
 function needsRestart(p: PipelineStatus): boolean {
   return (
+    !!p.input_verification_required ||
     p.stage === 'failed' ||
     p.stage === 'waiting_start' ||
     (p.stage === 'done' && p.stale_reasons.length > 0)

@@ -215,6 +215,9 @@ function HitItem({
   return (
     <li className="px-4 py-3">
       <blockquote className="m-0 mb-1.5 text-[13px] leading-relaxed">{e.quote}</blockquote>
+      {(e.effectivity_notes ?? []).map((note) => (
+        <Notice key={note}>{note}</Notice>
+      ))}
       <p className="m-0 text-xs text-muted-foreground">
         {file ? file.original_name : e.file_name} · 第 {e.physical_page} 页
         {e.printed_page ? `（原件页码 ${e.printed_page}）` : ''} · {evidenceKindLabel(e.kind)}

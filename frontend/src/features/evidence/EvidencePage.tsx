@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/endpoints';
-import { ErrorNotice, Loading, PageHead } from '../../components/ui';
+import { ErrorNotice, Loading, Notice, PageHead } from '../../components/ui';
 import { evidenceKindLabel } from '../../lib/labels';
 import { useFiles } from '../materials/queries';
 import { useProjectContext } from '../../routes/ProjectLayout';
@@ -35,6 +35,9 @@ export function EvidencePage() {
       {q.isError ? <ErrorNotice error={q.error} onRetry={() => void q.refetch()} /> : null}
       {q.data ? (
         <div>
+          {(q.data.effectivity_notes ?? []).map((note) => (
+            <Notice key={note}>{note}</Notice>
+          ))}
           <p className="m-0 mb-3 flex items-center gap-1.5 text-[13px] text-muted-foreground">
             <Icon name="FileText" size={14} />
             {file ? file.original_name : q.data.file_name} · 第 {q.data.physical_page} 页 ·{' '}

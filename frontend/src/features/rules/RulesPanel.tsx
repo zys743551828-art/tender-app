@@ -11,6 +11,7 @@ import { useProjectContext } from '../../routes/ProjectLayout';
 import { useConfirmPending, useReviewRule } from './actions';
 import { useRuleSet } from './queries';
 import { TermConflicts } from './TermConflicts';
+import { SourceEffectivity } from './SourceEffectivity';
 import { Button, textLink } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/input';
 
@@ -34,8 +35,12 @@ export function groupRules(rules: readonly Rule[]): { kind: RuleKind; rules: Rul
 
 /** 未确认（待人工确认）的废标／否决／强制类规则条数。 */
 export function unconfirmedQualification(rules: readonly Rule[]): number {
-  return rules.filter((r) => QUALIFICATION_KINDS.includes(r.kind) && r.confirmation === 'pending')
-    .length;
+  return rules.filter(
+    (r) =>
+      QUALIFICATION_KINDS.includes(r.kind) &&
+      r.confirmation === 'pending' &&
+      (!r.source_status || r.source_status === 'active'),
+  ).length;
 }
 
 function ruleDone(d: Decision): string {
@@ -44,6 +49,7 @@ function ruleDone(d: Decision): string {
 
 /** 各确认状态下可做的决定：未确认可确认、驳回、暂缓；已确认可改为驳回或暂缓；已驳回可重新确认。 */
 function decisionsFor(r: Rule): Decision[] {
+  if (r.source_status && r.source_status !== 'active') return [];
   if (r.confirmation === 'pending') return ['confirm', 'reject', 'defer'];
   if (r.confirmation === 'confirmed') return ['reject', 'defer'];
   return ['confirm'];
@@ -79,11 +85,14 @@ export function RulesPanel() {
   }
   const set = q.data;
   const groups = groupRules(set.rules);
-  const pending = set.rules.filter((r) => r.confirmation === 'pending');
+  const pending = set.rules.filter(
+    (r) => r.confirmation === 'pending' && (!r.source_status || r.source_status === 'active'),
+  );
   const open = unconfirmedQualification(set.rules);
   return (
     <>
       <TermConflicts projectId={pid} set={set} />
+      <SourceEffectivity projectId={pid} set={set} />
       <BidTermsNote set={set} projectId={pid} />
       {pending.length > 0 ? (
         <div className="mb-5 flex flex-col gap-3 rounded-lg border border-ai-border bg-ai-soft px-4 py-3 text-[13px] text-ai-foreground sm:flex-row sm:items-center">
@@ -91,7 +100,9 @@ export function RulesPanel() {
           <p className="m-0 flex-1">
             <strong className="font-semibold">{pending.length} 条规则还没有人核对</strong>
             {open > 0 ? `，其中 ${String(open)} 条是废标／否决／强制类，登记提交前须确认` : ''}。
-            评审暂按原文判断。
+            {set.status === 'conflict'
+              ? '生效关系或投标条件待核实，新一轮评审暂不开始。'
+              : '评审暂按原文判断。'}
           </p>
           <Button
             variant="primary"
@@ -214,7 +225,8 @@ function RuleItem({
   onConfirm: () => void;
   onAsk: (d: Decision) => void;
 }) {
-  const pending = r.confirmation === 'pending';
+  const pending =
+    r.confirmation === 'pending' && (!r.source_status || r.source_status === 'active');
   const critical = QUALIFICATION_KINDS.includes(r.kind) && pending;
   return (
     <li
@@ -235,6 +247,8 @@ function RuleItem({
       ) : null}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
         {pending ? <AiBadge>待核对</AiBadge> : null}
+        {r.source_status === 'superseded' ? <Tag tone="gray">已被补遗替代，保留查证</Tag> : null}
+        {r.source_status === 'needs_confirmation' ? <AiBadge>生效关系待核实</AiBadge> : null}
         {r.confirmation === 'rejected' ? <Tag tone="gray">已驳回</Tag> : null}
         {r.max_points ? <span className="text-muted-foreground">{r.max_points} 分</span> : null}
         {r.carried_from_rule_id ? (

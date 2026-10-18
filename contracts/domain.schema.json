@@ -417,6 +417,85 @@
       ],
       "additionalProperties": false
     },
+    "EffectivityDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "old_version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "new_version_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "action": {
+          "enum": [
+            "whole_replace",
+            "partial_replace",
+            "defer",
+            "retain"
+          ],
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "scope_basis": {
+          "items": {
+            "$ref": "#/$defs/EffectivityQuote"
+          },
+          "type": "array"
+        },
+        "ended_rule_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pending_rule_ids": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "decision_id",
+        "old_version_id",
+        "new_version_id",
+        "action",
+        "reason",
+        "scope_basis",
+        "ended_rule_ids",
+        "pending_rule_ids"
+      ],
+      "type": "object"
+    },
+    "EffectivityQuote": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "pattern": "^[a-z][a-z0-9_-]{2,80}$",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "quote"
+      ],
+      "type": "object"
+    },
     "Error": {
       "type": "object",
       "description": "",
@@ -536,6 +615,12 @@
             "unsupported"
           ],
           "type": "string"
+        },
+        "effectivity_notes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -2083,6 +2168,15 @@
               "type": "null"
             }
           ]
+        },
+        "source_status": {
+          "default": "active",
+          "enum": [
+            "active",
+            "superseded",
+            "needs_confirmation"
+          ],
+          "type": "string"
         }
       },
       "required": [
@@ -3608,6 +3702,7 @@
             "handle_findings",
             "reanalyze",
             "confirm_rules",
+            "verify_sources",
             "set_price",
             "submit",
             "record_outcome"
@@ -3781,6 +3876,10 @@
         },
         "rules_unconfirmed": {
           "type": "integer"
+        },
+        "input_verification_required": {
+          "default": false,
+          "type": "boolean"
         }
       },
       "required": [
@@ -4901,6 +5000,12 @@
         },
         "terms": {
           "$ref": "#/$defs/BidTerms"
+        },
+        "effectivity_decisions": {
+          "items": {
+            "$ref": "#/$defs/EffectivityDecision"
+          },
+          "type": "array"
         }
       },
       "required": [

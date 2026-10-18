@@ -14,7 +14,7 @@ from typing import Any
 
 from sqlalchemy import Connection
 
-from bidwb import db, term_conflicts
+from bidwb import db, source_effectivity, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import Conflict, NotFound, PreconditionFailed, Unprocessable
 from bidwb.schemas import (
@@ -107,20 +107,26 @@ def get_rules(conn: Connection, actor: Actor, project_id: str) -> RuleSet:
                 statement=item["statement"],
                 conditions=item["conditions_json"],
                 exceptions=item["exceptions_json"],
-                evidence=evidence.evidence_for_ids(conn, project_id, item["evidence_ids_json"]),
+                evidence=evidence.evidence_for_ids(conn, project_id, item["evidence_ids_json"], annotate=False),
                 confirmation=confirmation,
                 carried_from_rule_id=item["carried_from_rule_id"],
                 max_points=decimal_text(item["max_points"]),
+                source_status=source_effectivity.state(package["effectivity_json"], item),
             )
         )
     return RuleSet(
         rule_set_id=package["id"],
         project_id=project_id,
         source_version_ids=list(package["source_versions_json"]),
-        status="conflict" if term_conflicts.pending(package["terms_json"]) else _effective_status(package["status"], items, reviews),
+        status="conflict"
+        if term_conflicts.pending(package["terms_json"]) or source_effectivity.pending_count(package["effectivity_json"], items)
+        else _effective_status(
+            package["status"], [item for item in items if source_effectivity.state(package["effectivity_json"], item) == "active"], reviews
+        ),
         revision=package["revision"],
         rules=rules,
         terms=bid_terms(conn, project_id, package["terms_json"]),
+        effectivity_decisions=package["effectivity_json"].get("decisions", []),
     )
 
 
@@ -166,8 +172,14 @@ def effective_rules(conn: Connection, project_id: str, package_id: str) -> list[
         conn, "SELECT * FROM rule_items WHERE package_id=:p AND project_id=:pr ORDER BY id", {"p": package_id, "pr": project_id}
     )
     reviews = _latest_reviews(conn, project_id, [i["id"] for i in items])
+    effectivity = (
+        db.scalar(conn, "SELECT effectivity_json FROM rule_packages WHERE id=:k AND project_id=:p", {"k": package_id, "p": project_id})
+        or {}
+    )
     out: list[db.Row] = []
     for item in items:
+        if source_effectivity.state(effectivity, item) != "active":
+            continue
         decision = reviews[item["id"]]["decision"] if item["id"] in reviews else None
         if decision in ("reject", "defer"):
             continue
@@ -185,7 +197,7 @@ def _is_frozen(conn: Connection, package_id: str) -> bool:
 
 
 def _clone_package(
-    conn: Connection, project_id: str, package: db.Row, *, terms: dict[str, Any] | None = None
+    conn: Connection, project_id: str, package: db.Row, *, terms: dict[str, Any] | None = None, effectivity: dict[str, Any] | None = None
 ) -> tuple[str, dict[str, str]]:
     """规则包已被某一轮评审引用而不可改：复制出新规则包（条款相同、决定沿用），之后的更正落在新包上。
 
@@ -196,8 +208,8 @@ def _clone_package(
     now = utcnow()
     db.run(
         conn,
-        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,created_at)
-           VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),:now)""",
+        """INSERT INTO rule_packages(id,project_id,revision,status,artifact_id,source_versions_json,terms_json,effectivity_json,created_at)
+           VALUES (:i,:p,:r,'candidate',:a,CAST(:s AS jsonb),CAST(:t AS jsonb),CAST(:ef AS jsonb),:now)""",
         {
             "i": new_package,
             "p": project_id,
@@ -205,6 +217,7 @@ def _clone_package(
             "a": package["artifact_id"],
             "s": json.dumps(package["source_versions_json"]),
             "t": json.dumps(package["terms_json"] if terms is None else terms, ensure_ascii=False),
+            "ef": json.dumps(package["effectivity_json"] if effectivity is None else effectivity, ensure_ascii=False),
             "now": now,
         },
     )
@@ -304,6 +317,13 @@ def review_rule(conn: Connection, actor: Actor, rule_id: str, req: ReviewRequest
     latest_pkg = latest_package(conn, project_id)
     if latest_pkg is not None and latest_pkg["id"] != item["package_id"]:
         raise PreconditionFailed("stale_version", "该规则属于旧版规则包", current_version=str(latest_pkg["revision"]))
+    current_rule = db.one(conn, "SELECT * FROM rule_items WHERE id=:i AND project_id=:p", {"i": rule_id, "p": project_id})
+    if (
+        latest_pkg is not None
+        and current_rule is not None
+        and source_effectivity.state(latest_pkg["effectivity_json"], current_rule) != "active"
+    ):
+        raise Conflict("rule_effectivity_review_required", "这条要求的生效关系已有更正，请在补遗影响中核实，不能用普通规则确认覆盖效力决定")
     version = req.object_version
     previous = _latest_reviews(conn, project_id, [rule_id]).get(rule_id)
     was_effective = previous is None or previous["decision"] == "confirm"
@@ -376,7 +396,9 @@ def confirm_pending(conn: Connection, actor: Actor, project_id: str, req: Confir
     if len(known) != len(ids):
         raise NotFound("rule_not_found", "部分规则不属于当前规则包，请刷新后重试")
     reviewed = _latest_reviews(conn, project_id, ids)
-    pending = [i for i in ids if i not in reviewed]
+    rows = db.all_(conn, "SELECT * FROM rule_items WHERE package_id=:k AND project_id=:p", {"k": package["id"], "p": project_id})
+    active = {row["id"] for row in rows if source_effectivity.state(package["effectivity_json"], row) == "active"}
+    pending = [i for i in ids if i not in reviewed and i in active]
     now = utcnow()
     for rule_id in pending:
         db.run(

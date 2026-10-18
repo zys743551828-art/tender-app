@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/endpoints';
-import type { Decision, ResolveTermRequest } from '../../api/types';
+import type { Decision, EffectivityRequest, ResolveTermRequest } from '../../api/types';
 import { useIdempotentAction } from '../../lib/useIdempotentAction';
 import { invalidateProject } from '../projects/queries';
 import { reportKey } from '../report/queries';
@@ -20,6 +20,20 @@ export function useResolveTerm(projectId: string, onDone: () => void) {
   const qc = useQueryClient();
   return useIdempotentAction(
     (request: ResolveTermRequest, options) => api.rules.resolveTerm(projectId, request, options),
+    {
+      onSuccess: async () => {
+        await refreshRules(qc, projectId);
+        onDone();
+      },
+    },
+  );
+}
+
+export function useDecideEffectivity(projectId: string, onDone: () => void) {
+  const qc = useQueryClient();
+  return useIdempotentAction(
+    (request: EffectivityRequest, options) =>
+      api.rules.decideEffectivity(projectId, request, options),
     {
       onSuccess: async () => {
         await refreshRules(qc, projectId);

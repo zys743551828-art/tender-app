@@ -11,6 +11,7 @@ const CTA: Record<NextActionKey, string> = {
   handle_findings: '处理问题',
   reanalyze: '重新评审',
   confirm_rules: '确认规则',
+  verify_sources: '核实补遗依据',
   set_price: '填写报价',
   submit: '登记提交',
   record_outcome: '登记结果',

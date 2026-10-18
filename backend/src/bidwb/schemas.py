@@ -290,6 +290,7 @@ class EvidenceRef(Response):
     parser_version: str
     bbox: list[float] | None
     semantic_review: Literal["pending", "supported", "unsupported"]
+    effectivity_notes: list[str] = Field(default_factory=list)
 
 
 class SearchRequest(Request):
@@ -364,6 +365,7 @@ class Rule(Response):
     confirmation: Literal["pending", "confirmed", "rejected"]
     carried_from_rule_id: Id | None
     max_points: str | None
+    source_status: Literal["active", "superseded", "needs_confirmation"] = "active"
 
 
 class FullScoreTerm(Response):
@@ -416,6 +418,52 @@ class BidTerms(Response):
     conflicts: list[TermConflict] = Field(default_factory=list)
 
 
+class EffectivityQuote(Request):
+    evidence_id: Id
+    quote: Annotated[str, StringConstraints(min_length=1, max_length=2000, strip_whitespace=True)]
+
+
+EffectivityAction = Literal["whole_replace", "partial_replace", "defer", "retain"]
+
+
+class EffectivityPreviewRequest(Request):
+    object_version: NonEmpty
+    old_version_id: Id
+    new_version_id: Id
+    action: EffectivityAction
+    rule_ids: Annotated[list[Id], Field(max_length=200)] = Field(default_factory=list)
+
+
+class EffectivityRequest(EffectivityPreviewRequest):
+    scope_basis: Annotated[list[EffectivityQuote], Field(max_length=5)] = Field(default_factory=list)
+    reason: NonEmpty
+
+
+class AffectedSection(Response):
+    title: str
+    evidence: list[EvidenceRef]
+
+
+class EffectivityPreview(Response):
+    rule_set_id: Id
+    revision: int
+    affected_rule_ids: list[Id]
+    mixed_source_rule_ids: list[Id]
+    related_sections: list[AffectedSection]
+    gaps: list[str]
+
+
+class EffectivityDecision(Response):
+    decision_id: Id
+    old_version_id: Id
+    new_version_id: Id
+    action: EffectivityAction
+    reason: str
+    scope_basis: list[EffectivityQuote]
+    ended_rule_ids: list[Id]
+    pending_rule_ids: list[Id]
+
+
 class RuleSet(Response):
     rule_set_id: Id
     project_id: Id
@@ -424,6 +472,7 @@ class RuleSet(Response):
     revision: Annotated[int, Field(ge=1)]
     rules: list[Rule]
     terms: BidTerms
+    effectivity_decisions: list[EffectivityDecision] = Field(default_factory=list)
 
 
 class FactRequest(Request):
@@ -807,6 +856,7 @@ class PipelineStatus(Response):
     stale_reasons: list[Literal["body_updated", "tender_updated", "rules_changed", "facts_changed"]]
     rules_total: int
     rules_unconfirmed: int
+    input_verification_required: bool = False
 
 
 class PredictionBrief(Response):
@@ -851,6 +901,7 @@ class NextAction(Response):
         "handle_findings",
         "reanalyze",
         "confirm_rules",
+        "verify_sources",
         "set_price",
         "submit",
         "record_outcome",

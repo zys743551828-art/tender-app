@@ -111,7 +111,16 @@ export function PipelineBanner({
   let detail: ReactNode = null;
   let action: ReactNode = null;
   let tone: 'warning' | 'danger' | 'ai' | 'neutral' = 'neutral';
-  if (pipeline.stage === 'waiting_materials') {
+  if (pipeline.input_verification_required) {
+    tone = 'warning';
+    title = '先核实补遗或投标条件，再继续评审';
+    detail = '原文的生效关系尚待核实，已有报告保持原来的依据。';
+    action = (
+      <Button asChild size="sm" variant="primary">
+        <Link to={`${base}/basis`}>核实补遗依据</Link>
+      </Button>
+    );
+  } else if (pipeline.stage === 'waiting_materials') {
     tone = 'warning';
     title = `还缺${pipeline.missing.map(missingMaterialLabel).join('、') || '资料'}，暂时不能评审`;
     detail = '上传后自动评审，不需要再点别的。';

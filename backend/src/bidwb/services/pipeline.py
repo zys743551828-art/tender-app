@@ -15,7 +15,7 @@ from typing import Literal
 
 from sqlalchemy import Connection
 
-from bidwb import db, tasks
+from bidwb import db, source_effectivity, tasks, term_conflicts
 from bidwb.access import Actor, require_project
 from bidwb.errors import DomainError
 from bidwb.logs import get_logger
@@ -388,11 +388,16 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
     )
     stale = _stale_reasons(conn, project_id, plan, last)
     total = unconfirmed = 0
+    verification_required = False
     package = rules_service.latest_package(conn, project_id)
     if package is not None:
         effective = rules_service.effective_rules(conn, project_id, package["id"])
         total = len(effective)
         unconfirmed = sum(1 for r in effective if r["basis"] == "unconfirmed")
+        all_rules = db.all_(conn, "SELECT * FROM rule_items WHERE package_id=:k AND project_id=:p", {"k": package["id"], "p": project_id})
+        verification_required = bool(
+            term_conflicts.pending(package["terms_json"]) or source_effectivity.pending_count(package["effectivity_json"], all_rules)
+        )
     return PipelineStatus(
         project_id=project_id,
         stage=stage,
@@ -403,6 +408,7 @@ def status(conn: Connection, actor: Actor, project_id: str) -> PipelineStatus:
         stale_reasons=stale,
         rules_total=total,
         rules_unconfirmed=unconfirmed,
+        input_verification_required=verification_required,
     )
 
 

@@ -24,6 +24,21 @@ function backend(rep: Report | null) {
 }
 
 describe('报告页：没有完成的评审', () => {
+  it('生效关系待核实时引导核实依据，不显示无效的重试按钮', async () => {
+    backend(null);
+    server.use(
+      http.get('/api/v1/projects/prj-1/pipeline', () =>
+        HttpResponse.json(pipeline({ stage: 'failed', input_verification_required: true })),
+      ),
+    );
+    renderApp('/projects/prj-1');
+    expect(await screen.findByText('先核实补遗或投标条件，再继续评审')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '核实补遗依据' })).toHaveAttribute(
+      'href',
+      '/projects/prj-1/basis',
+    );
+    expect(screen.queryByRole('button', { name: '重新评审' })).not.toBeInTheDocument();
+  });
   it('资料不齐：说明还缺什么，给出上传入口，没有“下一步”按钮', async () => {
     backend(null);
     server.use(
