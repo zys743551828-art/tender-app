@@ -70,14 +70,14 @@ export function ReportPage() {
         lede={`第 ${String(r.round_no)} 轮 · 基于 ${formatDateTime(r.basis.generated_from_snapshot_at)} 的资料`}
         actions={<ExportButtons projectId={pid} />}
       />
-      <PipelineBanner pipeline={status ?? r.pipeline} />
+      <PipelineBanner pipeline={status ?? r.pipeline} requiredAction={r.next_actions[0]} />
       <Verdict report={r} base={base} settings={project.settings} />
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0">
           <NextActions
             actions={r.next_actions}
             base={base}
-            bannerHasAction={needsRestart(status ?? r.pipeline)}
+            bannerHasAction={needsRestart(status ?? r.pipeline, r.next_actions[0])}
           />
           <ComplianceTable compliance={r.qualification} projectId={pid} />
           <PredictionPanel
@@ -233,8 +233,9 @@ const PIPELINE_KEYS = new Set([
 ]);
 
 /** 流水线横幅自带“开始／重新评审”主按钮时，下一步不再用实心按钮，保证一屏只有一个主按钮。 */
-function needsRestart(p: PipelineStatus): boolean {
+function needsRestart(p: PipelineStatus, action?: NextAction): boolean {
   return (
+    action?.key === 'retry_analysis' ||
     !!p.input_verification_required ||
     p.stage === 'failed' ||
     p.stage === 'waiting_start' ||
@@ -255,8 +256,10 @@ function NextActions({
   if (todo.length === 0) return null;
   const remaining = todo.slice(1);
   const criticalKeys = new Set(['handle_disqualification', 'review_unclear', 'confirm_rules']);
-  const critical = remaining.filter((a) => criticalKeys.has(a.key));
-  const suggestions = remaining.filter((a) => !criticalKeys.has(a.key));
+  const critical = remaining.filter((a) =>
+    a.priority === undefined ? criticalKeys.has(a.key) : a.priority <= 4,
+  );
+  const suggestions = remaining.filter((a) => !critical.includes(a));
   const count = (items: NextAction[]) => items.reduce((n, a) => n + (a.count ?? 1), 0);
   const row = (a: NextAction, i: number) => (
     <li

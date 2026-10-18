@@ -3612,6 +3612,10 @@
             "wait_analysis",
             "retry_analysis",
             "handle_disqualification",
+            "handle_critical",
+            "verify_facts",
+            "improve_score",
+            "handle_suggestions",
             "review_unclear",
             "handle_findings",
             "reanalyze",
@@ -3650,6 +3654,12 @@
               "type": "null"
             }
           ]
+        },
+        "priority": {
+          "default": 6,
+          "maximum": 6,
+          "minimum": 1,
+          "type": "integer"
         }
       },
       "required": [

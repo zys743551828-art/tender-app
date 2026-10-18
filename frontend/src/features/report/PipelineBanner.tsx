@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import type { PipelineStatus, PipelineStepState } from '../../api/types';
+import type { NextAction, PipelineStatus, PipelineStepState } from '../../api/types';
 import { Icon } from '../../components/Icon';
 import { ErrorNotice } from '../../components/ui';
 import { cn } from '../../lib/cn';
@@ -29,10 +29,12 @@ const STATE_TEXT: Record<PipelineStepState, string> = {
 export function PipelineBanner({
   pipeline,
   showSteps = false,
+  requiredAction,
 }: {
   pipeline: PipelineStatus;
   /** 评审完成且没有更新时默认不占版面；资料页始终显示进度。 */
   showSteps?: boolean;
+  requiredAction?: NextAction;
 }) {
   const { project } = useProjectContext();
   const restart = useRestartAnalysis(project.project_id);
@@ -177,6 +179,11 @@ export function PipelineBanner({
         ))}
       </ul>
     );
+    action = restartButton;
+  } else if (requiredAction?.key === 'retry_analysis') {
+    tone = 'danger';
+    title = requiredAction.title;
+    detail = requiredAction.detail;
     action = restartButton;
   }
 

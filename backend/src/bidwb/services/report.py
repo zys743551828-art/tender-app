@@ -36,6 +36,27 @@ _CATEGORIES = ("disqualification", "response", "consistency", "scope", "improvem
 _CLOSED_STATES = ("resolved", "rejected")
 
 
+def _rank(actions: list[NextAction]) -> list[NextAction]:
+    priorities = {
+        "verify_sources": 1,
+        "upload_materials": 1,
+        "retry_analysis": 2,
+        "reanalyze": 2,
+        "start_analysis": 2,
+        "wait_analysis": 2,
+        "handle_disqualification": 3,
+        "handle_critical": 3,
+        "review_unclear": 4,
+        "verify_facts": 4,
+        "confirm_rules": 4,
+        "handle_findings": 5,
+        "improve_score": 5,
+    }
+    ranked = [a.model_copy(update={"priority": priorities.get(a.key, 6)}) for a in actions]
+    # 同级优先登记已满足闸门的提交，再看非阻断建议和报价；报价不构成放行前提。
+    return sorted(ranked, key=lambda a: (a.priority, 0 if a.key in {"submit", "record_outcome"} else 1))
+
+
 def _category_counts(conn: Connection, project_id: str, snapshot_id: str) -> list[CategoryCount]:
     rows = db.all_(
         conn,
@@ -65,56 +86,40 @@ def _next_actions(
     has_outcome: bool,
     project_state: str,
     settings: ProjectSettings,
+    critical_open: int = 0,
+    facts_open: int = 0,
+    technical_open: int | None = None,
+    suggestions_open: int | None = None,
+    scoring_gap: bool = False,
 ) -> list[NextAction]:
     """按项目开关裁剪：关闭的模块不出现在“下一步”里，规则按原文接受时不催确认。"""
-    actions: list[NextAction] = (
-        [
-            NextAction(
-                key="upload_materials",
-                title="核对或补交此稿的 PDF",
-                detail="在对应 Word 原稿处处理，无需重传其他资料。",
-                target="materials",
-                count=None,
-            )
-        ]
-        if status_.word_pdf_required
-        else []
-    )
+    if status_.word_pdf_required or status_.input_verification_required or status_.stage != "done":
+        return _rank(_actions_before_report(status_))
+    if status_.stale_reasons:
+        return _rank(
+            [
+                NextAction(
+                    key="reanalyze",
+                    title="资料、规则或事实有更新，重新评审",
+                    detail="当前报告基于更早的输入，旧风险保留在历史报告中。",
+                    target="report",
+                    count=None,
+                )
+            ]
+        )
+    actions: list[NextAction] = []
     open_by = {c.category: c.open for c in categories}
     qualification_open = open_by["disqualification"] + open_by["response"]
-    if status_.input_verification_required:
-        actions.append(
-            NextAction(
-                key="verify_sources",
-                title="先核实补遗或投标条件",
-                detail="原文的生效关系尚未核实，处理后再重新评审。",
-                target="rules",
-                count=None,
-            )
-        )
-    if status_.stage == "failed" and not status_.input_verification_required and not status_.word_pdf_required:
+    incomplete = matrix.coverage is None or matrix.coverage.status != "complete" or matrix.qualification.failed > 0
+    if incomplete:
         actions.append(
             NextAction(
                 key="retry_analysis",
-                title="评审中断，重新评审",
-                detail="某个环节失败了，已完成的环节不会重做。",
+                title="关键核对覆盖未完成，重新评审",
+                detail="存在检查失败或未覆盖的要求，不能用不完整结论登记提交。",
                 target="report",
                 count=None,
             )
-        )
-    elif status_.stage == "waiting_start" and not status_.input_verification_required and not status_.word_pdf_required:
-        actions.append(
-            NextAction(
-                key="start_analysis",
-                title="资料有更新，开始新一轮评审",
-                detail="本项目设置为手动开始评审，当前报告基于更早的资料。",
-                target="report",
-                count=None,
-            )
-        )
-    elif status_.stage == "running":
-        actions.append(
-            NextAction(key="wait_analysis", title="正在基于最新资料评审", detail="完成后报告会自动更新。", target="report", count=None)
         )
     if qualification_open:
         actions.append(
@@ -126,6 +131,19 @@ def _next_actions(
                 count=qualification_open,
             )
         )
+    actions.extend(
+        [
+            NextAction(
+                key="handle_critical",
+                title=f"处理 {critical_open} 个其他关键风险",
+                detail="存在被标为关键的未处理问题，先核对原文并处理。",
+                target="findings",
+                count=critical_open,
+            )
+        ]
+        if critical_open
+        else []
+    )
     unclear = matrix.qualification.unclear + matrix.qualification.failed
     if unclear:
         actions.append(
@@ -147,7 +165,20 @@ def _next_actions(
                 count=unconfirmed_qualification,
             )
         )
-    other_open = sum(c.open for c in categories) - qualification_open
+    actions.extend(
+        [
+            NextAction(
+                key="verify_facts",
+                title=f"核实 {facts_open} 个问题需要的事实",
+                detail="只录入有原件依据的事实；录入后重新评审，不把模型建议当成事实。",
+                target="rules",
+                count=facts_open,
+            )
+        ]
+        if facts_open
+        else []
+    )
+    other_open = technical_open if technical_open is not None else open_by["consistency"] + open_by["scope"]
     if other_open:
         actions.append(
             NextAction(
@@ -158,10 +189,25 @@ def _next_actions(
                 count=other_open,
             )
         )
-    if status_.stale_reasons and status_.stage == "done":  # 等待手动开始时已由 start_analysis 提示
+    if scoring_gap or matrix.scoring.failed or matrix.scoring.unclear:
         actions.append(
             NextAction(
-                key="reanalyze", title="资料、规则或事实有更新，重新评审", detail="当前报告基于更早的输入。", target="report", count=None
+                key="improve_score",
+                title="核对评分覆盖与失分点",
+                detail="评分检查有失败或缺少明确响应，先查看具体缺口；预测不完整本身不替代提交闸门。",
+                target="report",
+                count=None,
+            )
+        )
+    suggestions = suggestions_open if suggestions_open is not None else open_by["improvement"]
+    if suggestions:
+        actions.append(
+            NextAction(
+                key="handle_suggestions",
+                title=f"查看 {suggestions} 个其他建议",
+                detail="这些建议不属于关键风险，是否登记提交仍以正式检查为准。",
+                target="findings",
+                count=suggestions,
             )
         )
     if settings.price and not has_price:
@@ -174,7 +220,13 @@ def _next_actions(
                 count=None,
             )
         )
-    if project_state == "ready_to_submit" and status_.stage == "done" and not status_.stale_reasons:
+    if (
+        project_state == "ready_to_submit"
+        and not incomplete
+        and not qualification_open
+        and not critical_open
+        and (not unconfirmed_qualification or settings.accept_rules_as_written)
+    ):
         actions.append(NextAction(key="submit", title="登记提交", detail="关键问题与强制性要求已处理完。", target="submit", count=None))
     if settings.outcome_tracking and submitted and not has_outcome:
         actions.append(
@@ -182,7 +234,7 @@ def _next_actions(
                 key="record_outcome", title="登记开标结果", detail="结果用来校准预测，让下一次评审更准。", target="outcomes", count=None
             )
         )
-    return actions
+    return _rank(actions)
 
 
 @dataclass(frozen=True)
@@ -205,10 +257,30 @@ def _round(conn: Connection, actor: Actor, project_id: str, status_: PipelineSta
     effective = rules_service.effective_rules(conn, project_id, snapshot["rule_set_id"])
     matrix = compliance.for_snapshot(conn, project_id, snapshot_id)
     categories = _category_counts(conn, project_id, snapshot_id)
+    groups = db.all_(
+        conn,
+        """SELECT CASE
+        WHEN f.category IN ('disqualification','response') THEN 'qualification'
+        WHEN f.severity='critical' THEN 'critical'
+        WHEN f.nature='needs_confirmation' AND jsonb_array_length(f.required_facts_json)>0 THEN 'facts'
+        WHEN f.category IN ('consistency','scope') OR (f.impact='technical' AND f.severity!='improvement') THEN 'technical'
+        ELSE 'suggestions' END AS kind,count(*) AS n
+        FROM findings f JOIN finding_states s ON s.finding_id=f.id
+        WHERE f.project_id=:p AND f.snapshot_id=:s AND s.state=ANY(:open) GROUP BY 1""",
+        {"p": project_id, "s": snapshot_id, "open": list(OPEN_STATES)},
+    )
+    counts = {r["kind"]: int(r["n"]) for r in groups}
+    prediction_state = db.scalar(
+        conn,
+        "SELECT status FROM predictions WHERE project_id=:p AND snapshot_id=:s ORDER BY created_at DESC,id DESC LIMIT 1",
+        {"p": project_id, "s": snapshot_id},
+    )
     settings = projects_service.settings_of(conn, project_id)
     plan = price.get_plan(conn, actor, project_id) if settings.price else None
     submission = db.one(
-        conn, "SELECT id FROM submissions WHERE project_id=:p ORDER BY submitted_at DESC, id DESC LIMIT 1", {"p": project_id}
+        conn,
+        "SELECT s.id FROM submissions s WHERE s.project_id=:p AND NOT EXISTS(SELECT 1 FROM submissions n WHERE n.supersedes=s.id) ORDER BY s.submitted_at DESC,s.id DESC LIMIT 1",
+        {"p": project_id},
     )
     outcome = (
         db.one(conn, "SELECT 1 AS x FROM outcomes WHERE submission_id=:i LIMIT 1", {"i": submission["id"]})
@@ -227,6 +299,11 @@ def _round(conn: Connection, actor: Actor, project_id: str, status_: PipelineSta
         outcome is not None,
         project["state"],
         settings,
+        critical_open=counts.get("critical", 0),
+        facts_open=counts.get("facts", 0),
+        technical_open=counts.get("technical", 0),
+        suggestions_open=counts.get("suggestions", 0),
+        scoring_gap=prediction_state == "failed" or any(step.key == "prediction" and step.state == "failed" for step in status_.steps),
     )
     return _Round(status_, snapshot_id, snapshot["as_of"], effective, matrix, categories, plan, actions)
 
@@ -277,7 +354,7 @@ def summary(conn: Connection, actor: Actor, project_id: str) -> ProjectSummary:
     status_ = pipeline.status(conn, actor, project_id)
     last = pipeline.last_reviewed(conn, project_id)
     if last is None:
-        actions = _actions_before_report(status_)
+        actions = _rank(_actions_before_report(status_))
         return ProjectSummary(reviewed=False, qualification_open=0, prediction=None, next_action=actions[0] if actions else None)
     r = _round(conn, actor, project_id, status_, last["id"])
     open_by = {c.category: c.open for c in r.categories}

@@ -121,6 +121,74 @@ describe('报告页：没有完成的评审', () => {
 });
 
 describe('报告页：评审报告', () => {
+  it('关键核对覆盖不完整时，主动作交给重试横幅并调用正式评审接口', async () => {
+    backend(
+      report({
+        next_actions: [
+          {
+            key: 'retry_analysis',
+            title: '关键核对覆盖未完成，重新评审',
+            detail: '有要求尚未核对',
+            target: 'report',
+            count: null,
+            priority: 2,
+          },
+        ],
+      }),
+    );
+    let writes = 0;
+    server.use(
+      http.post('/api/v1/projects/prj-1/analysis', () => {
+        writes += 1;
+        return HttpResponse.json(pipeline({ stage: 'running' }));
+      }),
+    );
+    const user = userEvent.setup();
+    renderApp('/projects/prj-1');
+    expect(await screen.findByText('关键核对覆盖未完成，重新评审')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '重新评审' }));
+    await waitFor(() => expect(writes).toBe(1));
+  });
+
+  it('折叠数量采用服务端等级，待核实事实计入关键项，普通建议留在其他建议', async () => {
+    backend(
+      report({
+        next_actions: [
+          {
+            key: 'handle_critical',
+            title: '处理其他关键风险',
+            detail: '',
+            target: 'findings',
+            count: 1,
+            priority: 3,
+          },
+          {
+            key: 'verify_facts',
+            title: '核实事实',
+            detail: '',
+            target: 'rules',
+            count: 2,
+            priority: 4,
+          },
+          {
+            key: 'handle_suggestions',
+            title: '查看普通建议',
+            detail: '',
+            target: 'findings',
+            count: 3,
+            priority: 6,
+          },
+        ],
+      }),
+    );
+    renderApp('/projects/prj-1');
+    const toggle = await screen.findByText('剩余关键问题 2 项／其他建议 3 项');
+    await userEvent.click(toggle);
+    expect(screen.getByRole('link', { name: '核实事实' })).toHaveAttribute(
+      'href',
+      '/projects/prj-1/basis?tab=facts',
+    );
+  });
   it('结论：一句话说清有没有否决风险，下面是强制要求满足数、预计技术分（未校准、覆盖程度）和报价', async () => {
     backend(
       report({

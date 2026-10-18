@@ -986,6 +986,10 @@ export type NextActionKey =
   | 'wait_analysis'
   | 'retry_analysis'
   | 'handle_disqualification'
+  | 'handle_critical'
+  | 'verify_facts'
+  | 'improve_score'
+  | 'handle_suggestions'
   | 'handle_findings'
   | 'reanalyze'
   | 'review_unclear'
@@ -998,6 +1002,7 @@ export type NextActionTarget =
   'materials' | 'report' | 'findings' | 'rules' | 'price' | 'submit' | 'outcomes';
 
 export interface NextAction {
+  priority?: number;
   key: NextActionKey;
   title: string;
   detail: string;

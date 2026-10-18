@@ -248,7 +248,14 @@ def test_upload_runs_the_whole_review_and_builds_the_report(api_factory, make_me
     assert detail["feature_spec"] == "pf-1" and set(detail["features"]) == set(features.FEATURES)
     assert detail["features"]["raw_pct"] == 50 and detail["features"]["max_ratio"] == round(8 / 60, 6)
     assert detail["calibrated"] is None and detail["shadow"] is None and detail["anchors"] is None
-    assert [a["key"] for a in report["next_actions"]] == ["handle_disqualification", "confirm_rules", "handle_findings", "set_price"]
+    assert [a["key"] for a in report["next_actions"]] == [
+        "handle_disqualification",
+        "confirm_rules",
+        "verify_facts",
+        "handle_findings",
+        "improve_score",
+        "set_price",
+    ]
 
     findings = env.get("/findings?limit=100")["items"]
     assert {f["category"]: f["source"] for f in findings} == {"disqualification": "rule", "consistency": "consistency", "scope": "scope"}
@@ -558,7 +565,10 @@ def test_switches_trim_checks_report_and_submission_gate(api_factory, make_membe
     report = env.get("/report")
     by = {c["category"]: c["total"] for c in report["categories"]}
     assert by["consistency"] == 0 and by["scope"] == 0  # 关闭的检测不产生问题
-    assert report["price"] is None and [a["key"] for a in report["next_actions"]] == ["submit"]  # 不催报价、不催确认规则
+    assert report["price"] is None and [a["key"] for a in report["next_actions"]] == [
+        "improve_score",
+        "submit",
+    ]  # 评分缺口不替代提交闸门，不催报价或规则确认
     assert env.state() == "ready_to_submit"
     drawing = make_pdf([["图纸目录", "总平面图"]])
     _upload(env.api, store, env.pid, drawing, name="图纸.pdf", role="drawing", key="drawing-upload-0001")  # 非评审资料不影响提交

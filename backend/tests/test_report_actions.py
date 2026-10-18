@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from bidwb.schemas import CategoryCount, Compliance, PipelineStatus, ProjectSettings, VerdictCounts
+from bidwb.schemas import CategoryCount, Compliance, PipelineStatus, ProjectSettings, TaskCoverage, VerdictCounts
 from bidwb.services.report import _next_actions
 
 
@@ -13,7 +13,12 @@ def _counts(**kw: int) -> VerdictCounts:
 
 def _matrix(**qualification: int) -> Compliance:
     return Compliance(
-        snapshot_id="snp_1", run_id="job_1", coverage=None, qualification=_counts(**qualification), scoring=_counts(), rows=[]
+        snapshot_id="snp_1",
+        run_id="job_1",
+        coverage=TaskCoverage(status="complete", rules_total=2, rules_checked=2, rules_failed=0, candidates_dropped=0),
+        qualification=_counts(**qualification),
+        scoring=_counts(),
+        rows=[],
     )
 
 
@@ -36,7 +41,7 @@ def _status(stage: str = "done", stale: list[str] | None = None) -> PipelineStat
     )
 
 
-def _keys(**kw) -> list[str]:  # type: ignore[no-untyped-def]
+def _actions(**kw):  # type: ignore[no-untyped-def]
     defaults = {
         "status_": _status(),
         "matrix": _matrix(total=2, satisfied=2),
@@ -48,7 +53,57 @@ def _keys(**kw) -> list[str]:  # type: ignore[no-untyped-def]
         "project_state": "ready_to_submit",
         "settings": ProjectSettings(),
     }
-    return [a.key for a in _next_actions(**{**defaults, **kw})]
+    return _next_actions(**{**defaults, **kw})
+
+
+def _keys(**kw) -> list[str]:  # type: ignore[no-untyped-def]
+    return [a.key for a in _actions(**kw)]
+
+
+def test_six_levels_and_counts_come_from_current_business_groups() -> None:
+    actions = _actions(
+        categories=_categories(disqualification=1, consistency=4, improvement=2),
+        critical_open=1,
+        facts_open=1,
+        technical_open=2,
+        suggestions_open=2,
+        scoring_gap=True,
+        unconfirmed_qualification=1,
+        has_price=False,
+        project_state="issues_open",
+    )
+    assert [a.key for a in actions] == [
+        "handle_disqualification",
+        "handle_critical",
+        "confirm_rules",
+        "verify_facts",
+        "handle_findings",
+        "improve_score",
+        "handle_suggestions",
+        "set_price",
+    ]
+    assert [a.priority for a in actions] == [3, 3, 4, 4, 5, 5, 6, 6]
+    assert next(a for a in actions if a.key == "handle_findings").count == 2
+
+
+def test_changed_input_hides_historical_risk_actions() -> None:
+    assert _keys(status_=_status(stale=["body_updated"]), categories=_categories(disqualification=3)) == ["reanalyze"]
+    assert _keys(status_=_status("running"), categories=_categories(disqualification=3)) == ["wait_analysis"]
+    assert _keys(
+        status_=_status().model_copy(update={"input_verification_required": True}), categories=_categories(disqualification=3)
+    ) == ["verify_sources"]
+
+
+def test_incomplete_coverage_precedes_risks_and_cannot_offer_submission() -> None:
+    matrix = _matrix(total=2, satisfied=1, failed=1)
+    matrix.coverage = TaskCoverage(status="partial", rules_total=2, rules_checked=1, rules_failed=1, candidates_dropped=0)
+    actions = _actions(matrix=matrix, categories=_categories(disqualification=1))
+    assert actions[0].key == "retry_analysis" and actions[0].priority == 2
+    assert "submit" not in [a.key for a in actions]
+
+
+def test_eligible_submission_precedes_optional_suggestions_and_price() -> None:
+    assert _keys(categories=_categories(improvement=2), has_price=False) == ["submit", "handle_suggestions", "set_price"]
 
 
 def test_clean_review_goes_straight_to_submission() -> None:
@@ -63,7 +118,7 @@ def test_qualification_risks_come_first_then_unclear_then_rules_then_score_issue
         has_price=False,
         project_state="issues_open",
     )
-    assert keys == ["handle_disqualification", "review_unclear", "confirm_rules", "handle_findings", "set_price"]
+    assert keys == ["handle_disqualification", "review_unclear", "confirm_rules", "handle_suggestions", "set_price"]
 
 
 def test_failed_check_is_surfaced_like_unclear() -> None:
@@ -80,7 +135,7 @@ def test_pipeline_state_and_outcome_prompts() -> None:
 
 def test_switched_off_modules_do_not_ask_for_anything() -> None:
     busy = {"has_price": False, "submitted": True, "unconfirmed_qualification": 2, "project_state": "submitted"}
-    assert _keys(**busy) == ["confirm_rules", "set_price", "record_outcome"]
+    assert _keys(**busy) == ["confirm_rules", "record_outcome", "set_price"]
     quiet = ProjectSettings(price=False, outcome_tracking=False, accept_rules_as_written=True)
     assert _keys(**busy, settings=quiet) == []
 

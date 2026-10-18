@@ -7,6 +7,10 @@ const CTA: Record<NextActionKey, string> = {
   wait_analysis: '查看进度',
   retry_analysis: '重新评审',
   handle_disqualification: '处理否决风险',
+  handle_critical: '处理关键风险',
+  verify_facts: '核实事实',
+  improve_score: '查看评分缺口',
+  handle_suggestions: '查看建议',
   review_unclear: '逐条核对',
   handle_findings: '处理问题',
   reanalyze: '重新评审',
@@ -25,6 +29,9 @@ export function actionLabel(a: Pick<NextAction, 'key'>): string {
 export function actionPath(base: string, a: Pick<NextAction, 'key' | 'target'>): string {
   if (a.key === 'handle_disqualification') return `${base}/findings?category=disqualification`;
   if (a.key === 'review_unclear') return `${base}#matrix`;
+  if (a.key === 'verify_facts') return `${base}/basis?tab=facts`;
+  if (a.key === 'improve_score') return `${base}#pred-h`;
+  if (a.key === 'handle_suggestions') return `${base}/findings?category=improvement`;
   switch (a.target) {
     case 'materials':
       return `${base}/materials`;

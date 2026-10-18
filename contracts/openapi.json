@@ -5461,6 +5461,10 @@
               "wait_analysis",
               "retry_analysis",
               "handle_disqualification",
+              "handle_critical",
+              "verify_facts",
+              "improve_score",
+              "handle_suggestions",
               "review_unclear",
               "handle_findings",
               "reanalyze",
@@ -5503,6 +5507,13 @@
               }
             ],
             "title": "Count"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 6.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "default": 6
           }
         },
         "additionalProperties": false,

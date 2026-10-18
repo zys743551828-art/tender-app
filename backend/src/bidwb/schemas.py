@@ -975,6 +975,10 @@ class NextAction(Response):
         "wait_analysis",
         "retry_analysis",
         "handle_disqualification",
+        "handle_critical",
+        "verify_facts",
+        "improve_score",
+        "handle_suggestions",
         "review_unclear",
         "handle_findings",
         "reanalyze",
@@ -988,6 +992,7 @@ class NextAction(Response):
     detail: str
     target: Literal["materials", "report", "findings", "rules", "price", "submit", "outcomes"]
     count: int | None
+    priority: Annotated[int, Field(ge=1, le=6)] = 6
 
 
 class ReportBasis(Response):
