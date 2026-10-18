@@ -602,7 +602,7 @@ CI 建议：`python3 deploy/check_compose.py`（需要 PyYAML；有 `docker comp
 | 自动评审流水线 | `BIDWB_AUTO_ANALYSIS`（默认 true，`.env` 中为 `AUTO_ANALYSIS`）：上传完成时 API 推进、任务结束时 worker 推进、reaper 周期兜底；因 reaper 要写 OSS，编排给它配置了 OSS 凭据与 egress 网络。关闭后只由人工触发各步骤 | `config.py`、`api/routes_files.py`、`workers/runner.py`、`workers/loops.py`、`services/pipeline.py` |
 | 评审报告导出 | `GET /api/v1/projects/{id}/report.docx` 与 `GET /api/v1/projects/{id}/body.annotated.pdf` 在 API 进程内同步生成，依赖 `python-docx`、`pypdfium2`（`pyproject.toml` 已声明）；响应头 `Cache-Control: private, no-store`，不经任务队列与 worker-export | `api/routes_report.py`、`services/export.py`、`pyproject.toml` |
 | 任务进度 SSE | `GET /api/v1/tasks/{id}/events`：每 15 秒心跳，单连接最长 600 秒，支持 `Last-Event-ID` 续传 | `api/routes_tasks.py` |
-| 检索与 MLflow | 检索只实现关键词通道；`BIDWB_RETRIEVAL_BACKEND`、`BIDWB_MILVUS_URI` 被读取但没有连接 Milvus 的代码；后端代码不调用 MLflow（范围外） | `retrieval.py`、`config.py` |
+| 检索与 MLflow | 默认 keyword，可选 pgvector＋本地 BGE；语义通道要求完整匹配的项目／版本索引，否则回退关键词。Milvus 配置保留兼容但未连接；MLflow 范围外 | `retrieval.py`、`embeddings.py`、`services/vector_index.py`、`config.py` |
 | 日志 | stdout JSON 单行；访问日志只记路径与状态码；对 password、secret、token、authorization、cookie、signature、api_key、dsn 等键名做兜底脱敏 | `logs.py`、`api/app.py` |
 
 ### 11.3 前端提供的构建与运行约定
@@ -616,3 +616,19 @@ CI 建议：`python3 deploy/check_compose.py`（需要 PyYAML；有 `docker comp
 | 超时与限流 | nginx 对 SSE 读超时 3600 秒并关闭缓冲，对文件内容 300 秒，对其余 `/api/` 120 秒（报告导出属于后者），登录单独限流 | `app-locations.inc.template` |
 | CSP | `script-src 'self' 'wasm-unsafe-eval'`、`style-src 'self' 'unsafe-inline'`、`img-src 'self' data: blob:`、`worker-src 'self' blob:`、无 `frame-src`（回退到 `default-src 'self'`）；如前端新增内联脚本、`eval`、外部域名或 iframe 预览，须同步调整 `security-headers.inc.template` | `security-headers.inc.template` |
 | 开发 | `vite dev` 的 `/api` 代理使用环境变量 `API_TARGET`（缺省 `http://localhost:8000`，`compose.dev.yml` 设为 `http://api:8000`） | `frontend/vite.config.ts`、`compose.dev.yml` |
+
+### 可选 pgvector 检索
+
+默认保留 keyword。固定开发参考集存在页码召回退化，不能据部分摘录改善默认切换；结果见研究仓库 results/hybrid-retrieval-1。详细运行契约见 ../contracts/retrieval.md。
+
+增量迁移 0002 只创建可重建的 REAL[] 索引表，纯 PostgreSQL 也能迁移；API 只读，worker 可回填。升级前备份业务库，统一更新 API、relay、reaper 和所有 worker；不修改已部署的初始迁移。正式业务库仍使用 PostgreSQL 16.15 和 keyword。
+
+要在独立验证环境启用，先预备与 bidwb/embeddings.py 固定摘要一致的 model.onnx、tokenizer.json，放入 compose.pgvector.yml 声明的只读路径。该组合固定 pgvector 0.8.7 / PG16 Bookworm 镜像摘要，已实测其 PostgreSQL 为 16.15；其他架构仍应核对，不能升级主版本或删除数据卷。由数据库管理员在业务库执行 CREATE EXTENSION IF NOT EXISTS vector，再加载 compose.pgvector.yml。扩展安装不使用 API 或 worker 凭据。
+
+新资料启用后自动生成向量；既有项目用具备 worker 凭据并挂载模型的 parse worker 执行：
+
+```bash
+docker compose -f compose.yml -f compose.pgvector.yml exec worker-parse bidwb-admin rebuild-vectors --project <项目ID>
+```
+
+回填分批提交、可重跑；未完全回填的查询保留关键词结果并声明缺口。索引可重建，不替代原件或核验结论。大库性能、真实工程检索质量与 Milvus 退出尚未验收。

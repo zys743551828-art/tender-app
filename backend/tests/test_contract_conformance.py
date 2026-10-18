@@ -54,6 +54,9 @@ def test_schemas_match_contract() -> None:
 def test_migration_sql_is_identical_to_contract_schema():
     root = Path(__file__).resolve().parents[2]
     assert (root / "backend/migrations/sql/0001_initial.sql").read_bytes() == (root / "contracts/schema.sql").read_bytes()
+    assert (root / "backend/migrations/sql/0002_evidence_embeddings.sql").read_bytes() == (
+        root / "contracts/evidence-embeddings.sql"
+    ).read_bytes()
 
 
 def test_generated_contracts_are_current() -> None:

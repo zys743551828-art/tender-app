@@ -1,6 +1,6 @@
 """数据库访问基础。
 
-业务库的唯一事实来源是 ``contracts/schema.sql``（含触发器与授权），Alembic 迁移直接执行它；
+业务库结构以 ``contracts/schema.sql`` 及后续增量 SQL 契约为准（含触发器与授权），Alembic 按序执行；
 代码里用显式 SQL（SQLAlchemy ``text``）读写，不维护第二份 ORM 模型，避免两份定义漂移。
 """
 

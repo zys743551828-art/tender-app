@@ -12,11 +12,12 @@ from pathlib import Path
 
 from bidwb import db
 from bidwb.config import get_settings
+from bidwb.embeddings import EmbeddingUnavailable, get_embedder
 from bidwb.errors import Conflict, DomainError
 from bidwb.logs import configure_logging
 from bidwb.messaging import ensure_topics
 from bidwb.runtime import Container
-from bidwb.services import anchor_packs, auth, model_registry, score_pairs, scoring_models
+from bidwb.services import anchor_packs, auth, model_registry, score_pairs, scoring_models, vector_index
 from bidwb.storage import S3ObjectStore
 
 ContainerFactory = Callable[[], Container]
@@ -165,6 +166,23 @@ def _export_score_pairs(args: argparse.Namespace) -> int:
     return 0
 
 
+def _rebuild_vectors(args: argparse.Namespace) -> int:
+    settings = get_settings()
+    if not settings.embedding_model_dir:
+        print("失败：未配置 BIDWB_EMBEDDING_MODEL_DIR", file=sys.stderr)
+        return 1
+    engine = db.make_engine(settings.worker_dsn(), pool_size=1, application_name="bidwb-vector-index")
+    try:
+        count = vector_index.rebuild(engine, args.project, get_embedder(settings.embedding_model_dir))
+    except EmbeddingUnavailable as exc:
+        print(f"构建失败：{exc}", file=sys.stderr)
+        return 1
+    finally:
+        engine.dispose()
+    print(f"已构建 {count} 条证据向量；原始证据与人工核验状态保持原值")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="bidwb-admin", description="施组工作台运维命令")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -177,6 +195,9 @@ def build_parser() -> argparse.ArgumentParser:
     topics = sub.add_parser("ensure-topics", help="幂等创建 Kafka 业务主题与死信主题")
     topics.add_argument("--replication-factor", type=int, default=1)
     topics.set_defaults(func=_ensure_topics)
+    vectors = sub.add_parser("rebuild-vectors", help="按项目回填可重建的本地向量索引")
+    vectors.add_argument("--project", required=True, help="项目 ID")
+    vectors.set_defaults(func=_rebuild_vectors)
 
     environments = ("business", "shadow")
     model = sub.add_parser("register-scoring-model", help="登记打分模型（scoring-model/1）并路由到指定环境")

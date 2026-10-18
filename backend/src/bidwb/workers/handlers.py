@@ -17,6 +17,8 @@ from sqlalchemy import Connection, Engine, text
 
 from bidwb import db, parse_enrichment, parsing
 from bidwb.config import Settings
+from bidwb.embeddings import MODEL_FINGERPRINT, EmbeddingUnavailable, Encoded
+from bidwb.services import vector_index
 from bidwb.storage import ObjectStore
 from bidwb.tasks import Claim
 from bidwb.util import new_id, utcnow
@@ -93,6 +95,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         if "unsupported_media_type" in document.gaps:
             return HandlerFailure("parse_unsupported", "只支持 PDF 格式，请转换为 PDF 后重新上传")
         return HandlerFailure("parse_unreadable", "没有读到文字（可能是扫描件或加密文件），请提供可复制文字的 PDF 后重新上传")
+    encoded, retrieval_index = _embed_parse(ctx, document)
     summary = {
         "parser_version": parsing.PARSER_VERSION,
         "file_version_id": version_id,
@@ -105,6 +108,7 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
         "coverage_scope": "native_text_and_raster_presence",
         "pages": [asdict(page) for page in document.pages],
         "enrichment": enrichment,
+        "retrieval_index": retrieval_index,
         "candidate_evidence": [{"seq": seq, **asdict(c)} for seq, c in enumerate(document.chunks) if c.source != "native"],
     }
     claim = ctx.claim
@@ -128,12 +132,13 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
             },
         )
         if document.chunks:
+            evidence_ids = [new_id("evd") for _ in document.chunks]
             conn.execute(
                 text("""INSERT INTO evidence(id,project_id,file_version_id,parse_id,physical_page,printed_page,quote,kind,seq,bbox_json,semantic_review)
                         VALUES (:id,:p,:v,:parse,:page,NULL,:quote,:kind,:seq,CAST(:bbox AS jsonb),'pending')"""),
                 [
                     {
-                        "id": new_id("evd"),
+                        "id": evidence_ids[seq],
                         "p": claim.project_id,
                         "v": version_id,
                         "parse": parse_id,
@@ -146,8 +151,29 @@ def parse_handler(ctx: JobContext) -> HandlerOutput | HandlerFailure:
                     for seq, c in enumerate(document.chunks)
                 ],
             )
+            if encoded is not None:
+                vector_index.store(
+                    conn, claim.project_id, list(zip(evidence_ids, [c.quote for c in document.chunks], strict=True)), encoded
+                )
 
     return HandlerOutput(json.dumps(summary, ensure_ascii=False, sort_keys=True).encode(), "application/json", "parse-v1", finalize)
+
+
+def _embed_parse(ctx: JobContext, document: parsing.ParsedDocument) -> tuple[Encoded | None, dict[str, Any]]:
+    if ctx.settings.retrieval_backend != "pgvector":
+        return None, {"state": "disabled"}
+    try:
+        if not ctx.settings.embedding_model_dir:
+            raise EmbeddingUnavailable("embedding_model_not_configured")
+        encoded = vector_index.prepare(ctx.settings.embedding_model_dir, [chunk.quote for chunk in document.chunks], ctx.checkpoint)
+        return encoded, {
+            "state": "ready",
+            "model_fingerprint": MODEL_FINGERPRINT,
+            "chunk_count": len(encoded.vectors),
+            "truncated_count": sum(encoded.truncated),
+        }
+    except EmbeddingUnavailable as exc:
+        return None, {"state": "unavailable", "error_code": str(exc)}
 
 
 def _enrich_parse(ctx: JobContext, data: bytes, document: parsing.ParsedDocument) -> dict[str, Any] | None:

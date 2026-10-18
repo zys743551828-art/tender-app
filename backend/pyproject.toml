@@ -26,6 +26,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+retrieval = [
+  "onnxruntime==1.31.0",
+  "tokenizers==0.23.3",
+]
 parsing = [
   "rapidocr==3.10.0",
   "onnxruntime==1.31.0",
@@ -85,5 +89,5 @@ mypy_path = "src"
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*", "rapidocr.*", "pdfplumber.*"]
+module = ["confluent_kafka.*", "pypdfium2.*", "argon2.*", "rapidocr.*", "pdfplumber.*", "onnxruntime.*", "tokenizers.*", "numpy.*"]
 ignore_missing_imports = true

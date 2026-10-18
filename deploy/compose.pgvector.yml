@@ -1,0 +1,24 @@
+# 可选检索验证组合：先备份、检查 PostgreSQL 16 小版本与数据目录兼容性，并由管理员安装 vector 扩展。
+# 模型文件预先放到研究缓存；API 与 parse worker 只读挂载，运行时不下载。
+# 默认编排不加载此文件；固定参考集存在召回退化，仍保留 keyword 为默认。
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg16-bookworm@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a
+  api:
+    environment:
+      BIDWB_RETRIEVAL_BACKEND: pgvector
+      BIDWB_EMBEDDING_MODEL_DIR: /models/embedding
+    volumes:
+      - type: bind
+        source: ../../tender-research/.runtime/embeddings/bge-small-zh-v1.5
+        target: /models/embedding
+        read_only: true
+  worker-parse:
+    environment:
+      BIDWB_RETRIEVAL_BACKEND: pgvector
+      BIDWB_EMBEDDING_MODEL_DIR: /models/embedding
+    volumes:
+      - type: bind
+        source: ../../tender-research/.runtime/embeddings/bge-small-zh-v1.5
+        target: /models/embedding
+        read_only: true

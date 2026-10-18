@@ -46,7 +46,7 @@ COPY src ./src
 RUN if [ -f constraints.txt ]; then export PIP_CONSTRAINT=/build/constraints.txt; fi \
  && pip install --upgrade pip \
  && pip wheel --no-deps --wheel-dir /build/wheels . \
- && for wheel in /build/wheels/bidwb-*.whl; do pip install --only-binary=:all: "${wheel}[parsing]"; done \
+ && for wheel in /build/wheels/bidwb-*.whl; do pip install --only-binary=:all: "${wheel}[parsing,retrieval]"; done \
  && python -c "import bidwb, fastapi, uvicorn, psycopg, confluent_kafka, pypdfium2, argon2, boto3; print('imports ok')"
 
 # -----------------------------------------------------------------------------

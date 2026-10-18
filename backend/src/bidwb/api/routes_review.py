@@ -182,7 +182,7 @@ def review_finding(finding_id: str, body: ReviewRequest, session: CurrentSession
 def search_evidence(project_id: str, body: SearchRequest, session: CurrentSession, ctr: Ctr) -> SearchResult:
     # 只读检索：POST 仅为承载请求体，无副作用，因此不要求幂等键。
     with ctr.engine.connect() as conn:
-        return evidence.search(conn, session.actor, project_id, body)
+        return evidence.search(conn, session.actor, project_id, body, ctr.settings)
 
 
 @router.get("/evidence/{evidence_id}", response_model=EvidenceRef, operation_id="getEvidence")

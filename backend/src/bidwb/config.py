@@ -80,7 +80,8 @@ class Settings(BaseSettings):
     relay_poll_seconds: Annotated[float, Field(gt=0, le=30)] = 1.0
 
     # —— 检索与模型 ——
-    retrieval_backend: Literal["keyword", "milvus"] = "keyword"
+    retrieval_backend: Literal["keyword", "milvus", "pgvector"] = "keyword"
+    embedding_model_dir: str | None = None
     milvus_uri: str | None = None
     llm_base_url: str | None = None
     llm_model: str | None = None

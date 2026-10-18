@@ -26,7 +26,9 @@
 
 `enrichment` 的 `schema=local-enrichment-1`，包含 `source_sha256`、`selected_pages`、`skipped_pages`、`unfinished_pages`、`failure`、逐页 `pages`、模型文件 SHA-256 和执行耗时。`review=pending`，坐标空间为 `rendered_page_normalized`；原件按 2 倍渲染，`render_sha256` 对 RGB 像素计算，`render_size` 保存像素宽高。
 
-每页保存 OCR 状态 `not_needed/recognized_pending/empty/failed/unavailable/limited`，以及表格状态 `extracted_pending/none_detected/failed/limited`。OCR 行保存原始文字、置信度、归一化范围；表格保存原生单元格数组（空格为 null）、表范围和引擎版本。未检测到表格不证明原页没有表格，扫描表只可能产生 OCR 行。跨页关系不自动猜测。行、表、渲染像素和消息大小均有限制，超限明确保留状态。
+每页保存 OCR 状态 `not_needed/recognized_pending/empty/failed/unavailable/limited`，以及表格状态 `extracted_pending/none_detected/failed/limited`。OCR 行保存原始文字、置信度、归一化范围；表格保存原生单元格数组（空单元格按引擎输出保留 null 或空串）、表范围和引擎版本。未检测到表格不证明原页没有表格，扫描表只可能产生 OCR 行。跨页关系不自动猜测。行、表、渲染像素和消息大小均有限制，超限明确保留状态。
+
+`retrieval_index` 记录本次解析的派生向量状态：`disabled/ready/unavailable`。启用 pgvector 时，本地向量按 32 条一批生成并续租，丢失租约不提交；向量与新证据在同一结果事务写入。`ready` 附模型指纹、块数和截断数；编码不可用保留文字解析，附错误码。此状态不证明识别结果已经核验，不改变证据的 `semantic_review`。
 
 `candidate_evidence` 按实际写入证据的 `seq` 关联，保留 `physical_page`、`quote`、`bbox`、`kind`、`source`、`confidence` 和 `numeric_review_required`。OCR 为 `visual_observation/ocr`，原生表格行为 `table/native_table`，两者的 `semantic_review` 均为 pending。出现数字、百分号或千分号时要求数字核验；置信度不等于正确率。原始行／表数组完整留在 `enrichment.pages`，长候选按 400 字分块，范围仍是整行或整表，不冒充字符级坐标。
 

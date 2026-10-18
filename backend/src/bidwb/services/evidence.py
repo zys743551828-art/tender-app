@@ -8,8 +8,11 @@ from sqlalchemy import Connection
 
 from bidwb import db, retrieval
 from bidwb.access import Actor, require_project
+from bidwb.config import Settings
+from bidwb.embeddings import EmbeddingUnavailable, get_embedder
 from bidwb.errors import NotFound
 from bidwb.schemas import EvidenceRef, SearchHit, SearchRequest, SearchResult
+from bidwb.services import vector_index
 
 _EVIDENCE_SQL = """SELECT e.id,e.project_id,e.file_version_id,a.sha256 AS source_sha256,e.physical_page,e.printed_page,e.quote,e.kind,
        p.parser_version,e.bbox_json,e.semantic_review,f.role AS file_role,fv.original_name AS file_name
@@ -75,9 +78,9 @@ def current_version_ids(conn: Connection, project_id: str) -> list[str]:
     return [r["id"] for r in rows]
 
 
-def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest) -> SearchResult:
+def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest, settings: Settings | None = None) -> SearchResult:
     """检索证据。给了 ``snapshot_id`` 就限定在该轮固定下来的文件版本内；不给则检索项目当前资料
-    （录入第一批事实时还没有任何一轮诊断，必须能直接检索）。当前只有关键词通道，``mode=hybrid`` 会如实降级并说明原因。"""
+    （录入第一批事实时还没有任何一轮诊断，必须能直接检索）。可选 pgvector 通道缺少模型、扩展或完整索引时回退关键词。"""
     require_project(conn, actor, project_id)
     if req.snapshot_id is None:
         versions = current_version_ids(conn, project_id)
@@ -91,11 +94,37 @@ def search(conn: Connection, actor: Actor, project_id: str, req: SearchRequest) 
         {"p": project_id, "v": versions},
     )
     refs: Sequence[EvidenceRef] = [_ref(r) for r in rows]
+    if req.mode == "hybrid" and settings is not None and settings.retrieval_backend == "pgvector":
+        try:
+            if not settings.embedding_model_dir:
+                raise EmbeddingUnavailable("embedding_model_not_configured")
+            query = get_embedder(settings.embedding_model_dir).encode([req.query], query=True)
+            dense, truncated = vector_index.dense_rank(
+                conn, project_id, [(ref.evidence_id, ref.quote) for ref in refs], query.vectors[0], max(50, req.top_k)
+            )
+            texts = [ref.quote for ref in refs]
+            fused = retrieval.reciprocal_rank_fusion(
+                [retrieval.rank(req.query, texts, 50), retrieval.rank_exact(req.query, texts, 50), dense], req.top_k
+            )
+            gaps = (["embedding_query_truncated:查询超出模型长度"] if query.truncated[0] else []) + (
+                ["embedding_documents_truncated:部分证据向量只覆盖前512个词元"] if truncated else []
+            )
+            return SearchResult(
+                snapshot_id=req.snapshot_id,
+                mode_used="hybrid",
+                index_state="ready",
+                hits=[SearchHit(evidence=refs[item.index], score=round(item.score, 6), channel="fused") for item in fused],
+                gaps=gaps,
+            )
+        except EmbeddingUnavailable as exc:
+            fallback_gap = f"{exc}:使用关键词通道"
+    else:
+        fallback_gap = "hybrid_index_unavailable:使用关键词通道"
     hits = [
         SearchHit(evidence=refs[s.index], score=round(s.score, 6), channel="keyword")
         for s in retrieval.rank(req.query, [r.quote for r in refs], req.top_k)
     ]
-    gaps = ["hybrid_index_unavailable:使用关键词通道"] if req.mode == "hybrid" else []
+    gaps = [fallback_gap] if req.mode == "hybrid" else []
     return SearchResult(
         snapshot_id=req.snapshot_id,
         mode_used="keyword",
