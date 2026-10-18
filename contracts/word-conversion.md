@@ -39,4 +39,6 @@ DOCX 不解压到文件系统、不跟随关系；分别限制 ZIP 大小、条�
 
 产品队列客户端 `bidwb.word_conversion.convert_word` 接受已核对的固定方法指纹，不将队列自报的方法自动登记为可信。发布前核对方法、隔离状态和心跳，等待期间与收件后调用任务租约检查。接收时再次验证操作、原件、方法、状态、页面范围、缺口一致性及 PDF 字节摘要；失败回执只交付原因。取消或超时只清理本操作输入，输出由只读挂载保护。清理为尽力执行；进程崩溃后的输入回收与业务回执事务尚待业务层接入，不应把临时队列当永久档案。
 
+任务运行器支持 `HandlerFailure.finalize`：在 `tasks.commit_result` 锁定任务并核对当前租约、尝试及输入后，在同一数据库事务内执行失败凭据追加。凭据写入出错时任务失败状态与事件一并回滚；过期、取消、重新领取或重复完成的旧尝试不执行追加。该机制不登记成功产物、不生成解析证据；Word 回执表和解析处理器仍须单独接入。
+
 官方依据：[LibreOffice 启动参数](https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html)、[7.4 分支通信路径实现](https://github.com/LibreOffice/core/blob/libreoffice-7-4/sal/osl/unx/pipe.cxx)、[Landlock 内核文档](https://docs.kernel.org/userspace-api/landlock.html)。边界依据实现与实测共同核对，文字对应不能证明完整视觉一致。

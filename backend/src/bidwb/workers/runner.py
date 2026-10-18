@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import json
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass
+
+from sqlalchemy import Connection
 
 from bidwb import db, tasks
 from bidwb.errors import Conflict, DomainError, Unavailable
@@ -124,7 +127,7 @@ class WorkerRunner:
             return
         keeper.stop()
         if isinstance(outcome, HandlerFailure):
-            self._fail(claim, outcome.error_code, outcome.message)
+            self._fail(claim, outcome.error_code, outcome.message, outcome.finalize)
         else:
             self._succeed(claim, outcome)
 
@@ -165,12 +168,14 @@ class WorkerRunner:
             log.info("job_succeeded", job_id=claim.job_id, kind=claim.kind, attempt=claim.attempt)
             self._advance(claim)
 
-    def _fail(self, claim: Claim, code: str, message: str = "") -> None:
+    def _fail(self, claim: Claim, code: str, message: str = "", finalize: Callable[[Connection], None] | None = None) -> None:
         try:
             with db.transaction(self.ctr.engine) as conn:
                 tasks.commit_result(
                     conn, claim, input_sha256=claim.input_sha256, artifact_id=None, error_code=code, error_message=message or None
                 )
+                if finalize is not None:
+                    finalize(conn)
         except DomainError as exc:
             log.warning("job_fail_rejected", job_id=claim.job_id, code=exc.code)
         else:

@@ -46,6 +46,7 @@ class HandlerFailure:
 
     error_code: str
     message: str = ""  # 面向人的中文原因，写进任务失败事件与日志；错误码才是对外契约
+    finalize: Callable[[Connection], None] | None = None  # 租约核验后在失败事务内追加失败凭据，不生成成功产物
 
 
 @dataclass
