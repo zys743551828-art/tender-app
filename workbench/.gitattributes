@@ -11,3 +11,9 @@
 /packages/word_intake/renderer.py text eol=lf
 /packages/word_intake/inspection.py text eol=lf
 /packages/word_intake/sandbox_runner.py text eol=lf
+/packages/assistant/sql/*.sql text eol=lf
+/packages/authoring/sql/*.sql text eol=lf
+/packages/contracts/sql/*.sql text eol=lf
+/packages/identity/sql/*.sql text eol=lf
+/packages/knowledge/sql/*.sql text eol=lf
+/deploy/sql/*.sql text eol=lf

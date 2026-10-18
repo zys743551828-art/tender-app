@@ -1,0 +1,198 @@
+{
+  "source_commit": "0571875a3e6fbd14e41929082296a712e3eeec08",
+  "scope": "byte provenance only; no SQL execution/review qualification",
+  "inputs": [
+    {
+      "path": "packages/assistant/sql/assistant.sql",
+      "git_blob_oid": "8ebc7c4bc45bf7357727bfe40df2ade281beac05",
+      "git_sha256": "4030b5e6a749aa060956c4039aa0cdd34e057508ea6a4ce9c58100f5a6ca81b0",
+      "git_bytes": 12235,
+      "recorded_windows_sha256": "2551479b8c4cbb42b220897abcc7b39d728beab870ca2375e1de991b893d1b78",
+      "recorded_windows_bytes": 12440
+    },
+    {
+      "path": "packages/assistant/sql/intent-budget.sql",
+      "git_blob_oid": "d69858c99c39c58b97500d96b36e3f9f92946554",
+      "git_sha256": "173078b95a5cd58db9f8f8aa09ff2728bae2c4a1e1b3817a4b593e719b04a6b0",
+      "git_bytes": 38558,
+      "recorded_windows_sha256": "9b57df3476d308f18b22ecca6e6bf4b5f1ab1f44968043ae55ce970d934221c8",
+      "recorded_windows_bytes": 38945
+    },
+    {
+      "path": "packages/assistant/sql/live-facts.sql",
+      "git_blob_oid": "b767dad97c1bd51e909508c2e88b3bf35e8d0e12",
+      "git_sha256": "42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2",
+      "git_bytes": 11269,
+      "recorded_windows_sha256": "42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2",
+      "recorded_windows_bytes": 11269
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "git_blob_oid": "8512b54b6fe3b545a4754fcd41d8ddc722f225d0",
+      "git_sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd",
+      "git_bytes": 3972,
+      "recorded_windows_sha256": "788dcc56ab48f79c177986379a307766c4159c66d3ca0ad8e75fba4a4cdc1411",
+      "recorded_windows_bytes": 4034
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "git_blob_oid": "2da62a62e1ce6a66ef4171bed8ca2a451440e382",
+      "git_sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d",
+      "git_bytes": 7800,
+      "recorded_windows_sha256": "1eecf99ab7230fd4df8b5086ce499cc099cba06bc5a89a6438b7dcb1d71479b8",
+      "recorded_windows_bytes": 7895
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "git_blob_oid": "ccc4a6ac770b0a15c99ccc929fb5841313e8070b",
+      "git_sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319",
+      "git_bytes": 23321,
+      "recorded_windows_sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319",
+      "recorded_windows_bytes": 23321
+    },
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "git_blob_oid": "d0420b962c83382d9ab2e8592192fb0eab36a227",
+      "git_sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd",
+      "git_bytes": 12968,
+      "recorded_windows_sha256": "accb37248ba097d0992924b4977786932f167b04c105031b4e6acc3be698e098",
+      "recorded_windows_bytes": 13184
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "git_blob_oid": "c41ff8d8101296d38ba2a5444c80d9b978893df4",
+      "git_sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96",
+      "git_bytes": 32709,
+      "recorded_windows_sha256": "c8a1a595b6b855bdfe80671dd5719ed9c7f752d5f7b7f7d9ae8f153d286e115a",
+      "recorded_windows_bytes": 32965
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "git_blob_oid": "7f39c7b77a99a4e77e68e67c422df3788c9d755a",
+      "git_sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876",
+      "git_bytes": 7058,
+      "recorded_windows_sha256": "f3f042d397d6bbe84bb71d3337f703437004e8ca35b0e62324f9b53a205cbc3c",
+      "recorded_windows_bytes": 7136
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "git_blob_oid": "9fe9fb0c590c83668603f2d3f2ac7428304f4607",
+      "git_sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1",
+      "git_bytes": 5192,
+      "recorded_windows_sha256": "59da7d1a826049b7643b6b1d34a5764dc62959fc81761fe556e8d8f8029fab45",
+      "recorded_windows_bytes": 5236
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "git_blob_oid": "c5529f8ab08d71442e52f9f73a516dbf6eb3a780",
+      "git_sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b",
+      "git_bytes": 5543,
+      "recorded_windows_sha256": "161396a273d3094eac5263d25d27daabeee35dad037e49ae495211784e89599d",
+      "recorded_windows_bytes": 5616
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "git_blob_oid": "42a85daf349c294077fbc2e7b665a8687511572d",
+      "git_sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738",
+      "git_bytes": 3808,
+      "recorded_windows_sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738",
+      "recorded_windows_bytes": 3808
+    },
+    {
+      "path": "packages/knowledge/sql/rag.sql",
+      "git_blob_oid": "d84f4eab39e856d70587ea8115575256ec2efa7d",
+      "git_sha256": "51c98cf1aea5364b418747161e86bb374b9b3d44222d67891ec18e27bc200003",
+      "git_bytes": 8399,
+      "recorded_windows_sha256": "be7abfbe9e1c749b5b0bfb0fe4f311ff3dcc788a5eeb22531b143dafec53d9f5",
+      "recorded_windows_bytes": 8534
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "git_blob_oid": "143f92f7b1ba7009e71d0a36b247b915ec6065e2",
+      "git_sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e",
+      "git_bytes": 319,
+      "recorded_windows_sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e",
+      "recorded_windows_bytes": 319
+    },
+    {
+      "path": "deploy/sql/historical-backtest.sql",
+      "git_blob_oid": "ec36a3260ac96dcd7521daee7677c59c6b2c340c",
+      "git_sha256": "e811920d92478fd6e20a9b0d200c2769396eae92deee142a0cc2fbafd0086c44",
+      "git_bytes": 23867,
+      "recorded_windows_sha256": "9ebc3403a83295212b21407864cd2cc44608cd0fe880efb384a4507cb4e467a3",
+      "recorded_windows_bytes": 24116
+    },
+    {
+      "path": "deploy/sql/historical-input-qualification.sql",
+      "git_blob_oid": "ed72eaefc56f34f6fdbd312d03d686f7aa2ec1d9",
+      "git_sha256": "a5d3823cfa1f9cd360649114da8026a07bf5b93b13ec900c22226117137c1052",
+      "git_bytes": 24745,
+      "recorded_windows_sha256": "55620f39212d81c8355e116965169c1f50269eec2834bb0ba07bffbd17893c6d",
+      "recorded_windows_bytes": 24983
+    },
+    {
+      "path": "deploy/sql/model-governance-release.sql",
+      "git_blob_oid": "363bfb7f28435d14c202efc35bee37898ef9eae1",
+      "git_sha256": "80d5c94246bbfe4c47f320c9ad749eea2328a0c66b30a5614556168e0398d936",
+      "git_bytes": 14289,
+      "recorded_windows_sha256": "03113b267f3687e09bdc43f8db3595198576aab3cb5a33c72ca6e6f0266654dd",
+      "recorded_windows_bytes": 14453
+    },
+    {
+      "path": "deploy/sql/model-governance.sql",
+      "git_blob_oid": "524bc7f030cb2fce7cbbe3c1fee453c5e343fe5a",
+      "git_sha256": "0b7dc8863fb83703116189fb3e6bcf442ed5fae2250d50993189e04aefa6f51a",
+      "git_bytes": 34551,
+      "recorded_windows_sha256": "7944997a8e057b6d30469e477a56667626df8bc83ed67c7a7181d880638f975c",
+      "recorded_windows_bytes": 34914
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "git_blob_oid": "bcb980a7a7eabd5c08460c50028bf94a3ba0ab2a",
+      "git_sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027",
+      "git_bytes": 19971,
+      "recorded_windows_sha256": "082adcdb99acc6a5aa088fd8fdb8b5c064ec25f450f5afec32f6b628953ac0e8",
+      "recorded_windows_bytes": 20237
+    },
+    {
+      "path": "deploy/sql/retrospective-research.sql",
+      "git_blob_oid": "968ece2609b88df6c3035ab6ac5d826db2d7a01e",
+      "git_sha256": "8f5c093653fc62ad5c42a5e4d251905cc27bb46194a068722e9345b80219306e",
+      "git_bytes": 43726,
+      "recorded_windows_sha256": "a4b1726457ca8a4a5dcdf8277b0845b83b9dd86b0850dee89a06b088730e5f63",
+      "recorded_windows_bytes": 44167
+    },
+    {
+      "path": "deploy/sql/score-denominator.sql",
+      "git_blob_oid": "7e8fe41537e39a981df9d153827d1b3f144771e6",
+      "git_sha256": "e771ab52c25cbd19ac0e48f5732de051c2f8f5ecc7b6599a0f7064826b169195",
+      "git_bytes": 15602,
+      "recorded_windows_sha256": "52d7b71768edc05c2e85ac199672b00b3da54f4398f1852c81dda6a3d610cb92",
+      "recorded_windows_bytes": 15774
+    },
+    {
+      "path": "deploy/sql/score-execution.sql",
+      "git_blob_oid": "e8321b4ec4c651e5913cffb604249d372aa7423f",
+      "git_sha256": "28e9a2f5042e29078c24a20d2191ada9935034b745627e8b1a5c865b487ec5be",
+      "git_bytes": 62414,
+      "recorded_windows_sha256": "ec17fb640adbdb3ea1916dc126d5f5fb619b36ed475b581b1c4bf52a721d2a2a",
+      "recorded_windows_bytes": 62977
+    },
+    {
+      "path": "deploy/sql/technical-scale-authority.sql",
+      "git_blob_oid": "e5ca706f949ae32effabfd9660bfb2859df67af3",
+      "git_sha256": "ba5bd56c4ae03628cfac01d085cf8eb10fa95b094d3d554f2e866db10bb5dfad",
+      "git_bytes": 25209,
+      "recorded_windows_sha256": "40aa895afe60bffb90f83cdb0cd92c4ac25afba4bc57986b7143271fd4ff42bd",
+      "recorded_windows_bytes": 25456
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "git_blob_oid": "b0f21e1e268cd8e5e6732d591655615b3860b89e",
+      "git_sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619",
+      "git_bytes": 449,
+      "recorded_windows_sha256": "c9bde2b94e575f64e3546cbd6b5df25194f75f0fcfbd03172b51fd1d4cfb11f0",
+      "recorded_windows_bytes": 459
+    }
+  ]
+}

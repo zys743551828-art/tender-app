@@ -45,3 +45,9 @@ POSIX 0600／0700及symlink守卫需在真实Linux文件系统验证。可复用
 & .venv/Scripts/python.exe -X utf8 -m apps.api.export_openapi > packages/contracts/fusion-implemented.openapi.json
 & .venv/Scripts/python.exe -X utf8 apps/web/scripts/generate-contracts.py
 ```
+
+## SQL 输入字节
+
+活跃的直接 `packages/*/sql` 目录及 `deploy/sql` 使用显式 LF 检出规则；归档与 QA 冻结输入保持原字节。Git 归档和 Linux／Windows fresh 引导应据实际输入字节冻结 SHA，不使用另一种换行下的摘要作为当前文件摘要。
+
+`docs/fusion-sql-input-bytes.json` 逐项记录固定 Git blob、LF SHA256 和首批 Windows 工作树原始 SHA256，只有字节来源含义，不授 SQL 审查或执行资格。首批 Windows 原始验证输入及证据保留，不通过改预期摘要隐藏旧输入；后续 Linux 精确候选使用表内 `git_sha256`。

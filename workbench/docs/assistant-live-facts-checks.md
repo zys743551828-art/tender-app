@@ -4,10 +4,12 @@
 
 ## 实际输入
 
-| 文件 | SHA256 |
-| --- | --- |
-| packages/assistant/sql/live-facts.sql | 42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2 |
-| packages/assistant/sql/intent-budget.sql | 9b57df3476d308f18b22ecca6e6bf4b5f1ab1f44968043ae55ce970d934221c8 |
+| 文件 | Git LF SHA256 | 首批Windows原文件SHA256 |
+| --- | --- | --- |
+| packages/assistant/sql/live-facts.sql | 42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2 | 同左 |
+| packages/assistant/sql/intent-budget.sql | 173078b95a5cd58db9f8f8aa09ff2728bae2c4a1e1b3817a4b593e719b04a6b0 | 9b57df3476d308f18b22ecca6e6bf4b5f1ab1f44968043ae55ce970d934221c8 |
+
+当前活跃SQL统一LF，原Windows验证输入和原始证据不改写。字节映射见 [SQL输入清单](fusion-sql-input-bytes.json)，此表不将不同换行的SHA互当同一个原始文件。
 
 完整规范见 [live 资格协议](assistant-live-facts-protocol.md)。Python proof来源仍是原生人工确认basis及source_closure；缺basis不回推，不给旧任务补造证明。
 
