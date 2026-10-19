@@ -1,0 +1,152 @@
+name: tender-fusion
+
+x-python: &python
+  image: tender-fusion-checks:py312
+  pull_policy: never
+  working_dir: /workspace
+  read_only: true
+  restart: "no"
+  mem_limit: 1g
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:rw,nosuid,size=512m,mode=1777"]
+  environment: &python-env
+    PYTHONPATH: /workspace
+    PYTHONDONTWRITEBYTECODE: "1"
+    PYTHONUNBUFFERED: "1"
+    PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+    WORKBENCH_ENV_FILE: explicit-fusion-no-business-profile
+  volumes: &source
+    - ../packages:/workspace/packages:ro
+    - ../apps/api:/workspace/apps/api:ro
+    - ../apps/worker:/workspace/apps/worker:ro
+    - ../tests:/workspace/tests:ro
+    - ../pyproject.toml:/workspace/pyproject.toml:ro
+    - .:/workspace/deploy:ro
+  networks: [core]
+
+x-postgres: &postgres
+  image: pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d
+  pull_policy: never
+  restart: "no"
+  mem_limit: 1g
+  environment:
+    POSTGRES_USER: postgres
+    POSTGRES_DB: postgres
+    POSTGRES_PASSWORD_FILE: /run/secrets/fusion_owner_password
+  secrets: [fusion_owner_password]
+  healthcheck:
+    test: [CMD-SHELL, pg_isready -U postgres -d postgres]
+    interval: 3s
+    timeout: 3s
+    retries: 30
+  networks: [core]
+
+services:
+  postgres:
+    <<: *postgres
+    volumes: [postgres_data:/var/lib/postgresql/data]
+
+  init:
+    <<: *python
+    command: [python, -m, deploy.fusion_bootstrap]
+    depends_on:
+      postgres: {condition: service_healthy}
+    secrets: [fusion_owner_password, fusion_admin_password]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../deploy:/workspace/deploy:ro
+      - init_state:/workspace/.local
+      - api_profile:/runtime
+
+  api:
+    <<: *python
+    command: [python, -m, deploy.fusion_runtime]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - ../deploy:/workspace/deploy:ro
+      - api_profile:/runtime:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 30
+
+  web:
+    image: bidwb-web:0.1.0
+    pull_policy: never
+    entrypoint: [nginx, -g, "daemon off;"]
+    restart: "no"
+    read_only: true
+    mem_limit: 256m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      api: {condition: service_healthy}
+    ports: ["127.0.0.1:5188:8080"]
+    volumes:
+      - ../apps/web/dist:/usr/share/nginx/html:ro
+      - ./nginx-fusion.conf:/etc/nginx/conf.d/default.conf:ro
+    tmpfs: ["/tmp:rw,nosuid,size=64m,mode=1777"]
+    networks: [core]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/nginx-health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  checks-postgres:
+    <<: *postgres
+    profiles: [checks]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/fusion_checks_owner_password
+    secrets: [fusion_checks_owner_password]
+    volumes: [checks_postgres_data:/var/lib/postgresql/data]
+    networks:
+      core:
+        aliases: [fusion-nonowner-postgres]
+
+  checks:
+    <<: *python
+    profiles: [checks]
+    secrets: [fusion_checks_owner_password]
+    command: [python, -m, deploy.fusion_checks]
+    depends_on:
+      checks-postgres: {condition: service_healthy}
+    environment:
+      <<: *python-env
+      FUSION_CHECK_SUITE: ${FUSION_CHECK_SUITE:-pure}
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - ../deploy:/workspace/deploy:ro
+      - ../tests:/workspace/tests:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - checks_evidence:/evidence
+
+networks:
+  core:
+    internal: true
+
+volumes:
+  postgres_data:
+  init_state:
+  api_profile:
+  checks_postgres_data:
+  checks_evidence:
+
+secrets:
+  fusion_owner_password:
+    file: ../.local/fusion/owner-password
+  fusion_checks_owner_password:
+    file: ../.local/fusion/checks-owner-password
+  fusion_admin_password:
+    file: ../.local/fusion/admin-password
