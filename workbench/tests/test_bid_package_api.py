@@ -64,7 +64,7 @@ def database():
 
 
 @pytest.fixture
-def world(api):
+def world(api, request):
     from test_bid_package_repository import add_document
 
     from packages.domain.bid_packages import BidScope
@@ -83,7 +83,7 @@ def world(api):
     c = api["database"]["owner"]
     with c.transaction():
         c.execute("SET LOCAL search_path TO design,public")
-        member = add_document(c, scope, api["actor"])
+        member = add_document(c, scope, api["actor"], raw=getattr(request, "param", None))
         attach(c, scope.bid_id, api["actor"], member)
     item = {
         "member_id": "original",
@@ -112,6 +112,10 @@ def world(api):
 
 def attach(c, bid, actor, member, role="body", *, verified=True):
     file, batch, upload = uid(), uid(), uid()
+    size = c.execute(
+        "SELECT b.byte_size FROM design.document_versions v JOIN design.blobs b ON b.id=v.blob_id WHERE v.id=%s",
+        (member.document_version_id,),
+    ).fetchone()["byte_size"]
     c.execute(
         "INSERT INTO design.document_files(id,bid_id,role,revision,head_version_id) VALUES(%s,%s,%s,1,%s)",
         (file, bid, role, member.document_version_id),
@@ -126,13 +130,14 @@ def attach(c, bid, actor, member, role="body", *, verified=True):
     )
     c.execute(
         """INSERT INTO design.uploads(id,bid_id,batch_id,filename,role,declared_digest,declared_size,staging_key,state,expires_at,verified_version_id,verified_retain_until)
-    VALUES(%s,%s,%s,'synthetic.pdf',%s,%s,10,%s,%s,now()+interval '1 day',%s,now()+interval '1 day')""",
+    VALUES(%s,%s,%s,'synthetic.pdf',%s,%s,%s,%s,%s,now()+interval '1 day',%s,now()+interval '1 day')""",
         (
             upload,
             bid,
             batch,
             role,
             member.file_digest,
+            size,
             "synthetic/" + upload,
             "verified" if verified else "quarantined",
             member.document_version_id,

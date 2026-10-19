@@ -80,13 +80,14 @@ def seed(c):
     return {"c": c, "actor": actor, "scope": scope, "member": member, "package": p}
 
 
-def add_document(c, scope, actor, *, source_kind="own", category="technical"):
+def add_document(c, scope, actor, *, source_kind="own", category="technical", raw=None):
     blob, version, parse_id = uid(), uid(), uid()
-    file_digest = hashlib.sha256(version.encode()).hexdigest()
+    file_digest = hashlib.sha256(raw if raw is not None else version.encode()).hexdigest()
     c.execute(
-        "INSERT INTO design.blobs(id,digest,object_key,byte_size,media_type) VALUES(%s,%s,%s,10,'application/pdf')",
-        (blob, file_digest, "synthetic/" + version),
+        "INSERT INTO design.blobs(id,digest,object_key,byte_size,media_type) VALUES(%s,%s,%s,%s,'application/pdf') ON CONFLICT(digest) DO NOTHING",
+        (blob, file_digest, "synthetic/" + version, len(raw) if raw is not None else 10),
     )
+    blob = c.execute("SELECT id FROM design.blobs WHERE digest=%s", (file_digest,)).fetchone()["id"]
     c.execute(
         """INSERT INTO design.document_versions
         (id,bid_id,blob_id,original_name,obtained_at,artifact_kind,created_by)

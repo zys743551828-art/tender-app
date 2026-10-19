@@ -612,6 +612,207 @@ def counts(w):
     )
 
 
+@pytest.mark.parametrize(
+    "world", [b"synthetic original bytes for extraction execution"], indirect=True
+)
+@pytest.mark.parametrize("case", ["duplicate", "fenced", "missing-evidence", "late-rule"])
+def test_prepare_compute_publish_with_real_nonowner_execution(requirements, monkeypatch, case):
+    from apps.worker import engine
+    from packages.domain import model_calls, reviews, storage
+    from packages.domain.providers.deepseek import DeepSeekClient
+    from packages.domain.review_data import read_json_blob
+    from packages.domain.runtime import clean, enqueue_plan
+
+    w = requirements
+    c = w["database"]["owner"]
+    bid = w["scope"].bid_id
+    raw = b"synthetic original bytes for extraction execution"
+    objects = {}
+    blobs = c.execute(
+        "SELECT b.object_key FROM design.blobs b JOIN design.document_versions v ON v.blob_id=b.id WHERE v.bid_id=%s",
+        (bid,),
+    ).fetchall()
+    for blob in blobs:
+        objects[blob["object_key"]] = raw
+    monkeypatch.setattr(storage, "get", lambda key: objects[key])
+    monkeypatch.setattr(storage, "put", lambda key, data, media: objects.__setitem__(key, data))
+    monkeypatch.setattr(DeepSeekClient, "from_env", classmethod(lambda cls: object()))
+    monkeypatch.setenv("WORKER_DATABASE_DSN", w["database"]["worker_dsn"])
+    material = str(
+        c.execute(
+            "SELECT material_id FROM design.rule_sets WHERE id=%s",
+            (w["inventory_body"]["rule_set_id"],),
+        ).fetchone()["material_id"]
+    )
+    # Source metadata/parse rows are synthetic; original-byte verification is real.
+    authority_version = c.execute(
+        "SELECT manifest->'members'->0->>'document_version_id' AS version FROM design.bid_package_revisions WHERE id=%s",
+        (w["inventory_body"]["authority_revision_id"],),
+    ).fetchone()["version"]
+    with c.transaction():
+        for role, version in [
+            ("body", w["member"].document_version_id),
+            ("tender", authority_version),
+        ]:
+            c.execute(
+                "INSERT INTO design.material_assignments(snapshot_id,bid_id,document_version_id,role,ordinal) VALUES(%s,%s,%s,%s,0)",
+                (material, bid, version, role),
+            )
+        c.execute(
+            "UPDATE design.bid_profiles SET current_material_id=%s,current_body_id=%s WHERE bid_id=%s",
+            (material, w["member"].document_version_id, bid),
+        )
+        c.execute("UPDATE design.bids SET material_revision=1 WHERE id=%s", (bid,))
+        command = uid()
+        c.execute(
+            "INSERT INTO design.commands(id,actor_id,command_kind,target_id,idempotency_key,request_digest) VALUES(%s,%s,'synthetic-parse-seed',%s,%s,%s)",
+            (command, w["actor"], bid, uid(), digest({"material": material})),
+        )
+        parsed = enqueue_plan(
+            c,
+            bid,
+            command,
+            "parse-materials",
+            {"id": material},
+            stages=[{"key": "parse", "depends_on": []}],
+            handler_version="document/2",
+            topic="tender.task.document.v1",
+            input_digest=digest({"material": material}),
+        )
+        c.execute(
+            "UPDATE design.operations SET state='succeeded',finished_at=now() WHERE id=%s",
+            (parsed["id"],),
+        )
+
+    calls = []
+
+    def model(message, lease, **kwargs):
+        content = json.loads(kwargs["messages"][-1]["content"])
+        blocks = [
+            block for document in content["documents"] for block in document["evidence_blocks"]
+        ]
+        calls.append(content)
+        if case == "late-rule":
+            with c.transaction():
+                replacement = uid()
+                c.execute(
+                    "INSERT INTO design.rule_sets(id,bid_id,material_id,revision,digest,coverage) VALUES(%s,%s,%s,2,%s,'partial')",
+                    (replacement, bid, material, digest(replacement)),
+                )
+                c.execute(
+                    "UPDATE design.bid_profiles SET current_rule_set_id=%s WHERE bid_id=%s",
+                    (replacement, bid),
+                )
+        return {
+            "data": {
+                "rules": [
+                    {
+                        "kind": "mandatory",
+                        "statement": blocks[0]["text_content"],
+                        "conditions": [],
+                        "exceptions": [],
+                        "scope": {"bid_id": bid, "description": "Synthetic execution only"},
+                        "maximum": None,
+                        "bands": [],
+                        "evidence_quotes": [
+                            {
+                                "evidence_id": str(blocks[0]["id"]),
+                                "quote": blocks[0]["text_content"],
+                            }
+                        ],
+                    }
+                ],
+                "ambiguities": [],
+                "read_evidence_ids": [
+                    str(block["id"])
+                    for block in (blocks[:-1] if case == "missing-evidence" else blocks)
+                ],
+            }
+        }, uid()
+
+    monkeypatch.setattr(model_calls, "generate", model)
+    detail = w["client"].get("/api/v1/bids/" + bid)
+    request_headers = headers(w) | {"If-Match": detail.headers["etag"]}
+    response = w["client"].post(
+        "/api/v1/bids/" + bid + "/reviews",
+        json={
+            "body_version_id": w["member"].document_version_id,
+            "material_revision": 1,
+            "trigger": "manual",
+        },
+        headers=request_headers,
+    )
+    assert response.status_code == 202, response.text
+    reviews.prepare_intent(bid)
+    slot = c.execute(
+        "SELECT pending_intent FROM design.review_slots WHERE bid_id=%s", (bid,)
+    ).fetchone()["pending_intent"]
+    operation = slot["prepare_operation_id"]
+    assert operation != str(parsed["id"])
+    message = clean(
+        c.execute(
+            "SELECT payload FROM design.outbox WHERE operation_id=%s AND payload->>'step_key'='extract-rules'",
+            (operation,),
+        ).fetchone()["payload"]
+    )
+    descriptor = read_json_blob(
+        c.execute("SELECT * FROM design.blobs WHERE id=%s", (message["payload_ref"],)).fetchone()
+    )
+    frozen = descriptor["package_rule_extraction_input"]
+    assert (
+        frozen["manifest"]["authority_package"]["revision_id"]
+        == w["inventory_body"]["authority_revision_id"]
+    )
+    if case == "fenced":
+        old_lease = engine.acquire(message)
+        c.execute(
+            "UPDATE design.step_receipts SET lease_until=now()-interval '1 second' WHERE operation_id=%s",
+            (operation,),
+        )
+        lease = engine.acquire(message)
+        assert lease["fence"] > old_lease["fence"]
+        outcome = engine.run_compute(message, lease)
+        assert engine.finish(message, old_lease, outcome) is False
+        assert engine.finish(message, lease, outcome) is True
+    else:
+        engine.handle(message)
+    engine.handle(message)
+    assert len(calls) == 1
+    state = c.execute("SELECT state FROM design.operations WHERE id=%s", (operation,)).fetchone()[
+        "state"
+    ]
+    result = c.execute(
+        "SELECT result FROM design.effect_receipts WHERE operation_id=%s AND effect_key='extract-rules'",
+        (operation,),
+    ).fetchone()["result"]
+    records = c.execute(
+        "SELECT * FROM design.bid_package_requirement_extraction_runs WHERE operation_id=%s",
+        (operation,),
+    ).fetchall()
+    if case in {"missing-evidence", "late-rule"}:
+        assert state == "failed", result
+        assert result["error_code"] == (
+            "EXTRACTION_RANGE_INCOMPLETE"
+            if case == "missing-evidence"
+            else "PREPARATION_RULE_SET_CHANGED"
+        )
+        assert records == []
+    else:
+        assert state == "succeeded", result
+        assert len(records) == 1
+        assert records[0]["input_digest"] == frozen["digest"]
+        assert result["extraction_input_digest"] == frozen["digest"]
+        body = {
+            "authority_revision_id": w["inventory_body"]["authority_revision_id"],
+            "rule_set_id": result["result_ref"],
+            "mappings": [],
+        }
+        saved = inventory(w, body=body)
+        assert saved.status_code == 201, saved.text
+        assert saved.json()["manifest"]["extraction_binding"] == "exact_frozen_input_result"
+        assert saved.json()["manifest"]["inventory_complete"] is False
+
+
 def test_actual_nonowner_inventory_attempt_history_and_cas(requirements):
     w = requirements
     key = uid()
