@@ -330,6 +330,40 @@ SCHEMAS["PackageReviewOriginalVerification"] = object_schema(
 )
 
 
+SCHEMAS["FreezePackageReviewInput"] = object_schema(
+    deepcopy(SCHEMAS["PackageReviewOriginalVerificationRequest"]["properties"])
+    | {"context_digest": SHA}
+)
+SCHEMAS["PackageReviewFrozenInputManifest"] = object_schema(
+    {
+        "version": {"const": "package-review-frozen-input/1"},
+        "kind": {"const": "frozen_input"},
+        **{
+            key: UUID
+            for key in (
+                "id",
+                "bid_id",
+                "package_id",
+                "revision_id",
+                "inventory_id",
+                "actor_id",
+                "command_id",
+            )
+        },
+        **{key: SHA for key in ("input_digest", "context_digest", "evidence_digest")},
+        "execution_context": {"$ref": "#/components/schemas/PackageReviewExecutionContext"},
+        "as_of": {"type": "string", "format": "date-time"},
+        "frozen_at": {"type": "string", "format": "date-time"},
+        "blockers": deepcopy(SCHEMAS["PackageReviewInputPreview"]["properties"]["blockers"]),
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+    }
+)
+SCHEMAS["PackageReviewFrozenInputView"] = object_schema(
+    {"manifest": {"$ref": "#/components/schemas/PackageReviewFrozenInputManifest"}, "digest": SHA}
+)
+
+
 def valid(name, value):
     return Draft202012Validator(
         {"components": {"schemas": PACKAGE_SCHEMAS | SCHEMAS}, "allOf": [SCHEMAS[name]]},
@@ -400,6 +434,20 @@ def extend_openapi(actual):
             "verifyPackageReviewOriginals",
             "PackageReviewOriginalVerificationRequest",
             "PackageReviewOriginalVerification",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs",
+            "post",
+            "freezePackageReviewInput",
+            "FreezePackageReviewInput",
+            "PackageReviewFrozenInputView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}",
+            "get",
+            "getFrozenPackageReviewInput",
+            None,
+            "PackageReviewFrozenInputView",
         ),
     ]:
         operation = actual.get("paths", {}).get(BASE + suffix, {}).get(method)

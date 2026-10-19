@@ -12,6 +12,7 @@ from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse
 
 from apps.api.auth import auth
+from apps.api.bid_package_review_input_routes import router as input_router
 from apps.api.identity_routes import saved
 from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_requirement_repository as repository
@@ -23,6 +24,7 @@ router = APIRouter(
     prefix="/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
     tags=["bid-package-requirements"],
 )
+router.include_router(input_router)
 
 
 @contextmanager

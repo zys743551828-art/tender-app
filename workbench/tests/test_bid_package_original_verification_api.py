@@ -50,7 +50,7 @@ class TestOriginalVerification:
         class Client:
             def get_object(self, *, Bucket, Key):
                 # Real PG verifies there is no service transaction during provider IO.
-                assert (
+                assert not state.get("assert_zero_connections", True) or (
                     owner.execute(
                         "SELECT count(*) AS n FROM pg_stat_activity WHERE datname=current_database() AND usename='fusion_package_requirements_service'"
                     ).fetchone()["n"]

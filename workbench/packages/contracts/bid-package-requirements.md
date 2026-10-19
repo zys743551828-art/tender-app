@@ -1,6 +1,6 @@
 # 整包要求投影与人工范围声明
 
-本契约包含不可变要求清单、人工范围声明与只读整包评审输入预检，部署于 fusion_v3 预览库；旧预览库及配置卷保留。正式整包评分、审查与提交链未接入。正式条款及决定仍分别以现有 `rule_items`、`decisions`／`decision_heads`／`rule_carryovers` 为唯一权威；新表不提供另一个可写条款正文。
+本契约包含不可变要求清单、人工范围声明与只读整包评审输入预检，部署于 fusion_v4 全新预览库；旧预览库及配置卷保留。正式整包评分、审查与提交链未接入。正式条款及决定仍分别以现有 `rule_items`、`decisions`／`decision_heads`／`rule_carryovers` 为唯一权威；新表不提供另一个可写条款正文。
 
 ## 冻结内容
 
@@ -68,7 +68,23 @@
 
 候选 `semantic_digest` 包含明确输入、方法／政策、事实／决定和来源的内容；观察时点 `as_of` 单独由完整 `snapshot_digest` 绑定。两轮只比较语义身份，时间正常递增不会伪造成输入变化，但新时点的来源效力阻断仍须复算。拒绝无时区的时点，等价时区规范为UTC。方法声明的执行器与正式评分资格固定false，纯构造器拒绝不一致用途或伪造的true声明。
 
-`PackageReviewOriginalVerification.execution_context` 仅返回摘要、用途、时点、事实集ID和计数，不返回事实值、审计依据、原件定位或证据正文。前端独立边界函数核对候选版本、用途、摘要格式、时点与观察一致、计数和恒false资格，折叠显示技术信息。候选只在服务端本次核验内构建，**尚未持久化，不是正式冻结回执**；正式持久化／发布与执行消费仍待实现。
+`PackageReviewOriginalVerification.execution_context` 仅返回摘要、用途、时点、事实集ID和计数，不返回事实值、审计依据、原件定位或证据正文。前端独立边界函数核对候选版本、用途、摘要格式、时点与观察一致、计数和恒false资格，折叠显示技术信息。原件核验返回的候选只在本次核验内构建，**该HTTP观察不是持久化冻结回执**。需要显式调用下一节的冻结接口保存新记录，观察本身不会自动保存；正式执行／发布仍待接入。
+
+## 不可变整包评审输入与幂等冻结
+
+新增 `POST .../{inventory_id}/frozen-review-inputs` 和 `GET .../{inventory_id}/frozen-review-inputs/{input_id}`。创建需要Session、Origin、CSRF及Idempotency-Key，HTTP201；读取为Session只读HTTP200。`FreezePackageReviewInput` 包含原件核验请求五字段及明确 `context_digest`，不接收客户端正文、证据根、actor、资格或冻结时点。
+
+`bid_package_review_input_routes` 独立处理HTTP及提交失败边界；`bid_package_review_freezing` 处理原回执优先读回、锁外原件IO、最终事务重新捕获与保存；`bid_package_review_input_repository` 只处理不可变存取和原命令回执，不读取当前头。原件快照读取复用同一 `read_in_snapshot`，读检查由RR／RO调用，最终写事务在bid／来源图锁后以READ COMMITTED重新核对。
+
+同键同请求先读原ACK，已有ACK时不读对象、不按当前来源／生命周期重算旧输入；同键不同请求409。并发初次请求可重复做只读核验，但最终bid锁和原Command唯一约束保证只写一份记录及ACK。原件IO不持数据库连接或业务锁；最终事务必须重新核对选择、原件定位／解析证据、方法／事实／来源及当前观察。新增记录和Command ACK同事务提交；延期约束拒绝时不返回成功ACK。存储未配置／原件损坏等初步核验失败不产生Command。
+
+新记录 `package-review-frozen-input/1`、`kind=frozen_input` 绑定明确包／清单、actor／command、输入／上下文／证据根摘要及服务端时点。证据根 `package-review-evidence/1` 保存完整选择、捕获上下文及完整页／证据快照，剔除对象定位。以排序紧凑JSON的UTF-8原文存入不可变表 `bid_package_review_inputs.evidence_text`，SHA256绑定原始文本；其中已有页几何等JSON数字不冒充 `package_canonical_json` 的无浮点协议。外层manifest仍用规范摘要，引用根摘要。读取只校验原记录、根原文SHA和冻结身份，不按当前头／来源重建，不要求对象存储可用。
+
+冻结记录保留未核资格与原阻断，`review_ready`／`launch_available`恒false；保存并不启动模型、operation或评审。当前身份／规则／来源等必须在新冻结提交时仍可用，旧记录则始终可读；未知要求完整性、未核事实等不会被“已保存”覆盖成合规。持久化输入与执行资格是独立状态，后续执行仍须自己的授权与发布前复核。
+
+新增DDL在要求清单后、roles前执行，独立最小权限补片在roles后执行；共享基础计划14项。API仅有新表SELECT／INSERT，Worker仅SELECT；UPDATE／DELETE由权限和append-only触发器双重拒绝。新增fact_heads串行触发器复用原窄权限锁，覆盖首次头插入，不创造第二份事实权威。延期检查重用既有要求／身份／来源完整复核，另核事实头／完整条目／决定依据、精确原件／页证据、命令ACK及摘要；假证据或提交时过期回滚记录与ACK。
+
+本片只交付接口及存储，前端“保存冻结输入”、未决请求刷新恢复、历史入口与正式执行消费尚未接入。初始化规则要求全新库，当前预览切到fusion_v4空库并保留v3数据库、原合成项目及配置卷；不在v3就地改表，也不把旧单正文非空字段填成虚假整包身份。
 
 ## 全新隔离库依赖与权限
 

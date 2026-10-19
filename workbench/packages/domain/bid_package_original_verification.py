@@ -29,23 +29,29 @@ class VerificationInput:
         return {key: value for key, value in self.observations.items() if key != "at"}
 
 
-def read_input(bid: str, package: str, revision: str, inventory: str, body: dict[str, Any]):
-    with connection() as c:
-        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-        manifest = repository.selected(c, bid, package, revision, inventory, body)
-        if digest(manifest) != body["input_digest"]:
-            raise DomainError("PACKAGE_REVIEW_INPUT_DIGEST_MISMATCH", "所选预检输入摘要不一致", 422)
-        observations = repository.observations(c, manifest)
-        documents = [
-            read_member(c, bid, member) | {"package_role": role}
-            for role in ("target", "authority")
-            for member in manifest[role]["manifest"]["members"]
-        ]
-        result = evaluate(manifest, observations, evidence_matches=True)
-        execution_context = package_review_context.capture(c, manifest, observations)
+def read_in_snapshot(
+    c: Any, bid: str, package: str, revision: str, inventory: str, body: dict[str, Any]
+):
+    manifest = repository.selected(c, bid, package, revision, inventory, body)
+    if digest(manifest) != body["input_digest"]:
+        raise DomainError("PACKAGE_REVIEW_INPUT_DIGEST_MISMATCH", "所选预检输入摘要不一致", 422)
+    observations = repository.observations(c, manifest)
+    documents = [
+        read_member(c, bid, member) | {"package_role": role}
+        for role in ("target", "authority")
+        for member in manifest[role]["manifest"]["members"]
+    ]
+    result = evaluate(manifest, observations, evidence_matches=True)
+    execution_context = package_review_context.capture(c, manifest, observations)
     return VerificationInput(
         manifest, observations, documents, result["blockers"], execution_context
     )
+
+
+def read_input(bid: str, package: str, revision: str, inventory: str, body: dict[str, Any]):
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        return read_in_snapshot(c, bid, package, revision, inventory, body)
 
 
 def verify(bid: str, package: str, revision: str, inventory: str, body: dict[str, Any]):

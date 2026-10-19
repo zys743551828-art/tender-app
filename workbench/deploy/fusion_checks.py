@@ -26,6 +26,7 @@ SUITES = {
         "tests/test_bid_package_evidence_api.py",
         "tests/test_bid_package_review_preview_api.py",
         "tests/test_bid_package_original_verification_api.py",
+        "tests/test_bid_package_review_freezing_api.py",
     ],
 }
 

@@ -18774,6 +18774,194 @@
           }
         ]
       }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs": {
+      "post": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-review-inputs"
+        ],
+        "summary": "Freeze Review Input",
+        "operationId": "freezePackageReviewInput",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreezePackageReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageReviewFrozenInputView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}": {
+      "get": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-review-inputs"
+        ],
+        "summary": "Get Frozen Review Input",
+        "operationId": "getFrozenPackageReviewInput",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageReviewFrozenInputView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -52804,6 +52992,188 @@
           "facts_binding",
           "executor_available",
           "formal_scoring_eligible"
+        ]
+      },
+      "FreezePackageReviewInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "inventory_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "coverage_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverage_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "context_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "package_digest",
+          "inventory_digest",
+          "coverage_attempt_id",
+          "coverage_digest",
+          "input_digest",
+          "context_digest"
+        ]
+      },
+      "PackageReviewFrozenInputManifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "package-review-frozen-input/1"
+          },
+          "kind": {
+            "const": "frozen_input"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "package_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "command_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "context_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "evidence_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "execution_context": {
+            "$ref": "#/components/schemas/PackageReviewExecutionContext"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "frozen_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "PROJECT_WORK_CLOSED",
+                "PACKAGE_BIDDER_UNCONFIRMED",
+                "PACKAGE_REVIEW_IDENTITY_STALE",
+                "PACKAGE_REVIEW_PACKAGE_STALE",
+                "PACKAGE_REVIEW_INVENTORY_STALE",
+                "PACKAGE_REVIEW_RULE_SET_STALE",
+                "PACKAGE_REVIEW_SOURCE_UNPROVEN",
+                "PACKAGE_REVIEW_SOURCE_CHANGED",
+                "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
+                "PACKAGE_REVIEW_MEMBERS_UNPROVEN",
+                "PACKAGE_REVIEW_EVIDENCE_CHANGED",
+                "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP",
+                "PACKAGE_REVIEW_EXTRACTION_UNPROVEN",
+                "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN",
+                "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+              ]
+            }
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "id",
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "actor_id",
+          "command_id",
+          "input_digest",
+          "context_digest",
+          "evidence_digest",
+          "execution_context",
+          "as_of",
+          "frozen_at",
+          "blockers",
+          "review_ready",
+          "launch_available"
+        ]
+      },
+      "PackageReviewFrozenInputView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageReviewFrozenInputManifest"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
         ]
       }
     },

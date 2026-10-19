@@ -32,6 +32,8 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         "getPackageCoverageAttempt",
         "previewPackageReviewInput",
         "verifyPackageReviewOriginals",
+        "freezePackageReviewInput",
+        "getFrozenPackageReviewInput",
     }
 
 
