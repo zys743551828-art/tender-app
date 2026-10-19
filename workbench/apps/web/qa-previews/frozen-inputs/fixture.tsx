@@ -85,6 +85,35 @@ window.fetch = async (path) => {
   if (!url.includes("/frozen-review-inputs"))
     throw new Error("夹具拒绝业务请求");
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
+  if (url.endsWith("/execution-check")) {
+    const selectedId = url.split("/").at(-2);
+    const n = [id(6), id(7), id(8)].indexOf(selectedId ?? "");
+    const record = await historical(n < 0 ? 0 : n);
+    return new Response(
+      JSON.stringify({
+        kind: "eligibility_observation",
+        frozen_input_id: record.manifest.id,
+        frozen_digest: record.digest,
+        input_digest: record.manifest.input_digest,
+        checked_at: "2026-10-19T08:02:00Z",
+        current_context: {
+          ...record.manifest.execution_context,
+          as_of: "2026-10-19T08:02:00Z",
+          snapshot_digest: "7".repeat(64),
+        },
+        parse_evidence_status: "matched",
+        original_verification: "not_performed",
+        review_ready: false,
+        launch_available: false,
+        publication_authorized: false,
+        blockers: [
+          "PACKAGE_REVIEW_EXECUTOR_NOT_READY",
+          "PACKAGE_REVIEW_FACTS_UNPROVEN",
+        ],
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
   const list = url.includes("?limit=");
   const more = url.includes("cursor=");
   const items = await Promise.all(

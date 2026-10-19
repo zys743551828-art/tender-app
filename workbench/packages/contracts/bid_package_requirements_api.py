@@ -383,6 +383,38 @@ SCHEMAS["PackageReviewFrozenInputPage"] = object_schema(
         "next_cursor": {"type": ["string", "null"]},
     }
 )
+SCHEMAS["CheckPackageReviewEligibility"] = object_schema({"frozen_digest": SHA})
+SCHEMAS["PackageReviewEligibilityObservation"] = object_schema(
+    {
+        "kind": {"const": "eligibility_observation"},
+        "frozen_input_id": UUID,
+        "frozen_digest": SHA,
+        "input_digest": SHA,
+        "checked_at": {"type": "string", "format": "date-time"},
+        "current_context": {"$ref": "#/components/schemas/PackageReviewExecutionContext"},
+        "parse_evidence_status": {"enum": ["matched", "mismatch"]},
+        "original_verification": {"const": "not_performed"},
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+        "publication_authorized": {"const": False},
+        "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": True,
+            "items": {
+                "enum": SCHEMAS["PackageReviewInputPreview"]["properties"]["blockers"]["items"][
+                    "enum"
+                ]
+                + [
+                    "PACKAGE_REVIEW_METHOD_CHANGED",
+                    "PACKAGE_REVIEW_POLICY_CHANGED",
+                    "PACKAGE_REVIEW_FACTS_CHANGED",
+                    "PACKAGE_REVIEW_FACTS_UNPROVEN",
+                ]
+            },
+        },
+    }
+)
 
 
 def valid(name, value):
@@ -471,6 +503,13 @@ def extend_openapi(actual):
             "PackageReviewFrozenInputPage",
         ),
         (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
+            "post",
+            "checkFrozenPackageReviewEligibility",
+            "CheckPackageReviewEligibility",
+            "PackageReviewEligibilityObservation",
+        ),
+        (
             "/{inventory_id}/frozen-review-inputs/{input_id}",
             "get",
             "getFrozenPackageReviewInput",
@@ -494,7 +533,9 @@ def extend_openapi(actual):
                 {"in": "header", "name": header, "required": True, "schema": {"type": "string"}}
                 for header in (
                     ("Origin", "X-CSRF-Token")
-                    if suffix.endswith(("review-input-preview", "review-original-verification"))
+                    if suffix.endswith(
+                        ("review-input-preview", "review-original-verification", "execution-check")
+                    )
                     else ("Origin", "X-CSRF-Token", "Idempotency-Key")
                 )
             )
@@ -512,7 +553,9 @@ def extend_openapi(actual):
         operation["responses"] = {
             "201"
             if request
-            and not suffix.endswith(("review-input-preview", "review-original-verification"))
+            and not suffix.endswith(
+                ("review-input-preview", "review-original-verification", "execution-check")
+            )
             else "200": {
                 "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
                 "content": {

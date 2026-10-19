@@ -1,5 +1,44 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type CheckPackageReviewEligibility = {
+  frozen_digest: string;
+};
+
+export type PackageReviewEligibilityObservation = {
+  kind: "eligibility_observation";
+  frozen_input_id: string;
+  frozen_digest: string;
+  input_digest: string;
+  checked_at: string;
+  current_context: PackageReviewExecutionContext;
+  parse_evidence_status: "matched" | "mismatch";
+  original_verification: "not_performed";
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  blockers: (
+    | "PROJECT_WORK_CLOSED"
+    | "PACKAGE_BIDDER_UNCONFIRMED"
+    | "PACKAGE_REVIEW_IDENTITY_STALE"
+    | "PACKAGE_REVIEW_PACKAGE_STALE"
+    | "PACKAGE_REVIEW_INVENTORY_STALE"
+    | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
+    | "PACKAGE_REVIEW_SOURCE_CHANGED"
+    | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
+    | "PACKAGE_REVIEW_MEMBERS_UNPROVEN"
+    | "PACKAGE_REVIEW_EVIDENCE_CHANGED"
+    | "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP"
+    | "PACKAGE_REVIEW_EXTRACTION_UNPROVEN"
+    | "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN"
+    | "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+    | "PACKAGE_REVIEW_METHOD_CHANGED"
+    | "PACKAGE_REVIEW_POLICY_CHANGED"
+    | "PACKAGE_REVIEW_FACTS_CHANGED"
+    | "PACKAGE_REVIEW_FACTS_UNPROVEN"
+  )[];
+};
+
 export type PackageReviewFrozenInputPage = {
   bid_id: string;
   package_id: string;
@@ -3356,6 +3395,26 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageReviewExecutionContext = {
+  version: "package-review-context/1";
+  kind: "candidate";
+  input_digest: string;
+  semantic_digest: string;
+  snapshot_digest: string;
+  method_digest: string;
+  policy_digest: string;
+  facts_digest: string;
+  sources_digest: string;
+  as_of: string;
+  purpose: "prebid_compliance";
+  fact_set_id: string | null;
+  fact_count: number;
+  confirmed_fact_count: number;
+  facts_binding: "empty" | "unproven";
+  executor_available: false;
+  formal_scoring_eligible: false;
+};
+
 export type PackageReviewFrozenInputManifest = {
   version: "package-review-frozen-input/1";
   kind: "frozen_input";
@@ -3391,26 +3450,6 @@ export type PackageReviewFrozenInputManifest = {
   )[];
   review_ready: false;
   launch_available: false;
-};
-
-export type PackageReviewExecutionContext = {
-  version: "package-review-context/1";
-  kind: "candidate";
-  input_digest: string;
-  semantic_digest: string;
-  snapshot_digest: string;
-  method_digest: string;
-  policy_digest: string;
-  facts_digest: string;
-  sources_digest: string;
-  as_of: string;
-  purpose: "prebid_compliance";
-  fact_set_id: string | null;
-  fact_count: number;
-  confirmed_fact_count: number;
-  facts_binding: "empty" | "unproven";
-  executor_available: false;
-  formal_scoring_eligible: false;
 };
 
 export type PackageReviewVerifiedOriginal = {
@@ -4883,6 +4922,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
 ];
 
 export const ruleConfirmationLimit: number = 500;

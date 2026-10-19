@@ -20,6 +20,7 @@ import type {
 } from "./packageFrozenInput";
 import "./packageFrozenInput.css";
 import PackageFrozenInputDirectory from "./PackageFrozenInputDirectory";
+import PackageReviewEligibility from "./PackageReviewEligibility";
 import { matchesFrozenInputSummary } from "./frozenInputDirectory";
 import type { FrozenInputSummary } from "./frozenInputDirectory";
 
@@ -273,6 +274,13 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
         {historyError != null && <ErrorNotice error={historyError} />}
         {history && result(history)}
       </details>
+      {(history ?? saved) && (
+        <PackageReviewEligibility
+          key={(history ?? saved)!.digest}
+          scope={scope}
+          frozen={(history ?? saved)!}
+        />
+      )}
     </section>
   );
 }

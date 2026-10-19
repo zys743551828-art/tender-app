@@ -11,6 +11,7 @@ from apps.api.identity_routes import saved
 from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_requirement_repository as requirements
 from packages.domain import bid_package_review_input_repository as repository
+from packages.domain.bid_package_review_eligibility import inspect
 from packages.domain.bid_package_review_freezing import freeze
 from packages.domain.bid_package_review_input_directory import directory
 from packages.domain.bid_packages import PackageError
@@ -106,3 +107,23 @@ def get_frozen_review_input(
                 (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
                 str(input_id),
             )
+
+
+@router.post("/{inventory_id}/frozen-review-inputs/{input_id}/execution-check")
+def check_frozen_review_input(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    input_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    auth(r, True)
+    validate("CheckPackageReviewEligibility", body)
+    with input_errors():
+        return inspect(
+            (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+            str(input_id),
+            body["frozen_digest"],
+        )

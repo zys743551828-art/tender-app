@@ -19060,6 +19060,114 @@
           }
         ]
       }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check": {
+      "post": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-review-inputs"
+        ],
+        "summary": "Check Frozen Review Input",
+        "operationId": "checkFrozenPackageReviewEligibility",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPackageReviewEligibility"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageReviewEligibilityObservation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -53354,6 +53462,107 @@
           "items",
           "has_more",
           "next_cursor"
+        ]
+      },
+      "CheckPackageReviewEligibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "frozen_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "frozen_digest"
+        ]
+      },
+      "PackageReviewEligibilityObservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "eligibility_observation"
+          },
+          "frozen_input_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "frozen_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "current_context": {
+            "$ref": "#/components/schemas/PackageReviewExecutionContext"
+          },
+          "parse_evidence_status": {
+            "enum": [
+              "matched",
+              "mismatch"
+            ]
+          },
+          "original_verification": {
+            "const": "not_performed"
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          },
+          "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "PROJECT_WORK_CLOSED",
+                "PACKAGE_BIDDER_UNCONFIRMED",
+                "PACKAGE_REVIEW_IDENTITY_STALE",
+                "PACKAGE_REVIEW_PACKAGE_STALE",
+                "PACKAGE_REVIEW_INVENTORY_STALE",
+                "PACKAGE_REVIEW_RULE_SET_STALE",
+                "PACKAGE_REVIEW_SOURCE_UNPROVEN",
+                "PACKAGE_REVIEW_SOURCE_CHANGED",
+                "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
+                "PACKAGE_REVIEW_MEMBERS_UNPROVEN",
+                "PACKAGE_REVIEW_EVIDENCE_CHANGED",
+                "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP",
+                "PACKAGE_REVIEW_EXTRACTION_UNPROVEN",
+                "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN",
+                "PACKAGE_REVIEW_EXECUTOR_NOT_READY",
+                "PACKAGE_REVIEW_METHOD_CHANGED",
+                "PACKAGE_REVIEW_POLICY_CHANGED",
+                "PACKAGE_REVIEW_FACTS_CHANGED",
+                "PACKAGE_REVIEW_FACTS_UNPROVEN"
+              ]
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "frozen_input_id",
+          "frozen_digest",
+          "input_digest",
+          "checked_at",
+          "current_context",
+          "parse_evidence_status",
+          "original_verification",
+          "review_ready",
+          "launch_available",
+          "publication_authorized",
+          "blockers"
         ]
       }
     },

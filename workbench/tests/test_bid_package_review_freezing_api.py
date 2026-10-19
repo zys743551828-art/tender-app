@@ -210,6 +210,158 @@ class TestFreezing:
         assert result.status_code == 409 and result.json()["code"] == "IDEMPOTENCY_CONFLICT"
         assert len(f["calls"]) == calls
 
+    def test_execution_check_is_current_readonly_observation_not_original_or_publication_proof(
+        self, frozen_case, monkeypatch
+    ):
+        from packages.domain import storage
+
+        f = frozen_case
+        saved = self.post(f)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        before, calls = counts(f["w"]), len(f["calls"])
+
+        def unavailable():
+            raise AssertionError("eligibility must not read object storage")
+
+        monkeypatch.setattr(storage, "client", unavailable)
+        path = f["path"] + "/" + value["manifest"]["id"] + "/execution-check"
+        response = f["w"]["client"].post(
+            path,
+            json={"frozen_digest": value["digest"]},
+            headers={k: v for k, v in f["headers"].items() if k.lower() != "idempotency-key"},
+        )
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageReviewEligibilityObservation", result)
+        assert (
+            result["frozen_digest"] == value["digest"]
+            and result["input_digest"] == value["manifest"]["input_digest"]
+        )
+        assert (
+            result["parse_evidence_status"] == "matched"
+            and result["original_verification"] == "not_performed"
+        )
+        assert (
+            result["publication_authorized"]
+            is result["launch_available"]
+            is result["review_ready"]
+            is False
+        )
+        assert (
+            "PACKAGE_REVIEW_FACTS_UNPROVEN" in result["blockers"]
+            and "PACKAGE_REVIEW_EXECUTOR_NOT_READY" in result["blockers"]
+        )
+        assert counts(f["w"]) == before and len(f["calls"]) == calls
+        assert f["w"]["client"].get(path.removesuffix("/execution-check")).json() == value
+
+    def test_execution_check_observes_close_source_method_policy_and_facts_without_changing_history(
+        self, frozen_case, monkeypatch
+    ):
+        from packages.domain import package_review_method as method
+
+        f = frozen_case
+        saved = self.post(f)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        w = f["w"]
+        c = w["database"]["owner"]
+        OriginalVerificationCases.seed_fact(self, w)
+        c.execute("UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s", (f["scope"][0],))
+        c.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (w["sources"][0],),
+        )
+        monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-after-freeze")
+        monkeypatch.setitem(method.POLICY, "version", "synthetic-policy-after-freeze")
+        path = f["path"] + "/" + value["manifest"]["id"]
+        response = w["client"].post(
+            path + "/execution-check", json={"frozen_digest": value["digest"]}, headers=f["headers"]
+        )
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageReviewEligibilityObservation", result)
+        assert {
+            "PROJECT_WORK_CLOSED",
+            "PACKAGE_REVIEW_SOURCE_CHANGED",
+            "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
+            "PACKAGE_REVIEW_METHOD_CHANGED",
+            "PACKAGE_REVIEW_POLICY_CHANGED",
+            "PACKAGE_REVIEW_FACTS_CHANGED",
+        } <= set(result["blockers"])
+        assert result["parse_evidence_status"] == "matched"
+        assert w["client"].get(path).json() == value
+
+    def test_execution_check_rechecks_full_parse_metadata_and_preserves_old_root(self, frozen_case):
+        f = frozen_case
+        saved = self.post(f)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        w = f["w"]
+        parse = w["own"]["manifest"]["members"][0]["parse"]["parse_run_id"]
+        owner = w["database"]["owner"]
+        # Corruption injection only in the dedicated test DB, never a business repair.
+        assert owner.info.dbname == "fusion_package_requirements_api"
+        with owner.transaction():
+            owner.execute("SET LOCAL session_replication_role=replica")
+            assert (
+                owner.execute(
+                    "UPDATE design.pages SET width=width+1 WHERE parse_id=%s", (parse,)
+                ).rowcount
+                > 0
+            )
+        path = f["path"] + "/" + value["manifest"]["id"]
+        response = w["client"].post(
+            path + "/execution-check", json={"frozen_digest": value["digest"]}, headers=f["headers"]
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["parse_evidence_status"] == "mismatch"
+        assert "PACKAGE_REVIEW_EVIDENCE_CHANGED" in response.json()["blockers"]
+        assert w["client"].get(path).json() == value
+
+    def test_execution_check_requires_exact_record_scope_auth_and_strict_body(self, frozen_case):
+        from fastapi.testclient import TestClient
+
+        f = frozen_case
+        saved = self.post(f)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        w = f["w"]
+        path = f["path"] + "/" + value["manifest"]["id"] + "/execution-check"
+        with TestClient(w["app"]) as anonymous:
+            assert (
+                anonymous.post(
+                    path, json={"frozen_digest": value["digest"]}, headers=f["headers"]
+                ).status_code
+                == 401
+            )
+        assert (
+            w["client"]
+            .post(path, json={"frozen_digest": "0" * 64}, headers=f["headers"])
+            .status_code
+            == 409
+        )
+        assert (
+            w["client"]
+            .post(
+                path,
+                json={"frozen_digest": value["digest"], "review_ready": True},
+                headers=f["headers"],
+            )
+            .status_code
+            == 422
+        )
+        assert (
+            w["client"]
+            .post(
+                path.replace(f["scope"][0], uid(), 1),
+                json={"frozen_digest": value["digest"]},
+                headers=f["headers"],
+            )
+            .status_code
+            == 404
+        )
+
     def test_consumer_owns_full_frozen_root_and_never_borrows_current_context(
         self, frozen_case, monkeypatch
     ):

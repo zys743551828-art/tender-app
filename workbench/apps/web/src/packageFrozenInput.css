@@ -59,3 +59,12 @@
 .package-frozen-input__directory li span {
   min-width: 0;
 }
+.package-frozen-input__eligibility {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__eligibility > h5 {
+  margin: 0;
+  font-size: 14px;
+}
