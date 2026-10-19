@@ -46,6 +46,18 @@
 
 `review_ready` 和 `launch_available` 固定 false。当前要求完整性未获证明，正式整包执行器未接入，必须保留对应阻断；人工观察和声明只附作上下文，不作为启动评审前必须已全部满足的循环条件。组件只提供“检查所选整包评审输入”，无正式启动按钮；切换或离开再返回同一输入时，迟到响应按代次丢弃。后续正式执行还需冻结方法／用途／事实／来源有效时点、验证原件字节和执行资格，不能把本预检快照直接交给旧单正文执行器。
 
+## 所选整包原件字节核验
+
+`POST .../{inventory_id}/review-original-verification` 使用Session、Origin、CSRF，HTTP 200；请求为 `PackageReviewOriginalVerificationRequest`：完整预检选择四字段加 `input_digest`，必须与所选不可变预检manifest精确一致。不要求Idempotency-Key，不登记Command、operation或正式评审冻结记录。
+
+`bid_package_original_verification` 分别管理两个REPEATABLE READ／READ ONLY快照：先精确读取包成员及完整解析证据，关闭连接后调用独立 `original_verification` 流式读取对象，再开新快照重读全部输入和观察。对象IO期间不持业务连接或锁；解析、原件定位、包头、身份、清单、规则、来源和项目状态变化均不能被前一轮核验遮蔽。第二快照的效力时点重新计算阻断，时间本身递增不作为变化，效力阻断变化必须拒绝。
+
+原件流每次最多1MiB，至多读到声明大小加1字节；核对实际大小及SHA256，不依赖ETag或HEAD声明，不一次缓存完整原件。流正常／失败均关闭；对象缺失返回409，未配置或供应商故障返回503，不将私有定位、签名或错误原文送到用户。明确内存对象流仅用于测试，不接入运行配置。
+
+响应 `PackageReviewOriginalVerification` 为 `kind=observation`，包含选定输入摘要、服务端本次核对时点、每个目标／权威成员的明确版本／解析／文件摘要及大小、当前阻断；`originals_verified=true`仅表示本次全部所选原件字节匹配。`review_ready`／`launch_available`仍false，不产生持久资格或可复用执行凭证，不改旧manifest。对象定位和证据正文不进入响应。期间可变观察或输入发生变化返回409 `PACKAGE_REVIEW_INPUT_CHANGED`，不返回成功观察。
+
+前端原件核验是独立按需加载组件，仅在明确预检后由按钮触发；校验完整成员列表、解析身份、输入摘要、时间和阻断，伪造ready／缺成员／串版本均不展示成功。重新预检，即使摘要相同也清除前次观察、丢弃迟到响应；不自动启动任务。正式执行必须在其实际发布边界重新完成原件和完整身份核验，不能复用本HTTP观察放行。
+
 ## 全新隔离库依赖与权限
 
 新增 `sql/bid-package-requirements.sql` 在 core、domain、bid-packages、stable-lot-identity、retrieval、worker-functions 之后、roles 之前执行。不可变表为 `bid_package_requirement_inventories`、`bid_package_requirements`、`bid_package_coverage_attempts`、`bid_package_coverage_results`；仅 `bid_package_requirement_heads` 前进更新。API 需要新表 SELECT／INSERT、仅 heads UPDATE 及新校验函数 EXECUTE，不授不可变表 UPDATE／DELETE。Worker 仅可按实际准备／完成链追加抽取绑定；不能改写资料包或清单。评分与研究角色不新增写权限。既有决定头及规则继承首次写入也由新增触发器按 bid 串行，继承路径复用已有窄权限 `lock_worker_bid`，保护原来没有当前决定的空键；任意直接 SQL 反向锁序仍可能被 PostgreSQL 判死锁而整事务回滚，不将其描述为正常路径无死锁。

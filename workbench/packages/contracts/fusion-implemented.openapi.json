@@ -18677,6 +18677,103 @@
           }
         ]
       }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification": {
+      "post": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "Verify Review Originals",
+        "operationId": "verifyPackageReviewOriginals",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageReviewOriginalVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageReviewOriginalVerification"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -52444,6 +52541,166 @@
           "launch_available",
           "blockers",
           "physical_page_gaps"
+        ]
+      },
+      "PackageReviewOriginalVerificationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "inventory_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "coverage_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverage_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "package_digest",
+          "inventory_digest",
+          "coverage_attempt_id",
+          "coverage_digest",
+          "input_digest"
+        ]
+      },
+      "PackageReviewVerifiedOriginal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "enum": [
+              "target",
+              "authority"
+            ]
+          },
+          "member_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S",
+            "not": {
+              "pattern": "[\\u0000\\uD800-\\uDFFF]"
+            }
+          },
+          "document_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parse_run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "file_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "byte_size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "role",
+          "member_id",
+          "document_version_id",
+          "parse_run_id",
+          "file_digest",
+          "byte_size"
+        ]
+      },
+      "PackageReviewOriginalVerification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "observation"
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "originals_verified": {
+            "const": true
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "PROJECT_WORK_CLOSED",
+                "PACKAGE_BIDDER_UNCONFIRMED",
+                "PACKAGE_REVIEW_IDENTITY_STALE",
+                "PACKAGE_REVIEW_PACKAGE_STALE",
+                "PACKAGE_REVIEW_INVENTORY_STALE",
+                "PACKAGE_REVIEW_RULE_SET_STALE",
+                "PACKAGE_REVIEW_SOURCE_UNPROVEN",
+                "PACKAGE_REVIEW_SOURCE_CHANGED",
+                "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
+                "PACKAGE_REVIEW_MEMBERS_UNPROVEN",
+                "PACKAGE_REVIEW_EVIDENCE_CHANGED",
+                "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP",
+                "PACKAGE_REVIEW_EXTRACTION_UNPROVEN",
+                "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN",
+                "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+              ]
+            }
+          },
+          "originals": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/PackageReviewVerifiedOriginal"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "input_digest",
+          "checked_at",
+          "originals_verified",
+          "review_ready",
+          "launch_available",
+          "blockers",
+          "originals"
         ]
       }
     },

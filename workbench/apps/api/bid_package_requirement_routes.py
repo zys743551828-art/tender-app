@@ -244,3 +244,20 @@ def preview_review_input(
             return preview(
                 c, str(bid_id), str(package_id), str(revision_id), str(inventory_id), body
             )
+
+
+@router.post("/{inventory_id}/review-original-verification")
+def verify_review_originals(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    from packages.domain.bid_package_original_verification import verify
+
+    auth(r, True)
+    validate("PackageReviewOriginalVerificationRequest", body)
+    with requirement_errors():
+        return verify(str(bid_id), str(package_id), str(revision_id), str(inventory_id), body)

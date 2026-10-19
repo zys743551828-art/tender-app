@@ -1,5 +1,40 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type PackageReviewOriginalVerification = {
+  kind: "observation";
+  input_digest: string;
+  checked_at: string;
+  originals_verified: true;
+  review_ready: false;
+  launch_available: false;
+  blockers: (
+    | "PROJECT_WORK_CLOSED"
+    | "PACKAGE_BIDDER_UNCONFIRMED"
+    | "PACKAGE_REVIEW_IDENTITY_STALE"
+    | "PACKAGE_REVIEW_PACKAGE_STALE"
+    | "PACKAGE_REVIEW_INVENTORY_STALE"
+    | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
+    | "PACKAGE_REVIEW_SOURCE_CHANGED"
+    | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
+    | "PACKAGE_REVIEW_MEMBERS_UNPROVEN"
+    | "PACKAGE_REVIEW_EVIDENCE_CHANGED"
+    | "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP"
+    | "PACKAGE_REVIEW_EXTRACTION_UNPROVEN"
+    | "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN"
+    | "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+  )[];
+  originals: PackageReviewVerifiedOriginal[];
+};
+
+export type PackageReviewOriginalVerificationRequest = {
+  package_digest: string;
+  inventory_digest: string;
+  coverage_attempt_id: string | null;
+  coverage_digest: string | null;
+  input_digest: string;
+};
+
 export type PackageReviewInputPreviewRequest = {
   package_digest: string;
   inventory_digest: string;
@@ -3289,6 +3324,15 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageReviewVerifiedOriginal = {
+  role: "target" | "authority";
+  member_id: string;
+  document_version_id: string;
+  parse_run_id: string;
+  file_digest: string;
+  byte_size: number;
+};
+
 export type BidPackage_requirement = {
   requirement_id: string;
   scope: BidPackage_scope;
@@ -4746,6 +4790,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/uploads/{upload_id}/authorizations",
   "POST /api/v1/uploads/{upload_id}/abort",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
 ];
 
 export const ruleConfirmationLimit: number = 500;

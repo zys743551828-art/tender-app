@@ -272,6 +272,37 @@ SCHEMAS["PackageReviewInputPreview"] = object_schema(
 )
 
 
+SCHEMAS["PackageReviewOriginalVerificationRequest"] = object_schema(
+    deepcopy(SCHEMAS["PackageReviewInputPreviewRequest"]["properties"]) | {"input_digest": SHA}
+)
+SCHEMAS["PackageReviewVerifiedOriginal"] = object_schema(
+    {
+        "role": {"enum": ["target", "authority"]},
+        "member_id": IDENTIFIER,
+        "document_version_id": UUID,
+        "parse_run_id": UUID,
+        "file_digest": SHA,
+        "byte_size": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    }
+)
+SCHEMAS["PackageReviewOriginalVerification"] = object_schema(
+    {
+        "kind": {"const": "observation"},
+        "input_digest": SHA,
+        "checked_at": {"type": "string", "format": "date-time"},
+        "originals_verified": {"const": True},
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+        "blockers": deepcopy(SCHEMAS["PackageReviewInputPreview"]["properties"]["blockers"]),
+        "originals": {
+            "type": "array",
+            "minItems": 2,
+            "items": {"$ref": "#/components/schemas/PackageReviewVerifiedOriginal"},
+        },
+    }
+)
+
+
 def valid(name, value):
     return Draft202012Validator(
         {"components": {"schemas": PACKAGE_SCHEMAS | SCHEMAS}, "allOf": [SCHEMAS[name]]},
@@ -336,6 +367,13 @@ def extend_openapi(actual):
             "PackageReviewInputPreviewRequest",
             "PackageReviewInputPreview",
         ),
+        (
+            "/{inventory_id}/review-original-verification",
+            "post",
+            "verifyPackageReviewOriginals",
+            "PackageReviewOriginalVerificationRequest",
+            "PackageReviewOriginalVerification",
+        ),
     ]:
         operation = actual.get("paths", {}).get(BASE + suffix, {}).get(method)
         if operation is None:
@@ -353,7 +391,7 @@ def extend_openapi(actual):
                 {"in": "header", "name": header, "required": True, "schema": {"type": "string"}}
                 for header in (
                     ("Origin", "X-CSRF-Token")
-                    if suffix.endswith("review-input-preview")
+                    if suffix.endswith(("review-input-preview", "review-original-verification"))
                     else ("Origin", "X-CSRF-Token", "Idempotency-Key")
                 )
             )
@@ -369,7 +407,10 @@ def extend_openapi(actual):
                     for header in ("If-Match", "If-None-Match")
                 )
         operation["responses"] = {
-            "201" if request and not suffix.endswith("review-input-preview") else "200": {
+            "201"
+            if request
+            and not suffix.endswith(("review-input-preview", "review-original-verification"))
+            else "200": {
                 "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
                 "content": {
                     "application/json": {"schema": {"$ref": "#/components/schemas/" + response}}

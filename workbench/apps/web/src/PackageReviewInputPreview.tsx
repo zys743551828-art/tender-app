@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import type {
@@ -7,6 +7,12 @@ import type {
   PackageRequirementInventoryView,
   PackageReviewInputPreview as Preview,
 } from "./contracts";
+
+const PackageOriginalVerification = lazy(() =>
+  import("./PackageOriginalVerification").then((module) => ({
+    default: module.PackageOriginalVerification,
+  })),
+);
 
 type Props = {
   bidId: string;
@@ -201,6 +207,12 @@ export function PackageReviewInputPreview({
               ))}
             </ul>
           )}
+          <Suspense fallback={<p>正在加载原件核验…</p>}>
+            <PackageOriginalVerification
+              preview={current.result}
+              disabled={disabled || coveragePending}
+            />
+          </Suspense>
           <details>
             <summary>本次明确选择的输入身份</summary>
             <p>输入摘要 {current.result.digest}</p>
