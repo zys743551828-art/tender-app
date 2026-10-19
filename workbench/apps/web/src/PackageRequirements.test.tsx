@@ -283,6 +283,483 @@ const mount = () =>
     <PackageRequirements bidId={bid} memberId={member} packageView={view} />,
   );
 
+const planRules: RuleSetView = {
+  ...rules,
+  rules: [
+    {
+      id: ruleId,
+      rule_set_id: ruleSet,
+      kind: "mandatory",
+      statement: "人工检查计划保留原始全文",
+      conditions: ["有专项工艺时"],
+      exceptions: ["正式补遗另有约定"],
+      maximum: null,
+      evidence_ids: [evidence],
+      confirmation: "pending",
+      decision_revision: 1,
+      carryover: null,
+      scope: { bid_id: bid, description: "同一合成标段" },
+      bands: [],
+      origin_kind: "human_added",
+      manual_origin_rule_id: ruleId,
+      provenance_status: "effective",
+    },
+  ],
+};
+function installPlan(handler?: Handler, existing = true) {
+  return install(async (url, options) => {
+    const custom = await handler?.(url, options);
+    if (custom) return custom;
+    if (url === `/api/v1/bids/${bid}/rules`) return json(planRules);
+    if (url === `/api/v1/evidence/${evidence}`)
+      return json({
+        id: evidence,
+        document_version_id: id(16),
+        parse_run_id: id(17),
+        physical_page: 1,
+        printed_label: null,
+        kind: "text",
+        quote: "合成原页证据完整句",
+        bbox: null,
+        page_width: 400,
+        page_height: 500,
+        rotation: 0,
+        source_status: "published",
+      });
+    return undefined;
+  }, existing);
+}
+async function fillPlan() {
+  await userEvent.click(
+    screen.getByRole("button", { name: "开始编辑检查计划" }),
+  );
+  expect(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  ).toBeDisabled();
+  expect(screen.getByLabelText("权威依据包")).toBeDisabled();
+  await userEvent.click(screen.getByRole("checkbox", { name: "映射要求 1" }));
+  await userEvent.click(
+    screen.getByRole("checkbox", { name: /文件 1 · 分册 1/ }),
+  );
+  await userEvent.type(
+    screen.getByLabelText("要求 1 人工映射理由（最多200字）"),
+    "人工核对计划，非合规结论",
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("checkbox", { name: "要求 1 采用依据 1" }),
+    ).toBeEnabled(),
+  );
+  await userEvent.click(
+    screen.getByRole("checkbox", { name: "要求 1 采用依据 1" }),
+  );
+  await userEvent.click(
+    screen.getByRole("checkbox", { name: "要求 1 数量未知" }),
+  );
+  await userEvent.type(screen.getByLabelText("要求 1 最小数量"), "0");
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "保存检查计划清单" }),
+    ).toBeEnabled(),
+  );
+}
+
+it("explicitly starts an editable check plan, saves zero with exact original scope and never writes coverage", async () => {
+  const { writes } = installPlan(undefined, false);
+  mount();
+  await expand();
+  await selectAuthority();
+  await fillPlan();
+  expect(screen.getByRole("checkbox", { name: "映射要求 1" })).toBeEnabled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  );
+  await screen.findByText(/已冻结人工检查计划；清单完整性仍未知/);
+  expect(writes).toHaveLength(1);
+  expect(writes[0].url).toBe(base);
+  expect(writes[0].body).toEqual({
+    authority_revision_id: authorityRevision,
+    rule_set_id: ruleSet,
+    mappings: [
+      {
+        rule_id: ruleId,
+        categories: ["技术"],
+        target_part_ids: ["技术"],
+        minimum_count: 0,
+        applicability: "unknown",
+        applicability_evidence_ids: [],
+        valid_at: null,
+        checks: ["quantity"],
+        reason: "人工核对计划，非合规结论",
+        basis_evidence_ids: [evidence],
+      },
+    ],
+  });
+  expect(writes[0].headers.get("If-None-Match")).toBe("*");
+  expect(sessionStorage.length).toBe(0);
+});
+
+it.each([422, 428])(
+  "restores a v2 lost ACK with original plan, snapshots, key and CAS after refresh and generic pre-command rejection %s",
+  async (rejectionStatus) => {
+    let mode: "unknown" | "rejected" | "success" = "unknown";
+    const { writes } = installPlan((_url, options) => {
+      if (options?.method !== "POST") return;
+      if (mode === "unknown") throw new TypeError("lost ACK");
+      if (mode === "rejected")
+        return json(
+          {
+            code:
+              rejectionStatus === 422
+                ? "INVALID_REQUEST"
+                : "PRECONDITION_REQUIRED",
+            message: "前置拒绝",
+            retryable: false,
+          },
+          undefined,
+          rejectionStatus,
+        );
+    });
+    const ui = mount();
+    await expand();
+    await selectAuthority();
+    await fillPlan();
+    await userEvent.click(
+      screen.getByRole("button", { name: "保存检查计划清单" }),
+    );
+    await screen.findByText(/保存结果未知/);
+    const saved = sessionStorage.getItem(
+      `tender:requirements-pending:${member}:${bid}:${packageId}:${target}`,
+    )!;
+    expect(JSON.parse(saved)).toMatchObject({
+      version: 2,
+      context: { authority, rules: planRules },
+    });
+    expect(
+      screen.getByRole("button", { name: "取消未发送的检查计划" }),
+    ).toBeDisabled();
+    ui.unmount();
+    mode = "rejected";
+    mount();
+    await expand();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "重试原清单操作" }),
+    );
+    await screen.findByText("前置拒绝");
+    expect(
+      sessionStorage.getItem(
+        `tender:requirements-pending:${member}:${bid}:${packageId}:${target}`,
+      ),
+    ).toBe(saved);
+    expect(
+      screen.getByLabelText("要求 1 人工映射理由（最多200字）"),
+    ).toHaveValue("人工核对计划，非合规结论");
+    expect(screen.getByRole("checkbox", { name: "映射要求 1" })).toBeDisabled();
+    mode = "success";
+    await userEvent.click(
+      screen.getByRole("button", { name: "重试原清单操作" }),
+    );
+    await screen.findByText(/已保存要求清单修订/);
+    expect(writes).toHaveLength(3);
+    for (const write of writes.slice(1)) {
+      expect(write.body).toEqual(writes[0].body);
+      expect(write.headers.get("Idempotency-Key")).toBe(
+        writes[0].headers.get("Idempotency-Key"),
+      );
+      expect(write.headers.get("If-Match")).toBe('"current"');
+    }
+  },
+);
+
+it("keeps the original plan editable after a definitive conflict and requires exact read plus explicit baseline adoption", async () => {
+  let conflict = true;
+  const { writes, fetcher } = installPlan((url, options) => {
+    if (options?.method === "POST" && conflict)
+      return json(
+        {
+          code: "REVISION_CONFLICT",
+          message: "计划版本冲突",
+          retryable: false,
+        },
+        undefined,
+        412,
+      );
+    if (!conflict && url === base + "?limit=20")
+      return json(
+        {
+          ...page([
+            {
+              id: inventoryId,
+              digest: frozen.digest,
+              created_at: "2026-10-19T00:00:00Z",
+            },
+          ]),
+          current_inventory_id: inventoryId,
+        },
+        '"new-current"',
+      );
+    if (url === base + "/" + inventoryId)
+      return json({ ...frozen, manifest: { ...frozen.manifest, revision: 2 } });
+  });
+  mount();
+  await expand();
+  await selectAuthority();
+  await fillPlan();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  );
+  await screen.findByText("计划版本冲突");
+  conflict = false;
+  await waitFor(() =>
+    expect(
+      screen.getByLabelText("要求 1 人工映射理由（最多200字）"),
+    ).toBeEnabled(),
+  );
+  expect(screen.getByLabelText("要求 1 人工映射理由（最多200字）")).toHaveValue(
+    "人工核对计划，非合规结论",
+  );
+  expect(
+    screen.getByRole("button", { name: "放弃已明确失败的草稿" }),
+  ).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  ).toBeDisabled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取当前清单基线" }),
+  );
+  await screen.findByText("已核对当前清单修订 2");
+  expect(
+    fetcher.mock.calls.some(
+      ([path]) => String(path) === base + "/" + inventoryId,
+    ),
+  ).toBe(true);
+  expect(screen.getByText(/当前映射 0 \/ 总要求 1/)).toBeInTheDocument();
+  expect(writes).toHaveLength(1);
+  await userEvent.click(
+    screen.getByRole("button", { name: "确认采用已核对的新基线" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "保存检查计划清单" }),
+    ).toBeEnabled(),
+  );
+  expect(writes).toHaveLength(1);
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  );
+  await screen.findByText(/已保存要求清单修订/);
+  expect(writes[1].body).toEqual(writes[0].body);
+  expect(writes[0].headers.get("If-Match")).toBe('"current"');
+  expect(writes[1].headers.get("If-Match")).toBe('"new-current"');
+  expect(writes[1].headers.get("Idempotency-Key")).not.toBe(
+    writes[0].headers.get("Idempotency-Key"),
+  );
+});
+
+it("rejects a foreign exact baseline manifest after 412 and preserves the plan without automatic retry", async () => {
+  const { writes } = installPlan((url, options) => {
+    if (options?.method === "POST")
+      return json(
+        { code: "REVISION_CONFLICT", message: "基线已变", retryable: false },
+        undefined,
+        412,
+      );
+    if (url === base + "/" + inventoryId)
+      return json({
+        ...frozen,
+        manifest: { ...frozen.manifest, target_revision_id: id(99) },
+      });
+  });
+  mount();
+  await expand();
+  await selectAuthority();
+  await fillPlan();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  );
+  await screen.findByText("基线已变");
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取当前清单基线" }),
+  );
+  await screen.findByText(/当前清单范围或摘要不一致/);
+  expect(
+    screen.queryByRole("button", { name: "确认采用已核对的新基线" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  ).toBeDisabled();
+  expect(writes).toHaveLength(1);
+});
+
+it("latches original-rule changes, keeps entered fields and permits cancelling an unsent plan", async () => {
+  let changed = false;
+  const different = {
+    ...planRules,
+    revision: 2,
+    rules: planRules.rules.map((r) => ({
+      ...r,
+      statement: "新条款不能代入旧计划",
+    })),
+  };
+  const { writes } = installPlan((url) =>
+    url.endsWith("/rules") && changed ? json(different) : undefined,
+  );
+  mount();
+  await expand();
+  await selectAuthority();
+  await fillPlan();
+  changed = true;
+  await userEvent.click(
+    screen.getByRole("button", { name: "核对原规则与依据" }),
+  );
+  await screen.findByText(/原规则或依据已变化/);
+  expect(screen.getByLabelText("要求 1 人工映射理由（最多200字）")).toHaveValue(
+    "人工核对计划，非合规结论",
+  );
+  expect(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  ).toBeDisabled();
+  changed = false;
+  await userEvent.click(
+    screen.getByRole("button", { name: "核对原规则与依据" }),
+  );
+  expect(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  ).toBeDisabled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "取消未发送的检查计划" }),
+  );
+  expect(screen.queryByLabelText("人工检查计划草稿")).not.toBeInTheDocument();
+  expect(writes).toHaveLength(0);
+});
+
+function storedPlan() {
+  return {
+    version: 2,
+    scope: {
+      bidId: bid,
+      memberId: member,
+      packageId,
+      revisionId: target,
+      digest: view.digest,
+    },
+    body: {
+      authority_revision_id: authorityRevision,
+      rule_set_id: ruleSet,
+      mappings: [
+        {
+          rule_id: ruleId,
+          categories: ["技术"],
+          target_part_ids: ["技术"],
+          minimum_count: 0,
+          applicability: "unknown",
+          applicability_evidence_ids: [],
+          valid_at: "2026-10-19T02:00:00+08:00" as string | null,
+          checks: ["quantity"],
+          reason: "合成🧱检查计划",
+          basis_evidence_ids: [evidence],
+        },
+      ],
+    },
+    key: id(90),
+    etag: '"original"',
+    ifNoneMatch: null,
+    context: structuredClone({ authority, rules: planRules }),
+  };
+}
+it.each([
+  "other-lot",
+  "other-round",
+  "other-bidder",
+  "long-reason",
+  "nul-reason",
+  "surrogate-reason",
+  "no-timezone",
+  "bad-rule-id",
+])(
+  "locks corrupted v2 context/body recovery without sending a replacement: %s",
+  async (mode) => {
+    const pending = storedPlan();
+    if (mode === "other-lot")
+      pending.context.authority.manifest.scope.lot_id = id(99);
+    if (mode === "other-round")
+      pending.context.authority.manifest.scope.round_id = id(99);
+    if (mode === "other-bidder")
+      pending.context.authority.manifest.scope.bidder_id = id(99);
+    if (mode === "long-reason")
+      pending.body.mappings[0].reason = "字".repeat(201);
+    if (mode === "nul-reason") pending.body.mappings[0].reason = "理由\0";
+    if (mode === "surrogate-reason")
+      pending.body.mappings[0].reason = "理由\ud800";
+    if (mode === "no-timezone")
+      pending.body.mappings[0].valid_at = "2026-10-19T02:00:00";
+    if (mode === "bad-rule-id") pending.body.mappings[0].rule_id = "bad-rule";
+    sessionStorage.setItem(
+      `tender:requirements-pending:${member}:${bid}:${packageId}:${target}`,
+      JSON.stringify(pending),
+    );
+    const { writes } = installPlan();
+    mount();
+    await expand();
+    await screen.findByText(/本地未决操作记录损坏或范围不符/);
+    expect(
+      screen.queryByRole("button", { name: "重试原清单操作" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "开始编辑检查计划" }),
+    ).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  },
+);
+it("replays its own valid v2 timestamp, unicode reason and zero quantity without stricter restore changing the key", async () => {
+  const pending = storedPlan();
+  sessionStorage.setItem(
+    `tender:requirements-pending:${member}:${bid}:${packageId}:${target}`,
+    JSON.stringify(pending),
+  );
+  const { writes } = installPlan();
+  mount();
+  await expand();
+  await userEvent.click(
+    await screen.findByRole("button", { name: "重试原清单操作" }),
+  );
+  await screen.findByText(/已保存要求清单修订/);
+  expect(writes).toHaveLength(1);
+  expect(writes[0].body).toEqual(pending.body);
+  expect(writes[0].headers.get("Idempotency-Key")).toBe(pending.key);
+  expect(writes[0].headers.get("If-Match")).toBe(pending.etag);
+});
+it("allows explicitly abandoning a definitively failed plan without deleting any unknown operation", async () => {
+  const { writes } = installPlan((_url, options) =>
+    options?.method === "POST"
+      ? json(
+          {
+            code: "PACKAGE_REQUIREMENT_SOURCE_STALE",
+            message: "来源变化拒绝",
+            retryable: false,
+          },
+          undefined,
+          409,
+        )
+      : undefined,
+  );
+  mount();
+  await expand();
+  await selectAuthority();
+  await fillPlan();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存检查计划清单" }),
+  );
+  await screen.findByText("来源变化拒绝");
+  await userEvent.click(
+    screen.getByRole("button", { name: "放弃已明确失败的草稿" }),
+  );
+  expect(screen.queryByLabelText("人工检查计划草稿")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("权威依据包")).toBeEnabled();
+  expect(sessionStorage.length).toBe(0);
+  expect(writes).toHaveLength(1);
+});
+
 it("loads only after opening and reads exact frozen rule, unknown flags and historical scope", async () => {
   const { fetcher } = install();
   mount();
@@ -300,6 +777,52 @@ it("loads only after opening and reads exact frozen rule, unknown flags and hist
   expect(screen.getByText(/原始条件：仅在指定条件适用/)).toBeInTheDocument();
   expect(
     await screen.findByText(/尚无人工范围声明，所有条款核验状态为未知/),
+  ).toBeInTheDocument();
+});
+
+it("reads mapped history with the original reason, zero, translated checks and exact frozen target pages", async () => {
+  const mapped = structuredClone(frozen);
+  const binding = mapped.manifest.requirements[0];
+  binding.annotation = {
+    kind: "human_check_plan_declaration",
+    mapped: true,
+    reason: "保留人工选择的原计划理由",
+    basis_evidence_ids: [evidence],
+  };
+  binding.requirement.minimum_count = 0;
+  binding.requirement.target_part_ids = ["技术", "unknown-internal-part"];
+  binding.requirement.checks = [
+    "quantity",
+    "expiry",
+    "signature",
+    "format",
+    "scope",
+  ];
+  binding.requirement.applicability_evidence = ["evidence:" + evidence];
+  install((url) =>
+    url === base + "/" + inventoryId ? json(mapped) : undefined,
+  );
+  mount();
+  await expand();
+  await userEvent.click(
+    await screen.findByRole("button", { name: /读取清单 1/ }),
+  );
+  expect(
+    await screen.findByText(/检查计划理由：保留人工选择的原计划理由/),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/数量：0/)).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "核验项：数量逐项核对、有效期、签字盖章、格式要求、适用范围",
+    ),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText("目标范围：文件 1 · 分册 1 · 技术 · 物理页 1—2"),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/目标范围：未定位范围/)).toBeInTheDocument();
+  expect(screen.getByText(/unknown-internal-part/)).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "查看要求 1 检查计划采用依据（1）" }),
   ).toBeInTheDocument();
 });
 

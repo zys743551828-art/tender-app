@@ -410,51 +410,84 @@ a svg {
   padding: 24px;
   overflow-wrap: anywhere;
 }
-.bid-package-workspace .panel-heading {
+.bid-package-workspace
+  .panel-heading:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
 }
-.bid-package-workspace .panel-heading p {
+.bid-package-workspace
+  .panel-heading
+  p:not(:where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)) {
   margin-top: 8px;
 }
-.bid-package-workspace > label {
+.bid-package-workspace
+  > label:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   max-width: 380px;
   margin: 18px 0;
 }
-.bid-package-workspace h3 {
+.bid-package-workspace
+  h3:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 22px 0 12px;
 }
-.bid-package-workspace fieldset {
+.bid-package-workspace
+  fieldset:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   min-width: 0;
   padding: 18px;
   margin: 18px 0;
   border: 1px solid var(--line);
   border-radius: 8px;
 }
-.bid-package-workspace fieldset > label {
+.bid-package-workspace
+  fieldset
+  > label:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin-top: 14px;
 }
-.bid-package-workspace legend {
+.bid-package-workspace
+  legend:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   padding: 0 6px;
   font-weight: 600;
 }
-.bid-package-workspace ul {
+.bid-package-workspace
+  ul:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   padding-left: 22px;
   margin: 12px 0;
 }
-.bid-package-workspace details {
+.bid-package-workspace
+  details:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 12px 0;
 }
-.bid-package-workspace .text-button {
+.bid-package-workspace
+  .text-button:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   display: inline-block;
   margin-right: 12px;
   margin-bottom: 8px;
   line-height: 1.6;
 }
-.bid-package-workspace pre {
+.bid-package-workspace
+  pre:not(
+    :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   max-width: 100%;
   max-height: 280px;
   overflow: auto;
@@ -464,11 +497,17 @@ a svg {
   .bid-package-workspace {
     padding: 18px;
   }
-  .bid-package-workspace .panel-heading {
+  .bid-package-workspace
+    .panel-heading:not(
+      :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+    ) {
     flex-direction: column;
     gap: 10px;
   }
-  .bid-package-workspace fieldset {
+  .bid-package-workspace
+    fieldset:not(
+      :where(.package-requirements *, .dialog-backdrop, .dialog-backdrop *)
+    ) {
     padding: 12px;
   }
 }
@@ -4179,6 +4218,20 @@ textarea:focus-visible {
 .requirements-toggle {
   margin: 12px 0;
 }
+.package-requirements .requirement-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.package-requirements .requirement-plan-draft {
+  min-width: 0;
+  margin-block: 20px;
+}
+.package-requirements > fieldset > label {
+  margin-top: 14px;
+}
 .package-requirements {
   min-width: 0;
   margin: 18px 0;
@@ -4188,61 +4241,113 @@ textarea:focus-visible {
   background: var(--subtle);
   overflow-wrap: anywhere;
 }
-.package-requirements > h3 {
+.package-requirements
+  > h3:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin-top: 0;
 }
-.package-requirements p,
-.package-requirements details {
+.package-requirements
+  p:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ),
+.package-requirements
+  details:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin-block: 10px;
 }
-.package-requirements h4 {
+.package-requirements
+  h4:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 22px 0 12px;
   font-size: 14px;
 }
-.package-requirements h5 {
+.package-requirements
+  h5:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 0 0 10px;
   font-size: 13px;
 }
-.package-requirements h6 {
+.package-requirements
+  h6:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 16px 0 10px;
   font-size: 12px;
 }
-.package-requirements > p[role="note"],
-.package-requirements > div[role="status"] {
+.package-requirements
+  > p[role="note"]:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ),
+.package-requirements
+  > div[role="status"]:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   padding: 12px 14px;
   border: 1px solid var(--warning-border);
   border-radius: 8px;
   background: var(--warning-soft);
   color: var(--warning-foreground);
 }
-.package-requirements fieldset {
+/* Inline evidence dialogs and nested editors retain their own styles. */
+.package-requirements
+  fieldset:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   min-width: 0;
   margin: 18px 0;
   padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: var(--card);
 }
-.package-requirements label {
+.package-requirements
+  legend:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
+  padding: 0 6px;
+  font-weight: 600;
+}
+.package-requirements
+  label:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   display: grid;
   gap: 7px;
   min-width: 0;
 }
-.package-requirements select {
+.package-requirements
+  select:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   min-width: 0;
   max-width: 100%;
 }
-.package-requirements article {
+.package-requirements
+  article:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 12px 0;
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--card);
 }
-.package-requirements button {
+.package-requirements
+  button:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   max-width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
 }
-.package-requirements button:not(.button):not(.text-button) {
+.package-requirements
+  button:not(.button):not(.text-button):not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   padding: 8px 10px;
   border: 1px solid var(--border-strong);
   border-radius: 7px;
@@ -4250,10 +4355,16 @@ textarea:focus-visible {
   color: var(--primary);
   line-height: 1.6;
 }
-.package-requirements > button {
+.package-requirements
+  > button:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   margin: 6px 10px 6px 0;
 }
-.package-requirements > button[aria-pressed="true"] {
+.package-requirements
+  > button[aria-pressed="true"]:not(
+    :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+  ) {
   border-color: var(--primary);
   background: var(--primary-soft);
 }
@@ -4261,10 +4372,16 @@ textarea:focus-visible {
   .package-requirements {
     padding: 12px;
   }
-  .package-requirements article {
+  .package-requirements
+    article:not(
+      :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+    ) {
     padding: 12px;
   }
-  .package-requirements > button {
+  .package-requirements
+    > button:not(
+      :where(.requirement-check-plan *, .dialog-backdrop, .dialog-backdrop *)
+    ) {
     display: block;
     width: 100%;
     text-align: left;

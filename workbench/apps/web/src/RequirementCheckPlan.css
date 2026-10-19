@@ -1,0 +1,121 @@
+.requirement-check-plan {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.requirement-check-plan > article {
+  margin-block: 1rem;
+  padding-block: 1rem;
+  border-top: 1px solid var(--border);
+}
+.requirement-check-plan > article > label {
+  font-weight: 650;
+}
+.requirement-check-plan fieldset:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 1rem;
+  margin-block: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.requirement-check-plan label:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.requirement-check-plan
+  label:has(> input[type="checkbox"]):not(.dialog-backdrop):not(
+    .dialog-backdrop *
+  ) {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+}
+.requirement-check-plan
+  input[type="checkbox"]:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  min-height: auto;
+  accent-color: var(--primary);
+  margin-top: 0.2rem;
+}
+.requirement-check-plan
+  input:not([type="checkbox"]):not(.dialog-backdrop):not(.dialog-backdrop *),
+.requirement-check-plan select:not(.dialog-backdrop):not(.dialog-backdrop *),
+.requirement-check-plan textarea:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font: inherit;
+}
+.requirement-check-plan textarea:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  width: 100%;
+  min-height: 5rem;
+}
+.requirement-check-plan
+  blockquote:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--primary);
+  white-space: pre-wrap;
+}
+.requirement-check-plan pre:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.requirement-check-plan button:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  justify-self: start;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--card);
+  color: var(--primary);
+  font: inherit;
+  cursor: pointer;
+}
+.requirement-check-plan
+  button:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.requirement-check-plan
+  input:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.requirement-check-plan
+  textarea:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.requirement-check-plan
+  select:disabled:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.requirement-check-plan
+  .requirement-check-plan-evidence:not(.dialog-backdrop):not(
+    .dialog-backdrop *
+  ) {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.requirement-check-plan
+  [role="alert"]:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  color: var(--danger-foreground);
+}
+@media (max-width: 600px) {
+  .requirement-check-plan {
+    padding: 0.75rem;
+  }
+  .requirement-check-plan
+    fieldset:not(.dialog-backdrop):not(.dialog-backdrop *) {
+    padding: 0.65rem;
+  }
+  .requirement-check-plan
+    input:not([type="checkbox"]):not(.dialog-backdrop):not(.dialog-backdrop *),
+  .requirement-check-plan select:not(.dialog-backdrop):not(.dialog-backdrop *) {
+    width: 100%;
+  }
+}

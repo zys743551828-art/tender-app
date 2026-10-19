@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import type {
   BidPackageHeadPage,
@@ -16,6 +16,10 @@ import { EvidenceLinks } from "./EvidenceLinks";
 import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
+import {
+  RequirementCheckPlan,
+  type CheckPlanValue,
+} from "./RequirementCheckPlan";
 
 type Props = {
   bidId: string;
@@ -30,25 +34,50 @@ type Scope = {
   revisionId: string;
   digest: string;
 };
-type Pending = {
-  version: 1;
+type Context = { authority: BidPackageStoredView; rules: RuleSetView };
+type Conditions = { etag: string | null; ifNoneMatch: "*" | null };
+type Pending = Conditions & {
+  version: 1 | 2;
   scope: Scope;
   body: CreatePackageRequirementInventory;
   key: string;
-  etag: string | null;
-  ifNoneMatch: "*" | null;
+  context?: Context;
+};
+type Draft = Conditions & {
+  context: Context;
+  initialMappings: CreatePackageRequirementInventory["mappings"];
+  serial: number;
+  sent: boolean;
+  rejected?: boolean;
+};
+type Rebase = Conditions & {
+  head: string | null;
+  view: PackageRequirementInventoryView | null;
 };
 const sha = /^[a-f0-9]{64}$/;
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const storageKey = (scope: Scope) =>
   `tender:requirements-pending:${scope.memberId}:${scope.bidId}:${scope.packageId}:${scope.revisionId}`;
-function restore(scope: Scope): { pending: Pending | null; blocked: boolean } {
+const validIdentifier = (value: unknown): value is string =>
+  typeof value === "string" &&
+  !!value.trim() &&
+  Array.from(value).length <= 200 &&
+  !value.includes("\0") &&
+  !/[\uD800-\uDFFF]/u.test(value);
+const validTime = (value: string) =>
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+    value,
+  ) && !Number.isNaN(Date.parse(value));
+function restore(
+  scope: Scope,
+  expectedScope: BidPackageStoredView["manifest"]["scope"],
+): { pending: Pending | null; blocked: boolean } {
   try {
     const raw = sessionStorage.getItem(storageKey(scope));
     if (!raw) return { pending: null, blocked: false };
     const value = JSON.parse(raw) as Pending;
     if (
-      value.version !== 1 ||
+      ![1, 2].includes(value.version) ||
       !value.scope ||
       Object.keys(scope).some(
         (k) => value.scope[k as keyof Scope] !== scope[k as keyof Scope],
@@ -61,7 +90,10 @@ function restore(scope: Scope): { pending: Pending | null; blocked: boolean } {
       !uuid.test(value.body.authority_revision_id) ||
       !uuid.test(value.body.rule_set_id) ||
       !Array.isArray(value.body.mappings) ||
-      value.body.mappings.length !== 0 ||
+      (value.version === 1 && value.body.mappings.length !== 0) ||
+      (value.version === 2 &&
+        (!validContext(value.context, scope, value.body, expectedScope) ||
+          !validMappings(value.body.mappings, value.context!))) ||
       !(
         (value.ifNoneMatch === "*" && value.etag === null) ||
         (value.ifNoneMatch === null &&
@@ -74,6 +106,78 @@ function restore(scope: Scope): { pending: Pending | null; blocked: boolean } {
   } catch {
     return { pending: null, blocked: true };
   }
+}
+function validContext(
+  context: Context | undefined,
+  scope: Scope,
+  body: CreatePackageRequirementInventory,
+  expectedScope: BidPackageStoredView["manifest"]["scope"],
+) {
+  const a = context?.authority;
+  const r = context?.rules;
+  return !!(
+    a &&
+    r &&
+    a.manifest?.kind === "authority" &&
+    sha.test(a.digest) &&
+    a.manifest.revision_id === body.authority_revision_id &&
+    a.manifest.scope?.bid_id === scope.bidId &&
+    Object.keys(expectedScope).every(
+      (key) =>
+        a.manifest.scope[key as keyof typeof expectedScope] ===
+        expectedScope[key as keyof typeof expectedScope],
+    ) &&
+    r.bid_id === scope.bidId &&
+    uuid.test(r.id) &&
+    r.id === body.rule_set_id &&
+    Array.isArray(r.rules) &&
+    r.rules.every(
+      (rule) =>
+        uuid.test(rule.id) &&
+        rule.rule_set_id === r.id &&
+        rule.scope?.bid_id === scope.bidId,
+    )
+  );
+}
+function validMappings(
+  mappings: CreatePackageRequirementInventory["mappings"],
+  context: Context,
+) {
+  const seen = new Set<string>();
+  const identifiers = (v: unknown, nonempty = false): v is string[] =>
+    Array.isArray(v) &&
+    (!nonempty || v.length > 0) &&
+    v.every(validIdentifier) &&
+    new Set(v).size === v.length;
+  return mappings.every((item) => {
+    const rule = context.rules.rules.find((r) => r.id === item?.rule_id);
+    if (!rule || !uuid.test(item.rule_id) || seen.has(item.rule_id))
+      return false;
+    seen.add(item.rule_id);
+    return (
+      Object.keys(item).sort().join(",") ===
+        "applicability,applicability_evidence_ids,basis_evidence_ids,categories,checks,minimum_count,reason,rule_id,target_part_ids,valid_at" &&
+      identifiers(item.categories, true) &&
+      identifiers(item.target_part_ids) &&
+      identifiers(item.checks) &&
+      identifiers(item.basis_evidence_ids, true) &&
+      identifiers(item.applicability_evidence_ids) &&
+      [...item.basis_evidence_ids, ...item.applicability_evidence_ids].every(
+        (id) => uuid.test(id) && rule.evidence_ids.includes(id),
+      ) &&
+      (item.minimum_count === null ||
+        (Number.isSafeInteger(item.minimum_count) &&
+          item.minimum_count >= 0)) &&
+      ["unknown", "applicable", "not_applicable"].includes(
+        item.applicability,
+      ) &&
+      (item.applicability !== "not_applicable" ||
+        item.applicability_evidence_ids.length > 0) &&
+      (item.valid_at === null ||
+        (typeof item.valid_at === "string" && validTime(item.valid_at))) &&
+      validIdentifier(item.reason)
+    );
+  });
 }
 const strings = (value: unknown): string[] =>
   Array.isArray(value)
@@ -100,6 +204,13 @@ const gapNames: Record<string, string> = {
   page_count_unknown: "页数未知",
   parts_unassigned: "逻辑范围未分配",
   parse_identity_not_frozen: "解析身份尚未冻结",
+};
+const checkNames: Record<string, string> = {
+  quantity: "数量逐项核对",
+  expiry: "有效期",
+  signature: "签字盖章",
+  format: "格式要求",
+  scope: "适用范围",
 };
 function Conditions({ value, label }: { value: unknown; label: string }) {
   const valid =
@@ -174,10 +285,39 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     digest: packageView.digest,
   };
   const base = `/bids/${bidId}/packages/${m.package_id}/revisions/${m.revision_id}/requirement-inventories`;
-  const [recovery] = useState(() => restore(scope));
+  const [recovery] = useState(() => restore(scope, m.scope));
   const [pending, setPending] = useState<Pending | null>(recovery.pending);
-  const [authorityId, setAuthorityId] = useState("");
-  const [authorityRevision, setAuthorityRevision] = useState("");
+  const [draft, setDraft] = useState<Draft | null>(() =>
+    recovery.pending?.version === 2 && recovery.pending.context
+      ? {
+          context: recovery.pending.context,
+          initialMappings: recovery.pending.body.mappings,
+          etag: recovery.pending.etag,
+          ifNoneMatch: recovery.pending.ifNoneMatch,
+          serial: 1,
+          sent: true,
+        }
+      : null,
+  );
+  const [plan, setPlan] = useState<CheckPlanValue>({
+    mappings: [],
+    valid: false,
+    dirty: false,
+  });
+  const onPlanChange = useCallback(
+    (value: CheckPlanValue) => setPlan(value),
+    [],
+  );
+  const [planStale, setPlanStale] = useState(false);
+  const [needsRebase, setNeedsRebase] = useState(false);
+  const [rebase, setRebase] = useState<Rebase | null>(null);
+  const [emptyBaseline, setEmptyBaseline] = useState<Conditions | null>(null);
+  const [authorityId, setAuthorityId] = useState(
+    recovery.pending?.context?.authority.manifest.package_id ?? "",
+  );
+  const [authorityRevision, setAuthorityRevision] = useState(
+    recovery.pending?.context?.authority.manifest.revision_id ?? "",
+  );
   const [inventoryId, setInventoryId] = useState("");
   const [attemptId, setAttemptId] = useState("");
   const [busy, setBusy] = useState(false);
@@ -259,6 +399,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
   const canCreate =
     supportsApi("POST", base) &&
     !locked &&
+    !needsRebase &&
     authorityValid &&
     rulesValid &&
     !authority.error &&
@@ -269,21 +410,136 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     !rules.loading &&
     !!inventories.data &&
     (!inventories.data.current_inventory_id || !!inventories.etag);
+  useEffect(() => {
+    if (
+      draft &&
+      rules.data &&
+      JSON.stringify(rules.data) !== JSON.stringify(draft.context.rules)
+    )
+      setPlanStale(true);
+    if (
+      draft &&
+      a &&
+      JSON.stringify(a) !== JSON.stringify(draft.context.authority)
+    )
+      setPlanStale(true);
+  }, [draft, rules.data, a]);
+  const planSaveAllowed =
+    !!draft &&
+    !locked &&
+    !planStale &&
+    !needsRebase &&
+    supportsApi("POST", base) &&
+    !inventories.error &&
+    !inventories.loading &&
+    !rules.error &&
+    !authority.error &&
+    !rules.loading &&
+    !authority.loading &&
+    plan.valid &&
+    plan.mappings.length > 0 &&
+    validMappings(plan.mappings, draft.context);
 
-  async function save() {
-    if (busy || recovery.blocked || (!pending && (disabled || !canCreate)))
-      return;
-    const operation: Pending = pending ?? {
-      version: 1,
-      scope,
-      body: {
-        authority_revision_id: authorityRevision,
-        rule_set_id: rules.data!.id,
-        mappings: [],
-      },
-      key: crypto.randomUUID(),
+  function beginPlan() {
+    if (!canCreate || draft) return;
+    setDraft({
+      context: structuredClone({ authority: a!, rules: rules.data! }),
+      initialMappings: [],
       etag: inventories.data?.current_inventory_id ? inventories.etag : null,
       ifNoneMatch: inventories.data?.current_inventory_id ? null : "*",
+      serial: Date.now(),
+      sent: false,
+    });
+    setPlanStale(false);
+    setNeedsRebase(false);
+    setRebase(null);
+    setFailure(null);
+  }
+  async function inspectBaseline() {
+    if (!needsRebase || locked) return;
+    setBusy(true);
+    setRebase(null);
+    try {
+      const current = await api<PackageRequirementInventoryPage>(
+        `${base}?limit=20`,
+      );
+      if (!active.current) return;
+      const head = current.data.current_inventory_id;
+      if (head && !current.etag)
+        throw new Error("当前清单缺少版本条件，不能采用新基线。");
+      let view: PackageRequirementInventoryView | null = null;
+      if (head) {
+        if (!uuid.test(head))
+          throw new Error("当前清单身份无效，不能采用新基线。");
+        const exact = await api<PackageRequirementInventoryView>(
+          `${base}/${head}`,
+        );
+        if (!active.current) return;
+        const value = exact.data.manifest;
+        if (
+          value.id !== head ||
+          value.bid_id !== bidId ||
+          value.package_id !== m.package_id ||
+          value.target_revision_id !== m.revision_id ||
+          value.package_digest !== packageView.digest ||
+          !sha.test(exact.data.digest) ||
+          !Array.isArray(value.requirements) ||
+          !Number.isSafeInteger(value.revision) ||
+          value.revision < 1 ||
+          !current.data.items.some(
+            (item) => item.id === head && item.digest === exact.data.digest,
+          )
+        )
+          throw new Error("当前清单范围或摘要不一致，不能采用新基线。");
+        view = exact.data;
+      }
+      setRebase({
+        head,
+        view,
+        etag: head ? current.etag : null,
+        ifNoneMatch: head ? null : "*",
+      });
+    } catch (error) {
+      if (active.current) setFailure(error);
+    } finally {
+      if (active.current) setBusy(false);
+    }
+  }
+
+  async function save(withPlan = false) {
+    if (
+      busy ||
+      recovery.blocked ||
+      (!pending &&
+        (disabled || (withPlan ? !planSaveAllowed : !canCreate || !!draft)))
+    )
+      return;
+    const operation: Pending = pending ?? {
+      version: withPlan ? 2 : 1,
+      scope,
+      body: {
+        authority_revision_id: withPlan
+          ? draft!.context.authority.manifest.revision_id
+          : authorityRevision,
+        rule_set_id: withPlan ? draft!.context.rules.id : rules.data!.id,
+        mappings: withPlan ? structuredClone(plan.mappings) : [],
+      },
+      ...(withPlan ? { context: draft!.context } : {}),
+      key: crypto.randomUUID(),
+      etag: withPlan
+        ? draft!.etag
+        : emptyBaseline
+          ? emptyBaseline.etag
+          : inventories.data?.current_inventory_id
+            ? inventories.etag
+            : null,
+      ifNoneMatch: withPlan
+        ? draft!.ifNoneMatch
+        : emptyBaseline
+          ? emptyBaseline.ifNoneMatch
+          : inventories.data?.current_inventory_id
+            ? null
+            : "*",
     };
     setBusy(true);
     setFailure(null);
@@ -292,6 +548,8 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     try {
       sessionStorage.setItem(storageKey(scope), JSON.stringify(operation));
       setPending(operation);
+      if (operation.version === 2)
+        setDraft((old) => (old ? { ...old, sent: true } : old));
       sent = true;
       const result = await api<PackageRequirementInventoryView>(base, {
         method: "POST",
@@ -314,10 +572,15 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         throw new Error("保存响应身份不一致，保留原操作待核对。");
       sessionStorage.removeItem(storageKey(scope));
       setPending(null);
+      setDraft(null);
+      setPlanStale(false);
+      setNeedsRebase(false);
+      setRebase(null);
+      setEmptyBaseline(null);
       setInventoryId(saved.id);
       setAttemptId("");
       setNotice(
-        `已保存要求清单修订 ${saved.revision}，所有条款保持未映射；未形成完整覆盖结论。`,
+        `已保存要求清单修订 ${saved.revision}，${operation.body.mappings.length ? "已冻结人工检查计划；清单完整性仍未知" : "所有条款保持未映射"}；未形成完整覆盖结论。`,
       );
       void inventories.reload();
     } catch (error) {
@@ -340,6 +603,26 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         try {
           sessionStorage.removeItem(storageKey(scope));
           setPending(null);
+          if (operation.version === 2 && operation.context) {
+            setPlan({
+              mappings: operation.body.mappings,
+              valid: false,
+              dirty: true,
+            });
+            setDraft({
+              context: operation.context,
+              initialMappings: operation.body.mappings,
+              etag: operation.etag,
+              ifNoneMatch: operation.ifNoneMatch,
+              serial: Date.now(),
+              sent: false,
+              rejected: true,
+            });
+          }
+          if (error.status === 412) {
+            setNeedsRebase(true);
+            setRebase(null);
+          }
           void inventories.reload();
         } catch {
           setFailure(new Error("无法清理本地未决记录，保留原操作等待核对。"));
@@ -370,18 +653,16 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           {m.scope.bidder_id}
         </p>
       </details>
-      <fieldset disabled={locked}>
-        <legend>建立未映射要求清单</legend>
+      <fieldset disabled={locked || !!draft}>
+        <legend>选择本次要求清单依据</legend>
         <p>
-          明确选择权威依据包与修订，仅冻结现有原规则；分类、数量及适用性保持未知。不会自动生成已核验记录。
+          创建未映射清单保留未知；编辑检查计划需逐条明确范围与依据。两者均追加版本，不自动沿用上版计划或覆盖声明。
         </p>
         <p>
           新建清单须使用当前本方修订与当前依据修订；历史修订仍可读取，服务端会核对是否允许新建。
         </p>
         {!!inventories.data?.current_inventory_id && (
-          <p>
-            当前已有要求清单。本次创建将追加全未映射修订，不沿用原检查计划与覆盖声明；旧版仍保留可读。
-          </p>
+          <p>当前已有要求清单。本次将追加修订；旧版及原检查计划仍保留可读。</p>
         )}
         <ResourceState
           {...authorities}
@@ -502,15 +783,156 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         {rules.data && !rulesValid && (
           <p role="alert">规则集精确身份或项目范围不一致，禁止推算或创建。</p>
         )}
-        <button
-          type="button"
-          className="button"
-          disabled={!canCreate}
-          onClick={() => void save()}
-        >
-          创建未映射清单
-        </button>
+        <div className="requirement-plan-actions">
+          <button
+            type="button"
+            className="button"
+            disabled={!canCreate}
+            onClick={() => void save()}
+          >
+            创建未映射清单
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={!canCreate || !!draft}
+            onClick={beginPlan}
+          >
+            开始编辑检查计划
+          </button>
+        </div>
       </fieldset>
+      {draft && (
+        <section
+          className="requirement-plan-draft"
+          aria-label="人工检查计划草稿"
+        >
+          <p>
+            依据和原规则已固定到开始编辑时的快照。检查计划不是覆盖声明，清单完整性仍未知。
+          </p>
+          <RequirementCheckPlan
+            key={draft.serial}
+            bidId={bidId}
+            packageView={packageView}
+            authorityView={draft.context.authority}
+            rules={draft.context.rules}
+            disabled={locked}
+            initialMappings={draft.initialMappings}
+            onChange={onPlanChange}
+          />
+          {planStale && (
+            <p role="alert">
+              原规则或依据已变化，保留原检查计划；禁止把新快照自动代入保存。
+            </p>
+          )}
+          <div className="requirement-plan-actions">
+            <button
+              type="button"
+              disabled={locked}
+              onClick={() => {
+                void rules.reload();
+                void authority.reload();
+              }}
+            >
+              核对原规则与依据
+            </button>
+            <button
+              type="button"
+              className="button"
+              disabled={!planSaveAllowed}
+              onClick={() => void save(true)}
+            >
+              保存检查计划清单
+            </button>
+            <button
+              type="button"
+              disabled={locked || draft.sent}
+              onClick={() => {
+                setDraft(null);
+                setPlanStale(false);
+                setRebase(null);
+              }}
+            >
+              {draft.rejected ? "放弃已明确失败的草稿" : "取消未发送的检查计划"}
+            </button>
+          </div>
+        </section>
+      )}
+      {needsRebase && (
+        <div role="status">
+          <p>
+            清单基线冲突。原计划已保留；先读取当前清单，再明确确认采用新基线，不会自动重发。
+          </p>
+          <button
+            type="button"
+            disabled={locked}
+            onClick={() => void inspectBaseline()}
+          >
+            读取当前清单基线
+          </button>
+          {rebase && (
+            <>
+              {!rebase.view && (
+                <p>已核对当前尚无清单，采用后仍须明确提交首次创建。</p>
+              )}
+              {rebase.view && (
+                <>
+                  <p>已核对当前清单修订 {rebase.view.manifest.revision}</p>
+                  <p>
+                    当前映射{" "}
+                    {
+                      rebase.view.manifest.requirements.filter(
+                        (r) => r.annotation.mapped,
+                      ).length
+                    }{" "}
+                    / 总要求 {rebase.view.manifest.requirements.length}
+                    ；原草稿映射 {draft ? plan.mappings.length : 0}
+                  </p>
+                  <p>采用基线只更新版本条件，保留原草稿内容，不自动提交。</p>
+                </>
+              )}
+              <details>
+                <summary>已核对的新基线冻结身份</summary>
+                <p>
+                  {rebase.head ?? "尚无清单"} · 版本条件{" "}
+                  {rebase.etag ?? "首次创建"} · SHA256{" "}
+                  {rebase.view?.digest ?? "待首次生成"}
+                </p>
+                {rebase.view && (
+                  <p>
+                    依据修订 {rebase.view.manifest.authority_revision_id} ·
+                    原规则集 {rebase.view.manifest.rule_set_id}
+                  </p>
+                )}
+              </details>
+              <button
+                type="button"
+                disabled={locked || planStale}
+                onClick={() => {
+                  setDraft((old) =>
+                    old
+                      ? {
+                          ...old,
+                          etag: rebase.etag,
+                          ifNoneMatch: rebase.ifNoneMatch,
+                        }
+                      : old,
+                  );
+                  if (!draft)
+                    setEmptyBaseline({
+                      etag: rebase.etag,
+                      ifNoneMatch: rebase.ifNoneMatch,
+                    });
+                  setNeedsRebase(false);
+                  setRebase(null);
+                }}
+              >
+                确认采用已核对的新基线
+              </button>
+            </>
+          )}
+        </div>
+      )}
       {recovery.blocked && (
         <p role="alert">
           本地未决操作记录损坏或范围不符，创建已锁定。请保留记录核对，不能另发新操作。
@@ -638,13 +1060,55 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
                   }{" "}
                   · 有效时点：{r.valid_at ?? "未知"}
                 </p>
+                {!r.target_part_ids.length && (
+                  <p>目标范围：分类内范围，尚未指定具体页段</p>
+                )}
+                {r.target_part_ids.map((partId) => {
+                  const fileIndex = m.members.findIndex((member) =>
+                    member.parts.some((part) => part.part_id === partId),
+                  );
+                  const partIndex =
+                    fileIndex < 0
+                      ? -1
+                      : m.members[fileIndex].parts.findIndex(
+                          (part) => part.part_id === partId,
+                        );
+                  const part =
+                    fileIndex < 0
+                      ? undefined
+                      : m.members[fileIndex].parts[partIndex];
+                  return (
+                    <p key={partId}>
+                      目标范围：
+                      {part
+                        ? `文件 ${fileIndex + 1} · 分册 ${partIndex + 1} · ${categories[part.category] ?? part.category} · 物理页 ${part.first_page}—${part.last_page}`
+                        : "未定位范围，请核对冻结身份"}
+                    </p>
+                  );
+                })}
                 <p>
-                  目标范围：
-                  {r.target_part_ids.length
-                    ? r.target_part_ids.join("、")
-                    : "分类内范围，尚未指定具体页段"}{" "}
-                  · 核验项：{r.checks.length ? r.checks.join("、") : "未声明"}
+                  核验项：
+                  {r.checks.length
+                    ? r.checks
+                        .map((value) => checkNames[value] ?? "其他检查项")
+                        .join("、")
+                    : "未声明"}
                 </p>
+                <p>检查计划理由：{binding.annotation.reason ?? "未声明"}</p>
+                <EvidenceLinks
+                  ids={binding.annotation.basis_evidence_ids}
+                  label={`查看要求 ${i + 1} 检查计划采用依据`}
+                />
+                <EvidenceLinks
+                  ids={r.applicability_evidence
+                    .filter(
+                      (value) =>
+                        value.startsWith("evidence:") &&
+                        uuid.test(value.slice(9)),
+                    )
+                    .map((value) => value.slice(9))}
+                  label={`查看要求 ${i + 1} 的适用性依据`}
+                />
                 <Conditions
                   value={binding.rule_snapshot.conditions}
                   label="原始条件"
@@ -663,6 +1127,10 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
                     {binding.rule_id} · SHA256 {binding.requirement_digest}
                   </p>
                   <p>{r.source_refs.join("；")}</p>
+                  <p>
+                    目标范围身份：{r.target_part_ids.join("；") || "未指定"} ·
+                    检查项原始标识：{r.checks.join("；") || "未声明"}
+                  </p>
                   <p>
                     适用依据：{r.applicability_evidence.join("；") || "未记录"}
                   </p>
