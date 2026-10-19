@@ -1,5 +1,51 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type PackageReviewInputPreviewRequest = {
+  package_digest: string;
+  inventory_digest: string;
+  coverage_attempt_id: string | null;
+  coverage_digest: string | null;
+};
+
+export type PackageReviewInputManifest = {
+  version: "bid-package-review-input/1";
+  kind: "preview";
+  bid_id: string;
+  target: BidPackageStoredView;
+  authority: BidPackageStoredView;
+  inventory: PackageRequirementInventoryView;
+  coverage: PackageCoverageAttemptView | null;
+};
+
+export type PackageReviewInputPreview = {
+  manifest: PackageReviewInputManifest;
+  digest: string;
+  review_ready: false;
+  launch_available: false;
+  blockers: (
+    | "PROJECT_WORK_CLOSED"
+    | "PACKAGE_BIDDER_UNCONFIRMED"
+    | "PACKAGE_REVIEW_IDENTITY_STALE"
+    | "PACKAGE_REVIEW_PACKAGE_STALE"
+    | "PACKAGE_REVIEW_INVENTORY_STALE"
+    | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
+    | "PACKAGE_REVIEW_SOURCE_CHANGED"
+    | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
+    | "PACKAGE_REVIEW_MEMBERS_UNPROVEN"
+    | "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP"
+    | "PACKAGE_REVIEW_EXTRACTION_UNPROVEN"
+    | "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN"
+    | "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+  )[];
+  physical_page_gaps: {
+    role: "target" | "authority";
+    member_id: string;
+    first_page: number;
+    last_page: number;
+  }[];
+};
+
 export type CreatePackageRequirementInventory = {
   authority_revision_id: string;
   rule_set_id: string;
@@ -4698,6 +4744,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/uploads/{upload_id}/parts",
   "POST /api/v1/uploads/{upload_id}/authorizations",
   "POST /api/v1/uploads/{upload_id}/abort",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
 ];
 
 export const ruleConfirmationLimit: number = 500;

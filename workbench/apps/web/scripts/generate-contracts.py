@@ -17,6 +17,9 @@ args = parser.parse_args()
 contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
+    "PackageReviewInputPreviewRequest",
+    "PackageReviewInputManifest",
+    "PackageReviewInputPreview",
     "CreatePackageRequirementInventory",
     "CreatePackageCoverageAttempt",
     "PackageRequirementInventoryManifest",

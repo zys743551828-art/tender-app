@@ -206,6 +206,70 @@ SCHEMAS["PackageRequirementInventoryPage"]["properties"]["current_inventory_id"]
 }
 SCHEMAS["PackageRequirementInventoryPage"]["required"].append("current_inventory_id")
 
+SCHEMAS["PackageReviewInputPreviewRequest"] = object_schema(
+    {
+        "package_digest": SHA,
+        "inventory_digest": SHA,
+        "coverage_attempt_id": {"anyOf": [UUID, {"type": "null"}]},
+        "coverage_digest": NULL_SHA,
+    }
+)
+SCHEMAS["PackageReviewInputManifest"] = object_schema(
+    {
+        "version": {"const": "bid-package-review-input/1"},
+        "kind": {"const": "preview"},
+        "bid_id": UUID,
+        "target": {"$ref": "#/components/schemas/BidPackageStoredView"},
+        "authority": {"$ref": "#/components/schemas/BidPackageStoredView"},
+        "inventory": {"$ref": "#/components/schemas/PackageRequirementInventoryView"},
+        "coverage": {
+            "anyOf": [{"$ref": "#/components/schemas/PackageCoverageAttemptView"}, {"type": "null"}]
+        },
+    }
+)
+SCHEMAS["PackageReviewInputPreview"] = object_schema(
+    {
+        "manifest": {"$ref": "#/components/schemas/PackageReviewInputManifest"},
+        "digest": SHA,
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+        "blockers": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": True,
+            "items": {
+                "enum": [
+                    "PROJECT_WORK_CLOSED",
+                    "PACKAGE_BIDDER_UNCONFIRMED",
+                    "PACKAGE_REVIEW_IDENTITY_STALE",
+                    "PACKAGE_REVIEW_PACKAGE_STALE",
+                    "PACKAGE_REVIEW_INVENTORY_STALE",
+                    "PACKAGE_REVIEW_RULE_SET_STALE",
+                    "PACKAGE_REVIEW_SOURCE_UNPROVEN",
+                    "PACKAGE_REVIEW_SOURCE_CHANGED",
+                    "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
+                    "PACKAGE_REVIEW_MEMBERS_UNPROVEN",
+                    "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP",
+                    "PACKAGE_REVIEW_EXTRACTION_UNPROVEN",
+                    "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN",
+                    "PACKAGE_REVIEW_EXECUTOR_NOT_READY",
+                ]
+            },
+        },
+        "physical_page_gaps": {
+            "type": "array",
+            "items": object_schema(
+                {
+                    "role": {"enum": ["target", "authority"]},
+                    "member_id": IDENTIFIER,
+                    "first_page": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+                    "last_page": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+                }
+            ),
+        },
+    }
+)
+
 
 def valid(name, value):
     return Draft202012Validator(
@@ -264,6 +328,13 @@ def extend_openapi(actual):
             None,
             "PackageCoverageAttemptView",
         ),
+        (
+            "/{inventory_id}/review-input-preview",
+            "post",
+            "previewPackageReviewInput",
+            "PackageReviewInputPreviewRequest",
+            "PackageReviewInputPreview",
+        ),
     ]:
         operation = actual.get("paths", {}).get(BASE + suffix, {}).get(method)
         if operation is None:
@@ -279,7 +350,11 @@ def extend_openapi(actual):
             }
             operation.setdefault("parameters", []).extend(
                 {"in": "header", "name": header, "required": True, "schema": {"type": "string"}}
-                for header in ("Origin", "X-CSRF-Token", "Idempotency-Key")
+                for header in (
+                    ("Origin", "X-CSRF-Token")
+                    if suffix.endswith("review-input-preview")
+                    else ("Origin", "X-CSRF-Token", "Idempotency-Key")
+                )
             )
             if not suffix:
                 operation["parameters"].extend(
@@ -293,7 +368,7 @@ def extend_openapi(actual):
                     for header in ("If-Match", "If-None-Match")
                 )
         operation["responses"] = {
-            "201" if request else "200": {
+            "201" if request and not suffix.endswith("review-input-preview") else "200": {
                 "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
                 "content": {
                     "application/json": {"schema": {"$ref": "#/components/schemas/" + response}}

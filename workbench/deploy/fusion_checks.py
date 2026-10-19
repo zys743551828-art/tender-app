@@ -24,6 +24,7 @@ SUITES = {
     "requirements-api": [
         "tests/test_bid_package_requirements_api.py",
         "tests/test_bid_package_evidence_api.py",
+        "tests/test_bid_package_review_preview_api.py",
     ],
 }
 

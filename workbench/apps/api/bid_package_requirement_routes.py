@@ -223,3 +223,24 @@ def get_attempt(
             return repository.load_attempt(
                 c, *map(str, (bid_id, package_id, revision_id, inventory_id, attempt_id))
             )
+
+
+@router.post("/{inventory_id}/review-input-preview")
+def preview_review_input(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    from packages.domain.bid_package_review_preview import preview
+
+    auth(r, True)
+    validate("PackageReviewInputPreviewRequest", body)
+    with requirement_errors():
+        with connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            return preview(
+                c, str(bid_id), str(package_id), str(revision_id), str(inventory_id), body
+            )

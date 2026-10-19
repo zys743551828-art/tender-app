@@ -21,6 +21,7 @@ import type {
 import { ErrorNotice } from "./components";
 import { EvidenceLinks } from "./EvidenceLinks";
 import { ResourceState } from "./ResourceState";
+import { PackageReviewInputPreview } from "./PackageReviewInputPreview";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import {
@@ -1349,6 +1350,14 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           }}
         />
       </Suspense>
+      <PackageReviewInputPreview
+        bidId={bidId}
+        packageView={packageView}
+        inventory={inventoryValid ? inventory.data! : null}
+        coverage={attemptValid ? attempt.data! : null}
+        coveragePending={!!attemptId && !attemptValid}
+        disabled={busy || !!pending || recovery.blocked || coverageWriteLocked}
+      />
       {!supportsApi("POST", base) && (
         <p>当前服务尚未提供清单创建接口，保留只读历史。</p>
       )}
