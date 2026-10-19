@@ -210,6 +210,114 @@ class TestFreezing:
         assert result.status_code == 409 and result.json()["code"] == "IDEMPOTENCY_CONFLICT"
         assert len(f["calls"]) == calls
 
+    def test_consumer_owns_full_frozen_root_and_never_borrows_current_context(
+        self, frozen_case, monkeypatch
+    ):
+        import psycopg
+        from psycopg.rows import dict_row
+
+        from packages.domain.bid_package_review_input_repository import load_input
+
+        f = frozen_case
+        response = self.post(f)
+        assert response.status_code == 201, response.text
+        value = response.json()
+        before, calls = counts(f["w"]), len(f["calls"])
+        monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-changed-after-freeze")
+        with psycopg.connect(f["w"]["database"]["api_dsn"], row_factory=dict_row) as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            packet = load_input(c, f["scope"], value["manifest"]["id"])
+        assert packet.view() == value
+        root = packet.evidence()
+        original = packet.evidence()
+        assert (
+            len(root["documents"]) == 2
+            and root["selection"]["target"]["manifest"]["revision_id"] == f["scope"][2]
+        )
+        root["documents"][0]["blocks"][0]["text_content"] = "caller mutation"
+        packet.view()["manifest"]["blockers"].clear()
+        assert packet.evidence() == original and packet.view() == value
+        assert original["documents"][0]["blocks"][0]["text_content"] not in repr(packet)
+        assert counts(f["w"]) == before and len(f["calls"]) == calls
+
+    def test_consumer_rejects_inconsistent_resealed_structure_without_database_or_io(
+        self, frozen_case
+    ):
+        import json
+        from copy import deepcopy
+
+        from packages.domain.package_review_frozen_input import consume
+        from packages.domain.runtime import sha
+
+        f = frozen_case
+        response = self.post(f)
+        assert response.status_code == 201, response.text
+        input_id = response.json()["manifest"]["id"]
+        row = (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT manifest,digest,evidence_text,evidence_digest FROM design.bid_package_review_inputs WHERE id=%s",
+                (input_id,),
+            )
+            .fetchone()
+        )
+        assert consume(row, f["scope"], input_id).view() == response.json()
+        for part in (
+            "version",
+            "document_role",
+            "missing_document",
+            "parse",
+            "text",
+            "page",
+            "duplicate_block",
+            "object_key",
+            "context",
+            "summary",
+            "selection",
+            "scope",
+            "raw_checksum",
+            "duplicate_json_key",
+        ):
+            altered = deepcopy(row)
+            root = json.loads(altered["evidence_text"])
+            doc = root["documents"][0]
+            if part == "version":
+                root["version"] = "package-review-evidence/other"
+            if part == "document_role":
+                doc["package_role"] = "authority"
+            if part == "missing_document":
+                root["documents"].pop()
+            if part == "parse":
+                doc["parse_id"] = uid()
+            if part == "text":
+                doc["blocks"][0]["text_content"] = "forged synthetic text"
+            if part == "page":
+                doc["pages"].clear()
+            if part == "duplicate_block":
+                doc["blocks"].append(deepcopy(doc["blocks"][0]))
+            if part == "object_key":
+                doc["object_key"] = "forbidden synthetic locator"
+            if part == "context":
+                root["context"]["method"]["purpose"] = "formal_scoring"
+            if part == "summary":
+                altered["manifest"]["execution_context"]["fact_count"] += 1
+            if part == "selection":
+                root["selection"]["target"]["digest"] = "0" * 64
+            if part == "scope":
+                altered["manifest"]["bid_id"] = uid()
+            text = json.dumps(root, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+            if part == "duplicate_json_key":
+                text = '{"version":"duplicate",' + text[1:]
+            altered["evidence_text"] = text
+            altered["evidence_digest"] = altered["manifest"]["evidence_digest"] = sha(
+                text.encode("utf-8")
+            )
+            altered["digest"] = digest(altered["manifest"])
+            if part == "raw_checksum":
+                altered["evidence_text"] += " "
+            with pytest.raises(ValueError, match="PACKAGE_REVIEW_FROZEN_INPUT_CORRUPT"):
+                consume(altered, f["scope"], input_id)
+
     def test_wrong_context_and_missing_key_never_read_objects(self, frozen_case):
         f = frozen_case
         assert self.post(f, f["body"] | {"context_digest": "0" * 64}).status_code == 409

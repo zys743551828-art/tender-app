@@ -1,11 +1,11 @@
 """Immutable whole-package input persistence and replay; never reads current heads."""
 
-import json
 from typing import Any
 
 from psycopg.types.json import Jsonb
 
 from packages.domain.bid_packages import PackageError
+from packages.domain.package_review_frozen_input import consume
 from packages.domain.review_identity import digest
 from packages.domain.runtime import DomainError, sha
 
@@ -59,7 +59,7 @@ def insert(c: Any, manifest: dict[str, Any], evidence_text: str):
     return {"manifest": manifest, "digest": identity}
 
 
-def load(c: Any, scope: tuple[str, str, str, str], input_id: str):
+def load_input(c: Any, scope: tuple[str, str, str, str], input_id: str):
     row = c.execute(
         """SELECT manifest,digest,evidence_text,evidence_digest FROM design.bid_package_review_inputs
     WHERE bid_id=%s AND package_id=%s AND revision_id=%s AND inventory_id=%s AND id=%s""",
@@ -67,21 +67,8 @@ def load(c: Any, scope: tuple[str, str, str, str], input_id: str):
     ).fetchone()
     if row is None:
         raise PackageError("PACKAGE_REVIEW_FROZEN_INPUT_NOT_FOUND")
-    try:
-        from packages.contracts.bid_package_requirements_api import valid
+    return consume(row, scope, input_id)
 
-        manifest = row["manifest"]
-        root = json.loads(row["evidence_text"])
-        if not (
-            valid("PackageReviewFrozenInputManifest", manifest)
-            and digest(manifest) == row["digest"]
-            and sha(row["evidence_text"].encode("utf-8"))
-            == row["evidence_digest"]
-            == manifest["evidence_digest"]
-            and digest(root["selection"]) == manifest["input_digest"]
-            and digest(root["context"]) == manifest["execution_context"]["snapshot_digest"]
-        ):
-            raise ValueError("frozen_identity_mismatch")
-        return {"manifest": manifest, "digest": row["digest"]}
-    except (ValueError, TypeError, KeyError) as error:
-        raise PackageError("PACKAGE_REVIEW_FROZEN_INPUT_CORRUPT") from error
+
+def load(c: Any, scope: tuple[str, str, str, str], input_id: str):
+    return load_input(c, scope, input_id).view()

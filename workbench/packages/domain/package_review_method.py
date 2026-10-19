@@ -28,6 +28,7 @@ def profile():
                 for name in (
                     "packages/domain/package_review_method.py",
                     "packages/domain/package_review_identity.py",
+                    "packages/domain/package_review_frozen_input.py",
                     "packages/domain/package_review_context.py",
                     "packages/domain/bid_package_original_verification.py",
                     "packages/domain/bid_package_review_freezing.py",
