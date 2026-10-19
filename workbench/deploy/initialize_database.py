@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import shlex
 from pathlib import Path
@@ -10,7 +11,14 @@ from urllib.parse import unquote, urlsplit
 import psycopg
 from psycopg import sql
 
-ROOT = Path(__file__).resolve().parents[1]
+if __package__:
+    from .schema_plan import BASE_SQL, ROOT
+else:
+    # Existing deploy tools import this module from their own script directory.
+    import schema_plan as _script_plan
+
+    BASE_SQL = _script_plan.BASE_SQL
+    ROOT = _script_plan.ROOT
 
 
 def file_configuration(env_file: Path) -> dict[str, str]:
@@ -33,7 +41,12 @@ def local_configuration() -> dict[str, str]:
     return values
 
 
-def main() -> None:
+def main(argv=None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.parse_args(argv)
+    # Validate and freeze every base input before configuration or database access.
+    # Never reread moving source after the first DDL statement has committed.
+    statements = tuple((name, (ROOT / name).read_bytes().decode("utf-8")) for name in BASE_SQL)
     values = local_configuration()
     with psycopg.connect(values["OWNER_DATABASE_DSN"], autocommit=True) as connection:
         row = connection.execute(
@@ -41,27 +54,9 @@ def main() -> None:
         ).fetchone()
         if row and row[0]:
             raise SystemExit("Refusing initialization: design schema already exists.")
-        for name in (
-            "core.sql",
-            "domain.sql",
-            "bid-packages.sql",
-            "retrieval.sql",
-            "worker-functions.sql",
-            "roles.sql",
-        ):
-            connection.execute((ROOT / "packages/contracts/sql" / name).read_text())
+        for name, statement in statements:
+            connection.execute(statement)
             print(f"Initialized {name}")
-            if name == "bid-packages.sql":
-                connection.execute(
-                    (ROOT / "packages/identity/sql/stable-lot-identity.sql").read_text()
-                )
-                print("Initialized authoritative stable-lot identity")
-        connection.execute((ROOT / "deploy/sql/bid-package-runtime-grants.sql").read_text())
-        print("Initialized restricted package parse-freeze visibility")
-        connection.execute((ROOT / "deploy/sql/vector-runtime-grants.sql").read_text())
-        print("Initialized restricted vector runtime capabilities")
-        connection.execute((ROOT / "deploy/sql/research-source-qualification.sql").read_text())
-        print("Initialized restricted research source qualification")
         with connection.transaction():
             for role in ("api", "worker", "research_worker", "score_read"):
                 dsn = urlsplit(values[f"{role.upper()}_DATABASE_DSN"])
