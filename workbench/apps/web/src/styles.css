@@ -3504,9 +3504,10 @@ textarea:focus-visible {
   }
   .workspace-nav-hint {
     display: block;
+    flex-basis: 100%;
     color: var(--muted);
     font-size: 11px;
-    margin: -10px 0 16px;
+    margin: 6px 0 0;
   }
   .archive-search,
   .archive-project {
