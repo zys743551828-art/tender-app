@@ -243,3 +243,74 @@ def test_preview_requires_session_csrf_and_strict_shape(requirements):
     assert r.status_code == 403
     forged = check(w, inv, body | {"review_ready": True})
     assert forged.status_code == 422
+
+
+@pytest.mark.parametrize("role", ["target", "authority"])
+@pytest.mark.parametrize("change", ["text", "rehashed_text", "geometry", "parser"])
+def test_actual_frozen_evidence_drift_blocks_without_rewriting_history(requirements, role, change):
+    w = requirements
+    _, inv, body = prepare(w)
+    before = check(w, inv, body).json()
+    assert "PACKAGE_REVIEW_EVIDENCE_CHANGED" not in before["blockers"]
+    member = before["manifest"][role]["manifest"]["members"][0]
+    parse = member["parse"]["parse_run_id"]
+    c = w["database"]["owner"]
+    # Simulate damaged restored records only in the dedicated test database.
+    # This bypass belongs to test corruption injection, never a business repair.
+    assert c.info.dbname == "fusion_package_requirements_api"
+    with c.transaction():
+        c.execute("SET LOCAL session_replication_role=replica")
+        if change == "text":
+            c.execute(
+                "UPDATE design.evidence_blocks SET text_content='damaged synthetic text' WHERE parse_id=%s",
+                (parse,),
+            )
+        elif change == "rehashed_text":
+            import hashlib
+
+            changed = "rehashed synthetic replacement"
+            c.execute(
+                "UPDATE design.evidence_blocks SET text_content=%s,digest=%s WHERE parse_id=%s",
+                (changed, hashlib.sha256(changed.encode()).hexdigest(), parse),
+            )
+        elif change == "geometry":
+            c.execute("UPDATE design.pages SET width=width+1 WHERE parse_id=%s", (parse,))
+        else:
+            c.execute(
+                "UPDATE design.parse_runs SET parser_digest=%s WHERE id=%s", ("0" * 64, parse)
+            )
+    response = check(w, inv, body)
+    assert response.status_code == 200, response.text
+    value = response.json()
+    assert valid("PackageReviewInputPreview", value)
+    assert value["manifest"] == before["manifest"]
+    assert value["digest"] == before["digest"]
+    assert "PACKAGE_REVIEW_EVIDENCE_CHANGED" in value["blockers"]
+    assert value["review_ready"] is value["launch_available"] is False
+
+
+def test_newer_failed_parse_never_replaces_explicit_frozen_member(requirements):
+    import psycopg
+    from psycopg.rows import dict_row
+
+    from packages.domain.bid_package_review_documents import read_member
+
+    w = requirements
+    _, inv, body = prepare(w)
+    before = check(w, inv, body).json()
+    member = before["manifest"]["target"]["manifest"]["members"][0]
+    c = w["database"]["owner"]
+    newer = uid()
+    c.execute(
+        """INSERT INTO design.parse_runs(id,bid_id,document_version_id,parser_digest,config_digest,page_count,coverage,gaps)
+        SELECT %s,bid_id,document_version_id,parser_digest,config_digest,0,'failed','[]' FROM design.parse_runs WHERE id=%s""",
+        (newer, member["parse"]["parse_run_id"]),
+    )
+    assert check(w, inv, body).json() == before
+    with psycopg.connect(w["database"]["api_dsn"], row_factory=dict_row) as reader:
+        reader.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        document = read_member(reader, w["scope"].bid_id, member)
+        assert str(document["parse_id"]) == member["parse"]["parse_run_id"]
+        assert str(document["parse_id"]) != newer
+        assert len(document["pages"]) == member["page_count"]
+        assert document["blocks"]

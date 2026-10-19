@@ -30,6 +30,7 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         "createPackageCoverageAttempt",
         "listPackageCoverageAttempts",
         "getPackageCoverageAttempt",
+        "previewPackageReviewInput",
     }
 
 
@@ -53,6 +54,7 @@ def test_package_only_app_exports_all_registered_operations_and_schemas():
         "listBidPackageRevisions",
         "listBidPackageDocuments",
         "listBidPackageParses",
+        "listBidPackageFrozenEvidence",
     }
     base = "/api/v1/bids/{bid_id}/packages"
     for path, request_schema in (

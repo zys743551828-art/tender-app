@@ -249,6 +249,7 @@ SCHEMAS["PackageReviewInputPreview"] = object_schema(
                     "PACKAGE_REVIEW_SOURCE_CHANGED",
                     "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
                     "PACKAGE_REVIEW_MEMBERS_UNPROVEN",
+                    "PACKAGE_REVIEW_EVIDENCE_CHANGED",
                     "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP",
                     "PACKAGE_REVIEW_EXTRACTION_UNPROVEN",
                     "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN",

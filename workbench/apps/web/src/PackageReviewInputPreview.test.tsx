@@ -176,6 +176,23 @@ it("显式触发只读预检，StrictMode下仍显示阻断且没有执行入口
   });
 });
 
+it("实际证据无法匹配时显示可理解的阻断而不提供执行入口", async () => {
+  const value = reply();
+  value.blockers.push("PACKAGE_REVIEW_EVIDENCE_CHANGED");
+  fetchMock.mockResolvedValue(respond(value));
+  render(<PackageReviewInputPreview {...props} />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "检查所选整包评审输入" }),
+  );
+  expect(
+    await screen.findByText(
+      "冻结解析对应的文件、页或证据记录无法核对，需检查原件与解析。",
+    ),
+  ).toBeInTheDocument();
+  expect(screen.getByText("暂不可正式评审")).toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
 it("未选择清单或所选范围记录仍在加载时不发送", async () => {
   const { rerender } = render(
     <PackageReviewInputPreview {...props} inventory={null} />,

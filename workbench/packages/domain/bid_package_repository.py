@@ -93,18 +93,24 @@ def identity_snapshot(c: Any, scope: BidScope) -> dict[str, Any]:
 
 
 def read_parse_identity(
-    c: Any, bid_id: str, document_version_id: str, parse_run_id: str
+    c: Any, bid_id: str, document_version_id: str, parse_run_id: str, *, lock: bool = True
 ) -> ParseIdentity:
     """Freezeable evidence identity of actual ordered DB records, not a latest-run guess.
 
     JSONB geometry/structure/gaps are encoded as PostgreSQL text, so protocol/1 has
     no floating point values. Evidence text must match its existing SHA256.
-    The caller keeps the transaction open until save_revision freezes this run.
+    Writers retain the default row lock until save_revision freezes this run.
+    Read-only callers use lock=False inside a repeatable-read snapshot.
     """
     row = _one(
         c,
-        """SELECT parser_digest,config_digest,page_count,coverage,gaps FROM design.parse_runs
-        WHERE bid_id=%s AND document_version_id=%s AND id=%s FOR UPDATE""",
+        (
+            """SELECT parser_digest,config_digest,page_count,coverage,gaps FROM design.parse_runs
+            WHERE bid_id=%s AND document_version_id=%s AND id=%s FOR UPDATE"""
+            if lock
+            else """SELECT parser_digest,config_digest,page_count,coverage,gaps FROM design.parse_runs
+            WHERE bid_id=%s AND document_version_id=%s AND id=%s"""
+        ),
         (bid_id, document_version_id, parse_run_id),
     )
     if row is None:

@@ -27,6 +27,8 @@ const messages: Record<Preview["blockers"][number], string> = {
   PACKAGE_REVIEW_SOURCE_CHANGED: "来源效力记录已变化，旧输入保持原样。",
   PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE: "来源尚未生效、已撤回、过期或用途不符。",
   PACKAGE_REVIEW_MEMBERS_UNPROVEN: "成员的解析、页数或逻辑范围仍未明确。",
+  PACKAGE_REVIEW_EVIDENCE_CHANGED:
+    "冻结解析对应的文件、页或证据记录无法核对，需检查原件与解析。",
   PACKAGE_REVIEW_PHYSICAL_RANGE_GAP: "包内仍有未纳入逻辑范围的物理页。",
   PACKAGE_REVIEW_EXTRACTION_UNPROVEN: "要求抽取尚无精确冻结输入与完成绑定。",
   PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN:

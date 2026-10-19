@@ -1,4 +1,4 @@
-from packages.domain.bid_package_review_preview import physical_gaps
+from packages.domain.bid_package_review_policy import physical_gaps
 
 
 def test_shared_ranges_are_unioned_without_hiding_unassigned_physical_pages():
