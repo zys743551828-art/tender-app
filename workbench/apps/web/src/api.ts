@@ -77,10 +77,17 @@ export async function api<T>(
     method?: string;
     body?: unknown;
     etag?: string | null;
+    ifNoneMatch?: "*" | null;
     key?: string;
   } = {},
 ): Promise<ApiResult<T>> {
   const method = options.method ?? "GET";
+  if (options.etag && options.ifNoneMatch)
+    throw new ApiError(
+      "保存条件冲突，请重新核对当前版本。",
+      422,
+      "INVALID_PRECONDITION",
+    );
   const headers: Record<string, string> = { Accept: "application/json" };
   if (method !== "GET") {
     headers["Content-Type"] = "application/json";
@@ -88,6 +95,7 @@ export async function api<T>(
     headers["Idempotency-Key"] = options.key ?? crypto.randomUUID();
   }
   if (options.etag) headers["If-Match"] = options.etag;
+  if (options.ifNoneMatch) headers["If-None-Match"] = options.ifNoneMatch;
   let response: Response;
   try {
     response = await fetch(`/api/v1${path}`, {

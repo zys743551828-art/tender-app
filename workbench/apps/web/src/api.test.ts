@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { objectFetch, setAuth } from "./api";
+import { api, objectFetch, setAuth } from "./api";
 
 const auth = {
   member: { id: "member", display_name: "测试", active: true },
@@ -7,6 +7,37 @@ const auth = {
   expires_at: "2027-01-01T00:00:00Z",
 };
 let transport: ReturnType<typeof vi.fn<typeof fetch>>;
+it("首版条件保存携带If-None-Match和原幂等键，追加条件仍用If-Match", async () => {
+  transport.mockImplementation(
+    async () => new Response(JSON.stringify({ saved: true })),
+  );
+  await api("/bids/b/packages/p/revisions/r/requirement-inventories", {
+    method: "POST",
+    body: { mappings: [] },
+    key: "original-key",
+    ifNoneMatch: "*",
+  });
+  const first = new Headers(transport.mock.calls[0][1]?.headers);
+  expect(first.get("If-None-Match")).toBe("*");
+  expect(first.has("If-Match")).toBe(false);
+  expect(first.get("Idempotency-Key")).toBe("original-key");
+  expect(first.get("X-CSRF-Token")).toBe(auth.csrf_token);
+  await api("/bids/b/packages/p/revisions/r/requirement-inventories", {
+    method: "POST",
+    body: { mappings: [] },
+    etag: '"inventory-v1"',
+    key: "append-key",
+  });
+  const next = new Headers(transport.mock.calls[1][1]?.headers);
+  expect(next.get("If-Match")).toBe('"inventory-v1"');
+  expect(next.has("If-None-Match")).toBe(false);
+});
+it("冲突的版本条件在发送前拒绝", async () => {
+  await expect(
+    api("/unused", { method: "POST", etag: '"old"', ifNoneMatch: "*" }),
+  ).rejects.toMatchObject({ code: "INVALID_PRECONDITION" });
+  expect(transport).not.toHaveBeenCalled();
+});
 beforeEach(() => {
   setAuth(auth);
   transport = vi.fn<typeof fetch>().mockResolvedValue(new Response());

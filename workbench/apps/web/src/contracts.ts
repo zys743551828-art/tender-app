@@ -1,5 +1,222 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type CreatePackageRequirementInventory = {
+  authority_revision_id: string;
+  rule_set_id: string;
+  mappings: {
+    rule_id: string;
+    categories: string[];
+    target_part_ids: string[];
+    minimum_count: number | null;
+    applicability: "applicable" | "unknown" | "not_applicable";
+    applicability_evidence_ids: string[];
+    valid_at: string | null;
+    checks: string[];
+    reason: string;
+    basis_evidence_ids: string[];
+  }[];
+};
+
+export type CreatePackageCoverageAttempt = {
+  inventory_digest: string;
+  package_digest: string;
+  results: {
+    rule_id: string;
+    requirement_digest: string;
+    state:
+      | "not_provided"
+      | "missing"
+      | "pending_parse"
+      | "parse_gap"
+      | "unsupported"
+      | "verified"
+      | "not_applicable"
+      | "conflict"
+      | "unknown";
+    inspected: {
+      part_id: string;
+      first_page: number;
+      last_page: number;
+    }[];
+    evidence_ids: string[];
+    reason: string;
+    basis_type: "human_scope_declaration" | "human_observation";
+  }[];
+};
+
+export type PackageRequirementInventoryManifest = {
+  version: "bid-package-requirements/1";
+  id: string;
+  bid_id: string;
+  package_id: string;
+  target_revision_id: string;
+  package_digest: string;
+  authority_revision_id: string;
+  authority_digest: string;
+  rule_set_id: string;
+  rule_set_digest: string;
+  revision: number;
+  predecessor_digest: string | null;
+  identity_digest: string;
+  source_snapshot: { [key: string]: unknown }[];
+  requirements: {
+    rule_id: string;
+    rule_digest: string;
+    rule_snapshot: { [key: string]: unknown };
+    decision_id: string | null;
+    decision_snapshot: { [key: string]: unknown } | null;
+    requirement: BidPackage_requirement;
+    requirement_digest: string;
+    source_bound: boolean;
+    annotation: {
+      kind: "human_check_plan_declaration";
+      mapped: boolean;
+      reason: string | null;
+      basis_evidence_ids: string[];
+    };
+  }[];
+  inventory_complete: false;
+  extraction_binding: "unproven_legacy_rule_set";
+  review_ready: false;
+  actor_id: string;
+};
+
+export type PackageCoverageAttemptManifest = {
+  version: "bid-package-coverage/1";
+  id: string;
+  bid_id: string;
+  inventory_id: string;
+  inventory_digest: string;
+  package_digest: string;
+  actor_id: string;
+  results: {
+    coverage: BidPackage_coverage;
+    basis_type: "human_scope_declaration" | "human_observation";
+    evidence_ids: string[];
+  }[];
+  assessment: {
+    package_digest: string;
+    complete: false;
+    requirement_inventory_complete: false;
+    requirement_states: {
+      [key: string]:
+        | "not_provided"
+        | "missing"
+        | "pending_parse"
+        | "parse_gap"
+        | "unsupported"
+        | "verified"
+        | "not_applicable"
+        | "conflict"
+        | "unknown";
+    };
+    requirement_digests: { [key: string]: string };
+    inspected_ranges: { [key: string]: unknown }[];
+    member_gaps: { [key: string]: unknown }[];
+  };
+  review_ready: false;
+};
+
+export type PackageRequirementInventoryView = {
+  manifest: {
+    version: "bid-package-requirements/1";
+    id: string;
+    bid_id: string;
+    package_id: string;
+    target_revision_id: string;
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    rule_set_id: string;
+    rule_set_digest: string;
+    revision: number;
+    predecessor_digest: string | null;
+    identity_digest: string;
+    source_snapshot: { [key: string]: unknown }[];
+    requirements: {
+      rule_id: string;
+      rule_digest: string;
+      rule_snapshot: { [key: string]: unknown };
+      decision_id: string | null;
+      decision_snapshot: { [key: string]: unknown } | null;
+      requirement: BidPackage_requirement;
+      requirement_digest: string;
+      source_bound: boolean;
+      annotation: {
+        kind: "human_check_plan_declaration";
+        mapped: boolean;
+        reason: string | null;
+        basis_evidence_ids: string[];
+      };
+    }[];
+    inventory_complete: false;
+    extraction_binding: "unproven_legacy_rule_set";
+    review_ready: false;
+    actor_id: string;
+  };
+  digest: string;
+};
+
+export type PackageCoverageAttemptView = {
+  manifest: {
+    version: "bid-package-coverage/1";
+    id: string;
+    bid_id: string;
+    inventory_id: string;
+    inventory_digest: string;
+    package_digest: string;
+    actor_id: string;
+    results: {
+      coverage: BidPackage_coverage;
+      basis_type: "human_scope_declaration" | "human_observation";
+      evidence_ids: string[];
+    }[];
+    assessment: {
+      package_digest: string;
+      complete: false;
+      requirement_inventory_complete: false;
+      requirement_states: {
+        [key: string]:
+          | "not_provided"
+          | "missing"
+          | "pending_parse"
+          | "parse_gap"
+          | "unsupported"
+          | "verified"
+          | "not_applicable"
+          | "conflict"
+          | "unknown";
+      };
+      requirement_digests: { [key: string]: string };
+      inspected_ranges: { [key: string]: unknown }[];
+      member_gaps: { [key: string]: unknown }[];
+    };
+    review_ready: false;
+  };
+  digest: string;
+};
+
+export type PackageRequirementInventoryPage = {
+  items: {
+    id: string;
+    digest: string;
+    created_at: string;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+  current_inventory_id: string | null;
+};
+
+export type PackageRequirementHistoryPage = {
+  items: {
+    id: string;
+    digest: string;
+    created_at: string;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
 export type CreateBidPackage = {
   kind: "authority" | "bid";
   members: {
@@ -2925,6 +3142,41 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type BidPackage_requirement = {
+  requirement_id: string;
+  scope: BidPackage_scope;
+  origin: "authority" | "company" | "manual";
+  source_refs: string[];
+  categories: string[];
+  target_part_ids: string[];
+  minimum_count: number | null;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  applicability_evidence: string[];
+  valid_at: string | null;
+  conditions: string[];
+  checks: string[];
+  identity_version: "bid-requirement/1";
+};
+
+export type BidPackage_coverage = {
+  requirement_id: string;
+  package_digest: string;
+  state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  inspected: BidPackage_inspectedRange[];
+  evidence_refs: string[];
+  reason: string | null;
+  requirement_digest: string;
+};
+
 export type BidPackage_scope = {
   engineering_project_id: string;
   lot_id: string;
@@ -3942,6 +4194,12 @@ export type DocumentRelation = {
   kind: "user_declared_same_draft" | "controlled_render";
   verification: "unverified" | "verified" | "rejected";
   evidence_ids: string[];
+};
+
+export type BidPackage_inspectedRange = {
+  part_id: string;
+  first_page: number;
+  last_page: number;
 };
 
 export type BidPackage_parseIdentity = {

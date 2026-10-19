@@ -13,6 +13,7 @@ import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
+import { PackageRequirements } from "./PackageRequirements";
 
 type Member = CreateBidPackage["members"][number];
 type Part = Member["parts"][number];
@@ -498,6 +499,15 @@ function PackageWorkspace({
               >
                 基于当前修订编辑
               </button>
+              {verifiedView.manifest.kind === "bid" && (
+                <PackageRequirements
+                  key={`${bidId}:${memberId}:${verifiedView.manifest.package_id}:${verifiedView.manifest.revision_id}`}
+                  bidId={bidId}
+                  memberId={memberId}
+                  packageView={verifiedView}
+                  disabled={disabled}
+                />
+              )}
             </>
           )}
           <h3>修订历史</h3>
