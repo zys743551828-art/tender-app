@@ -33,6 +33,7 @@ wanted = [
     "BidPackageRevisionSummaryPage",
     "BidPackageDocumentPage",
     "BidPackageParsePage",
+    "PackageEvidencePage",
     "AuthoringTemplateCreate",
     "AuthoringTemplateVersion",
     "WordOriginalView",

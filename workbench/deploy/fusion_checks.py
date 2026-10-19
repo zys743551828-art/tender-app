@@ -21,7 +21,10 @@ SUITES = {
     ],
     "budget": ["tests/test_assistant_budget_nonowner.py"],
     "requirements-pure": ["tests/test_bid_package_requirements.py"],
-    "requirements-api": ["tests/test_bid_package_requirements_api.py"],
+    "requirements-api": [
+        "tests/test_bid_package_requirements_api.py",
+        "tests/test_bid_package_evidence_api.py",
+    ],
 }
 
 

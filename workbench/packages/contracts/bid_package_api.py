@@ -82,6 +82,31 @@ SCHEMAS = {
 
 SCHEMAS.update(
     {
+        "PackageEvidencePage": object_schema(
+            {
+                "revision_id": UUID,
+                "package_digest": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+                "items": {
+                    "type": "array",
+                    "items": object_schema(
+                        {
+                            "id": UUID,
+                            "document_version_id": UUID,
+                            "parse_run_id": UUID,
+                            "physical_page": {"type": "integer", "minimum": 1},
+                            "part_ids": {
+                                "type": "array",
+                                "items": IDENTIFIER,
+                                "minItems": 1,
+                                "uniqueItems": True,
+                            },
+                        }
+                    ),
+                },
+                "has_more": {"type": "boolean"},
+                "next_cursor": {"type": ["string", "null"]},
+            }
+        ),
         "BidPackageHead": object_schema(
             {
                 "id": UUID,
@@ -200,6 +225,11 @@ def extend_openapi(actual):
             "default": {"$ref": "#/components/responses/DomainError"},
         }
     for path, operation_id, schema in [
+        (
+            base + "/{package_id}/revisions/{revision_id}/evidence",
+            "listBidPackageFrozenEvidence",
+            "PackageEvidencePage",
+        ),
         (base, "listBidPackages", "BidPackageHeadPage"),
         (
             base + "/{package_id}/revisions",

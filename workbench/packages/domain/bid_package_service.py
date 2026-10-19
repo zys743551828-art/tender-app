@@ -2,6 +2,8 @@
 
 from uuid import uuid4
 
+from psycopg.types.json import Jsonb
+
 from packages.domain import bid_package_repository as repository
 from packages.domain.bid_packages import (
     BidScope,
@@ -14,7 +16,7 @@ from packages.domain.bid_packages import (
     require,
 )
 from packages.domain.review_identity import canonical
-from packages.domain.runtime import clean, etag, fetch, sha
+from packages.domain.runtime import DomainError, clean, etag, fetch, sha
 from packages.identity import pagination
 from packages.knowledge import sources
 from packages.lifecycle.service import assert_work_writable
@@ -121,6 +123,61 @@ def historical(c, bid_id, package_id, revision_id):
     package = repository.load_revision(c, str(bid_id), str(revision_id))
     require(package.package_id == str(package_id), "PACKAGE_REVISION_NOT_FOUND")
     return package
+
+
+def evidence_directory(c, bid_id, package_id, revision_id, *, limit=20, cursor=None):
+    """Discover IDs within the exact saved parse/parts; historical sources remain identifiable."""
+    package = historical(c, bid_id, package_id, revision_id)
+    scope = sha(
+        {
+            "directory": "bid-package-evidence/1",
+            "bid_id": str(bid_id),
+            "package_id": str(package_id),
+            "revision_id": str(revision_id),
+            "package_digest": package.manifest_digest,
+        }
+    )
+    after = pagination.decode(cursor, scope)
+    if after and after[0] != "":
+        raise DomainError("INVALID_CURSOR", "资料包证据游标不属于当前冻结修订", 422)
+    last_id = after[-1] if after else None
+    ranges = [
+        {
+            "document_version_id": member.document_version_id,
+            "parse_run_id": member.parse.parse_run_id,
+            "part_id": part.part_id,
+            "first_page": part.first_page,
+            "last_page": part.last_page,
+        }
+        for member in package.members
+        if member.parse.status == "frozen"
+        for part in member.parts
+    ]
+    rows = repository._all(
+        c,
+        """WITH frozen AS (
+          SELECT * FROM jsonb_to_recordset(%s::jsonb) AS f(
+            document_version_id uuid,parse_run_id uuid,part_id text,first_page integer,last_page integer))
+        SELECT e.id,p.document_version_id,p.id AS parse_run_id,e.physical_page,
+          array_agg(DISTINCT f.part_id ORDER BY f.part_id) AS part_ids
+        FROM frozen f JOIN design.parse_runs p
+          ON p.id=f.parse_run_id AND p.document_version_id=f.document_version_id AND p.bid_id=%s
+        JOIN design.evidence_blocks e ON e.bid_id=p.bid_id AND e.parse_id=p.id
+          AND e.physical_page BETWEEN f.first_page AND f.last_page
+        WHERE (%s::uuid IS NULL OR e.id>%s)
+        GROUP BY e.id,p.document_version_id,p.id,e.physical_page ORDER BY e.id LIMIT %s""",
+        (Jsonb(ranges), bid_id, last_id, last_id, limit + 1),
+    )
+    items = clean(rows[:limit])
+    return {
+        "revision_id": package.revision_id,
+        "package_digest": package.manifest_digest,
+        "items": items,
+        "has_more": len(rows) > limit,
+        "next_cursor": pagination.encode(scope, ["", items[-1]["id"]])
+        if len(rows) > limit
+        else None,
+    }
 
 
 def view(c, package):

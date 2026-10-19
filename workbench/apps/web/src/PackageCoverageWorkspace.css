@@ -1,0 +1,41 @@
+.package-coverage-workspace {
+  min-width: 0;
+  margin-block: 22px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  overflow-wrap: anywhere;
+}
+.package-coverage-workspace > h4 {
+  margin: 0 0 12px;
+}
+.package-coverage-workspace > p {
+  margin-block: 10px;
+}
+.package-coverage-workspace > [role="alert"],
+.package-coverage-workspace > [role="status"] {
+  padding: 12px;
+  background: var(--warning-soft);
+  color: var(--warning-foreground);
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+}
+.package-coverage-workspace > .coverage-workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-block: 14px;
+}
+.package-coverage-workspace > button,
+.package-coverage-workspace > [role="status"] > button,
+.package-coverage-workspace > .coverage-workspace-actions > button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 650px) {
+  .package-coverage-workspace {
+    padding: 12px;
+  }
+}

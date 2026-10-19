@@ -1,0 +1,110 @@
+.coverage-editor {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+}
+.coverage-editor > article {
+  margin-block: 1rem;
+  padding-block: 1rem;
+  border-top: 1px solid var(--border);
+}
+.coverage-editor fieldset:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 1rem;
+  margin-block: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.coverage-editor label:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.coverage-editor
+  label:has(> input[type="checkbox"]):not(.dialog-backdrop):not(
+    .dialog-backdrop *
+  ) {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+}
+.coverage-editor
+  input[type="checkbox"]:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  width: 18px;
+  height: 18px;
+  min-height: auto;
+  accent-color: var(--primary);
+  margin-top: 0.2rem;
+}
+.coverage-editor
+  input:not([type="checkbox"]):not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor select:not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor textarea:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font: inherit;
+}
+.coverage-editor textarea:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  width: 100%;
+  min-height: 5rem;
+}
+.coverage-editor blockquote:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--primary);
+  white-space: pre-wrap;
+}
+.coverage-editor pre:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.coverage-editor button:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  justify-self: start;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  background: var(--card);
+  color: var(--primary);
+  font: inherit;
+  cursor: pointer;
+}
+.coverage-editor button:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor input:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor
+  textarea:disabled:not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor select:disabled:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.coverage-editor
+  .coverage-editor-range:not(.dialog-backdrop):not(.dialog-backdrop *),
+.coverage-editor
+  .coverage-editor-evidence:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.coverage-editor [role="alert"]:not(.dialog-backdrop):not(.dialog-backdrop *) {
+  color: var(--danger-foreground);
+}
+@media (max-width: 600px) {
+  .coverage-editor {
+    padding: 0.75rem;
+  }
+  .coverage-editor fieldset:not(.dialog-backdrop):not(.dialog-backdrop *) {
+    padding: 0.65rem;
+  }
+  .coverage-editor
+    input:not([type="checkbox"]):not(.dialog-backdrop):not(.dialog-backdrop *),
+  .coverage-editor select:not(.dialog-backdrop):not(.dialog-backdrop *) {
+    width: 100%;
+  }
+}

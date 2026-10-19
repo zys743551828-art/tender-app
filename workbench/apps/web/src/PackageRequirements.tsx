@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { api, ApiError, supportsApi } from "./api";
 import type {
   BidPackageHeadPage,
@@ -20,6 +27,11 @@ import {
   RequirementCheckPlan,
   type CheckPlanValue,
 } from "./RequirementCheckPlan";
+
+const PackageCoverageWorkspace = lazy(async () => {
+  const module = await import("./PackageCoverageWorkspace");
+  return { default: module.PackageCoverageWorkspace };
+});
 
 type Props = {
   bidId: string;
@@ -205,6 +217,21 @@ const gapNames: Record<string, string> = {
   parts_unassigned: "逻辑范围未分配",
   parse_identity_not_frozen: "解析身份尚未冻结",
 };
+function inspectedLabel(
+  view: BidPackageStoredView,
+  partId: unknown,
+  first: unknown,
+  last: unknown,
+) {
+  for (const [fileIndex, member] of view.manifest.members.entries()) {
+    const partIndex = member.parts.findIndex((part) => part.part_id === partId);
+    if (partIndex >= 0) {
+      const part = member.parts[partIndex];
+      return `文件 ${fileIndex + 1} · 分册 ${partIndex + 1} · ${categories[part.category] ?? part.category} · 物理页 ${typeof first === "number" ? first : "待核"}—${typeof last === "number" ? last : "待核"}`;
+    }
+  }
+  return "受检范围未能定位，须核对冻结身份";
+}
 const checkNames: Record<string, string> = {
   quantity: "数量逐项核对",
   expiry: "有效期",
@@ -323,6 +350,11 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
   const [notice, setNotice] = useState("");
+  const [coverageWriteLocked, setCoverageWriteLocked] = useState(false);
+  const onCoveragePending = useCallback(
+    (value: boolean) => setCoverageWriteLocked(value),
+    [],
+  );
   const active = useRef(true);
   useEffect(() => {
     active.current = true;
@@ -395,7 +427,8 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     checked.id === attemptId &&
     checked.inventory_digest === inventory.data?.digest &&
     checked.package_digest === packageView.digest;
-  const locked = disabled || busy || !!pending || recovery.blocked;
+  const locked =
+    disabled || busy || !!pending || recovery.blocked || coverageWriteLocked;
   const canCreate =
     supportsApi("POST", base) &&
     !locked &&
@@ -1139,7 +1172,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
             );
           })}
           <h4>人工范围声明历史</h4>
-          <p>这里可读取已保存的人工核验记录，暂未提供人工核验填写。</p>
+          <p>每次人工记录单独读取。新增记录在下方填写，不沿用历史结果。</p>
           <ResourceState
             {...attempts}
             hasData={!!attempts.data}
@@ -1233,18 +1266,17 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
               <ul>
                 {checked.assessment.inspected_ranges.map((range, i) => (
                   <li key={i}>
-                    {text(range.part_id)} · 物理页{" "}
-                    {typeof range.first_page === "number"
-                      ? range.first_page
-                      : "待核"}
-                    —
-                    {typeof range.last_page === "number"
-                      ? range.last_page
-                      : "待核"}
+                    {inspectedLabel(
+                      packageView,
+                      range.part_id,
+                      range.first_page,
+                      range.last_page,
+                    )}
                     <details>
                       <summary>受检范围冻结身份</summary>
                       <p>
-                        要求 {text(range.requirement_id)} · 文件版本{" "}
+                        范围 {text(range.part_id)} · 要求{" "}
+                        {text(range.requirement_id)} · 文件版本{" "}
                         {text(range.document_version_id)} · 要求摘要{" "}
                         {text(range.requirement_digest)}
                       </p>
@@ -1254,6 +1286,14 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
               </ul>
               {checked.results.map((result) => (
                 <div key={result.coverage.requirement_id}>
+                  <h6>
+                    要求{" "}
+                    {frozen.requirements.findIndex(
+                      (binding) =>
+                        binding.rule_id === result.coverage.requirement_id,
+                    ) + 1}{" "}
+                    · {names[result.coverage.state] ?? "未知"}
+                  </h6>
                   <p>
                     依据类型：
                     {result.basis_type === "human_scope_declaration"
@@ -1264,8 +1304,12 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
                   <ul>
                     {result.coverage.inspected.map((range, i) => (
                       <li key={i}>
-                        {range.part_id} · 物理页 {range.first_page}—
-                        {range.last_page}
+                        {inspectedLabel(
+                          packageView,
+                          range.part_id,
+                          range.first_page,
+                          range.last_page,
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -1285,6 +1329,26 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           )}
         </>
       )}
+      <Suspense fallback={<p role="status">正在加载人工范围填写…</p>}>
+        <PackageCoverageWorkspace
+          bidId={bidId}
+          memberId={memberId}
+          packageView={packageView}
+          authorityView={authorityValid ? a! : null}
+          inventory={inventoryValid ? inventory.data! : null}
+          currentInventoryId={inventories.data?.current_inventory_id ?? null}
+          currentKnown={
+            !!inventories.data && !inventories.loading && !inventories.error
+          }
+          onPendingChange={onCoveragePending}
+          disabled={disabled || !!pending || recovery.blocked || busy}
+          onSaved={(savedInventoryId, savedAttemptId) => {
+            setInventoryId(savedInventoryId);
+            setAttemptId(savedAttemptId);
+            if (inventoryId === savedInventoryId) void attempts.reload();
+          }}
+        />
+      </Suspense>
       {!supportsApi("POST", base) && (
         <p>当前服务尚未提供清单创建接口，保留只读历史。</p>
       )}

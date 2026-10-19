@@ -326,6 +326,20 @@ export type BidPackageParsePage = {
   next_cursor: string | null;
 };
 
+export type PackageEvidencePage = {
+  revision_id: string;
+  package_digest: string;
+  items: {
+    id: string;
+    document_version_id: string;
+    parse_run_id: string;
+    physical_page: number;
+    part_ids: string[];
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
 export type AuthoringTemplateCreate = {
   name: string;
   kind: "outline" | "layout";
@@ -4455,6 +4469,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/manifest",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/evidence",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",

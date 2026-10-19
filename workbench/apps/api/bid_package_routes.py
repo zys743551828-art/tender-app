@@ -156,3 +156,22 @@ def get_manifest(bid_id: UUID, package_id: UUID, revision_id: UUID, r: Request):
                 "X-Manifest-SHA256": digest,
             },
         )
+
+
+@router.get("/{package_id}/revisions/{revision_id}/evidence")
+def list_frozen_evidence(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    r: Request,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = Query(default=None, max_length=4096),
+):
+    auth(r)
+    with package_errors(), connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        value = service.evidence_directory(
+            c, bid_id, package_id, revision_id, limit=limit, cursor=cursor
+        )
+        validate("PackageEvidencePage", value)
+        return value

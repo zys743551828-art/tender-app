@@ -128,6 +128,7 @@ def implemented_openapi(app):
             "/{package_id}/revisions",
             "/{package_id}/revisions/{revision_id}",
             "/{package_id}/revisions/{revision_id}/manifest",
+            "/{package_id}/revisions/{revision_id}/evidence",
         )
     } | {
         "/api/v1/bids/{bid_id}/package-documents",
