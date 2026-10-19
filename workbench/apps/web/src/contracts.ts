@@ -44,42 +44,85 @@ export type CreatePackageCoverageAttempt = {
   }[];
 };
 
-export type PackageRequirementInventoryManifest = {
-  version: "bid-package-requirements/1";
-  id: string;
-  bid_id: string;
-  package_id: string;
-  target_revision_id: string;
-  package_digest: string;
-  authority_revision_id: string;
-  authority_digest: string;
-  rule_set_id: string;
-  rule_set_digest: string;
-  revision: number;
-  predecessor_digest: string | null;
-  identity_digest: string;
-  source_snapshot: { [key: string]: unknown }[];
-  requirements: {
-    rule_id: string;
-    rule_digest: string;
-    rule_snapshot: { [key: string]: unknown };
-    decision_id: string | null;
-    decision_snapshot: { [key: string]: unknown } | null;
-    requirement: BidPackage_requirement;
-    requirement_digest: string;
-    source_bound: boolean;
-    annotation: {
-      kind: "human_check_plan_declaration";
-      mapped: boolean;
-      reason: string | null;
-      basis_evidence_ids: string[];
+export type PackageRequirementInventoryManifest =
+  | {
+      version: "bid-package-requirements/1";
+      id: string;
+      bid_id: string;
+      package_id: string;
+      target_revision_id: string;
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      revision: number;
+      predecessor_digest: string | null;
+      identity_digest: string;
+      source_snapshot: { [key: string]: unknown }[];
+      requirements: {
+        rule_id: string;
+        rule_digest: string;
+        rule_snapshot: { [key: string]: unknown };
+        decision_id: string | null;
+        decision_snapshot: { [key: string]: unknown } | null;
+        requirement: BidPackage_requirement;
+        requirement_digest: string;
+        source_bound: boolean;
+        annotation: {
+          kind: "human_check_plan_declaration";
+          mapped: boolean;
+          reason: string | null;
+          basis_evidence_ids: string[];
+        };
+      }[];
+      inventory_complete: false;
+      extraction_binding: "unproven_legacy_rule_set";
+      review_ready: false;
+      actor_id: string;
+    }
+  | {
+      version: "bid-package-requirements/2";
+      id: string;
+      bid_id: string;
+      package_id: string;
+      target_revision_id: string;
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      revision: number;
+      predecessor_digest: string | null;
+      identity_digest: string;
+      source_snapshot: { [key: string]: unknown }[];
+      requirements: {
+        rule_id: string;
+        rule_digest: string;
+        rule_snapshot: { [key: string]: unknown };
+        decision_id: string | null;
+        decision_snapshot: { [key: string]: unknown } | null;
+        requirement: BidPackage_requirement;
+        requirement_digest: string;
+        source_bound: boolean;
+        annotation: {
+          kind: "human_check_plan_declaration";
+          mapped: boolean;
+          reason: string | null;
+          basis_evidence_ids: string[];
+        };
+      }[];
+      inventory_complete: false;
+      extraction_binding: "exact_frozen_input_result";
+      review_ready: false;
+      actor_id: string;
+      extraction_input_digest: string;
+      extraction_result_digest: string;
+      extraction_result_id: string;
+      extraction_range_status: "all_frozen_evidence_submitted";
+      extraction_coverage: "complete" | "partial" | "conflict";
+      extraction_quality_status: "not_measured";
     };
-  }[];
-  inventory_complete: false;
-  extraction_binding: "unproven_legacy_rule_set";
-  review_ready: false;
-  actor_id: string;
-};
 
 export type PackageCoverageAttemptManifest = {
   version: "bid-package-coverage/1";
@@ -118,42 +161,85 @@ export type PackageCoverageAttemptManifest = {
 };
 
 export type PackageRequirementInventoryView = {
-  manifest: {
-    version: "bid-package-requirements/1";
-    id: string;
-    bid_id: string;
-    package_id: string;
-    target_revision_id: string;
-    package_digest: string;
-    authority_revision_id: string;
-    authority_digest: string;
-    rule_set_id: string;
-    rule_set_digest: string;
-    revision: number;
-    predecessor_digest: string | null;
-    identity_digest: string;
-    source_snapshot: { [key: string]: unknown }[];
-    requirements: {
-      rule_id: string;
-      rule_digest: string;
-      rule_snapshot: { [key: string]: unknown };
-      decision_id: string | null;
-      decision_snapshot: { [key: string]: unknown } | null;
-      requirement: BidPackage_requirement;
-      requirement_digest: string;
-      source_bound: boolean;
-      annotation: {
-        kind: "human_check_plan_declaration";
-        mapped: boolean;
-        reason: string | null;
-        basis_evidence_ids: string[];
+  manifest:
+    | {
+        version: "bid-package-requirements/1";
+        id: string;
+        bid_id: string;
+        package_id: string;
+        target_revision_id: string;
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        revision: number;
+        predecessor_digest: string | null;
+        identity_digest: string;
+        source_snapshot: { [key: string]: unknown }[];
+        requirements: {
+          rule_id: string;
+          rule_digest: string;
+          rule_snapshot: { [key: string]: unknown };
+          decision_id: string | null;
+          decision_snapshot: { [key: string]: unknown } | null;
+          requirement: BidPackage_requirement;
+          requirement_digest: string;
+          source_bound: boolean;
+          annotation: {
+            kind: "human_check_plan_declaration";
+            mapped: boolean;
+            reason: string | null;
+            basis_evidence_ids: string[];
+          };
+        }[];
+        inventory_complete: false;
+        extraction_binding: "unproven_legacy_rule_set";
+        review_ready: false;
+        actor_id: string;
+      }
+    | {
+        version: "bid-package-requirements/2";
+        id: string;
+        bid_id: string;
+        package_id: string;
+        target_revision_id: string;
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        revision: number;
+        predecessor_digest: string | null;
+        identity_digest: string;
+        source_snapshot: { [key: string]: unknown }[];
+        requirements: {
+          rule_id: string;
+          rule_digest: string;
+          rule_snapshot: { [key: string]: unknown };
+          decision_id: string | null;
+          decision_snapshot: { [key: string]: unknown } | null;
+          requirement: BidPackage_requirement;
+          requirement_digest: string;
+          source_bound: boolean;
+          annotation: {
+            kind: "human_check_plan_declaration";
+            mapped: boolean;
+            reason: string | null;
+            basis_evidence_ids: string[];
+          };
+        }[];
+        inventory_complete: false;
+        extraction_binding: "exact_frozen_input_result";
+        review_ready: false;
+        actor_id: string;
+        extraction_input_digest: string;
+        extraction_result_digest: string;
+        extraction_result_id: string;
+        extraction_range_status: "all_frozen_evidence_submitted";
+        extraction_coverage: "complete" | "partial" | "conflict";
+        extraction_quality_status: "not_measured";
       };
-    }[];
-    inventory_complete: false;
-    extraction_binding: "unproven_legacy_rule_set";
-    review_ready: false;
-    actor_id: string;
-  };
   digest: string;
 };
 

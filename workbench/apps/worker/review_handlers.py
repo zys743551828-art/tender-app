@@ -6,6 +6,7 @@ from copy import deepcopy
 from psycopg.types.json import Jsonb
 
 from packages.domain import model_calls
+from packages.domain.bid_packages import PackageError
 from packages.domain.review_data import (
     check_frozen_sources,
     effective_at,
@@ -76,6 +77,22 @@ def compute_prepare(message, lease):
         if sha(closure) != sha(descriptor["source_closure"]):
             raise DomainError("PREPARE_SOURCE_STALE", "准备来源身份已变化", 409)
         effective_at(closure, descriptor["as_of"])
+        frozen_input = descriptor.get("package_rule_extraction_input")
+        if frozen_input:
+            from packages.domain.bid_package_extraction import validate_frozen_input
+
+            try:
+                validate_frozen_input(
+                    c,
+                    message["bid_id"],
+                    frozen_input,
+                    documents,
+                    descriptor["method"],
+                    descriptor["method_digest"],
+                    descriptor["material_snapshot_id"],
+                )
+            except PackageError as error:
+                raise DomainError(error.code, "冻结的整包抽取输入与任务资料不一致", 409) from error
     verify_bytes(documents)
     sources = [doc for doc in documents if doc["role"] != "body"]
     blocks = [block for doc in sources for block in doc["blocks"]]
@@ -144,6 +161,8 @@ def compute_prepare(message, lease):
         "gaps": gaps,
         "ambiguities": result["ambiguities"],
         "model_call_id": str(call),
+        "package_rule_extraction_input": descriptor.get("package_rule_extraction_input"),
+        "read_evidence_ids_digest": sha(sorted(map(str, result["read_evidence_ids"]))),
     }
 
 
@@ -473,7 +492,7 @@ def publish(c, message, outcome):
             outcome["coverage"],
             outcome["documents"],
         )
-        return {
+        value = {
             "result_ref": str(identity),
             "gaps": outcome["gaps"],
             "ambiguities": outcome["ambiguities"],
@@ -500,6 +519,42 @@ def publish(c, message, outcome):
                 )
             ),
         }
+        frozen_input = outcome.get("package_rule_extraction_input")
+        if frozen_input:
+            from packages.domain.bid_package_extraction import (
+                record_completion,
+                validate_frozen_input,
+            )
+
+            try:
+                validate_frozen_input(
+                    c,
+                    message["bid_id"],
+                    frozen_input,
+                    outcome["documents"],
+                    frozen_input["manifest"]["method_profile"],
+                    outcome["method_digest"],
+                    outcome["material_id"],
+                )
+            except PackageError as error:
+                raise DomainError(error.code, "冻结的整包抽取输入在完成时不一致", 409) from error
+
+            extraction_result = {
+                "input_digest": frozen_input["digest"],
+                "rule_set_id": str(identity),
+                "authority_revision_id": frozen_input["manifest"]["authority_package"][
+                    "revision_id"
+                ],
+                "authority_digest": frozen_input["manifest"]["authority_package"]["digest"],
+                "method_digest": outcome["method_digest"],
+                "range_status": "all_frozen_evidence_submitted",
+                "read_evidence_ids_digest": outcome["read_evidence_ids_digest"],
+                "extraction_coverage": outcome["coverage"],
+                "quality_status": "not_measured",
+            }
+            record_completion(c, message, frozen_input, str(identity), extraction_result)
+            value["extraction_input_digest"] = frozen_input["digest"]
+        return value
     row, evidence = outcome["row"], outcome["evidence"]
     check_frozen_sources(c, row["manifest"], evidence, lock=True)
     if message["step_key"] == "core-judgment":

@@ -7,6 +7,7 @@ from uuid import uuid4
 import psycopg
 from psycopg.types.json import Jsonb
 
+from packages.domain import bid_package_extraction as extraction
 from packages.domain import bid_package_repository as packages
 from packages.domain import bid_package_requirements as domain
 from packages.domain.bid_package_service import historical, lock_bid
@@ -171,10 +172,16 @@ def create_inventory(
                     and set(rule["evidence_ids"]) <= authority_evidence.keys(),
                 )
             )
-        identity = str(uuid4())
+        extracted = extraction.completion_for_rule_set(
+            c,
+            bid_id,
+            str(rule_set["id"]),
+            authority.revision_id,
+            authority.manifest_digest,
+        )
         manifest = {
-            "version": "bid-package-requirements/1",
-            "id": identity,
+            "version": "bid-package-requirements/2" if extracted else "bid-package-requirements/1",
+            "id": str(uuid4()),
             "bid_id": bid_id,
             "package_id": package_id,
             "target_revision_id": target_id,
@@ -189,10 +196,24 @@ def create_inventory(
             "source_snapshot": snapshot,
             "requirements": bindings,
             "inventory_complete": False,
-            "extraction_binding": "unproven_legacy_rule_set",
+            "extraction_binding": (
+                "exact_frozen_input_result" if extracted else "unproven_legacy_rule_set"
+            ),
             "review_ready": False,
             "actor_id": body["actor_id"],
         }
+        if extracted:
+            manifest.update(
+                {
+                    "extraction_input_digest": extracted["input_digest"],
+                    "extraction_result_digest": extracted["result_digest"],
+                    "extraction_result_id": str(extracted["id"]),
+                    "extraction_range_status": extracted["result"]["range_status"],
+                    "extraction_coverage": extracted["result"]["extraction_coverage"],
+                    "extraction_quality_status": extracted["result"]["quality_status"],
+                }
+            )
+        identity = manifest["id"]
         frozen_digest = digest(manifest)
         c.execute(
             """INSERT INTO design.bid_package_requirement_inventories
@@ -254,6 +275,24 @@ def load_inventory(c: Any, bid_id: str, package_id: str, target_id: str, invento
             valid("PackageRequirementInventoryManifest", value) and digest(value) == row["digest"],
             "PACKAGE_REQUIREMENT_STORED_CORRUPT",
         )
+        if value["version"] == "bid-package-requirements/2":
+            result = extraction.completion_for_rule_set(
+                c,
+                bid_id,
+                value["rule_set_id"],
+                value["authority_revision_id"],
+                value["authority_digest"],
+            )
+            require(
+                result is not None
+                and value["extraction_input_digest"] == result["input_digest"]
+                and value["extraction_result_digest"] == result["result_digest"]
+                and value["extraction_result_id"] == str(result["id"])
+                and value["extraction_range_status"] == result["result"]["range_status"]
+                and value["extraction_coverage"] == result["result"]["extraction_coverage"]
+                and value["extraction_quality_status"] == result["result"]["quality_status"],
+                "PACKAGE_REQUIREMENT_STORED_CORRUPT",
+            )
         require(
             all(
                 binding["requirement_digest"] == digest(binding["requirement"])

@@ -61,6 +61,7 @@ def method_profile():
                     "packages/domain/engineering.py",
                     "packages/domain/content_checks.py",
                     "packages/domain/content_decision_basis.py",
+                    "packages/domain/bid_package_extraction.py",
                 )
             }
         ),
@@ -462,12 +463,22 @@ def prepare_intent(bid_id):
             "method": method,
             "method_digest": sha(method),
         }
+        from packages.domain.bid_package_extraction import freeze_matching_input
+
+        descriptor["package_rule_extraction_input"] = freeze_matching_input(
+            c, str(bid_id), str(snapshot), documents, method, sha(method)
+        )
         preparation_digest = sha(
             {
                 "source_fingerprint": source_hash,
                 "source_closure": closure,
                 "method": method,
                 "base_rule_set_id": descriptor["base_rule_set_id"],
+                "package_rule_extraction_input_digest": (
+                    descriptor["package_rule_extraction_input"]["digest"]
+                    if descriptor["package_rule_extraction_input"]
+                    else None
+                ),
             }
         )
     blob = save_json(descriptor)

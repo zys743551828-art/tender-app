@@ -260,6 +260,344 @@ def attempt_body(w, inv, *, state="verified"):
     }
 
 
+def package_extraction_document(c, package):
+    member = package.members[0]
+    parse = c.execute(
+        "SELECT parser_digest,config_digest,page_count,coverage,gaps FROM design.parse_runs WHERE id=%s",
+        (member.parse.parse_run_id,),
+    ).fetchone()
+    pages = c.execute(
+        "SELECT physical_page,quality,gaps FROM design.pages WHERE parse_id=%s ORDER BY physical_page",
+        (member.parse.parse_run_id,),
+    ).fetchall()
+    blocks = c.execute(
+        """SELECT id::text AS id,physical_page,ordinal,kind,text_content,bbox,structure,digest
+                FROM design.evidence_blocks WHERE parse_id=%s ORDER BY physical_page,ordinal""",
+        (member.parse.parse_run_id,),
+    ).fetchall()
+    return {
+        "document_version_id": member.document_version_id,
+        "role": "tender",
+        "digest": member.file_digest,
+        "parse_id": member.parse.parse_run_id,
+        "parser_digest": parse["parser_digest"],
+        "config_digest": parse["config_digest"],
+        "page_count": parse["page_count"],
+        "coverage": parse["coverage"],
+        "gaps": parse["gaps"],
+        "pages": pages,
+        "blocks": blocks,
+    }
+
+
+def test_worker_completion_binds_exact_frozen_input_without_claiming_quality(
+    requirements, monkeypatch
+):
+    from packages.domain import storage
+    from packages.domain.bid_package_extraction import (
+        freeze_matching_input,
+        record_completion,
+        validate_frozen_input,
+    )
+    from packages.domain.bid_package_repository import load_revision
+    from packages.domain.review_data import save_json
+    from packages.domain.review_identity import digest
+    from packages.domain.runtime import enqueue_plan
+
+    w = requirements
+    legacy_response = inventory(w)
+    assert legacy_response.status_code == 201
+    legacy = legacy_response.json()
+    legacy_tag = legacy_response.headers["etag"]
+    c = w["database"]["owner"]
+    authority_id = w["inventory_body"]["authority_revision_id"]
+    authority = load_revision(c, w["scope"].bid_id, authority_id)
+    document = package_extraction_document(c, authority)
+    method = {"engine": "synthetic-test-only", "version": "1"}
+    method_digest = digest(method)
+    frozen = freeze_matching_input(
+        c,
+        w["scope"].bid_id,
+        "10000000-0000-0000-0000-000000000001",
+        [document],
+        method,
+        method_digest,
+    )
+    assert frozen is not None
+    assert frozen["manifest"]["scope"]["lot_id"] == w["scope"].lot_id
+    assert frozen["manifest"]["authority_package"]["revision_id"] == authority_id
+    assert frozen["manifest"]["members"][0]["parse_run_id"] == document["parse_id"]
+    assert frozen["manifest"]["extraction_scope"]["parts"][0]["shared_attachment"] is False
+
+    stored_objects = {}
+    monkeypatch.setattr(
+        storage,
+        "put",
+        lambda key, data, media: stored_objects.__setitem__(key, data),
+    )
+    monkeypatch.setattr(storage, "get", lambda key: stored_objects[key])
+    monkeypatch.setenv("WORKER_DATABASE_DSN", w["database"]["worker_dsn"])
+    descriptor = {
+        "documents": [document],
+        "package_rule_extraction_input": frozen,
+    }
+    blob = save_json(descriptor, worker=True)
+    command_id, operation_digest = uid(), digest({"frozen": frozen["digest"]})
+    with c.transaction():
+        c.execute(
+            """INSERT INTO design.commands
+                    (id,actor_id,command_kind,target_id,idempotency_key,request_digest)
+                    VALUES(%s,%s,'synthetic_prepare',%s,%s,%s)""",
+            (command_id, w["actor"], w["scope"].bid_id, uid(), operation_digest),
+        )
+        operation = enqueue_plan(
+            c,
+            w["scope"].bid_id,
+            command_id,
+            "prepare-review",
+            {"id": blob["id"]},
+            stages=[{"key": "extract-rules", "depends_on": []}],
+            handler_version="prepare/1",
+            topic="tender.task.review.v1",
+            input_digest=operation_digest,
+        )
+    result = {
+        "input_digest": frozen["digest"],
+        "rule_set_id": w["inventory_body"]["rule_set_id"],
+        "authority_revision_id": authority_id,
+        "authority_digest": authority.manifest_digest,
+        "method_digest": method_digest,
+        "range_status": "all_frozen_evidence_submitted",
+        "read_evidence_ids_digest": digest(["synthetic-evidence-set"]),
+        "extraction_coverage": "partial",
+        "quality_status": "not_measured",
+    }
+    message = {
+        "bid_id": w["scope"].bid_id,
+        "operation_id": operation["id"],
+        "input_digest": operation_digest,
+        "payload_ref": blob["id"],
+    }
+    with psycopg.connect(w["database"]["worker_dsn"], row_factory=dict_row) as worker:
+        worker.execute("SET search_path=design,public")
+        validate_frozen_input(
+            worker,
+            w["scope"].bid_id,
+            frozen,
+            [document],
+            method,
+            method_digest,
+            "10000000-0000-0000-0000-000000000001",
+        )
+        record_completion(
+            worker,
+            message,
+            frozen,
+            w["inventory_body"]["rule_set_id"],
+            result,
+        )
+        worker.execute(
+            """INSERT INTO design.effect_receipts(operation_id,effect_key,result)
+                    VALUES(%s,'extract-rules',%s)""",
+            (
+                operation["id"],
+                Jsonb(
+                    {
+                        "result_ref": w["inventory_body"]["rule_set_id"],
+                        "method_digest": method_digest,
+                        "extraction_input_digest": frozen["digest"],
+                    }
+                ),
+            ),
+        )
+        worker.execute(
+            "UPDATE design.operations SET state='succeeded',finished_at=now() WHERE id=%s",
+            (operation["id"],),
+        )
+    with psycopg.connect(w["database"]["api_dsn"], row_factory=dict_row) as api:
+        api.execute("SET search_path=design,public")
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            api.execute(
+                """INSERT INTO design.bid_package_requirement_extraction_runs(id)
+                        VALUES(%s)""",
+                (uid(),),
+            )
+
+    # Reading history must not depend on object storage being online.
+    def unavailable_object_store(key):
+        raise AssertionError("historical inventory read accessed object storage")
+
+    monkeypatch.setattr(storage, "get", unavailable_object_store)
+    response = inventory(w, tag=legacy_tag)
+    assert response.status_code == 201, response.text
+    manifest = response.json()["manifest"]
+    assert manifest["version"] == "bid-package-requirements/2"
+    assert manifest["extraction_binding"] == "exact_frozen_input_result"
+    assert manifest["extraction_input_digest"] == frozen["digest"]
+    assert manifest["extraction_coverage"] == "partial"
+    assert manifest["extraction_quality_status"] == "not_measured"
+    assert manifest["inventory_complete"] is False
+    assert manifest["review_ready"] is False
+    current = w["client"].get(w["requirement_base"] + "/" + manifest["id"])
+    assert current.status_code == 200
+    assert current.json() == response.json()
+    old = w["client"].get(w["requirement_base"] + "/" + legacy["manifest"]["id"])
+    assert old.status_code == 200
+    assert old.json() == legacy
+
+
+def test_same_file_new_parse_creates_new_frozen_identity_and_keeps_old_input_unchanged(
+    requirements,
+):
+    from packages.domain.bid_package_extraction import (
+        freeze_matching_input,
+        validate_frozen_input,
+    )
+    from packages.domain.bid_package_repository import (
+        load_revision,
+        read_parse_identity,
+        save_revision,
+    )
+    from packages.domain.bid_packages import PackageError
+    from packages.domain.review_identity import digest
+
+    w = requirements
+    c = w["database"]["owner"]
+    old_revision_id = w["inventory_body"]["authority_revision_id"]
+    old_package = load_revision(c, w["scope"].bid_id, old_revision_id)
+    old_document = package_extraction_document(c, old_package)
+    method = {"engine": "synthetic-test-only", "version": "1"}
+    method_digest = digest(method)
+    frozen_old = freeze_matching_input(
+        c,
+        w["scope"].bid_id,
+        "10000000-0000-0000-0000-000000000002",
+        [old_document],
+        method,
+        method_digest,
+    )
+    assert frozen_old is not None
+    old_digest = frozen_old["digest"]
+
+    new_parse_id = uid()
+    with c.transaction():
+        c.execute(
+            """INSERT INTO design.parse_runs
+                    (id,bid_id,document_version_id,parser_digest,config_digest,page_count,coverage,gaps)
+                    SELECT %s,bid_id,document_version_id,%s,%s,page_count,coverage,gaps
+                    FROM design.parse_runs WHERE id=%s""",
+            (new_parse_id, "e" * 64, "f" * 64, old_document["parse_id"]),
+        )
+        c.execute(
+            """INSERT INTO design.pages
+                    (bid_id,parse_id,physical_page,printed_label,width,height,rotation,quality,gaps)
+                    SELECT bid_id,%s,physical_page,printed_label,width,height,rotation,quality,gaps
+                    FROM design.pages WHERE parse_id=%s""",
+            (new_parse_id, old_document["parse_id"]),
+        )
+        c.execute(
+            """INSERT INTO design.evidence_blocks
+                    (id,bid_id,parse_id,physical_page,ordinal,kind,text_content,bbox,structure,digest)
+                    SELECT gen_random_uuid(),bid_id,%s,physical_page,ordinal,kind,text_content,bbox,structure,digest
+                    FROM design.evidence_blocks WHERE parse_id=%s""",
+            (new_parse_id, old_document["parse_id"]),
+        )
+    changed_member = replace(
+        old_package.members[0],
+        parse=read_parse_identity(
+            c, w["scope"].bid_id, old_document["document_version_id"], new_parse_id
+        ),
+    )
+    new_package = old_package.next_revision(uid(), (changed_member,))
+    save_revision(c, new_package, expected_digest=old_package.manifest_digest)
+    new_document = package_extraction_document(c, new_package)
+    frozen_new = freeze_matching_input(
+        c,
+        w["scope"].bid_id,
+        "10000000-0000-0000-0000-000000000002",
+        [new_document],
+        method,
+        method_digest,
+    )
+    assert frozen_new is not None
+    assert frozen_new["digest"] != old_digest
+    assert frozen_old["digest"] == old_digest
+    assert frozen_old["manifest"]["authority_package"]["revision_id"] == old_revision_id
+    assert frozen_new["manifest"]["authority_package"]["revision_id"] == new_package.revision_id
+    assert frozen_new["manifest"]["members"][0]["parse_run_id"] == new_parse_id
+
+    # A newer parse/head must not invalidate or silently replace the exact old
+    # execution input. This exercises the worker-side flattened member shape.
+    validate_frozen_input(
+        c,
+        w["scope"].bid_id,
+        frozen_old,
+        [old_document],
+        method,
+        method_digest,
+        "10000000-0000-0000-0000-000000000002",
+    )
+
+    partial_document = new_document | {"coverage": "partial"}
+    assert (
+        freeze_matching_input(
+            c,
+            w["scope"].bid_id,
+            "10000000-0000-0000-0000-000000000002",
+            [partial_document],
+            method,
+            method_digest,
+        )
+        is None
+    )
+    with pytest.raises(PackageError, match="PACKAGE_EXTRACTION_INPUT_IDENTITY_MISMATCH"):
+        validate_frozen_input(
+            c,
+            uid(),
+            frozen_new,
+            [new_document],
+            method,
+            method_digest,
+            "10000000-0000-0000-0000-000000000002",
+        )
+
+
+@pytest.mark.parametrize("change", ["text", "missing-block", "page", "member-parts", "scope"])
+def test_frozen_extraction_rejects_changed_execution_content(requirements, change):
+    from packages.domain.bid_package_extraction import freeze_matching_input, validate_frozen_input
+    from packages.domain.bid_package_repository import load_revision
+    from packages.domain.bid_packages import PackageError
+
+    w = requirements
+    c = w["database"]["owner"]
+    bid = w["scope"].bid_id
+    package = load_revision(c, bid, w["inventory_body"]["authority_revision_id"])
+    document = package_extraction_document(c, package)
+    method = {"engine": "synthetic-mechanism-only", "version": "1"}
+    material_id = uid()
+    frozen = freeze_matching_input(c, bid, material_id, [document], method, digest(method))
+    assert frozen is not None
+    original = deepcopy(frozen)
+    changed = deepcopy(document)
+    if change == "text":
+        changed["blocks"][0]["text_content"] += " altered"
+    elif change == "missing-block":
+        changed["blocks"].pop()
+    elif change == "page":
+        changed["pages"][0]["physical_page"] = 99
+    elif change == "member-parts":
+        frozen["manifest"]["members"][0]["parts"][0]["last_page"] = 1
+        frozen["digest"] = digest(frozen["manifest"])
+    else:
+        frozen["manifest"]["scope"]["round_id"] = uid()
+        frozen["digest"] = digest(frozen["manifest"])
+    with pytest.raises(PackageError):
+        validate_frozen_input(c, bid, frozen, [changed], method, digest(method), material_id)
+    assert digest(original["manifest"]) == original["digest"]
+    if change in {"text", "missing-block", "page"}:
+        assert freeze_matching_input(c, bid, material_id, [changed], method, digest(method)) is None
+
+
 def counts(w):
     c = w["database"]["owner"]
     return tuple(

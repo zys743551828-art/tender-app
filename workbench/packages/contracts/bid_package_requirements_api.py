@@ -81,7 +81,7 @@ BINDING = object_schema(
         ),
     }
 )
-INVENTORY = object_schema(
+INVENTORY_V1 = object_schema(
     {
         "version": {"const": "bid-package-requirements/1"},
         "id": UUID,
@@ -104,6 +104,30 @@ INVENTORY = object_schema(
         "actor_id": UUID,
     }
 )
+INVENTORY_V2 = deepcopy(INVENTORY_V1)
+INVENTORY_V2["properties"]["version"] = {"const": "bid-package-requirements/2"}
+INVENTORY_V2["properties"]["extraction_binding"] = {"const": "exact_frozen_input_result"}
+INVENTORY_V2["properties"].update(
+    {
+        "extraction_input_digest": SHA,
+        "extraction_result_digest": SHA,
+        "extraction_result_id": UUID,
+        "extraction_range_status": {"const": "all_frozen_evidence_submitted"},
+        "extraction_coverage": {"enum": ["complete", "partial", "conflict"]},
+        "extraction_quality_status": {"const": "not_measured"},
+    }
+)
+INVENTORY_V2["required"].extend(
+    [
+        "extraction_input_digest",
+        "extraction_result_digest",
+        "extraction_result_id",
+        "extraction_range_status",
+        "extraction_coverage",
+        "extraction_quality_status",
+    ]
+)
+INVENTORY = {"oneOf": [INVENTORY_V1, INVENTORY_V2]}
 ASSESSMENT = object_schema(
     {
         "package_digest": SHA,

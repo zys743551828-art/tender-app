@@ -39874,352 +39874,8 @@
         ]
       },
       "PackageRequirementInventoryManifest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "version": {
-            "const": "bid-package-requirements/1"
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "bid_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "package_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "target_revision_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "package_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "authority_revision_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "authority_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "rule_set_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "rule_set_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "revision": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 9007199254740991
-          },
-          "predecessor_digest": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "identity_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "source_snapshot": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "requirements": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "rule_id": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "rule_digest": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
-                },
-                "rule_snapshot": {
-                  "type": "object"
-                },
-                "decision_id": {
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "format": "uuid"
-                },
-                "decision_snapshot": {
-                  "type": [
-                    "object",
-                    "null"
-                  ]
-                },
-                "requirement": {
-                  "$ref": "#/components/schemas/BidPackage_requirement"
-                },
-                "requirement_digest": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
-                },
-                "source_bound": {
-                  "type": "boolean"
-                },
-                "annotation": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "kind": {
-                      "const": "human_check_plan_declaration"
-                    },
-                    "mapped": {
-                      "type": "boolean"
-                    },
-                    "reason": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 200,
-                          "pattern": "\\S",
-                          "not": {
-                            "pattern": "[\\u0000\\uD800-\\uDFFF]"
-                          }
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "basis_evidence_ids": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "uniqueItems": true,
-                      "maxItems": 500
-                    }
-                  },
-                  "required": [
-                    "kind",
-                    "mapped",
-                    "reason",
-                    "basis_evidence_ids"
-                  ]
-                }
-              },
-              "required": [
-                "rule_id",
-                "rule_digest",
-                "rule_snapshot",
-                "decision_id",
-                "decision_snapshot",
-                "requirement",
-                "requirement_digest",
-                "source_bound",
-                "annotation"
-              ]
-            }
-          },
-          "inventory_complete": {
-            "const": false
-          },
-          "extraction_binding": {
-            "const": "unproven_legacy_rule_set"
-          },
-          "review_ready": {
-            "const": false
-          },
-          "actor_id": {
-            "type": "string",
-            "format": "uuid"
-          }
-        },
-        "required": [
-          "version",
-          "id",
-          "bid_id",
-          "package_id",
-          "target_revision_id",
-          "package_digest",
-          "authority_revision_id",
-          "authority_digest",
-          "rule_set_id",
-          "rule_set_digest",
-          "revision",
-          "predecessor_digest",
-          "identity_digest",
-          "source_snapshot",
-          "requirements",
-          "inventory_complete",
-          "extraction_binding",
-          "review_ready",
-          "actor_id"
-        ]
-      },
-      "PackageCoverageAttemptManifest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "version": {
-            "const": "bid-package-coverage/1"
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "bid_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "inventory_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "inventory_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "package_digest": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "actor_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "results": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "coverage": {
-                  "$ref": "#/components/schemas/BidPackage_coverage"
-                },
-                "basis_type": {
-                  "enum": [
-                    "human_scope_declaration",
-                    "human_observation"
-                  ]
-                },
-                "evidence_ids": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uuid"
-                  },
-                  "uniqueItems": true,
-                  "maxItems": 500
-                }
-              },
-              "required": [
-                "coverage",
-                "basis_type",
-                "evidence_ids"
-              ]
-            }
-          },
-          "assessment": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "package_digest": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "complete": {
-                "const": false
-              },
-              "requirement_inventory_complete": {
-                "const": false
-              },
-              "requirement_states": {
-                "type": "object",
-                "additionalProperties": {
-                  "enum": [
-                    "not_provided",
-                    "missing",
-                    "pending_parse",
-                    "parse_gap",
-                    "unsupported",
-                    "verified",
-                    "not_applicable",
-                    "conflict",
-                    "unknown"
-                  ]
-                }
-              },
-              "requirement_digests": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string",
-                  "pattern": "^[a-f0-9]{64}$"
-                }
-              },
-              "inspected_ranges": {
-                "type": "array",
-                "items": {
-                  "type": "object"
-                }
-              },
-              "member_gaps": {
-                "type": "array",
-                "items": {
-                  "type": "object"
-                }
-              }
-            },
-            "required": [
-              "package_digest",
-              "complete",
-              "requirement_inventory_complete",
-              "requirement_states",
-              "requirement_digests",
-              "inspected_ranges",
-              "member_gaps"
-            ]
-          },
-          "review_ready": {
-            "const": false
-          }
-        },
-        "required": [
-          "version",
-          "id",
-          "bid_id",
-          "inventory_id",
-          "inventory_digest",
-          "package_digest",
-          "actor_id",
-          "results",
-          "assessment",
-          "review_ready"
-        ]
-      },
-      "PackageRequirementInventoryView": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "manifest": {
+        "oneOf": [
+          {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -40419,6 +40075,824 @@
               "extraction_binding",
               "review_ready",
               "actor_id"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "const": "bid-package-requirements/2"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "bid_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "package_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "target_revision_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "package_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "authority_revision_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "authority_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "rule_set_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rule_set_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "predecessor_digest": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "identity_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_snapshot": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "rule_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "rule_digest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "rule_snapshot": {
+                      "type": "object"
+                    },
+                    "decision_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "decision_snapshot": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "requirement": {
+                      "$ref": "#/components/schemas/BidPackage_requirement"
+                    },
+                    "requirement_digest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "source_bound": {
+                      "type": "boolean"
+                    },
+                    "annotation": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "const": "human_check_plan_declaration"
+                        },
+                        "mapped": {
+                          "type": "boolean"
+                        },
+                        "reason": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "pattern": "\\S",
+                              "not": {
+                                "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "basis_evidence_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "uniqueItems": true,
+                          "maxItems": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "mapped",
+                        "reason",
+                        "basis_evidence_ids"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rule_id",
+                    "rule_digest",
+                    "rule_snapshot",
+                    "decision_id",
+                    "decision_snapshot",
+                    "requirement",
+                    "requirement_digest",
+                    "source_bound",
+                    "annotation"
+                  ]
+                }
+              },
+              "inventory_complete": {
+                "const": false
+              },
+              "extraction_binding": {
+                "const": "exact_frozen_input_result"
+              },
+              "review_ready": {
+                "const": false
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "extraction_input_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "extraction_result_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "extraction_result_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "extraction_range_status": {
+                "const": "all_frozen_evidence_submitted"
+              },
+              "extraction_coverage": {
+                "enum": [
+                  "complete",
+                  "partial",
+                  "conflict"
+                ]
+              },
+              "extraction_quality_status": {
+                "const": "not_measured"
+              }
+            },
+            "required": [
+              "version",
+              "id",
+              "bid_id",
+              "package_id",
+              "target_revision_id",
+              "package_digest",
+              "authority_revision_id",
+              "authority_digest",
+              "rule_set_id",
+              "rule_set_digest",
+              "revision",
+              "predecessor_digest",
+              "identity_digest",
+              "source_snapshot",
+              "requirements",
+              "inventory_complete",
+              "extraction_binding",
+              "review_ready",
+              "actor_id",
+              "extraction_input_digest",
+              "extraction_result_digest",
+              "extraction_result_id",
+              "extraction_range_status",
+              "extraction_coverage",
+              "extraction_quality_status"
+            ]
+          }
+        ]
+      },
+      "PackageCoverageAttemptManifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "bid-package-coverage/1"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "coverage": {
+                  "$ref": "#/components/schemas/BidPackage_coverage"
+                },
+                "basis_type": {
+                  "enum": [
+                    "human_scope_declaration",
+                    "human_observation"
+                  ]
+                },
+                "evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                }
+              },
+              "required": [
+                "coverage",
+                "basis_type",
+                "evidence_ids"
+              ]
+            }
+          },
+          "assessment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "package_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "complete": {
+                "const": false
+              },
+              "requirement_inventory_complete": {
+                "const": false
+              },
+              "requirement_states": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "not_provided",
+                    "missing",
+                    "pending_parse",
+                    "parse_gap",
+                    "unsupported",
+                    "verified",
+                    "not_applicable",
+                    "conflict",
+                    "unknown"
+                  ]
+                }
+              },
+              "requirement_digests": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "inspected_ranges": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "member_gaps": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": [
+              "package_digest",
+              "complete",
+              "requirement_inventory_complete",
+              "requirement_states",
+              "requirement_digests",
+              "inspected_ranges",
+              "member_gaps"
+            ]
+          },
+          "review_ready": {
+            "const": false
+          }
+        },
+        "required": [
+          "version",
+          "id",
+          "bid_id",
+          "inventory_id",
+          "inventory_digest",
+          "package_digest",
+          "actor_id",
+          "results",
+          "assessment",
+          "review_ready"
+        ]
+      },
+      "PackageRequirementInventoryView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "version": {
+                    "const": "bid-package-requirements/1"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "bid_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "package_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "target_revision_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "package_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "authority_revision_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "authority_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "rule_set_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rule_set_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "predecessor_digest": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "identity_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "source_snapshot": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "rule_id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "rule_digest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "rule_snapshot": {
+                          "type": "object"
+                        },
+                        "decision_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid"
+                        },
+                        "decision_snapshot": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "requirement": {
+                          "$ref": "#/components/schemas/BidPackage_requirement"
+                        },
+                        "requirement_digest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "source_bound": {
+                          "type": "boolean"
+                        },
+                        "annotation": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "kind": {
+                              "const": "human_check_plan_declaration"
+                            },
+                            "mapped": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "pattern": "\\S",
+                                  "not": {
+                                    "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "basis_evidence_ids": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "uniqueItems": true,
+                              "maxItems": 500
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "mapped",
+                            "reason",
+                            "basis_evidence_ids"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "rule_id",
+                        "rule_digest",
+                        "rule_snapshot",
+                        "decision_id",
+                        "decision_snapshot",
+                        "requirement",
+                        "requirement_digest",
+                        "source_bound",
+                        "annotation"
+                      ]
+                    }
+                  },
+                  "inventory_complete": {
+                    "const": false
+                  },
+                  "extraction_binding": {
+                    "const": "unproven_legacy_rule_set"
+                  },
+                  "review_ready": {
+                    "const": false
+                  },
+                  "actor_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "version",
+                  "id",
+                  "bid_id",
+                  "package_id",
+                  "target_revision_id",
+                  "package_digest",
+                  "authority_revision_id",
+                  "authority_digest",
+                  "rule_set_id",
+                  "rule_set_digest",
+                  "revision",
+                  "predecessor_digest",
+                  "identity_digest",
+                  "source_snapshot",
+                  "requirements",
+                  "inventory_complete",
+                  "extraction_binding",
+                  "review_ready",
+                  "actor_id"
+                ]
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "version": {
+                    "const": "bid-package-requirements/2"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "bid_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "package_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "target_revision_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "package_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "authority_revision_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "authority_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "rule_set_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rule_set_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "predecessor_digest": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "identity_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "source_snapshot": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "rule_id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "rule_digest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "rule_snapshot": {
+                          "type": "object"
+                        },
+                        "decision_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uuid"
+                        },
+                        "decision_snapshot": {
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "requirement": {
+                          "$ref": "#/components/schemas/BidPackage_requirement"
+                        },
+                        "requirement_digest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "source_bound": {
+                          "type": "boolean"
+                        },
+                        "annotation": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "kind": {
+                              "const": "human_check_plan_declaration"
+                            },
+                            "mapped": {
+                              "type": "boolean"
+                            },
+                            "reason": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 200,
+                                  "pattern": "\\S",
+                                  "not": {
+                                    "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                                  }
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "basis_evidence_ids": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "uniqueItems": true,
+                              "maxItems": 500
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "mapped",
+                            "reason",
+                            "basis_evidence_ids"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "rule_id",
+                        "rule_digest",
+                        "rule_snapshot",
+                        "decision_id",
+                        "decision_snapshot",
+                        "requirement",
+                        "requirement_digest",
+                        "source_bound",
+                        "annotation"
+                      ]
+                    }
+                  },
+                  "inventory_complete": {
+                    "const": false
+                  },
+                  "extraction_binding": {
+                    "const": "exact_frozen_input_result"
+                  },
+                  "review_ready": {
+                    "const": false
+                  },
+                  "actor_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "extraction_input_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "extraction_result_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "extraction_result_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "extraction_range_status": {
+                    "const": "all_frozen_evidence_submitted"
+                  },
+                  "extraction_coverage": {
+                    "enum": [
+                      "complete",
+                      "partial",
+                      "conflict"
+                    ]
+                  },
+                  "extraction_quality_status": {
+                    "const": "not_measured"
+                  }
+                },
+                "required": [
+                  "version",
+                  "id",
+                  "bid_id",
+                  "package_id",
+                  "target_revision_id",
+                  "package_digest",
+                  "authority_revision_id",
+                  "authority_digest",
+                  "rule_set_id",
+                  "rule_set_digest",
+                  "revision",
+                  "predecessor_digest",
+                  "identity_digest",
+                  "source_snapshot",
+                  "requirements",
+                  "inventory_complete",
+                  "extraction_binding",
+                  "review_ready",
+                  "actor_id",
+                  "extraction_input_digest",
+                  "extraction_result_digest",
+                  "extraction_result_id",
+                  "extraction_range_status",
+                  "extraction_coverage",
+                  "extraction_quality_status"
+                ]
+              }
             ]
           },
           "digest": {

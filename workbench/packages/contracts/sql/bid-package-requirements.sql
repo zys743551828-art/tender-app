@@ -19,6 +19,17 @@ BEGIN
    IF jsonb_typeof(value->key) IS DISTINCT FROM 'string' OR (value->>key ~ '^[a-f0-9]{64}$') IS NOT TRUE THEN RETURN false; END IF;
   END LOOP;
   IF value->'predecessor_digest' IS DISTINCT FROM 'null'::jsonb AND (jsonb_typeof(value->'predecessor_digest') IS DISTINCT FROM 'string' OR (value->>'predecessor_digest' ~ '^[a-f0-9]{64}$') IS NOT TRUE) THEN RETURN false; END IF;
+ ELSIF value->>'version'='bid-package-requirements/2' THEN
+  FOREACH key IN ARRAY ARRAY['package_id','target_revision_id','authority_revision_id','rule_set_id','actor_id','extraction_result_id'] LOOP
+   IF NOT package_json_text(value->key) THEN RETURN false; END IF;
+  END LOOP;
+  FOREACH key IN ARRAY ARRAY['package_digest','authority_digest','rule_set_digest','identity_digest','extraction_input_digest','extraction_result_digest'] LOOP
+   IF jsonb_typeof(value->key) IS DISTINCT FROM 'string' OR (value->>key ~ '^[a-f0-9]{64}$') IS NOT TRUE THEN RETURN false; END IF;
+  END LOOP;
+  IF value->>'extraction_range_status' IS DISTINCT FROM 'all_frozen_evidence_submitted'
+  OR value->>'extraction_quality_status' IS DISTINCT FROM 'not_measured'
+  OR (value->>'extraction_coverage' IN ('complete','partial','conflict')) IS NOT TRUE THEN RETURN false; END IF;
+  IF value->'predecessor_digest' IS DISTINCT FROM 'null'::jsonb AND (jsonb_typeof(value->'predecessor_digest') IS DISTINCT FROM 'string' OR (value->>'predecessor_digest' ~ '^[a-f0-9]{64}$') IS NOT TRUE) THEN RETURN false; END IF;
  ELSIF value->>'version'='bid-package-coverage/1' THEN
   IF NOT package_json_text(value->'inventory_id') OR NOT package_json_text(value->'actor_id') THEN RETURN false; END IF;
   FOREACH key IN ARRAY ARRAY['inventory_digest','package_digest'] LOOP
@@ -28,6 +39,65 @@ BEGIN
  END IF;
  RETURN true;
 END $$;
+
+CREATE TABLE bid_package_requirement_extraction_runs(
+ id uuid PRIMARY KEY,
+ bid_id uuid NOT NULL REFERENCES bid_profiles(bid_id),
+ authority_revision_id uuid NOT NULL REFERENCES bid_package_revisions(id),
+ authority_digest sha256 NOT NULL,
+ input_blob_id uuid NOT NULL REFERENCES blobs(id),
+ input_digest sha256 NOT NULL,
+ input_manifest jsonb NOT NULL CHECK(jsonb_typeof(input_manifest)='object'),
+ operation_id uuid NOT NULL UNIQUE REFERENCES operations(id),
+ operation_input_digest sha256 NOT NULL,
+ rule_set_id uuid NOT NULL,
+ result_digest sha256 NOT NULL,
+ result jsonb NOT NULL CHECK(jsonb_typeof(result)='object'),
+ created_at timestamptz NOT NULL DEFAULT now(),
+ FOREIGN KEY(bid_id,rule_set_id) REFERENCES rule_sets(bid_id,id),
+ UNIQUE(bid_id,rule_set_id),
+ CHECK(encode(sha256(convert_to(package_canonical_json(input_manifest),'UTF8')),'hex')=input_digest),
+ CHECK((input_manifest->>'identity_version'='package-rule-extraction-input/1'
+  AND input_manifest->>'bid_id'=bid_id::text
+  AND input_manifest->'authority_package'->>'revision_id'=authority_revision_id::text
+  AND input_manifest->'authority_package'->>'digest'=authority_digest::text) IS TRUE),
+ CHECK(package_json_keys(result,ARRAY['input_digest','rule_set_id','authority_revision_id','authority_digest','method_digest','range_status','read_evidence_ids_digest','extraction_coverage','quality_status']) IS TRUE),
+ CHECK((result->>'input_digest'=input_digest::text AND result->>'rule_set_id'=rule_set_id::text
+  AND result->>'authority_revision_id'=authority_revision_id::text AND result->>'authority_digest'=authority_digest::text
+  AND result->>'range_status'='all_frozen_evidence_submitted'
+  AND result->>'quality_status'='not_measured'
+  AND (result->>'method_digest' ~ '^[a-f0-9]{64}$') IS TRUE
+  AND (result->>'read_evidence_ids_digest' ~ '^[a-f0-9]{64}$') IS TRUE
+  AND (result->>'extraction_coverage' IN ('complete','partial','conflict')) IS TRUE) IS TRUE),
+ CHECK(encode(sha256(convert_to(package_canonical_json(result),'UTF8')),'hex')=result_digest)
+);
+
+CREATE FUNCTION bid_requirement_extraction_run_guard() RETURNS trigger LANGUAGE plpgsql
+ SET search_path=pg_catalog,design AS $$
+DECLARE authority record; rule_set record; op record;
+BEGIN
+ SELECT r.id,r.digest,p.bid_id,p.kind INTO authority
+ FROM design.bid_package_revisions r JOIN design.bid_packages p ON p.id=r.package_id
+ WHERE r.id=NEW.authority_revision_id;
+ SELECT id,bid_id INTO rule_set FROM design.rule_sets WHERE id=NEW.rule_set_id;
+ SELECT o.id,o.bid_id INTO op
+ FROM design.operations o JOIN design.operation_steps s ON s.operation_id=o.id
+ JOIN design.outbox x ON x.operation_id=o.id AND x.payload->>'payload_ref'=NEW.input_blob_id::text
+ WHERE o.id=NEW.operation_id AND s.step_key='extract-rules' AND s.handler_version='prepare/1'
+  AND s.input_digest=NEW.operation_input_digest AND o.handler_version='prepare/1'
+  AND o.input_digest=NEW.operation_input_digest;
+ IF authority.id IS NULL OR authority.kind<>'authority' OR authority.bid_id<>NEW.bid_id
+ OR authority.digest<>NEW.authority_digest OR rule_set.id IS NULL OR rule_set.bid_id<>NEW.bid_id
+ OR op.id IS NULL OR op.bid_id<>NEW.bid_id
+ OR NEW.result->>'method_digest' !~ '^[a-f0-9]{64}$'
+ OR NEW.result->>'read_evidence_ids_digest' !~ '^[a-f0-9]{64}$'
+ THEN RAISE EXCEPTION 'requirement_extraction_run_binding_mismatch' USING ERRCODE='23514'; END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER extraction_run_context BEFORE INSERT ON bid_package_requirement_extraction_runs
+ FOR EACH ROW EXECUTE FUNCTION bid_requirement_extraction_run_guard();
+CREATE TRIGGER extraction_run_immutable BEFORE UPDATE OR DELETE ON bid_package_requirement_extraction_runs
+ FOR EACH ROW EXECUTE FUNCTION append_only();
 
 CREATE FUNCTION bid_requirement_uuid_array(value jsonb) RETURNS boolean LANGUAGE plpgsql IMMUTABLE
  SET search_path=pg_catalog AS $$
@@ -92,8 +162,17 @@ CREATE TABLE bid_package_requirement_inventories(
  FOREIGN KEY(target_revision_id,predecessor_digest) REFERENCES bid_package_requirement_inventories(target_revision_id,digest),
  CHECK((revision=1)=(predecessor_digest IS NULL)),
  CHECK(bid_requirement_envelope_shape(manifest)),
- CHECK(package_json_keys(manifest,ARRAY['version','id','bid_id','package_id','target_revision_id','package_digest','authority_revision_id','authority_digest','rule_set_id','rule_set_digest','revision','predecessor_digest','identity_digest','source_snapshot','requirements','inventory_complete','extraction_binding','review_ready','actor_id']) IS TRUE),
- CHECK((manifest->>'version'='bid-package-requirements/1' AND manifest->'inventory_complete'='false'::jsonb AND manifest->'review_ready'='false'::jsonb AND manifest->>'extraction_binding'='unproven_legacy_rule_set') IS TRUE),
+ CHECK((
+  (manifest->>'version'='bid-package-requirements/1'
+   AND package_json_keys(manifest,ARRAY['version','id','bid_id','package_id','target_revision_id','package_digest','authority_revision_id','authority_digest','rule_set_id','rule_set_digest','revision','predecessor_digest','identity_digest','source_snapshot','requirements','inventory_complete','extraction_binding','review_ready','actor_id'])
+   AND manifest->'inventory_complete'='false'::jsonb AND manifest->'review_ready'='false'::jsonb
+   AND manifest->>'extraction_binding'='unproven_legacy_rule_set')
+  OR
+  (manifest->>'version'='bid-package-requirements/2'
+   AND package_json_keys(manifest,ARRAY['version','id','bid_id','package_id','target_revision_id','package_digest','authority_revision_id','authority_digest','rule_set_id','rule_set_digest','revision','predecessor_digest','identity_digest','source_snapshot','requirements','inventory_complete','extraction_binding','review_ready','actor_id','extraction_input_digest','extraction_result_digest','extraction_result_id','extraction_range_status','extraction_coverage','extraction_quality_status'])
+   AND manifest->'inventory_complete'='false'::jsonb AND manifest->'review_ready'='false'::jsonb
+   AND manifest->>'extraction_binding'='exact_frozen_input_result')
+ ) IS TRUE),
  CHECK((manifest->>'id'=id::text AND manifest->>'bid_id'=bid_id::text AND manifest->>'package_id'=package_id::text AND manifest->>'target_revision_id'=target_revision_id::text AND manifest->>'authority_revision_id'=authority_revision_id::text AND manifest->>'rule_set_id'=rule_set_id::text) IS TRUE),
  CHECK((manifest->>'actor_id'=actor_id::text) IS TRUE),
  CHECK(package_json_integer(manifest->'revision',1) IS TRUE AND (manifest->>'revision')::bigint=revision),
@@ -172,6 +251,18 @@ BEGIN
  current_identity=design.identity_snapshot_v2(NEW.bid_id);
  IF current_identity->>'digest' IS DISTINCT FROM own.identity_digest::text OR current_identity->>'digest' IS DISTINCT FROM authority.identity_digest::text OR inv.manifest->>'identity_digest' IS DISTINCT FROM current_identity->>'digest' THEN RAISE EXCEPTION 'requirement_identity_stale' USING ERRCODE='23514'; END IF;
  IF inv.manifest->>'package_digest' IS DISTINCT FROM own.digest::text OR inv.manifest->>'authority_digest' IS DISTINCT FROM authority.digest::text OR NOT EXISTS(SELECT 1 FROM design.bid_profiles WHERE bid_id=NEW.bid_id AND current_rule_set_id=inv.rule_set_id) OR NOT EXISTS(SELECT 1 FROM design.rule_sets WHERE id=inv.rule_set_id AND digest::text=inv.manifest->>'rule_set_digest') THEN RAISE EXCEPTION 'requirement_rule_or_package_stale' USING ERRCODE='23514'; END IF;
+ IF inv.manifest->>'version'='bid-package-requirements/2' AND NOT EXISTS(
+  SELECT 1 FROM design.bid_package_requirement_extraction_runs x
+  WHERE x.id::text=inv.manifest->>'extraction_result_id' AND x.bid_id=NEW.bid_id
+   AND x.authority_revision_id=inv.authority_revision_id
+   AND x.authority_digest::text=inv.manifest->>'authority_digest'
+   AND x.rule_set_id=inv.rule_set_id
+   AND x.input_digest::text=inv.manifest->>'extraction_input_digest'
+   AND x.result_digest::text=inv.manifest->>'extraction_result_digest'
+   AND x.result->>'range_status'=inv.manifest->>'extraction_range_status'
+   AND x.result->>'extraction_coverage'=inv.manifest->>'extraction_coverage'
+   AND x.result->>'quality_status'=inv.manifest->>'extraction_quality_status')
+ THEN RAISE EXCEPTION 'requirement_extraction_binding_mismatch' USING ERRCODE='23514'; END IF;
  sources=design.bid_requirement_source_snapshot(own.id,authority.id);
  IF sources IS DISTINCT FROM inv.manifest->'source_snapshot' THEN RAISE EXCEPTION 'requirement_source_snapshot_stale' USING ERRCODE='23514'; END IF;
  FOR item IN SELECT value FROM jsonb_array_elements(sources) LOOP
@@ -390,5 +481,5 @@ DO $$ DECLARE name text; BEGIN
  EXECUTE format('CREATE TRIGGER immutable BEFORE UPDATE OR DELETE ON design.%I FOR EACH ROW EXECUTE FUNCTION design.append_only()',name);
  END LOOP;
 END $$;
-REVOKE ALL ON FUNCTION bid_requirement_envelope_shape(jsonb),bid_requirement_uuid_array(jsonb),bid_requirement_decision_serial_guard(),bid_requirement_carryover_serial_guard(),bid_requirement_source_serial_guard(),bid_requirement_source_snapshot(uuid,uuid),bid_requirement_context_guard(),bid_requirement_shape(jsonb),bid_requirement_binding_guard(),bid_requirement_result_guard(),bid_requirement_head_guard(),bid_requirement_final_recheck(uuid),bid_requirement_assessment(uuid),bid_requirement_complete_guard() FROM PUBLIC;
+REVOKE ALL ON FUNCTION bid_requirement_envelope_shape(jsonb),bid_requirement_uuid_array(jsonb),bid_requirement_extraction_run_guard(),bid_requirement_decision_serial_guard(),bid_requirement_carryover_serial_guard(),bid_requirement_source_serial_guard(),bid_requirement_source_snapshot(uuid,uuid),bid_requirement_context_guard(),bid_requirement_shape(jsonb),bid_requirement_binding_guard(),bid_requirement_result_guard(),bid_requirement_head_guard(),bid_requirement_final_recheck(uuid),bid_requirement_assessment(uuid),bid_requirement_complete_guard() FROM PUBLIC;
 COMMIT;
