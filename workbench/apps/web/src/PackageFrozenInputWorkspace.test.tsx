@@ -279,7 +279,22 @@ it("历史GET不依赖当前候选或可写状态，允许原记录的其他创�
   const response = await reply();
   response.manifest.actor_id = id(99);
   response.digest = await frozenManifestDigest(response.manifest);
-  fetchMock.mockResolvedValue(respond(response, 200));
+  fetchMock.mockImplementation(async (path: string) =>
+    respond(
+      path.includes("?limit=")
+        ? {
+            bid_id: scope.bidId,
+            package_id: scope.packageId,
+            revision_id: scope.revisionId,
+            inventory_id: scope.inventoryId,
+            items: [],
+            has_more: false,
+            next_cursor: null,
+          }
+        : response,
+      200,
+    ),
+  );
   render(
     <PackageFrozenInputWorkspace scope={scope} candidate={null} disabled />,
   );
@@ -287,10 +302,106 @@ it("历史GET不依赖当前候选或可写状态，允许原记录的其他创�
   await userEvent.type(screen.getByLabelText("冻结输入记录编号"), id(6));
   await userEvent.click(screen.getByRole("button", { name: "读取历史记录" }));
   expect(await screen.findByText(/记录编号：/)).toHaveTextContent(id(6));
-  expect(fetchMock.mock.calls[0][0]).toContain(
+  expect(fetchMock.mock.calls.at(-1)![0]).toContain(
     `/frozen-review-inputs/${id(6)}`,
   );
-  expect(fetchMock.mock.calls[0][1].method).toBe("GET");
+  expect(fetchMock.mock.calls.at(-1)![1].method).toBe("GET");
+  expect(loadFreezeRecord(scope).pending).toBeNull();
+});
+
+it.each(["digest", "time", "input", "context", "actor"])(
+  "点选目录读取完整记录，%s不符时拒绝且未决写入保持原样",
+  async (field) => {
+    const response = await reply();
+    storeFreezeRecord({
+      version: 1,
+      scope,
+      pending: { key: id(10), body },
+      lastId: null,
+    });
+    const original = loadFreezeRecord(scope).pending;
+    fetchMock.mockImplementation(async (path: string) =>
+      respond(
+        path.includes("?limit=")
+          ? {
+              bid_id: scope.bidId,
+              package_id: scope.packageId,
+              revision_id: scope.revisionId,
+              inventory_id: scope.inventoryId,
+              items: [
+                {
+                  id: id(6),
+                  actor_id: field === "actor" ? id(99) : scope.memberId,
+                  digest: field === "digest" ? "f".repeat(64) : response.digest,
+                  frozen_at:
+                    field === "time"
+                      ? "2026-10-19T08:00:00Z"
+                      : response.manifest.frozen_at,
+                  input_digest:
+                    field === "input" ? "f".repeat(64) : body.input_digest,
+                  context_digest:
+                    field === "context" ? "f".repeat(64) : body.context_digest,
+                },
+              ],
+              has_more: false,
+              next_cursor: null,
+            }
+          : response,
+        200,
+      ),
+    );
+    renderWorkspace(null);
+    await userEvent.click(screen.getByText("读取历史冻结输入"));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /查看.*的冻结记录/ }),
+    );
+    expect(
+      await screen.findByText(/所选目录摘要或身份不符/),
+    ).toBeInTheDocument();
+    expect(loadFreezeRecord(scope).pending).toEqual(original);
+    expect(screen.queryByText(/记录编号：/)).not.toBeInTheDocument();
+  },
+);
+
+it("点选目录只读回匹配的完整记录，不将历史转成当前可保存候选", async () => {
+  const response = await reply();
+  fetchMock.mockImplementation(async (path: string) =>
+    respond(
+      path.includes("?limit=")
+        ? {
+            bid_id: scope.bidId,
+            package_id: scope.packageId,
+            revision_id: scope.revisionId,
+            inventory_id: scope.inventoryId,
+            items: [
+              {
+                id: id(6),
+                actor_id: scope.memberId,
+                digest: response.digest,
+                frozen_at: response.manifest.frozen_at.replace("Z", "+00:00"),
+                input_digest: body.input_digest,
+                context_digest: body.context_digest,
+              },
+            ],
+            has_more: false,
+            next_cursor: null,
+          }
+        : response,
+      200,
+    ),
+  );
+  renderWorkspace(null);
+  await userEvent.click(screen.getByText("读取历史冻结输入"));
+  await userEvent.click(
+    await screen.findByRole("button", { name: /查看.*的冻结记录/ }),
+  );
+  expect(await screen.findByText(/记录编号：/)).toHaveTextContent(id(6));
+  expect(
+    screen.getByRole("button", { name: "保存本次冻结输入" }),
+  ).toBeDisabled();
+  expect(fetchMock.mock.calls.every((call) => call[1].method === "GET")).toBe(
+    true,
+  );
   expect(loadFreezeRecord(scope).pending).toBeNull();
 });
 
@@ -312,4 +423,51 @@ it("离开页面后晚到ACK不清理未决请求，不覆盖下一页面", asyn
   });
   expect(loadFreezeRecord(scope).pending).toEqual(original);
   expect(screen.queryByText("冻结输入已保存。")).not.toBeInTheDocument();
+});
+
+it("新保存成功后，旧历史慢响应不能覆盖新编号和详情", async () => {
+  const fresh = await reply();
+  const old = await reply();
+  old.manifest.id = id(7);
+  old.digest = await frozenManifestDigest(old.manifest);
+  let finish!: (value: Response) => void;
+  fetchMock.mockImplementation(async (path: string, options: RequestInit) => {
+    if (options.method === "POST") return respond(fresh);
+    if (path.includes("?limit="))
+      return respond(
+        {
+          bid_id: scope.bidId,
+          package_id: scope.packageId,
+          revision_id: scope.revisionId,
+          inventory_id: scope.inventoryId,
+          items: [
+            {
+              id: id(7),
+              actor_id: scope.memberId,
+              digest: old.digest,
+              input_digest: body.input_digest,
+              context_digest: body.context_digest,
+              frozen_at: old.manifest.frozen_at,
+            },
+          ],
+          has_more: false,
+          next_cursor: null,
+        },
+        200,
+      );
+    return new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+  });
+  renderWorkspace();
+  await userEvent.click(screen.getByText("读取历史冻结输入"));
+  await userEvent.click(
+    await screen.findByRole("button", { name: /查看.*的冻结记录/ }),
+  );
+  await save();
+  await screen.findByText("冻结输入已保存。");
+  await act(async () => finish(respond(old, 200)));
+  expect(screen.getByLabelText("冻结输入记录编号")).toHaveValue(id(6));
+  expect(screen.getAllByText(/记录编号：/)).toHaveLength(1);
+  expect(screen.getByText(/记录编号：/)).toHaveTextContent(id(6));
 });

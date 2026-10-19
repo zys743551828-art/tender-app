@@ -362,6 +362,27 @@ SCHEMAS["PackageReviewFrozenInputManifest"] = object_schema(
 SCHEMAS["PackageReviewFrozenInputView"] = object_schema(
     {"manifest": {"$ref": "#/components/schemas/PackageReviewFrozenInputManifest"}, "digest": SHA}
 )
+SCHEMAS["PackageReviewFrozenInputPage"] = object_schema(
+    {
+        **{key: UUID for key in ("bid_id", "package_id", "revision_id", "inventory_id")},
+        "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": object_schema(
+                {
+                    "id": UUID,
+                    "digest": SHA,
+                    "actor_id": UUID,
+                    "frozen_at": {"type": "string", "format": "date-time"},
+                    "input_digest": SHA,
+                    "context_digest": SHA,
+                }
+            ),
+        },
+        "has_more": {"type": "boolean"},
+        "next_cursor": {"type": ["string", "null"]},
+    }
+)
 
 
 def valid(name, value):
@@ -441,6 +462,13 @@ def extend_openapi(actual):
             "freezePackageReviewInput",
             "FreezePackageReviewInput",
             "PackageReviewFrozenInputView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs",
+            "get",
+            "listFrozenPackageReviewInputs",
+            None,
+            "PackageReviewFrozenInputPage",
         ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}",

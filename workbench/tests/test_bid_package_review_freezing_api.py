@@ -114,6 +114,93 @@ class TestFreezing:
             w["client"].get(f["path"] + "/" + original.json()["manifest"]["id"]).json()
             == original.json()
         )
+        history = w["client"].get(f["path"])
+        assert history.status_code == 200 and valid("PackageReviewFrozenInputPage", history.json())
+        assert history.json()["items"][0]["id"] == original.json()["manifest"]["id"]
+        assert len(f["calls"]) == original_calls
+
+    def test_directory_pages_newest_first_and_refresh_discovers_later_saves(self, frozen_case):
+        f = frozen_case
+        w = f["w"]
+        records = []
+        for _ in range(3):
+            response = self.post(f, headers_override=headers(w))
+            assert response.status_code == 201, response.text
+            records.append(response.json())
+        first = w["client"].get(f["path"], params={"limit": 1})
+        assert first.status_code == 200 and valid("PackageReviewFrozenInputPage", first.json())
+        page = first.json()
+        assert page["items"][0]["id"] == records[-1]["manifest"]["id"]
+        assert page["has_more"] and page["next_cursor"]
+        latest = self.post(f, headers_override=headers(w))
+        assert latest.status_code == 201, latest.text
+        before, calls = counts(w), len(f["calls"])
+        seen = page["items"]
+        while page["has_more"]:
+            response = w["client"].get(
+                f["path"], params={"limit": 1, "cursor": page["next_cursor"]}
+            )
+            assert response.status_code == 200 and valid(
+                "PackageReviewFrozenInputPage", response.json()
+            )
+            page = response.json()
+            seen += page["items"]
+        assert page["next_cursor"] is None
+        assert [item["id"] for item in seen] == [r["manifest"]["id"] for r in reversed(records)]
+        for summary, record in zip(seen, reversed(records), strict=True):
+            assert summary["digest"] == record["digest"]
+            for key in ("actor_id", "input_digest", "context_digest"):
+                assert summary[key] == record["manifest"][key]
+            assert "manifest" not in summary and "evidence_text" not in summary
+        fresh = w["client"].get(f["path"]).json()
+        assert (
+            len(fresh["items"]) == 4 and fresh["items"][0]["id"] == latest.json()["manifest"]["id"]
+        )
+        assert counts(w) == before and len(f["calls"]) == calls
+
+    def test_empty_directory_auth_scope_and_query_bounds(self, frozen_case):
+        from fastapi.testclient import TestClient
+
+        f = frozen_case
+        w = f["w"]
+        empty = w["client"].get(f["path"])
+        assert empty.status_code == 200 and valid("PackageReviewFrozenInputPage", empty.json())
+        assert empty.json()["items"] == [] and empty.json()["next_cursor"] is None
+        with TestClient(w["app"]) as anonymous:
+            assert anonymous.get(f["path"]).status_code == 401
+        for field in f["scope"]:
+            assert w["client"].get(f["path"].replace(field, uid(), 1)).status_code == 404
+        for params in ({"limit": 0}, {"limit": 101}, {"cursor": "broken"}, {"cursor": "x" * 4097}):
+            assert w["client"].get(f["path"], params=params).status_code == 422
+        assert not f["calls"]
+
+    def test_cursor_is_signed_and_bound_to_exact_inventory_not_current_head(self, frozen_case):
+        from test_bid_package_requirements_api import inventory
+
+        from apps.api.bid_package_requirement_routes import tag
+        from packages.domain.runtime import sha
+        from packages.identity import pagination
+
+        f = frozen_case
+        w = f["w"]
+        for _ in range(2):
+            assert self.post(f, headers_override=headers(w)).status_code == 201
+        first = w["client"].get(f["path"], params={"limit": 1}).json()
+        token = first["next_cursor"]
+        invalid = w["client"].get(f["path"], params={"cursor": token + "x"})
+        assert invalid.status_code == 422 and invalid.json()["code"] == "INVALID_CURSOR"
+        binding = sha({"directory": "package-review-frozen-inputs/1", "scope": f["scope"]})
+        for date in ("not-a-date", "2026-10-19T00:00:00"):
+            bad = pagination.encode(binding, [date, first["items"][0]["id"]])
+            response = w["client"].get(f["path"], params={"cursor": bad})
+            assert response.status_code == 422 and response.json()["code"] == "INVALID_CURSOR"
+        created = inventory(w, tag=tag(f["scope"][2], f["body"]["inventory_digest"]))
+        assert created.status_code == 201, created.text
+        new_path = f["path"].replace(f["scope"][3], created.json()["manifest"]["id"])
+        response = w["client"].get(new_path, params={"cursor": token})
+        assert response.status_code == 422 and response.json()["code"] == "INVALID_CURSOR"
+        old = w["client"].get(f["path"])
+        assert old.status_code == 200 and len(old.json()["items"]) == 2
 
     def test_same_key_with_different_context_conflicts_before_io(self, frozen_case):
         f = frozen_case

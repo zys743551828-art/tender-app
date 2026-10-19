@@ -42,3 +42,20 @@
 .package-frozen-input__result {
   margin-block: 0.75rem;
 }
+.package-frozen-input__directory ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.package-frozen-input__directory li {
+  min-width: 0;
+}
+.package-frozen-input__directory li button {
+  text-align: start;
+  width: 100%;
+  justify-content: start;
+}
+.package-frozen-input__directory li span {
+  min-width: 0;
+}

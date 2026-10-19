@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, Body, Query, Request
 
 from apps.api.auth import auth
 from apps.api.identity_routes import saved
@@ -12,6 +12,7 @@ from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_requirement_repository as requirements
 from packages.domain import bid_package_review_input_repository as repository
 from packages.domain.bid_package_review_freezing import freeze
+from packages.domain.bid_package_review_input_directory import directory
 from packages.domain.bid_packages import PackageError
 from packages.domain.runtime import DomainError, connection
 
@@ -63,6 +64,28 @@ def freeze_review_input(
             body,
         )
         return saved(stored, replayed)
+
+
+@router.get("/{inventory_id}/frozen-review-inputs")
+def list_frozen_review_inputs(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    r: Request,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with input_errors():
+        with connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            return directory(
+                c,
+                (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+                limit=limit,
+                cursor=cursor,
+            )
 
 
 @router.get("/{inventory_id}/frozen-review-inputs/{input_id}")

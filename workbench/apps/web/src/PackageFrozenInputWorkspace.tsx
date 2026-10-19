@@ -19,6 +19,9 @@ import type {
   PendingFreeze,
 } from "./packageFrozenInput";
 import "./packageFrozenInput.css";
+import PackageFrozenInputDirectory from "./PackageFrozenInputDirectory";
+import { matchesFrozenInputSummary } from "./frozenInputDirectory";
+import type { FrozenInputSummary } from "./frozenInputDirectory";
 
 type Props = {
   scope: FreezeScope;
@@ -61,6 +64,7 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
   const [historyError, setHistoryError] = useState<unknown>(null);
   const [reading, setReading] = useState(false);
   const historyTicket = useRef(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
   useEffect(() => {
     active.current = true;
     return () => {
@@ -119,6 +123,10 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
       // Persist completion only after every ACK identity check, including its canonical digest.
       persist({ ...current, pending: null, lastId: data.manifest.id });
       setSaved(data);
+      historyTicket.current++;
+      setReading(false);
+      setHistory(null);
+      setHistoryError(null);
       setHistoryId(data.manifest.id);
     } catch (failure) {
       if (active.current) setError(failure);
@@ -127,8 +135,10 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
       if (active.current) setBusy(false);
     }
   }
-  async function readHistory() {
-    const id = historyId.trim();
+  async function readHistory(
+    id = historyId.trim(),
+    expected?: FrozenInputSummary,
+  ) {
     if (!validFrozenInputId(id) || !supportsApi("GET", `${path}/${id}`)) return;
     const ticket = ++historyTicket.current;
     setReading(true);
@@ -137,6 +147,8 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
     try {
       const { data } = await api<PackageReviewFrozenInputView>(`${path}/${id}`);
       await validateFrozenInput(data, scope, id);
+      if (expected && !matchesFrozenInputSummary(data, expected))
+        throw new Error("读取记录与所选目录摘要或身份不符，未采用其他记录。");
       if (active.current && ticket === historyTicket.current) setHistory(data);
     } catch (failure) {
       if (active.current && ticket === historyTicket.current)
@@ -218,10 +230,19 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
           {result(saved)}
         </div>
       )}
-      <details>
+      <details onToggle={(event) => setHistoryOpen(event.currentTarget.open)}>
         <summary>读取历史冻结输入</summary>
+        <PackageFrozenInputDirectory
+          scope={scope}
+          enabled={historyOpen}
+          refreshId={saved?.manifest.id}
+          onSelect={(item) => {
+            setHistoryId(item.id);
+            void readHistory(item.id, item);
+          }}
+        />
         <p>
-          输入此清单下的记录编号，从服务端读取原始记录。自动填入本标签页最近成功保存的编号；此处尚无历史目录。
+          也可输入此清单下的记录编号，从服务端读取原始记录。自动填入本标签页最近成功保存的编号。
         </p>
         <label>
           冻结输入记录编号

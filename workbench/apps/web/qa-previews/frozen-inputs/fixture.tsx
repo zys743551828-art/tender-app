@@ -70,12 +70,51 @@ async function reply(): Promise<PackageReviewFrozenInputView> {
 }
 
 let offline = true;
+async function historical(n: number) {
+  const record = await reply();
+  record.manifest.id = id(6 + n);
+  record.manifest.frozen_at =
+    n === 0
+      ? "2026-10-19T08:00:01Z"
+      : `2026-10-19T08:00:00.${String(1000000 - n).padStart(6, "0")}Z`;
+  record.digest = await frozenManifestDigest(record.manifest);
+  return record;
+}
 window.fetch = async (path) => {
-  if (!String(path).includes("/frozen-review-inputs"))
+  const url = String(path);
+  if (!url.includes("/frozen-review-inputs"))
     throw new Error("夹具拒绝业务请求");
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
-  return new Response(JSON.stringify(await reply()), {
-    status: 201,
+  const list = url.includes("?limit=");
+  const more = url.includes("cursor=");
+  const items = await Promise.all(
+    (more ? [2] : [0, 1]).map(async (n) => {
+      const record = await historical(n);
+      const m = record.manifest;
+      return {
+        id: m.id,
+        digest: record.digest,
+        actor_id: m.actor_id,
+        frozen_at: m.frozen_at,
+        input_digest: m.input_digest,
+        context_digest: m.context_digest,
+      };
+    }),
+  );
+  const selected = [id(7), id(8)].indexOf(url.split("/").at(-1) ?? "");
+  const data = list
+    ? {
+        bid_id: scope.bidId,
+        package_id: scope.packageId,
+        revision_id: scope.revisionId,
+        inventory_id: scope.inventoryId,
+        items,
+        has_more: !more,
+        next_cursor: more ? null : "synthetic-next-page",
+      }
+    : await historical(selected < 0 ? 0 : selected + 1);
+  return new Response(JSON.stringify(data), {
+    status: 200,
     headers: { "Content-Type": "application/json" },
   });
 };

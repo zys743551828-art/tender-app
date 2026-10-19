@@ -1,5 +1,22 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type PackageReviewFrozenInputPage = {
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  items: {
+    id: string;
+    digest: string;
+    actor_id: string;
+    frozen_at: string;
+    input_digest: string;
+    context_digest: string;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
 export type FreezePackageReviewInput = {
   package_digest: string;
   inventory_digest: string;
@@ -4864,6 +4881,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}",
 ];
 
