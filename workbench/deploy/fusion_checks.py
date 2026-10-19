@@ -71,7 +71,10 @@ def main():
                 "tender_research_worker",
                 "tender_assistant_budget_admin",
             ):
-                if not c.execute("SELECT FROM pg_roles WHERE rolname=%s", (group,)).fetchone():
+                if (
+                    c.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (group,)).fetchone()
+                    is None
+                ):
                     c.execute(sql.SQL("CREATE ROLE {} NOLOGIN").format(sql.Identifier(group)))
         if suite == "budget":
             environment["FUSION_NONOWNER_OWNER_DSN"] = check_dsn

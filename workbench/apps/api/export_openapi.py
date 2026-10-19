@@ -15,6 +15,12 @@ from apps.api.upload_contracts import extend_openapi as extend_uploads
 from packages.assistant.contracts import extend_openapi as extend_assistant
 from packages.authoring.contracts import extend_openapi as extend_authoring
 from packages.contracts.bid_package_api import extend_openapi as extend_bid_packages
+from packages.contracts.bid_package_requirements_api import (
+    BASE as REQUIREMENTS_BASE,
+)
+from packages.contracts.bid_package_requirements_api import (
+    extend_openapi as extend_bid_package_requirements,
+)
 from packages.domain.runtime import ROOT
 from packages.identity.contracts import extend_openapi as extend_identity
 from packages.knowledge.contracts import extend_openapi as extend_knowledge
@@ -113,18 +119,29 @@ def implemented_openapi(app):
     extend_knowledge(actual)
     extend_knowledge_rag(actual)
     extend_identity(actual)
-    package_bases = (
-        "/api/v1/bids/{bid_id}/packages",
+    package_base = "/api/v1/bids/{bid_id}/packages"
+    package_paths = {
+        package_base + suffix
+        for suffix in (
+            "",
+            "/{package_id}",
+            "/{package_id}/revisions",
+            "/{package_id}/revisions/{revision_id}",
+            "/{package_id}/revisions/{revision_id}/manifest",
+        )
+    } | {
         "/api/v1/bids/{bid_id}/package-documents",
-    )
-    if any(
-        path == base or path.startswith(base + "/")
-        for path in actual["paths"]
-        for base in package_bases
-    ):
+        "/api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
+    }
+    if package_paths.intersection(actual["paths"]):
         # Partial apps need no package contracts; registered package routes still
         # undergo the extender's complete operation/schema checks.
         extend_bid_packages(actual)
+    if any(
+        path == REQUIREMENTS_BASE or path.startswith(REQUIREMENTS_BASE + "/")
+        for path in actual["paths"]
+    ):
+        extend_bid_package_requirements(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)

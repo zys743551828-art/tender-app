@@ -57,8 +57,8 @@ services:
       - ../packages:/workspace/packages:ro
       - ../apps/api:/workspace/apps/api:ro
       - ../deploy:/workspace/deploy:ro
-      - init_state:/workspace/.local
-      - api_profile:/runtime
+      - init_state_v2:/workspace/.local
+      - api_profile_v2:/runtime
 
   api:
     <<: *python
@@ -70,7 +70,7 @@ services:
       - ../apps/api:/workspace/apps/api:ro
       - ../apps/worker:/workspace/apps/worker:ro
       - ../deploy:/workspace/deploy:ro
-      - api_profile:/runtime:ro
+      - api_profile_v2:/runtime:ro
     healthcheck:
       test: [CMD, python, -c, "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=3)"]
       interval: 5s
@@ -93,7 +93,7 @@ services:
       - ../apps/web/dist:/usr/share/nginx/html:ro
       - ./nginx-fusion.conf:/etc/nginx/conf.d/default.conf:ro
     tmpfs: ["/tmp:rw,nosuid,size=64m,mode=1777"]
-    networks: [core]
+    networks: [core, preview]
     healthcheck:
       test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/nginx-health"]
       interval: 5s
@@ -135,11 +135,15 @@ services:
 networks:
   core:
     internal: true
+  preview:
+    driver: bridge
 
 volumes:
   postgres_data:
   init_state:
   api_profile:
+  init_state_v2:
+  api_profile_v2:
   checks_postgres_data:
   checks_evidence:
 

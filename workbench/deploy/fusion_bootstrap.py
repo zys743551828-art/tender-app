@@ -15,7 +15,9 @@ from deploy.fusion_runtime import API_KEYS
 from deploy.initialize_database import file_configuration
 
 ORIGIN = "http://127.0.0.1:5188"
-DATABASE = "tender_checks_fusion"
+# Explicit new preview, preserving the prior database and its private volume pair.
+PREVIEW_NAME = "fusion_v2"
+DATABASE = "tender_checks_" + PREVIEW_NAME
 
 
 def main():
@@ -58,19 +60,19 @@ def main():
         return
     with psycopg.connect(owner_dsn, autocommit=True) as c:
         if (
-            c.execute("SELECT FROM pg_database WHERE datname=%s", (DATABASE,)).fetchone()
+            c.execute("SELECT 1 FROM pg_database WHERE datname=%s", (DATABASE,)).fetchone()
             or api_profile.exists()
         ):
             raise RuntimeError("FUSION_PARTIAL_STATE_REFUSED")
         for group in fresh.GROUPS:
-            if not c.execute("SELECT FROM pg_roles WHERE rolname=%s", (group,)).fetchone():
+            if c.execute("SELECT 1 FROM pg_roles WHERE rolname=%s", (group,)).fetchone() is None:
                 c.execute(sql.SQL("CREATE ROLE {} NOLOGIN").format(sql.Identifier(group)))
     base = state / "fusion-base.env"
     if not base.exists():
         fresh.write_private(
             base, {"OWNER_DATABASE_DSN": owner_dsn, "OBJECT_STORE_PREFIX": "fusion-local-disabled"}
         )
-    receipt = fresh.bootstrap(base_profile=base, name="fusion", app_origin=ORIGIN)
+    receipt = fresh.bootstrap(base_profile=base, name=PREVIEW_NAME, app_origin=ORIGIN)
     business = file_configuration(fresh.ROOT / receipt["profiles"]["business"])
     from apps.api.auth import password_hash
 

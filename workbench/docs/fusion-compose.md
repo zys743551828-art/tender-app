@@ -1,6 +1,6 @@
 # 融合独立 Compose 组
 
-项目固定为 `tender-fusion`。默认只启 PostgreSQL、一次性初始化、API、Web；Web 地址为 `http://127.0.0.1:5188`，由 nginx 同源代理 `/api/`。PostgreSQL 无宿主端口。网络为独立 internal 网络，数据库、初始化资料、API 配置和检查证据分别使用本组命名卷。所有服务关闭自动重启。
+项目固定为 `tender-fusion`。默认只启 PostgreSQL、一次性初始化、API、Web；Web 地址为 `http://127.0.0.1:5188`，由 nginx 同源代理 `/api/`。PostgreSQL 无宿主端口。core 为独立 internal 网络；仅 Web 同时连接 preview bridge 供 loopback 端口发布，API、init、数据库和 checks 均不接 preview。数据库、初始化资料、API 配置和检查证据分别使用本组命名卷。所有服务关闭自动重启。
 
 不会启动 Kafka、Worker、评分、研究或供应商消费者。该组是本地开发预览与机制检查入口，不代表正式模型、OCR、转换能力或完整一期验收通过。原 dev/Claude 组不属于此编排。
 
@@ -32,6 +32,10 @@
 
 ## 初始化与重启边界
 
+要求/覆盖 DDL 经评审加入共享计划后，本预览显式改为 `fusion_v2`：新库 `tender_checks_fusion_v2`，init 使用 `init_state_v2`，init/API 共用独立 `api_profile_v2`。固定项目名、5188、PostgreSQL 数据卷及本地秘密文件不变；原 `tender_checks_fusion` 与 `init_state` / `api_profile` 卷保留，不挂载到新 API，不覆盖或隐式升级。配置更改本身不启动服务；由主代理显式执行默认组 `up`，首次创建新代际。
+
+这是一次明确的新鲜预览切换，没有自动推算代际、迁移旧库或清空卷的机制。若 v2 已有不完整状态或 SQL 指纹不匹配，仍按下面规则拒绝修复，不自动另建 v3。
+
 新库由实际 `bootstrap_fresh` 按共享 `schema_plan.BASE_SQL` 和冻结字节创建；不启用归档或可选扩展。初始化凭证只保留在 init 专有卷，业务账户使用非 owner LOGIN。初始管理员仅在全新创建成功后写入。
 
 成功重启必须同时匹配初始化收据的库名与有序 SQL SHA，并验证 API 私有配置和管理员记录。存在库但没有成功收据、SQL 变更或不完整状态均拒绝自动修复，不能把重启当作前进迁移入口。修改共享计划需要独立评审，不能通过删除卷绕过失败原因。
@@ -40,8 +44,12 @@
 
 ## 当前验证状态（2026-10-19）
 
-静态 ruff、format、Linux 平台 mypy、bandit、离线 Compose config 与 diff 检查通过；共享初始化 14 项已由主代理独立复跑通过。经授权在宿主仅运行两个不涉及 POSIX 权限的 Compose 配置节点，2 passed in 0.44s，收据 `.local/fusion-host-config.xml`，独立 basetemp 为 `.local/fusion-host-config-pytest`。Docker 引擎/socket 修复尚待完成，因此本次新增 Compose profile 完整纯测试、完整 helper Linux 回归、真实组初始化、API 登录与 Web 交互均待运行验证。本次未启动任何新容器，不把离线配置检查记录为运行验收。
+静态 ruff、format、Linux 平台 mypy、bandit、离线 Compose config 与 diff 检查通过；共享初始化 14 项已由主代理独立复跑通过。经授权在宿主仅运行两个不涉及 POSIX 权限的 Compose 配置节点，最初 2 passed in 0.44s；加入仅 Web 可接 preview 的约束后，2 passed in 0.49s，收据 `.local/fusion-preview-config.xml`，独立 basetemp 为 `.local/fusion-preview-config-pytest`。
 
-要求/覆盖投影的新 DDL 与 API 仍由其他代理审查，不在本切片默认初始化中，相关检查尚未运行；须获独立批准后由主代理更新共享依赖计划。
+Docker 恢复后，本组 checks pure 在既有 Python3.12 镜像实际完成 70 passed in 0.87s，含 Linux 私有配置权限与 helper 纯回归，服务退出0、真实供应商尝试0；证据 `.local/fusion-pure-evidence/`。默认组由主代理启动，init成功退出、API健康。Docker29 中 Web 只接 internal 网时实际端口映射为空，因此仅为 Web 增加 preview bridge 并单独重建该服务；宿主 `/` 200，真实 `/api/v1/auth/session` 未登录返回401，证据 `.local/fusion-preview-http.json`。该修复未重启 init、API 或 checks。
 
-编排已预留 `checks -Suite requirements-pure` 与 `checks -Suite requirements-api`；后者仅向子测试进程注入独立 checks-PG 的 `FUSION_REQUIREMENTS_ADMIN_DSN`。这两项必须等要求切片静态评审批准才运行，默认仍为 `pure`，预留入口不表示新 DDL 已获执行或默认初始化授权。
+角色/库存在查询从无返回列的 `SELECT FROM` 改成 `SELECT 1`：默认 tuple row factory 下存在行原为假值空 tuple，会错误重复建组或漏过入口已有库检测。修复后检查服务重复运行成功。
+
+要求/覆盖已独立静态审查并加入共享12项计划：worker-functions之后装新DDL，roles之后撤销四张冻结历史表UPDATE。明确新代际fusion_v2已实际全新初始化，原fusion库和旧配置卷保留；主代理通过5188入口实测登录200、会话200、异源403、缺CSRF403、退出204及退出后401。内置浏览器控制连接仍不可用，无本次视觉截图。
+
+编排支持 `checks -Suite requirements-pure` 与 `checks -Suite requirements-api`；后者仅向子测试进程注入独立 checks-PG 的 `FUSION_REQUIREMENTS_ADMIN_DSN`。执行者最终20项通过，主代理从整合12项计划独立再验20项通过22.28秒；测试库和账号在fixture结束清理，容器和卷保留。最终Linux pure再次70项通过0.80秒。要求页面、完整抽取身份与正式评审资格仍未覆盖。

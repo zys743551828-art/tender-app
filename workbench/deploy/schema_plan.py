@@ -12,8 +12,10 @@ BASE_SQL = (
     "packages/identity/sql/stable-lot-identity.sql",
     "packages/contracts/sql/retrieval.sql",
     "packages/contracts/sql/worker-functions.sql",
+    "packages/contracts/sql/bid-package-requirements.sql",
     "packages/contracts/sql/roles.sql",
     "deploy/sql/bid-package-runtime-grants.sql",
+    "deploy/sql/bid-package-requirement-runtime-grants.sql",
     "deploy/sql/vector-runtime-grants.sql",
     "deploy/sql/research-source-qualification.sql",
 )

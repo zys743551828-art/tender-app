@@ -9527,6 +9527,560 @@
         ]
       }
     },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories": {
+      "post": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "Create Inventory",
+        "operationId": "createPackageRequirementInventory",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "First revision requires If-None-Match:*; later revisions require exact current inventory If-Match."
+          },
+          {
+            "in": "header",
+            "name": "If-None-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "First revision requires If-None-Match:*; later revisions require exact current inventory If-Match."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePackageRequirementInventory"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageRequirementInventoryView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "List Inventories",
+        "operationId": "listPackageRequirementInventories",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageRequirementInventoryPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}": {
+      "get": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "Get Inventory",
+        "operationId": "getPackageRequirementInventory",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageRequirementInventoryView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts": {
+      "post": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "Create Attempt",
+        "operationId": "createPackageCoverageAttempt",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePackageCoverageAttempt"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageCoverageAttemptView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "List Attempts",
+        "operationId": "listPackageCoverageAttempts",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageRequirementHistoryPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts/{attempt_id}": {
+      "get": {
+        "tags": [
+          "bid-package-requirements"
+        ],
+        "summary": "Get Attempt",
+        "operationId": "getPackageCoverageAttempt",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "attempt_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Attempt Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageCoverageAttemptView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/bids/{bid_id}/package-documents": {
       "get": {
         "tags": [
@@ -38869,6 +39423,1100 @@
           "items",
           "has_more",
           "next_cursor"
+        ]
+      },
+      "CreatePackageRequirementInventory": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "authority_revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_set_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "rule_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "\\S",
+                    "not": {
+                      "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                    }
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500,
+                  "minItems": 1
+                },
+                "target_part_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "\\S",
+                    "not": {
+                      "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                    }
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                },
+                "minimum_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "applicability": {
+                  "enum": [
+                    "applicable",
+                    "unknown",
+                    "not_applicable"
+                  ]
+                },
+                "applicability_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                },
+                "valid_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time"
+                },
+                "checks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "pattern": "\\S",
+                    "not": {
+                      "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                    }
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "\\S",
+                  "not": {
+                    "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                  }
+                },
+                "basis_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500,
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "rule_id",
+                "categories",
+                "target_part_ids",
+                "minimum_count",
+                "applicability",
+                "applicability_evidence_ids",
+                "valid_at",
+                "checks",
+                "reason",
+                "basis_evidence_ids"
+              ]
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "authority_revision_id",
+          "rule_set_id",
+          "mappings"
+        ]
+      },
+      "CreatePackageCoverageAttempt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "inventory_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "rule_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "requirement_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "state": {
+                  "enum": [
+                    "not_provided",
+                    "missing",
+                    "pending_parse",
+                    "parse_gap",
+                    "unsupported",
+                    "verified",
+                    "not_applicable",
+                    "conflict",
+                    "unknown"
+                  ]
+                },
+                "inspected": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "part_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "pattern": "\\S",
+                        "not": {
+                          "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                        }
+                      },
+                      "first_page": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "last_page": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "part_id",
+                      "first_page",
+                      "last_page"
+                    ]
+                  }
+                },
+                "evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "pattern": "\\S",
+                  "not": {
+                    "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                  }
+                },
+                "basis_type": {
+                  "enum": [
+                    "human_scope_declaration",
+                    "human_observation"
+                  ]
+                }
+              },
+              "required": [
+                "rule_id",
+                "requirement_digest",
+                "state",
+                "inspected",
+                "evidence_ids",
+                "reason",
+                "basis_type"
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "state": {
+                        "enum": [
+                          "verified",
+                          "not_applicable"
+                        ]
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "basis_type": {
+                        "const": "human_scope_declaration"
+                      }
+                    }
+                  },
+                  "else": {
+                    "properties": {
+                      "basis_type": {
+                        "const": "human_observation"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "inventory_digest",
+          "package_digest",
+          "results"
+        ]
+      },
+      "PackageRequirementInventoryManifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "bid-package-requirements/1"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "package_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target_revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "authority_revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authority_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "rule_set_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_set_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "predecessor_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "identity_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_snapshot": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "rule_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "rule_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "rule_snapshot": {
+                  "type": "object"
+                },
+                "decision_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid"
+                },
+                "decision_snapshot": {
+                  "type": [
+                    "object",
+                    "null"
+                  ]
+                },
+                "requirement": {
+                  "$ref": "#/components/schemas/BidPackage_requirement"
+                },
+                "requirement_digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "source_bound": {
+                  "type": "boolean"
+                },
+                "annotation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "kind": {
+                      "const": "human_check_plan_declaration"
+                    },
+                    "mapped": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200,
+                          "pattern": "\\S",
+                          "not": {
+                            "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "basis_evidence_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "uniqueItems": true,
+                      "maxItems": 500
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "mapped",
+                    "reason",
+                    "basis_evidence_ids"
+                  ]
+                }
+              },
+              "required": [
+                "rule_id",
+                "rule_digest",
+                "rule_snapshot",
+                "decision_id",
+                "decision_snapshot",
+                "requirement",
+                "requirement_digest",
+                "source_bound",
+                "annotation"
+              ]
+            }
+          },
+          "inventory_complete": {
+            "const": false
+          },
+          "extraction_binding": {
+            "const": "unproven_legacy_rule_set"
+          },
+          "review_ready": {
+            "const": false
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "version",
+          "id",
+          "bid_id",
+          "package_id",
+          "target_revision_id",
+          "package_digest",
+          "authority_revision_id",
+          "authority_digest",
+          "rule_set_id",
+          "rule_set_digest",
+          "revision",
+          "predecessor_digest",
+          "identity_digest",
+          "source_snapshot",
+          "requirements",
+          "inventory_complete",
+          "extraction_binding",
+          "review_ready",
+          "actor_id"
+        ]
+      },
+      "PackageCoverageAttemptManifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "bid-package-coverage/1"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "package_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "coverage": {
+                  "$ref": "#/components/schemas/BidPackage_coverage"
+                },
+                "basis_type": {
+                  "enum": [
+                    "human_scope_declaration",
+                    "human_observation"
+                  ]
+                },
+                "evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "uniqueItems": true,
+                  "maxItems": 500
+                }
+              },
+              "required": [
+                "coverage",
+                "basis_type",
+                "evidence_ids"
+              ]
+            }
+          },
+          "assessment": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "package_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "complete": {
+                "const": false
+              },
+              "requirement_inventory_complete": {
+                "const": false
+              },
+              "requirement_states": {
+                "type": "object",
+                "additionalProperties": {
+                  "enum": [
+                    "not_provided",
+                    "missing",
+                    "pending_parse",
+                    "parse_gap",
+                    "unsupported",
+                    "verified",
+                    "not_applicable",
+                    "conflict",
+                    "unknown"
+                  ]
+                }
+              },
+              "requirement_digests": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "inspected_ranges": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "member_gaps": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            },
+            "required": [
+              "package_digest",
+              "complete",
+              "requirement_inventory_complete",
+              "requirement_states",
+              "requirement_digests",
+              "inspected_ranges",
+              "member_gaps"
+            ]
+          },
+          "review_ready": {
+            "const": false
+          }
+        },
+        "required": [
+          "version",
+          "id",
+          "bid_id",
+          "inventory_id",
+          "inventory_digest",
+          "package_digest",
+          "actor_id",
+          "results",
+          "assessment",
+          "review_ready"
+        ]
+      },
+      "PackageRequirementInventoryView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "const": "bid-package-requirements/1"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "bid_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "package_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "target_revision_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "package_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "authority_revision_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "authority_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "rule_set_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rule_set_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "predecessor_digest": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "identity_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_snapshot": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "rule_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "rule_digest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "rule_snapshot": {
+                      "type": "object"
+                    },
+                    "decision_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "decision_snapshot": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "requirement": {
+                      "$ref": "#/components/schemas/BidPackage_requirement"
+                    },
+                    "requirement_digest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "source_bound": {
+                      "type": "boolean"
+                    },
+                    "annotation": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "kind": {
+                          "const": "human_check_plan_declaration"
+                        },
+                        "mapped": {
+                          "type": "boolean"
+                        },
+                        "reason": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200,
+                              "pattern": "\\S",
+                              "not": {
+                                "pattern": "[\\u0000\\uD800-\\uDFFF]"
+                              }
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "basis_evidence_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "uniqueItems": true,
+                          "maxItems": 500
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "mapped",
+                        "reason",
+                        "basis_evidence_ids"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rule_id",
+                    "rule_digest",
+                    "rule_snapshot",
+                    "decision_id",
+                    "decision_snapshot",
+                    "requirement",
+                    "requirement_digest",
+                    "source_bound",
+                    "annotation"
+                  ]
+                }
+              },
+              "inventory_complete": {
+                "const": false
+              },
+              "extraction_binding": {
+                "const": "unproven_legacy_rule_set"
+              },
+              "review_ready": {
+                "const": false
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "version",
+              "id",
+              "bid_id",
+              "package_id",
+              "target_revision_id",
+              "package_digest",
+              "authority_revision_id",
+              "authority_digest",
+              "rule_set_id",
+              "rule_set_digest",
+              "revision",
+              "predecessor_digest",
+              "identity_digest",
+              "source_snapshot",
+              "requirements",
+              "inventory_complete",
+              "extraction_binding",
+              "review_ready",
+              "actor_id"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
+        ]
+      },
+      "PackageCoverageAttemptView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version": {
+                "const": "bid-package-coverage/1"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "bid_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "inventory_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "inventory_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "package_digest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "results": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "coverage": {
+                      "$ref": "#/components/schemas/BidPackage_coverage"
+                    },
+                    "basis_type": {
+                      "enum": [
+                        "human_scope_declaration",
+                        "human_observation"
+                      ]
+                    },
+                    "evidence_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "uniqueItems": true,
+                      "maxItems": 500
+                    }
+                  },
+                  "required": [
+                    "coverage",
+                    "basis_type",
+                    "evidence_ids"
+                  ]
+                }
+              },
+              "assessment": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "package_digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "complete": {
+                    "const": false
+                  },
+                  "requirement_inventory_complete": {
+                    "const": false
+                  },
+                  "requirement_states": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "enum": [
+                        "not_provided",
+                        "missing",
+                        "pending_parse",
+                        "parse_gap",
+                        "unsupported",
+                        "verified",
+                        "not_applicable",
+                        "conflict",
+                        "unknown"
+                      ]
+                    }
+                  },
+                  "requirement_digests": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "inspected_ranges": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "member_gaps": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                },
+                "required": [
+                  "package_digest",
+                  "complete",
+                  "requirement_inventory_complete",
+                  "requirement_states",
+                  "requirement_digests",
+                  "inspected_ranges",
+                  "member_gaps"
+                ]
+              },
+              "review_ready": {
+                "const": false
+              }
+            },
+            "required": [
+              "version",
+              "id",
+              "bid_id",
+              "inventory_id",
+              "inventory_digest",
+              "package_digest",
+              "actor_id",
+              "results",
+              "assessment",
+              "review_ready"
+            ]
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
+        ]
+      },
+      "PackageRequirementHistoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "digest",
+                "created_at"
+              ]
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "PackageRequirementInventoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "digest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "digest",
+                "created_at"
+              ]
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "current_inventory_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "items",
+          "has_more",
+          "next_cursor",
+          "current_inventory_id"
         ]
       },
       "PricingEvidenceQuote": {
