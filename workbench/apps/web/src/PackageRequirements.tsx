@@ -1351,6 +1351,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         />
       </Suspense>
       <PackageReviewInputPreview
+        memberId={memberId}
         bidId={bidId}
         packageView={packageView}
         inventory={inventoryValid ? inventory.data! : null}

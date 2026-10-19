@@ -13,7 +13,7 @@ type RequestRecord = {
 export function clearRecordedCommands(keepMemberId?: string) {
   for (const key of Object.keys(sessionStorage)) {
     const match = key.match(
-      /^tender:command(?:-record)?:(?:submission|report|pricing-formula|pricing-simulate|pricing-save|knowledge-search|knowledge-unit|knowledge-index|business-result|business-verification|assistant-main|assistant-state|assistant-turn|assistant-note|assistant-cancel|assistant-action|task-template|task-pause|task-run|task-draft|authoring-structure|authoring-resolve|authoring-plan|word-retry|authoring-template):([^:]+):/,
+      /^tender:command(?:-record)?:(?:package-freeze|submission|report|pricing-formula|pricing-simulate|pricing-save|knowledge-search|knowledge-unit|knowledge-index|business-result|business-verification|assistant-main|assistant-state|assistant-turn|assistant-note|assistant-cancel|assistant-action|task-template|task-pause|task-run|task-draft|authoring-structure|authoring-resolve|authoring-plan|word-retry|authoring-template):([^:]+):/,
     );
     if (match && (!keepMemberId || match[1] !== keepMemberId))
       sessionStorage.removeItem(key);

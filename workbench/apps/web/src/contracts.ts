@@ -1,5 +1,19 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type FreezePackageReviewInput = {
+  package_digest: string;
+  inventory_digest: string;
+  coverage_attempt_id: string | null;
+  coverage_digest: string | null;
+  input_digest: string;
+  context_digest: string;
+};
+
+export type PackageReviewFrozenInputView = {
+  manifest: PackageReviewFrozenInputManifest;
+  digest: string;
+};
+
 export type PackageReviewOriginalVerification = {
   kind: "observation";
   execution_context: PackageReviewExecutionContext;
@@ -3324,6 +3338,43 @@ export type UploadTarget =
       file_id: string;
       expected_file_revision: number;
     };
+
+export type PackageReviewFrozenInputManifest = {
+  version: "package-review-frozen-input/1";
+  kind: "frozen_input";
+  id: string;
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  actor_id: string;
+  command_id: string;
+  input_digest: string;
+  context_digest: string;
+  evidence_digest: string;
+  execution_context: PackageReviewExecutionContext;
+  as_of: string;
+  frozen_at: string;
+  blockers: (
+    | "PROJECT_WORK_CLOSED"
+    | "PACKAGE_BIDDER_UNCONFIRMED"
+    | "PACKAGE_REVIEW_IDENTITY_STALE"
+    | "PACKAGE_REVIEW_PACKAGE_STALE"
+    | "PACKAGE_REVIEW_INVENTORY_STALE"
+    | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
+    | "PACKAGE_REVIEW_SOURCE_CHANGED"
+    | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
+    | "PACKAGE_REVIEW_MEMBERS_UNPROVEN"
+    | "PACKAGE_REVIEW_EVIDENCE_CHANGED"
+    | "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP"
+    | "PACKAGE_REVIEW_EXTRACTION_UNPROVEN"
+    | "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN"
+    | "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+  )[];
+  review_ready: false;
+  launch_available: false;
+};
 
 export type PackageReviewExecutionContext = {
   version: "package-review-context/1";

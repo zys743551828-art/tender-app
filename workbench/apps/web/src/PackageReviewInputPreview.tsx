@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import type {
+  FreezePackageReviewInput,
   BidPackageStoredView,
   PackageCoverageAttemptView,
   PackageRequirementInventoryView,
@@ -14,7 +15,12 @@ const PackageOriginalVerification = lazy(() =>
   })),
 );
 
+const PackageFrozenInputWorkspace = lazy(
+  () => import("./PackageFrozenInputWorkspace"),
+);
+
 type Props = {
+  memberId?: string;
   bidId: string;
   packageView: BidPackageStoredView;
   inventory: PackageRequirementInventoryView | null;
@@ -43,6 +49,7 @@ const messages: Record<Preview["blockers"][number], string> = {
 };
 
 export function PackageReviewInputPreview({
+  memberId,
   bidId,
   packageView,
   inventory,
@@ -61,6 +68,10 @@ export function PackageReviewInputPreview({
     coverage?.manifest.id,
     coverage?.digest,
   ]);
+  const [candidate, setCandidate] = useState<{
+    selection: string;
+    body: FreezePackageReviewInput;
+  } | null>(null);
   const active = useRef(key);
   const generation = useRef(0);
   active.current = key;
@@ -74,6 +85,7 @@ export function PackageReviewInputPreview({
     active.current = key;
     generation.current += 1;
     setState(null);
+    setCandidate(null);
     return () => {
       active.current = "";
       generation.current += 1;
@@ -93,6 +105,7 @@ export function PackageReviewInputPreview({
       !available
     )
       return;
+    setCandidate(null);
     const captured = key;
     const ticket = ++generation.current;
     setState({ key: captured, busy: true });
@@ -210,6 +223,25 @@ export function PackageReviewInputPreview({
           <Suspense fallback={<p>正在加载原件核验…</p>}>
             <PackageOriginalVerification
               preview={current.result}
+              onVerified={(observation) => {
+                if (!observation) {
+                  setCandidate(null);
+                  return;
+                }
+                const selected = current.result!.manifest;
+                setCandidate({
+                  selection: key,
+                  body: {
+                    package_digest: selected.target.digest,
+                    inventory_digest: selected.inventory.digest,
+                    coverage_attempt_id: selected.coverage?.manifest.id ?? null,
+                    coverage_digest: selected.coverage?.digest ?? null,
+                    input_digest: current.result!.digest,
+                    context_digest:
+                      observation.execution_context.semantic_digest,
+                  },
+                });
+              }}
               disabled={disabled || coveragePending}
             />
           </Suspense>
@@ -258,6 +290,28 @@ export function PackageReviewInputPreview({
             </p>
           </details>
         </div>
+      )}
+      {memberId && inventory && (
+        <Suspense fallback={<p>正在加载冻结输入记录…</p>}>
+          <PackageFrozenInputWorkspace
+            key={JSON.stringify([
+              memberId,
+              bidId,
+              m.package_id,
+              m.revision_id,
+              inventory.manifest.id,
+            ])}
+            scope={{
+              memberId,
+              bidId,
+              packageId: m.package_id,
+              revisionId: m.revision_id,
+              inventoryId: inventory.manifest.id,
+            }}
+            candidate={candidate?.selection === key ? candidate.body : null}
+            disabled={disabled || coveragePending}
+          />
+        </Suspense>
       )}
     </div>
   );

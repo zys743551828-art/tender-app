@@ -3,6 +3,7 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { PackageReviewInputPreview } from "./PackageReviewInputPreview";
+import { storeFreezeRecord } from "./packageFrozenInput";
 import type {
   BidPackageStoredView,
   PackageRequirementInventoryView,
@@ -145,10 +146,44 @@ const respond = (value: unknown) =>
   });
 const fetchMock = vi.fn();
 beforeEach(() => {
+  sessionStorage.clear();
   fetchMock.mockReset();
   vi.stubGlobal("fetch", fetchMock);
 });
 afterEach(() => vi.unstubAllGlobals());
+
+it("刷新后未做预检也能恢复所选清单的旧保存，不依赖当前可写状态", async () => {
+  storeFreezeRecord({
+    version: 1,
+    scope: {
+      memberId: id(50),
+      bidId: props.bidId,
+      packageId: target.manifest.package_id,
+      revisionId: target.manifest.revision_id,
+      inventoryId: inv.manifest.id,
+    },
+    pending: {
+      key: id(51),
+      body: {
+        package_digest: target.digest,
+        inventory_digest: inv.digest,
+        input_digest: "a".repeat(64),
+        context_digest: "b".repeat(64),
+        coverage_attempt_id: null,
+        coverage_digest: null,
+      },
+    },
+    lastId: null,
+  });
+  render(<PackageReviewInputPreview {...props} memberId={id(50)} disabled />);
+  expect(
+    await screen.findByRole("button", { name: "恢复原保存请求" }),
+  ).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: "保存本次冻结输入" }),
+  ).toBeDisabled();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
 
 it("显式触发只读预检，StrictMode下仍显示阻断且没有执行入口", async () => {
   fetchMock.mockResolvedValue(respond(reply()));

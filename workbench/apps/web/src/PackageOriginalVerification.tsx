@@ -7,10 +7,15 @@ import type {
   PackageReviewOriginalVerification as Observation,
 } from "./contracts";
 
-type Props = { preview: PackageReviewInputPreview; disabled?: boolean };
+type Props = {
+  preview: PackageReviewInputPreview;
+  disabled?: boolean;
+  onVerified?: (result: Observation | null) => void;
+};
 
 export function PackageOriginalVerification({
   preview,
+  onVerified,
   disabled = false,
 }: Props) {
   const selected = preview.manifest;
@@ -37,6 +42,7 @@ export function PackageOriginalVerification({
 
   async function verify() {
     if (disabled || !available || current?.busy) return;
+    onVerified?.(null);
     const ticket = ++generation.current;
     const input = preview;
     setState({ input, busy: true });
@@ -89,6 +95,7 @@ export function PackageOriginalVerification({
       )
         throw new Error("原件核验响应与所选输入不一致，未采用该结果。");
       setState({ input, result: data });
+      onVerified?.(data);
     } catch (error) {
       if (ticket === generation.current && active.current === input)
         setState({ input, error });

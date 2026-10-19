@@ -95,6 +95,25 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
+it("仅完整核验响应可交给保存入口，重新核验先撤销候选", async () => {
+  const onVerified = vi.fn();
+  fetchMock.mockResolvedValue(respond(reply()));
+  render(
+    <PackageOriginalVerification preview={preview} onVerified={onVerified} />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "核对所选原件" }));
+  await screen.findByRole("status");
+  expect(onVerified.mock.calls[0]).toEqual([null]);
+  expect(onVerified.mock.calls[1]).toEqual([reply()]);
+  fetchMock.mockResolvedValue(
+    respond({ ...reply(), input_digest: "f".repeat(64) }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: "核对所选原件" }));
+  await screen.findByRole("alert");
+  expect(onVerified).toHaveBeenCalledTimes(3);
+  expect(onVerified).toHaveBeenLastCalledWith(null);
+});
+
 it("显式核验全部明确成员，只显示本次观察且仍不可正式评审", async () => {
   fetchMock.mockResolvedValue(respond(reply()));
   render(
