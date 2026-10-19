@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
+import { matchesExecutionContext } from "./packageReviewContext";
 import type {
   PackageReviewInputPreview,
   PackageReviewOriginalVerification as Observation,
@@ -55,6 +56,11 @@ export function PackageOriginalVerification({
         selected[role].manifest.members.map((member) => ({ role, member })),
       );
       if (
+        !matchesExecutionContext(
+          data.execution_context,
+          input.digest,
+          data.checked_at,
+        ) ||
         data.kind !== "observation" ||
         data.input_digest !== input.digest ||
         data.originals_verified !== true ||
@@ -107,12 +113,27 @@ export function PackageOriginalVerification({
         <ErrorNotice error={current.error} onRetry={() => void verify()} />
       )}
       {current?.result && (
-        <p role="status">
-          本次已核对 {current.result.originals.length}{" "}
-          个成员原件，正式评审仍未就绪。核验时间：
-          {new Date(current.result.checked_at).toLocaleString()}
-          。后续执行需重新核验。
-        </p>
+        <div>
+          <p role="status">
+            本次已核对 {current.result.originals.length}{" "}
+            个成员原件，正式评审仍未就绪。核验时间：
+            {new Date(current.result.checked_at).toLocaleString()}
+            。后续执行需重新核验。
+          </p>
+          <details>
+            <summary>本次候选执行上下文</summary>
+            <p>
+              用途：标前合规核对。事实{" "}
+              {current.result.execution_context.fact_count} 条，其中人工确认为{" "}
+              {current.result.execution_context.confirmed_fact_count}{" "}
+              条；事实输入资格尚未核验。
+            </p>
+            <p>
+              方法、事实与来源摘要已纳入本次核对；候选尚未持久化，不能用于正式执行或评分。
+            </p>
+            <p>上下文摘要 {current.result.execution_context.semantic_digest}</p>
+          </details>
+        </div>
       )}
     </div>
   );

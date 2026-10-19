@@ -46,6 +46,25 @@ const preview = {
   },
 } as unknown as Preview;
 const reply = (): Observation => ({
+  execution_context: {
+    version: "package-review-context/1",
+    kind: "candidate",
+    input_digest: preview.digest,
+    semantic_digest: "1".repeat(64),
+    snapshot_digest: "2".repeat(64),
+    method_digest: "3".repeat(64),
+    policy_digest: "4".repeat(64),
+    facts_digest: "5".repeat(64),
+    sources_digest: "6".repeat(64),
+    as_of: "2026-10-19T07:00:00Z",
+    purpose: "prebid_compliance",
+    fact_set_id: null,
+    fact_count: 0,
+    confirmed_fact_count: 0,
+    facts_binding: "empty",
+    executor_available: false,
+    formal_scoring_eligible: false,
+  },
   kind: "observation",
   input_digest: preview.digest,
   checked_at: "2026-10-19T07:00:00Z",
@@ -108,6 +127,10 @@ it.each([
   "ready",
   "blockers",
   "date",
+  "context_digest",
+  "context_scoring",
+  "context_time",
+  "context_count",
 ])("拒绝不一致响应：%s", async (kind) => {
   const value = reply();
   if (kind === "missing") value.originals.pop();
@@ -118,6 +141,16 @@ it.each([
     (value as unknown as { review_ready: boolean }).review_ready = true;
   if (kind === "blockers") value.blockers = [];
   if (kind === "date") value.checked_at = "invalid";
+  if (kind === "context_digest")
+    value.execution_context.semantic_digest = "bad";
+  if (kind === "context_scoring")
+    (
+      value.execution_context as unknown as { formal_scoring_eligible: boolean }
+    ).formal_scoring_eligible = true;
+  if (kind === "context_time")
+    value.execution_context.as_of = "2026-10-19T07:01:00Z";
+  if (kind === "context_count")
+    value.execution_context.confirmed_fact_count = 1;
   fetchMock.mockResolvedValue(respond(value));
   render(<PackageOriginalVerification preview={preview} />);
   await userEvent.click(screen.getByRole("button", { name: "核对所选原件" }));

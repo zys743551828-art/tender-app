@@ -52643,6 +52643,9 @@
           "kind": {
             "const": "observation"
           },
+          "execution_context": {
+            "$ref": "#/components/schemas/PackageReviewExecutionContext"
+          },
           "input_digest": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
@@ -52694,6 +52697,7 @@
         },
         "required": [
           "kind",
+          "execution_context",
           "input_digest",
           "checked_at",
           "originals_verified",
@@ -52701,6 +52705,105 @@
           "launch_available",
           "blockers",
           "originals"
+        ]
+      },
+      "PackageReviewExecutionContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "package-review-context/1"
+          },
+          "kind": {
+            "const": "candidate"
+          },
+          "input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "semantic_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "method_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "facts_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sources_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "fact_set_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fact_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "confirmed_fact_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "facts_binding": {
+            "enum": [
+              "empty",
+              "unproven"
+            ]
+          },
+          "executor_available": {
+            "const": false
+          },
+          "formal_scoring_eligible": {
+            "const": false
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "input_digest",
+          "semantic_digest",
+          "snapshot_digest",
+          "method_digest",
+          "policy_digest",
+          "facts_digest",
+          "sources_digest",
+          "as_of",
+          "purpose",
+          "fact_set_id",
+          "fact_count",
+          "confirmed_fact_count",
+          "facts_binding",
+          "executor_available",
+          "formal_scoring_eligible"
         ]
       }
     },

@@ -2,6 +2,7 @@
 
 export type PackageReviewOriginalVerification = {
   kind: "observation";
+  execution_context: PackageReviewExecutionContext;
   input_digest: string;
   checked_at: string;
   originals_verified: true;
@@ -3323,6 +3324,26 @@ export type UploadTarget =
       file_id: string;
       expected_file_revision: number;
     };
+
+export type PackageReviewExecutionContext = {
+  version: "package-review-context/1";
+  kind: "candidate";
+  input_digest: string;
+  semantic_digest: string;
+  snapshot_digest: string;
+  method_digest: string;
+  policy_digest: string;
+  facts_digest: string;
+  sources_digest: string;
+  as_of: string;
+  purpose: "prebid_compliance";
+  fact_set_id: string | null;
+  fact_count: number;
+  confirmed_fact_count: number;
+  facts_binding: "empty" | "unproven";
+  executor_available: false;
+  formal_scoring_eligible: false;
+};
 
 export type PackageReviewVerifiedOriginal = {
   role: "target" | "authority";

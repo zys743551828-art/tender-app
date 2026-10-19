@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from packages.domain import bid_package_review_repository as repository
-from packages.domain import original_verification
+from packages.domain import original_verification, package_review_context
 from packages.domain.bid_package_review_documents import read_member
 from packages.domain.bid_package_review_policy import evaluate
+from packages.domain.package_review_identity import summary
 from packages.domain.review_identity import digest
 from packages.domain.runtime import DomainError, connection
 
@@ -17,6 +18,7 @@ class VerificationInput:
     observations: dict[str, Any]
     documents: list[dict[str, Any]]
     blockers: list[str]
+    execution_context: dict[str, Any]
 
     @property
     def digest(self) -> str:
@@ -40,7 +42,10 @@ def read_input(bid: str, package: str, revision: str, inventory: str, body: dict
             for member in manifest[role]["manifest"]["members"]
         ]
         result = evaluate(manifest, observations, evidence_matches=True)
-    return VerificationInput(manifest, observations, documents, result["blockers"])
+        execution_context = package_review_context.capture(c, manifest, observations)
+    return VerificationInput(
+        manifest, observations, documents, result["blockers"], execution_context
+    )
 
 
 def verify(bid: str, package: str, revision: str, inventory: str, body: dict[str, Any]):
@@ -54,12 +59,14 @@ def verify(bid: str, package: str, revision: str, inventory: str, body: dict[str
         or before.documents != after.documents
         or before.stable_observations() != after.stable_observations()
         or before.blockers != after.blockers
+        or before.execution_context["semantic_digest"] != after.execution_context["semantic_digest"]
     ):
         raise DomainError(
             "PACKAGE_REVIEW_INPUT_CHANGED", "核验期间输入或来源状态已变化，请重新检查", 409
         )
     return {
         "kind": "observation",
+        "execution_context": summary(after.execution_context),
         "input_digest": after.digest,
         "checked_at": after.observations["at"].isoformat(),
         "originals_verified": True,

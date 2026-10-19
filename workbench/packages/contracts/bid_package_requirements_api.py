@@ -285,9 +285,36 @@ SCHEMAS["PackageReviewVerifiedOriginal"] = object_schema(
         "byte_size": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
     }
 )
+SCHEMAS["PackageReviewExecutionContext"] = object_schema(
+    {
+        "version": {"const": "package-review-context/1"},
+        "kind": {"const": "candidate"},
+        **{
+            field: SHA
+            for field in (
+                "input_digest",
+                "semantic_digest",
+                "snapshot_digest",
+                "method_digest",
+                "policy_digest",
+                "facts_digest",
+                "sources_digest",
+            )
+        },
+        "as_of": {"type": "string", "format": "date-time"},
+        "purpose": {"const": "prebid_compliance"},
+        "fact_set_id": {"anyOf": [UUID, {"type": "null"}]},
+        "fact_count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "confirmed_fact_count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "facts_binding": {"enum": ["empty", "unproven"]},
+        "executor_available": {"const": False},
+        "formal_scoring_eligible": {"const": False},
+    }
+)
 SCHEMAS["PackageReviewOriginalVerification"] = object_schema(
     {
         "kind": {"const": "observation"},
+        "execution_context": {"$ref": "#/components/schemas/PackageReviewExecutionContext"},
         "input_digest": SHA,
         "checked_at": {"type": "string", "format": "date-time"},
         "originals_verified": {"const": True},

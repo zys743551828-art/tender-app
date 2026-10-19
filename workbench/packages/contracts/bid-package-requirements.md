@@ -58,6 +58,18 @@
 
 前端原件核验是独立按需加载组件，仅在明确预检后由按钮触发；校验完整成员列表、解析身份、输入摘要、时间和阻断，伪造ready／缺成员／串版本均不展示成功。重新预检，即使摘要相同也清除前次观察、丢弃迟到响应；不自动启动任务。正式执行必须在其实际发布边界重新完成原件和完整身份核验，不能复用本HTTP观察放行。
 
+## 整包候选执行上下文
+
+原件核验的两个只读快照现在同时捕获 `package-review-context/1`：明确包／要求清单／可选人工记录的原摘要、冻结主体、整包方法和政策、用途 `prebid_compliance`、事实集及逐项人工决定／依据、来源快照和服务端效力时点。核验期间事实头、人工决定或方法配置变化，均返回 `PACKAGE_REVIEW_INPUT_CHANGED`；只读观察不使用旧单正文事实校验的当前正文／最新解析路径，不取得该路径的来源写锁。
+
+职责分为：`package_review_context` 读取事实权威与精确成员关联；`package_review_method` 声明整包方法／用途和实际代码摘要；`package_review_identity` 纯构造候选内容及身份；原件协调服务只负责双快照比较。旧 `review-content/1`、单正文方法和旧包manifest摘要算法不变。不借用旧执行器名称或评分资格。
+
+事实捕获保留未确认及拒绝的条目、决定身份和头版本，缺失不默认为已确认；证据只记录与明确冻结文件／解析成员的关联，包外或缺证据为unproven。事实值和审计依据使用 `postgresql-jsonb-text` 表示，避免浮点转换及不安全整数进入规范摘要。本片不重审人工事实依据的正式适用资格；有事实时响应 `facts_binding=unproven`，无事实记录为empty，两者都不授执行资格。
+
+候选 `semantic_digest` 包含明确输入、方法／政策、事实／决定和来源的内容；观察时点 `as_of` 单独由完整 `snapshot_digest` 绑定。两轮只比较语义身份，时间正常递增不会伪造成输入变化，但新时点的来源效力阻断仍须复算。拒绝无时区的时点，等价时区规范为UTC。方法声明的执行器与正式评分资格固定false，纯构造器拒绝不一致用途或伪造的true声明。
+
+`PackageReviewOriginalVerification.execution_context` 仅返回摘要、用途、时点、事实集ID和计数，不返回事实值、审计依据、原件定位或证据正文。前端独立边界函数核对候选版本、用途、摘要格式、时点与观察一致、计数和恒false资格，折叠显示技术信息。候选只在服务端本次核验内构建，**尚未持久化，不是正式冻结回执**；正式持久化／发布与执行消费仍待实现。
+
 ## 全新隔离库依赖与权限
 
 新增 `sql/bid-package-requirements.sql` 在 core、domain、bid-packages、stable-lot-identity、retrieval、worker-functions 之后、roles 之前执行。不可变表为 `bid_package_requirement_inventories`、`bid_package_requirements`、`bid_package_coverage_attempts`、`bid_package_coverage_results`；仅 `bid_package_requirement_heads` 前进更新。API 需要新表 SELECT／INSERT、仅 heads UPDATE 及新校验函数 EXECUTE，不授不可变表 UPDATE／DELETE。Worker 仅可按实际准备／完成链追加抽取绑定；不能改写资料包或清单。评分与研究角色不新增写权限。既有决定头及规则继承首次写入也由新增触发器按 bid 串行，继承路径复用已有窄权限 `lock_worker_bid`，保护原来没有当前决定的空键；任意直接 SQL 反向锁序仍可能被 PostgreSQL 判死锁而整事务回滚，不将其描述为正常路径无死锁。
