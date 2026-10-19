@@ -16,9 +16,57 @@ export function Brand() {
 export function Icon({
   name,
 }: {
-  name: "grid" | "file" | "upload" | "arrow" | "check" | "clock" | "back";
+  name:
+    | "grid"
+    | "briefcase"
+    | "archive"
+    | "flask"
+    | "book"
+    | "chart"
+    | "assistant"
+    | "file"
+    | "upload"
+    | "arrow"
+    | "check"
+    | "clock"
+    | "back";
 }) {
   const paths = {
+    briefcase: (
+      <>
+        <rect x="3" y="7" width="18" height="14" rx="2" />
+        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12a22 22 0 0 0 18 0M12 12v3" />
+      </>
+    ),
+    archive: (
+      <>
+        <rect x="3" y="3" width="18" height="5" rx="1" />
+        <path d="M5 8v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M9 12h6" />
+      </>
+    ),
+    flask: (
+      <>
+        <path d="M9 3h6M10 3v6l-5.8 9.7A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.3-2.3L14 9V3M7 14h10" />
+        <path d="M10 17h.01M14 18h.01" />
+      </>
+    ),
+    book: (
+      <>
+        <path d="M12 6c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V5c-4-1-7-1-10 1Z" />
+        <path d="M12 6v15M5 9h3M5 13h3M16 9h3M16 13h3" />
+      </>
+    ),
+    chart: (
+      <>
+        <path d="M3 3v18h18M8 16v-5M13 16V7M18 16V4" />
+      </>
+    ),
+    assistant: (
+      <>
+        <path d="M21 13a4 4 0 0 1-4 4h-5l-5 4v-4H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h11a4 4 0 0 1 4 4Z" />
+        <path d="m12 6 .9 2.6L15.5 9.5l-2.6.9L12 13l-.9-2.6L8.5 9.5l2.6-.9Z" />
+      </>
+    ),
     grid: (
       <>
         <rect x="3" y="3" width="7" height="7" rx="1" />

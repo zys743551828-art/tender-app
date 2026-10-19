@@ -179,21 +179,21 @@ export function App() {
               className={`nav-item${area === "projects" ? " active" : ""}`}
               onClick={() => navigate(null)}
             >
-              <Icon name="grid" />
+              <Icon name="briefcase" />
               投标项目
             </button>
             <button
               className={`nav-item${area === "history" ? " active" : ""}`}
               onClick={() => void openArea("history")}
             >
-              <Icon name="grid" />
+              <Icon name="archive" />
               项目档案
             </button>
             <button
               className={`nav-item${area === "research" ? " active" : ""}`}
               onClick={() => void openArea("research")}
             >
-              <Icon name="grid" />
+              <Icon name="flask" />
               评分研究
             </button>
             {supportsApi("GET", "/knowledge") && (
@@ -201,7 +201,7 @@ export function App() {
                 className={`nav-item${area === "knowledge" ? " active" : ""}`}
                 onClick={() => void openArea("knowledge")}
               >
-                <Icon name="grid" />
+                <Icon name="book" />
                 企业知识
               </button>
             )}
@@ -210,7 +210,7 @@ export function App() {
                 className={`nav-item${area === "metrics" ? " active" : ""}`}
                 onClick={() => void openArea("metrics")}
               >
-                <Icon name="grid" />
+                <Icon name="chart" />
                 业务结果与指标
               </button>
             )}
@@ -219,7 +219,7 @@ export function App() {
                 className={`nav-item${area === "assistant" ? " active" : ""}`}
                 onClick={() => void openArea("assistant")}
               >
-                <Icon name="grid" />
+                <Icon name="assistant" />
                 工作助手
               </button>
             )}
