@@ -13,6 +13,7 @@ from packages.domain import bid_package_execution_input_repository as execution_
 from packages.domain import bid_package_execution_inputs as execution_inputs
 from packages.domain import bid_package_requirement_repository as requirements
 from packages.domain import bid_package_review_input_repository as repository
+from packages.domain.bid_package_fact_validation import inspect as inspect_facts
 from packages.domain.bid_package_review_eligibility import inspect
 from packages.domain.bid_package_review_freezing import freeze
 from packages.domain.bid_package_review_input_directory import directory
@@ -181,3 +182,27 @@ def get_execution_input(
                 str(input_id),
                 str(execution_input_id),
             )
+
+
+@router.post(
+    "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check"
+)
+def check_execution_facts(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    input_id: UUID,
+    execution_input_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    auth(r, True)
+    validate("CheckPackageExecutionFacts", body)
+    with input_errors():
+        return inspect_facts(
+            (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+            str(input_id),
+            str(execution_input_id),
+            body["execution_input_digest"],
+        )

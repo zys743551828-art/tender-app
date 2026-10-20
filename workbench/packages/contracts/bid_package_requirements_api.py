@@ -475,6 +475,73 @@ SCHEMAS["PackageExecutionInputView"] = object_schema(
 )
 
 
+SCHEMAS["CheckPackageExecutionFacts"] = object_schema({"execution_input_digest": SHA})
+_FACT_CODES = [
+    "FACT_SET_EMPTY",
+    "FACT_DECISION_UNCONFIRMED",
+    "FACT_DECISION_BINDING_UNPROVEN",
+    "FACT_DECISION_BASIS_UNPROVEN",
+    "FACT_EVIDENCE_OUTSIDE_FROZEN_INPUT",
+    "FACT_EVIDENCE_QUALITY_UNPROVEN",
+    "FACT_SOURCE_BINDING_UNPROVEN",
+    "FACT_SOURCE_NOT_EFFECTIVE",
+    "FACT_SCOPE_MAPPING_REQUIRED",
+]
+SCHEMAS["PackageFactValidationItem"] = object_schema(
+    {
+        "fact_id": UUID,
+        "provenance_status": {"enum": ["verified", "unproven"]},
+        "scope_binding": {"const": "unproven"},
+        "facts_qualified": {"const": False},
+        "blockers": {
+            "type": "array",
+            "items": {"enum": _FACT_CODES[1:]},
+            "minItems": 1,
+            "uniqueItems": True,
+        },
+    }
+)
+SCHEMAS["PackageExecutionFactCheck"] = object_schema(
+    {
+        "kind": {"const": "fact_validation_observation"},
+        **{
+            k: UUID
+            for k in (
+                "bid_id",
+                "package_id",
+                "revision_id",
+                "inventory_id",
+                "frozen_input_id",
+                "execution_input_id",
+            )
+        },
+        **{
+            k: SHA
+            for k in (
+                "execution_input_digest",
+                "prepared_context_digest",
+                "observed_context_digest",
+                "observed_facts_digest",
+            )
+        },
+        "matches_prepared_context": {"type": "boolean"},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "fact_count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "provenance_verified_count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "fact_checks": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/PackageFactValidationItem"},
+        },
+        "blockers": {"type": "array", "items": {"const": "FACT_SET_EMPTY"}, "uniqueItems": True},
+        "facts_qualified": {"const": False},
+        "original_verification": {"const": "not_performed"},
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+        "publication_authorized": {"const": False},
+    }
+)
+
+
 def valid(name, value):
     return Draft202012Validator(
         {"components": {"schemas": PACKAGE_SCHEMAS | SCHEMAS}, "allOf": [SCHEMAS[name]]},
@@ -496,6 +563,13 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
+            "post",
+            "checkPackageExecutionFacts",
+            "CheckPackageExecutionFacts",
+            "PackageExecutionFactCheck",
+        ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
             "post",
@@ -606,7 +680,12 @@ def extend_openapi(actual):
                 for header in (
                     ("Origin", "X-CSRF-Token")
                     if suffix.endswith(
-                        ("review-input-preview", "review-original-verification", "execution-check")
+                        (
+                            "review-input-preview",
+                            "review-original-verification",
+                            "execution-check",
+                            "fact-check",
+                        )
                     )
                     else ("Origin", "X-CSRF-Token", "Idempotency-Key")
                 )
@@ -626,7 +705,12 @@ def extend_openapi(actual):
             "201"
             if request
             and not suffix.endswith(
-                ("review-input-preview", "review-original-verification", "execution-check")
+                (
+                    "review-input-preview",
+                    "review-original-verification",
+                    "execution-check",
+                    "fact-check",
+                )
             )
             else "200": {
                 "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",

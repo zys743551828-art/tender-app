@@ -1,5 +1,34 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type CheckPackageExecutionFacts = {
+  execution_input_digest: string;
+};
+
+export type PackageExecutionFactCheck = {
+  kind: "fact_validation_observation";
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  prepared_context_digest: string;
+  observed_context_digest: string;
+  observed_facts_digest: string;
+  matches_prepared_context: boolean;
+  checked_at: string;
+  fact_count: number;
+  provenance_verified_count: number;
+  fact_checks: PackageFactValidationItem[];
+  blockers: "FACT_SET_EMPTY"[];
+  facts_qualified: false;
+  original_verification: "not_performed";
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type SavePackageExecutionInput = {
   frozen_digest: string;
   context_digest: string;
@@ -3406,6 +3435,23 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageFactValidationItem = {
+  fact_id: string;
+  provenance_status: "verified" | "unproven";
+  scope_binding: "unproven";
+  facts_qualified: false;
+  blockers: (
+    | "FACT_DECISION_UNCONFIRMED"
+    | "FACT_DECISION_BINDING_UNPROVEN"
+    | "FACT_DECISION_BASIS_UNPROVEN"
+    | "FACT_EVIDENCE_OUTSIDE_FROZEN_INPUT"
+    | "FACT_EVIDENCE_QUALITY_UNPROVEN"
+    | "FACT_SOURCE_BINDING_UNPROVEN"
+    | "FACT_SOURCE_NOT_EFFECTIVE"
+    | "FACT_SCOPE_MAPPING_REQUIRED"
+  )[];
+};
+
 export type PackageExecution_RerunIntent = {
   nonce: PackageExecution_Id;
   reason: string;
@@ -5012,6 +5058,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
 ];
 
 export const ruleConfirmationLimit: number = 500;

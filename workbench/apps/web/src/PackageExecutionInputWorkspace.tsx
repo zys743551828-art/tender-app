@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
+import PackageFactCheck from "./PackageFactCheck";
 import type {
   PackageExecutionInputView,
   PackageReviewEligibilityObservation,
@@ -238,6 +239,11 @@ function Workspace({
               记录摘要：<code>{result.digest}</code>
             </p>
           </details>
+          <PackageFactCheck
+            scope={scope}
+            frozenId={frozen.manifest.id}
+            prepared={result}
+          />
         </div>
       )}
       <details>

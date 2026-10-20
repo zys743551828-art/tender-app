@@ -142,6 +142,193 @@ class TestFreezing:
         assert saved.status_code == 201, saved.text
         return f, frozen, path, saved.json()
 
+    def test_fact_check_explains_unproven_input_without_objects_commands_or_jobs(
+        self, prepared_case, monkeypatch
+    ):
+        from packages.domain import storage
+
+        f, frozen, path, value = prepared_case
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        before = c.execute(statement).fetchone()
+        calls = len(f["calls"])
+
+        def unavailable():
+            raise AssertionError("fact observation cannot read original objects")
+
+        monkeypatch.setattr(storage, "client", unavailable)
+        response = f["w"]["client"].post(
+            path + "/" + value["manifest"]["id"] + "/fact-check",
+            json={"execution_input_digest": value["digest"]},
+            headers=f["headers"],
+        )
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageExecutionFactCheck", result)
+        assert result["matches_prepared_context"] is True
+        assert result["fact_count"] == 1 and result["provenance_verified_count"] == 0
+        assert {
+            "FACT_DECISION_UNCONFIRMED",
+            "FACT_DECISION_BASIS_UNPROVEN",
+            "FACT_SCOPE_MAPPING_REQUIRED",
+        } <= set(result["fact_checks"][0]["blockers"])
+        assert (
+            result["facts_qualified"]
+            is result["review_ready"]
+            is result["launch_available"]
+            is result["publication_authorized"]
+            is False
+        )
+        assert result["original_verification"] == "not_performed"
+        assert (
+            "object_key" not in response.text
+            and "synthetic subject" not in response.text
+            and "amount" not in response.text
+        )
+        assert c.execute(statement).fetchone() == before and len(f["calls"]) == calls
+
+    def test_fact_check_is_bound_to_prepared_digest_scope_and_csrf(self, prepared_case):
+        f, frozen, path, value = prepared_case
+        client = f["w"]["client"]
+        url = path + "/" + value["manifest"]["id"] + "/fact-check"
+        body = {"execution_input_digest": value["digest"]}
+        assert client.post(url, json=body).status_code == 403
+        assert (
+            client.post(
+                url, json=body | {"launch_available": True}, headers=f["headers"]
+            ).status_code
+            == 422
+        )
+        wrong = client.post(url, json={"execution_input_digest": "0" * 64}, headers=f["headers"])
+        assert (
+            wrong.status_code == 409 and wrong.json()["code"] == "PACKAGE_EXECUTION_INPUT_CHANGED"
+        )
+        assert (
+            client.post(
+                url.replace(value["manifest"]["id"], uid()), json=body, headers=f["headers"]
+            ).status_code
+            == 404
+        )
+        assert (
+            client.post(
+                url.replace(f["scope"][1], uid()), json=body, headers=f["headers"]
+            ).status_code
+            == 404
+        )
+
+    def test_fact_check_observes_new_facts_without_rewriting_prepared_history(self, prepared_case):
+        f, frozen, path, value = prepared_case
+        OriginalVerificationCases.seed_fact(self, f["w"])
+        response = f["w"]["client"].post(
+            path + "/" + value["manifest"]["id"] + "/fact-check",
+            json={"execution_input_digest": value["digest"]},
+            headers=f["headers"],
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["matches_prepared_context"] is False
+        assert (
+            response.json()["observed_facts_digest"]
+            != value["manifest"]["execution_context"]["facts_digest"]
+        )
+        assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
+
+    @pytest.mark.parametrize("withdraw", [False, True])
+    def test_fact_check_valid_decision_basis_proves_provenance_but_not_package_scope(
+        self, frozen_case, withdraw
+    ):
+        from packages.domain.bid_package_review_eligibility import inspect
+        from packages.domain.fact_sets import identity
+        from packages.domain.human_decisions import append_decision
+        from packages.domain.review_data import source_closure
+        from packages.domain.runtime import clean, connection, sha
+        from packages.rag.indexing import ensure_parse_sources, parse_source_id
+
+        f = frozen_case
+        w = f["w"]
+        frozen = self.post(f).json()
+        fact = OriginalVerificationCases.seed_fact(self, w, [w["evidence"]])
+        with connection() as c:
+            row = c.execute("SELECT * FROM design.fact_items WHERE id=%s", (fact,)).fetchone()
+            evidence = c.execute(
+                "SELECT e.parse_id,p.document_version_id FROM design.evidence_blocks e JOIN design.parse_runs p ON p.bid_id=e.bid_id AND p.id=e.parse_id WHERE e.bid_id=%s AND e.id=%s",
+                (w["scope"].bid_id, w["evidence"]),
+            ).fetchone()
+            _, source = ensure_parse_sources(
+                c, w["scope"].bid_id, evidence["parse_id"], publish_readable=True
+            )
+            revision = c.execute(
+                "SELECT revision FROM retrieval.source_heads WHERE source_id=%s", (source,)
+            ).fetchone()["revision"]
+            refs = clean(
+                [
+                    {
+                        "source_id": source,
+                        "source_revision": revision,
+                        "evidence_id": w["evidence"],
+                        "document_version_id": evidence["document_version_id"],
+                    }
+                ]
+            )
+            basis = {
+                "fact_identity": identity(row),
+                "evidence": {
+                    "references": refs,
+                    "source_closure_digest": sha(source_closure(c, [{"id": str(source)}])),
+                },
+            }
+            append_decision(
+                c,
+                w["scope"].bid_id,
+                w["actor"],
+                "fact",
+                fact,
+                {
+                    "decision": "confirmed",
+                    "reason": "synthetic evidence confirmation",
+                    "evidence_ids": [w["evidence"]],
+                },
+                basis=basis,
+            )
+        current = inspect(f["scope"], frozen["manifest"]["id"], frozen["digest"])
+        path = f["path"] + "/" + frozen["manifest"]["id"] + "/execution-inputs"
+        saved = w["client"].post(
+            path,
+            json={
+                "frozen_digest": frozen["digest"],
+                "context_digest": current["current_context"]["semantic_digest"],
+                "rerun": None,
+            },
+            headers=headers(w),
+        )
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        if withdraw:
+            owner = w["database"]["owner"]
+            parse = owner.execute(
+                "SELECT parse_id FROM design.evidence_blocks WHERE id=%s", (w["evidence"],)
+            ).fetchone()["parse_id"]
+            owner.execute(
+                "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                (parse_source_id(parse),),
+            )
+        response = w["client"].post(
+            path + "/" + value["manifest"]["id"] + "/fact-check",
+            json={"execution_input_digest": value["digest"]},
+            headers=headers(w),
+        )
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageExecutionFactCheck", result)
+        assert result["provenance_verified_count"] == (0 if withdraw else 1)
+        item = result["fact_checks"][0]
+        assert (
+            item["facts_qualified"] is False and "FACT_SCOPE_MAPPING_REQUIRED" in item["blockers"]
+        )
+        if withdraw:
+            assert "FACT_SOURCE_NOT_EFFECTIVE" in item["blockers"]
+        else:
+            assert item["blockers"] == ["FACT_SCOPE_MAPPING_REQUIRED"]
+
     def test_prepared_internal_consumer_retains_private_context_and_refuses_task_shortcut(
         self, prepared_case
     ):

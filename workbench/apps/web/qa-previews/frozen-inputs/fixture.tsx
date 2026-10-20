@@ -93,6 +93,56 @@ window.fetch = async (path, options) => {
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
   if (url.includes("/execution-inputs")) {
     const parts = url.split("/");
+    if (url.endsWith("/fact-check")) {
+      const saved = preparedRecords.get(parts.at(-2)!);
+      if (!saved)
+        return new Response(
+          JSON.stringify({ code: "PACKAGE_EXECUTION_INPUT_NOT_FOUND" }),
+          { status: 404, headers: { "Content-Type": "application/json" } },
+        );
+      const m = saved.manifest,
+        b = m.identity.binding;
+      return new Response(
+        JSON.stringify({
+          kind: "fact_validation_observation",
+          bid_id: m.bid_id,
+          package_id: m.package_id,
+          revision_id: m.revision_id,
+          inventory_id: m.inventory_id,
+          frozen_input_id: m.frozen_input_id,
+          execution_input_id: m.id,
+          execution_input_digest: saved.digest,
+          prepared_context_digest: b.context_digest,
+          observed_context_digest: "f".repeat(64),
+          observed_facts_digest: "a".repeat(64),
+          matches_prepared_context: false,
+          checked_at: "2026-10-20T08:00:00Z",
+          fact_count: 1,
+          provenance_verified_count: 0,
+          fact_checks: [
+            {
+              fact_id: id(90),
+              provenance_status: "unproven",
+              scope_binding: "unproven",
+              facts_qualified: false,
+              blockers: [
+                "FACT_DECISION_UNCONFIRMED",
+                "FACT_DECISION_BASIS_UNPROVEN",
+                "FACT_SOURCE_BINDING_UNPROVEN",
+                "FACT_SCOPE_MAPPING_REQUIRED",
+              ],
+            },
+          ],
+          blockers: [],
+          facts_qualified: false,
+          original_verification: "not_performed",
+          review_ready: false,
+          launch_available: false,
+          publication_authorized: false,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
     const frozenId = parts[parts.indexOf("execution-inputs") - 1];
     const n = [id(6), id(7), id(8)].indexOf(frozenId);
     const frozen = await historical(Math.max(0, n));

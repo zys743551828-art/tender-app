@@ -78,3 +78,13 @@
   margin: 0;
   font-size: 14px;
 }
+.package-frozen-input__fact-check {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.package-frozen-input__fact-check > h6 {
+  margin: 0;
+  font-size: 14px;
+}
