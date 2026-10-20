@@ -17,6 +17,9 @@ FILES = (
     "packages/domain/package_fact_usage.py",
     "packages/domain/package_review_context.py",
     "packages/domain/bid_package_fact_provenance.py",
+    "packages/domain/fact_decision_lineage.py",
+    "packages/domain/package_fact_scope_snapshot.py",
+    "packages/contracts/schemas/package-fact-proof-snapshot.schema.json",
     "packages/domain/package_fact_validation.py",
     "packages/domain/package_fact_scope.py",
     "packages/domain/bid_package_fact_scope_repository.py",
@@ -56,7 +59,9 @@ def _observe(c, packet, usage):
         }
         current = {
             item["fact"]["id"]: item
-            for item in read_facts(c, packet.scope[0], selected_parses, fact_ids=ids)["items"]
+            for item in read_facts(c, packet.scope[0], selected_parses, fact_ids=ids, as_of=now)[
+                "items"
+            ]
         }
         if set(current) != set(ids):
             raise DomainError(

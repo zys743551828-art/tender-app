@@ -8,7 +8,44 @@ from packages.domain.rule_sets import current_decision
 from packages.domain.runtime import clean
 
 
-def read_facts(c: Any, bid: str, selected_parses: set, *, fact_ids: list[str] | None = None):
+def _decision_basis(c: Any, bid: str, decision: dict | None, as_of: str | None):
+    if decision is None:
+        return None
+    rows = c.execute(
+        """SELECT actor_id::text,payload,created_at,(payload->'basis')::text AS basis_jsonb_text,
+        created_at<=COALESCE(%s::timestamptz,clock_timestamp()) AS not_future
+        FROM design.audit_entries WHERE bid_id=%s AND event_type='human.decision_recorded'
+        AND payload->>'decision_id'=%s LIMIT 2""",
+        (as_of, bid, str(decision["id"])),
+    ).fetchall()
+    if len(rows) != 1:
+        return None
+    row = rows[0]
+    payload = row["payload"]
+    if (
+        not isinstance(payload, dict)
+        or not row["not_future"]
+        or row["created_at"] < decision["created_at"]
+        or row["actor_id"] != str(decision["actor_id"])
+        or str(decision["bid_id"]) != bid
+        or decision["object_kind"] != "fact"
+        or any(
+            payload.get(key) != str(decision[key])
+            for key in ("object_kind", "object_id", "decision")
+        )
+    ):
+        return None
+    return row["basis_jsonb_text"]
+
+
+def read_facts(
+    c: Any,
+    bid: str,
+    selected_parses: set,
+    *,
+    fact_ids: list[str] | None = None,
+    as_of: str | None = None,
+):
     head = c.execute(
         """SELECT h.fact_set_id,h.revision,s.digest AS fact_set_digest FROM design.fact_heads h
         LEFT JOIN design.fact_sets s ON s.bid_id=h.bid_id AND s.id=h.fact_set_id WHERE h.bid_id=%s""",
@@ -36,16 +73,7 @@ def read_facts(c: Any, bid: str, selected_parses: set, *, fact_ids: list[str] | 
             WHERE e.bid_id=%s AND e.id=ANY(%s::uuid[]) ORDER BY e.id""",
             (bid, list(fact["evidence_ids"])),
         ).fetchall()
-        basis = (
-            c.execute(
-                """SELECT (payload->'basis')::text AS basis_jsonb_text FROM design.audit_entries
-            WHERE bid_id=%s AND event_type='human.decision_recorded' AND payload->>'decision_id'=%s
-            ORDER BY created_at DESC,id DESC LIMIT 1""",
-                (bid, str(decision["id"])),
-            ).fetchone()
-            if decision is not None
-            else None
-        )
+        basis = _decision_basis(c, bid, decision, as_of)
         # This records provenance status, not an authoring/current-material qualification.
         in_scope = (
             bool(fact["evidence_ids"])
@@ -58,7 +86,7 @@ def read_facts(c: Any, bid: str, selected_parses: set, *, fact_ids: list[str] | 
             {
                 "fact": clean(fact),
                 "decision": clean(decision),
-                "decision_basis_jsonb_text": basis["basis_jsonb_text"] if basis else None,
+                "decision_basis_jsonb_text": basis,
                 "evidence": clean(evidence),
                 "scope_binding": "selected_frozen_parse" if in_scope else "unproven",
             }
@@ -72,20 +100,20 @@ def read_facts(c: Any, bid: str, selected_parses: set, *, fact_ids: list[str] | 
     }
 
 
-def facts(c: Any, selected: dict[str, Any]):
+def facts(c: Any, selected: dict[str, Any], *, as_of: str | None = None):
     selected_parses = {
         (member["document_version_id"], member["parse"]["parse_run_id"])
         for role in ("target", "authority")
         for member in selected[role]["manifest"]["members"]
         if member["parse"]["status"] == "frozen"
     }
-    return read_facts(c, selected["bid_id"], selected_parses)
+    return read_facts(c, selected["bid_id"], selected_parses, as_of=as_of)
 
 
 def capture(c: Any, selected: dict[str, Any], observations: dict[str, Any]):
     return candidate(
         selected,
-        facts(c, selected),
+        facts(c, selected, as_of=observations["at"].isoformat()),
         observations["sources"],
         method.profile(),
         method.POLICY,

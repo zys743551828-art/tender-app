@@ -353,6 +353,53 @@ class TestFreezing:
             "previous_digest": None,
         }
 
+    def test_duplicate_root_decision_audit_cannot_authorize_new_scope_or_admission(
+        self, provenance_case
+    ):
+        from packages.domain.bid_package_fact_admission import observe
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.runtime import DomainError, audit, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        saved, _ = save(*args, str(uid()), self.scope_body(provenance_case))
+        with connection() as c:
+            row = c.execute(
+                "SELECT a.payload FROM design.audit_entries a JOIN design.decision_heads h ON h.bid_id=a.bid_id AND h.decision_id::text=a.payload->>'decision_id' WHERE h.object_kind='fact' AND h.object_id=%s AND a.event_type='human.decision_recorded'",
+                (fact,),
+            ).fetchone()
+            audit(c, f["w"]["actor"], f["scope"][0], "human.decision_recorded", row["payload"])
+        response = f["w"]["client"].post(
+            path + "/" + prepared["manifest"]["id"] + "/fact-check",
+            json={"execution_input_digest": prepared["digest"]},
+            headers=headers(f["w"]),
+        )
+        assert response.status_code == 200, response.text
+        assert "FACT_DECISION_BASIS_UNPROVEN" in response.json()["fact_checks"][0]["blockers"]
+        with pytest.raises(DomainError):
+            save(
+                *args,
+                str(uid()),
+                self.scope_body(provenance_case) | {"previous_digest": saved["body"]["digest"]},
+            )
+        with pytest.raises(DomainError) as denied:
+            observe(
+                *args[1:], prepared["digest"], {"purpose": "prebid_compliance", "fact_ids": [fact]}
+            )
+        assert denied.value.code == "PACKAGE_SELECTED_FACTS_UNPROVEN"
+        record_id = saved["body"]["manifest"]["id"]
+        assert (
+            f["w"]["client"]
+            .get(path + "/" + prepared["manifest"]["id"] + "/fact-scope-declarations/" + record_id)
+            .json()
+            == saved["body"]
+        )
+
     def test_scope_provenance_carryover_requires_same_bid_and_fact_set(self, provenance_case):
         from packages.domain.fact_sets import decision_basis
         from packages.domain.runtime import audit, connection
