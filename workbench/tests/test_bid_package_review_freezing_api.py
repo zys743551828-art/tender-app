@@ -419,6 +419,83 @@ class TestFreezing:
         )
         assert result["fact_checks"][0]["blockers"] == ["FACT_SCOPE_MAPPING_REQUIRED"]
 
+        # A second exact edge resolves the same original decision, never by date/name.
+        from packages.domain.bid_package_fact_scope_repository import load_packet
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.bid_package_review_eligibility import inspect
+
+        second_set, second_fact = str(uid()), str(uid())
+        with connection() as c:
+            c.execute(
+                "INSERT INTO design.fact_sets(id,bid_id,digest) VALUES(%s,%s,%s)",
+                (second_set, bid, digest({"synthetic": "second_carryover"})),
+            )
+            c.execute(
+                "INSERT INTO design.fact_items(id,bid_id,fact_set_id,subject,scope,name,value,unit,evidence_ids) SELECT %s,bid_id,%s,subject,scope,name,value,unit,evidence_ids FROM design.fact_items WHERE bid_id=%s AND id=%s",
+                (second_fact, second_set, bid, new_fact),
+            )
+            c.execute(
+                "INSERT INTO design.decision_heads(bid_id,object_kind,object_id,revision,decision_id) VALUES(%s,'fact',%s,1,%s)",
+                (bid, second_fact, old),
+            )
+            c.execute(
+                "UPDATE design.fact_heads SET fact_set_id=%s,revision=revision+1 WHERE bid_id=%s",
+                (second_set, bid),
+            )
+            audit(
+                c,
+                f["w"]["actor"],
+                bid,
+                "facts.set_replaced",
+                {
+                    "fact_set_id": second_set,
+                    "previous_set_id": new_set,
+                    "carryovers": [
+                        {
+                            "new_fact_id": second_fact,
+                            "from_fact_id": new_fact,
+                            "from_decision_id": str(old),
+                            "equivalence_digest": digest(basis),
+                        }
+                    ],
+                },
+            )
+        assert check()["provenance_verified_count"] == 1
+        current = inspect(f["scope"], frozen["manifest"]["id"], frozen["digest"])
+        prepared_response = f["w"]["client"].post(
+            path,
+            json={
+                "frozen_digest": frozen["digest"],
+                "context_digest": current["current_context"]["semantic_digest"],
+                "rerun": None,
+            },
+            headers=headers(f["w"]),
+        )
+        assert prepared_response.status_code == 201, prepared_response.text
+        prepared2 = prepared_response.json()
+        body = self.scope_body((f, frozen, path, prepared2, second_fact, source))
+        stored, _ = save(
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared2["manifest"]["id"],
+            str(uid()),
+            body,
+        )
+        with connection() as c:
+            packet = load_packet(
+                c,
+                f["scope"],
+                frozen["manifest"]["id"],
+                prepared2["manifest"]["id"],
+                stored["body"]["manifest"]["id"],
+            )
+            assert [edge["from_fact_id"] for edge in packet.proof()["decision_lineage"]] == [
+                new_fact,
+                old_fact,
+            ]
+            assert packet.proof()["decision_lineage"][1]["previous_set_recorded"] is False
+
     def test_scope_http_explicit_save_observation_and_exact_history(self, provenance_case):
         f, frozen, path, prepared, fact, source = provenance_case
         client = f["w"]["client"]
@@ -789,6 +866,10 @@ class TestFreezing:
             (source,),
         )
         assert service.save(*args, key, body) == (saved, True)
+        frozen_proof = owner.execute(
+            "SELECT proof_text,proof_snapshot_digest FROM design.bid_package_fact_scopes WHERE id=%s",
+            (record["manifest"]["id"],),
+        ).fetchone()
         withdrawal = body | {
             "action": "withdraw",
             "subject": None,
@@ -797,6 +878,13 @@ class TestFreezing:
         }
         removed, replay = service.save(*args, str(uid()), withdrawal)
         assert not replay and removed["body"]["manifest"]["action"] == "withdraw"
+        assert (
+            owner.execute(
+                "SELECT proof_text,proof_snapshot_digest FROM design.bid_package_fact_scopes WHERE id=%s",
+                (removed["body"]["manifest"]["id"],),
+            ).fetchone()
+            == frozen_proof
+        )
         with pytest.raises(DomainError, match="已变化"):
             service.save(*args, str(uid()), body)
         with connection() as c:
@@ -859,7 +947,7 @@ class TestFreezing:
             == 1
         )
 
-    @pytest.mark.parametrize("corrupt", ["ack", "subject", "fact", "predecessor", "fork"])
+    @pytest.mark.parametrize("corrupt", ["ack", "subject", "fact", "predecessor", "fork", "proof"])
     def test_scope_deferred_guard_rejects_resealed_record_and_rolls_back_command(
         self, provenance_case, corrupt
     ):
@@ -905,7 +993,14 @@ class TestFreezing:
                 if corrupt == "fork":
                     m["previous_digest"] = None
                 value = {"manifest": m, "digest": digest(m)}
-                repository.append(c, value)
+                proof_text = repository.head_packet(c, args[1][0], args[3], fact).snapshot_text()
+                if corrupt == "proof":
+                    import json
+
+                    proof = json.loads(proof_text)
+                    proof["proof"]["decision_binding"] = False
+                    proof_text = json.dumps(proof)
+                repository.append(c, value, proof_text)
                 command.finish(value | {"digest": "f" * 64} if corrupt == "ack" else value, 201)
         assert counts(f["w"]) == before
         assert (

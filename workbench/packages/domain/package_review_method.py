@@ -27,6 +27,11 @@ def profile():
                 name: sha((ROOT / name).read_bytes())
                 for name in (
                     "packages/domain/package_review_method.py",
+                    "packages/domain/bid_package_fact_provenance.py",
+                    "packages/domain/fact_decision_lineage.py",
+                    "packages/domain/package_fact_validation.py",
+                    "packages/domain/package_fact_scope_snapshot.py",
+                    "packages/contracts/schemas/package-fact-proof-snapshot.schema.json",
                     "packages/domain/package_review_identity.py",
                     "packages/domain/package_review_frozen_input.py",
                     "packages/domain/package_review_eligibility.py",

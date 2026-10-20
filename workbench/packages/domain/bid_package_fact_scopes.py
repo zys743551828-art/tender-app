@@ -6,6 +6,7 @@ from packages.domain import package_fact_scope as policy
 from packages.domain.bid_package_fact_provenance import read_proof
 from packages.domain.bid_package_frozen_originals import capture
 from packages.domain.bid_package_service import lock_bid
+from packages.domain.package_fact_scope_snapshot import freeze
 from packages.domain.review_identity import utc
 from packages.domain.runtime import Command, DomainError, connection, sha, uid
 from packages.knowledge.sources import lock_graph
@@ -50,7 +51,8 @@ def save(actor, scope, frozen_id, input_id, key, body):
         packet = inputs.load_packet(c, scope, frozen_id, input_id)
         if packet.digest != body["execution_input_digest"]:
             raise DomainError("PACKAGE_EXECUTION_INPUT_CHANGED", "准备输入摘要与明确选择不符", 409)
-        previous = repository.head(c, scope[0], input_id, body["fact_id"])
+        previous_packet = repository.head_packet(c, scope[0], input_id, body["fact_id"])
+        previous = previous_packet.view() if previous_packet else None
         if (previous["digest"] if previous else None) != body["previous_digest"]:
             raise DomainError("PACKAGE_FACT_SCOPE_CHANGED", "事实范围绑定已变化，请重读后操作", 409)
         audit = {
@@ -66,6 +68,7 @@ def save(actor, scope, frozen_id, input_id, key, body):
             if previous is None:
                 raise DomainError("PACKAGE_FACT_SCOPE_NOT_FOUND", "事实范围绑定不存在", 404)
             value = policy.withdraw(previous, **audit)
+            proof_text = previous_packet.snapshot_text()
         else:
             assert_work_writable(c, scope[0])
             lock_graph(c)
@@ -78,9 +81,11 @@ def save(actor, scope, frozen_id, input_id, key, body):
             if len(selected) != 1:
                 raise DomainError("PACKAGE_FACT_NOT_FOUND", "事实不存在于明确准备输入", 404)
             proof = read_proof(c, scope[0], selected[0], context["as_of"])
+            audit["recorded_at"] = context["as_of"]
             value = policy.declare(
                 packet, current, body["fact_id"], proof, body["subject"], previous=previous, **audit
             )
-        repository.append(c, value)
+            proof_text = freeze(proof, audit["recorded_at"])
+        repository.append(c, value, proof_text)
         stored = command.finish(value, 201)
     return stored, False

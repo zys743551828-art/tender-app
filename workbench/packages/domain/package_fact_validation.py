@@ -39,6 +39,32 @@ def _float(value):
     return result
 
 
+def fact_identity(fact):
+    value = json.loads(
+        fact["value_jsonb_text"],
+        object_pairs_hook=_pairs,
+        parse_constant=_reject_constant,
+        parse_float=_float,
+    )
+    return identity({**fact, "value": value})
+
+
+def decision_basis(item):
+    basis = json.loads(
+        item["decision_basis_jsonb_text"],
+        object_pairs_hook=_pairs,
+        parse_constant=_reject_constant,
+        parse_float=_float,
+    )
+    if set(basis) != {"fact_identity", "evidence"} or basis["fact_identity"] != fact_identity(
+        item["fact"]
+    ):
+        raise ValueError("fact_basis_identity")
+    if set(basis["evidence"]) != {"references", "source_closure_digest"}:
+        raise ValueError("fact_basis_shape")
+    return basis
+
+
 def assess(item, proof):
     fact, decision = item["fact"], item["decision"]
     codes = []
@@ -48,26 +74,7 @@ def assess(item, proof):
         codes.append("FACT_DECISION_BINDING_UNPROVEN")
     basis = None
     try:
-        basis = json.loads(
-            item["decision_basis_jsonb_text"],
-            object_pairs_hook=_pairs,
-            parse_constant=_reject_constant,
-            parse_float=_float,
-        )
-        value = json.loads(
-            fact["value_jsonb_text"],
-            object_pairs_hook=_pairs,
-            parse_constant=_reject_constant,
-            parse_float=_float,
-        )
-        expected_identity = identity({**fact, "value": value})
-        if (
-            set(basis) != {"fact_identity", "evidence"}
-            or basis["fact_identity"] != expected_identity
-        ):
-            raise ValueError("fact_basis_identity")
-        if set(basis["evidence"]) != {"references", "source_closure_digest"}:
-            raise ValueError("fact_basis_shape")
+        basis = decision_basis(item)
     except (TypeError, ValueError, KeyError, OverflowError):
         codes.append("FACT_DECISION_BASIS_UNPROVEN")
         basis = None

@@ -11,19 +11,22 @@ CREATE TABLE bid_package_fact_scopes(
  previous_digest sha256,
  manifest jsonb NOT NULL,
  digest sha256 NOT NULL,
+ proof_text text NOT NULL,
+ proof_snapshot_digest sha256 NOT NULL,
  FOREIGN KEY(bid_id,execution_input_id) REFERENCES bid_package_execution_inputs(bid_id,id),
  UNIQUE(bid_id,execution_input_id,fact_id,digest),
  UNIQUE NULLS NOT DISTINCT(execution_input_id,fact_id,previous_digest),
  FOREIGN KEY(bid_id,execution_input_id,fact_id,previous_digest)
  REFERENCES bid_package_fact_scopes(bid_id,execution_input_id,fact_id,digest),
  CHECK(previous_digest IS DISTINCT FROM digest),
- CHECK(encode(sha256(convert_to(package_canonical_json(manifest),'UTF8')),'hex')=digest)
+ CHECK(encode(sha256(convert_to(package_canonical_json(manifest),'UTF8')),'hex')=digest),
+ CHECK(encode(sha256(convert_to(proof_text,'UTF8')),'hex')=proof_snapshot_digest)
 );
 CREATE TRIGGER immutable_guard BEFORE UPDATE OR DELETE ON bid_package_fact_scopes
  FOR EACH ROW EXECUTE FUNCTION append_only();
 CREATE FUNCTION bid_fact_scope_guard() RETURNS trigger LANGUAGE plpgsql SET search_path=pg_catalog,design AS $$
 DECLARE prepared design.bid_package_execution_inputs; prior design.bid_package_fact_scopes;
- m jsonb; b jsonb; original jsonb; context jsonb; item jsonb; expected jsonb; subject_field text; k text;
+ m jsonb; b jsonb; original jsonb; context jsonb; item jsonb; expected jsonb; envelope jsonb; proof jsonb; subject_field text; k text;
 BEGIN
  IF current_setting('transaction_isolation')<>'read committed' THEN RAISE EXCEPTION 'fact_scope_requires_read_committed' USING ERRCODE='25001'; END IF;
  PERFORM design.lock_worker_bid(NEW.bid_id);
@@ -40,6 +43,26 @@ BEGIN
  OR m->>'recorded_at' !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$' THEN
   RAISE EXCEPTION 'fact_scope_manifest' USING ERRCODE='23514'; END IF;
  PERFORM (m->>'recorded_at')::timestamptz;
+ envelope:=NEW.proof_text::jsonb; proof:=envelope->'proof';
+ IF NOT design.package_json_keys(envelope,ARRAY['version','observed_at','proof'])
+ OR envelope->>'version' IS DISTINCT FROM 'package-fact-proof-snapshot/1'
+ OR jsonb_typeof(envelope->'observed_at') IS DISTINCT FROM 'string'
+ OR envelope->>'observed_at' !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$'
+ OR NOT design.package_json_keys(proof,ARRAY['version','decision_binding','decision_lineage','references','closure','sources_effective','evidence_usable'])
+ OR proof->>'version' IS DISTINCT FROM 'package-fact-provenance/2'
+ OR proof->'decision_binding' IS DISTINCT FROM 'true'::jsonb
+ OR proof->'sources_effective' IS DISTINCT FROM 'true'::jsonb
+ OR proof->'evidence_usable' IS DISTINCT FROM 'true'::jsonb
+ OR jsonb_typeof(proof->'references') IS DISTINCT FROM 'array'
+ OR jsonb_typeof(proof->'closure') IS DISTINCT FROM 'array'
+ OR jsonb_typeof(proof->'decision_lineage') IS DISTINCT FROM 'array' THEN
+  RAISE EXCEPTION 'fact_scope_proof' USING ERRCODE='23514'; END IF;
+ IF jsonb_array_length(proof->'references')=0 OR jsonb_array_length(proof->'closure')=0
+ OR jsonb_array_length(proof->'decision_lineage')>256
+ OR encode(sha256(convert_to(design.package_canonical_json(proof),'UTF8')),'hex') IS DISTINCT FROM b->>'proof_digest'
+ OR (m->>'action'='bind' AND envelope->>'observed_at' IS DISTINCT FROM m->>'recorded_at') THEN
+  RAISE EXCEPTION 'fact_scope_proof_binding' USING ERRCODE='23514'; END IF;
+ PERFORM (envelope->>'observed_at')::timestamptz;
  FOREACH k IN ARRAY ARRAY['facts_qualified','review_ready','launch_available','publication_authorized'] LOOP
   IF m->k IS DISTINCT FROM 'false'::jsonb THEN RAISE EXCEPTION 'fact_scope_never_authorized' USING ERRCODE='23514'; END IF;
  END LOOP;
@@ -65,7 +88,8 @@ BEGIN
   SELECT * INTO prior FROM design.bid_package_fact_scopes WHERE bid_id=NEW.bid_id AND execution_input_id=NEW.execution_input_id AND fact_id=NEW.fact_id AND digest=NEW.previous_digest;
   IF NOT FOUND OR prior.manifest->'binding' IS DISTINCT FROM b THEN RAISE EXCEPTION 'fact_scope_predecessor' USING ERRCODE='23514'; END IF;
  END IF;
- IF m->>'action'='withdraw' AND (NEW.previous_digest IS NULL OR prior.manifest->>'action' IS DISTINCT FROM 'bind' OR prior.manifest->'subject' IS DISTINCT FROM m->'subject') THEN
+ IF m->>'action'='withdraw' AND (NEW.previous_digest IS NULL OR prior.manifest->>'action' IS DISTINCT FROM 'bind' OR prior.manifest->'subject' IS DISTINCT FROM m->'subject'
+ OR NEW.proof_text IS DISTINCT FROM prior.proof_text OR NEW.proof_snapshot_digest IS DISTINCT FROM prior.proof_snapshot_digest) THEN
   RAISE EXCEPTION 'fact_scope_withdrawal' USING ERRCODE='23514'; END IF;
  expected:=jsonb_build_object('execution_input_digest',prepared.digest,'fact_id',NEW.fact_id,'action',m->'action',
  'subject',CASE WHEN m->>'action'='bind' THEN m->'subject' ELSE 'null'::jsonb END,'reason',m->'reason','previous_digest',m->'previous_digest');

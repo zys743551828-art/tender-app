@@ -16,7 +16,7 @@ from deploy.initialize_database import file_configuration
 
 ORIGIN = "http://127.0.0.1:5188"
 # Explicit new preview, preserving the prior database and its private volume pair.
-PREVIEW_NAME = "fusion_v6"
+PREVIEW_NAME = "fusion_v7"
 DATABASE = "tender_checks_" + PREVIEW_NAME
 
 
