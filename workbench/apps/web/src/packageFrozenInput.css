@@ -88,3 +88,20 @@
   margin: 0;
   font-size: 14px;
 }
+.package-frozen-input__fact-scope {
+  min-width: 0;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__fact-scope select,
+.package-frozen-input__fact-scope textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.package-frozen-input__fact-scope-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

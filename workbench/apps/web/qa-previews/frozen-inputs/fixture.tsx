@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { prepared } from "./prepared";
+import { scopeObservation, scopeReply } from "./factScope";
+import { factScopeStorageKey } from "../../src/factScopeRecovery";
 import {
   executionScope,
   executionStorageKey,
@@ -12,6 +14,8 @@ import {
 } from "../../src/packageFrozenInput";
 import type { FreezeScope } from "../../src/packageFrozenInput";
 import type {
+  ChangePackageFactScope,
+  PackageFactScopeView,
   FreezePackageReviewInput,
   PackageReviewFrozenInputView,
 } from "../../src/contracts";
@@ -63,10 +67,10 @@ export async function reply(): Promise<PackageReviewFrozenInputView> {
       policy_digest: "3".repeat(64),
       facts_digest: "4".repeat(64),
       sources_digest: "5".repeat(64),
-      fact_set_id: null,
-      fact_count: 0,
-      confirmed_fact_count: 0,
-      facts_binding: "empty",
+      fact_set_id: id(50),
+      fact_count: 1,
+      confirmed_fact_count: 1,
+      facts_binding: "unproven",
       executor_available: false,
       formal_scoring_eligible: false,
     },
@@ -75,6 +79,11 @@ export async function reply(): Promise<PackageReviewFrozenInputView> {
 }
 
 let offline = true;
+let scopeChanged = false;
+let loseScopeAck = false;
+const scopeRecords = new Map<string, PackageFactScopeView>();
+const scopeHeads = new Map<string, PackageFactScopeView>();
+const scopeRequests = new Map<string, string>();
 async function historical(n: number) {
   const record = await reply();
   record.manifest.id = id(6 + n);
@@ -93,6 +102,29 @@ window.fetch = async (path, options) => {
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
   if (url.includes("/execution-inputs")) {
     const parts = url.split("/");
+    if (url.includes("/fact-scope-declarations") || url.endsWith("/scope-declaration")) {
+      const preparedId=parts[parts.indexOf("execution-inputs")+1];
+      const saved=preparedRecords.get(preparedId);
+      const json=(value:unknown,status=200)=>new Response(JSON.stringify(value),{status,headers:{"Content-Type":"application/json"}});
+      if(!saved)return json({code:"PACKAGE_EXECUTION_INPUT_NOT_FOUND"},404);
+      if(url.endsWith("/scope-declaration")){
+        const fact=parts.at(-2)!;
+        return json(scopeObservation(saved,fact,scopeHeads.get(`${preparedId}:${fact}`)??null,scopeChanged));
+      }
+      if(options?.method!=="POST")return json(scopeRecords.get(parts.at(-1)!)??{code:"PACKAGE_FACT_SCOPE_NOT_FOUND"},scopeRecords.has(parts.at(-1)!)?200:404);
+      const key=new Headers(options.headers).get("Idempotency-Key")!;
+      const request=JSON.parse(String(options.body)) as ChangePackageFactScope;
+      if(scopeRequests.has(key)&&scopeRequests.get(key)!==JSON.stringify(request))return json({code:"IDEMPOTENCY_CONFLICT"},409);
+      let value=scopeRecords.get(key);
+      if(!value){
+        const previous=scopeHeads.get(`${preparedId}:${request.fact_id}`)??null;
+        if((previous?.digest??null)!==request.previous_digest)return json({code:"PACKAGE_FACT_SCOPE_CHANGED"},409);
+        value=await scopeReply(saved,request,scope.memberId,key,previous);
+        scopeRecords.set(key,value);scopeHeads.set(`${preparedId}:${request.fact_id}`,value);scopeRequests.set(key,JSON.stringify(request));
+        if(loseScopeAck){loseScopeAck=false;throw new Error("合成场景：范围已保存，回执丢失；请恢复原请求。");}
+      }
+      return json(value,201);
+    }
     if (url.endsWith("/fact-check")) {
       const saved = preparedRecords.get(parts.at(-2)!);
       if (!saved)
@@ -113,24 +145,19 @@ window.fetch = async (path, options) => {
           execution_input_id: m.id,
           execution_input_digest: saved.digest,
           prepared_context_digest: b.context_digest,
-          observed_context_digest: "f".repeat(64),
-          observed_facts_digest: "a".repeat(64),
-          matches_prepared_context: false,
+          observed_context_digest: scopeChanged?"f".repeat(64):b.context_digest,
+          observed_facts_digest: m.execution_context.facts_digest,
+          matches_prepared_context: !scopeChanged,
           checked_at: "2026-10-20T08:00:00Z",
           fact_count: 1,
-          provenance_verified_count: 0,
+          provenance_verified_count: scopeChanged?0:1,
           fact_checks: [
             {
               fact_id: id(90),
-              provenance_status: "unproven",
+              provenance_status: scopeChanged?"unproven":"verified",
               scope_binding: "unproven",
               facts_qualified: false,
-              blockers: [
-                "FACT_DECISION_UNCONFIRMED",
-                "FACT_DECISION_BASIS_UNPROVEN",
-                "FACT_SOURCE_BINDING_UNPROVEN",
-                "FACT_SCOPE_MAPPING_REQUIRED",
-              ],
+              blockers: scopeChanged?["FACT_SOURCE_NOT_EFFECTIVE","FACT_SCOPE_MAPPING_REQUIRED"]:["FACT_SCOPE_MAPPING_REQUIRED"],
             },
           ],
           blockers: [],
@@ -258,6 +285,8 @@ function Fixture() {
         />
         模拟断网（只影响夹具）
       </label>
+      <label style={{display:"block",marginBlock:12}}><input style={{width:"auto",minHeight:0,marginRight:8}} type="checkbox" onChange={e=>{scopeChanged=e.target.checked;}}/>模拟来源停用（只影响范围观察）</label>
+      <button type="button" onClick={()=>{loseScopeAck=true;}}>下一次范围保存丢失回执</button>
       <button
         onClick={async () => {
           sessionStorage.removeItem(freezeStorageKey(scope));
@@ -265,7 +294,9 @@ function Fixture() {
             sessionStorage.removeItem(
               executionStorageKey(executionScope(scope, await historical(n))),
             );
+          for(const value of new Set(preparedRecords.values()))sessionStorage.removeItem(factScopeStorageKey({...scope,frozenId:value.manifest.frozen_input_id,preparedId:value.manifest.id,preparedDigest:value.digest}));
           preparedRecords.clear();
+          scopeRecords.clear();scopeHeads.clear();scopeRequests.clear();loseScopeAck=false;
           setSerial((v) => v + 1);
         }}
       >

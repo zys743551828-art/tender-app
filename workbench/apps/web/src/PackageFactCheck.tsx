@@ -8,6 +8,7 @@ import type {
 import type { FreezeScope } from "./packageFrozenInput";
 import { executionPath } from "./executionInputRecovery";
 import { factCheckMessages, matchesFactCheck } from "./packageFactValidation";
+import PackageFactScopeWorkspace from "./PackageFactScopeWorkspace";
 type Props = {
   scope: FreezeScope;
   frozenId: string;
@@ -120,6 +121,16 @@ function Check({ scope, frozenId, prepared }: Props) {
           )}
         </div>
       )}
+      <PackageFactScopeWorkspace
+        scope={scope}
+        frozenId={frozenId}
+        prepared={prepared}
+        factIds={
+          result?.matches_prepared_context
+            ? result.fact_checks.map((x) => x.fact_id)
+            : []
+        }
+      />
     </section>
   );
 }
