@@ -146,9 +146,12 @@ def recheck_for_publication(c, verified: VerifiedFrozenOriginals):
     lock_graph(c)
     current = capture(c, verified.scope, verified.input_id, verified.frozen_digest)
     assert_same(json.loads(verified._snapshot_text), current)
-    result = current["result"]
+    return assert_publication_ready(current["result"], verified.context_digest)
+
+
+def assert_publication_ready(result: dict[str, Any], context_digest: str):
     if (
-        result["current_context"]["semantic_digest"] != verified.context_digest
+        result["current_context"]["semantic_digest"] != context_digest
         or result["blockers"]
         or result["review_ready"] is not True
         or result["launch_available"] is not True

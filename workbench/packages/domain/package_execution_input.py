@@ -1,6 +1,7 @@
 """Pure validation of a stored prepared snapshot; never current-state or dispatch authority."""
 
 import json
+from dataclasses import dataclass, field
 
 from packages.contracts.bid_package_requirements_api import valid
 from packages.domain.package_review_execution_identity import verify as verify_identity
@@ -24,7 +25,24 @@ def _check(condition):
         raise ValueError("execution_input_binding")
 
 
-def consume(row, scope, frozen_id, input_id, packet):
+@dataclass(frozen=True)
+class PreparedExecutionInput:
+    scope: tuple[str, str, str, str]
+    frozen_id: str
+    input_id: str
+    digest: str
+    _view_text: str = field(repr=False)
+    _snapshot_text: str = field(repr=False)
+
+    def view(self):
+        return json.loads(self._view_text)
+
+    def snapshot(self):
+        """Private execution payload for internal consumers; every read owns its copy."""
+        return json.loads(self._snapshot_text)
+
+
+def consume_packet(row, scope, frozen_id, input_id, packet):
     try:
         m = row["manifest"]
         _check(valid("PackageExecutionInputManifest", m) and digest(m) == row["digest"])
@@ -88,4 +106,15 @@ def consume(row, scope, frozen_id, input_id, packet):
         raise DomainError(
             "PACKAGE_EXECUTION_INPUT_CORRUPT", "执行输入完整性校验失败", 500
         ) from error
-    return {"manifest": m, "digest": row["digest"]}
+    return PreparedExecutionInput(
+        tuple(scope),
+        frozen_id,
+        input_id,
+        row["digest"],
+        json.dumps({"manifest": m, "digest": row["digest"]}, ensure_ascii=False, allow_nan=False),
+        row["snapshot_text"],
+    )
+
+
+def consume(row, scope, frozen_id, input_id, packet):
+    return consume_packet(row, scope, frozen_id, input_id, packet).view()

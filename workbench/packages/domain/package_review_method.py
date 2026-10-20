@@ -36,6 +36,7 @@ def profile():
                     "packages/domain/bid_package_execution_inputs.py",
                     "packages/domain/bid_package_execution_input_repository.py",
                     "packages/domain/package_execution_input.py",
+                    "packages/domain/bid_package_prepared_originals.py",
                     "packages/contracts/sql/bid-package-execution-inputs.sql",
                     "packages/contracts/schemas/package-review-execution.schema.json",
                     "packages/domain/package_review_context.py",

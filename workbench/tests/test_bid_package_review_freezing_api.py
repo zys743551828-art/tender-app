@@ -135,6 +135,132 @@ class TestFreezing:
         )
         assert f["w"]["client"].get(f["path"] + "/" + old["manifest"]["id"]).json() == old
 
+    @pytest.fixture
+    def prepared_case(self, execution_case):
+        f, frozen, path, body, h = execution_case
+        saved = f["w"]["client"].post(path, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        return f, frozen, path, saved.json()
+
+    def test_prepared_internal_consumer_retains_private_context_and_refuses_task_shortcut(
+        self, prepared_case
+    ):
+        from packages.domain import bid_package_execution_input_repository as inputs
+        from packages.domain import bid_package_prepared_originals as prepared
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, value = prepared_case
+        args = (f["scope"], frozen["manifest"]["id"], value["manifest"]["id"], value["digest"])
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        before = c.execute(statement).fetchone()
+        with connection() as reader:
+            packet = inputs.load_packet(reader, *args[:-1])
+        assert packet.view() == value
+        assert len(packet.snapshot()["context"]["manifest"]["facts"]["items"]) == 1
+        packet.snapshot()["context"]["manifest"]["facts"]["items"].clear()
+        packet.view()["manifest"]["identity"].clear()
+        assert packet.view() == value
+        assert len(packet.snapshot()["context"]["manifest"]["facts"]["items"]) == 1
+        assert "object_key" not in repr(packet) and "text_content" not in repr(packet)
+        calls = len(f["calls"])
+        receipt = prepared.verify(*args)
+        assert len(f["calls"]) == calls + 2
+        assert "object_key" not in repr(receipt) and "text_content" not in repr(receipt)
+        with pytest.raises(DomainError) as error, connection() as publisher:
+            prepared.recheck_for_publication(publisher, receipt)
+        assert error.value.code == "PACKAGE_REVIEW_EXECUTION_BLOCKED"
+        assert c.execute(statement).fetchone() == before
+        assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
+
+    def test_prepared_internal_wrong_reference_rejected_before_object_io(self, prepared_case):
+        from packages.domain import bid_package_prepared_originals as prepared
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, value = prepared_case
+        frozen_id, input_id = frozen["manifest"]["id"], value["manifest"]["id"]
+        calls = len(f["calls"])
+        for scope, fid, pid, digest_value in (
+            (f["scope"], frozen_id, input_id, "0" * 64),
+            (f["scope"], frozen_id, uid(), value["digest"]),
+            (f["scope"], uid(), input_id, value["digest"]),
+            ((f["scope"][0], uid(), *f["scope"][2:]), frozen_id, input_id, value["digest"]),
+        ):
+            with pytest.raises(DomainError) as error:
+                prepared.verify(scope, fid, pid, digest_value)
+            assert error.value.code in {
+                "PACKAGE_EXECUTION_INPUT_CHANGED",
+                "PACKAGE_EXECUTION_INPUT_NOT_FOUND",
+            }
+        assert len(f["calls"]) == calls
+
+    @pytest.mark.parametrize("change", ["method", "source", "lifecycle"])
+    def test_prepared_internal_new_state_cannot_replace_saved_input(
+        self, prepared_case, monkeypatch, change
+    ):
+        from packages.domain import bid_package_prepared_originals as prepared
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, value = prepared_case
+        c = f["w"]["database"]["owner"]
+        if change == "method":
+            monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-after-prepare")
+        elif change == "source":
+            c.execute(
+                "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                (f["w"]["sources"][0],),
+            )
+        else:
+            c.execute(
+                "UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s", (f["scope"][0],)
+            )
+        with pytest.raises(DomainError) as error:
+            prepared.verify(
+                f["scope"], frozen["manifest"]["id"], value["manifest"]["id"], value["digest"]
+            )
+        assert error.value.code in {
+            "PACKAGE_REVIEW_CONTEXT_CHANGED",
+            "PACKAGE_REVIEW_INPUT_CHANGED",
+        }
+        assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
+
+    def test_prepared_internal_late_change_and_unsafe_transactions_never_publish(
+        self, prepared_case, monkeypatch
+    ):
+        from packages.domain import bid_package_prepared_originals as prepared
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, value = prepared_case
+        receipt = prepared.verify(
+            f["scope"], frozen["manifest"]["id"], value["manifest"]["id"], value["digest"]
+        )
+        with connection() as c:
+            c.rollback()
+            c.autocommit = True
+            with pytest.raises(ValueError, match="transaction"):
+                prepared.recheck_for_publication(c, receipt)
+        with connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            with pytest.raises(ValueError, match="read-committed"):
+                prepared.recheck_for_publication(c, receipt)
+        monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-after-verification")
+        with pytest.raises(DomainError) as error, connection() as c:
+            prepared.recheck_for_publication(c, receipt)
+        assert error.value.code == "PACKAGE_REVIEW_INPUT_CHANGED"
+
+    def test_prepared_internal_rerun_keeps_exact_saved_execution_identity(self, execution_case):
+        from packages.domain import bid_package_prepared_originals as prepared
+
+        f, frozen, path, body, h = execution_case
+        rerun = {"nonce": uid(), "reason": "explicit prepared rerun"}
+        response = f["w"]["client"].post(path, json=body | {"rerun": rerun}, headers=h)
+        assert response.status_code == 201, response.text
+        value = response.json()
+        receipt = prepared.verify(
+            f["scope"], frozen["manifest"]["id"], value["manifest"]["id"], value["digest"]
+        )
+        assert receipt._originals.execution_identity(rerun) == value["manifest"]["identity"]
+
     def test_prepared_replay_and_history_survive_closed_work_withdrawal_and_no_store(
         self, execution_case, monkeypatch
     ):
