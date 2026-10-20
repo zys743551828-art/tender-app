@@ -48,7 +48,9 @@ class VerifiedFrozenOriginals:
 
 
 def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: str):
-    packet, root, observations, result = read_in_snapshot(c, scope, input_id, frozen_digest)
+    packet, root, observations, context, result = read_in_snapshot(
+        c, scope, input_id, frozen_digest
+    )
     if result["parse_evidence_status"] != "matched":
         raise DomainError("PACKAGE_REVIEW_EVIDENCE_CHANGED", "精确解析证据已变化，未核验原件", 409)
     documents = [
@@ -57,7 +59,7 @@ def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: s
         for member in root["selection"][role]["manifest"]["members"]
     ]
     manifest = packet.view()["manifest"]
-    context = result["current_context"]
+    current = result["current_context"]
     return {
         "binding": {
             **dict(
@@ -68,11 +70,12 @@ def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: s
             "frozen_digest": frozen_digest,
             "input_digest": manifest["input_digest"],
             "evidence_digest": manifest["evidence_digest"],
-            "context_digest": context["semantic_digest"],
-            "method_digest": context["method_digest"],
-            "policy_digest": context["policy_digest"],
-            "purpose": context["purpose"],
+            "context_digest": current["semantic_digest"],
+            "method_digest": current["method_digest"],
+            "policy_digest": current["policy_digest"],
+            "purpose": current["purpose"],
         },
+        "context": context,
         "result": result,
         "observations": clean({k: v for k, v in observations.items() if k != "at"}),
         "documents": clean(documents),
@@ -81,7 +84,18 @@ def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: s
 
 def stable(snapshot: dict[str, Any]) -> dict[str, Any]:
     result = snapshot["result"]
+    context = snapshot.get("context")
     return snapshot | {
+        **(
+            {
+                "context": {
+                    "manifest": {k: v for k, v in context["manifest"].items() if k != "as_of"},
+                    "semantic_digest": context["semantic_digest"],
+                }
+            }
+            if context is not None
+            else {}
+        ),
         "result": {k: v for k, v in result.items() if k not in {"checked_at", "current_context"}}
         | {
             "current_context": {
@@ -89,7 +103,7 @@ def stable(snapshot: dict[str, Any]) -> dict[str, Any]:
                 for k, v in result["current_context"].items()
                 if k not in {"as_of", "snapshot_digest"}
             }
-        }
+        },
     }
 
 

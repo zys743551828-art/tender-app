@@ -84,6 +84,185 @@ class TestFreezing:
         loaded = w["client"].get(f["path"] + "/" + value["manifest"]["id"])
         assert loaded.status_code == 200 and loaded.json() == value
 
+    @pytest.fixture
+    def execution_case(self, frozen_case):
+        from packages.domain.bid_package_review_eligibility import inspect
+
+        f = frozen_case
+        old = self.post(f).json()
+        OriginalVerificationCases.seed_fact(self, f["w"])
+        context = inspect(f["scope"], old["manifest"]["id"], old["digest"])
+        path = f["path"] + "/" + old["manifest"]["id"] + "/execution-inputs"
+        body = {
+            "frozen_digest": old["digest"],
+            "context_digest": context["current_context"]["semantic_digest"],
+            "rerun": None,
+        }
+        return f, old, path, body, headers(f["w"])
+
+    def test_prepared_input_persists_full_current_context_but_no_job_or_outbox(
+        self, execution_case
+    ):
+        import json
+
+        f, old, path, body, h = execution_case
+        c = f["w"]["database"]["owner"]
+        before = c.execute(
+            "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        ).fetchone()
+        response = f["w"]["client"].post(path, json=body, headers=h)
+        assert response.status_code == 201, response.text
+        value = response.json()
+        assert valid("PackageExecutionInputView", value)
+        assert (
+            value["manifest"]["kind"] == "prepared_input"
+            and value["manifest"]["publication_authorized"] is False
+        )
+        row = c.execute(
+            "SELECT snapshot_text FROM design.bid_package_execution_inputs WHERE id=%s",
+            (value["manifest"]["id"],),
+        ).fetchone()
+        snapshot = json.loads(row["snapshot_text"])
+        assert len(snapshot["context"]["manifest"]["facts"]["items"]) == 1
+        assert snapshot["context"]["manifest"]["facts"]["qualification"] == "not_validated"
+        assert "object_key" not in response.text and "text_content" not in response.text
+        assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
+        assert (
+            c.execute(
+                "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+            ).fetchone()
+            == before
+        )
+        assert f["w"]["client"].get(f["path"] + "/" + old["manifest"]["id"]).json() == old
+
+    def test_prepared_replay_and_history_survive_closed_work_withdrawal_and_no_store(
+        self, execution_case, monkeypatch
+    ):
+        from packages.domain import storage
+
+        f, old, path, body, h = execution_case
+        saved = f["w"]["client"].post(path, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        c = f["w"]["database"]["owner"]
+        c.execute("UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s", (f["scope"][0],))
+        c.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (f["w"]["sources"][0],),
+        )
+        calls = len(f["calls"])
+
+        def unavailable():
+            raise AssertionError("historical replay cannot read storage")
+
+        monkeypatch.setattr(storage, "client", unavailable)
+        monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-after-save")
+        replay = f["w"]["client"].post(path, json=body, headers=h)
+        assert replay.status_code == 201 and replay.headers.get("idempotent-replayed") == "true"
+        assert replay.json() == value
+        assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
+        assert len(f["calls"]) == calls
+
+    def test_prepared_strict_request_idempotency_conflict_and_scope(self, execution_case):
+        f, old, path, body, h = execution_case
+        client = f["w"]["client"]
+        calls = len(f["calls"])
+        assert (
+            client.post(path, json=body | {"launch_available": True}, headers=h).status_code == 422
+        )
+        assert (
+            client.post(
+                path,
+                json=body,
+                headers={k: v for k, v in h.items() if k.lower() != "idempotency-key"},
+            ).status_code
+            == 428
+        )
+        assert (
+            client.post(path, json=body | {"context_digest": "0" * 64}, headers=h).status_code
+            == 409
+        )
+        assert len(f["calls"]) == calls
+        saved = client.post(path, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        calls = len(f["calls"])
+        assert (
+            client.post(
+                path,
+                json=body | {"rerun": {"nonce": uid(), "reason": "explicit changed intent"}},
+                headers=h,
+            ).status_code
+            == 409
+        )
+        assert len(f["calls"]) == calls
+        detail = path + "/" + saved.json()["manifest"]["id"]
+        assert client.get(detail.replace(f["scope"][1], uid())).status_code == 404
+
+    @pytest.mark.parametrize("change", ["close", "source", "facts", "method"])
+    def test_prepared_race_during_io_leaves_no_input_or_command(
+        self, execution_case, monkeypatch, change
+    ):
+        f, old, path, body, h = execution_case
+        c = f["w"]["database"]["owner"]
+        before = c.execute(
+            "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.bid_package_execution_inputs) AS inputs"
+        ).fetchone()
+
+        def mutate():
+            if change == "close":
+                c.execute(
+                    "UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s",
+                    (f["scope"][0],),
+                )
+            elif change == "source":
+                c.execute(
+                    "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                    (f["w"]["sources"][0],),
+                )
+            elif change == "facts":
+                OriginalVerificationCases.seed_fact(self, f["w"])
+            else:
+                monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-io-race")
+
+        f["state"]["during_read"] = mutate
+        response = f["w"]["client"].post(path, json=body, headers=h)
+        assert response.status_code == 409, response.text
+        assert (
+            c.execute(
+                "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.bid_package_execution_inputs) AS inputs"
+            ).fetchone()
+            == before
+        )
+
+    def test_prepared_rerun_changes_execution_only_and_permissions_are_append_only(
+        self, execution_case
+    ):
+        import psycopg
+
+        f, old, path, body, h = execution_case
+        client = f["w"]["client"]
+        first = client.post(path, json=body, headers=h)
+        second = client.post(
+            path,
+            json=body | {"rerun": {"nonce": uid(), "reason": "explicit rerun"}},
+            headers=headers(f["w"]),
+        )
+        assert first.status_code == second.status_code == 201, (first.text, second.text)
+        a, b = first.json()["manifest"], second.json()["manifest"]
+        assert a["identity"]["content_digest"] == b["identity"]["content_digest"]
+        assert a["identity"]["execution_digest"] != b["identity"]["execution_digest"]
+        with psycopg.connect(f["w"]["database"]["api_dsn"]) as c:
+            assert (
+                c.execute(
+                    "SELECT has_table_privilege(current_user,'design.bid_package_execution_inputs','UPDATE')"
+                ).fetchone()[0]
+                is False
+            )
+        with psycopg.connect(f["w"]["database"]["worker_dsn"]) as c:
+            assert c.execute(
+                "SELECT has_table_privilege(current_user,'design.bid_package_execution_inputs','SELECT'),has_table_privilege(current_user,'design.bid_package_execution_inputs','INSERT')"
+            ).fetchone() == (True, False)
+
     def test_replay_and_historical_read_survive_source_withdrawal_close_and_store_unavailable(
         self, frozen_case, monkeypatch
     ):
@@ -209,6 +388,98 @@ class TestFreezing:
         result = self.post(f, f["body"] | {"context_digest": "0" * 64})
         assert result.status_code == 409 and result.json()["code"] == "IDEMPOTENCY_CONFLICT"
         assert len(f["calls"]) == calls
+
+    def test_prepared_bad_ack_rolls_back_record_and_command(self, execution_case, monkeypatch):
+        from copy import deepcopy
+
+        from packages.domain.runtime import Command
+
+        f, old, path, body, h = execution_case
+        c = f["w"]["database"]["owner"]
+        before = c.execute(
+            "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.bid_package_execution_inputs) AS inputs"
+        ).fetchone()
+        finish = Command.finish
+
+        def corrupt(command, value, status=200, headers=None):
+            changed = deepcopy(value)
+            changed["manifest"]["publication_authorized"] = True
+            return finish(command, changed, status, headers)
+
+        monkeypatch.setattr(Command, "finish", corrupt)
+        response = f["w"]["client"].post(path, json=body, headers=h)
+        assert response.status_code == 409, response.text
+        assert (
+            c.execute(
+                "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.bid_package_execution_inputs) AS inputs"
+            ).fetchone()
+            == before
+        )
+
+    def test_prepared_concurrent_same_key_returns_one_record(self, execution_case):
+        from concurrent.futures import ThreadPoolExecutor
+
+        f, old, path, body, h = execution_case
+        # Other concurrent requests may own connections; single-flight IO tests still assert zero.
+        f["state"]["assert_zero_connections"] = False
+
+        def send():
+            return f["w"]["client"].post(path, json=body, headers=h)
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            responses = list(pool.map(lambda _: send(), range(2)))
+        assert all(r.status_code == 201 for r in responses), [r.text for r in responses]
+        assert responses[0].json() == responses[1].json()
+        assert sum(r.headers.get("idempotent-replayed") == "true" for r in responses) == 1
+        c = f["w"]["database"]["owner"]
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM design.bid_package_execution_inputs WHERE frozen_input_id=%s",
+                (old["manifest"]["id"],),
+            ).fetchone()["n"]
+            == 1
+        )
+
+    def test_prepared_history_rejects_resealed_private_snapshot_corruption(self, execution_case):
+        import json
+        from copy import deepcopy
+
+        from packages.domain import bid_package_review_input_repository as roots
+        from packages.domain.package_execution_input import consume
+        from packages.domain.runtime import DomainError, connection, sha
+
+        f, old, path, body, h = execution_case
+        saved = f["w"]["client"].post(path, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        with connection() as c:
+            packet = roots.load_input(c, f["scope"], old["manifest"]["id"])
+            row = dict(
+                c.execute(
+                    "SELECT * FROM design.bid_package_execution_inputs WHERE id=%s",
+                    (value["manifest"]["id"],),
+                ).fetchone()
+            )
+        for change in ("context", "document", "identity", "source"):
+            changed = deepcopy(row)
+            s = json.loads(row["snapshot_text"])
+            if change == "context":
+                s["context"]["manifest"]["facts"]["qualification"] = "validated"
+            elif change == "document":
+                s["documents"][0]["blocks"][0]["text_content"] = "synthetic changed text"
+            elif change == "identity":
+                s["binding"]["identity_digest"] = "a" * 64
+            else:
+                s["observations"]["sources"] = []
+            changed["snapshot_text"] = json.dumps(
+                s, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
+            changed["snapshot_digest"] = sha(changed["snapshot_text"].encode())
+            changed["manifest"]["snapshot_digest"] = changed["snapshot_digest"]
+            changed["digest"] = digest(changed["manifest"])
+            with pytest.raises(DomainError) as error:
+                consume(changed, f["scope"], old["manifest"]["id"], value["manifest"]["id"], packet)
+            assert error.value.code == "PACKAGE_EXECUTION_INPUT_CORRUPT"
 
     def test_execution_check_is_current_readonly_observation_not_original_or_publication_proof(
         self, frozen_case, monkeypatch

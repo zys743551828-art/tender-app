@@ -1,5 +1,16 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type SavePackageExecutionInput = {
+  frozen_digest: string;
+  context_digest: string;
+  rerun: PackageExecution_RerunIntent | null;
+};
+
+export type PackageExecutionInputView = {
+  manifest: PackageExecutionInputManifest;
+  digest: string;
+};
+
 export type CheckPackageReviewEligibility = {
   frozen_digest: string;
 };
@@ -3395,6 +3406,53 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageExecution_RerunIntent = {
+  nonce: PackageExecution_Id;
+  reason: string;
+};
+
+export type PackageExecutionInputManifest = {
+  version: "package-review-execution-input/1";
+  kind: "prepared_input";
+  id: string;
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  actor_id: string;
+  command_id: string;
+  identity: PackageExecution_Identity;
+  execution_context: PackageReviewExecutionContext;
+  snapshot_digest: string;
+  originals_verified_at: string;
+  saved_at: string;
+  blockers: (
+    | "PROJECT_WORK_CLOSED"
+    | "PACKAGE_BIDDER_UNCONFIRMED"
+    | "PACKAGE_REVIEW_IDENTITY_STALE"
+    | "PACKAGE_REVIEW_PACKAGE_STALE"
+    | "PACKAGE_REVIEW_INVENTORY_STALE"
+    | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
+    | "PACKAGE_REVIEW_SOURCE_CHANGED"
+    | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
+    | "PACKAGE_REVIEW_MEMBERS_UNPROVEN"
+    | "PACKAGE_REVIEW_EVIDENCE_CHANGED"
+    | "PACKAGE_REVIEW_PHYSICAL_RANGE_GAP"
+    | "PACKAGE_REVIEW_EXTRACTION_UNPROVEN"
+    | "PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN"
+    | "PACKAGE_REVIEW_EXECUTOR_NOT_READY"
+    | "PACKAGE_REVIEW_METHOD_CHANGED"
+    | "PACKAGE_REVIEW_POLICY_CHANGED"
+    | "PACKAGE_REVIEW_FACTS_CHANGED"
+    | "PACKAGE_REVIEW_FACTS_UNPROVEN"
+  )[];
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type PackageReviewExecutionContext = {
   version: "package-review-context/1";
   kind: "candidate";
@@ -4515,6 +4573,17 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageExecution_Id = string;
+
+export type PackageExecution_Identity = {
+  version: "package-review-execution/1";
+  kind: "identity";
+  binding: PackageExecution_Binding;
+  rerun: PackageExecution_RerunIntent | null;
+  content_digest: PackageExecution_Digest;
+  execution_digest: PackageExecution_Digest;
+};
+
 export type BidPackage_inspectedRange = {
   part_id: string;
   first_page: number;
@@ -4627,6 +4696,24 @@ export type RuleEvidenceQuote = {
   evidence_id: string;
   quote: string;
 };
+
+export type PackageExecution_Binding = {
+  bid_id: PackageExecution_Id;
+  package_id: PackageExecution_Id;
+  revision_id: PackageExecution_Id;
+  inventory_id: PackageExecution_Id;
+  identity_digest: PackageExecution_Digest;
+  frozen_input_id: PackageExecution_Id;
+  frozen_digest: PackageExecution_Digest;
+  input_digest: PackageExecution_Digest;
+  evidence_digest: PackageExecution_Digest;
+  context_digest: PackageExecution_Digest;
+  method_digest: PackageExecution_Digest;
+  policy_digest: PackageExecution_Digest;
+  purpose: "prebid_compliance";
+};
+
+export type PackageExecution_Digest = string;
 
 export type MissedTaskSchedule = {
   from: string;
@@ -4923,6 +5010,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
 ];
 
 export const ruleConfirmationLimit: number = 500;

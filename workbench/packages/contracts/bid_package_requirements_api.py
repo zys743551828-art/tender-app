@@ -1,6 +1,8 @@
 """Requirements projections / human coverage declarations, never formal review output."""
 
+import json
 from copy import deepcopy
+from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -417,6 +419,62 @@ SCHEMAS["PackageReviewEligibilityObservation"] = object_schema(
 )
 
 
+_execution = json.loads(
+    (Path(__file__).parent / "schemas/package-review-execution.schema.json").read_text(
+        encoding="utf-8"
+    )
+)
+for _name, _schema in _execution["$defs"].items():
+    SCHEMAS["PackageExecution_" + _name] = json.loads(
+        json.dumps(_schema).replace("#/$defs/", "#/components/schemas/PackageExecution_")
+    )
+SCHEMAS["SavePackageExecutionInput"] = object_schema(
+    {
+        "frozen_digest": SHA,
+        "context_digest": SHA,
+        "rerun": {
+            "anyOf": [
+                {"$ref": "#/components/schemas/PackageExecution_RerunIntent"},
+                {"type": "null"},
+            ]
+        },
+    }
+)
+SCHEMAS["PackageExecutionInputManifest"] = object_schema(
+    {
+        "version": {"const": "package-review-execution-input/1"},
+        "kind": {"const": "prepared_input"},
+        **{
+            k: UUID
+            for k in (
+                "id",
+                "bid_id",
+                "package_id",
+                "revision_id",
+                "inventory_id",
+                "frozen_input_id",
+                "actor_id",
+                "command_id",
+            )
+        },
+        "identity": {"$ref": "#/components/schemas/PackageExecution_Identity"},
+        "execution_context": {"$ref": "#/components/schemas/PackageReviewExecutionContext"},
+        "snapshot_digest": SHA,
+        "originals_verified_at": {"type": "string", "format": "date-time"},
+        "saved_at": {"type": "string", "format": "date-time"},
+        "blockers": deepcopy(
+            SCHEMAS["PackageReviewEligibilityObservation"]["properties"]["blockers"]
+        ),
+        "review_ready": {"const": False},
+        "launch_available": {"const": False},
+        "publication_authorized": {"const": False},
+    }
+)
+SCHEMAS["PackageExecutionInputView"] = object_schema(
+    {"manifest": {"$ref": "#/components/schemas/PackageExecutionInputManifest"}, "digest": SHA}
+)
+
+
 def valid(name, value):
     return Draft202012Validator(
         {"components": {"schemas": PACKAGE_SCHEMAS | SCHEMAS}, "allOf": [SCHEMAS[name]]},
@@ -438,6 +496,20 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
+            "post",
+            "savePackageExecutionInput",
+            "SavePackageExecutionInput",
+            "PackageExecutionInputView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
+            "get",
+            "getPackageExecutionInput",
+            None,
+            "PackageExecutionInputView",
+        ),
         ("", "get", "listPackageRequirementInventories", None, "PackageRequirementInventoryPage"),
         (
             "",

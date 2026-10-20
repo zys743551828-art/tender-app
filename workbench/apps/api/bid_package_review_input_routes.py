@@ -9,6 +9,8 @@ from fastapi import APIRouter, Body, Query, Request
 from apps.api.auth import auth
 from apps.api.identity_routes import saved
 from packages.contracts.bid_package_requirements_api import validate
+from packages.domain import bid_package_execution_input_repository as execution_repository
+from packages.domain import bid_package_execution_inputs as execution_inputs
 from packages.domain import bid_package_requirement_repository as requirements
 from packages.domain import bid_package_review_input_repository as repository
 from packages.domain.bid_package_review_eligibility import inspect
@@ -36,6 +38,13 @@ def input_errors():
             error.code, "冻结输入不存在或与选定身份不一致", status, retryable=False
         ) from error
     except (psycopg.IntegrityError, psycopg.DataError) as error:
+        if (error.diag.message_primary or "").startswith("execution_input_"):
+            raise DomainError(
+                "PACKAGE_EXECUTION_INPUT_REJECTED",
+                "执行输入校验未通过，未保存记录或回执",
+                409,
+                retryable=False,
+            ) from error
         if (error.diag.message_primary or "").startswith("review_freeze_"):
             raise DomainError(
                 "PACKAGE_REVIEW_FREEZE_REJECTED",
@@ -127,3 +136,48 @@ def check_frozen_review_input(
             str(input_id),
             body["frozen_digest"],
         )
+
+
+@router.post("/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs")
+def save_execution_input(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    input_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    actor = auth(r, True)
+    validate("SavePackageExecutionInput", body)
+    with input_errors():
+        value, replayed = execution_inputs.save(
+            str(actor["member_id"]),
+            (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+            str(input_id),
+            r.headers.get("idempotency-key"),
+            body,
+        )
+        return saved(value, replayed)
+
+
+@router.get("/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}")
+def get_execution_input(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    input_id: UUID,
+    execution_input_id: UUID,
+    r: Request,
+):
+    auth(r)
+    with input_errors():
+        with connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            return execution_repository.load(
+                c,
+                (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+                str(input_id),
+                str(execution_input_id),
+            )
