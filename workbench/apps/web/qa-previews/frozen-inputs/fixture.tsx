@@ -1,4 +1,9 @@
 import React, { useState } from "react";
+import { prepared } from "./prepared";
+import {
+  executionScope,
+  executionStorageKey,
+} from "../../src/executionInputRecovery";
 import { createRoot } from "react-dom/client";
 import Workspace from "../../src/PackageFrozenInputWorkspace";
 import {
@@ -27,7 +32,7 @@ const body: FreezePackageReviewInput = {
   coverage_attempt_id: null,
   coverage_digest: null,
 };
-async function reply(): Promise<PackageReviewFrozenInputView> {
+export async function reply(): Promise<PackageReviewFrozenInputView> {
   const manifest: PackageReviewFrozenInputView["manifest"] = {
     version: "package-review-frozen-input/1",
     kind: "frozen_input",
@@ -80,11 +85,32 @@ async function historical(n: number) {
   record.digest = await frozenManifestDigest(record.manifest);
   return record;
 }
-window.fetch = async (path) => {
+const preparedRecords = new Map<string, Awaited<ReturnType<typeof prepared>>>();
+window.fetch = async (path, options) => {
   const url = String(path);
   if (!url.includes("/frozen-review-inputs"))
     throw new Error("夹具拒绝业务请求");
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
+  if (url.includes("/execution-inputs")) {
+    const parts = url.split("/");
+    const frozenId = parts[parts.indexOf("execution-inputs") - 1];
+    const n = [id(6), id(7), id(8)].indexOf(frozenId);
+    const frozen = await historical(Math.max(0, n));
+    const key =
+      options?.method === "POST"
+        ? new Headers(options.headers).get("Idempotency-Key")!
+        : parts.at(-1)!;
+    let data = preparedRecords.get(key);
+    if (!data && options?.method === "POST") {
+      data = await prepared(frozen, id(20 + preparedRecords.size));
+      preparedRecords.set(key, data);
+      preparedRecords.set(data.manifest.id, data);
+    }
+    return new Response(JSON.stringify(data ?? { message: "夹具记录不存在" }), {
+      status: data ? 200 : 404,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
   if (url.endsWith("/execution-check")) {
     const selectedId = url.split("/").at(-2);
     const n = [id(6), id(7), id(8)].indexOf(selectedId ?? "");
@@ -183,8 +209,13 @@ function Fixture() {
         模拟断网（只影响夹具）
       </label>
       <button
-        onClick={() => {
+        onClick={async () => {
           sessionStorage.removeItem(freezeStorageKey(scope));
+          for (const n of [0, 1, 2])
+            sessionStorage.removeItem(
+              executionStorageKey(executionScope(scope, await historical(n))),
+            );
+          preparedRecords.clear();
           setSerial((v) => v + 1);
         }}
       >

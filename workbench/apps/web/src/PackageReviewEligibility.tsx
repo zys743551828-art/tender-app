@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
+import PackageExecutionInputWorkspace from "./PackageExecutionInputWorkspace";
 import { freezePath } from "./packageFrozenInput";
 import type { FreezeScope } from "./packageFrozenInput";
 import type {
@@ -101,6 +102,12 @@ export default function PackageReviewEligibility({
           </ul>
         </div>
       )}
+      <PackageExecutionInputWorkspace
+        scope={scope}
+        frozen={frozen}
+        candidate={current?.result ?? null}
+        disabled={!!current?.busy}
+      />
     </div>
   );
 }

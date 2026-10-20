@@ -68,3 +68,13 @@
   margin: 0;
   font-size: 14px;
 }
+.package-frozen-input__execution {
+  min-width: 0;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__execution > h5 {
+  margin: 0;
+  font-size: 14px;
+}
