@@ -255,6 +255,143 @@ class TestFreezing:
         assert counts(f["w"]) == before and len(f["calls"]) == calls
         assert f["w"]["client"].get(path.removesuffix("/execution-check")).json() == value
 
+    def verify_frozen(self, f, value):
+        from packages.domain.bid_package_frozen_originals import verify
+        from packages.domain.bid_package_review_eligibility import inspect
+
+        context = inspect(f["scope"], value["manifest"]["id"], value["digest"])
+        return verify(
+            f["scope"],
+            value["manifest"]["id"],
+            value["digest"],
+            context["current_context"]["semantic_digest"],
+        )
+
+    def test_frozen_originals_stream_without_connections_preserve_history_and_still_block_publication(
+        self, frozen_case
+    ):
+        import json
+
+        from packages.domain.bid_package_frozen_originals import recheck_for_publication
+        from packages.domain.runtime import DomainError, connection
+
+        f = frozen_case
+        value = self.post(f).json()
+        before, calls = counts(f["w"]), len(f["calls"])
+        receipt = self.verify_frozen(f, value)
+        result = receipt.observation()
+        assert len(f["calls"]) - calls == len(result["originals"]) == 2
+        assert {d["role"] for d in result["originals"]} == {"target", "authority"}
+        assert result["original_verification"] == "verified_at_observation"
+        assert result["publication_authorized"] is result["launch_available"] is False
+        assert "object_key" not in json.dumps(result) and "text_content" not in json.dumps(result)
+        assert "object_key" not in repr(receipt) and "synthetic-original" not in repr(receipt)
+        result["originals"].clear()
+        assert len(receipt.observation()["originals"]) == 2
+        with pytest.raises(DomainError) as error, connection() as c:
+            recheck_for_publication(c, receipt)
+        assert error.value.code == "PACKAGE_REVIEW_EXECUTION_BLOCKED"
+        assert len(f["calls"]) - calls == 2 and counts(f["w"]) == before
+        assert f["w"]["client"].get(f["path"] + "/" + value["manifest"]["id"]).json() == value
+
+    @pytest.mark.parametrize("change", ["close", "source", "facts", "method", "policy"])
+    def test_frozen_originals_reject_change_during_lock_free_io(
+        self, frozen_case, monkeypatch, change
+    ):
+        from packages.domain import package_review_method as method
+        from packages.domain.runtime import DomainError
+
+        f = frozen_case
+        value = self.post(f).json()
+        owner = f["w"]["database"]["owner"]
+
+        def mutate():
+            if change == "close":
+                owner.execute(
+                    "UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s",
+                    (f["scope"][0],),
+                )
+            elif change == "source":
+                owner.execute(
+                    "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                    (f["w"]["sources"][0],),
+                )
+            elif change == "facts":
+                OriginalVerificationCases.seed_fact(self, f["w"])
+            elif change == "method":
+                monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-race-model")
+            else:
+                monkeypatch.setitem(method.POLICY, "version", "synthetic-race-policy")
+
+        f["state"]["during_read"] = mutate
+        with pytest.raises(DomainError) as error:
+            self.verify_frozen(f, value)
+        assert error.value.code == "PACKAGE_REVIEW_INPUT_CHANGED"
+        assert f["w"]["client"].get(f["path"] + "/" + value["manifest"]["id"]).json() == value
+
+    @pytest.mark.parametrize("change", ["close", "source", "facts", "method"])
+    def test_publication_rechecks_after_original_receipt_without_repeating_io(
+        self, frozen_case, monkeypatch, change
+    ):
+        from packages.domain.bid_package_frozen_originals import recheck_for_publication
+        from packages.domain.runtime import DomainError, connection
+
+        f = frozen_case
+        value = self.post(f).json()
+        receipt = self.verify_frozen(f, value)
+        calls = len(f["calls"])
+        owner = f["w"]["database"]["owner"]
+        if change == "close":
+            owner.execute(
+                "UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s", (f["scope"][0],)
+            )
+        elif change == "source":
+            owner.execute(
+                "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                (f["w"]["sources"][0],),
+            )
+        elif change == "facts":
+            OriginalVerificationCases.seed_fact(self, f["w"])
+        else:
+            monkeypatch.setenv("DEEPSEEK_MODEL", "synthetic-before-publication")
+        before = counts(f["w"])
+        with pytest.raises(DomainError) as error, connection() as c:
+            recheck_for_publication(c, receipt)
+        assert error.value.code == "PACKAGE_REVIEW_INPUT_CHANGED"
+        assert len(f["calls"]) == calls and counts(f["w"]) == before
+
+    @pytest.mark.parametrize(
+        "payload", [b"synthetic-corrupted", b"", b"synthetic-original-v1-overlong"]
+    )
+    def test_frozen_originals_fail_on_corrupt_stream_without_receipt(self, frozen_case, payload):
+        from packages.domain.runtime import DomainError
+
+        f = frozen_case
+        value = self.post(f).json()
+        f["state"]["bytes"] = payload
+        before = counts(f["w"])
+        with pytest.raises(DomainError) as error:
+            self.verify_frozen(f, value)
+        assert error.value.code == "ORIGINAL_BYTES_CORRUPTED"
+        assert counts(f["w"]) == before
+
+    def test_frozen_originals_reject_context_before_io_and_publication_requires_fresh_transaction(
+        self, frozen_case
+    ):
+        from packages.domain.bid_package_frozen_originals import recheck_for_publication, verify
+        from packages.domain.runtime import DomainError, connection
+
+        f = frozen_case
+        value = self.post(f).json()
+        calls = len(f["calls"])
+        with pytest.raises(DomainError) as error:
+            verify(f["scope"], value["manifest"]["id"], value["digest"], "0" * 64)
+        assert error.value.code == "PACKAGE_REVIEW_CONTEXT_CHANGED" and len(f["calls"]) == calls
+        receipt = self.verify_frozen(f, value)
+        with pytest.raises(ValueError), connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            recheck_for_publication(c, receipt)
+
     def test_execution_check_observes_close_source_method_policy_and_facts_without_changing_history(
         self, frozen_case, monkeypatch
     ):
