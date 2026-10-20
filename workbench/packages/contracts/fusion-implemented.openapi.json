@@ -19494,6 +19494,336 @@
           }
         ]
       }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations": {
+      "post": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-fact-scopes"
+        ],
+        "summary": "Change Fact Scope",
+        "operationId": "changePackageFactScope",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePackageFactScope"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageFactScopeView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}": {
+      "get": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-fact-scopes"
+        ],
+        "summary": "Read Fact Scope",
+        "operationId": "getPackageFactScope",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "name": "declaration_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Declaration Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageFactScopeView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration": {
+      "get": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-fact-scopes"
+        ],
+        "summary": "Observe Fact Scope",
+        "operationId": "getPackageFactScopeObservation",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "name": "fact_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Fact Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageFactScopeObservation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -54360,6 +54690,497 @@
           "blockers",
           "facts_qualified",
           "original_verification",
+          "review_ready",
+          "launch_available",
+          "publication_authorized"
+        ]
+      },
+      "PackageFactScope_Id": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "PackageFactScope_Digest": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "PackageFactScope_Subject": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "id"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "engineering_project",
+              "lot",
+              "round",
+              "bidder"
+            ]
+          },
+          "id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          }
+        }
+      },
+      "PackageFactScope_ScopeBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "identity_digest",
+          "frozen_input_id",
+          "frozen_digest",
+          "input_digest",
+          "evidence_digest",
+          "context_digest",
+          "method_digest",
+          "policy_digest",
+          "purpose",
+          "execution_input_id",
+          "execution_input_digest",
+          "facts_digest",
+          "fact_set_id",
+          "fact_id",
+          "fact_item_digest",
+          "proof_digest"
+        ],
+        "properties": {
+          "bid_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "package_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "revision_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "inventory_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "identity_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "frozen_input_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "frozen_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "input_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "evidence_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "context_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "method_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "policy_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "execution_input_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "facts_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "fact_set_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "fact_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "fact_item_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "proof_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          }
+        }
+      },
+      "PackageFactScope_Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "kind",
+          "id",
+          "actor_id",
+          "command_id",
+          "recorded_at",
+          "reason",
+          "action",
+          "previous_digest",
+          "binding",
+          "subject",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized"
+        ],
+        "properties": {
+          "version": {
+            "const": "package-fact-scope/1"
+          },
+          "kind": {
+            "const": "fact_scope_declaration"
+          },
+          "id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "actor_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "command_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{6}Z$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?(?![\\s\\S])"
+          },
+          "action": {
+            "enum": [
+              "bind",
+              "withdraw"
+            ]
+          },
+          "previous_digest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageFactScope_Digest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "binding": {
+            "$ref": "#/components/schemas/PackageFactScope_ScopeBinding"
+          },
+          "subject": {
+            "$ref": "#/components/schemas/PackageFactScope_Subject"
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "action": {
+                  "const": "withdraw"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "previous_digest": {
+                  "$ref": "#/components/schemas/PackageFactScope_Digest"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PackageFactScope_Record": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "manifest",
+          "digest"
+        ],
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageFactScope_Manifest"
+          },
+          "digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          }
+        }
+      },
+      "PackageFactScope_Change": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "execution_input_digest",
+          "fact_id",
+          "action",
+          "subject",
+          "reason",
+          "previous_digest"
+        ],
+        "properties": {
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageFactScope_Digest"
+          },
+          "fact_id": {
+            "$ref": "#/components/schemas/PackageFactScope_Id"
+          },
+          "action": {
+            "enum": [
+              "bind",
+              "withdraw"
+            ]
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageFactScope_Subject"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?(?![\\s\\S])"
+          },
+          "previous_digest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageFactScope_Digest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "action": {
+                  "const": "bind"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "subject": {
+                  "$ref": "#/components/schemas/PackageFactScope_Subject"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "action": {
+                  "const": "withdraw"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "subject": {
+                  "type": "null"
+                },
+                "previous_digest": {
+                  "$ref": "#/components/schemas/PackageFactScope_Digest"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ChangePackageFactScope": {
+        "$ref": "#/components/schemas/PackageFactScope_Change"
+      },
+      "PackageFactScopeView": {
+        "$ref": "#/components/schemas/PackageFactScope_Record"
+      },
+      "PackageFactScopeObservation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "fact_scope_observation"
+          },
+          "bid_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "package_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inventory_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "frozen_input_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "execution_input_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fact_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "execution_input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "prepared_context_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "observed_context_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "matches_prepared_input": {
+            "type": "boolean"
+          },
+          "provenance_status": {
+            "enum": [
+              "verified",
+              "unproven"
+            ]
+          },
+          "subject_choices": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "engineering_project",
+                    "lot",
+                    "round",
+                    "bidder"
+                  ]
+                },
+                "id": {
+                  "$ref": "#/components/schemas/PackageFactScope_Id"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id",
+                "label"
+              ]
+            }
+          },
+          "head": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageFactScope_Record"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "binding_status": {
+            "enum": [
+              "unproven",
+              "matches_current_input",
+              "withdrawn"
+            ]
+          },
+          "observation_gap": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          }
+        },
+        "required": [
+          "kind",
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "frozen_input_id",
+          "execution_input_id",
+          "fact_id",
+          "execution_input_digest",
+          "prepared_context_digest",
+          "observed_context_digest",
+          "matches_prepared_input",
+          "provenance_status",
+          "subject_choices",
+          "head",
+          "binding_status",
+          "observation_gap",
+          "checked_at",
+          "facts_qualified",
           "review_ready",
           "launch_available",
           "publication_authorized"

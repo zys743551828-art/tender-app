@@ -1,5 +1,38 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type ChangePackageFactScope = PackageFactScope_Change;
+
+export type PackageFactScopeView = PackageFactScope_Record;
+
+export type PackageFactScopeObservation = {
+  kind: "fact_scope_observation";
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  execution_input_id: string;
+  fact_id: string;
+  execution_input_digest: string;
+  prepared_context_digest: string;
+  observed_context_digest: string | null;
+  matches_prepared_input: boolean;
+  provenance_status: "verified" | "unproven";
+  subject_choices: {
+    kind: "engineering_project" | "lot" | "round" | "bidder";
+    id: PackageFactScope_Id;
+    label: string;
+  }[];
+  head: PackageFactScope_Record | null;
+  binding_status: "unproven" | "matches_current_input" | "withdrawn";
+  observation_gap: string | null;
+  checked_at: string;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type CheckPackageExecutionFacts = {
   execution_input_digest: string;
 };
@@ -3435,6 +3468,22 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageFactScope_Change = {
+  execution_input_digest: PackageFactScope_Digest;
+  fact_id: PackageFactScope_Id;
+  action: "bind" | "withdraw";
+  subject: PackageFactScope_Subject | null;
+  reason: string;
+  previous_digest: PackageFactScope_Digest | null;
+};
+
+export type PackageFactScope_Record = {
+  manifest: PackageFactScope_Manifest;
+  digest: PackageFactScope_Digest;
+};
+
+export type PackageFactScope_Id = string;
+
 export type PackageFactValidationItem = {
   fact_id: string;
   provenance_status: "verified" | "unproven";
@@ -4619,6 +4668,31 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageFactScope_Digest = string;
+
+export type PackageFactScope_Subject = {
+  kind: "engineering_project" | "lot" | "round" | "bidder";
+  id: PackageFactScope_Id;
+};
+
+export type PackageFactScope_Manifest = {
+  version: "package-fact-scope/1";
+  kind: "fact_scope_declaration";
+  id: PackageFactScope_Id;
+  actor_id: PackageFactScope_Id;
+  command_id: PackageFactScope_Id;
+  recorded_at: string;
+  reason: string;
+  action: "bind" | "withdraw";
+  previous_digest: PackageFactScope_Digest | null;
+  binding: PackageFactScope_ScopeBinding;
+  subject: PackageFactScope_Subject;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type PackageExecution_Id = string;
 
 export type PackageExecution_Identity = {
@@ -4741,6 +4815,29 @@ export type DecisionView = {
 export type RuleEvidenceQuote = {
   evidence_id: string;
   quote: string;
+};
+
+export type PackageFactScope_ScopeBinding = {
+  bid_id: PackageFactScope_Id;
+  package_id: PackageFactScope_Id;
+  revision_id: PackageFactScope_Id;
+  inventory_id: PackageFactScope_Id;
+  identity_digest: PackageFactScope_Digest;
+  frozen_input_id: PackageFactScope_Id;
+  frozen_digest: PackageFactScope_Digest;
+  input_digest: PackageFactScope_Digest;
+  evidence_digest: PackageFactScope_Digest;
+  context_digest: PackageFactScope_Digest;
+  method_digest: PackageFactScope_Digest;
+  policy_digest: PackageFactScope_Digest;
+  purpose: "prebid_compliance";
+  execution_input_id: PackageFactScope_Id;
+  execution_input_digest: PackageFactScope_Digest;
+  facts_digest: PackageFactScope_Digest;
+  fact_set_id: PackageFactScope_Id;
+  fact_id: PackageFactScope_Id;
+  fact_item_digest: PackageFactScope_Digest;
+  proof_digest: PackageFactScope_Digest;
 };
 
 export type PackageExecution_Binding = {
@@ -5059,6 +5156,9 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration",
 ];
 
 export const ruleConfirmationLimit: number = 500;

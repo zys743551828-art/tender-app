@@ -38,6 +38,9 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         "savePackageExecutionInput",
         "getPackageExecutionInput",
         "checkPackageExecutionFacts",
+        "changePackageFactScope",
+        "getPackageFactScope",
+        "getPackageFactScopeObservation",
         "listFrozenPackageReviewInputs",
     }
 

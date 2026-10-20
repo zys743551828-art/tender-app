@@ -542,6 +542,64 @@ SCHEMAS["PackageExecutionFactCheck"] = object_schema(
 )
 
 
+_fact_scope = json.loads(
+    (Path(__file__).parent / "schemas/package-fact-scope.schema.json").read_text("utf-8")
+)
+for _name, _value in _fact_scope["$defs"].items():
+    SCHEMAS["PackageFactScope_" + _name] = json.loads(
+        json.dumps(_value).replace("#/$defs/", "#/components/schemas/PackageFactScope_")
+    )
+SCHEMAS["ChangePackageFactScope"] = {"$ref": "#/components/schemas/PackageFactScope_Change"}
+SCHEMAS["PackageFactScopeView"] = {"$ref": "#/components/schemas/PackageFactScope_Record"}
+SCHEMAS["PackageFactScopeObservation"] = object_schema(
+    {
+        "kind": {"const": "fact_scope_observation"},
+        **{
+            k: UUID
+            for k in (
+                "bid_id",
+                "package_id",
+                "revision_id",
+                "inventory_id",
+                "frozen_input_id",
+                "execution_input_id",
+                "fact_id",
+            )
+        },
+        "execution_input_digest": SHA,
+        "prepared_context_digest": SHA,
+        "observed_context_digest": NULL_SHA,
+        "matches_prepared_input": {"type": "boolean"},
+        "provenance_status": {"enum": ["verified", "unproven"]},
+        "subject_choices": {
+            "type": "array",
+            "maxItems": 4,
+            "items": object_schema(
+                {
+                    **deepcopy(SCHEMAS["PackageFactScope_Subject"]["properties"]),
+                    "label": {"type": "string"},
+                }
+            ),
+        },
+        "head": {
+            "anyOf": [{"$ref": "#/components/schemas/PackageFactScope_Record"}, {"type": "null"}]
+        },
+        "binding_status": {"enum": ["unproven", "matches_current_input", "withdrawn"]},
+        "observation_gap": {"type": ["string", "null"]},
+        "checked_at": {"type": "string", "format": "date-time"},
+        **{
+            k: {"const": False}
+            for k in (
+                "facts_qualified",
+                "review_ready",
+                "launch_available",
+                "publication_authorized",
+            )
+        },
+    }
+)
+
+
 def valid(name, value):
     return Draft202012Validator(
         {"components": {"schemas": PACKAGE_SCHEMAS | SCHEMAS}, "allOf": [SCHEMAS[name]]},
@@ -563,6 +621,27 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
+            "post",
+            "changePackageFactScope",
+            "ChangePackageFactScope",
+            "PackageFactScopeView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}",
+            "get",
+            "getPackageFactScope",
+            None,
+            "PackageFactScopeView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration",
+            "get",
+            "getPackageFactScopeObservation",
+            None,
+            "PackageFactScopeObservation",
+        ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
             "post",

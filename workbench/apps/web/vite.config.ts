@@ -4,6 +4,16 @@ import { loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.replaceAll("\\", "/").endsWith("/src/contracts.ts"))
+            return "api-capabilities";
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       "/api": {

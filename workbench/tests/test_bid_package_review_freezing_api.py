@@ -414,6 +414,113 @@ class TestFreezing:
         )
         assert result["fact_checks"][0]["blockers"] == ["FACT_SCOPE_MAPPING_REQUIRED"]
 
+    def test_scope_http_explicit_save_observation_and_exact_history(self, provenance_case):
+        f, frozen, path, prepared, fact, source = provenance_case
+        client = f["w"]["client"]
+        base = path + "/" + prepared["manifest"]["id"]
+        url = base + "/fact-scope-declarations"
+        observe = base + "/facts/" + fact + "/scope-declaration"
+        result = client.get(observe)
+        assert result.status_code == 200, result.text
+        observation = result.json()
+        assert valid("PackageFactScopeObservation", observation)
+        assert observation["head"] is None and observation["matches_prepared_input"] is True
+        assert (
+            observation["provenance_status"] == "verified"
+            and len(observation["subject_choices"]) == 4
+        )
+        body = self.scope_body(provenance_case)
+        assert client.post(url, json=body).status_code == 403
+        assert (
+            client.post(
+                url, json=body | {"launch_available": True}, headers=headers(f["w"])
+            ).status_code
+            == 422
+        )
+        assert (
+            client.post(
+                url,
+                json=body,
+                headers={
+                    k: v for k, v in headers(f["w"]).items() if k.lower() != "idempotency-key"
+                },
+            ).status_code
+            == 428
+        )
+        h = headers(f["w"])
+        saved = client.post(url, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        record = saved.json()
+        assert valid("PackageFactScopeView", record)
+        replay = client.post(url, json=body, headers=h)
+        assert (
+            replay.status_code == 201
+            and replay.json() == record
+            and replay.headers["idempotent-replayed"] == "true"
+        )
+        observed = client.get(observe).json()
+        assert valid("PackageFactScopeObservation", observed)
+        assert observed["head"] == record and observed["binding_status"] == "matches_current_input"
+        history = url + "/" + record["manifest"]["id"]
+        assert client.get(history).json() == record
+        assert client.get(history.replace(f["scope"][1], uid())).status_code == 404
+        assert client.get(observe.replace(fact, uid())).status_code == 404
+        owner = f["w"]["database"]["owner"]
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (source,),
+        )
+        changed = client.get(observe).json()
+        assert valid("PackageFactScopeObservation", changed)
+        assert changed["head"] == record and changed["binding_status"] == "unproven"
+        assert (
+            changed["matches_prepared_input"] is False
+            and changed["provenance_status"] == "unproven"
+        )
+        withdrawn = client.post(
+            url,
+            json=body
+            | {"action": "withdraw", "subject": None, "previous_digest": record["digest"]},
+            headers=headers(f["w"]),
+        )
+        assert withdrawn.status_code == 201, withdrawn.text
+        assert client.get(observe).json()["binding_status"] == "withdrawn"
+        assert client.get(history).json() == record
+
+    def test_scope_http_deferred_bad_ack_returns_conflict_without_saved_record(
+        self, provenance_case, monkeypatch
+    ):
+        from packages.domain.runtime import Command
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        before = counts(f["w"])
+        finish = Command.finish
+
+        def bad_ack(command, value, status=200, headers=None):
+            if value.get("manifest", {}).get("kind") == "fact_scope_declaration":
+                value = value | {"digest": "0" * 64}
+            return finish(command, value, status, headers)
+
+        monkeypatch.setattr(Command, "finish", bad_ack)
+        result = f["w"]["client"].post(
+            path + "/" + prepared["manifest"]["id"] + "/fact-scope-declarations",
+            json=self.scope_body(provenance_case),
+            headers=headers(f["w"]),
+        )
+        assert (
+            result.status_code == 409 and result.json()["code"] == "PACKAGE_FACT_SCOPE_REJECTED"
+        ), result.text
+        assert counts(f["w"]) == before
+        assert (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT count(*) AS n FROM design.bid_package_fact_scopes WHERE execution_input_id=%s",
+                (prepared["manifest"]["id"],),
+            )
+            .fetchone()["n"]
+            == 0
+        )
+
     def test_scope_declaration_append_ack_withdrawal_and_immutable_history(self, provenance_case):
         import psycopg
 
