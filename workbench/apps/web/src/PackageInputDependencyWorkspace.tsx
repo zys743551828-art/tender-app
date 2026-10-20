@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import { EvidenceLinks } from "./EvidenceLinks";
@@ -23,6 +23,11 @@ import type {
   DependencyRequirement,
 } from "./inputDependencyProtocol";
 import "./packageInputDependencies.css";
+import type { DependencyPlanCandidate } from "./PackageDependencyPlanWorkspace";
+
+const PackageDependencyPlanWorkspace = lazy(
+  () => import("./PackageDependencyPlanWorkspace"),
+);
 
 type Draft = {
   row: DependencyRequirement;
@@ -68,6 +73,9 @@ function Workspace(props: DependencyProps) {
     [error, setError] = useState<unknown>(null),
     [result, setResult] = useState<PackageInputDependencyAssessment | null>(
       null,
+    ),
+    [checkedPlan, setCheckedPlan] = useState<DependencyPlanCandidate | null>(
+      null,
     );
   const active = useRef(false),
     ticket = useRef(0);
@@ -85,6 +93,7 @@ function Workspace(props: DependencyProps) {
   function invalidate() {
     ticket.current++;
     setResult(null);
+    setCheckedPlan(null);
     setError(null);
   }
   async function load() {
@@ -93,6 +102,7 @@ function Workspace(props: DependencyProps) {
     setBusy(true);
     setError(null);
     setResult(null);
+    setCheckedPlan(null);
     try {
       const { data } = await api<PackageRequirementInventoryView>(
         dependencyInventoryPath(props.scope),
@@ -166,13 +176,17 @@ function Workspace(props: DependencyProps) {
     setBusy(true);
     setError(null);
     setResult(null);
+    setCheckedPlan(null);
     try {
       const { data } = await api<PackageInputDependencyAssessment>(path, {
         method: "POST",
         body,
       });
       await validateDependencyAssessment(data, props, inventory, body);
-      if (active.current && ticket.current === current) setResult(data);
+      if (active.current && ticket.current === current) {
+        setResult(data);
+        setCheckedPlan({ request: body, assessment: data });
+      }
     } catch (failure) {
       if (active.current && ticket.current === current) setError(failure);
     } finally {
@@ -490,6 +504,13 @@ function Workspace(props: DependencyProps) {
             </details>
           </div>
         )}
+        <Suspense fallback={<p>正在加载计划保存与历史…</p>}>
+          <PackageDependencyPlanWorkspace
+            {...props}
+            candidate={checkedPlan}
+            onRecheck={invalidate}
+          />
+        </Suspense>
       </div>
     </details>
   );

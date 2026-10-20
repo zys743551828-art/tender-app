@@ -2,7 +2,7 @@
 
 机器协议为 [package-dependency-plan.schema.json](schemas/package-dependency-plan.schema.json)，持久化为 [bid-package-dependency-plans.sql](sql/bid-package-dependency-plans.sql)。保存与读取用例分别为 `bid_package_dependency_plans.save`／`read`，历史发现由独立目录协调器负责。只读 `dependency-check` 继续不保存。
 
-公开路径为 `.../frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans`：POST明确保存返回201，GET分页发现返回200，GET `/{plan_id}`读取准确原计划返回200。均须Session；POST另须Origin、CSRF和Idempotency-Key。实际OpenAPI和生成前端类型分别绑定保存、列表和完整历史契约，显式界面与原请求恢复另行接入。
+公开路径为 `.../frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans`：POST明确保存返回201，GET分页发现返回200，GET `/{plan_id}`读取准确原计划返回200。均须Session；POST另须Origin、CSRF和Idempotency-Key。实际OpenAPI和生成前端类型分别绑定保存、列表和完整历史契约。
 
 目录默认10、最多20项，按原保存时间及ID排序，签名游标绑定完整prepared身份与摘要。先验证准确原packet，再于同一RR快照读取有界摘要；SQL交叉核准确原ACK及唯一审计，不将整份要求或私有事实池批量传到客户端。列表只含理由、时间、评估摘要、数量和缺口状态，明确资格均false；完整原记录按指定ID另读。坏回执或重复审计使目录拒绝500，篡改／跨prepared游标422，跨prepared读取计划404。追加期间的分页不宣称是同一冻结时点的完整计划目录。
 
@@ -15,3 +15,11 @@
 计划仅复制实际选用事实 ID 和条目摘要，不复制未用公司事实池或私有事实值。Worker后续必须从绑定的原 prepared 按该选择读取投影，再独立核对当前事实资格、原件、生命周期、预算、租约和发布条件。人工依赖声明完整、要求清单完整、事实真实性、原件字节验证和正式执行资格分别判断；允许保存有 unknown／missing 的计划，全部整体资格仍 false。没有创建任务、阶段或 Outbox，没有模型／外部调用。
 
 职责：纯领域负责新计划绑定与历史完整性；用例负责显式意图、项目锁、事务和幂等；仓储负责追加和原 ACK／审计交叉核；SQL负责行绑定、回执、追加及权限。历史完整性检查依赖可信保存回执，不能把任意重封装的客户端 JSON 当成服务端历史。
+
+## 显式界面与原请求恢复
+
+逐条核对面板保存准确本轮请求与核对结果，任何草稿／事实选择变更清除候选保存资格；另设计划保存／历史工作面，表单不放进状态通知。保存须有本轮核对结果、明确理由和人工确认，不自动保存、请求或选择历史；有缺口仍可明确保存，资格继续false。原标注按20条逐步展开，原摘要默认折叠，原历史不能代替本轮候选。
+
+发送前先在sessionStorage写完整请求和幂等键，绑定操作者、项目／包／修订／清单、冻结ID／摘要及prepared ID／摘要；写入失败不发送。网络未知、错误ACK或幂等冲突保留原请求，刷新后只有明确恢复才按原body／原key重放，不以新草稿替代；回执验证准确请求SHA、原assessment／usage及整个记录SHA，全部边界保持false。只有服务端已经过原命令回放查找后明确返回上下文摘要变化或项目关闭，才能结束该未落库的请求并要求重新核对；恢复中的通用422、未知失败和冲突不静默清理。
+
+历史显式分页发现／按记录读取，检查准确prepared、排序、游标向后推进和目录／记录资格边界；读取不改当前草稿或清除未决写请求。切换准确输入后丢弃旧组件的迟到响应，卸载不继续更新界面。恢复记录损坏时保留原记录并禁止新保存，仍可只读查服务器历史。界面、回执协议、会话恢复、原逐条标注和HTTP客户端各自分责。

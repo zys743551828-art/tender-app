@@ -177,7 +177,25 @@ it("editing invalidates old assessment and cannot calculate an unapplied draft",
   show();
   await load();
   await calculate();
+  await userEvent.click(
+    screen.getByText("保存与查阅依赖计划", { selector: "summary" }),
+  );
+  await userEvent.type(
+    await screen.findByLabelText("计划保存理由"),
+    "明确保存这次核对候选",
+  );
+  await userEvent.click(
+    screen.getByLabelText(
+      "我确认保存以上核对结果与本轮明确选择，缺口仍按原状态保留",
+    ),
+  );
+  expect(
+    screen.getByRole("button", { name: "明确保存本轮计划" }),
+  ).toBeEnabled();
   await edit();
+  expect(
+    screen.getByRole("button", { name: "明确保存本轮计划" }),
+  ).toBeDisabled();
   expect(screen.queryByText(/本次只核对依赖标注与原事实选择/)).toBeNull();
   expect(
     screen.getByRole("button", { name: "计算本轮依赖缺口（不保存）" }),
