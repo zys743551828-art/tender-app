@@ -353,6 +353,68 @@ class TestFreezing:
             "previous_digest": None,
         }
 
+    @pytest.mark.parametrize(
+        "change",
+        [
+            "newer_parse",
+            "withdrawn",
+            "wrong_scope",
+            "wrong_digest",
+            "extra_parent",
+            "repeatable_read",
+        ],
+    )
+    def test_frozen_fact_basis_has_independent_exact_source_port(self, provenance_case, change):
+        from packages.domain.bid_package_fact_evidence import read_basis
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        owner = f["w"]["database"]["owner"]
+        bid = f["scope"][0]
+        evidence = str(f["w"]["evidence"])
+        old = owner.execute(
+            "SELECT parse_id FROM design.evidence_blocks WHERE id=%s", (evidence,)
+        ).fetchone()["parse_id"]
+        if change == "newer_parse":
+            owner.execute(
+                "INSERT INTO design.parse_runs(id,bid_id,document_version_id,parser_digest,config_digest,page_count,coverage,gaps,created_at) SELECT %s,bid_id,document_version_id,parser_digest,config_digest,page_count,'failed','[\"synthetic newer failed parse\"]'::jsonb,clock_timestamp() FROM design.parse_runs WHERE id=%s",
+                (uid(), old),
+            )
+            owner.execute(
+                "UPDATE design.bid_profiles SET current_body_id=NULL,current_material_id=NULL WHERE bid_id=%s",
+                (bid,),
+            )
+        if change == "withdrawn":
+            owner.execute(
+                "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                (source,),
+            )
+        if change == "extra_parent":
+            parent = owner.execute(
+                "SELECT n.id FROM retrieval.source_nodes n JOIN design.document_versions v ON v.id=n.document_version_id JOIN design.parse_runs p ON p.document_version_id<>v.id AND p.bid_id=v.bid_id WHERE p.id=%s AND n.policy_class='prebid_content' LIMIT 1",
+                (old,),
+            ).fetchone()["id"]
+            owner.execute(
+                "INSERT INTO retrieval.lineage_edges(child_id,parent_id) VALUES(%s,%s)",
+                (source, parent),
+            )
+        before = counts(f["w"])
+        scope = f["scope"] if change != "wrong_scope" else (bid, str(uid()), *f["scope"][2:])
+        fd = frozen["digest"] if change != "wrong_digest" else "0" * 64
+        with connection() as c:
+            if change == "repeatable_read":
+                c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            if change != "newer_parse":
+                with pytest.raises((DomainError, ValueError)):
+                    read_basis(c, scope, frozen["manifest"]["id"], fd, [evidence])
+            else:
+                observed = read_basis(c, scope, frozen["manifest"]["id"], fd, [evidence])
+                assert observed.view()["selection"]["selected"][0]["parse_run_id"] == str(old)
+                assert observed.basis()["references"][0]["evidence_id"] == evidence
+                assert observed.view()["facts_qualified"] is False
+                assert not c.closed and not c.autocommit
+        assert counts(f["w"]) == before
+
     def test_duplicate_root_decision_audit_cannot_authorize_new_scope_or_admission(
         self, provenance_case
     ):
