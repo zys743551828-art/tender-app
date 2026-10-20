@@ -142,6 +142,96 @@ class TestFreezing:
         assert saved.status_code == 201, saved.text
         return f, frozen, path, saved.json()
 
+    def test_dependency_assessment_reads_exact_packets_without_objects_commands_or_jobs(
+        self, prepared_case, monkeypatch
+    ):
+        from packages.domain import storage
+        from packages.domain.bid_package_execution_input_repository import load_packet
+        from packages.domain.bid_package_input_dependencies import observe
+        from packages.domain.package_fact_usage import select
+        from packages.domain.runtime import connection
+
+        f, frozen, _, value = prepared_case
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        before = c.execute(statement).fetchone()
+        calls = len(f["calls"])
+        selection = {"purpose": "prebid_compliance", "fact_ids": []}
+        with connection() as reader:
+            reader.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            packet = load_packet(
+                reader, f["scope"], frozen["manifest"]["id"], value["manifest"]["id"]
+            )
+            usage = select(packet, selection)
+
+        def no_objects():
+            raise AssertionError("dependency assessment cannot read original objects")
+
+        monkeypatch.setattr(storage, "client", no_objects)
+        result = observe(
+            f["scope"],
+            frozen["manifest"]["id"],
+            value["manifest"]["id"],
+            value["digest"],
+            selection,
+            {"purpose": "prebid_compliance", "usage_digest": usage.digest, "dependencies": []},
+        ).view()
+        m = result["manifest"]
+        assert m["requirement_count"] > 0 and m["required_facts_assessment"] == "unknown"
+        assert m["dependency_review_status"] == "incomplete" and m["selected_fact_count"] == 0
+        assert (
+            m["inventory_complete"]
+            is m["review_ready"]
+            is m["launch_available"]
+            is m["publication_authorized"]
+            is False
+        )
+        assert "value_jsonb_text" not in str(result) and "text_content" not in str(result)
+        assert digest(m) == result["digest"] and len(f["calls"]) == calls
+        assert c.execute(statement).fetchone() == before
+
+    @pytest.mark.parametrize("invalid", ["prepared_digest", "usage_digest", "foreign_requirement"])
+    def test_dependency_assessment_rejects_wrong_input_and_foreign_annotation(
+        self, prepared_case, invalid
+    ):
+        from packages.domain.bid_package_execution_input_repository import load_packet
+        from packages.domain.bid_package_input_dependencies import observe
+        from packages.domain.package_fact_usage import select
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, _, value = prepared_case
+        selection = {"purpose": "prebid_compliance", "fact_ids": []}
+        with connection() as reader:
+            reader.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            packet = load_packet(
+                reader, f["scope"], frozen["manifest"]["id"], value["manifest"]["id"]
+            )
+            usage = select(packet, selection)
+        body = {"purpose": "prebid_compliance", "usage_digest": usage.digest, "dependencies": []}
+        if invalid == "usage_digest":
+            body["usage_digest"] = "a" * 64
+        if invalid == "foreign_requirement":
+            body["dependencies"] = [
+                {
+                    "requirement_id": str(uid()),
+                    "requirement_digest": "a" * 64,
+                    "state": "not_needed",
+                    "fact_ids": [],
+                    "evidence_ids": [str(uid())],
+                    "reason": "合成外部要求",
+                }
+            ]
+        with pytest.raises(DomainError) as error:
+            observe(
+                f["scope"],
+                frozen["manifest"]["id"],
+                value["manifest"]["id"],
+                "a" * 64 if invalid == "prepared_digest" else value["digest"],
+                selection,
+                body,
+            )
+        assert error.value.status == (422 if invalid == "foreign_requirement" else 409)
+
     def test_fact_check_explains_unproven_input_without_objects_commands_or_jobs(
         self, prepared_case, monkeypatch
     ):

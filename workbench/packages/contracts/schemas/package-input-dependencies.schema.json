@@ -1,0 +1,325 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-input-dependencies:1",
+  "$ref": "#/$defs/View",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Prepared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "frozen_input_id",
+        "execution_input_id",
+        "execution_input_digest"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "requirement_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "state": {
+          "enum": [
+            "unknown",
+            "not_needed",
+            "required"
+          ]
+        },
+        "fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true,
+          "maxItems": 500,
+          "minItems": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "requirement_digest",
+        "state",
+        "fact_ids",
+        "evidence_ids",
+        "reason"
+      ]
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "usage_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Dependency"
+          },
+          "maxItems": 500
+        }
+      },
+      "required": [
+        "purpose",
+        "usage_digest",
+        "dependencies"
+      ]
+    },
+    "RequirementAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requirement_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "requirement_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "declaration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dependency"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fact_status": {
+          "enum": [
+            "unknown",
+            "missing",
+            "selected_unvalidated",
+            "not_used"
+          ]
+        },
+        "unselected_fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "coverage_state": {
+          "enum": [
+            "not_provided",
+            "missing",
+            "pending_parse",
+            "parse_gap",
+            "unsupported",
+            "verified",
+            "not_applicable",
+            "conflict",
+            "unknown"
+          ]
+        },
+        "source_bound": {
+          "type": "boolean"
+        },
+        "applicability": {
+          "enum": [
+            "applicable",
+            "unknown",
+            "not_applicable"
+          ]
+        }
+      },
+      "required": [
+        "requirement_id",
+        "requirement_digest",
+        "declaration",
+        "fact_status",
+        "unselected_fact_ids",
+        "coverage_state",
+        "source_bound",
+        "applicability"
+      ]
+    },
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "package-input-dependencies/1"
+        },
+        "kind": {
+          "const": "input_dependency_assessment"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "inventory_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "usage_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "selected_fact_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependency_review_status": {
+          "enum": [
+            "incomplete",
+            "declared"
+          ]
+        },
+        "required_facts_assessment": {
+          "enum": [
+            "unknown",
+            "missing",
+            "selected_unvalidated",
+            "not_used"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequirementAssessment"
+          }
+        },
+        "inventory_status": {
+          "enum": [
+            "unproven",
+            "range_submitted_quality_unmeasured"
+          ]
+        },
+        "declaration_kind": {
+          "const": "human_dependency_annotation"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "purpose",
+        "prepared",
+        "frozen_digest",
+        "inventory_digest",
+        "usage_digest",
+        "selected_fact_count",
+        "requirement_count",
+        "dependency_review_status",
+        "required_facts_assessment",
+        "requirements",
+        "inventory_status",
+        "declaration_kind",
+        "inventory_complete",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "policy_digest"
+      ]
+    },
+    "View": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "manifest",
+        "digest"
+      ]
+    }
+  }
+}
