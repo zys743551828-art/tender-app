@@ -1,5 +1,49 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type ConfirmPackageFact = PackageFactChange_ConfirmRequest;
+
+export type WithdrawPackageFact = PackageFactChange_WithdrawRequest;
+
+export type PackageFactChangeView = PackageFactChange_Record;
+
+export type PackageCurrentFactPage = {
+  version: "package-current-facts/1";
+  kind: "current_package_facts";
+  fact_count: number;
+  items: PackageCurrentFactSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+  binding: PackageFactChange_Binding;
+  head: PackageFactChange_Head;
+  checked_at: string;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  required_facts_assessment: "not_performed";
+  source_packages: PackageFactSourcePackage[];
+};
+
+export type PackageCurrentFactDetail = {
+  version: "package-current-fact/1";
+  kind: "current_package_fact";
+  summary: PackageCurrentFactSummary;
+  editability: "editable" | "unsupported_or_oversized";
+  editable_fact: PackageEditableFact | null;
+  binding: PackageFactChange_Binding;
+  head: PackageFactChange_Head;
+  checked_at: string;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  required_facts_assessment: "not_performed";
+  evidence_references: PackageFactEvidenceReference[];
+  evidence_truncated: boolean;
+};
+
 export type PackagePreparedFactPage = {
   bid_id: string;
   package_id: string;
@@ -3484,6 +3528,79 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageFactChange_ConfirmRequest = {
+  frozen_digest: PackageFactChange_Digest;
+  expected_head: PackageFactChange_Head;
+  replaces_fact_id: PackageFactChange_Id | null;
+  fact: PackageFactChange_Fact;
+  confirmation: "confirmed";
+};
+
+export type PackageFactChange_WithdrawRequest = {
+  frozen_digest: PackageFactChange_Digest;
+  expected_head: PackageFactChange_Head;
+  fact_id: PackageFactChange_Id;
+  reason: string;
+};
+
+export type PackageFactChange_Record = {
+  manifest: PackageFactChange_Manifest | PackageFactChange_ManifestV2;
+  digest: PackageFactChange_Digest;
+};
+
+export type PackageCurrentFactSummary = {
+  fact_id: string;
+  fact_item_digest: string;
+  name: string;
+  subject: string;
+  scope: string;
+  value_preview: string;
+  unit: string | null;
+  preview_truncated: boolean;
+  confirmation_recorded: "pending" | "confirmed" | "rejected";
+  decision_id: string | null;
+  frozen_evidence_status: "selected_parse" | "unproven";
+};
+
+export type PackageFactChange_Binding = {
+  bid_id: PackageFactChange_Id;
+  package_id: PackageFactChange_Id;
+  revision_id: PackageFactChange_Id;
+  inventory_id: PackageFactChange_Id;
+  frozen_input_id: PackageFactChange_Id;
+  frozen_digest: PackageFactChange_Digest;
+};
+
+export type PackageFactChange_Head = {
+  id: PackageFactChange_Id | null;
+  revision: number;
+};
+
+export type PackageFactSourcePackage = {
+  role: "target" | "authority";
+  package_id: string;
+  revision_id: string;
+  digest: string;
+};
+
+export type PackageEditableFact = {
+  subject: string;
+  scope: string;
+  name: string;
+  value: string | boolean | null;
+  unit: string | null;
+  evidence_ids: string[];
+};
+
+export type PackageFactEvidenceReference = {
+  id: string;
+  parse_id: string;
+  document_version_id: string;
+  physical_page: number;
+  digest: string;
+  frozen_parse_member: boolean;
+};
+
 export type PackagePreparedFactSummary = {
   fact_id: string;
   fact_item_digest: string;
@@ -4695,6 +4812,67 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageFactChange_Digest = string;
+
+export type PackageFactChange_Id = string;
+
+export type PackageFactChange_Fact = {
+  subject: string;
+  scope: string;
+  name: string;
+  value: string | boolean | null;
+  unit: string | null;
+  evidence_ids: string[];
+  reason: string;
+};
+
+export type PackageFactChange_Manifest = {
+  version: "package-fact-change/1";
+  kind: "package_fact_change";
+  command_id: PackageFactChange_Id;
+  actor_id: PackageFactChange_Id;
+  action: "confirmed" | "withdrawn";
+  recorded_at: string;
+  reason: string;
+  binding: PackageFactChange_Binding;
+  previous_head: PackageFactChange_Head;
+  head: PackageFactChange_Head;
+  fact_id: PackageFactChange_Id;
+  replaces_fact_id: PackageFactChange_Id | null;
+  decision_id: PackageFactChange_Id | null;
+  evidence_selection_digest: PackageFactChange_Digest | null;
+  evidence_basis_digest: PackageFactChange_Digest | null;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
+export type PackageFactChange_ManifestV2 = {
+  version: "package-fact-change/2";
+  kind: "package_fact_change";
+  command_id: PackageFactChange_Id;
+  actor_id: PackageFactChange_Id;
+  action: "confirmed" | "withdrawn";
+  recorded_at: string;
+  reason: string;
+  binding: PackageFactChange_Binding;
+  previous_head: PackageFactChange_Head;
+  head: PackageFactChange_Head;
+  fact_id: PackageFactChange_Id;
+  replaces_fact_id: PackageFactChange_Id | null;
+  decision_id: PackageFactChange_Id | null;
+  evidence_selection_digest: PackageFactChange_Digest | null;
+  evidence_basis_digest: PackageFactChange_Digest | null;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  request_digest: PackageFactChange_Digest;
+};
+
 export type PackageFactScope_Digest = string;
 
 export type PackageFactScope_Subject = {
@@ -5032,12 +5210,30 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/manifest",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/evidence",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-confirmations",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-withdrawals",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-changes/{command_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-context",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/facts/{fact_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts/{attempt_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
   "GET /api/v1/bids/{bid_id}/package-documents",
   "GET /api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
   "GET /api/v1/bids/{bid_id}/pricing-context",
@@ -5174,19 +5370,6 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/uploads/{upload_id}/parts",
   "POST /api/v1/uploads/{upload_id}/authorizations",
   "POST /api/v1/uploads/{upload_id}/abort",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-check",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-check",
-  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration",
-  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts",
 ];
 
 export const ruleConfirmationLimit: number = 500;

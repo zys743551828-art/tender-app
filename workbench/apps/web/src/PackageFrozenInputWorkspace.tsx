@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import type {
@@ -23,6 +23,9 @@ import PackageFrozenInputDirectory from "./PackageFrozenInputDirectory";
 import PackageReviewEligibility from "./PackageReviewEligibility";
 import { matchesFrozenInputSummary } from "./frozenInputDirectory";
 import type { FrozenInputSummary } from "./frozenInputDirectory";
+const PackageFactChangeWorkspace = lazy(
+  () => import("./PackageFactChangeWorkspace"),
+);
 
 type Props = {
   scope: FreezeScope;
@@ -44,6 +47,7 @@ export default function PackageFrozenInputWorkspace({
 }
 
 function Workspace({ scope, candidate, disabled = false }: Props) {
+  const [factRevision, setFactRevision] = useState(0);
   const [loaded] = useState(() => {
     try {
       return { record: loadFreezeRecord(scope), error: null };
@@ -275,8 +279,18 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
         {history && result(history)}
       </details>
       {(history ?? saved) && (
+        <Suspense fallback={<p>正在加载项目事实…</p>}>
+          <PackageFactChangeWorkspace
+            scope={scope}
+            frozen={(history ?? saved)!}
+            disabled={disabled}
+            onCommitted={() => setFactRevision((value) => value + 1)}
+          />
+        </Suspense>
+      )}
+      {(history ?? saved) && (
         <PackageReviewEligibility
-          key={(history ?? saved)!.digest}
+          key={`${(history ?? saved)!.digest}:${factRevision}`}
           scope={scope}
           frozen={(history ?? saved)!}
         />

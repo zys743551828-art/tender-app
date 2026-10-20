@@ -1,3 +1,6 @@
+import Picker from "./PackageEvidencePicker";
+import { partsOf, memberships } from "./packageEvidenceDirectory";
+import type { EvidenceEntry as Entry } from "./packageEvidenceDirectory";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
 import type {
@@ -5,7 +8,6 @@ import type {
   CreatePackageCoverageAttempt,
   EvidenceView,
   PackageRequirementInventoryView,
-  PackageEvidencePage,
 } from "./contracts";
 import "./CoverageEditor.css";
 
@@ -24,8 +26,6 @@ type Props = {
   onChange: (value: CoverageEditorValue) => void;
   initialResults?: CoverageEditorValue["results"];
 };
-type Entry = PackageEvidencePage["items"][number];
-type EvidencePage = PackageEvidencePage;
 type Range = { enabled: boolean; first: string; last: string };
 type Draft = {
   enabled: boolean;
@@ -73,193 +73,6 @@ const pageNumber = (text: string) =>
   /^\d+$/.test(text) && Number.isSafeInteger(Number(text)) && Number(text) > 0
     ? Number(text)
     : NaN;
-const partsOf = (view: BidPackageStoredView) =>
-  view.manifest.members.flatMap((member, fileIndex) =>
-    member.parts.map((part, partIndex) => ({
-      member,
-      part,
-      fileIndex: fileIndex + 1,
-      partIndex: partIndex + 1,
-    })),
-  );
-function memberships(
-  view: BidPackageStoredView,
-  value: Pick<
-    EvidenceView,
-    "document_version_id" | "parse_run_id" | "physical_page"
-  >,
-) {
-  return partsOf(view)
-    .filter(
-      ({ member, part }) =>
-        member.document_version_id === value.document_version_id &&
-        member.parse.status === "frozen" &&
-        member.parse.parse_run_id === value.parse_run_id &&
-        part.first_page <= value.physical_page &&
-        value.physical_page <= part.last_page,
-    )
-    .map((p) => p.part.part_id);
-}
-function validateDirectory(page: EvidencePage, view: BidPackageStoredView) {
-  if (
-    page.revision_id !== view.manifest.revision_id ||
-    page.package_digest !== view.digest ||
-    !Array.isArray(page.items) ||
-    typeof page.has_more !== "boolean" ||
-    (page.has_more &&
-      (!page.next_cursor || typeof page.next_cursor !== "string"))
-  )
-    throw new Error("证据目录的包修订或摘要不一致，未采用其他范围。");
-  for (const item of page.items) {
-    const actual = memberships(view, item).sort();
-    if (
-      typeof item.id !== "string" ||
-      !item.id ||
-      !Number.isSafeInteger(item.physical_page) ||
-      item.physical_page < 1 ||
-      !Array.isArray(item.part_ids) ||
-      !item.part_ids.length ||
-      [...item.part_ids].sort().join("\0") !== actual.join("\0")
-    )
-      throw new Error("证据目录的文件、解析或逻辑页范围不一致。");
-  }
-}
-
-function EvidenceDirectory({
-  bidId,
-  view,
-  disabled,
-  renderEntry,
-}: {
-  bidId: string;
-  view: BidPackageStoredView;
-  disabled: boolean;
-  renderEntry: (entry: Entry, index: number) => React.ReactNode;
-}) {
-  const path = `/bids/${bidId}/packages/${view.manifest.package_id}/revisions/${view.manifest.revision_id}/evidence?limit=20`;
-  const generation = useRef(0);
-  const invalidate = useCallback(() => {
-    generation.current++;
-  }, []);
-  const [snapshot, setSnapshot] = useState<{
-    path: string;
-    items: Entry[];
-    next: string | null;
-    hasMore: boolean;
-    loading: boolean;
-    error?: unknown;
-  }>({ path, items: [], next: null, hasMore: false, loading: true });
-  async function load(cursor: string | null = null) {
-    const token = ++generation.current;
-    setSnapshot((old) => ({ ...old, path, loading: true, error: undefined }));
-    try {
-      const { data } = await api<EvidencePage>(
-        path + (cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""),
-      );
-      validateDirectory(data, view);
-      if (data.has_more && cursor === data.next_cursor)
-        throw new Error("证据目录游标没有推进，请重读后继续。");
-      if (generation.current !== token) return;
-      setSnapshot((old) => {
-        const merged = new Map(
-          (cursor && old.path === path ? old.items : []).map((item) => [
-            item.id,
-            item,
-          ]),
-        );
-        for (const item of data.items) merged.set(item.id, item);
-        return {
-          path,
-          items: [...merged.values()],
-          next: data.next_cursor,
-          hasMore: data.has_more,
-          loading: false,
-        };
-      });
-    } catch (error) {
-      if (generation.current === token)
-        setSnapshot((old) => ({ ...old, path, loading: false, error }));
-    }
-  }
-  useEffect(() => {
-    void load();
-    return invalidate;
-    // One immutable directory instance per captured package revision.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, view.digest, invalidate]);
-  const current = snapshot.path === path ? snapshot : null;
-  return (
-    <div className="coverage-editor-directory">
-      {current?.loading && <p>正在读取冻结解析的证据目录…</p>}
-      {!!current?.error && (
-        <p role="alert">
-          {current.error instanceof Error
-            ? current.error.message
-            : "目录读取失败"}
-          <button
-            type="button"
-            disabled={disabled || current.loading}
-            onClick={() => void load(current.next)}
-          >
-            重读证据目录
-          </button>
-        </p>
-      )}
-      {current?.items.map(renderEntry)}
-      {current &&
-        !current.loading &&
-        !current.items.length &&
-        !current.error && <p>此冻结包暂无可定位证据，不会改取最新解析。</p>}
-      {current?.hasMore && (
-        <button
-          type="button"
-          disabled={disabled || current.loading}
-          onClick={() => void load(current.next)}
-        >
-          更多冻结证据
-        </button>
-      )}
-    </div>
-  );
-}
-
-function Picker({
-  label,
-  bidId,
-  view,
-  disabled,
-  renderEntry,
-}: {
-  label: string;
-  bidId: string;
-  view: BidPackageStoredView;
-  disabled: boolean;
-  renderEntry: (entry: Entry, index: number) => React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div>
-      <button
-        type="button"
-        disabled={disabled}
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        {label}
-      </button>
-      {open && (
-        <EvidenceDirectory
-          key={`${view.manifest.revision_id}:${view.digest}`}
-          bidId={bidId}
-          view={view}
-          disabled={disabled}
-          renderEntry={renderEntry}
-        />
-      )}
-    </div>
-  );
-}
-
 export function CoverageEditor({
   bidId,
   packageView,

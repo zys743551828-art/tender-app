@@ -403,6 +403,241 @@ class TestFreezing:
         ).fetchone()
         return rows, head
 
+    def test_old_fact_change_receipt_remains_exact_history_without_invented_request_binding(
+        self, provenance_case, monkeypatch
+    ):
+        from copy import deepcopy
+
+        from packages.domain import bid_package_fact_changes as changes
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        original = changes.policy.seal
+
+        def legacy_seal(manifest):
+            value = deepcopy(manifest)
+            value["version"] = "package-fact-change/1"
+            value.pop("request_digest")
+            return original(value)
+
+        monkeypatch.setattr(changes.policy, "seal", legacy_seal)
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+        body = self.fact_change_body(provenance_case)
+        key = str(uid())
+        saved, _ = changes.confirm(*args, key, body)
+        monkeypatch.setattr(changes.policy, "seal", original)
+        record = saved["body"]
+        assert (
+            record["manifest"]["version"] == "package-fact-change/1"
+            and "request_digest" not in record["manifest"]
+        )
+        assert (
+            changes.load(f["scope"], frozen["manifest"]["id"], record["manifest"]["command_id"])
+            == record
+        )
+        assert changes.confirm(*args, key, body) == (saved, True)
+
+    def test_fact_change_http_requires_explicit_intent_csrf_and_key_and_exposes_exact_history(
+        self, provenance_case
+    ):
+        f, frozen, path, prepared, fact, source = provenance_case
+        client = f["w"]["client"]
+        base = path.removesuffix("/execution-inputs")
+        url = base + "/fact-confirmations"
+        body = self.fact_change_body(provenance_case)
+        assert client.post(url, json=body).status_code == 403
+        assert (
+            client.post(
+                url,
+                json=body,
+                headers={
+                    k: v for k, v in headers(f["w"]).items() if k.lower() != "idempotency-key"
+                },
+            ).status_code
+            == 428
+        )
+        assert (
+            client.post(
+                url, json=body | {"launch_available": True}, headers=headers(f["w"])
+            ).status_code
+            == 422
+        )
+        assert (
+            client.post(
+                url, json=body | {"confirmation": "automatic"}, headers=headers(f["w"])
+            ).status_code
+            == 422
+        )
+        h = headers(f["w"])
+        saved = client.post(url, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        record = saved.json()
+        assert valid("PackageFactChangeView", record)
+        replay = client.post(url, json=body, headers=h)
+        assert (
+            replay.status_code == 201
+            and replay.json() == record
+            and replay.headers.get("Idempotent-Replayed") == "true"
+        )
+        history = base + "/fact-changes/" + record["manifest"]["command_id"]
+        assert client.get(history).json() == record
+        assert client.get(history.replace(f["scope"][1], str(uid()))).status_code == 404
+        client.cookies.clear()
+        assert client.get(history).status_code == 401
+        assert (
+            client.get(
+                base + "/fact-context", params={"frozen_digest": frozen["digest"]}
+            ).status_code
+            == 401
+        )
+        assert client.post(url, json=body, headers=h).status_code == 401
+
+    def test_current_fact_http_directory_is_bounded_and_cursor_tracks_exact_head(
+        self, provenance_case
+    ):
+        from packages.domain.bid_package_fact_changes import confirm
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        client = f["w"]["client"]
+        base = path.removesuffix("/execution-inputs")
+        url = base + "/fact-context"
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+        body = self.fact_change_body(provenance_case)
+        confirm(*args, str(uid()), body)
+        response = client.get(url, params={"frozen_digest": frozen["digest"], "limit": 1})
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert valid("PackageCurrentFactPage", page)
+        assert page["fact_count"] == 2 and page["has_more"] and page["next_cursor"]
+        assert {row["role"] for row in page["source_packages"]} == {"target", "authority"}
+        target = next(row for row in page["source_packages"] if row["role"] == "target")
+        assert (
+            target["package_id"] == f["scope"][1]
+            and target["revision_id"] == f["scope"][2]
+            and target["digest"] == f["body"]["package_digest"]
+        )
+        assert (
+            page["facts_qualified"] is False
+            and page["required_facts_assessment"] == "not_performed"
+        )
+        assert (
+            "decision_basis_jsonb_text" not in response.text and "object_key" not in response.text
+        )
+        next_page = client.get(
+            url,
+            params={"frozen_digest": frozen["digest"], "limit": 1, "cursor": page["next_cursor"]},
+        ).json()
+        assert valid("PackageCurrentFactPage", next_page) and not next_page["has_more"]
+        assert next_page["items"][0]["fact_id"] != page["items"][0]["fact_id"]
+        owner = f["w"]["database"]["owner"]
+        old_clone = owner.execute(
+            "SELECT id FROM design.fact_items WHERE fact_set_id=%s AND name='synthetic fact'",
+            (page["head"]["id"],),
+        ).fetchone()["id"]
+        detail = client.get(
+            base + "/facts/" + str(old_clone), params={"frozen_digest": frozen["digest"]}
+        )
+        assert detail.status_code == 200, detail.text
+        assert valid("PackageCurrentFactDetail", detail.json())
+        assert (
+            detail.json()["editability"] == "unsupported_or_oversized"
+            and detail.json()["editable_fact"] is None
+        )
+        assert detail.json()["evidence_references"][0]["frozen_parse_member"] is True
+        confirm(*args, str(uid()), self.fact_change_body(provenance_case))
+        stale = client.get(
+            url, params={"frozen_digest": frozen["digest"], "cursor": page["next_cursor"]}
+        )
+        assert stale.status_code == 422 and stale.json()["code"] == "INVALID_CURSOR"
+        assert (
+            client.get(
+                base + "/facts/" + str(old_clone), params={"frozen_digest": frozen["digest"]}
+            ).status_code
+            == 404
+        )
+        assert client.get(url, params={"frozen_digest": "0" * 64}).status_code == 409
+        assert (
+            client.get(
+                url, params={"frozen_digest": frozen["digest"], "cursor": "forged.signature"}
+            ).status_code
+            == 422
+        )
+        assert (
+            client.get(url, params={"frozen_digest": frozen["digest"], "limit": 101}).status_code
+            == 422
+        )
+
+    @pytest.mark.parametrize("value", [True, None, "😀" * 300])
+    def test_current_fact_detail_preserves_scalar_type_and_exact_evidence_reference(
+        self, provenance_case, value
+    ):
+        f, frozen, path, prepared, fact, source = provenance_case
+        body = self.fact_change_body(provenance_case)
+        body["fact"]["value"] = value
+        body["fact"]["name"] = "😀" * 300
+        client = f["w"]["client"]
+        base = path.removesuffix("/execution-inputs")
+        saved = client.post(base + "/fact-confirmations", json=body, headers=headers(f["w"]))
+        assert saved.status_code == 201, saved.text
+        record = saved.json()
+        response = client.get(
+            base + "/facts/" + record["manifest"]["fact_id"],
+            params={"frozen_digest": frozen["digest"]},
+        )
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageCurrentFactDetail", result)
+        assert result["editable_fact"]["value"] == value and result["editability"] == "editable"
+        assert (
+            result["summary"]["name"] == "😀" * 240
+            and result["summary"]["preview_truncated"] is True
+        )
+        assert (
+            result["summary"]["confirmation_recorded"] == "confirmed"
+            and result["facts_qualified"] is False
+        )
+        assert result["evidence_references"][0]["id"] == str(f["w"]["evidence"])
+        assert result["evidence_references"][0]["frozen_parse_member"] is True
+
+    def test_fact_withdraw_http_recovers_original_confirmation_and_history_after_source_loss(
+        self, provenance_case
+    ):
+        f, frozen, path, prepared, fact, source = provenance_case
+        body = self.fact_change_body(provenance_case)
+        client = f["w"]["client"]
+        base = path.removesuffix("/execution-inputs")
+        h = headers(f["w"])
+        saved = client.post(base + "/fact-confirmations", json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        record = saved.json()
+        owner = f["w"]["database"]["owner"]
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (source,),
+        )
+        change = dict(
+            frozen_digest=frozen["digest"],
+            expected_head=record["manifest"]["head"],
+            fact_id=record["manifest"]["fact_id"],
+            reason="明确撤回本次事实",
+        )
+        removed = client.post(base + "/fact-withdrawals", json=change, headers=headers(f["w"]))
+        assert removed.status_code == 201, removed.text
+        assert (
+            valid("PackageFactChangeView", removed.json())
+            and removed.json()["manifest"]["action"] == "withdrawn"
+        )
+        assert client.post(base + "/fact-confirmations", json=body, headers=h).json() == record
+        assert (
+            client.get(base + "/fact-changes/" + record["manifest"]["command_id"]).json() == record
+        )
+        assert (
+            client.post(
+                base + "/fact-withdrawals", json=change, headers=headers(f["w"])
+            ).status_code
+            == 409
+        )
+        assert client.get(path + "/" + prepared["manifest"]["id"]).json() == prepared
+
     def test_shared_fact_writer_keeps_existing_human_api_default_policy(self, frozen_case):
         f = frozen_case
         assert self.post(f).status_code == 201
@@ -540,7 +775,7 @@ class TestFreezing:
             == 1
         )
 
-    @pytest.mark.parametrize("corrupt", ["resealed", "empty", "headers"])
+    @pytest.mark.parametrize("corrupt", ["resealed", "empty", "headers", "request"])
     def test_package_fact_resealed_ack_cannot_replace_immutable_audit_history(
         self, provenance_case, corrupt
     ):
@@ -563,6 +798,10 @@ class TestFreezing:
             forged = {}
         if corrupt == "headers":
             forged = deepcopy(saved) | {"headers": {"X-Forged": "blocked"}}
+        if corrupt == "request":
+            forged = deepcopy(saved)
+            forged["body"]["manifest"]["request_digest"] = "0" * 64
+            forged["body"]["digest"] = digest(forged["body"]["manifest"])
         owner = f["w"]["database"]["owner"]
         command_id = saved["body"]["manifest"]["command_id"]
         owner.execute(

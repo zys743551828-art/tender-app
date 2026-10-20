@@ -86,6 +86,16 @@
 
 本片只交付接口及存储，前端“保存冻结输入”、未决请求刷新恢复、历史入口与正式执行消费尚未接入。初始化规则要求全新库，当前预览切到fusion_v4空库并保留v3数据库、原合成项目及配置卷；不在v3就地改表，也不把旧单正文非空字段填成虚假整包身份。
 
+## 冻结输入内的项目事实管理
+
+在 `.../{inventory_id}/frozen-review-inputs/{input_id}` 下提供五个实际接口：`POST /fact-confirmations`、`POST /fact-withdrawals`、`GET /fact-changes/{command_id}`、`GET /fact-context`、`GET /facts/{fact_id}`。写入需要会话、Origin、CSRF 与幂等键，返回201；读取需要会话，返回200。当前目录与详情必须显式携带 `frozen_digest`。目录稳定分页，游标绑定冻结身份及当前事实集；并发事实头改变后须重读。
+
+确认请求明确给出当前事实集的 `expected_head`、`confirmation=confirmed`、主体／范围／名称／值／单位／证据与理由；替换需明确 `replaces_fact_id`。值只支持原 FactInput 的字符串、布尔或空值，不能将历史可读的任意JSON强转成新输入。详情对复杂或超长旧值仅提供摘要及撤回入口。撤回需要原事实编号、理由及准确当前头。调用方不能提交操作者、服务端时间或资格标志。新确认只消费冻结文件及解析实际包含的证据；目录返回的本方／权威来源包引用来自准确原冻结记录，界面不改读最新包。
+
+新回执 `package-fact-change/2` 通过 `request_digest=SHA256({body,if_match:null})` 绑定完整原请求，同时核对原命令、201 ACK、不可变审计与冻结根。`package-fact-change/1` 原历史按原摘要读取，不补造完整请求摘要，不以旧协议充当新请求的精确确认。历史读取不清除客户端未决操作。事实修改、决定、集头、审计与命令同事务，CAS冲突或最终来源失效整笔回滚；不改变旧冻结输入、证据或报告。
+
+界面显式读取事实、按名称和值选择、从冻结包目录读取原句及文件名，核对后人工确认。HTTP层、当前事实读取、领域写协调、恢复协议、依据选择和局部样式分别负责各自边界。提交前先保存原请求体及键，未知结果只恢复同一笔；账号／冻结身份隔离迟到响应，退出清理私有恢复记录。保存成功后重新核对执行条件。原件字节、事实资格、评审／执行／发布标志恒false，必要事实评估仍为 `not_performed`；这些接口不启动任务或模型。
+
 ## 全新隔离库依赖与权限
 
 新增 `sql/bid-package-requirements.sql` 在 core、domain、bid-packages、stable-lot-identity、retrieval、worker-functions 之后、roles 之前执行。不可变表为 `bid_package_requirement_inventories`、`bid_package_requirements`、`bid_package_coverage_attempts`、`bid_package_coverage_results`；仅 `bid_package_requirement_heads` 前进更新。API 需要新表 SELECT／INSERT、仅 heads UPDATE 及新校验函数 EXECUTE，不授不可变表 UPDATE／DELETE。Worker 仅可按实际准备／完成链追加抽取绑定；不能改写资料包或清单。评分与研究角色不新增写权限。既有决定头及规则继承首次写入也由新增触发器按 bid 串行，继承路径复用已有窄权限 `lock_worker_bid`，保护原来没有当前决定的空键；任意直接 SQL 反向锁序仍可能被 PostgreSQL 判死锁而整事务回滚，不将其描述为正常路径无死锁。

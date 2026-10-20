@@ -551,6 +551,19 @@ for _name, _value in _fact_scope["$defs"].items():
     )
 SCHEMAS["ChangePackageFactScope"] = {"$ref": "#/components/schemas/PackageFactScope_Change"}
 SCHEMAS["PackageFactScopeView"] = {"$ref": "#/components/schemas/PackageFactScope_Record"}
+_fact_change = json.loads(
+    (Path(__file__).parent / "schemas/package-fact-change.schema.json").read_text("utf-8")
+)
+for _name, _value in _fact_change["$defs"].items():
+    SCHEMAS["PackageFactChange_" + _name] = json.loads(
+        json.dumps(_value).replace("#/$defs/", "#/components/schemas/PackageFactChange_")
+    )
+SCHEMAS["ConfirmPackageFact"] = {"$ref": "#/components/schemas/PackageFactChange_ConfirmRequest"}
+SCHEMAS["WithdrawPackageFact"] = {"$ref": "#/components/schemas/PackageFactChange_WithdrawRequest"}
+SCHEMAS["PackageFactChangeView"] = {"$ref": "#/components/schemas/PackageFactChange_Record"}
+SCHEMAS["PackageEditableFact"] = deepcopy(SCHEMAS["PackageFactChange_Fact"])
+SCHEMAS["PackageEditableFact"]["properties"].pop("reason")
+SCHEMAS["PackageEditableFact"]["required"].remove("reason")
 SCHEMAS["PackagePreparedFactSummary"] = object_schema(
     {
         "fact_id": UUID,
@@ -588,6 +601,89 @@ SCHEMAS["PackagePreparedFactPage"] = object_schema(
         "has_more": {"type": "boolean"},
         "next_cursor": {"type": ["string", "null"], "maxLength": 4096},
     }
+)
+SCHEMAS["PackageCurrentFactSummary"] = deepcopy(SCHEMAS["PackagePreparedFactSummary"])
+SCHEMAS["PackageCurrentFactSummary"]["properties"].update(
+    confirmation_recorded={"enum": ["pending", "confirmed", "rejected"]},
+    decision_id={"anyOf": [UUID, {"type": "null"}]},
+    frozen_evidence_status={"enum": ["selected_parse", "unproven"]},
+)
+SCHEMAS["PackageCurrentFactSummary"]["required"].extend(
+    ["confirmation_recorded", "decision_id", "frozen_evidence_status"]
+)
+_current_fact_common = dict(
+    binding={"$ref": "#/components/schemas/PackageFactChange_Binding"},
+    head={"$ref": "#/components/schemas/PackageFactChange_Head"},
+    checked_at={"type": "string", "format": "date-time"},
+    **{
+        key: {"const": False}
+        for key in (
+            "original_bytes_verified",
+            "facts_qualified",
+            "review_ready",
+            "launch_available",
+            "publication_authorized",
+        )
+    },
+    required_facts_assessment={"const": "not_performed"},
+)
+SCHEMAS["PackageCurrentFactPage"] = object_schema(
+    dict(
+        version={"const": "package-current-facts/1"},
+        kind={"const": "current_package_facts"},
+        fact_count={"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        items={
+            "type": "array",
+            "maxItems": 100,
+            "items": {"$ref": "#/components/schemas/PackageCurrentFactSummary"},
+        },
+        has_more={"type": "boolean"},
+        next_cursor={"type": ["string", "null"], "maxLength": 4096},
+        **deepcopy(_current_fact_common),
+    )
+)
+SCHEMAS["PackageCurrentFactDetail"] = object_schema(
+    dict(
+        version={"const": "package-current-fact/1"},
+        kind={"const": "current_package_fact"},
+        summary={"$ref": "#/components/schemas/PackageCurrentFactSummary"},
+        editability={"enum": ["editable", "unsupported_or_oversized"]},
+        editable_fact={
+            "anyOf": [{"$ref": "#/components/schemas/PackageEditableFact"}, {"type": "null"}]
+        },
+        **deepcopy(_current_fact_common),
+    )
+)
+SCHEMAS["PackageFactSourcePackage"] = object_schema(
+    dict(role={"enum": ["target", "authority"]}, package_id=UUID, revision_id=UUID, digest=SHA)
+)
+SCHEMAS["PackageCurrentFactPage"]["properties"]["source_packages"] = {
+    "type": "array",
+    "minItems": 2,
+    "maxItems": 2,
+    "items": {"$ref": "#/components/schemas/PackageFactSourcePackage"},
+}
+SCHEMAS["PackageCurrentFactPage"]["required"].append("source_packages")
+SCHEMAS["PackageFactEvidenceReference"] = object_schema(
+    dict(
+        id=UUID,
+        parse_id=UUID,
+        document_version_id=UUID,
+        physical_page={"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+        digest=SHA,
+        frozen_parse_member={"type": "boolean"},
+    )
+)
+SCHEMAS["PackageCurrentFactDetail"]["properties"].update(
+    evidence_references={
+        "type": "array",
+        "maxItems": 100,
+        "items": {"$ref": "#/components/schemas/PackageFactEvidenceReference"},
+    },
+    evidence_truncated={"type": "boolean"},
+)
+SCHEMAS["PackageCurrentFactDetail"]["required"].extend(
+    ["evidence_references", "evidence_truncated"]
 )
 SCHEMAS["PackageFactScopeObservation"] = object_schema(
     {
@@ -647,7 +743,12 @@ def valid(name, value):
 
 def validate(name, value):
     if not valid(name, value):
-        raise DomainError("INVALID_REQUEST", "要求清单或人工核验声明字段不符合协议", 422)
+        message = (
+            "事实操作字段不符合协议，请核对事实、依据与当前版本"
+            if name in ("ConfirmPackageFact", "WithdrawPackageFact")
+            else "要求清单或人工核验声明字段不符合协议"
+        )
+        raise DomainError("INVALID_REQUEST", message, 422)
 
 
 BASE = "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories"
@@ -659,6 +760,41 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/fact-confirmations",
+            "post",
+            "confirmPackageFact",
+            "ConfirmPackageFact",
+            "PackageFactChangeView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/fact-withdrawals",
+            "post",
+            "withdrawPackageFact",
+            "WithdrawPackageFact",
+            "PackageFactChangeView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/fact-changes/{command_id}",
+            "get",
+            "getPackageFactChange",
+            None,
+            "PackageFactChangeView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/fact-context",
+            "get",
+            "listPackageCurrentFacts",
+            None,
+            "PackageCurrentFactPage",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/facts/{fact_id}",
+            "get",
+            "getPackageCurrentFact",
+            None,
+            "PackageCurrentFactDetail",
+        ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts",
             "get",
@@ -837,7 +973,16 @@ def extend_openapi(actual):
                 )
             )
             else "200": {
-                "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+                "description": "Explicit human fact operation or current fact observation; no review/execution authority."
+                if operation_id
+                in (
+                    "confirmPackageFact",
+                    "withdrawPackageFact",
+                    "getPackageFactChange",
+                    "listPackageCurrentFacts",
+                    "getPackageCurrentFact",
+                )
+                else "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
                 "content": {
                     "application/json": {"schema": {"$ref": "#/components/schemas/" + response}}
                 },

@@ -182,3 +182,25 @@ def test_withdrawal_receipt_never_claims_a_new_confirmation(manifest):
         evidence_basis_digest=None,
     )
     assert policy.verify(policy.seal(manifest))["manifest"]["decision_id"] is None
+
+
+def test_new_receipt_binds_complete_request_while_old_receipt_keeps_original_digest(
+    manifest, request_body
+):
+    from packages.domain.runtime import sha
+
+    old = policy.seal(manifest)
+    newer = manifest | dict(
+        version="package-fact-change/2",
+        request_digest=sha({"body": request_body, "if_match": None}),
+    )
+    assert policy.verify(policy.seal(newer))["manifest"]["request_digest"] == sha(
+        {"body": request_body, "if_match": None}
+    )
+    assert policy.verify(old) == old and "request_digest" not in old["manifest"]
+
+
+def test_new_receipt_cannot_claim_request_binding_without_digest(manifest):
+    manifest["version"] = "package-fact-change/2"
+    with pytest.raises(DomainError):
+        policy.verify(dict(manifest=manifest, digest=digest(manifest)))

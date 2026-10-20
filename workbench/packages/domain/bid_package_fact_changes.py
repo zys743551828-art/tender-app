@@ -19,6 +19,7 @@ from packages.domain.runtime import (
     clean,
     connection,
     require_read_committed,
+    sha,
 )
 from packages.lifecycle.service import assert_work_writable
 
@@ -85,7 +86,7 @@ def _load_record(c, scope, frozen_id, command_id):
     ):
         raise DomainError("PACKAGE_FACT_CHANGE_NOT_FOUND", "事实操作回执不存在", 404)
     command = c.execute(
-        "SELECT actor_id::text,command_kind,target_id::text,response FROM design.commands WHERE id=%s",
+        "SELECT actor_id::text,command_kind,target_id::text,request_digest,response FROM design.commands WHERE id=%s",
         (command_id,),
     ).fetchone()
     ack = _ack(command["response"]) if command is not None else None
@@ -98,6 +99,10 @@ def _load_record(c, scope, frozen_id, command_id):
         or row["event_type"] != "package.fact_" + m["action"]
         or command["command_kind"] != KINDS[m["action"]]
         or command["target_id"] != frozen_id
+        or (
+            m["version"] == "package-fact-change/2"
+            and m["request_digest"] != command["request_digest"]
+        )
         or ack != value
     ):
         raise DomainError(
@@ -133,6 +138,10 @@ def _replay(c, command, actor, scope, frozen_id, body, action):
         or stored["status"] != 201
     ):
         raise DomainError("PACKAGE_FACT_CHANGE_CORRUPT", "事实操作回执与原命令不一致", 500)
+    if m["version"] == "package-fact-change/2" and m["request_digest"] != sha(
+        {"body": body, "if_match": None}
+    ):
+        raise DomainError("PACKAGE_FACT_CHANGE_CORRUPT", "事实操作回执与原请求内容不一致", 500)
     if value != _load_record(c, scope, frozen_id, str(command.id)):
         raise DomainError("PACKAGE_FACT_CHANGE_CORRUPT", "事实操作回执与原审计不一致", 500)
     return stored, True
@@ -196,7 +205,8 @@ def _save(actor, scope, frozen_id, key, body, action):
             # Natural expiry can happen without any source revision while cloning.
             effective_at(receipt.closure(), recorded_at)
         manifest = {
-            "version": "package-fact-change/1",
+            "version": "package-fact-change/2",
+            "request_digest": sha({"body": body, "if_match": None}),
             "kind": "package_fact_change",
             "command_id": str(command.id),
             "actor_id": actor,

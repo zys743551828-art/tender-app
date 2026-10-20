@@ -21,6 +21,7 @@ FILES = (
     "packages/domain/package_fact_scope_snapshot.py",
     "packages/contracts/schemas/package-fact-proof-snapshot.schema.json",
     "packages/domain/package_fact_validation.py",
+    "packages/domain/fact_sets.py",
     "packages/domain/package_fact_scope.py",
     "packages/domain/bid_package_fact_scope_repository.py",
     "packages/domain/review_data.py",
