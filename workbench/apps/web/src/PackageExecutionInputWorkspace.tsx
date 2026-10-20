@@ -108,6 +108,10 @@ function Workspace({
         : null;
     if (!pending) return;
     writing.current = true;
+    ticket.current++;
+    setResult(null);
+    setReading(false);
+    setHistoryError(null);
     setBusy(true);
     setError(null);
     try {

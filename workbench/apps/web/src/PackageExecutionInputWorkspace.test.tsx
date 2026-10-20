@@ -324,3 +324,42 @@ it("编辑历史编号后迟到读回不得覆盖当前选择", async () => {
     screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
   ).not.toBeInTheDocument();
 });
+
+it("新保存结果未知时不显示上一笔成功记录", async () => {
+  fetchMock.mockResolvedValueOnce(response(await prepared(frozen, id(20))));
+  render(<Workspace scope={scope} frozen={frozen} candidate={candidate} />);
+  await save();
+  await screen.findByText("执行准备输入已读回并校验，尚未启动评审。");
+  fetchMock.mockRejectedValueOnce(new Error("offline"));
+  await save();
+  await screen.findByText(/有一笔执行准备输入保存尚未确认/);
+  expect(
+    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+  ).not.toBeInTheDocument();
+  expect(JSON.parse(sessionStorage.getItem(storageKey)!).lastId).toBe(id(20));
+});
+
+it("保存开始后此前历史读取的迟到结果不得覆盖未知状态", async () => {
+  let resolve!: (v: Response) => void;
+  fetchMock.mockImplementationOnce(
+    () =>
+      new Promise<Response>((r) => {
+        resolve = r;
+      }),
+  );
+  render(<Workspace scope={scope} frozen={frozen} candidate={candidate} />);
+  await userEvent.click(screen.getByText("读取已有执行准备输入"));
+  await userEvent.type(screen.getByLabelText("执行准备输入编号"), id(20));
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取执行准备输入" }),
+  );
+  fetchMock.mockRejectedValueOnce(new Error("offline"));
+  await save();
+  await screen.findByText(/有一笔执行准备输入保存尚未确认/);
+  await act(async () => {
+    resolve(response(await prepared(frozen, id(20)), 200));
+  });
+  expect(
+    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+  ).not.toBeInTheDocument();
+});
