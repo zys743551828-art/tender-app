@@ -5,6 +5,7 @@ import {
 } from "./executionInputValidation";
 import { validPendingFactChange } from "./factChangeProtocol";
 import type { FactChangeScope, PendingFactChange } from "./factChangeProtocol";
+import { recordedCommandStorageKey } from "./recordedCommandStorage";
 export type FactChangeRecord = {
   version: 1;
   scope: FactChangeScope;
@@ -12,7 +13,15 @@ export type FactChangeRecord = {
   lastId: string | null;
 };
 export const factChangeStorageKey = (s: FactChangeScope) =>
-  `tender:command-record:fact-change:${s.memberId}:${s.bidId}:${s.packageId}:${s.revisionId}:${s.inventoryId}:${s.frozenId}`;
+  recordedCommandStorageKey(
+    "fact-change",
+    s.memberId,
+    s.bidId,
+    s.packageId,
+    s.revisionId,
+    s.inventoryId,
+    s.frozenId,
+  );
 export function loadFactChangeRecord(s: FactChangeScope): FactChangeRecord {
   const raw = sessionStorage.getItem(factChangeStorageKey(s));
   if (raw === null)

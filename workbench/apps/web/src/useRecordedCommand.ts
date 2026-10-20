@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, commandKey, completeCommand, supportsApi } from "./api";
 import type { ApiResult } from "./api";
+export { clearRecordedCommands } from "./recordedCommandStorage";
 
 type RequestRecord = {
   path: string;
@@ -9,16 +10,6 @@ type RequestRecord = {
   key: string;
   method?: "POST" | "PUT" | "PATCH";
 };
-
-export function clearRecordedCommands(keepMemberId?: string) {
-  for (const key of Object.keys(sessionStorage)) {
-    const match = key.match(
-      /^tender:command(?:-record)?:(?:fact-change|package-freeze|submission|report|pricing-formula|pricing-simulate|pricing-save|knowledge-search|knowledge-unit|knowledge-index|business-result|business-verification|assistant-main|assistant-state|assistant-turn|assistant-note|assistant-cancel|assistant-action|task-template|task-pause|task-run|task-draft|authoring-structure|authoring-resolve|authoring-plan|word-retry|authoring-template):([^:]+):/,
-    );
-    if (match && (!keepMemberId || match[1] !== keepMemberId))
-      sessionStorage.removeItem(key);
-  }
-}
 
 /** Retain the exact uncertain request across refresh; a new snapshot is never a retry. */
 export function useRecordedCommand(scope: string) {

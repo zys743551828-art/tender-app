@@ -92,6 +92,8 @@ function Workspace(props: DependencyProps) {
   }, []);
   function invalidate() {
     ticket.current++;
+    // The invalidated request can no longer release its own busy state.
+    setBusy(false);
     setResult(null);
     setCheckedPlan(null);
     setError(null);
