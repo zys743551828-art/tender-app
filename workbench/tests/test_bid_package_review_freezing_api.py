@@ -306,6 +306,206 @@ class TestFreezing:
         )
         assert response.status_code == (409 if invalid == "prepared_digest" else 422), response.text
 
+    @pytest.fixture
+    def dependency_plan_case(self, prepared_case):
+        from packages.domain.bid_package_input_dependencies import check
+
+        f, frozen, _, prepared = prepared_case
+        selected = {
+            "execution_input_digest": prepared["digest"],
+            "purpose": "prebid_compliance",
+            "fact_ids": [],
+            "dependencies": [],
+        }
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        assessment = check(*args[1:], selected)
+        return (
+            f,
+            frozen,
+            prepared,
+            args,
+            selected
+            | {"assessment_digest": assessment["digest"], "reason": "明确保存含未知缺口的合成计划"},
+        )
+
+    def test_dependency_plan_saves_immutable_receipt_and_exact_audit_without_io_or_tasks(
+        self, dependency_plan_case, monkeypatch
+    ):
+        from packages.domain import storage
+        from packages.domain.bid_package_dependency_plans import read, save
+        from packages.domain.runtime import connection
+
+        f, frozen, prepared, args, body = dependency_plan_case
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS outbox"
+        before = c.execute(statement).fetchone()
+        monkeypatch.setattr(
+            storage, "client", lambda: pytest.fail("plan saving must not read objects")
+        )
+        key = str(uid())
+        response, replay = save(*args, key, body)
+        assert not replay and response["status"] == 201
+        value = response["body"]
+        assert value["digest"] == digest(value["manifest"])
+        assert value["manifest"]["assessment"]["manifest"]["required_facts_assessment"] == "unknown"
+        assert value["manifest"]["launch_available"] is False
+        assert save(*args, key, body) == (response, True)
+        assert read(*args[1:], value["manifest"]["id"]) == value
+        with connection() as reader:
+            role = reader.execute(
+                "SELECT rolsuper FROM pg_roles WHERE rolname=current_user"
+            ).fetchone()
+            assert not role["rolsuper"]
+            privileges = reader.execute(
+                "SELECT has_table_privilege(current_user,'design.bid_package_dependency_plans','INSERT') AS i,has_table_privilege(current_user,'design.bid_package_dependency_plans','UPDATE') AS u,has_table_privilege(current_user,'design.bid_package_dependency_plans','DELETE') AS d"
+            ).fetchone()
+            assert privileges == {"i": True, "u": False, "d": False}
+        assert c.execute(statement).fetchone() == before
+        assert f["w"]["client"].get(f["path"] + "/" + frozen["manifest"]["id"]).json() == frozen
+
+    @pytest.mark.parametrize(
+        "failure", ["assessment", "prepared", "key_conflict", "missing_key", "foreign_scope"]
+    )
+    def test_dependency_plan_invalid_request_rolls_back_all_writes(
+        self, dependency_plan_case, failure
+    ):
+        from packages.domain.bid_package_dependency_plans import save
+        from packages.domain.runtime import DomainError
+
+        f, _, _, args, body = dependency_plan_case
+        c = f["w"]["database"]["owner"]
+        key = str(uid())
+        if failure == "key_conflict":
+            save(*args, key, body)
+            body = body | {"reason": "不同意图不得复用同一个键"}
+        elif failure == "assessment":
+            body = body | {"assessment_digest": "a" * 64}
+        elif failure == "prepared":
+            body = body | {"execution_input_digest": "a" * 64}
+        elif failure == "missing_key":
+            key = ""
+        elif failure == "foreign_scope":
+            args = (args[0], (args[1][0], str(uid()), *args[1][2:]), *args[2:])
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.bid_package_dependency_plans) AS plans,(SELECT count(*) FROM design.audit_entries) AS audits,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS outbox"
+        before = c.execute(statement).fetchone()
+        with pytest.raises(DomainError) as denied:
+            save(*args, key, body)
+        assert denied.value.status == (
+            428 if failure == "missing_key" else 404 if failure == "foreign_scope" else 409
+        )
+        assert c.execute(statement).fetchone() == before
+
+    def test_dependency_plan_history_survives_policy_change_and_archival_but_new_save_does_not(
+        self, dependency_plan_case, monkeypatch
+    ):
+        from packages.domain import package_input_dependencies as policy
+        from packages.domain.bid_package_dependency_plans import read, save
+        from packages.domain.runtime import DomainError
+
+        f, _, _, args, body = dependency_plan_case
+        key = str(uid())
+        response, _ = save(*args, key, body)
+        monkeypatch.setattr(
+            policy, "assess", lambda *args: pytest.fail("history cannot recompute current policy")
+        )
+        f["w"]["database"]["owner"].execute(
+            "UPDATE design.bid_profiles SET archived_at=clock_timestamp() WHERE bid_id=%s",
+            (f["scope"][0],),
+        )
+        assert read(*args[1:], response["body"]["manifest"]["id"]) == response["body"]
+        assert save(*args, key, body) == (response, True)
+        with pytest.raises(DomainError):
+            save(*args, str(uid()), body)
+
+    def test_dependency_plans_append_separate_explicit_choices_without_replacing_history(
+        self, dependency_plan_case
+    ):
+        from packages.domain.bid_package_dependency_plans import read, save
+
+        f, _, _, args, body = dependency_plan_case
+        first, _ = save(*args, str(uid()), body)
+        second, _ = save(*args, str(uid()), body | {"reason": "另一份明确保存的独立计划"})
+        assert first["body"]["manifest"]["id"] != second["body"]["manifest"]["id"]
+        assert first["body"]["manifest"]["assessment"] == second["body"]["manifest"]["assessment"]
+        assert read(*args[1:], first["body"]["manifest"]["id"]) == first["body"]
+        assert read(*args[1:], second["body"]["manifest"]["id"]) == second["body"]
+        assert (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT count(*) AS n FROM design.bid_package_dependency_plans WHERE execution_input_id=%s",
+                (args[3],),
+            )
+            .fetchone()["n"]
+            == 2
+        )
+
+    def test_dependency_plan_policy_change_requires_new_check_but_preserves_old_receipt(
+        self, dependency_plan_case, monkeypatch
+    ):
+        from packages.domain import package_input_dependencies as policy
+        from packages.domain.bid_package_dependency_plans import read, save
+        from packages.domain.runtime import DomainError
+
+        _, _, _, args, body = dependency_plan_case
+        key = str(uid())
+        response, _ = save(*args, key, body)
+        monkeypatch.setattr(policy, "POLICY_FILES", policy.POLICY_FILES[:-1])
+        assert read(*args[1:], response["body"]["manifest"]["id"]) == response["body"]
+        assert save(*args, key, body) == (response, True)
+        with pytest.raises(DomainError) as denied:
+            save(*args, str(uid()), body)
+        assert denied.value.code == "PACKAGE_INPUT_DEPENDENCIES_CHANGED"
+
+    def test_dependency_plan_history_rejects_duplicate_audit_and_database_requires_exact_ack(
+        self, dependency_plan_case
+    ):
+        from psycopg import errors
+
+        from packages.domain import bid_package_dependency_plan_repository as repository
+        from packages.domain.bid_package_dependency_plans import read, save
+        from packages.domain.runtime import DomainError, audit, connection
+
+        f, _, _, args, body = dependency_plan_case
+        response, _ = save(*args, str(uid()), body)
+        value = response["body"]
+        with connection() as writer:
+            audit(
+                writer,
+                args[0],
+                args[1][0],
+                repository.EVENT,
+                repository.audit_payload(value),
+                value["manifest"]["command_id"],
+            )
+        with pytest.raises(DomainError) as denied:
+            read(*args[1:], value["manifest"]["id"])
+        assert denied.value.code == "PACKAGE_DEPENDENCY_PLAN_CORRUPT"
+        with pytest.raises(errors.CheckViolation, match="dependency_plan_ack"):
+            with connection() as writer:
+                from copy import deepcopy
+
+                from packages.domain.runtime import Command
+
+                command = Command(writer, args[0], repository.KIND, args[3], str(uid()), body)
+                forged = deepcopy(value)
+                forged["manifest"].update(id=str(uid()), command_id=str(command.id))
+                forged["digest"] = digest(forged["manifest"])
+                repository.append(writer, forged)
+                audit(
+                    writer,
+                    args[0],
+                    args[1][0],
+                    repository.EVENT,
+                    repository.audit_payload(forged),
+                    command.id,
+                )
+                command.finish(forged, 200)
+
     def test_fact_check_explains_unproven_input_without_objects_commands_or_jobs(
         self, prepared_case, monkeypatch
     ):

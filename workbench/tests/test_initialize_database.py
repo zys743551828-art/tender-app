@@ -63,6 +63,8 @@ def test_both_entry_points_share_one_tuple_and_dependency_order():
         "packages/contracts/sql/bid-package-requirements.sql",
         "packages/contracts/sql/bid-package-review-inputs.sql",
         "packages/contracts/sql/bid-package-execution-inputs.sql",
+        "packages/contracts/sql/bid-package-fact-scopes.sql",
+        "packages/contracts/sql/bid-package-dependency-plans.sql",
         "packages/contracts/sql/roles.sql",
     ]
     assert [positions[name] for name in required] == sorted(positions[name] for name in required)
@@ -71,6 +73,8 @@ def test_both_entry_points_share_one_tuple_and_dependency_order():
         "deploy/sql/bid-package-requirement-runtime-grants.sql",
         "deploy/sql/bid-package-review-input-runtime-grants.sql",
         "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+        "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+        "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
         "deploy/sql/vector-runtime-grants.sql",
         "deploy/sql/research-source-qualification.sql",
     ):
