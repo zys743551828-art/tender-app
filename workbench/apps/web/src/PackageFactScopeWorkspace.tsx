@@ -66,6 +66,7 @@ function Workspace({
   });
   const [record, setRecord] = useState<FactScopeRecord | null>(loaded.record),
     recordRef = useRef(record);
+  const [open, setOpen] = useState(!!loaded.record?.pending);
   const [factId, setFactId] = useState(
     loaded.record?.pending?.body.fact_id ?? loaded.record?.lastFactId ?? "",
   );
@@ -96,6 +97,7 @@ function Workspace({
     storeFactScopeRecord(next);
     recordRef.current = next;
     setRecord(next);
+    if (next.pending) setOpen(true);
   }
   function changeFact(value: string) {
     ticket.current++;
@@ -259,7 +261,8 @@ function Workspace({
   return (
     <details
       className="package-frozen-input__fact-scope"
-      open={record?.pending ? true : undefined}
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
     >
       <summary>事实适用范围</summary>
       <p>
@@ -337,92 +340,97 @@ function Workspace({
         {reading ? "正在读取范围…" : "读取当前事实范围"}
       </button>
       {observation && (
-        <div role="status">
-          <p>
-            {observation.binding_status === "matches_current_input"
-              ? "范围声明与当前输入匹配。"
-              : observation.binding_status === "withdrawn"
-                ? "此事实的范围声明已撤回。"
-                : observation.head
-                  ? "已有声明，但当前适用性仍待核对。"
-                  : "此事实尚无范围声明。"}
-          </p>
-          {!observation.matches_prepared_input && (
+        <>
+          <div role="status">
             <p>
-              当前输入已变化或无法完整核对。旧声明保留；新绑定需重新准备输入，已有声明仍可撤回。
+              {observation.binding_status === "matches_current_input"
+                ? "范围声明与当前输入匹配。"
+                : observation.binding_status === "withdrawn"
+                  ? "此事实的范围声明已撤回。"
+                  : observation.head
+                    ? "已有声明，但当前适用性仍待核对。"
+                    : "此事实尚无范围声明。"}
             </p>
-          )}
-          {observation.provenance_status === "unproven" && (
-            <p>事实依据链尚未证明，暂不能新增范围声明。</p>
-          )}
-          <p>
-            观察时间：{new Date(observation.checked_at).toLocaleString()}
-            。此观察不授予执行资格。
-          </p>
-          {observation.head && (
+            {!observation.matches_prepared_input && (
+              <p>
+                当前输入已变化或无法完整核对。旧声明保留；新绑定需重新准备输入，已有声明仍可撤回。
+              </p>
+            )}
+            {observation.provenance_status === "unproven" && (
+              <p>事实依据链尚未证明，暂不能新增范围声明。</p>
+            )}
             <p>
-              当前声明编号：<code>{observation.head.manifest.id}</code>；理由：
-              {observation.head.manifest.reason}
+              观察时间：{new Date(observation.checked_at).toLocaleString()}
+              。此观察不授予执行资格。
             </p>
-          )}
-          <label>
-            明确适用对象
-            <select
-              value={subjectKind}
-              disabled={busy || !!record?.pending}
-              onChange={(e) => setSubjectKind(e.target.value)}
-            >
-              <option value="">请选择适用对象</option>
-              {observation.subject_choices.map((x) => (
-                <option key={x.kind} value={x.kind}>
-                  {scopeLabels[x.kind]}：{x.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            声明或撤回理由
-            <textarea
-              value={reason}
-              maxLength={2000}
-              disabled={busy || !!record?.pending}
-              onChange={(e) => setReason(e.target.value)}
-              rows={3}
-            />
-          </label>
-          <div className="package-frozen-input__fact-scope-actions">
-            <button
-              type="button"
-              className="button secondary"
-              disabled={
-                !record ||
-                busy ||
-                !!record.pending ||
-                !available ||
-                !canBind ||
-                !reason.trim()
-              }
-              onClick={() => void write("bind")}
-            >
-              保存范围声明
-            </button>
-            <button
-              type="button"
-              className="button secondary"
-              disabled={
-                !record ||
-                busy ||
-                !!record.pending ||
-                !available ||
-                !canWithdraw ||
-                !reason.trim()
-              }
-              onClick={() => void write("withdraw")}
-            >
-              撤回范围声明
-            </button>
+            {observation.head && (
+              <p>
+                当前声明编号：<code>{observation.head.manifest.id}</code>
+                ；理由：
+                {observation.head.manifest.reason}
+              </p>
+            )}
           </div>
-        </div>
+          <div className="package-frozen-input__fact-scope-form">
+            <label>
+              明确适用对象
+              <select
+                value={subjectKind}
+                disabled={busy || !!record?.pending}
+                onChange={(e) => setSubjectKind(e.target.value)}
+              >
+                <option value="">请选择适用对象</option>
+                {observation.subject_choices.map((x) => (
+                  <option key={x.kind} value={x.kind}>
+                    {scopeLabels[x.kind]}：{x.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              声明或撤回理由
+              <textarea
+                value={reason}
+                maxLength={2000}
+                disabled={busy || !!record?.pending}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+              />
+            </label>
+            <div className="package-frozen-input__fact-scope-actions">
+              <button
+                type="button"
+                className="button secondary"
+                disabled={
+                  !record ||
+                  busy ||
+                  !!record.pending ||
+                  !available ||
+                  !canBind ||
+                  !reason.trim()
+                }
+                onClick={() => void write("bind")}
+              >
+                保存范围声明
+              </button>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={
+                  !record ||
+                  busy ||
+                  !!record.pending ||
+                  !available ||
+                  !canWithdraw ||
+                  !reason.trim()
+                }
+                onClick={() => void write("withdraw")}
+              >
+                撤回范围声明
+              </button>
+            </div>
+          </div>
+        </>
       )}
       {result && (
         <div role="status">

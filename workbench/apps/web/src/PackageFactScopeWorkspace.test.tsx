@@ -151,6 +151,11 @@ it("丢失ACK后重挂载不自动重发，按原键原体恢复已提交声明"
   await userEvent.click(screen.getByRole("button", { name: "恢复范围原请求" }));
   await screen.findByText("范围声明记录已读回校验；当前有效性需另行重读。");
   const second = fetchMock.mock.calls[2];
+  const restored = screen.getByText(
+    "范围声明记录已读回校验；当前有效性需另行重读。",
+  );
+  expect(restored.closest("details")).toHaveAttribute("open");
+  expect(restored).toBeVisible();
   expect(second[1].body).toBe(first[1].body);
   expect(second[1].headers["Idempotency-Key"]).toBe(
     first[1].headers["Idempotency-Key"],

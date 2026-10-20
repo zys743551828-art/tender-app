@@ -216,35 +216,38 @@ function Workspace({
       )}
       {error != null && <ErrorNotice error={error} />}
       {result && (
-        <div role="status">
-          <p>执行准备输入已读回并校验，尚未启动评审。</p>
-          <p>
-            准备输入编号：<code>{result.manifest.id}</code>
-          </p>
-          <p>
-            原件核验时点：
-            {new Date(result.manifest.originals_verified_at).toLocaleString()}
-            。保存时仍有 {result.manifest.blockers.length}{" "}
-            项阻断；来源和事实资格需在正式启动前重新核对。
-          </p>
-          <details>
-            <summary>准备输入身份</summary>
+        <>
+          <div role="status">
+            <p>执行准备输入已读回并校验，尚未启动评审。</p>
             <p>
-              内容摘要：<code>{result.manifest.identity.content_digest}</code>
+              准备输入编号：<code>{result.manifest.id}</code>
             </p>
             <p>
-              执行摘要：<code>{result.manifest.identity.execution_digest}</code>
+              原件核验时点：
+              {new Date(result.manifest.originals_verified_at).toLocaleString()}
+              。保存时仍有 {result.manifest.blockers.length}{" "}
+              项阻断；来源和事实资格需在正式启动前重新核对。
             </p>
-            <p>
-              记录摘要：<code>{result.digest}</code>
-            </p>
-          </details>
+            <details>
+              <summary>准备输入身份</summary>
+              <p>
+                内容摘要：<code>{result.manifest.identity.content_digest}</code>
+              </p>
+              <p>
+                执行摘要：
+                <code>{result.manifest.identity.execution_digest}</code>
+              </p>
+              <p>
+                记录摘要：<code>{result.digest}</code>
+              </p>
+            </details>
+          </div>
           <PackageFactCheck
             scope={scope}
             frozenId={frozen.manifest.id}
             prepared={result}
           />
-        </div>
+        </>
       )}
       <details>
         <summary>读取已有执行准备输入</summary>
