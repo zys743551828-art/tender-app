@@ -11452,6 +11452,352 @@
         ]
       }
     },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans": {
+      "post": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-dependency-plans"
+        ],
+        "summary": "Save Plan",
+        "operationId": "savePackageDependencyPlan",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePackageDependencyPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDependencyPlanView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-dependency-plans"
+        ],
+        "summary": "List Plans",
+        "operationId": "listPackageDependencyPlans",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDependencyPlanPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans/{plan_id}": {
+      "get": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-dependency-plans"
+        ],
+        "summary": "Get Plan",
+        "operationId": "getPackageDependencyPlan",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDependencyPlanView"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories": {
       "post": {
         "tags": [
@@ -45689,6 +46035,750 @@
           "evidence_ids"
         ],
         "additionalProperties": false
+      },
+      "PackageDependencyPlan_Assessment_Id": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "PackageDependencyPlan_Assessment_Digest": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "PackageDependencyPlan_Assessment_Prepared": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "frozen_input_id",
+          "execution_input_id",
+          "execution_input_digest"
+        ],
+        "properties": {
+          "bid_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "package_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "revision_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "inventory_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "frozen_input_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "execution_input_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          }
+        }
+      },
+      "PackageDependencyPlan_Assessment_Dependency": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requirement_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "requirement_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "state": {
+            "enum": [
+              "unknown",
+              "not_needed",
+              "required"
+            ]
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500,
+            "minItems": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+          }
+        },
+        "required": [
+          "requirement_id",
+          "requirement_digest",
+          "state",
+          "fact_ids",
+          "evidence_ids",
+          "reason"
+        ]
+      },
+      "PackageDependencyPlan_Assessment_Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "usage_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Dependency"
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "purpose",
+          "usage_digest",
+          "dependencies"
+        ]
+      },
+      "PackageDependencyPlan_Assessment_RequirementAssessment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requirement_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "requirement_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "declaration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Dependency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fact_status": {
+            "enum": [
+              "unknown",
+              "missing",
+              "selected_unvalidated",
+              "not_used"
+            ]
+          },
+          "unselected_fact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "coverage_state": {
+            "enum": [
+              "not_provided",
+              "missing",
+              "pending_parse",
+              "parse_gap",
+              "unsupported",
+              "verified",
+              "not_applicable",
+              "conflict",
+              "unknown"
+            ]
+          },
+          "source_bound": {
+            "type": "boolean"
+          },
+          "applicability": {
+            "enum": [
+              "applicable",
+              "unknown",
+              "not_applicable"
+            ]
+          }
+        },
+        "required": [
+          "requirement_id",
+          "requirement_digest",
+          "declaration",
+          "fact_status",
+          "unselected_fact_ids",
+          "coverage_state",
+          "source_bound",
+          "applicability"
+        ]
+      },
+      "PackageDependencyPlan_Assessment_Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "package-input-dependencies/1"
+          },
+          "kind": {
+            "const": "input_dependency_assessment"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "prepared": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Prepared"
+          },
+          "frozen_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "inventory_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "usage_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "selected_fact_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requirement_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dependency_review_status": {
+            "enum": [
+              "incomplete",
+              "declared"
+            ]
+          },
+          "required_facts_assessment": {
+            "enum": [
+              "unknown",
+              "missing",
+              "selected_unvalidated",
+              "not_used"
+            ]
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_RequirementAssessment"
+            }
+          },
+          "inventory_status": {
+            "enum": [
+              "unproven",
+              "range_submitted_quality_unmeasured"
+            ]
+          },
+          "declaration_kind": {
+            "const": "human_dependency_annotation"
+          },
+          "inventory_complete": {
+            "const": false
+          },
+          "original_bytes_verified": {
+            "const": false
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          },
+          "policy_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "purpose",
+          "prepared",
+          "frozen_digest",
+          "inventory_digest",
+          "usage_digest",
+          "selected_fact_count",
+          "requirement_count",
+          "dependency_review_status",
+          "required_facts_assessment",
+          "requirements",
+          "inventory_status",
+          "declaration_kind",
+          "inventory_complete",
+          "original_bytes_verified",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized",
+          "policy_digest"
+        ]
+      },
+      "PackageDependencyPlan_Assessment_View": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Manifest"
+          },
+          "digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
+        ]
+      },
+      "PackageDependencyPlan_Usage_Id": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "PackageDependencyPlan_Usage_Digest": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "PackageDependencyPlan_Usage_Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "purpose",
+          "fact_ids"
+        ],
+        "properties": {
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "fact_ids": {
+            "type": "array",
+            "maxItems": 500,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+            }
+          }
+        }
+      },
+      "PackageDependencyPlan_Usage_Prepared": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "frozen_input_id",
+          "execution_input_id",
+          "execution_input_digest"
+        ],
+        "properties": {
+          "bid_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "package_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "revision_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "inventory_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "frozen_input_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "execution_input_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          }
+        }
+      },
+      "PackageDependencyPlan_Usage_Selected": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fact_id",
+          "fact_item_digest"
+        ],
+        "properties": {
+          "fact_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Id"
+          },
+          "fact_item_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          }
+        }
+      },
+      "PackageDependencyPlan_Usage_Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "kind",
+          "purpose",
+          "prepared",
+          "identity_digest",
+          "selected",
+          "selection_digest",
+          "selected_facts_digest",
+          "required_facts_assessment",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized"
+        ],
+        "properties": {
+          "version": {
+            "const": "package-fact-usage/1"
+          },
+          "kind": {
+            "const": "fact_usage_selection"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "prepared": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Prepared"
+          },
+          "identity_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          },
+          "selected": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Selected"
+            }
+          },
+          "selection_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          },
+          "selected_facts_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          },
+          "required_facts_assessment": {
+            "const": "not_performed"
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          }
+        }
+      },
+      "PackageDependencyPlan_Usage_View": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "manifest",
+          "digest"
+        ],
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Manifest"
+          },
+          "digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_Digest"
+          }
+        }
+      },
+      "PackageDependencyPlan_Save": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+            },
+            "maxItems": 500,
+            "uniqueItems": true
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Dependency"
+            },
+            "maxItems": 500
+          },
+          "assessment_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+          }
+        },
+        "required": [
+          "execution_input_digest",
+          "purpose",
+          "fact_ids",
+          "dependencies",
+          "assessment_digest",
+          "reason"
+        ]
+      },
+      "PackageDependencyPlan_Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "package-dependency-plan/1"
+          },
+          "kind": {
+            "const": "human_dependency_plan"
+          },
+          "id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "actor_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "command_id": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Id"
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+          },
+          "request_digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          },
+          "prepared": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Prepared"
+          },
+          "assessment": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_View"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Usage_View"
+          },
+          "inventory_complete": {
+            "const": false
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "id",
+          "actor_id",
+          "command_id",
+          "saved_at",
+          "reason",
+          "request_digest",
+          "prepared",
+          "assessment",
+          "usage",
+          "inventory_complete",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized"
+        ]
+      },
+      "PackageDependencyPlan_View": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Manifest"
+          },
+          "digest": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Digest"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
+        ]
+      },
+      "SavePackageDependencyPlan": {
+        "$ref": "#/components/schemas/PackageDependencyPlan_Save"
+      },
+      "PackageDependencyPlanView": {
+        "$ref": "#/components/schemas/PackageDependencyPlan_View"
+      },
+      "PackageDependencyPlanSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "saved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+          },
+          "assessment_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "required_facts_assessment": {
+            "enum": [
+              "unknown",
+              "missing",
+              "selected_unvalidated",
+              "not_used"
+            ]
+          },
+          "dependency_review_status": {
+            "enum": [
+              "incomplete",
+              "declared"
+            ]
+          },
+          "selected_fact_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "requirement_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "digest",
+          "actor_id",
+          "saved_at",
+          "reason",
+          "assessment_digest",
+          "required_facts_assessment",
+          "dependency_review_status",
+          "selected_fact_count",
+          "requirement_count"
+        ]
+      },
+      "PackageDependencyPlanPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "prepared": {
+            "$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Prepared"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/PackageDependencyPlanSummary"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "inventory_complete": {
+            "const": false
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          }
+        },
+        "required": [
+          "prepared",
+          "items",
+          "has_more",
+          "next_cursor",
+          "inventory_complete",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized"
+        ]
       },
       "PackagePreparedFactSummary": {
         "type": "object",

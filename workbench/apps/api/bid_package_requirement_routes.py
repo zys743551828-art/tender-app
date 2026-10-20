@@ -12,6 +12,7 @@ from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse
 
 from apps.api.auth import auth
+from apps.api.bid_package_dependency_plan_routes import router as dependency_plan_router
 from apps.api.bid_package_dependency_routes import router as dependency_router
 from apps.api.bid_package_fact_change_routes import router as fact_change_router
 from apps.api.bid_package_fact_scope_routes import router as fact_scope_router
@@ -31,6 +32,7 @@ router.include_router(input_router)
 router.include_router(fact_scope_router)
 router.include_router(fact_change_router)
 router.include_router(dependency_router)
+router.include_router(dependency_plan_router)
 
 
 @contextmanager

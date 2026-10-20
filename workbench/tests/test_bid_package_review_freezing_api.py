@@ -506,6 +506,201 @@ class TestFreezing:
                 )
                 command.finish(forged, 200)
 
+    @staticmethod
+    def plan_path(f, frozen, prepared):
+        return (
+            f["path"]
+            + "/"
+            + frozen["manifest"]["id"]
+            + "/execution-inputs/"
+            + prepared["manifest"]["id"]
+            + "/dependency-plans"
+        )
+
+    def test_dependency_plan_http_saves_replays_lists_and_reads_original_after_archive(
+        self, dependency_plan_case, monkeypatch
+    ):
+        from packages.domain import storage
+
+        f, frozen, prepared, args, body = dependency_plan_case
+        target = self.plan_path(f, frozen, prepared)
+        client = f["w"]["client"]
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS outbox"
+        before = c.execute(statement).fetchone()
+        monkeypatch.setattr(
+            storage, "client", lambda: pytest.fail("plan HTTP must not read objects")
+        )
+        h = headers(f["w"])
+        saved = client.post(target, json=body, headers=h)
+        assert saved.status_code == 201, saved.text
+        value = saved.json()
+        assert valid("PackageDependencyPlanView", value)
+        assert client.post(target, json=body, headers=h).json() == value
+        assert client.get(target + "/" + value["manifest"]["id"]).json() == value
+        page = client.get(target)
+        assert page.status_code == 200, page.text
+        listing = page.json()
+        assert valid("PackageDependencyPlanPage", listing)
+        assert len(listing["items"]) == 1 and listing["items"][0]["id"] == value["manifest"]["id"]
+        assert listing["has_more"] is False and listing["next_cursor"] is None
+        assert listing["items"][0]["required_facts_assessment"] == "unknown"
+        assert listing["prepared"] == value["manifest"]["prepared"]
+        assert "usage" not in listing["items"][0] and "value_jsonb_text" not in page.text
+        c.execute(
+            "UPDATE design.bid_profiles SET archived_at=clock_timestamp() WHERE bid_id=%s",
+            (args[1][0],),
+        )
+        assert client.get(target).json() == listing
+        assert client.get(target + "/" + value["manifest"]["id"]).json() == value
+        assert client.post(target, json=body, headers=h).json() == value
+        assert client.post(target, json=body, headers=headers(f["w"])).status_code == 409
+        assert c.execute(statement).fetchone() == before
+
+    def test_dependency_plan_http_requires_auth_csrf_and_explicit_key_without_writes(
+        self, dependency_plan_case
+    ):
+        f, frozen, prepared, _, body = dependency_plan_case
+        target = self.plan_path(f, frozen, prepared)
+        client = f["w"]["client"]
+        c = f["w"]["database"]["owner"]
+        before = counts(f["w"])
+        h = headers(f["w"])
+        assert (
+            client.post(
+                target,
+                json=body,
+                headers={k: v for k, v in h.items() if k.lower() != "idempotency-key"},
+            ).status_code
+            == 428
+        )
+        assert (
+            client.post(
+                target,
+                json=body,
+                headers={k: v for k, v in h.items() if k.lower() != "x-csrf-token"},
+            ).status_code
+            == 403
+        )
+        cookies = dict(client.cookies)
+        client.cookies.clear()
+        try:
+            assert client.post(target, json=body, headers=h).status_code == 401
+            assert client.get(target).status_code == 401
+            assert client.get(target + "/" + str(uid())).status_code == 401
+        finally:
+            client.cookies.update(cookies)
+        assert counts(f["w"]) == before
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM design.bid_package_dependency_plans WHERE execution_input_id=%s",
+                (prepared["manifest"]["id"],),
+            ).fetchone()["n"]
+            == 0
+        )
+
+    @pytest.mark.parametrize(
+        "invalid", ["assessment", "foreign_fact", "private_usage", "purpose", "reason"]
+    )
+    def test_dependency_plan_http_rejects_changed_or_unbound_intent(
+        self, dependency_plan_case, invalid
+    ):
+        f, frozen, prepared, _, body = dependency_plan_case
+        if invalid == "assessment":
+            body = body | {"assessment_digest": "a" * 64}
+        elif invalid == "foreign_fact":
+            body = body | {"fact_ids": [str(uid())]}
+        elif invalid == "private_usage":
+            body = body | {"usage_digest": "a" * 64}
+        else:
+            body = body | {invalid: " " if invalid == "reason" else "scoring"}
+        before = counts(f["w"])
+        result = f["w"]["client"].post(
+            self.plan_path(f, frozen, prepared), json=body, headers=headers(f["w"])
+        )
+        assert result.status_code == (409 if invalid == "assessment" else 422), result.text
+        assert counts(f["w"]) == before
+
+    def test_dependency_plan_history_pagination_is_bounded_and_cannot_cross_prepared_input(
+        self, dependency_plan_case
+    ):
+        f, frozen, prepared, _, body = dependency_plan_case
+        client = f["w"]["client"]
+        target = self.plan_path(f, frozen, prepared)
+        first = client.post(target, json=body, headers=headers(f["w"])).json()
+        second = client.post(
+            target, json=body | {"reason": "第二份独立计划"}, headers=headers(f["w"])
+        ).json()
+        page = client.get(target, params={"limit": 1}).json()
+        assert page["has_more"] is True and page["next_cursor"]
+        assert page["items"][0]["id"] == first["manifest"]["id"]
+        after = client.get(target, params={"limit": 1, "cursor": page["next_cursor"]}).json()
+        assert after["has_more"] is False and after["items"][0]["id"] == second["manifest"]["id"]
+        assert client.get(target, params={"limit": 21}).status_code == 422
+        assert client.get(target, params={"cursor": page["next_cursor"] + "x"}).status_code == 422
+        other = client.post(
+            target.rsplit("/", 2)[0],
+            json={
+                "frozen_digest": frozen["digest"],
+                "context_digest": prepared["manifest"]["identity"]["binding"]["context_digest"],
+                "rerun": None,
+            },
+            headers=headers(f["w"]),
+        )
+        assert other.status_code == 201, other.text
+        other_path = self.plan_path(f, frozen, other.json())
+        assert client.get(other_path, params={"cursor": page["next_cursor"]}).status_code == 422
+        assert client.get(other_path + "/" + first["manifest"]["id"]).status_code == 404
+
+    def test_dependency_plan_http_history_rejects_duplicate_audit(self, dependency_plan_case):
+        from packages.domain import bid_package_dependency_plan_repository as repository
+        from packages.domain.runtime import audit, connection
+
+        f, frozen, prepared, args, body = dependency_plan_case
+        target = self.plan_path(f, frozen, prepared)
+        client = f["w"]["client"]
+        value = client.post(target, json=body, headers=headers(f["w"])).json()
+        with connection() as writer:
+            audit(
+                writer,
+                args[0],
+                args[1][0],
+                repository.EVENT,
+                repository.audit_payload(value),
+                value["manifest"]["command_id"],
+            )
+        assert client.get(target).status_code == 500
+        assert client.get(target + "/" + value["manifest"]["id"]).status_code == 500
+
+    def test_dependency_plan_http_deferred_commit_failure_never_returns_success_ack(
+        self, dependency_plan_case, monkeypatch
+    ):
+        from packages.domain.runtime import Command
+
+        f, frozen, prepared, _, body = dependency_plan_case
+        finish = Command.finish
+
+        def wrong_status(command, value, status=200, headers=None):
+            return finish(command, value, 200, headers)
+
+        monkeypatch.setattr(Command, "finish", wrong_status)
+        before = counts(f["w"])
+        result = f["w"]["client"].post(
+            self.plan_path(f, frozen, prepared), json=body, headers=headers(f["w"])
+        )
+        assert result.status_code == 409, result.text
+        assert result.json()["code"] == "PACKAGE_DEPENDENCY_PLAN_REJECTED"
+        assert counts(f["w"]) == before
+        assert (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT count(*) AS n FROM design.bid_package_dependency_plans WHERE execution_input_id=%s",
+                (prepared["manifest"]["id"],),
+            )
+            .fetchone()["n"]
+            == 0
+        )
+
     def test_fact_check_explains_unproven_input_without_objects_commands_or_jobs(
         self, prepared_case, monkeypatch
     ):

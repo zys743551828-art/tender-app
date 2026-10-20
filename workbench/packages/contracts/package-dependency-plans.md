@@ -1,6 +1,10 @@
 # 整包人工依赖计划
 
-机器协议为 [package-dependency-plan.schema.json](schemas/package-dependency-plan.schema.json)，持久化为 [bid-package-dependency-plans.sql](sql/bid-package-dependency-plans.sql)。内部保存与读取用例分别为 `bid_package_dependency_plans.save`／`read`；公开 HTTP、历史发现与显式界面另行接入。只读 `dependency-check` 继续不保存。
+机器协议为 [package-dependency-plan.schema.json](schemas/package-dependency-plan.schema.json)，持久化为 [bid-package-dependency-plans.sql](sql/bid-package-dependency-plans.sql)。保存与读取用例分别为 `bid_package_dependency_plans.save`／`read`，历史发现由独立目录协调器负责。只读 `dependency-check` 继续不保存。
+
+公开路径为 `.../frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans`：POST明确保存返回201，GET分页发现返回200，GET `/{plan_id}`读取准确原计划返回200。均须Session；POST另须Origin、CSRF和Idempotency-Key。实际OpenAPI和生成前端类型分别绑定保存、列表和完整历史契约，显式界面与原请求恢复另行接入。
+
+目录默认10、最多20项，按原保存时间及ID排序，签名游标绑定完整prepared身份与摘要。先验证准确原packet，再于同一RR快照读取有界摘要；SQL交叉核准确原ACK及唯一审计，不将整份要求或私有事实池批量传到客户端。列表只含理由、时间、评估摘要、数量和缺口状态，明确资格均false；完整原记录按指定ID另读。坏回执或重复审计使目录拒绝500，篡改／跨prepared游标422，跨prepared读取计划404。追加期间的分页不宣称是同一冻结时点的完整计划目录。
 
 调用方明确给出准确 prepared 摘要、用途、实际消费事实 ID、逐条依赖、刚核对的 assessment 摘要和保存理由。服务端在项目锁下读取准确冻结输入及 prepared，重新构造私有 usage 并核对当前依赖政策产生的评估；与刚确认的摘要不同返回409，不静默存另一份计划。字段错误422、缺少幂等键428、同键不同请求409；失败回滚命令、计划、审计及事件。当前项目结束／归档拒绝新保存。
 

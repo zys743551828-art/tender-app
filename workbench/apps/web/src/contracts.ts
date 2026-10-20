@@ -1,5 +1,21 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type SavePackageDependencyPlan = PackageDependencyPlan_Save;
+
+export type PackageDependencyPlanView = PackageDependencyPlan_View;
+
+export type PackageDependencyPlanPage = {
+  prepared: PackageDependencyPlan_Assessment_Prepared;
+  items: PackageDependencyPlanSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+  inventory_complete: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type CheckPackageInputDependencies = {
   execution_input_digest: string;
   purpose: "prebid_compliance";
@@ -3537,6 +3553,47 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageDependencyPlan_Save = {
+  execution_input_digest: PackageDependencyPlan_Assessment_Digest;
+  purpose: "prebid_compliance";
+  fact_ids: PackageDependencyPlan_Assessment_Id[];
+  dependencies: PackageDependencyPlan_Assessment_Dependency[];
+  assessment_digest: PackageDependencyPlan_Assessment_Digest;
+  reason: string;
+};
+
+export type PackageDependencyPlan_View = {
+  manifest: PackageDependencyPlan_Manifest;
+  digest: PackageDependencyPlan_Assessment_Digest;
+};
+
+export type PackageDependencyPlan_Assessment_Prepared = {
+  bid_id: PackageDependencyPlan_Assessment_Id;
+  package_id: PackageDependencyPlan_Assessment_Id;
+  revision_id: PackageDependencyPlan_Assessment_Id;
+  inventory_id: PackageDependencyPlan_Assessment_Id;
+  frozen_input_id: PackageDependencyPlan_Assessment_Id;
+  execution_input_id: PackageDependencyPlan_Assessment_Id;
+  execution_input_digest: PackageDependencyPlan_Assessment_Digest;
+};
+
+export type PackageDependencyPlanSummary = {
+  id: string;
+  digest: string;
+  actor_id: string;
+  saved_at: string;
+  reason: string;
+  assessment_digest: string;
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  dependency_review_status: "incomplete" | "declared";
+  selected_fact_count: number;
+  requirement_count: number;
+};
+
 export type PackageInputDependencies_Dependency = {
   requirement_id: PackageInputDependencies_Id;
   requirement_digest: PackageInputDependencies_Digest;
@@ -4835,6 +4892,38 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageDependencyPlan_Assessment_Digest = string;
+
+export type PackageDependencyPlan_Assessment_Id = string;
+
+export type PackageDependencyPlan_Assessment_Dependency = {
+  requirement_id: PackageDependencyPlan_Assessment_Id;
+  requirement_digest: PackageDependencyPlan_Assessment_Digest;
+  state: "unknown" | "not_needed" | "required";
+  fact_ids: PackageDependencyPlan_Assessment_Id[];
+  evidence_ids: PackageDependencyPlan_Assessment_Id[];
+  reason: string;
+};
+
+export type PackageDependencyPlan_Manifest = {
+  version: "package-dependency-plan/1";
+  kind: "human_dependency_plan";
+  id: PackageDependencyPlan_Assessment_Id;
+  actor_id: PackageDependencyPlan_Assessment_Id;
+  command_id: PackageDependencyPlan_Assessment_Id;
+  saved_at: string;
+  reason: string;
+  request_digest: PackageDependencyPlan_Assessment_Digest;
+  prepared: PackageDependencyPlan_Assessment_Prepared;
+  assessment: PackageDependencyPlan_Assessment_View;
+  usage: PackageDependencyPlan_Usage_View;
+  inventory_complete: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
 export type PackageInputDependencies_Id = string;
 
 export type PackageInputDependencies_Digest = string;
@@ -5077,6 +5166,16 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type PackageDependencyPlan_Assessment_View = {
+  manifest: PackageDependencyPlan_Assessment_Manifest;
+  digest: PackageDependencyPlan_Assessment_Digest;
+};
+
+export type PackageDependencyPlan_Usage_View = {
+  manifest: PackageDependencyPlan_Usage_Manifest;
+  digest: PackageDependencyPlan_Usage_Digest;
+};
+
 export type PackageInputDependencies_Prepared = {
   bid_id: PackageInputDependencies_Id;
   package_id: PackageInputDependencies_Id;
@@ -5155,6 +5254,89 @@ export type MissedTaskSchedule = {
   count_status: "not_enumerated";
   resolution: "skipped_run_current_once_available";
 };
+
+export type PackageDependencyPlan_Assessment_Manifest = {
+  version: "package-input-dependencies/1";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageDependencyPlan_Assessment_Prepared;
+  frozen_digest: PackageDependencyPlan_Assessment_Digest;
+  inventory_digest: PackageDependencyPlan_Assessment_Digest;
+  usage_digest: PackageDependencyPlan_Assessment_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageDependencyPlan_Assessment_RequirementAssessment[];
+  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageDependencyPlan_Assessment_Digest;
+};
+
+export type PackageDependencyPlan_Usage_Manifest = {
+  version: "package-fact-usage/1";
+  kind: "fact_usage_selection";
+  purpose: "prebid_compliance";
+  prepared: PackageDependencyPlan_Usage_Prepared;
+  identity_digest: PackageDependencyPlan_Usage_Digest;
+  selected: PackageDependencyPlan_Usage_Selected[];
+  selection_digest: PackageDependencyPlan_Usage_Digest;
+  selected_facts_digest: PackageDependencyPlan_Usage_Digest;
+  required_facts_assessment: "not_performed";
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
+export type PackageDependencyPlan_Usage_Digest = string;
+
+export type PackageDependencyPlan_Assessment_RequirementAssessment = {
+  requirement_id: PackageDependencyPlan_Assessment_Id;
+  requirement_digest: PackageDependencyPlan_Assessment_Digest;
+  declaration: PackageDependencyPlan_Assessment_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageDependencyPlan_Assessment_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+};
+
+export type PackageDependencyPlan_Usage_Prepared = {
+  bid_id: PackageDependencyPlan_Usage_Id;
+  package_id: PackageDependencyPlan_Usage_Id;
+  revision_id: PackageDependencyPlan_Usage_Id;
+  inventory_id: PackageDependencyPlan_Usage_Id;
+  frozen_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_digest: PackageDependencyPlan_Usage_Digest;
+};
+
+export type PackageDependencyPlan_Usage_Selected = {
+  fact_id: PackageDependencyPlan_Usage_Id;
+  fact_item_digest: PackageDependencyPlan_Usage_Digest;
+};
+
+export type PackageDependencyPlan_Usage_Id = string;
 
 export const implementedOperations: readonly string[] = [
   "PUT /api/v1/object-transfers/uploads/{upload_id}",
@@ -5312,6 +5494,9 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-context",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/facts/{fact_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-check",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans/{plan_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",

@@ -24,6 +24,9 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         for operation in methods.values()
     }
     assert operations == {
+        "savePackageDependencyPlan",
+        "listPackageDependencyPlans",
+        "getPackageDependencyPlan",
         "checkPackageInputDependencies",
         "createPackageRequirementInventory",
         "listPackageRequirementInventories",
@@ -142,3 +145,23 @@ def test_dependency_check_is_readonly_post_with_server_bound_usage_digest():
     }
     assert valid("CheckPackageInputDependencies", body)
     assert not valid("CheckPackageInputDependencies", body | {"usage_digest": "b" * 64})
+
+
+def test_dependency_plan_commands_and_history_publish_distinct_auth_contracts():
+    app = FastAPI()
+    app.include_router(requirements_router)
+    actual = implemented_openapi(app)
+    path = next(p for p in actual["paths"] if p.endswith("/dependency-plans"))
+    post = actual["paths"][path]["post"]
+    assert post["operationId"] == "savePackageDependencyPlan"
+    assert post["security"] == [{"SessionCookie": []}] and "201" in post["responses"]
+    assert {
+        p["name"] for p in post["parameters"] if p.get("in") == "header" and p.get("required")
+    } == {"Origin", "X-CSRF-Token", "Idempotency-Key"}
+    assert post["requestBody"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/SavePackageDependencyPlan"
+    }
+    for suffix in ("", "/{plan_id}"):
+        get = actual["paths"][path + suffix]["get"]
+        assert get["security"] == [{"SessionCookie": []}] and "200" in get["responses"]
+        assert not any(p.get("in") == "header" and p.get("required") for p in get["parameters"])

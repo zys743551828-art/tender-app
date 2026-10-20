@@ -584,6 +584,53 @@ SCHEMAS["CheckPackageInputDependencies"] = object_schema(
     }
 )
 SCHEMAS["PackageEditableFact"] = deepcopy(SCHEMAS["PackageFactChange_Fact"])
+_dependency_plan = json.loads(
+    (Path(__file__).parent / "schemas/package-dependency-plan.schema.json").read_text("utf-8")
+)
+for _name, _value in _dependency_plan["$defs"].items():
+    SCHEMAS["PackageDependencyPlan_" + _name] = json.loads(
+        json.dumps(_value).replace("#/$defs/", "#/components/schemas/PackageDependencyPlan_")
+    )
+SCHEMAS["SavePackageDependencyPlan"] = {"$ref": "#/components/schemas/PackageDependencyPlan_Save"}
+SCHEMAS["PackageDependencyPlanView"] = {"$ref": "#/components/schemas/PackageDependencyPlan_View"}
+SCHEMAS["PackageDependencyPlanSummary"] = object_schema(
+    {
+        "id": UUID,
+        "digest": SHA,
+        "actor_id": UUID,
+        "saved_at": {"type": "string", "format": "date-time"},
+        "reason": deepcopy(_dependency_plan["$defs"]["Manifest"]["properties"]["reason"]),
+        "assessment_digest": SHA,
+        "required_facts_assessment": {
+            "enum": ["unknown", "missing", "selected_unvalidated", "not_used"]
+        },
+        "dependency_review_status": {"enum": ["incomplete", "declared"]},
+        "selected_fact_count": {"type": "integer", "minimum": 0, "maximum": 500},
+        "requirement_count": {"type": "integer", "minimum": 0},
+    }
+)
+SCHEMAS["PackageDependencyPlanPage"] = object_schema(
+    {
+        "prepared": {"$ref": "#/components/schemas/PackageDependencyPlan_Assessment_Prepared"},
+        "items": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {"$ref": "#/components/schemas/PackageDependencyPlanSummary"},
+        },
+        "has_more": {"type": "boolean"},
+        "next_cursor": {"type": ["string", "null"]},
+        **{
+            key: {"const": False}
+            for key in (
+                "inventory_complete",
+                "facts_qualified",
+                "review_ready",
+                "launch_available",
+                "publication_authorized",
+            )
+        },
+    }
+)
 SCHEMAS["PackageEditableFact"]["properties"].pop("reason")
 SCHEMAS["PackageEditableFact"]["required"].remove("reason")
 SCHEMAS["PackagePreparedFactSummary"] = object_schema(
@@ -782,6 +829,27 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
+            "post",
+            "savePackageDependencyPlan",
+            "SavePackageDependencyPlan",
+            "PackageDependencyPlanView",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
+            "get",
+            "listPackageDependencyPlans",
+            None,
+            "PackageDependencyPlanPage",
+        ),
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans/{plan_id}",
+            "get",
+            "getPackageDependencyPlan",
+            None,
+            "PackageDependencyPlanView",
+        ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-check",
             "post",
