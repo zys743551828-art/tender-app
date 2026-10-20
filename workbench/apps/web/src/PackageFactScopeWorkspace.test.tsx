@@ -45,7 +45,11 @@ const prepared = {
         purpose: "prebid_compliance",
       },
     },
-    execution_context: { facts_digest: sha("c"), fact_set_id: id(50) },
+    execution_context: {
+      facts_digest: sha("c"),
+      fact_set_id: id(50),
+      fact_count: 1,
+    },
   },
 } as PackageExecutionInputView;
 const keyScope = {
@@ -411,4 +415,76 @@ it("范围链头和选项主体矛盾时拒绝当前匹配观察", async () => {
   await expect(
     validateScopeObservation(observation, scope, id(6), prepared, id(90)),
   ).rejects.toThrow();
+});
+const directoryReply = () => ({
+  bid_id: scope.bidId,
+  package_id: scope.packageId,
+  revision_id: scope.revisionId,
+  inventory_id: scope.inventoryId,
+  frozen_input_id: id(6),
+  execution_input_id: prepared.manifest.id,
+  execution_input_digest: prepared.digest,
+  facts_digest: sha("c"),
+  fact_set_id: id(50),
+  fact_count: 1,
+  items: [
+    {
+      fact_id: id(90),
+      fact_item_digest: sha("a"),
+      name: "合同工期",
+      subject: "本工程",
+      scope: "施工阶段",
+      value_preview: "180",
+      unit: "天",
+      preview_truncated: false,
+    },
+  ],
+  has_more: false,
+  next_cursor: null,
+});
+it("按原事实名称选择后读取当前范围，不需要手工填写编号", async () => {
+  fetchMock.mockResolvedValueOnce(response(directoryReply()));
+  fetchMock.mockResolvedValueOnce(response(scopeObservation(prepared, id(90))));
+  fetchMock.mockImplementationOnce(async (_url, options) =>
+    response(
+      await scopeReply(
+        prepared,
+        JSON.parse(options.body),
+        scope.memberId,
+        id(100),
+      ),
+      201,
+    ),
+  );
+  render(<Workspace {...props} />);
+  await open();
+  await userEvent.click(screen.getByRole("button", { name: "读取原事实列表" }));
+  await userEvent.click(
+    await screen.findByRole("button", { name: /合同工期 · 180 天/ }),
+  );
+  await screen.findByText("此事实尚无范围声明。");
+  expect(screen.getByLabelText("待核对的事实编号")).toHaveValue(id(90));
+  await fill();
+  await userEvent.click(screen.getByRole("button", { name: "保存范围声明" }));
+  await screen.findByText("范围声明记录已读回校验；当前有效性需另行重读。");
+});
+it("目录中选定事实和当前声明摘要矛盾时不显示匹配", async () => {
+  const previous = await scopeReply(prepared, body(), scope.memberId, id(100));
+  previous.manifest.binding.fact_item_digest = sha("f");
+  const { frozenManifestDigest } = await import("./packageFrozenInput");
+  previous.digest = await frozenManifestDigest(previous.manifest);
+  fetchMock.mockResolvedValueOnce(response(directoryReply()));
+  fetchMock.mockResolvedValueOnce(
+    response(scopeObservation(prepared, id(90), previous)),
+  );
+  render(<Workspace {...props} />);
+  await open();
+  await userEvent.click(screen.getByRole("button", { name: "读取原事实列表" }));
+  await userEvent.click(
+    await screen.findByRole("button", { name: /合同工期 · 180 天/ }),
+  );
+  await screen.findByText(/当前声明与选定原事实摘要不符/);
+  expect(
+    screen.queryByText("范围声明与当前输入匹配。"),
+  ).not.toBeInTheDocument();
 });

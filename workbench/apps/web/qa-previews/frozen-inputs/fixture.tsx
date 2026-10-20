@@ -102,6 +102,11 @@ window.fetch = async (path, options) => {
   if (offline) throw new Error("合成场景：保存回执丢失，请恢复原请求。");
   if (url.includes("/execution-inputs")) {
     const parts = url.split("/");
+    if(url.split("?")[0].endsWith("/facts")){
+      const saved=preparedRecords.get(parts[parts.indexOf("execution-inputs")+1]);
+      const value=saved?{bid_id:scope.bidId,package_id:scope.packageId,revision_id:scope.revisionId,inventory_id:scope.inventoryId,frozen_input_id:saved.manifest.frozen_input_id,execution_input_id:saved.manifest.id,execution_input_digest:saved.digest,facts_digest:saved.manifest.execution_context.facts_digest,fact_set_id:saved.manifest.execution_context.fact_set_id,fact_count:1,items:[{fact_id:id(90),fact_item_digest:"a".repeat(64),name:"合同工期",subject:"本工程",scope:"施工阶段",value_preview:"180",unit:"天",preview_truncated:false}],has_more:false,next_cursor:null}:{code:"PACKAGE_EXECUTION_INPUT_NOT_FOUND"};
+      return new Response(JSON.stringify(value),{status:saved?200:404,headers:{"Content-Type":"application/json"}});
+    }
     if (url.includes("/fact-scope-declarations") || url.endsWith("/scope-declaration")) {
       const preparedId=parts[parts.indexOf("execution-inputs")+1];
       const saved=preparedRecords.get(preparedId);

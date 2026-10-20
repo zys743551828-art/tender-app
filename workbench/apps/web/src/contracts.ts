@@ -1,5 +1,21 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type PackagePreparedFactPage = {
+  bid_id: string;
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  facts_digest: string;
+  fact_set_id: string | null;
+  fact_count: number;
+  items: PackagePreparedFactSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
 export type ChangePackageFactScope = PackageFactScope_Change;
 
 export type PackageFactScopeView = PackageFactScope_Record;
@@ -3468,6 +3484,17 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackagePreparedFactSummary = {
+  fact_id: string;
+  fact_item_digest: string;
+  name: string;
+  subject: string;
+  scope: string;
+  value_preview: string;
+  unit: string | null;
+  preview_truncated: boolean;
+};
+
 export type PackageFactScope_Change = {
   execution_input_digest: PackageFactScope_Digest;
   fact_id: PackageFactScope_Id;
@@ -5159,6 +5186,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations/{declaration_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts/{fact_id}/scope-declaration",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts",
 ];
 
 export const ruleConfirmationLimit: number = 500;

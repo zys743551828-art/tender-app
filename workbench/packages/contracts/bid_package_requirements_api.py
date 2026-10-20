@@ -551,6 +551,44 @@ for _name, _value in _fact_scope["$defs"].items():
     )
 SCHEMAS["ChangePackageFactScope"] = {"$ref": "#/components/schemas/PackageFactScope_Change"}
 SCHEMAS["PackageFactScopeView"] = {"$ref": "#/components/schemas/PackageFactScope_Record"}
+SCHEMAS["PackagePreparedFactSummary"] = object_schema(
+    {
+        "fact_id": UUID,
+        "fact_item_digest": SHA,
+        **{
+            key: {"type": "string", "maxLength": 240}
+            for key in ("name", "subject", "scope", "value_preview")
+        },
+        "unit": {"type": ["string", "null"], "maxLength": 240},
+        "preview_truncated": {"type": "boolean"},
+    }
+)
+SCHEMAS["PackagePreparedFactPage"] = object_schema(
+    {
+        **{
+            key: UUID
+            for key in (
+                "bid_id",
+                "package_id",
+                "revision_id",
+                "inventory_id",
+                "frozen_input_id",
+                "execution_input_id",
+            )
+        },
+        "execution_input_digest": SHA,
+        "facts_digest": SHA,
+        "fact_set_id": {"anyOf": [UUID, {"type": "null"}]},
+        "fact_count": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+        "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {"$ref": "#/components/schemas/PackagePreparedFactSummary"},
+        },
+        "has_more": {"type": "boolean"},
+        "next_cursor": {"type": ["string", "null"], "maxLength": 4096},
+    }
+)
 SCHEMAS["PackageFactScopeObservation"] = object_schema(
     {
         "kind": {"const": "fact_scope_observation"},
@@ -621,6 +659,13 @@ def extend_openapi(actual):
         schemas.setdefault(name, deepcopy(value))
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
+        (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/facts",
+            "get",
+            "listPackagePreparedFacts",
+            None,
+            "PackagePreparedFactPage",
+        ),
         (
             "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/fact-scope-declarations",
             "post",

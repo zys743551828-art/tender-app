@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Body, Request
+from fastapi import APIRouter, Body, Query, Request
 
 from apps.api.auth import auth
 from apps.api.bid_package_review_input_routes import input_errors
@@ -13,6 +13,7 @@ from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_fact_scope_repository as repository
 from packages.domain import bid_package_fact_scopes as service
 from packages.domain.bid_package_fact_scope_observation import inspect
+from packages.domain.bid_package_prepared_facts import directory
 from packages.domain.runtime import DomainError, connection
 
 router = APIRouter(tags=["bid-package-fact-scopes"])
@@ -103,4 +104,27 @@ def observe_fact_scope(
             str(input_id),
             str(execution_input_id),
             str(fact_id),
+        )
+
+
+@router.get(BASE + "/facts")
+def list_prepared_facts(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    inventory_id: UUID,
+    input_id: UUID,
+    execution_input_id: UUID,
+    r: Request,
+    limit: int = Query(default=20, ge=1, le=100),
+    cursor: str | None = None,
+):
+    auth(r)
+    with scope_errors():
+        return directory(
+            (str(bid_id), str(package_id), str(revision_id), str(inventory_id)),
+            str(input_id),
+            str(execution_input_id),
+            limit,
+            cursor,
         )

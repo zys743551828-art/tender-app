@@ -521,6 +521,52 @@ class TestFreezing:
             == 0
         )
 
+    def test_original_prepared_fact_directory_survives_current_head_and_source_changes(
+        self, provenance_case
+    ):
+        import json
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        client = f["w"]["client"]
+        url = path + "/" + prepared["manifest"]["id"] + "/facts?limit=1"
+        owner = f["w"]["database"]["owner"]
+        row = owner.execute(
+            "SELECT snapshot_text FROM design.bid_package_execution_inputs WHERE id=%s",
+            (prepared["manifest"]["id"],),
+        ).fetchone()
+        original = json.loads(row["snapshot_text"])["context"]["manifest"]["facts"]["items"][0]
+        calls = len(f["calls"])
+        before = counts(f["w"])
+        response = client.get(url)
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert valid("PackagePreparedFactPage", page)
+        assert page["fact_count"] == 1 and page["execution_input_digest"] == prepared["digest"]
+        item = page["items"][0]
+        assert item["fact_id"] == fact and item["name"] == original["fact"]["name"]
+        assert item["fact_item_digest"] == digest(original)
+        assert (
+            "decision_basis_jsonb_text" not in response.text and "object_key" not in response.text
+        )
+        assert counts(f["w"]) == before and len(f["calls"]) == calls
+        OriginalVerificationCases.seed_fact(self, f["w"])
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (source,),
+        )
+        assert client.get(url).json() == page
+
+    def test_prepared_fact_directory_auth_scope_and_cursor_validation(self, provenance_case):
+        f, frozen, path, prepared, fact, source = provenance_case
+        client = f["w"]["client"]
+        url = path + "/" + prepared["manifest"]["id"] + "/facts"
+        assert client.get(url + "?limit=101").status_code == 422
+        assert client.get(url + "?cursor=forged.signature").status_code == 422
+        assert client.get(url.replace(f["scope"][1], uid())).status_code == 404
+        assert client.get(url.replace(prepared["manifest"]["id"], uid())).status_code == 404
+        client.cookies.clear()
+        assert client.get(url).status_code == 401
+
     def test_scope_declaration_append_ack_withdrawal_and_immutable_history(self, provenance_case):
         import psycopg
 

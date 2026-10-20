@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
+import PackagePreparedFactPicker from "./PackagePreparedFactPicker";
 import type {
   PackageExecutionInputView,
   PackageFactScopeObservation,
   PackageFactScopeView,
+  PackagePreparedFactSummary,
 } from "./contracts";
 import type { FreezeScope } from "./packageFrozenInput";
 import { executionPath } from "./executionInputRecovery";
@@ -71,6 +73,8 @@ function Workspace({
   const [observation, setObservation] =
     useState<PackageFactScopeObservation | null>(null);
   const [result, setResult] = useState<PackageFactScopeView | null>(null);
+  const [selectedFact, setSelectedFact] =
+    useState<PackagePreparedFactSummary | null>(null);
   const [subjectKind, setSubjectKind] = useState(""),
     [reason, setReason] = useState("");
   const [error, setError] = useState<unknown>(loaded.error),
@@ -100,9 +104,9 @@ function Workspace({
     setResult(null);
     setSubjectKind("");
     setFactId(value);
+    setSelectedFact(null);
   }
-  async function observe() {
-    const id = factId.trim();
+  async function observe(id = factId.trim(), expectedFact = selectedFact) {
     if (!executionId(id) || writing.current) return;
     const current = ++ticket.current;
     setReading(true);
@@ -114,6 +118,13 @@ function Workspace({
         `${base}/facts/${id}/scope-declaration`,
       );
       await validateScopeObservation(data, scope, frozenId, prepared, id);
+      if (
+        expectedFact?.fact_id === id &&
+        data.head &&
+        data.head.manifest.binding.fact_item_digest !==
+          expectedFact.fact_item_digest
+      )
+        throw new Error("当前声明与选定原事实摘要不符，未采纳。");
       if (active.current && ticket.current === current) setObservation(data);
     } catch (failure) {
       if (active.current && ticket.current === current) setError(failure);
@@ -138,6 +149,7 @@ function Workspace({
         setObservation(null);
         setSubjectKind("");
         setFactId(data.manifest.binding.fact_id);
+        setSelectedFact(null);
       }
     } catch (failure) {
       if (active.current && ticket.current === current) setError(failure);
@@ -216,6 +228,11 @@ function Workspace({
         pending.body,
         scope.memberId,
       );
+      if (
+        selectedFact?.fact_id === pending.body.fact_id &&
+        data.manifest.binding.fact_item_digest !== selectedFact.fact_item_digest
+      )
+        throw new Error("保存回执与选定原事实摘要不符；原请求仍保留。");
       if (!active.current) return;
       persist({
         ...current,
@@ -224,6 +241,9 @@ function Workspace({
         lastFactId: pending.body.fact_id,
       });
       setFactId(pending.body.fact_id);
+      setSelectedFact((value) =>
+        value?.fact_id === pending.body.fact_id ? value : null,
+      );
       setHistoryId(data.manifest.id);
       setObservation(null);
       setSubjectKind("");
@@ -265,6 +285,32 @@ function Workspace({
           >
             {busy ? "正在恢复原请求…" : "恢复范围原请求"}
           </button>
+        </div>
+      )}
+      <PackagePreparedFactPicker
+        scope={scope}
+        frozenId={frozenId}
+        prepared={prepared}
+        disabled={busy}
+        onSelect={(item) => {
+          changeFact(item.fact_id);
+          setSelectedFact(item);
+          void observe(item.fact_id, item);
+        }}
+      />
+      {selectedFact && (
+        <div role="status">
+          <p>
+            选定原事实：{selectedFact.name} · {selectedFact.value_preview}
+            {selectedFact.unit ? ` ${selectedFact.unit}` : ""}
+          </p>
+          <p>
+            原主体：{selectedFact.subject}；原范围：{selectedFact.scope}
+            。自由文本仅作原记录展示，适用对象仍须明确选择。
+          </p>
+          {selectedFact.preview_truncated && (
+            <p>摘要有截断，请结合完整原资料核对。</p>
+          )}
         </div>
       )}
       <label>

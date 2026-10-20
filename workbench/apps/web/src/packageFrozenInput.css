@@ -105,3 +105,24 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+.package-frozen-input__fact-picker ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.package-frozen-input__fact-picker li,
+.package-frozen-input__fact-picker span {
+  min-width: 0;
+}
+.package-frozen-input__fact-picker li button {
+  width: 100%;
+  justify-content: start;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.package-frozen-input__fact-picker small {
+  display: block;
+  margin-top: 4px;
+}
