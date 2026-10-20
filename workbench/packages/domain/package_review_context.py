@@ -8,8 +8,7 @@ from packages.domain.rule_sets import current_decision
 from packages.domain.runtime import clean
 
 
-def facts(c: Any, selected: dict[str, Any]):
-    bid = selected["bid_id"]
+def read_facts(c: Any, bid: str, selected_parses: set, *, fact_ids: list[str] | None = None):
     head = c.execute(
         """SELECT h.fact_set_id,h.revision,s.digest AS fact_set_digest FROM design.fact_heads h
         LEFT JOIN design.fact_sets s ON s.bid_id=h.bid_id AND s.id=h.fact_set_id WHERE h.bid_id=%s""",
@@ -22,18 +21,12 @@ def facts(c: Any, selected: dict[str, Any]):
             """SELECT f.id,f.bid_id,f.fact_set_id,f.subject,f.scope,f.name,
         f.value::text AS value_jsonb_text,f.unit,f.evidence_ids,s.digest AS fact_set_digest
         FROM design.fact_items f JOIN design.fact_sets s ON s.bid_id=f.bid_id AND s.id=f.fact_set_id
-        WHERE f.bid_id=%s AND f.fact_set_id=%s ORDER BY f.id""",
-            (bid, head["fact_set_id"]),
+        WHERE f.bid_id=%s AND f.fact_set_id=%s AND (%s::uuid[] IS NULL OR f.id=ANY(%s::uuid[])) ORDER BY f.id""",
+            (bid, head["fact_set_id"], fact_ids, fact_ids),
         ).fetchall()
         if head["fact_set_id"] is not None
         else []
     )
-    selected_parses = {
-        (member["document_version_id"], member["parse"]["parse_run_id"])
-        for role in ("target", "authority")
-        for member in selected[role]["manifest"]["members"]
-        if member["parse"]["status"] == "frozen"
-    }
     items = []
     for fact in rows:
         decision = current_decision(c, bid, "fact", fact["id"])
@@ -77,6 +70,16 @@ def facts(c: Any, selected: dict[str, Any]):
         "value_encoding": "postgresql-jsonb-text",
         "qualification": "not_validated",
     }
+
+
+def facts(c: Any, selected: dict[str, Any]):
+    selected_parses = {
+        (member["document_version_id"], member["parse"]["parse_run_id"])
+        for role in ("target", "authority")
+        for member in selected[role]["manifest"]["members"]
+        if member["parse"]["status"] == "frozen"
+    }
+    return read_facts(c, selected["bid_id"], selected_parses)
 
 
 def capture(c: Any, selected: dict[str, Any], observations: dict[str, Any]):

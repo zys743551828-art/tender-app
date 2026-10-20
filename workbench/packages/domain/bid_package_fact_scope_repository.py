@@ -8,6 +8,15 @@ from packages.domain.runtime import DomainError
 KIND = "package-fact-scope-declare"
 
 
+def _stored(row):
+    try:
+        return verify(dict(row))
+    except (ValueError, TypeError, KeyError) as error:
+        raise DomainError(
+            "PACKAGE_FACT_SCOPE_CORRUPT", "已保存事实范围记录完整性校验失败", 500
+        ) from error
+
+
 def head(c, bid, input_id, fact_id):
     rows = c.execute(
         """SELECT a.manifest,a.digest FROM design.bid_package_fact_scopes a
@@ -19,7 +28,7 @@ def head(c, bid, input_id, fact_id):
     ).fetchall()
     if len(rows) > 1:
         raise DomainError("PACKAGE_FACT_SCOPE_CORRUPT", "事实范围绑定链不完整", 500)
-    return verify(dict(rows[0])) if rows else None
+    return _stored(rows[0]) if rows else None
 
 
 def append(c, record):
@@ -55,4 +64,4 @@ def load(c, scope, frozen_id, input_id, record_id):
     ).fetchone()
     if row is None:
         raise DomainError("PACKAGE_FACT_SCOPE_NOT_FOUND", "事实范围绑定不存在", 404)
-    return verify(dict(row))
+    return _stored(row)

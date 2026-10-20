@@ -38,6 +38,7 @@ class SelectedPreparedFacts:
     digest: str
     _manifest_text: str = field(repr=False)
     _items_text: str = field(repr=False)
+    _authority_text: str = field(repr=False)
 
     def view(self):
         return {"manifest": json.loads(self._manifest_text), "digest": self.digest}
@@ -45,6 +46,10 @@ class SelectedPreparedFacts:
     def selected_items(self):
         """Private unqualified payload; every consumer receives only owned selected copies."""
         return json.loads(self._items_text)
+
+    def prepared_authority(self):
+        """Original binding metadata only; no unused fact values or current-state claims."""
+        return json.loads(self._authority_text)
 
 
 def select(packet, request):
@@ -117,7 +122,16 @@ def select(packet, request):
     }
     _validate("Manifest", manifest)
     return SelectedPreparedFacts(
-        digest(manifest), canonical(manifest).decode("utf-8"), canonical(chosen).decode("utf-8")
+        digest(manifest),
+        canonical(manifest).decode("utf-8"),
+        canonical(chosen).decode("utf-8"),
+        canonical(
+            {
+                "binding": binding,
+                "facts_digest": context["facts_digest"],
+                "fact_set_id": summary["fact_set_id"],
+            }
+        ).decode("utf-8"),
     )
 
 

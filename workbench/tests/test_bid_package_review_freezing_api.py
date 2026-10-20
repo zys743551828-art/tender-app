@@ -233,7 +233,7 @@ class TestFreezing:
         assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
 
     @pytest.fixture
-    def provenance_case(self, frozen_case):
+    def provenance_case(self, frozen_case, request):
         from packages.domain.bid_package_review_eligibility import inspect
         from packages.domain.fact_sets import identity
         from packages.domain.human_decisions import append_decision
@@ -254,6 +254,11 @@ class TestFreezing:
             _, source = ensure_parse_sources(
                 c, w["scope"].bid_id, evidence["parse_id"], publish_readable=True
             )
+            if getattr(request, "param", None):
+                c.execute(
+                    "UPDATE retrieval.source_heads SET revision=revision+1,valid_until=clock_timestamp()+%s::integer*interval '1 second' WHERE source_id=%s",
+                    (request.param, source),
+                )
             revision = c.execute(
                 "SELECT revision FROM retrieval.source_heads WHERE source_id=%s", (source,)
             ).fetchone()["revision"]
@@ -555,6 +560,186 @@ class TestFreezing:
             (source,),
         )
         assert client.get(url).json() == page
+
+    def test_selected_fact_admission_recheck_and_unused_pool_do_not_create_tasks(
+        self, provenance_case
+    ):
+        from psycopg.pq import TransactionStatus
+        from psycopg.types.json import Jsonb
+
+        from packages.domain import bid_package_fact_admission as admission
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        scope = f["scope"]
+        frozen_id = frozen["manifest"]["id"]
+        input_id = prepared["manifest"]["id"]
+        save(
+            str(f["w"]["actor"]),
+            scope,
+            frozen_id,
+            input_id,
+            str(uid()),
+            self.scope_body(provenance_case),
+        )
+        before = counts(f["w"])
+        calls = len(f["calls"])
+        observed = admission.observe(
+            scope,
+            frozen_id,
+            input_id,
+            prepared["digest"],
+            {"purpose": "prebid_compliance", "fact_ids": [fact]},
+        )
+        m = observed.view()["manifest"]
+        assert m["facts_qualified"] is True and m["selected_count"] == 1
+        assert (
+            m["admission"] == "verified_for_selected_use"
+            and m["required_facts_assessment"] == "not_performed"
+        )
+        assert all(
+            m[key] is False
+            for key in ("review_ready", "launch_available", "publication_authorized")
+        )
+        assert "synthetic subject" not in str(observed.view()) + repr(observed)
+        with connection() as c:
+            fresh = admission.recheck(c, observed)
+            assert fresh.view()["manifest"]["content_digest"] == m["content_digest"]
+            assert c.info.transaction_status == TransactionStatus.INTRANS
+        with connection() as c:
+            c.execute(
+                "INSERT INTO design.fact_items(id,bid_id,fact_set_id,subject,scope,name,value,unit,evidence_ids) SELECT %s,bid_id,fact_set_id,subject,scope,'unused unconfirmed',%s,unit,evidence_ids FROM design.fact_items WHERE bid_id=%s AND id=%s",
+                (str(uid()), Jsonb("unused-private"), scope[0], fact),
+            )
+            c.execute(
+                "UPDATE design.fact_heads SET revision=revision+1 WHERE bid_id=%s", (scope[0],)
+            )
+        with connection() as c:
+            fresh = admission.recheck(c, observed)
+            assert fresh.view()["manifest"]["content_digest"] == m["content_digest"]
+            assert len(fresh.selected_items()) == 1 and "unused-private" not in str(
+                fresh.selected_items()
+            )
+        with connection() as c:
+            c.rollback()
+            c.autocommit = True
+            with pytest.raises(ValueError, match="requires a transaction"):
+                admission.recheck(c, observed)
+        with connection() as c:
+            c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+            with pytest.raises(DomainError) as denied:
+                admission.recheck(c, observed)
+            assert denied.value.code == "CURRENT_AUTHORITY_REQUIRES_READ_COMMITTED"
+        assert counts(f["w"]) == before and len(f["calls"]) == calls
+        assert f["w"]["client"].get(path + "/" + input_id).json() == prepared
+
+    def test_empty_selected_admission_does_not_read_or_approve_unconfirmed_company_pool(
+        self, prepared_case, monkeypatch
+    ):
+        from packages.domain import bid_package_fact_admission as admission
+
+        f, frozen, path, prepared = prepared_case
+
+        def forbidden(*args, **kwargs):
+            raise AssertionError("empty selection must not inspect current fact pool")
+
+        monkeypatch.setattr(admission, "read_facts", forbidden)
+        monkeypatch.setattr(admission, "read_proof", forbidden)
+        result = admission.observe(
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+            prepared["digest"],
+            {"purpose": "prebid_compliance", "fact_ids": []},
+        )
+        assert result.view()["manifest"]["admission"] == "not_used"
+        assert (
+            result.view()["manifest"]["facts_qualified"] is False and result.selected_items() == []
+        )
+        assert result.view()["manifest"]["required_facts_assessment"] == "not_performed"
+
+    @pytest.mark.parametrize("change", ["withdraw", "replace"])
+    def test_selected_admission_rejects_changed_scope_or_fact_but_preserves_old_receipt(
+        self, provenance_case, change
+    ):
+        from packages.domain import bid_package_fact_admission as admission
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        body = self.scope_body(provenance_case)
+        saved, _ = save(*args, str(uid()), body)
+        observed = admission.observe(
+            *args[1:], prepared["digest"], {"purpose": "prebid_compliance", "fact_ids": [fact]}
+        )
+        old = observed.view()
+        if change == "withdraw":
+            save(
+                *args,
+                str(uid()),
+                body
+                | {
+                    "action": "withdraw",
+                    "subject": None,
+                    "previous_digest": saved["body"]["digest"],
+                },
+            )
+        else:
+            OriginalVerificationCases.seed_fact(self, f["w"])
+        with connection() as c:
+            with pytest.raises(DomainError) as denied:
+                admission.recheck(c, observed)
+            assert denied.value.code in (
+                "PACKAGE_SELECTED_FACTS_UNPROVEN",
+                "PACKAGE_SELECTED_FACT_NOT_CURRENT",
+            )
+        assert observed.view() == old
+
+    @pytest.mark.parametrize("provenance_case", [8], indirect=True)
+    def test_selected_admission_expiry_is_rechecked_without_source_head_changes(
+        self, provenance_case
+    ):
+        import time
+
+        from packages.domain import bid_package_fact_admission as admission
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        save(*args, str(uid()), self.scope_body(provenance_case))
+        observed = admission.observe(
+            *args[1:], prepared["digest"], {"purpose": "prebid_compliance", "fact_ids": [fact]}
+        )
+        owner = f["w"]["database"]["owner"]
+        state = owner.execute(
+            "SELECT revision,extract(epoch from valid_until-clock_timestamp()) AS remaining FROM retrieval.source_heads WHERE source_id=%s",
+            (source,),
+        ).fetchone()
+        assert state["remaining"] > 0
+        time.sleep(float(state["remaining"]) + 0.15)
+        assert (
+            owner.execute(
+                "SELECT revision FROM retrieval.source_heads WHERE source_id=%s", (source,)
+            ).fetchone()["revision"]
+            == state["revision"]
+        )
+        with connection() as c:
+            with pytest.raises(DomainError) as denied:
+                admission.recheck(c, observed)
+            assert denied.value.code == "PACKAGE_SELECTED_FACTS_UNPROVEN"
 
     def test_prepared_fact_directory_auth_scope_and_cursor_validation(self, provenance_case):
         f, frozen, path, prepared, fact, source = provenance_case
