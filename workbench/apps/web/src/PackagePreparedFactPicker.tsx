@@ -15,6 +15,7 @@ type Props = {
   prepared: PackageExecutionInputView;
   disabled: boolean;
   onSelect: (item: PackagePreparedFactSummary) => void;
+  description?: string;
 };
 export default function PackagePreparedFactPicker(props: Props) {
   return (
@@ -29,7 +30,14 @@ export default function PackagePreparedFactPicker(props: Props) {
     />
   );
 }
-function Picker({ scope, frozenId, prepared, disabled, onSelect }: Props) {
+function Picker({
+  scope,
+  frozenId,
+  prepared,
+  disabled,
+  onSelect,
+  description = "读取此准备输入保存时的事实摘要，按名称选择后核对范围；事实更新不会替换这里的旧记录。",
+}: Props) {
   const [items, setItems] = useState<PackagePreparedFactSummary[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
     [loaded, setLoaded] = useState(false),
@@ -94,9 +102,7 @@ function Picker({ scope, frozenId, prepared, disabled, onSelect }: Props) {
       className="package-frozen-input__fact-picker"
       aria-label="按名称选择原事实"
     >
-      <p>
-        读取此准备输入保存时的事实摘要，按名称选择后核对范围；事实更新不会替换这里的旧记录。
-      </p>
+      <p>{description}</p>
       <button
         type="button"
         className="button secondary"

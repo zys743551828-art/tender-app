@@ -24,6 +24,7 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         for operation in methods.values()
     }
     assert operations == {
+        "checkPackageInputDependencies",
         "createPackageRequirementInventory",
         "listPackageRequirementInventories",
         "getPackageRequirementInventory",
@@ -117,3 +118,27 @@ def test_current_fact_and_change_operations_publish_exact_auth_and_request_contr
                 p.get("in") == "query" and p["name"] == "frozen_digest" and p["required"]
                 for p in op["parameters"]
             )
+
+
+def test_dependency_check_is_readonly_post_with_server_bound_usage_digest():
+    from packages.contracts.bid_package_requirements_api import valid
+
+    app = FastAPI()
+    app.include_router(requirements_router)
+    actual = implemented_openapi(app)
+    path = next(p for p in actual["paths"] if p.endswith("/dependency-check"))
+    op = actual["paths"][path]["post"]
+    assert op["operationId"] == "checkPackageInputDependencies"
+    assert op["security"] == [{"SessionCookie": []}]
+    assert "200" in op["responses"] and "201" not in op["responses"]
+    assert {
+        p["name"] for p in op["parameters"] if p.get("in") == "header" and p.get("required")
+    } == {"Origin", "X-CSRF-Token"}
+    body = {
+        "execution_input_digest": "a" * 64,
+        "purpose": "prebid_compliance",
+        "fact_ids": [],
+        "dependencies": [],
+    }
+    assert valid("CheckPackageInputDependencies", body)
+    assert not valid("CheckPackageInputDependencies", body | {"usage_digest": "b" * 64})

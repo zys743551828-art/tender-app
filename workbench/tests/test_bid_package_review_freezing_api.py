@@ -232,6 +232,80 @@ class TestFreezing:
             )
         assert error.value.status == (422 if invalid == "foreign_requirement" else 409)
 
+    def test_dependency_http_binds_private_usage_on_server_and_requires_session_csrf(
+        self, prepared_case, monkeypatch
+    ):
+        from packages.domain import storage
+
+        f, _, path, value = prepared_case
+        client = f["w"]["client"]
+        target = path + "/" + value["manifest"]["id"] + "/dependency-check"
+        body = {
+            "execution_input_digest": value["digest"],
+            "purpose": "prebid_compliance",
+            "fact_ids": [],
+            "dependencies": [],
+        }
+        h = {k: v for k, v in headers(f["w"]).items() if k.lower() != "idempotency-key"}
+        c = f["w"]["database"]["owner"]
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        before = c.execute(statement).fetchone()
+        calls = len(f["calls"])
+        monkeypatch.setattr(
+            storage, "client", lambda: pytest.fail("dependency HTTP must not read objects")
+        )
+        response = client.post(target, json=body, headers=h)
+        assert response.status_code == 200, response.text
+        result = response.json()
+        assert valid("PackageInputDependencyAssessment", result)
+        assert digest(result["manifest"]) == result["digest"]
+        assert result["manifest"]["required_facts_assessment"] == "unknown"
+        assert result["manifest"]["prepared"]["execution_input_digest"] == value["digest"]
+        assert client.post(target, json=body, headers=h).json() == result
+        assert (
+            client.post(
+                target,
+                json=body,
+                headers={k: v for k, v in h.items() if k.lower() != "x-csrf-token"},
+            ).status_code
+            == 403
+        )
+        cookies = dict(client.cookies)
+        client.cookies.clear()
+        try:
+            assert client.post(target, json=body, headers=h).status_code == 401
+        finally:
+            client.cookies.update(cookies)
+        assert c.execute(statement).fetchone() == before and len(f["calls"]) == calls
+
+    @pytest.mark.parametrize(
+        "invalid", ["private_usage_digest", "prepared_digest", "purpose", "foreign_fact"]
+    )
+    def test_dependency_http_rejects_guessed_private_identity_or_wrong_scope(
+        self, prepared_case, invalid
+    ):
+        f, _, path, value = prepared_case
+        body = {
+            "execution_input_digest": value["digest"],
+            "purpose": "prebid_compliance",
+            "fact_ids": [],
+            "dependencies": [],
+        }
+        if invalid == "private_usage_digest":
+            body["usage_digest"] = "a" * 64
+        elif invalid == "prepared_digest":
+            body["execution_input_digest"] = "a" * 64
+        elif invalid == "purpose":
+            body["purpose"] = "formal_scoring"
+        else:
+            body["fact_ids"] = [str(uid())]
+        response = f["w"]["client"].post(
+            path + "/" + value["manifest"]["id"] + "/dependency-check",
+            json=body,
+            headers=headers(f["w"]),
+        )
+        assert response.status_code == (409 if invalid == "prepared_digest" else 422), response.text
+
     def test_fact_check_explains_unproven_input_without_objects_commands_or_jobs(
         self, prepared_case, monkeypatch
     ):

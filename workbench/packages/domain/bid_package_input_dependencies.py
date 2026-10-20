@@ -7,7 +7,9 @@ from packages.domain import package_input_dependencies as dependencies
 from packages.domain.runtime import DomainError, connection
 
 
-def observe(scope, frozen_id, input_id, prepared_digest, selection_request, request):
+def observe(
+    scope, frozen_id, input_id, prepared_digest, selection_request, request, *, _bind_usage=False
+):
     with connection() as c:
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
         packet = prepared_inputs.load_packet(c, scope, frozen_id, input_id)
@@ -18,6 +20,8 @@ def observe(scope, frozen_id, input_id, prepared_digest, selection_request, requ
         original = frozen_inputs.load_input(c, scope, frozen_id)
         try:
             usage = fact_usage.select(packet, selection_request)
+            if _bind_usage:
+                request = {**request, "usage_digest": usage.digest}
             return dependencies.assess(original, packet, usage, request)
         except ValueError as error:
             if str(error) in {
@@ -38,3 +42,18 @@ def observe(scope, frozen_id, input_id, prepared_digest, selection_request, requ
                 "要求依赖声明的身份、依据或内容不符合协议",
                 422,
             ) from error
+
+
+def check(scope, frozen_id, input_id, body):
+    from packages.contracts.bid_package_requirements_api import validate
+
+    validate("CheckPackageInputDependencies", body)
+    return observe(
+        scope,
+        frozen_id,
+        input_id,
+        body["execution_input_digest"],
+        {"purpose": body["purpose"], "fact_ids": body["fact_ids"]},
+        {"purpose": body["purpose"], "dependencies": body["dependencies"]},
+        _bind_usage=True,
+    ).view()

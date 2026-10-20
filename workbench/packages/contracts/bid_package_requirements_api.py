@@ -561,6 +561,28 @@ for _name, _value in _fact_change["$defs"].items():
 SCHEMAS["ConfirmPackageFact"] = {"$ref": "#/components/schemas/PackageFactChange_ConfirmRequest"}
 SCHEMAS["WithdrawPackageFact"] = {"$ref": "#/components/schemas/PackageFactChange_WithdrawRequest"}
 SCHEMAS["PackageFactChangeView"] = {"$ref": "#/components/schemas/PackageFactChange_Record"}
+_input_dependencies = json.loads(
+    (Path(__file__).parent / "schemas/package-input-dependencies.schema.json").read_text("utf-8")
+)
+for _name, _value in _input_dependencies["$defs"].items():
+    SCHEMAS["PackageInputDependencies_" + _name] = json.loads(
+        json.dumps(_value).replace("#/$defs/", "#/components/schemas/PackageInputDependencies_")
+    )
+SCHEMAS["PackageInputDependencyAssessment"] = {
+    "$ref": "#/components/schemas/PackageInputDependencies_View"
+}
+SCHEMAS["CheckPackageInputDependencies"] = object_schema(
+    {
+        "execution_input_digest": SHA,
+        "purpose": {"const": "prebid_compliance"},
+        "fact_ids": IDS,
+        "dependencies": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {"$ref": "#/components/schemas/PackageInputDependencies_Dependency"},
+        },
+    }
+)
 SCHEMAS["PackageEditableFact"] = deepcopy(SCHEMAS["PackageFactChange_Fact"])
 SCHEMAS["PackageEditableFact"]["properties"].pop("reason")
 SCHEMAS["PackageEditableFact"]["required"].remove("reason")
@@ -761,6 +783,13 @@ def extend_openapi(actual):
     schemas.update(deepcopy(SCHEMAS))
     for suffix, method, operation_id, request, response in [
         (
+            "/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-check",
+            "post",
+            "checkPackageInputDependencies",
+            "CheckPackageInputDependencies",
+            "PackageInputDependencyAssessment",
+        ),
+        (
             "/{inventory_id}/frozen-review-inputs/{input_id}/fact-confirmations",
             "post",
             "confirmPackageFact",
@@ -945,6 +974,7 @@ def extend_openapi(actual):
                             "review-original-verification",
                             "execution-check",
                             "fact-check",
+                            "dependency-check",
                         )
                     )
                     else ("Origin", "X-CSRF-Token", "Idempotency-Key")
@@ -970,6 +1000,7 @@ def extend_openapi(actual):
                     "review-original-verification",
                     "execution-check",
                     "fact-check",
+                    "dependency-check",
                 )
             )
             else "200": {

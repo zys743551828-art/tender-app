@@ -11334,6 +11334,124 @@
         ]
       }
     },
+    "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-check": {
+      "post": {
+        "tags": [
+          "bid-package-requirements",
+          "bid-package-input-dependencies"
+        ],
+        "summary": "Check Dependencies",
+        "operationId": "checkPackageInputDependencies",
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Bid Id"
+            }
+          },
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          },
+          {
+            "name": "revision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Revision Id"
+            }
+          },
+          {
+            "name": "inventory_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inventory Id"
+            }
+          },
+          {
+            "name": "input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Input Id"
+            }
+          },
+          {
+            "name": "execution_input_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Execution Input Id"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Origin",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPackageInputDependencies"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Frozen projection / explicit human scope declaration. Inventory completeness and review readiness remain false.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageInputDependencyAssessment"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DomainError"
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ]
+      }
+    },
     "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories": {
       "post": {
         "tags": [
@@ -45158,6 +45276,362 @@
       },
       "PackageFactChangeView": {
         "$ref": "#/components/schemas/PackageFactChange_Record"
+      },
+      "PackageInputDependencies_Id": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "minLength": 36,
+        "maxLength": 36
+      },
+      "PackageInputDependencies_Digest": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$",
+        "minLength": 64,
+        "maxLength": 64
+      },
+      "PackageInputDependencies_Prepared": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bid_id",
+          "package_id",
+          "revision_id",
+          "inventory_id",
+          "frozen_input_id",
+          "execution_input_id",
+          "execution_input_digest"
+        ],
+        "properties": {
+          "bid_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "package_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "revision_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "inventory_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "frozen_input_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "execution_input_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "execution_input_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          }
+        }
+      },
+      "PackageInputDependencies_Dependency": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requirement_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "requirement_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "state": {
+            "enum": [
+              "unknown",
+              "not_needed",
+              "required"
+            ]
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500,
+            "minItems": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+          }
+        },
+        "required": [
+          "requirement_id",
+          "requirement_digest",
+          "state",
+          "fact_ids",
+          "evidence_ids",
+          "reason"
+        ]
+      },
+      "PackageInputDependencies_Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "usage_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_Dependency"
+            },
+            "maxItems": 500
+          }
+        },
+        "required": [
+          "purpose",
+          "usage_digest",
+          "dependencies"
+        ]
+      },
+      "PackageInputDependencies_RequirementAssessment": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requirement_id": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Id"
+          },
+          "requirement_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "declaration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackageInputDependencies_Dependency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fact_status": {
+            "enum": [
+              "unknown",
+              "missing",
+              "selected_unvalidated",
+              "not_used"
+            ]
+          },
+          "unselected_fact_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_Id"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "coverage_state": {
+            "enum": [
+              "not_provided",
+              "missing",
+              "pending_parse",
+              "parse_gap",
+              "unsupported",
+              "verified",
+              "not_applicable",
+              "conflict",
+              "unknown"
+            ]
+          },
+          "source_bound": {
+            "type": "boolean"
+          },
+          "applicability": {
+            "enum": [
+              "applicable",
+              "unknown",
+              "not_applicable"
+            ]
+          }
+        },
+        "required": [
+          "requirement_id",
+          "requirement_digest",
+          "declaration",
+          "fact_status",
+          "unselected_fact_ids",
+          "coverage_state",
+          "source_bound",
+          "applicability"
+        ]
+      },
+      "PackageInputDependencies_Manifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "const": "package-input-dependencies/1"
+          },
+          "kind": {
+            "const": "input_dependency_assessment"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "prepared": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Prepared"
+          },
+          "frozen_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "inventory_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "usage_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          },
+          "selected_fact_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "requirement_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dependency_review_status": {
+            "enum": [
+              "incomplete",
+              "declared"
+            ]
+          },
+          "required_facts_assessment": {
+            "enum": [
+              "unknown",
+              "missing",
+              "selected_unvalidated",
+              "not_used"
+            ]
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_RequirementAssessment"
+            }
+          },
+          "inventory_status": {
+            "enum": [
+              "unproven",
+              "range_submitted_quality_unmeasured"
+            ]
+          },
+          "declaration_kind": {
+            "const": "human_dependency_annotation"
+          },
+          "inventory_complete": {
+            "const": false
+          },
+          "original_bytes_verified": {
+            "const": false
+          },
+          "facts_qualified": {
+            "const": false
+          },
+          "review_ready": {
+            "const": false
+          },
+          "launch_available": {
+            "const": false
+          },
+          "publication_authorized": {
+            "const": false
+          },
+          "policy_digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          }
+        },
+        "required": [
+          "version",
+          "kind",
+          "purpose",
+          "prepared",
+          "frozen_digest",
+          "inventory_digest",
+          "usage_digest",
+          "selected_fact_count",
+          "requirement_count",
+          "dependency_review_status",
+          "required_facts_assessment",
+          "requirements",
+          "inventory_status",
+          "declaration_kind",
+          "inventory_complete",
+          "original_bytes_verified",
+          "facts_qualified",
+          "review_ready",
+          "launch_available",
+          "publication_authorized",
+          "policy_digest"
+        ]
+      },
+      "PackageInputDependencies_View": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "manifest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Manifest"
+          },
+          "digest": {
+            "$ref": "#/components/schemas/PackageInputDependencies_Digest"
+          }
+        },
+        "required": [
+          "manifest",
+          "digest"
+        ]
+      },
+      "PackageInputDependencyAssessment": {
+        "$ref": "#/components/schemas/PackageInputDependencies_View"
+      },
+      "CheckPackageInputDependencies": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "execution_input_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "purpose": {
+            "const": "prebid_compliance"
+          },
+          "fact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true,
+            "maxItems": 500
+          },
+          "dependencies": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/PackageInputDependencies_Dependency"
+            }
+          }
+        },
+        "required": [
+          "execution_input_digest",
+          "purpose",
+          "fact_ids",
+          "dependencies"
+        ]
       },
       "PackageEditableFact": {
         "type": "object",

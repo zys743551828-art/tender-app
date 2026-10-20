@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import PackageFactCheck from "./PackageFactCheck";
@@ -18,6 +18,10 @@ import {
   loadExecutionRecord,
   storeExecutionRecord,
 } from "./executionInputRecovery";
+
+const PackageInputDependencyWorkspace = lazy(
+  () => import("./PackageInputDependencyWorkspace"),
+);
 import type {
   ExecutionRecord,
   ExecutionScope,
@@ -247,6 +251,13 @@ function Workspace({
             frozenId={frozen.manifest.id}
             prepared={result}
           />
+          <Suspense fallback={<p>正在加载逐条事实需求核对…</p>}>
+            <PackageInputDependencyWorkspace
+              scope={scope}
+              frozen={frozen}
+              prepared={result}
+            />
+          </Suspense>
         </>
       )}
       <details>

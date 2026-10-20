@@ -1,5 +1,14 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
 
+export type CheckPackageInputDependencies = {
+  execution_input_digest: string;
+  purpose: "prebid_compliance";
+  fact_ids: string[];
+  dependencies: PackageInputDependencies_Dependency[];
+};
+
+export type PackageInputDependencyAssessment = PackageInputDependencies_View;
+
 export type ConfirmPackageFact = PackageFactChange_ConfirmRequest;
 
 export type WithdrawPackageFact = PackageFactChange_WithdrawRequest;
@@ -3528,6 +3537,20 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageInputDependencies_Dependency = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  state: "unknown" | "not_needed" | "required";
+  fact_ids: PackageInputDependencies_Id[];
+  evidence_ids: PackageInputDependencies_Id[];
+  reason: string;
+};
+
+export type PackageInputDependencies_View = {
+  manifest: PackageInputDependencies_Manifest;
+  digest: PackageInputDependencies_Digest;
+};
+
 export type PackageFactChange_ConfirmRequest = {
   frozen_digest: PackageFactChange_Digest;
   expected_head: PackageFactChange_Head;
@@ -4812,6 +4835,38 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageInputDependencies_Id = string;
+
+export type PackageInputDependencies_Digest = string;
+
+export type PackageInputDependencies_Manifest = {
+  version: "package-input-dependencies/1";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageInputDependencies_Prepared;
+  frozen_digest: PackageInputDependencies_Digest;
+  inventory_digest: PackageInputDependencies_Digest;
+  usage_digest: PackageInputDependencies_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageInputDependencies_RequirementAssessment[];
+  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageInputDependencies_Digest;
+};
+
 export type PackageFactChange_Digest = string;
 
 export type PackageFactChange_Id = string;
@@ -5022,6 +5077,36 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type PackageInputDependencies_Prepared = {
+  bid_id: PackageInputDependencies_Id;
+  package_id: PackageInputDependencies_Id;
+  revision_id: PackageInputDependencies_Id;
+  inventory_id: PackageInputDependencies_Id;
+  frozen_input_id: PackageInputDependencies_Id;
+  execution_input_id: PackageInputDependencies_Id;
+  execution_input_digest: PackageInputDependencies_Digest;
+};
+
+export type PackageInputDependencies_RequirementAssessment = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  declaration: PackageInputDependencies_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageInputDependencies_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+};
+
 export type PackageFactScope_ScopeBinding = {
   bid_id: PackageFactScope_Id;
   package_id: PackageFactScope_Id;
@@ -5226,6 +5311,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-changes/{command_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/fact-context",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/facts/{fact_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-check",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",
