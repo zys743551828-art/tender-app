@@ -1,0 +1,143 @@
+[
+  {
+    "name": "explicit-lot",
+    "expected": {
+      "manifest": {
+        "version": "package-fact-scope/1",
+        "kind": "fact_scope_declaration",
+        "id": "00000000-0000-4000-8000-000000000040",
+        "actor_id": "00000000-0000-4000-8000-000000000041",
+        "command_id": "00000000-0000-4000-8000-000000000042",
+        "recorded_at": "2026-10-20T00:00:00.000000Z",
+        "reason": "人工核对事实适用对象",
+        "action": "bind",
+        "previous_digest": null,
+        "binding": {
+          "bid_id": "00000000-0000-4000-8000-000000000001",
+          "package_id": "00000000-0000-4000-8000-000000000002",
+          "revision_id": "00000000-0000-4000-8000-000000000003",
+          "inventory_id": "00000000-0000-4000-8000-000000000004",
+          "identity_digest": "8f87d9cb9dd3e7f7347a180287028f1ff02cb0258bfa819fcc00c4b03e1e410f",
+          "frozen_input_id": "00000000-0000-4000-8000-000000000005",
+          "frozen_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "context_digest": "bf52b1fa19c544223b9e33bcf814e7183c1bccf626b6776eaef04d35691ca2db",
+          "method_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "policy_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "purpose": "prebid_compliance",
+          "execution_input_id": "00000000-0000-4000-8000-000000000006",
+          "execution_input_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+          "facts_digest": "193983ff8b9c005cbc96bf47deb7046e4e00262d0ef006d70ed9bfb902e15484",
+          "fact_set_id": "00000000-0000-4000-8000-000000000031",
+          "fact_id": "00000000-0000-4000-8000-000000000030",
+          "fact_item_digest": "ced6e5fe0808b672d67b8e96981b7def5c70ace3b0cdbbf4458cc716a01d6fe0",
+          "proof_digest": "eca0def1f3adcd62dd7bb3058fba2dd77ed33dc042ffb0511c3b86450529d732"
+        },
+        "subject": {
+          "kind": "lot",
+          "id": "00000000-0000-4000-8000-000000000023"
+        },
+        "facts_qualified": false,
+        "review_ready": false,
+        "launch_available": false,
+        "publication_authorized": false
+      },
+      "digest": "505bd0c62cfa3b564f46342b9a41a5bcbb4b13d1f236c9f9368049ad92c8ee7b"
+    }
+  },
+  {
+    "name": "append-same-input",
+    "expected": {
+      "manifest": {
+        "version": "package-fact-scope/1",
+        "kind": "fact_scope_declaration",
+        "id": "00000000-0000-4000-8000-000000000050",
+        "actor_id": "00000000-0000-4000-8000-000000000041",
+        "command_id": "00000000-0000-4000-8000-000000000042",
+        "recorded_at": "2026-10-20T00:00:00.000000Z",
+        "reason": "人工核对事实适用对象",
+        "action": "bind",
+        "previous_digest": "505bd0c62cfa3b564f46342b9a41a5bcbb4b13d1f236c9f9368049ad92c8ee7b",
+        "binding": {
+          "bid_id": "00000000-0000-4000-8000-000000000001",
+          "package_id": "00000000-0000-4000-8000-000000000002",
+          "revision_id": "00000000-0000-4000-8000-000000000003",
+          "inventory_id": "00000000-0000-4000-8000-000000000004",
+          "identity_digest": "8f87d9cb9dd3e7f7347a180287028f1ff02cb0258bfa819fcc00c4b03e1e410f",
+          "frozen_input_id": "00000000-0000-4000-8000-000000000005",
+          "frozen_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "context_digest": "bf52b1fa19c544223b9e33bcf814e7183c1bccf626b6776eaef04d35691ca2db",
+          "method_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "policy_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "purpose": "prebid_compliance",
+          "execution_input_id": "00000000-0000-4000-8000-000000000006",
+          "execution_input_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+          "facts_digest": "193983ff8b9c005cbc96bf47deb7046e4e00262d0ef006d70ed9bfb902e15484",
+          "fact_set_id": "00000000-0000-4000-8000-000000000031",
+          "fact_id": "00000000-0000-4000-8000-000000000030",
+          "fact_item_digest": "ced6e5fe0808b672d67b8e96981b7def5c70ace3b0cdbbf4458cc716a01d6fe0",
+          "proof_digest": "eca0def1f3adcd62dd7bb3058fba2dd77ed33dc042ffb0511c3b86450529d732"
+        },
+        "subject": {
+          "kind": "lot",
+          "id": "00000000-0000-4000-8000-000000000023"
+        },
+        "facts_qualified": false,
+        "review_ready": false,
+        "launch_available": false,
+        "publication_authorized": false
+      },
+      "digest": "95d6b23c9f5fdbeefdc218e5f028a50da409ffb0c7edfdda34a67e0cb8a85996"
+    }
+  },
+  {
+    "name": "withdraw-original-binding",
+    "expected": {
+      "manifest": {
+        "version": "package-fact-scope/1",
+        "kind": "fact_scope_declaration",
+        "id": "00000000-0000-4000-8000-000000000051",
+        "actor_id": "00000000-0000-4000-8000-000000000041",
+        "command_id": "00000000-0000-4000-8000-000000000042",
+        "recorded_at": "2026-10-20T00:00:00.000000Z",
+        "reason": "人工核对事实适用对象",
+        "action": "withdraw",
+        "previous_digest": "95d6b23c9f5fdbeefdc218e5f028a50da409ffb0c7edfdda34a67e0cb8a85996",
+        "binding": {
+          "bid_id": "00000000-0000-4000-8000-000000000001",
+          "package_id": "00000000-0000-4000-8000-000000000002",
+          "revision_id": "00000000-0000-4000-8000-000000000003",
+          "inventory_id": "00000000-0000-4000-8000-000000000004",
+          "identity_digest": "8f87d9cb9dd3e7f7347a180287028f1ff02cb0258bfa819fcc00c4b03e1e410f",
+          "frozen_input_id": "00000000-0000-4000-8000-000000000005",
+          "frozen_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "context_digest": "bf52b1fa19c544223b9e33bcf814e7183c1bccf626b6776eaef04d35691ca2db",
+          "method_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "policy_digest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "purpose": "prebid_compliance",
+          "execution_input_id": "00000000-0000-4000-8000-000000000006",
+          "execution_input_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+          "facts_digest": "193983ff8b9c005cbc96bf47deb7046e4e00262d0ef006d70ed9bfb902e15484",
+          "fact_set_id": "00000000-0000-4000-8000-000000000031",
+          "fact_id": "00000000-0000-4000-8000-000000000030",
+          "fact_item_digest": "ced6e5fe0808b672d67b8e96981b7def5c70ace3b0cdbbf4458cc716a01d6fe0",
+          "proof_digest": "eca0def1f3adcd62dd7bb3058fba2dd77ed33dc042ffb0511c3b86450529d732"
+        },
+        "subject": {
+          "kind": "lot",
+          "id": "00000000-0000-4000-8000-000000000023"
+        },
+        "facts_qualified": false,
+        "review_ready": false,
+        "launch_available": false,
+        "publication_authorized": false
+      },
+      "digest": "abd60e96bbf1d29b82b705ce0fefeafef5f74e5ab73022cfa0bc1c42c8e4bbf4"
+    }
+  }
+]

@@ -232,16 +232,14 @@ class TestFreezing:
         )
         assert f["w"]["client"].get(path + "/" + value["manifest"]["id"]).json() == value
 
-    @pytest.mark.parametrize("withdraw", [False, True])
-    def test_fact_check_valid_decision_basis_proves_provenance_but_not_package_scope(
-        self, frozen_case, withdraw
-    ):
+    @pytest.fixture
+    def provenance_case(self, frozen_case):
         from packages.domain.bid_package_review_eligibility import inspect
         from packages.domain.fact_sets import identity
         from packages.domain.human_decisions import append_decision
         from packages.domain.review_data import source_closure
         from packages.domain.runtime import clean, connection, sha
-        from packages.rag.indexing import ensure_parse_sources, parse_source_id
+        from packages.rag.indexing import ensure_parse_sources
 
         f = frozen_case
         w = f["w"]
@@ -302,6 +300,16 @@ class TestFreezing:
         )
         assert saved.status_code == 201, saved.text
         value = saved.json()
+        return f, frozen, path, value, str(fact), str(source)
+
+    @pytest.mark.parametrize("withdraw", [False, True])
+    def test_fact_check_valid_decision_basis_proves_provenance_but_not_package_scope(
+        self, provenance_case, withdraw
+    ):
+        from packages.rag.indexing import parse_source_id
+
+        f, frozen, path, value, fact, source = provenance_case
+        w = f["w"]
         if withdraw:
             owner = w["database"]["owner"]
             parse = owner.execute(
@@ -328,6 +336,247 @@ class TestFreezing:
             assert "FACT_SOURCE_NOT_EFFECTIVE" in item["blockers"]
         else:
             assert item["blockers"] == ["FACT_SCOPE_MAPPING_REQUIRED"]
+
+    def scope_body(self, provenance_case):
+        f, frozen, path, value, fact, source = provenance_case
+        return {
+            "execution_input_digest": value["digest"],
+            "fact_id": fact,
+            "action": "bind",
+            "subject": {"kind": "lot", "id": str(f["w"]["scope"].lot_id)},
+            "reason": "明确事实属于本标段",
+            "previous_digest": None,
+        }
+
+    def test_scope_provenance_carryover_requires_same_bid_and_fact_set(self, provenance_case):
+        from packages.domain.fact_sets import decision_basis
+        from packages.domain.runtime import audit, connection
+
+        f, frozen, path, prepared, old_fact, source = provenance_case
+        bid = f["scope"][0]
+        new_set, new_fact = str(uid()), str(uid())
+        with connection() as c:
+            old = c.execute(
+                "SELECT decision_id FROM design.decision_heads WHERE bid_id=%s AND object_kind='fact' AND object_id=%s",
+                (bid, old_fact),
+            ).fetchone()["decision_id"]
+            basis = decision_basis(c, old)
+            c.execute(
+                "INSERT INTO design.fact_sets(id,bid_id,digest) VALUES(%s,%s,%s)",
+                (new_set, bid, digest({"synthetic": "carryover"})),
+            )
+            c.execute(
+                "INSERT INTO design.fact_items(id,bid_id,fact_set_id,subject,scope,name,value,unit,evidence_ids) SELECT %s,bid_id,%s,subject,scope,name,value,unit,evidence_ids FROM design.fact_items WHERE bid_id=%s AND id=%s",
+                (new_fact, new_set, bid, old_fact),
+            )
+            c.execute(
+                "INSERT INTO design.decision_heads(bid_id,object_kind,object_id,revision,decision_id) VALUES(%s,'fact',%s,1,%s)",
+                (bid, new_fact, old),
+            )
+            c.execute(
+                "UPDATE design.fact_heads SET fact_set_id=%s,revision=revision+1 WHERE bid_id=%s",
+                (new_set, bid),
+            )
+            payload = {
+                "fact_set_id": new_set,
+                "carryovers": [
+                    {
+                        "new_fact_id": new_fact,
+                        "from_fact_id": old_fact,
+                        "from_decision_id": str(old),
+                        "equivalence_digest": digest(basis),
+                    }
+                ],
+            }
+            # A plausible audit from a different scope must never confer equivalence.
+            audit(c, f["w"]["actor"], None, "facts.set_replaced", payload)
+
+        def check():
+            response = f["w"]["client"].post(
+                path + "/" + prepared["manifest"]["id"] + "/fact-check",
+                json={"execution_input_digest": prepared["digest"]},
+                headers=headers(f["w"]),
+            )
+            assert response.status_code == 200, response.text
+            return response.json()
+
+        assert "FACT_DECISION_BINDING_UNPROVEN" in check()["fact_checks"][0]["blockers"]
+        with connection() as c:
+            audit(
+                c, f["w"]["actor"], bid, "facts.set_replaced", payload | {"fact_set_id": str(uid())}
+            )
+        assert "FACT_DECISION_BINDING_UNPROVEN" in check()["fact_checks"][0]["blockers"]
+        with connection() as c:
+            audit(c, f["w"]["actor"], bid, "facts.set_replaced", payload)
+        result = check()
+        assert (
+            result["provenance_verified_count"] == 1 and result["matches_prepared_context"] is False
+        )
+        assert result["fact_checks"][0]["blockers"] == ["FACT_SCOPE_MAPPING_REQUIRED"]
+
+    def test_scope_declaration_append_ack_withdrawal_and_immutable_history(self, provenance_case):
+        import psycopg
+
+        from packages.domain import bid_package_fact_scope_repository as repository
+        from packages.domain import bid_package_fact_scopes as service
+        from packages.domain.runtime import DomainError, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        owner = f["w"]["database"]["owner"]
+        before = owner.execute(
+            "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        ).fetchone()
+        old_prepared = f["w"]["client"].get(path + "/" + prepared["manifest"]["id"]).json()
+        body = self.scope_body(provenance_case)
+        key = str(uid())
+        saved, replay = service.save(*args, key, body)
+        assert saved["status"] == 201 and not replay
+        record = saved["body"]
+        assert record["manifest"]["binding"]["fact_id"] == fact
+        assert record["manifest"]["facts_qualified"] is False
+        assert service.save(*args, key, body) == (saved, True)
+        with pytest.raises(DomainError, match="同一幂等键"):
+            service.save(*args, key, body | {"reason": "不同意图"})
+        with connection() as c:
+            assert repository.head(c, args[1][0], args[3], fact) == record
+            assert repository.load(c, args[1], args[2], args[3], record["manifest"]["id"]) == record
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (source,),
+        )
+        assert service.save(*args, key, body) == (saved, True)
+        withdrawal = body | {
+            "action": "withdraw",
+            "subject": None,
+            "previous_digest": record["digest"],
+            "reason": "来源停用后撤回适用声明",
+        }
+        removed, replay = service.save(*args, str(uid()), withdrawal)
+        assert not replay and removed["body"]["manifest"]["action"] == "withdraw"
+        with pytest.raises(DomainError, match="已变化"):
+            service.save(*args, str(uid()), body)
+        with connection() as c:
+            assert repository.head(c, args[1][0], args[3], fact) == removed["body"]
+            assert repository.load(c, args[1], args[2], args[3], record["manifest"]["id"]) == record
+            assert c.execute(
+                "SELECT has_table_privilege(current_user,'design.bid_package_fact_scopes','INSERT') AS i,has_table_privilege(current_user,'design.bid_package_fact_scopes','UPDATE') AS u,has_table_privilege(current_user,'design.bid_package_fact_scopes','DELETE') AS d"
+            ).fetchone() == {"i": True, "u": False, "d": False}
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            with connection() as c:
+                c.execute(
+                    "DELETE FROM design.bid_package_fact_scopes WHERE id=%s",
+                    (record["manifest"]["id"],),
+                )
+        assert f["w"]["client"].get(path + "/" + prepared["manifest"]["id"]).json() == old_prepared
+        assert (
+            owner.execute(
+                "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+            ).fetchone()
+            == before
+        )
+
+    @pytest.mark.parametrize("same_key", [False, True])
+    def test_scope_concurrent_same_intent_has_one_record_and_ack(self, provenance_case, same_key):
+        from concurrent.futures import ThreadPoolExecutor
+
+        from packages.domain.bid_package_fact_scopes import save
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        body = self.scope_body(provenance_case)
+        key = str(uid())
+
+        def run(index):
+            try:
+                return save(*args, key if same_key or index == 0 else str(uid()), body)
+            except DomainError as error:
+                return error.code
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(run, range(2)))
+        if same_key:
+            assert results[0][0] == results[1][0] and sum(x[1] for x in results) == 1
+        else:
+            assert sum(isinstance(x, tuple) for x in results) == 1
+            assert "PACKAGE_FACT_SCOPE_CHANGED" in results
+        assert (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT count(*) AS n FROM design.bid_package_fact_scopes WHERE execution_input_id=%s",
+                (args[3],),
+            )
+            .fetchone()["n"]
+            == 1
+        )
+
+    @pytest.mark.parametrize("corrupt", ["ack", "subject", "fact", "predecessor", "fork"])
+    def test_scope_deferred_guard_rejects_resealed_record_and_rolls_back_command(
+        self, provenance_case, corrupt
+    ):
+        import psycopg
+
+        from packages.domain import bid_package_fact_scope_repository as repository
+        from packages.domain import bid_package_fact_scopes as service
+        from packages.domain.runtime import Command, connection
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+        )
+        body = self.scope_body(provenance_case)
+        original, _ = service.save(*args, str(uid()), body)
+        record = original["body"]
+        owner = f["w"]["database"]["owner"]
+        before = counts(f["w"])
+        with pytest.raises(psycopg.IntegrityError):
+            with connection() as c:
+                command = Command(
+                    c,
+                    args[0],
+                    repository.KIND,
+                    args[3],
+                    str(uid()),
+                    body | {"previous_digest": record["digest"]},
+                )
+                m = record["manifest"] | {
+                    "id": str(uid()),
+                    "command_id": str(command.id),
+                    "previous_digest": record["digest"],
+                }
+                if corrupt == "subject":
+                    m["subject"] = {"kind": "lot", "id": str(uid())}
+                if corrupt == "fact":
+                    m["binding"] = m["binding"] | {"fact_id": str(uid())}
+                if corrupt == "predecessor":
+                    m["previous_digest"] = "0" * 64
+                if corrupt == "fork":
+                    m["previous_digest"] = None
+                value = {"manifest": m, "digest": digest(m)}
+                repository.append(c, value)
+                command.finish(value | {"digest": "f" * 64} if corrupt == "ack" else value, 201)
+        assert counts(f["w"]) == before
+        assert (
+            owner.execute(
+                "SELECT count(*) AS n FROM design.bid_package_fact_scopes WHERE execution_input_id=%s",
+                (args[3],),
+            ).fetchone()["n"]
+            == 1
+        )
 
     def test_prepared_internal_consumer_retains_private_context_and_refuses_task_shortcut(
         self, prepared_case
