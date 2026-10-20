@@ -109,6 +109,8 @@ def replace_set(
     new_fact=None,
     command_id=None,
     confirmation_only=False,
+    evidence_reader=None,
+    adoption_reader=None,
 ):
     """调用者已锁bid；所有克隆/头/映射/真实确认在同一事务，无外部模型调用。"""
     if kind not in ("add", "replace", "withdraw") or not reason.strip():
@@ -127,7 +129,7 @@ def replace_set(
         if any(not new_fact[key].strip() for key in ("subject", "scope", "name", "reason")):
             raise DomainError("FACT_CHANGE_INVALID", "请完整填写主体、范围、名称和依据理由", 422)
         try:
-            new_basis = evidence_basis(c, bid, new_fact["evidence_ids"])
+            new_basis = (evidence_reader or evidence_basis)(c, bid, new_fact["evidence_ids"])
         except ValueError as error:
             raise DomainError(
                 "FACT_SOURCE_NOT_EFFECTIVE", "事实来源已撤回或身份不一致，请先核验来源", 409
@@ -150,17 +152,30 @@ def replace_set(
     mappings = []
     for old in remaining:
         new_id = uid()
-        _insert_fact(c, bid, set_id, new_id, old)
+        # Clone immutable database values directly, preserving PostgreSQL JSON numbers.
+        c.execute(
+            """INSERT INTO fact_items(id,bid_id,fact_set_id,subject,scope,name,value,unit,evidence_ids)
+            SELECT %s,bid_id,%s,subject,scope,name,value,unit,evidence_ids
+            FROM fact_items WHERE bid_id=%s AND id=%s""",
+            (new_id, set_id, bid, old["id"]),
+        )
         decision = current_decision(c, bid, "fact", old["id"])
         if not decision:
             continue
-        basis = decision_basis(c, decision["id"])
-        try:
-            now_basis = evidence_basis(c, bid, old["evidence_ids"])
-        except (DomainError, ValueError):
-            continue
-        if basis != {"fact_identity": identity(old), "evidence": now_basis}:
-            continue
+        if adoption_reader is None:
+            basis = decision_basis(c, decision["id"])
+            try:
+                now_basis = evidence_basis(c, bid, old["evidence_ids"])
+            except (DomainError, ValueError):
+                continue
+            if basis != {"fact_identity": identity(old), "evidence": now_basis}:
+                continue
+        else:
+            # An explicit policy may preserve an exact historical decision. This is
+            # not current source qualification; consumers must recheck actual use.
+            basis = adoption_reader(c, bid, old, decision)
+            if basis is None or basis.get("fact_identity") != identity(old):
+                continue
         c.execute(
             "INSERT INTO decision_heads(bid_id,object_kind,object_id,revision,decision_id) VALUES(%s,'fact',%s,1,%s)",
             (bid, new_id, decision["id"]),

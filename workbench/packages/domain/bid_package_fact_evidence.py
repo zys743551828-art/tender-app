@@ -21,12 +21,16 @@ class FrozenFactEvidenceBasis:
     digest: str
     _text: str = field(repr=False)
     _basis_text: str = field(repr=False)
+    _closure_text: str = field(repr=False)
 
     def view(self):
         return json.loads(self._text)
 
     def basis(self):
         return json.loads(self._basis_text)
+
+    def closure(self):
+        return json.loads(self._closure_text)
 
 
 def read_basis(c, scope, frozen_id, frozen_digest, evidence_ids):
@@ -97,5 +101,8 @@ def read_basis(c, scope, frozen_id, frozen_digest, evidence_ids):
     }
     selection_policy.validate("BasisObservation", manifest)
     return FrozenFactEvidenceBasis(
-        digest(manifest), canonical(manifest).decode("utf-8"), canonical(basis).decode("utf-8")
+        digest(manifest),
+        canonical(manifest).decode("utf-8"),
+        canonical(basis).decode("utf-8"),
+        canonical(closure).decode("utf-8"),
     )

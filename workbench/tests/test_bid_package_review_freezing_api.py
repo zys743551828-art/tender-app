@@ -353,6 +353,372 @@ class TestFreezing:
             "previous_digest": None,
         }
 
+    def fact_change_body(self, case):
+        f, frozen, path, prepared, fact, source = case
+        head = (
+            f["w"]["database"]["owner"]
+            .execute(
+                "SELECT fact_set_id::text AS id,revision FROM design.fact_heads WHERE bid_id=%s",
+                (f["scope"][0],),
+            )
+            .fetchone()
+        )
+        return dict(
+            frozen_digest=frozen["digest"],
+            expected_head=head or dict(id=None, revision=0),
+            replaces_fact_id=None,
+            confirmation="confirmed",
+            fact=dict(
+                subject="本工程",
+                scope="本标段",
+                name="新增明确事实",
+                value="180",
+                unit="天",
+                evidence_ids=[str(f["w"]["evidence"])],
+                reason="按本次冻结原页人工确认",
+            ),
+        )
+
+    def fact_change_counts(self, case):
+        f = case[0]
+        owner = f["w"]["database"]["owner"]
+        rows = tuple(
+            owner.execute("SELECT count(*) AS n FROM design." + name).fetchone()["n"]
+            for name in (
+                "fact_sets",
+                "fact_items",
+                "decisions",
+                "decision_heads",
+                "fact_set_changes",
+                "audit_entries",
+                "commands",
+                "stream_events",
+                "operations",
+                "outbox",
+            )
+        )
+        head = owner.execute(
+            "SELECT fact_set_id::text,revision FROM design.fact_heads WHERE bid_id=%s",
+            (f["scope"][0],),
+        ).fetchone()
+        return rows, head
+
+    def test_shared_fact_writer_keeps_existing_human_api_default_policy(self, frozen_case):
+        f = frozen_case
+        assert self.post(f).status_code == 201
+        owner = f["w"]["database"]["owner"]
+        bid = f["scope"][0]
+        owner.execute(
+            "UPDATE design.bid_profiles SET current_body_id=(SELECT p.document_version_id FROM design.evidence_blocks e JOIN design.parse_runs p ON p.id=e.parse_id AND p.bid_id=e.bid_id WHERE e.id=%s) WHERE bid_id=%s",
+            (str(f["w"]["evidence"]), bid),
+        )
+        client = f["w"]["client"]
+        url = "/api/v1/bids/" + bid + "/facts"
+        before = client.get(url)
+        assert before.status_code == 200, before.text
+        body = dict(
+            replaces_fact_id=None,
+            fact=dict(
+                subject="本工程",
+                scope="本标段",
+                name="legacy default policy",
+                value="180",
+                unit="天",
+                evidence_ids=[str(f["w"]["evidence"])],
+                reason="保留旧接口默认策略",
+            ),
+        )
+        response = client.post(
+            url, json=body, headers=headers(f["w"]) | {"If-Match": before.headers["etag"]}
+        )
+        assert response.status_code == 200, response.text
+        response = client.post(
+            url,
+            json=body | {"fact": body["fact"] | {"name": "legacy second confirmation"}},
+            headers=headers(f["w"]) | {"If-Match": response.headers["etag"]},
+        )
+        assert response.status_code == 200, response.text
+        assert len(response.json()["facts"]) == 2
+        assert all(item["confirmation"] == "confirmed" for item in response.json()["facts"])
+
+    def test_package_fact_confirmation_preserves_existing_decision_without_legacy_heads(
+        self, provenance_case
+    ):
+        from packages.domain.bid_package_fact_changes import confirm
+        from packages.domain.bid_package_fact_provenance import read_proof
+        from packages.domain.package_review_context import read_facts
+        from packages.domain.runtime import connection
+
+        f, frozen, path, prepared, old_fact, source = provenance_case
+        owner = f["w"]["database"]["owner"]
+        bid = f["scope"][0]
+        original = owner.execute(
+            "SELECT decision_id FROM design.decision_heads WHERE bid_id=%s AND object_kind='fact' AND object_id=%s",
+            (bid, old_fact),
+        ).fetchone()["decision_id"]
+        owner.execute(
+            "UPDATE design.bid_profiles SET current_body_id=NULL,current_material_id=NULL WHERE bid_id=%s",
+            (bid,),
+        )
+        before = owner.execute(
+            "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+        ).fetchone()
+        body = self.fact_change_body(provenance_case)
+        key = str(uid())
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+        saved, replay = confirm(*args, key, body)
+        assert saved["status"] == 201 and replay is False
+        m = saved["body"]["manifest"]
+        assert m["action"] == "confirmed" and m["facts_qualified"] is False
+        assert m["head"]["revision"] == body["expected_head"]["revision"] + 1
+        assert confirm(*args, key, body) == (saved, True)
+        with connection() as c:
+            parse = c.execute(
+                "SELECT parse_id::text, p.document_version_id::text FROM design.evidence_blocks e JOIN design.parse_runs p ON p.id=e.parse_id AND p.bid_id=e.bid_id WHERE e.id=%s",
+                (str(f["w"]["evidence"]),),
+            ).fetchone()
+            current = read_facts(c, bid, {(parse["document_version_id"], parse["parse_id"])})
+            old_clone = [item for item in current["items"] if item["fact"]["id"] != m["fact_id"]][0]
+            assert old_clone["decision"]["id"] == str(original)
+            proof = read_proof(c, bid, old_clone, m["recorded_at"])
+            assert (
+                proof["decision_binding"] is True
+                and proof["decision_lineage"][0]["from_fact_id"] == old_fact
+            )
+        assert (
+            owner.execute(
+                "SELECT (SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS events"
+            ).fetchone()
+            == before
+        )
+        assert f["w"]["client"].get(path + "/" + prepared["manifest"]["id"]).json() == prepared
+
+    def test_package_fact_replace_withdraw_and_replay_preserve_history_after_source_loss(
+        self, provenance_case
+    ):
+        from packages.domain.bid_package_fact_changes import confirm, load, withdraw
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, old_fact, source = provenance_case
+        body = self.fact_change_body(provenance_case) | {"replaces_fact_id": old_fact}
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+        key = str(uid())
+        saved, _ = confirm(*args, key, body)
+        m = saved["body"]["manifest"]
+        owner = f["w"]["database"]["owner"]
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+            (source,),
+        )
+        withdrawal = dict(
+            frozen_digest=frozen["digest"],
+            expected_head=m["head"],
+            fact_id=m["fact_id"],
+            reason="来源停用后撤回事实",
+        )
+        removed, _ = withdraw(*args, str(uid()), withdrawal)
+        assert removed["body"]["manifest"]["action"] == "withdrawn"
+        assert (
+            owner.execute(
+                "SELECT count(*) AS n FROM design.fact_items WHERE fact_set_id=%s",
+                (removed["body"]["manifest"]["head"]["id"],),
+            ).fetchone()["n"]
+            == 0
+        )
+        owner.execute(
+            "UPDATE design.bid_profiles SET archived_at=clock_timestamp() WHERE bid_id=%s",
+            (f["scope"][0],),
+        )
+        assert confirm(*args, key, body) == (saved, True)
+        assert load(f["scope"], frozen["manifest"]["id"], m["command_id"]) == saved["body"]
+        with pytest.raises(DomainError):
+            confirm(*args, str(uid()), body)
+        assert (
+            owner.execute(
+                "SELECT count(*) AS n FROM design.fact_items WHERE id=%s", (old_fact,)
+            ).fetchone()["n"]
+            == 1
+        )
+
+    @pytest.mark.parametrize("corrupt", ["resealed", "empty", "headers"])
+    def test_package_fact_resealed_ack_cannot_replace_immutable_audit_history(
+        self, provenance_case, corrupt
+    ):
+        from copy import deepcopy
+
+        from psycopg.types.json import Jsonb
+
+        from packages.domain.bid_package_fact_changes import confirm, load
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+        body = self.fact_change_body(provenance_case)
+        key = str(uid())
+        saved, _ = confirm(*args, key, body)
+        forged = deepcopy(saved)
+        forged["body"]["manifest"]["reason"] = "forged but resealed"
+        forged["body"]["digest"] = digest(forged["body"]["manifest"])
+        if corrupt == "empty":
+            forged = {}
+        if corrupt == "headers":
+            forged = deepcopy(saved) | {"headers": {"X-Forged": "blocked"}}
+        owner = f["w"]["database"]["owner"]
+        command_id = saved["body"]["manifest"]["command_id"]
+        owner.execute(
+            "UPDATE design.commands SET response=%s WHERE id=%s", (Jsonb(forged), command_id)
+        )
+        before = self.fact_change_counts(provenance_case)
+        with pytest.raises(DomainError) as error:
+            confirm(*args, key, body)
+        assert error.value.code == "PACKAGE_FACT_CHANGE_CORRUPT"
+        with pytest.raises(DomainError) as error:
+            load(f["scope"], frozen["manifest"]["id"], command_id)
+        assert error.value.code == "PACKAGE_FACT_CHANGE_CORRUPT"
+        assert self.fact_change_counts(provenance_case) == before
+        assert (
+            owner.execute(
+                "SELECT payload FROM design.audit_entries WHERE command_id=%s AND event_type='package.fact_confirmed'",
+                (command_id,),
+            ).fetchone()["payload"]
+            == saved["body"]
+        )
+
+    @pytest.mark.parametrize("same_key", [False, True])
+    def test_package_fact_concurrent_confirmations_have_one_head_and_recoverable_ack(
+        self, provenance_case, same_key
+    ):
+        from concurrent.futures import ThreadPoolExecutor
+
+        from packages.domain.bid_package_fact_changes import confirm
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        body = self.fact_change_body(provenance_case)
+        key = str(uid())
+        args = (str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"])
+
+        def run(index):
+            try:
+                return confirm(*args, key if same_key or index == 0 else str(uid()), body)
+            except DomainError as error:
+                return error.code
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(run, range(2)))
+        if same_key:
+            assert results[0][0] == results[1][0] and sum(row[1] for row in results) == 1
+        else:
+            assert (
+                sum(isinstance(row, tuple) for row in results) == 1
+                and "FACT_HEAD_CHANGED" in results
+            )
+
+    @pytest.mark.parametrize(
+        "change", ["stale", "wrong_digest", "outside_evidence", "source_withdrawn", "wrong_scope"]
+    )
+    def test_package_fact_failed_confirmation_rolls_back_command_and_facts(
+        self, provenance_case, change
+    ):
+        from packages.domain.bid_package_fact_changes import confirm
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        body = self.fact_change_body(provenance_case)
+        scope = f["scope"]
+        owner = f["w"]["database"]["owner"]
+        if change == "stale":
+            body["expected_head"]["revision"] += 1
+        if change == "wrong_digest":
+            body["frozen_digest"] = "0" * 64
+        if change == "outside_evidence":
+            body["fact"]["evidence_ids"] = [str(uid())]
+        if change == "source_withdrawn":
+            owner.execute(
+                "UPDATE retrieval.source_heads SET revision=revision+1,status='withdrawn' WHERE source_id=%s",
+                (source,),
+            )
+        if change == "wrong_scope":
+            scope = (scope[0], str(uid()), *scope[2:])
+        before = self.fact_change_counts(provenance_case)
+        with pytest.raises((DomainError, ValueError)):
+            confirm(str(f["w"]["actor"]), scope, frozen["manifest"]["id"], str(uid()), body)
+        assert self.fact_change_counts(provenance_case) == before
+
+    def test_package_fact_natural_expiry_after_append_rolls_back_every_write(
+        self, provenance_case, monkeypatch
+    ):
+        import time
+
+        from packages.domain import bid_package_fact_changes as changes
+        from packages.domain.runtime import DomainError
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        body = self.fact_change_body(provenance_case)
+        owner = f["w"]["database"]["owner"]
+        owner.execute(
+            "UPDATE retrieval.source_heads SET revision=revision+1,valid_until=clock_timestamp()+interval '5 seconds' WHERE source_id=%s",
+            (source,),
+        )
+        original = changes.replace_set
+        called = []
+
+        def append_then_expire(c, *args, **kwargs):
+            result = original(c, *args, **kwargs)
+            called.append(True)
+            remaining = c.execute(
+                "SELECT extract(epoch from valid_until-clock_timestamp()) AS remaining FROM retrieval.source_heads WHERE source_id=%s",
+                (source,),
+            ).fetchone()["remaining"]
+            time.sleep(max(0, float(remaining)) + 0.1)
+            return result
+
+        monkeypatch.setattr(changes, "replace_set", append_then_expire)
+        before = self.fact_change_counts(provenance_case)
+        with pytest.raises(DomainError) as error:
+            changes.confirm(
+                str(f["w"]["actor"]), f["scope"], frozen["manifest"]["id"], str(uid()), body
+            )
+        assert error.value.code == "SOURCE_NOT_EFFECTIVE" and called == [True]
+        assert self.fact_change_counts(provenance_case) == before
+
+    def test_package_fact_clone_preserves_postgres_json_precision_without_confirming_pending_value(
+        self, provenance_case
+    ):
+        from packages.domain.bid_package_fact_changes import confirm
+
+        f, frozen, path, prepared, fact, source = provenance_case
+        owner = f["w"]["database"]["owner"]
+        bid = f["scope"][0]
+        pending_set, pending_fact = uid(), uid()
+        owner.execute(
+            "INSERT INTO design.fact_sets(id,bid_id,digest) VALUES(%s,%s,%s)",
+            (pending_set, bid, "d" * 64),
+        )
+        owner.execute(
+            "INSERT INTO design.fact_items(id,bid_id,fact_set_id,subject,scope,name,value,unit,evidence_ids) VALUES(%s,%s,%s,'pending','pending','precision','{\"n\":9007199254740993.123456789012345678901}'::jsonb,NULL,ARRAY[]::uuid[])",
+            (pending_fact, bid, pending_set),
+        )
+        owner.execute(
+            "UPDATE design.fact_heads SET fact_set_id=%s,revision=revision+1 WHERE bid_id=%s",
+            (pending_set, bid),
+        )
+        exact = owner.execute(
+            "SELECT value::text AS value FROM design.fact_items WHERE id=%s", (pending_fact,)
+        ).fetchone()["value"]
+        saved, _ = confirm(
+            str(f["w"]["actor"]),
+            f["scope"],
+            frozen["manifest"]["id"],
+            str(uid()),
+            self.fact_change_body(provenance_case),
+        )
+        clone = owner.execute(
+            "SELECT f.id,f.value::text AS value,h.decision_id FROM design.fact_items f LEFT JOIN design.decision_heads h ON h.bid_id=f.bid_id AND h.object_kind='fact' AND h.object_id=f.id WHERE f.fact_set_id=%s AND f.name='precision'",
+            (saved["body"]["manifest"]["head"]["id"],),
+        ).fetchone()
+        assert clone["value"] == exact and clone["decision_id"] is None
+
     @pytest.mark.parametrize(
         "change",
         [

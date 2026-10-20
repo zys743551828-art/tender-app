@@ -78,6 +78,9 @@ def test_caller_retains_transaction_and_exact_basis_is_defensive(ports):
     basis = result.basis()
     basis["references"].clear()
     assert result.basis()["references"]
+    closure = result.closure()
+    closure[0]["status"] = "withdrawn"
+    assert result.closure()[0]["status"] == "published"
     assert "basis_text" not in repr(result)
     assert all(
         result.view()[key] is False

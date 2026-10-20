@@ -8,7 +8,7 @@ from packages.domain.rule_sets import current_decision
 from packages.domain.runtime import clean
 
 
-def _decision_basis(c: Any, bid: str, decision: dict | None, as_of: str | None):
+def read_decision_basis(c: Any, bid: str, decision: dict | None, as_of: str | None):
     if decision is None:
         return None
     rows = c.execute(
@@ -73,7 +73,7 @@ def read_facts(
             WHERE e.bid_id=%s AND e.id=ANY(%s::uuid[]) ORDER BY e.id""",
             (bid, list(fact["evidence_ids"])),
         ).fetchall()
-        basis = _decision_basis(c, bid, decision, as_of)
+        basis = read_decision_basis(c, bid, decision, as_of)
         # This records provenance status, not an authoring/current-material qualification.
         in_scope = (
             bool(fact["evidence_ids"])
