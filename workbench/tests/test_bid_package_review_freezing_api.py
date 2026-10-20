@@ -142,6 +142,171 @@ class TestFreezing:
         assert saved.status_code == 201, saved.text
         return f, frozen, path, saved.json()
 
+    def test_inventory_proof_legacy_never_infers_later_receipt_and_ignores_current_fact_head(
+        self, prepared_case, monkeypatch
+    ):
+        from inventory_proof_support import seed_receipt
+
+        from packages.domain import storage
+        from packages.domain.bid_package_inventory_proof import observe
+
+        f, frozen, _, prepared = prepared_case
+        args = (
+            f["scope"],
+            frozen["manifest"]["id"],
+            prepared["manifest"]["id"],
+            prepared["digest"],
+        )
+        before = observe(*args).view()
+        assert before["manifest"]["extraction_receipt_state"] == "not_frozen"
+        seed_receipt(f["w"], monkeypatch)
+        OriginalVerificationCases.seed_fact(self, f["w"])
+        c = f["w"]["database"]["owner"]
+        c.execute(
+            "UPDATE design.bid_profiles SET archived_at=clock_timestamp() WHERE bid_id=%s",
+            (f["scope"][0],),
+        )
+        monkeypatch.setattr(storage, "client", lambda: pytest.fail("proof cannot read objects"))
+        monkeypatch.setattr(storage, "get", lambda *a: pytest.fail("proof cannot read descriptors"))
+        statement = "SELECT (SELECT count(*) FROM design.commands) AS commands,(SELECT count(*) FROM design.operations) AS jobs,(SELECT count(*) FROM design.outbox) AS outbox,(SELECT count(*) FROM design.audit_entries) AS audits"
+        counts_before = c.execute(statement).fetchone()
+        assert observe(*args).view() == before
+        assert c.execute(statement).fetchone() == counts_before
+        assert f["w"]["client"].get(f["path"] + "/" + frozen["manifest"]["id"]).json() == frozen
+
+    @pytest.mark.parametrize("invalid", ["digest", "scope"])
+    def test_inventory_proof_requires_exact_requested_prepared_identity(
+        self, prepared_case, invalid
+    ):
+        from packages.domain.bid_package_inventory_proof import observe
+        from packages.domain.bid_packages import PackageError
+        from packages.domain.runtime import DomainError
+
+        f, frozen, _, prepared = prepared_case
+        scope = f["scope"] if invalid == "digest" else (f["scope"][0], str(uid()), *f["scope"][2:])
+        with pytest.raises(
+            DomainError if invalid == "digest" else (DomainError, PackageError)
+        ) as error:
+            observe(
+                scope,
+                frozen["manifest"]["id"],
+                prepared["manifest"]["id"],
+                "a" * 64 if invalid == "digest" else prepared["digest"],
+            )
+        if invalid == "digest":
+            assert error.value.status == 409
+
+    @pytest.fixture
+    def exact_inventory_proof_case(self, prepared_case, monkeypatch):
+        from inventory_proof_support import seed_receipt
+        from test_bid_package_requirements_api import inventory
+        from test_bid_package_review_preview_api import check
+
+        from packages.domain.bid_package_review_eligibility import inspect
+
+        f, old_frozen, _, old_prepared = prepared_case
+        seed_receipt(f["w"], monkeypatch)
+        legacy = f["w"]["client"].get(f["w"]["requirement_base"] + "/" + f["scope"][3])
+        newer = inventory(f["w"], tag=legacy.headers["etag"])
+        assert newer.status_code == 201, newer.text
+        inv = newer.json()
+        assert inv["manifest"]["version"] == "bid-package-requirements/2"
+        scope = (*f["scope"][:3], inv["manifest"]["id"])
+        request = {
+            "package_digest": inv["manifest"]["package_digest"],
+            "inventory_digest": inv["digest"],
+            "coverage_attempt_id": None,
+            "coverage_digest": None,
+        }
+        preview = check(f["w"], inv, request)
+        assert preview.status_code == 200, preview.text
+        request["input_digest"] = preview.json()["digest"]
+        captured = read_input(*scope, request)
+        path = f["w"]["requirement_base"] + "/" + inv["manifest"]["id"] + "/frozen-review-inputs"
+        frozen = f["w"]["client"].post(
+            path,
+            json=request | {"context_digest": captured.execution_context["semantic_digest"]},
+            headers=headers(f["w"]),
+        )
+        assert frozen.status_code == 201, frozen.text
+        frozen = frozen.json()
+        context = inspect(scope, frozen["manifest"]["id"], frozen["digest"])
+        prepared = f["w"]["client"].post(
+            path + "/" + frozen["manifest"]["id"] + "/execution-inputs",
+            json={
+                "frozen_digest": frozen["digest"],
+                "context_digest": context["current_context"]["semantic_digest"],
+                "rerun": None,
+            },
+            headers=headers(f["w"]),
+        )
+        assert prepared.status_code == 201, prepared.text
+        return f, scope, frozen, prepared.json(), old_frozen, old_prepared
+
+    def test_inventory_proof_exact_archive_in_rr_readonly_does_not_certify_quality_or_create_jobs(
+        self, exact_inventory_proof_case, monkeypatch
+    ):
+        from packages.domain import bid_package_inventory_proof as service
+        from packages.domain import storage
+
+        f, scope, frozen, prepared, old_frozen, _ = exact_inventory_proof_case
+        reader = service._receipt
+
+        def checked(c, *args):
+            assert (
+                c.execute("SHOW transaction_isolation").fetchone()["transaction_isolation"]
+                == "repeatable read"
+            )
+            assert (
+                c.execute("SHOW transaction_read_only").fetchone()["transaction_read_only"] == "on"
+            )
+            assert not c.execute(
+                "SELECT rolsuper FROM pg_roles WHERE rolname=current_user"
+            ).fetchone()["rolsuper"]
+            return reader(c, *args)
+
+        monkeypatch.setattr(service, "_receipt", checked)
+        monkeypatch.setattr(
+            storage, "client", lambda: pytest.fail("proof cannot read original objects")
+        )
+        monkeypatch.setattr(
+            storage, "get", lambda *a: pytest.fail("proof cannot read descriptor objects")
+        )
+        before = counts(f["w"])
+        value = service.observe(
+            scope, frozen["manifest"]["id"], prepared["manifest"]["id"], prepared["digest"]
+        ).view()
+        m = value["manifest"]
+        assert m["extraction_receipt_state"] == "matched" and m["extraction_range_proven"] is True
+        assert m["extraction_coverage"] == "complete" and m["quality_status"] == "not_measured"
+        assert m["inventory_complete"] is m["launch_available"] is m["facts_qualified"] is False
+        assert "text_content" not in str(value) and "object_key" not in str(value)
+        assert counts(f["w"]) == before
+        assert (
+            f["w"]["client"].get(f["path"] + "/" + old_frozen["manifest"]["id"]).json()
+            == old_frozen
+        )
+
+    def test_inventory_proof_mismatched_effect_cannot_authorize_a_frozen_exact_inventory(
+        self, exact_inventory_proof_case
+    ):
+        from packages.domain.bid_package_inventory_proof import observe
+        from packages.domain.runtime import DomainError
+
+        f, scope, frozen, prepared, _, _ = exact_inventory_proof_case
+        c = f["w"]["database"]["owner"]
+        assert c.info.dbname == "fusion_package_requirements_api"
+        # A deliberately damaged restore is confined to the isolated fixture database.
+        with c.transaction():
+            c.execute("SET LOCAL session_replication_role=replica")
+            c.execute(
+                "UPDATE design.effect_receipts SET result=jsonb_set(result,'{result_ref}',to_jsonb(%s::text)) WHERE operation_id=(SELECT operation_id FROM design.bid_package_requirement_extraction_runs WHERE bid_id=%s)",
+                (str(uid()), scope[0]),
+            )
+        with pytest.raises(DomainError) as error:
+            observe(scope, frozen["manifest"]["id"], prepared["manifest"]["id"], prepared["digest"])
+        assert error.value.code == "PACKAGE_INVENTORY_PROOF_CORRUPT"
+
     def test_dependency_assessment_reads_exact_packets_without_objects_commands_or_jobs(
         self, prepared_case, monkeypatch
     ):
