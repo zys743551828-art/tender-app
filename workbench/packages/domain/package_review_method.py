@@ -32,6 +32,8 @@ def profile():
                     "packages/domain/package_review_eligibility.py",
                     "packages/domain/bid_package_review_eligibility.py",
                     "packages/domain/bid_package_frozen_originals.py",
+                    "packages/domain/package_review_execution_identity.py",
+                    "packages/contracts/schemas/package-review-execution.schema.json",
                     "packages/domain/package_review_context.py",
                     "packages/domain/bid_package_original_verification.py",
                     "packages/domain/bid_package_review_freezing.py",

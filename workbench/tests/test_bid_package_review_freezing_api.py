@@ -294,6 +294,36 @@ class TestFreezing:
         assert len(f["calls"]) - calls == 2 and counts(f["w"]) == before
         assert f["w"]["client"].get(f["path"] + "/" + value["manifest"]["id"]).json() == value
 
+    def test_execution_identity_comes_from_verified_root_and_current_context_not_caller_body(
+        self, frozen_case
+    ):
+        from packages.domain.package_review_execution_identity import verify
+
+        f = frozen_case
+        value = self.post(f).json()
+        receipt = self.verify_frozen(f, value)
+        before = counts(f["w"])
+        initial = receipt.execution_identity()
+        assert verify(initial) == initial
+        binding = initial["binding"]
+        assert (
+            tuple(binding[k] for k in ("bid_id", "package_id", "revision_id", "inventory_id"))
+            == f["scope"]
+        )
+        assert binding["frozen_input_id"] == value["manifest"]["id"]
+        assert binding["frozen_digest"] == value["digest"]
+        assert binding["input_digest"] == value["manifest"]["input_digest"]
+        assert binding["evidence_digest"] == value["manifest"]["evidence_digest"]
+        assert binding["identity_digest"] == f["w"]["own"]["identity"]["digest"]
+        assert binding["context_digest"] == receipt.context_digest
+        assert binding["method_digest"] == receipt.observation()["current_context"]["method_digest"]
+        rerun = receipt.execution_identity({"nonce": uid(), "reason": "synthetic explicit rerun"})
+        assert rerun["content_digest"] == initial["content_digest"]
+        assert rerun["execution_digest"] != initial["execution_digest"]
+        binding.clear()
+        assert receipt.execution_identity()["binding"]
+        assert counts(f["w"]) == before and receipt.observation()["publication_authorized"] is False
+
     @pytest.mark.parametrize("change", ["close", "source", "facts", "method", "policy"])
     def test_frozen_originals_reject_change_during_lock_free_io(
         self, frozen_case, monkeypatch, change

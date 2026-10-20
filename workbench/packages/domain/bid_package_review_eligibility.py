@@ -21,10 +21,10 @@ def read_in_snapshot(c, scope: tuple[str, str, str, str], input_id: str, frozen_
     matches = evidence_matches(c, root["selection"])
     context = package_review_context.capture(c, root["selection"], observations)
     result = assess(packet.view(), root, observations, context, evidence_matches=matches)
-    return root, observations, result
+    return packet, root, observations, result
 
 
 def inspect(scope: tuple[str, str, str, str], input_id: str, frozen_digest: str):
     with connection() as c:
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-        return read_in_snapshot(c, scope, input_id, frozen_digest)[2]
+        return read_in_snapshot(c, scope, input_id, frozen_digest)[3]

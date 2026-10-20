@@ -11,6 +11,7 @@ from packages.domain import original_verification
 from packages.domain.bid_package_review_documents import read_member
 from packages.domain.bid_package_review_eligibility import read_in_snapshot
 from packages.domain.bid_package_service import lock_bid
+from packages.domain.package_review_execution_identity import identify
 from packages.domain.runtime import DomainError, clean, connection
 from packages.knowledge.sources import lock_graph
 
@@ -22,6 +23,9 @@ class VerifiedFrozenOriginals:
     frozen_digest: str
     context_digest: str
     _snapshot_text: str = field(repr=False)
+
+    def execution_identity(self, rerun: dict[str, Any] | None = None) -> dict[str, Any]:
+        return identify(json.loads(self._snapshot_text)["binding"], rerun)
 
     def observation(self) -> dict[str, Any]:
         # Each consumer receives a copy; locators and private evidence never leave this port.
@@ -44,7 +48,7 @@ class VerifiedFrozenOriginals:
 
 
 def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: str):
-    root, observations, result = read_in_snapshot(c, scope, input_id, frozen_digest)
+    packet, root, observations, result = read_in_snapshot(c, scope, input_id, frozen_digest)
     if result["parse_evidence_status"] != "matched":
         raise DomainError("PACKAGE_REVIEW_EVIDENCE_CHANGED", "精确解析证据已变化，未核验原件", 409)
     documents = [
@@ -52,7 +56,23 @@ def capture(c, scope: tuple[str, str, str, str], input_id: str, frozen_digest: s
         for role in ("target", "authority")
         for member in root["selection"][role]["manifest"]["members"]
     ]
+    manifest = packet.view()["manifest"]
+    context = result["current_context"]
     return {
+        "binding": {
+            **dict(
+                zip(("bid_id", "package_id", "revision_id", "inventory_id"), scope, strict=True)
+            ),
+            "identity_digest": root["selection"]["target"]["identity"]["digest"],
+            "frozen_input_id": input_id,
+            "frozen_digest": frozen_digest,
+            "input_digest": manifest["input_digest"],
+            "evidence_digest": manifest["evidence_digest"],
+            "context_digest": context["semantic_digest"],
+            "method_digest": context["method_digest"],
+            "policy_digest": context["policy_digest"],
+            "purpose": context["purpose"],
+        },
         "result": result,
         "observations": clean({k: v for k, v in observations.items() if k != "at"}),
         "documents": clean(documents),
