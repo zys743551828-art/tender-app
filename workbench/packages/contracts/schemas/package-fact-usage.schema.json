@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-fact-usage:1",
+  "$ref": "#/$defs/View",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "fact_ids"
+      ],
+      "properties": {
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "fact_ids": {
+          "type": "array",
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Id"
+          }
+        }
+      }
+    },
+    "Prepared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "frozen_input_id",
+        "execution_input_id",
+        "execution_input_digest"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Selected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fact_id",
+        "fact_item_digest"
+      ],
+      "properties": {
+        "fact_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "fact_item_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "purpose",
+        "prepared",
+        "identity_digest",
+        "selected",
+        "selection_digest",
+        "selected_facts_digest",
+        "required_facts_assessment",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-fact-usage/1"
+        },
+        "kind": {
+          "const": "fact_usage_selection"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "selected": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "#/$defs/Selected"
+          }
+        },
+        "selection_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "selected_facts_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "required_facts_assessment": {
+          "const": "not_performed"
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        }
+      }
+    },
+    "View": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest",
+        "digest"
+      ],
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    }
+  }
+}
