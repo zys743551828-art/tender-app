@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import Execution from "./PackageExecutionInputWorkspace";
@@ -109,9 +109,43 @@ async function prepareRerun() {
   );
 }
 it("creates a new execution identity only after an explicit rerun reason, without launching from the preparation form", async () => {
+  let acknowledge: (() => Promise<void>) | undefined;
+  fetchMock
+    .mockImplementationOnce(async (_url, options: RequestInit) =>
+      json(await response(JSON.parse(String(options.body)))),
+    )
+    .mockImplementationOnce(
+      (_url, options: RequestInit) =>
+        new Promise<Response>((resolve) => {
+          acknowledge = async () =>
+            resolve(json(await response(JSON.parse(String(options.body)))));
+        }),
+    );
   show();
   await prepareRerun();
-  await screen.findByText("合成测试：修订技术方案后复检");
+  const storageKey = executionStorageKey(
+    executionScope(fixture.props.scope, fixture.props.frozen),
+  );
+  // The controlled textarea contains this text before any server ACK; it is
+  // not evidence that the response digests were checked and persisted.
+  expect(screen.getByText("合成测试：修订技术方案后复检").tagName).toBe(
+    "TEXTAREA",
+  );
+  const pending = JSON.parse(sessionStorage.getItem(storageKey)!);
+  expect(pending.lastId).toBe(fixture.props.prepared.manifest.id);
+  expect(pending.pending.body.rerun.reason).toBe(
+    "合成测试：修订技术方案后复检",
+  );
+  expect(
+    screen.queryByRole("region", { name: "核查入口接线" }),
+  ).not.toBeInTheDocument();
+  await act(async () => {
+    await acknowledge!();
+  });
+  const result = await screen.findByRole("region", { name: "核查入口接线" });
+  expect(
+    within(result).getByText("合成测试：修订技术方案后复检"),
+  ).toBeInTheDocument();
   expect(fetchMock).toHaveBeenCalledTimes(2);
   const first = JSON.parse(String(fetchMock.mock.calls[0][1].body)),
     next = JSON.parse(String(fetchMock.mock.calls[1][1].body));
@@ -121,13 +155,7 @@ it("creates a new execution identity only after an explicit rerun reason, withou
   expect(
     fetchMock.mock.calls.every(([url]) => url.endsWith("/execution-inputs")),
   ).toBe(true);
-  const stored = JSON.parse(
-    sessionStorage.getItem(
-      executionStorageKey(
-        executionScope(fixture.props.scope, fixture.props.frozen),
-      ),
-    )!,
-  );
+  const stored = JSON.parse(sessionStorage.getItem(storageKey)!);
   expect(stored.lastId).toBe(id(202));
   expect(stored.pending).toBeNull();
 });
@@ -150,7 +178,10 @@ it("retains the original rerun nonce and reason through a lost acknowledgement a
   await userEvent.click(
     screen.getByRole("button", { name: "恢复原执行准备请求" }),
   );
-  await screen.findByText("合成测试：修订技术方案后复检");
+  const result = await screen.findByRole("region", { name: "核查入口接线" });
+  expect(
+    within(result).getByText("合成测试：修订技术方案后复检"),
+  ).toBeInTheDocument();
   const retry = fetchMock.mock.calls[2][1] as RequestInit;
   expect(retry.body).toBe(original.body);
   expect(new Headers(retry.headers).get("Idempotency-Key")).toBe(

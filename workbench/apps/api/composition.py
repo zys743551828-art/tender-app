@@ -6,6 +6,7 @@ from fastapi.routing import APIRoute
 def mount(app):
     from apps.api.authoring_rich import router as authoring_rich
     from apps.api.authoring_structure import router as authoring_structure
+    from apps.api.authoring_word_import import router as authoring_word_import
     from apps.api.historical_input_routes import router as historical_input
     from apps.api.historical_routes import router as historical_proof
     from apps.api.lifecycle_routes import router as lifecycle
@@ -18,6 +19,7 @@ def mount(app):
     routers = (
         authoring_structure,
         authoring_rich,
+        authoring_word_import,
         technical_scale,
         lifecycle,
         task_drafts,
@@ -48,6 +50,7 @@ def mount(app):
 
 def extend_openapi(actual):
     from apps.api.composition_contracts import extend_lifecycle
+    from packages.authoring.docx_import_contracts import extend_openapi as word_import
     from packages.authoring.rich_contracts import extend_openapi as rich
     from packages.authoring.structure_contracts import extend_openapi as structure
     from packages.model_governance.contracts import extend_openapi as governance
@@ -64,6 +67,7 @@ def extend_openapi(actual):
     for extension in (
         structure,
         rich,
+        word_import,
         governance,
         historical_proof,
         historical_input,

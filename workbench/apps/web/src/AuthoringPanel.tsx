@@ -15,6 +15,7 @@ import { useResource } from "./useResource";
 import { useCommand } from "./useCommand";
 import { SectionEditor } from "./SectionEditor";
 import { AuthoringBuilds } from "./AuthoringBuilds";
+import { AuthoringWordImport } from "./AuthoringWordImport";
 import type { SectionEditorHandle } from "./SectionEditor";
 
 export function AuthoringPanel({
@@ -200,7 +201,9 @@ export function AuthoringPanel({
               {richCapabilities.data
                 ? "表格和已登记图片可在章节中明确插入、编辑和保存；构建会分别记录实际目录、章页范围及未核验项。"
                 : "表格和图片编辑能力尚未就绪，请保留原稿。"}
-              外部Word结构导入仍需单独接通，原Word可先保存或转PDF核对。
+              {supportsApi("GET", "/authoring/word-import-capabilities")
+                ? "外部Word须先预览结构和转换损失，再明确追加新章节；实际支持范围见Word导入区。"
+                : "外部Word结构导入尚未开放，原Word可先保存或转PDF核对。"}
             </p>
             <ResourceState
               {...richCapabilities}
@@ -277,6 +280,7 @@ function DraftEditor({
   const [switching, setSwitching] = useState(false);
   const [building, setBuilding] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const editor = useRef<SectionEditorHandle>(null);
   const writingRef = useRef<HTMLElement>(null);
@@ -284,7 +288,7 @@ function DraftEditor({
     ? selected!
     : view?.sections[0]?.id;
   async function choose(id: string) {
-    if (switching || building || id === sectionId) return;
+    if (switching || building || importing || id === sectionId) return;
     setSwitching(true);
     try {
       if (!editor.current || (await editor.current.flush())) {
@@ -321,7 +325,7 @@ function DraftEditor({
               draftId={draftId}
               draftRevision={view.revision}
               sectionId={sectionId}
-              disabled={disabled || switching || building}
+              disabled={disabled || switching || building || importing}
               onChoose={choose}
               onContinue={() => {
                 writingRef.current?.scrollIntoView({ block: "start" });
@@ -354,7 +358,13 @@ function DraftEditor({
                 sectionId={sectionId}
                 capabilities={capabilities}
                 richCapabilities={richCapabilities}
-                disabled={disabled || switching || building || structureBusy}
+                disabled={
+                  disabled ||
+                  switching ||
+                  building ||
+                  structureBusy ||
+                  importing
+                }
                 onSaved={() => void reloadHead().catch(setError)}
               />
             ) : (
@@ -365,6 +375,28 @@ function DraftEditor({
           </section>
         </div>
       )}
+      {view &&
+        current.etag &&
+        supportsApi("GET", "/authoring/word-import-capabilities") && (
+          <AuthoringWordImport
+            bidId={bidId}
+            memberId={memberId}
+            draftId={draftId}
+            draftRevision={view.revision}
+            disabled={disabled || switching || building || structureBusy}
+            onChanged={reloadHead}
+            onBusy={setImporting}
+            onPackages={onPackages}
+            prepare={async () => {
+              if (
+                sectionId &&
+                (!editor.current || !(await editor.current.flush(true)))
+              )
+                return null;
+              return reloadHead();
+            }}
+          />
+        )}
       {view && current.etag && (
         <AuthoringBuilds
           bidId={bidId}
@@ -373,7 +405,7 @@ function DraftEditor({
           capabilities={capabilities}
           richCapabilities={richCapabilities}
           projectTitle={projectTitle}
-          disabled={disabled || switching || structureBusy}
+          disabled={disabled || switching || structureBusy || importing}
           onPackages={onPackages}
           setBusy={setBuilding}
           prepare={async () => {

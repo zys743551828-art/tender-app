@@ -48,6 +48,28 @@ def _references(snapshot):
     return refs
 
 
+def _import_source_ids(snapshot):
+    from packages.authoring.docx_import_sources import (
+        image_import_source_ids,
+        import_source_ids,
+    )
+
+    identities = {
+        identity
+        for item in (snapshot.get("authoring_images") or {}).get("items", [])
+        for identity in image_import_source_ids(item["normalization_proof"])
+    }
+    extension = snapshot.get("authoring_structure")
+    if extension is not None and "word_import_sources" in extension["metadata"]:
+        identities.update(
+            import_source_ids(
+                extension["metadata"],
+                section_ids=[n["section_id"] for n in extension["nodes"] if not n["deleted"]],
+            )
+        )
+    return sorted(identities)
+
+
 def capture(c, bid_id, build_id, document_id):
     """Read-only packet; no source registration or I/O, safe in a repeatable read."""
     row = c.execute(
@@ -151,7 +173,12 @@ def capture(c, bid_id, build_id, document_id):
         ):
             rejected("该 PDF 缺少与本次 Word 输出匹配的完整受控转换关系；原文件仍可下载")
     refs = _references(snapshot)
-    authority = source_authority_manifest(c, refs)
+    direct_source_ids = sorted(
+        {ref["source_id"] for ref in refs} | set(_import_source_ids(snapshot))
+    )
+    authority = source_authority_manifest(
+        c, [{"source_id": identity} for identity in direct_source_ids]
+    )
     proof = {
         "protocol": PROTOCOL,
         "bid_id": str(bid_id),
@@ -170,7 +197,7 @@ def capture(c, bid_id, build_id, document_id):
         "word_pdf_relation": "verified" if chosen["format"] == "pdf" else "not_applicable",
         "publication_receipt_digest": sha(receipt),
         "source_authority_digest": sha(authority),
-        "direct_source_ids": sorted({ref["source_id"] for ref in refs}),
+        "direct_source_ids": direct_source_ids,
     }
     return clean(
         {"proof": proof, "documents": documents, "snapshot": snapshot, "manifest": manifest}
@@ -405,6 +432,11 @@ def observe_admission(c, bid_id, document_id):
                     or row["normalized_blob_id"] != item["normalized_blob"]["id"]
                 ):
                     rejected()
+                from packages.authoring.docx_import_sources import assert_image_import_source
+
+                assert_image_import_source(
+                    c, UUID(str(bid_id)), item["normalization_proof"], lock_sources=False
+                )
                 images.append(
                     {
                         key: row[key]

@@ -9,8 +9,9 @@ from uuid import UUID
 
 from psycopg.types.json import Jsonb
 
+from packages.authoring import section_sources
 from packages.authoring.patches import create_proposal, proposal_context
-from packages.authoring.repository import assert_sources, lock_draft, source_authority_manifest
+from packages.authoring.repository import assert_sources, lock_draft
 from packages.domain.runtime import DomainError, clean, fetch, sha, uid
 from packages.rag.indexing import parse_source_id
 
@@ -23,7 +24,7 @@ def freeze_generation_plan(c, bid, body):
     draft = lock_draft(c, bid, original_section["draft_id"])
     from packages.authoring.snapshot_structure import assert_active
 
-    assert_active(c, bid, original_section["draft_id"], section_id)
+    extension = assert_active(c, bid, original_section["draft_id"], section_id)
     section = fetch(
         c,
         "SELECT * FROM section_revisions WHERE section_id=%s AND revision=(SELECT head_revision FROM sections WHERE id=%s)",
@@ -106,8 +107,14 @@ def freeze_generation_plan(c, bid, body):
     identity = uid()
     plan = {
         "purpose": "authoring",
-        "authority_manifest": source_authority_manifest(
-            c, section["content"]["attrs"]["source_refs"] + [b["source_ref"] for b in blocks]
+        "authority_manifest": section_sources.authority(
+            c,
+            bid,
+            original_section["draft_id"],
+            section_id,
+            section["content"],
+            additional_refs=[b["source_ref"] for b in blocks],
+            extension=extension,
         ),
         "base_draft_revision": draft["revision"],
         "section_digest": section["digest"],
@@ -163,7 +170,7 @@ def accept_generated_proposal(c, bid, writing_plan_id, generated):
     )
     assert_sources(c, bid, checked)
     if (
-        source_authority_manifest(c, checked["attrs"]["source_refs"])
+        section_sources.authority(c, bid, section["draft_id"], plan["section_id"], checked)
         != plan["plan"]["authority_manifest"]
     ):
         raise DomainError(

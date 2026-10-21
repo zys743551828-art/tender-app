@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from uuid import UUID
 
-from packages.authoring.repository import assert_sources, source_authority_manifest
+from packages.authoring import section_sources
+from packages.authoring.repository import assert_sources
 from packages.domain.fact_sets import evidence_basis
 from packages.domain.rule_sets import current_decision
 from packages.domain.runtime import DomainError, clean, fetch, sha
@@ -309,8 +310,8 @@ def resolve(c, ref):
                     "draft_id": section["draft_id"],
                     "revision": section["head_revision"],
                     "digest": section["digest"],
-                    "authority": source_authority_manifest(
-                        c, section["content"]["attrs"]["source_refs"]
+                    "authority": section_sources.authority(
+                        c, section["bid_id"], section["draft_id"], identity, section["content"]
                     ),
                 },
                 "formal_scoring_input": False,

@@ -89,7 +89,19 @@ def validate_use(c, bid, state, contents):
     )
     for binding in state["metadata"].get("format_bindings", []):
         refs.extend(binding["source_refs"])
-    return {"sources": source_authority_manifest(c, refs), "format": report}
+    authority = {"sources": source_authority_manifest(c, refs), "format": report}
+    if "word_import_sources" in state["metadata"]:
+        from packages.authoring.docx_import_sources import assert_import_sources
+
+        imported = assert_import_sources(
+            c,
+            bid,
+            state["metadata"],
+            section_ids=[n["section_id"] for n in state["nodes"] if not n["deleted"]],
+        )
+        if imported["items"]:
+            authority["word_imports"] = imported
+    return authority
 
 
 def view(c, bid, draft):
@@ -159,6 +171,10 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
     if prospective is None:
         result = mutate(state["nodes"], contents, body["changes"])
         after = deepcopy(state) | {"nodes": result["nodes"]}
+        if result["copied_from"] and "word_import_sources" in after["metadata"]:
+            from packages.authoring.docx_import_sources import extend_import_copies
+
+            after["metadata"] = extend_import_copies(after["metadata"], result["copied_from"])
         texts = result["contents"]
         created = result["created_ids"]
     else:

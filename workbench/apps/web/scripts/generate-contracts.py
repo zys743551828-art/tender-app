@@ -22,6 +22,12 @@ else:
     contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
+    "AuthoringWordImportPrepareRequest",
+    "AuthoringWordImportResolveRequest",
+    "AuthoringWordImportCandidate",
+    "AuthoringWordImportResult",
+    "AuthoringWordImportPage",
+    "AuthoringWordImportCapabilities",
     "DocumentParseContext",
     "StartDocumentParse",
     "DocumentParseView",

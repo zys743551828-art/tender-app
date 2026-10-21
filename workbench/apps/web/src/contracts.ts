@@ -1,5 +1,195 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type AuthoringWordImportPrepareRequest = {
+  source_document_version_id: string;
+  source_digest: string;
+  source_byte_size: number;
+  base_draft_revision: number;
+  method_digest: string;
+  reason: string;
+};
+
+export type AuthoringWordImportResolveRequest = {
+  decision: "append" | "reject";
+  candidate_digest: string;
+  acknowledged_issue_ids: string[];
+  reason: string;
+};
+
+export type AuthoringWordImportCandidate = {
+  candidate_id: string;
+  bid_id: string;
+  draft_id: string;
+  candidate_digest: string;
+  source: {
+    document_version_id: string;
+    digest: string;
+    byte_size: number;
+    media_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    filename: string;
+    role: string;
+    file_id: string;
+    file_revision: number;
+    intake_digest: string;
+  };
+  base_draft_revision: number;
+  method_digest: string;
+  state: "ready" | "blocked" | "applied" | "rejected";
+  created_at: string;
+  created_by: string;
+  section_count: number;
+  image_count: number;
+  warning_count: number;
+  blocker_count: number;
+  protocol: "authoring-word-import-candidate/1";
+  base_snapshot_id: string;
+  base_draft_etag: string;
+  before_digest: string;
+  existing_sections: {
+    section_id: string;
+    parent_id: string | null;
+    ordinal: number;
+    title: string;
+  }[];
+  method: AuthoringWordImportJson;
+  sections: {
+    key: string;
+    parent_key: string | null;
+    section_id: string;
+    parent_id: string | null;
+    ordinal: number;
+    title: string;
+    source_path: string;
+    content: AuthoringWordImportJson;
+  }[];
+  mapping: {
+    source_path: string;
+    section_key: string;
+    node_id: string;
+    kind: string;
+  }[];
+  images: {
+    key: string;
+    source_part: string;
+    source_digest: string;
+    source_byte_size: number;
+    source_media_type: "image/png" | "image/jpeg";
+    media_type: "image/png";
+    digest: string;
+    byte_size: number;
+    width_px: number;
+    height_px: number;
+  }[];
+  issues: {
+    id: string;
+    code: string;
+    severity: "warning" | "blocker";
+    source_path: string;
+    message: string;
+  }[];
+  can_apply: boolean;
+  current_validity: "rechecked_on_append";
+  append_only: true;
+  reason: string;
+  preparation: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      source_document_version_id: string;
+      source_digest: string;
+      source_byte_size: number;
+      base_draft_revision: number;
+      method_digest: string;
+      reason: string;
+    };
+    if_match: string | null;
+  };
+  resolution: AuthoringWordImportResult | null;
+};
+
+export type AuthoringWordImportResult = {
+  bid_id: string;
+  draft_id: string;
+  candidate_id: string;
+  candidate_digest: string;
+  decision: "append" | "reject";
+  state: "applied" | "rejected";
+  created_section_ids: string[];
+  draft_revision: number | null;
+  snapshot_id: string | null;
+  snapshot_digest: string | null;
+  resolved_at: string;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      decision: "append" | "reject";
+      candidate_digest: string;
+      acknowledged_issue_ids: string[];
+      reason: string;
+    };
+    if_match: string | null;
+  };
+};
+
+export type AuthoringWordImportPage = {
+  bid_id: string;
+  draft_id: string;
+  items: {
+    candidate_id: string;
+    bid_id: string;
+    draft_id: string;
+    candidate_digest: string;
+    source: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      filename: string;
+      role: string;
+      file_id: string;
+      file_revision: number;
+      intake_digest: string;
+    };
+    base_draft_revision: number;
+    method_digest: string;
+    state: "ready" | "blocked" | "applied" | "rejected";
+    created_at: string;
+    created_by: string;
+    section_count: number;
+    image_count: number;
+    warning_count: number;
+    blocker_count: number;
+  }[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type AuthoringWordImportCapabilities = {
+  enabled: boolean;
+  unavailable_reason: {
+    code: string;
+    message: string;
+  } | null;
+  method_digest: string;
+  method: AuthoringWordImportJson;
+  supported: string[];
+  limitations: string[];
+  limits: {
+    max_docx_bytes: number;
+    max_candidate_bytes: number;
+    max_sections: number;
+    max_images: number;
+  };
+  append_only: true;
+  requires_registered_original: true;
+  requires_loss_acknowledgement: true;
+};
+
 export type DocumentParseContext = {
   context: {
     protocol: "document-parse-context/1";
@@ -4317,6 +4507,14 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type AuthoringWordImportJson =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringWordImportJson[]
+  | { [key: string]: AuthoringWordImportJson };
+
 export type PackageReviewHumanDecisionSummary = {
   id: string;
   digest: string;
@@ -6621,6 +6819,12 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}",
   "POST /api/v1/bids/{bid_id}/authoring-images/{asset_id}/withdraw",
   "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}/bytes/{variant}",
+  "GET /api/v1/authoring/word-import-capabilities",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/resolve",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/images/{image_key}",
   "GET /api/v1/technical-scale-capabilities",
   "GET /api/v1/bids/{bid_id}/technical-scale-context",
   "POST /api/v1/bids/{bid_id}/technical-scales",

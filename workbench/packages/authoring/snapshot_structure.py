@@ -133,6 +133,7 @@ def assert_active(c, bid, draft, section):
         raise DomainError(
             "AUTHORING_SECTION_DELETED", "该章节已从当前草稿删除，可查看历史或先预览恢复", 409
         )
+    return extension
 
 
 def plan(c, identity):
@@ -281,4 +282,17 @@ def frozen_authority(c, bid, extension, sections, *, lock_sources=True):
     report = assert_snapshot(c, bid, extension, lock_sources=lock_sources)
     for binding in extension["metadata"].get("format_bindings", []):
         refs.extend(binding["source_refs"])
-    return {"sources": source_authority_manifest(c, refs), "format": report}
+    authority = {"sources": source_authority_manifest(c, refs), "format": report}
+    if "word_import_sources" in extension["metadata"]:
+        from packages.authoring.docx_import_sources import assert_import_sources
+
+        imported = assert_import_sources(
+            c,
+            bid,
+            extension["metadata"],
+            section_ids=[n["section_id"] for n in extension["nodes"] if not n["deleted"]],
+            lock_sources=lock_sources,
+        )
+        if imported["items"]:
+            authority["word_imports"] = imported
+    return authority

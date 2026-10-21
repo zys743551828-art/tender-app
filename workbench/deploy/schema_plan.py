@@ -24,6 +24,7 @@ BASE_SQL = (
     "packages/contracts/sql/roles.sql",
     "packages/authoring/sql/structure.sql",
     "packages/authoring/sql/rich_assets.sql",
+    "packages/authoring/sql/docx_import.sql",
     "deploy/sql/bid-package-runtime-grants.sql",
     "deploy/sql/bid-package-requirement-runtime-grants.sql",
     "deploy/sql/bid-package-review-input-runtime-grants.sql",

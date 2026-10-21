@@ -83,12 +83,19 @@ def command(c, request, actor, kind, target, body, conditional=False, *, bid):
 @router.get("/authoring/capabilities")
 def capabilities(r: Request):
     auth(r)
+    application = r.scope.get("app") if r is not None else None
+    word_import_registered = any(
+        getattr(route, "path", None) == "/api/v1/authoring/word-import-capabilities"
+        for route in getattr(application, "routes", ())
+    )
     return {
         "schema_digest": SCHEMA_DIGEST,
         "schema": SCHEMA,
         "default_template_version_id": str(DEFAULT_TEMPLATE_ID),
         "formats": ["docx", "pdf"],
-        "supports_external_docx_import": False,
+        # Implementation support is separate from the dedicated endpoint's
+        # database/role availability and the candidate's actual format limits.
+        "supports_external_docx_import": word_import_registered,
         "supported_nodes": SCHEMA["nodes"],
         "unsupported": [
             "images",
