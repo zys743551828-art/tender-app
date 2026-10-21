@@ -95,6 +95,16 @@ def extend_openapi(actual):
     submission["properties"]["evidence_ref"] = deepcopy(NULL_UUID)
     submission["properties"].update(deepcopy(additions))
     submission["required"] += list(additions)
+    # Historical single-body command ACKs predate the explicit discriminator.
+    # New reads include it; both remain valid without inventing a body for packages.
+    submission["properties"]["subject_kind"] = {"const": "single_body"}
+    schemas["SingleBodySubmissionView"] = deepcopy(submission)
+    schemas["SubmissionView"] = {
+        "oneOf": [
+            {"$ref": "#/components/schemas/SingleBodySubmissionView"},
+            {"$ref": "#/components/schemas/PackageSubmissionView"},
+        ]
+    }
     schemas["SubmissionPage"] = page("SubmissionView")
     schemas["SubmissionDocumentView"] = obj(
         {

@@ -118,6 +118,9 @@ def freeze_prediction(c, *, bid, actor, command, prediction_id, proof_event_id):
 
 
 def bind_submission_prediction(c, *, submission, actor, command):
+    if submission.get("subject_kind", "single_body") == "bid_package":
+        # No qualified complete-package pre-submission prediction producer exists.
+        return None
     bid = submission["bid_id"]
     records.lock_bid(c, bid)
     old = [
@@ -158,6 +161,9 @@ def eligible_pairs(c, submissions, *, as_of):
     pairs = []
     excluded: Counter[str] = Counter()
     for submission in submissions:
+        if submission.get("subject_kind", "single_body") == "bid_package":
+            excluded["package_prediction_producer_unavailable"] += 1
+            continue
         bid = submission["bid_id"]
         if not submission["settings"].get("show_prediction", False):
             excluded["prediction_hidden"] += 1

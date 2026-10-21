@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from apps.api.auth import auth
 from packages.domain.runtime import (
@@ -330,11 +330,31 @@ def get_outcome(outcome_id: UUID, request: Request):
         head = fetch(
             c, "SELECT * FROM outcome_heads WHERE submission_id=%s", (row["submission_id"],)
         )
+        submission = fetch(
+            c,
+            "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
+            (row["bid_id"], row["submission_id"]),
+        )
+        if submission.get("subject_kind") == "bid_package":
+            from packages.research.package_outcomes import current_reasons
+
+            at = c.execute("SELECT clock_timestamp() AS t").fetchone()["t"]
+            reasons = current_reasons(c, submission, row, view["verification_details"], as_of=at)
+            view["package_association"] = clean(
+                {
+                    "available": not reasons,
+                    "reasons": reasons,
+                    "checked_at": at,
+                    "scope": "official_outcome_association",
+                    "formal_sample_eligible": False,
+                }
+            )
         return JSONResponse(
             view | {"current": head["outcome_id"] == row["id"]},
             headers={
                 "ETag": etag("outcome-verification", outcome_id, view["verification_revision"]),
                 "Outcome-Head-ETag": etag("outcome-head", row["submission_id"], head["revision"]),
+                "Cache-Control": "private, no-store",
             },
         )
 
@@ -371,9 +391,20 @@ def correct_outcome(outcome_id: UUID, request: Request, body: dict = Body(...)):
 
 
 @router.post("/outcomes/{outcome_id}/verification")
-def verify_outcome(outcome_id: UUID, request: Request, body: OutcomeVerification):
+def verify_outcome(outcome_id: UUID, request: Request, body: dict = Body(...)):
     actor = auth(request, True)
-    value = body.model_dump(mode="json")
+    if body.get("subject_kind") == "bid_package":
+        from packages.contracts.package_outcomes_api import validate as validate_package_outcome
+
+        validate_package_outcome("PackageOutcomeVerificationRequest", body)
+        value = body
+    else:
+        try:
+            value = OutcomeVerification.model_validate(body).model_dump(mode="json")
+        except ValidationError:
+            raise DomainError(
+                "INVALID_REQUEST", "请核对成绩核验的身份、来源和时间字段", 422
+            ) from None
     with connection() as c:
         cmd = command(c, request, actor, "verify-outcome", outcome_id, value, conditional=True)
         if cmd.replay:

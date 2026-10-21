@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 
+from packages.contracts.openapi_dependencies import schema_closure
 from packages.research.profile import descriptor, digest
 
 
@@ -23,6 +24,8 @@ def arr(item):
 
 
 def extend_openapi(actual):
+    if not actual.get("paths"):
+        return
     from apps.api.research_routes import (
         DatasetRequest,
         GroupingRequest,
@@ -30,7 +33,9 @@ def extend_openapi(actual):
     )
     from packages.research.import_contracts import HistoricalImportRequest
 
-    schemas = actual["components"]["schemas"]
+    # These catalogs include dependencies for other features. Build locally so
+    # an empty or partial research router does not advertise those operations.
+    schemas = deepcopy(actual["components"]["schemas"])
     uuid = {"type": "string", "format": "uuid"}
     integer = {"type": "integer", "minimum": 0}
     string = {"type": "string"}
@@ -38,7 +43,16 @@ def extend_openapi(actual):
     digest_schema = {"type": "string", "pattern": "^[0-9a-f]{64}$"}
     boolean = {"type": "boolean"}
     empty = obj({})
-    schemas["ResearchOutcomeVerification"] = OutcomeVerification.model_json_schema()
+    from packages.contracts.package_outcomes_api import schemas as package_outcome_schemas
+
+    schemas.update(deepcopy(package_outcome_schemas()))
+    schemas["SingleBodyOutcomeVerification"] = OutcomeVerification.model_json_schema()
+    schemas["ResearchOutcomeVerification"] = {
+        "oneOf": [
+            ref("SingleBodyOutcomeVerification"),
+            ref("PackageOutcomeVerificationRequest"),
+        ]
+    }
     schemas["ResearchDatasetRequest"] = DatasetRequest.model_json_schema()
     schemas["ResearchOutcomeContext"] = obj(
         {
@@ -88,6 +102,11 @@ def extend_openapi(actual):
             "identity_reason": {"type": ["string", "null"]},
         }
     )
+    schemas["SingleBodyOutcomeContext"] = deepcopy(schemas["ResearchOutcomeContext"])
+    schemas["SingleBodyOutcomeContext"]["properties"]["subject_kind"] = {"const": "single_body"}
+    schemas["ResearchOutcomeContext"] = {
+        "oneOf": [ref("SingleBodyOutcomeContext"), ref("PackageOutcomeContext")]
+    }
     import_schema = HistoricalImportRequest.model_json_schema(
         ref_template="#/components/schemas/{model}"
     )
@@ -185,7 +204,11 @@ def extend_openapi(actual):
             "verification_revision": integer,
             "supersedes_id": nullable_uuid,
             "verification_details": {
-                "anyOf": [ref("ResearchOutcomeVerification"), {"type": "null"}]
+                "anyOf": [
+                    ref("SingleBodyOutcomeVerification"),
+                    ref("PackageOutcomeVerificationDetails"),
+                    {"type": "null"},
+                ]
             },
         }
     )
@@ -193,6 +216,15 @@ def extend_openapi(actual):
     schemas["ResearchOutcomeView"] = outcome
     detail = deepcopy(outcome)
     detail["properties"]["current"] = boolean
+    detail["properties"]["package_association"] = obj(
+        {
+            "available": boolean,
+            "reasons": arr(string),
+            "checked_at": {"type": "string", "format": "date-time"},
+            "scope": {"const": "official_outcome_association"},
+            "formal_sample_eligible": {"const": False},
+        }
+    )
     detail["required"].append("current")
     schemas["ResearchOutcomeDetail"] = detail
     schemas["ResearchOutcomePage"] = obj(
@@ -511,6 +543,7 @@ def extend_openapi(actual):
         ),
     ]
     schemas["ResearchEmptyRequest"] = empty
+    roots = set()
     for (
         path,
         method,
@@ -523,6 +556,9 @@ def extend_openapi(actual):
         operation = actual["paths"].get("/api/v1" + path, {}).get(method)
         if operation is None:
             continue
+        roots.add(response_schema)
+        if request_schema:
+            roots.add(request_schema)
         operation["operationId"] = operation_id
         operation["security"] = [{"SessionCookie": []}]
         operation["parameters"] = [
@@ -551,6 +587,9 @@ def extend_openapi(actual):
             },
             "default": {"$ref": "#/components/responses/DomainError"},
         }
+    if not roots:
+        return
+    actual["components"]["schemas"].update(schema_closure(schemas, roots))
     actual.setdefault("x-research-runtime", {}).update(
         {"profile": descriptor(), "profile_digest": digest(), "formal_scoring_eligible": False}
     )

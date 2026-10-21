@@ -1,0 +1,122 @@
+{
+  "version": "package-submission-outcome-regression/1",
+  "base_commit": "1bb2e37cfb5efe80e593b64709183e17024a5c18",
+  "candidate": "F05 package submission/outcome and latest full-schema recovery",
+  "backend": {
+    "returncode": 0,
+    "passed": 2300,
+    "skipped": 1275,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 4,
+    "pytest_seconds": 68.52,
+    "wrapper_seconds": 70.71,
+    "source_file_count": 3945,
+    "source_before_sha256": "c5099dcd4da32cafb3b6789da101eca4ab377bca77399626bb6c0419842eed32",
+    "source_after_sha256": "c5099dcd4da32cafb3b6789da101eca4ab377bca77399626bb6c0419842eed32",
+    "source_unchanged": true,
+    "command": [
+      "/usr/bin/bwrap",
+      "--die-with-parent",
+      "--unshare-user",
+      "--ro-bind",
+      "/",
+      "/",
+      "--bind",
+      "/tmp",
+      "/tmp",
+      "--tmpfs",
+      "/workspace",
+      "--bind",
+      "/workspace/scratch",
+      "/workspace/scratch",
+      "--ro-bind",
+      "/tmp/tender-completion-runtime/recovery-archive-discovery/docs",
+      "/workspace/tender-docs",
+      "--dev",
+      "/dev",
+      "--chdir",
+      "/workspace/scratch/31e56f630f51/tender-app-review/workbench",
+      "/workspace/scratch/31e56f630f51/review-venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "-p",
+      "no:cacheprovider",
+      "--ignore-glob=tests/test_fusion_full_*",
+      "--ignore=tests/test_object_transfer_mode.py"
+    ],
+    "excluded_future_name_prefixes": ["fusion_full_", "test_fusion_full_"],
+    "excluded_unregistered_files": [
+      "packages/domain/object_transfer_mode.py",
+      "tests/test_object_transfer_mode.py"
+    ],
+    "paid_model_calls": 0,
+    "database_dsns_provided": false,
+    "archive_source": {
+      "repository": "https://github.com/zys743551828-art/tender-docs",
+      "commit": "b0425e8a10ae8e08b099556b6f1183062562ce75",
+      "verified_count": 327,
+      "dependency_source": {
+        "url": "https://registry.npmjs.org/flatted/-/flatted-3.4.4.tgz",
+        "sri": "sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==",
+        "path": "package/python/flatted.py",
+        "sha256": "f784c254de76a25435ebaa61c72942072733ae4b42619b943bf37b09fa45e644",
+        "bytes": 3773
+      }
+    },
+    "log_sha256": "bd9e353c7bbcef0bb8f57dacc44313df589520cfc3b40cd614cb68587602e8a6"
+  },
+  "first_backend_pass_preserved": {
+    "returncode": 1,
+    "passed": 2289,
+    "skipped": 1275,
+    "failed": 1,
+    "failure": "test_bid_package_openapi.py::test_app_without_package_router_does_not_publish_package_operations",
+    "source_sha256": "49aa2ebaf45fe73b7284aa38db3d78f2faa6a1543f6d017995d3020d67b310f6",
+    "source_unchanged": true,
+    "log_sha256": "66e6365b81907d8ac8ae2884974ad06d54767be115c4fcb600ddfc6f9b39329b",
+    "fix": "Only mounted-operation schema closures are registered; 10 new partial/full-app dependency tests, existing test unchanged."
+  },
+  "frontend": {
+    "full_suite": {
+      "files": 112,
+      "passed": 953,
+      "failed": 0,
+      "seconds": 32.61,
+      "log_sha256": "1f4134f685c0e468cb8594dcd5af526657708c196eebfde089ea59c3cbbd62f6"
+    },
+    "after_suite_change": "Two tests replaced invalid findByRole exact options with anchored exact-name regexes; production source unchanged.",
+    "after_change_targeted_tests": 18,
+    "after_change_targeted_passed": 18,
+    "typescript_and_production_build": {
+      "returncode": 0,
+      "vite_seconds": 3.99,
+      "entry_kb": 521.92,
+      "entry_gzip_kb": 161.13,
+      "chunk_size_warning_retained": true,
+      "log_sha256": "436215c2470f545bc5ee6d819a003e3f186f9e6846236c64c77c790ca26a3524"
+    },
+    "first_build_failure_preserved": {
+      "cause": "Two test-only options not allowed by ByRoleOptions",
+      "log_sha256": "c7cd899505163519755c65ca7eded4863fa3a7a921cf029afa4bab6f7f878db7"
+    },
+    "contract_regeneration_after_openapi_fix": {
+      "typescript_bytes_unchanged": true,
+      "openapi_gzip_bytes": 124609
+    }
+  },
+  "static_checks": {
+    "python_ruff_and_format_files": 38,
+    "python_mypy_and_bandit_implementation_files": 25,
+    "typescript_eslint_files": 26,
+    "frontend_prettier_files_including_css": 28,
+    "all_passed": true
+  },
+  "boundaries": [
+    "Environment skips are not passes; independent native PG and S3 batches are listed separately.",
+    "No formal score or standard submission qualification granted.",
+    "Independent future full-runtime files are not in this candidate or its test scope."
+  ]
+}

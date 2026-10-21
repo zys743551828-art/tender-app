@@ -9,6 +9,7 @@ def mount(app):
     from apps.api.authoring_structure import router as authoring_structure
     from apps.api.authoring_word_import import router as authoring_word_import
     from apps.api.bid_package_rule_correction_routes import router as package_rule_corrections
+    from apps.api.bid_package_submission_routes import router as package_submissions
     from apps.api.historical_input_routes import router as historical_input
     from apps.api.historical_routes import router as historical_proof
     from apps.api.lifecycle_routes import router as lifecycle
@@ -24,6 +25,7 @@ def mount(app):
         authoring_rich,
         authoring_word_import,
         package_rule_corrections,
+        package_submissions,
         technical_scale,
         lifecycle,
         task_drafts,
@@ -61,6 +63,7 @@ def extend_openapi(actual):
     from packages.contracts.package_rule_corrections_api import (
         extend_openapi as package_rule_corrections,
     )
+    from packages.contracts.package_submissions_api import extend_openapi as package_submissions
     from packages.model_governance.contracts import extend_openapi as governance
     from packages.model_governance.historical_contracts import extend_openapi as historical_proof
     from packages.model_governance.historical_input_contracts import (
@@ -78,6 +81,7 @@ def extend_openapi(actual):
         rich,
         word_import,
         package_rule_corrections,
+        package_submissions,
         governance,
         historical_proof,
         historical_input,

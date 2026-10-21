@@ -4185,7 +4185,9 @@ export type OfflineSubmissionRequest = {
   explanation: string;
 };
 
-export type SubmissionView = {
+export type SubmissionView = SingleBodySubmissionView | PackageSubmissionView;
+
+export type SingleBodySubmissionView = {
   id: string;
   bid_id: string;
   body_version_id: string;
@@ -4239,6 +4241,452 @@ export type SubmissionView = {
   platform_submission_verified: false;
   explanation: string | null;
   correction_reason: string | null;
+  subject_kind?: "single_body";
+};
+
+export type PackageSubmissionSelection = {
+  package_id: string;
+  revision_id: string;
+  package_digest: string;
+  inventory: {
+    id: string;
+    digest: string;
+  } | null;
+  coverage: {
+    id: string;
+    digest: string;
+  } | null;
+  review_run: {
+    id: string;
+    input_digest: string;
+    result_digest: string | null;
+  } | null;
+};
+
+export type PackageSubmissionRequest = {
+  kind: "standard" | "offline_fact";
+  selection: {
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    inventory: {
+      id: string;
+      digest: string;
+    } | null;
+    coverage: {
+      id: string;
+      digest: string;
+    } | null;
+    review_run: {
+      id: string;
+      input_digest: string;
+      result_digest: string | null;
+    } | null;
+  };
+  input_digest: string;
+  evidence: {
+    document_version_id: string;
+    digest: string;
+    byte_size: number;
+  };
+  submitted_at: string;
+  explanation: string;
+  expected_head: {
+    id: string;
+    revision: number;
+  } | null;
+  correction_reason: string | null;
+};
+
+export type PackageSubmissionPreview = {
+  selection: {
+    target: BidPackageStoredView;
+    authority: BidPackageStoredView | null;
+    inventory: PackageRequirementInventoryView | null;
+    coverage: PackageCoverageAttemptView | null;
+  };
+  selection_request: {
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    inventory: {
+      id: string;
+      digest: string;
+    } | null;
+    coverage: {
+      id: string;
+      digest: string;
+    } | null;
+    review_run: {
+      id: string;
+      input_digest: string;
+      result_digest: string | null;
+    } | null;
+  };
+  gate: PackageSubmissionGateView;
+  input_digest: string;
+  bid_etag: string;
+  current_submission_head: {
+    id: string;
+    revision: number;
+    subject_kind: "single_body" | "bid_package";
+  } | null;
+};
+
+export type PackageSubmissionBindingView = {
+  manifest: {
+    version: "package-submission-binding/1";
+    submission_id: string;
+    bid_id: string;
+    subject: {
+      kind: "bid_package";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+    };
+    selection: {
+      target: BidPackageStoredView;
+      authority: BidPackageStoredView | null;
+      inventory: PackageRequirementInventoryView | null;
+      coverage: PackageCoverageAttemptView | null;
+    };
+    selection_request: {
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      coverage: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        id: string;
+        input_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+    package_identity: HistoricalBidIdentitySnapshot;
+    recorded_identity: BidIdentitySnapshot;
+    submitted_at: string;
+    recorded_at: string;
+    assessed_at: string;
+    actor_id: string;
+    command_id: string;
+    request: {
+      kind: "standard" | "offline_fact";
+      selection: {
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory: {
+          id: string;
+          digest: string;
+        } | null;
+        coverage: {
+          id: string;
+          digest: string;
+        } | null;
+        review_run: {
+          id: string;
+          input_digest: string;
+          result_digest: string | null;
+        } | null;
+      };
+      input_digest: string;
+      evidence: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      };
+      submitted_at: string;
+      explanation: string;
+      expected_head: {
+        id: string;
+        revision: number;
+      } | null;
+      correction_reason: string | null;
+    };
+    request_digest: string;
+    if_match: string;
+    input_digest: string;
+    context: { [key: string]: unknown };
+    review_run: PackageReviewRunView | null;
+    inventory_proof: { [key: string]: unknown } | null;
+    gate: PackageSubmissionGateView;
+    originals: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: string;
+      artifact_kind: string;
+      original_name: string;
+      roles: (
+        | "target"
+        | "authority"
+        | "submission_attachment"
+        | "source_ancestor"
+      )[];
+    }[];
+    evidence: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: string;
+      artifact_kind: string;
+      original_name: string;
+      roles: (
+        | "target"
+        | "authority"
+        | "submission_attachment"
+        | "source_ancestor"
+      )[];
+    };
+    attachment_sources: { [key: string]: unknown }[];
+    supersedes_id: string | null;
+    head_revision: number;
+    platform_submission_verified: false;
+    pre_submission_system_check_verified: false;
+    original_bytes_verified: true;
+  };
+  digest: string;
+};
+
+export type PackageSubmissionView = {
+  id: string;
+  bid_id: string;
+  subject_kind: "bid_package";
+  body_version_id: null;
+  review_id: null;
+  kind: "standard" | "offline_fact";
+  submitted_at: string;
+  recorded_at: string;
+  recorded_by: string;
+  gate_checked: boolean;
+  evidence_ref: string;
+  current: boolean;
+  supersedes_id: string | null;
+  identity: HistoricalBidIdentitySnapshot;
+  original_name: null;
+  artifact_kind: null;
+  checks_label: string;
+  open_risk_snapshot: { [key: string]: unknown };
+  platform_submission_verified: false;
+  explanation: string;
+  correction_reason: string | null;
+  package_binding: PackageSubmissionBindingView;
+};
+
+export type PackageSubmissionAppliedView = {
+  submission: {
+    id: string;
+    bid_id: string;
+    subject_kind: "bid_package";
+    body_version_id: null;
+    review_id: null;
+    kind: "standard" | "offline_fact";
+    submitted_at: string;
+    recorded_at: string;
+    recorded_by: string;
+    gate_checked: boolean;
+    evidence_ref: string;
+    current: boolean;
+    supersedes_id: string | null;
+    identity: HistoricalBidIdentitySnapshot;
+    original_name: null;
+    artifact_kind: null;
+    checks_label: string;
+    open_risk_snapshot: { [key: string]: unknown };
+    platform_submission_verified: false;
+    explanation: string;
+    correction_reason: string | null;
+    package_binding: PackageSubmissionBindingView;
+  };
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      kind: "standard" | "offline_fact";
+      selection: {
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory: {
+          id: string;
+          digest: string;
+        } | null;
+        coverage: {
+          id: string;
+          digest: string;
+        } | null;
+        review_run: {
+          id: string;
+          input_digest: string;
+          result_digest: string | null;
+        } | null;
+      };
+      input_digest: string;
+      evidence: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      };
+      submitted_at: string;
+      explanation: string;
+      expected_head: {
+        id: string;
+        revision: number;
+      } | null;
+      correction_reason: string | null;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageSubmissionGateView = PackageSubmissionGate_View;
+
+export type PackageOutcomeContext = {
+  subject_kind: "bid_package";
+  bid_id: string;
+  submission_id: string;
+  body_version_id: null;
+  identity: {
+    project_id: string;
+    lot_id: string | null;
+    round_id: string;
+    bidder_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    binding_digest: string;
+    identity_digest: string;
+  };
+  package_identity: HistoricalBidIdentitySnapshot;
+  recorded_identity: BidIdentitySnapshot;
+  package_binding: PackageSubmissionBindingView;
+  authority: {
+    package_id: string;
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  } | null;
+  display: {
+    project_title: string;
+    lot: string | null;
+    round_no: number;
+    bidder_name: string;
+    body_filename: null;
+  };
+  submitted_at: string;
+  kind: "standard" | "offline_fact";
+  source_candidates: {
+    id: string;
+    original_name: string;
+    obtained_at: string;
+  }[];
+  identity_ready: boolean;
+  identity_status: "confirmed" | "unavailable" | "changed";
+  identity_reason: string | null;
+  verification_blockers: string[];
+  verification_requires_source_evidence: true;
+  formal_sample_eligible: false;
+  formal_sample_blockers: "package_formal_sample_not_supported"[];
+};
+
+export type PackageOutcomeVerificationRequest = {
+  version: "package-outcome-verification/1";
+  subject_kind: "bid_package";
+  state: "pending" | "verified" | "conflict" | "rejected";
+  reason: string;
+  identity: {
+    project_id: string;
+    lot_id: string | null;
+    round_id: string;
+    bidder_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    binding_digest: string;
+    identity_digest: string;
+  };
+  authority: {
+    package_id: string;
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  } | null;
+  aggregation: string;
+  published_at: string | null;
+  evidence_refs: {
+    document_version_id: string;
+    evidence_id: string;
+    physical_page: number;
+    quote: string;
+  }[];
+};
+
+export type PackageOutcomeVerificationDetails = {
+  version: "package-outcome-verification-record/1";
+  subject_kind: "bid_package";
+  request: {
+    version: "package-outcome-verification/1";
+    subject_kind: "bid_package";
+    state: "pending" | "verified" | "conflict" | "rejected";
+    reason: string;
+    identity: {
+      project_id: string;
+      lot_id: string | null;
+      round_id: string;
+      bidder_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      binding_digest: string;
+      identity_digest: string;
+    };
+    authority: {
+      package_id: string;
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    } | null;
+    aggregation: string;
+    published_at: string | null;
+    evidence_refs: {
+      document_version_id: string;
+      evidence_id: string;
+      physical_page: number;
+      quote: string;
+    }[];
+  };
+  package_identity: HistoricalBidIdentitySnapshot;
+  binding_digest: string;
+  checked_at: string;
+  authority_proof: {
+    digest: string;
+    snapshot: { [key: string]: unknown };
+  } | null;
+  official_source_proof: {
+    digest: string;
+    snapshot: { [key: string]: unknown };
+  } | null;
+  verification_scope: "official_outcome_association";
+  formal_sample_eligible: false;
+  formal_sample_blockers: "package_formal_sample_not_supported"[];
+};
+
+export type OutcomeRequest = {
+  submission_id: string;
+  score_kind: "technical_total" | "comprehensive_total" | "unknown";
+  value: string | null;
+  maximum: string | null;
+  source_version_id: string;
+  known_at: string;
 };
 
 export type SubmissionPage = {
@@ -4866,8 +5314,18 @@ export type ResearchOutcomeDetail = {
   known_at: string;
   verification_revision: number;
   supersedes_id: string | null;
-  verification_details: ResearchOutcomeVerification | null;
+  verification_details:
+    | SingleBodyOutcomeVerification
+    | PackageOutcomeVerificationDetails
+    | null;
   current: boolean;
+  package_association?: {
+    available: boolean;
+    reasons: string[];
+    checked_at: string;
+    scope: "official_outcome_association";
+    formal_sample_eligible: false;
+  };
 };
 
 export type ResearchSamplePage = {
@@ -6450,6 +6908,61 @@ export type SubmissionRiskSnapshot = {
   scope_note: string;
 };
 
+export type HistoricalBidIdentitySnapshot =
+  | {
+      bidder_id: string;
+      bidder_name: string;
+      round_id: string;
+      engineering_project_id: string;
+      engineering_title: string;
+      region: string | null;
+      engineering_type: string | null;
+      lot: string | null;
+      round_no: number;
+      binding_status: "confirmed" | "pending";
+      authority_id: string | null;
+      digest: string;
+      identity_version?: "bid-identity/1";
+    }
+  | {
+      bidder_id: string;
+      bidder_name: string;
+      round_id: string;
+      engineering_project_id: string;
+      engineering_title: string;
+      region: string | null;
+      engineering_type: string | null;
+      lot: string | null;
+      lot_id: string | null;
+      round_no: number;
+      binding_status: "confirmed" | "pending";
+      authority_id: string | null;
+      digest: string;
+      identity_version: "bid-identity/2";
+    };
+
+export type BidIdentitySnapshot = {
+  bidder_id: string;
+  bidder_name: string;
+  round_id: string;
+  engineering_project_id: string;
+  engineering_title: string;
+  region: string | null;
+  engineering_type: string | null;
+  lot: string | null;
+  lot_id: string | null;
+  round_no: number;
+  binding_status: "confirmed" | "pending";
+  authority_id: string | null;
+  digest: string;
+  identity_version: "bid-identity/2";
+};
+
+export type PackageSubmissionGate_View = {
+  manifest: PackageSubmissionGate_Manifest;
+  digest: string;
+};
+
 export type SubmissionDocumentView = {
   document_version_id: string;
   original_name: string;
@@ -6648,10 +7161,13 @@ export type ResearchOutcomeView = {
   known_at: string;
   verification_revision: number;
   supersedes_id: string | null;
-  verification_details: ResearchOutcomeVerification | null;
+  verification_details:
+    | SingleBodyOutcomeVerification
+    | PackageOutcomeVerificationDetails
+    | null;
 };
 
-export type ResearchOutcomeVerification = {
+export type SingleBodyOutcomeVerification = {
   state: "pending" | "verified" | "conflict" | "rejected";
   reason: string;
   identity: { [key: string]: string };
@@ -6992,23 +7508,6 @@ export type MemberView = {
   active: boolean;
 };
 
-export type BidIdentitySnapshot = {
-  bidder_id: string;
-  bidder_name: string;
-  round_id: string;
-  engineering_project_id: string;
-  engineering_title: string;
-  region: string | null;
-  engineering_type: string | null;
-  lot: string | null;
-  lot_id: string | null;
-  round_no: number;
-  binding_status: "confirmed" | "pending";
-  authority_id: string | null;
-  digest: string;
-  identity_version: "bid-identity/2";
-};
-
 export type UploadPartGrant = {
   part_number: number;
   byte_offset: number;
@@ -7312,6 +7811,47 @@ export type TaskDraftUnresolvedField = {
   reason: string;
 };
 
+export type PackageSubmissionGate_Manifest = {
+  version: "package-submission-gate/1";
+  kind: "current_package_submission_observation";
+  subject: {
+    kind: "bid_package";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    identity_digest: string;
+  };
+  selection: {
+    digest: string;
+    authority_revision_id: string | null;
+    authority_digest: string | null;
+    inventory_id: string | null;
+    inventory_digest: string | null;
+    coverage_attempt_id: string | null;
+    coverage_digest: string | null;
+    run_id: string | null;
+    result_digest: string | null;
+  };
+  checked_at: string;
+  policy_digest: string;
+  gates: {
+    current_input: PackageSubmissionGate_CurrentInput;
+    core_coverage: PackageSubmissionGate_CoreCoverage;
+    mandatory_confirmation: PackageSubmissionGate_MandatoryConfirmation;
+    known_blocking_risks: PackageSubmissionGate_KnownBlockingRisks;
+  };
+  state: "blocked" | "unknown";
+  allowed: false;
+  inventory_complete: false;
+  quality_status: "not_measured";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  publication_authorized: false;
+  platform_submission_verified: false;
+  limitations: string[];
+};
+
 export type KnowledgeAuthority = {
   source_id: string;
   ancestor_id: string;
@@ -7550,6 +8090,133 @@ export type MissedTaskSchedule = {
   count: null;
   count_status: "not_enumerated";
   resolution: "skipped_run_current_once_available";
+};
+
+export type PackageSubmissionGate_CurrentInput = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "current_metadata_observation";
+  observations_digest: string | null;
+  current_identity_digest: string | null;
+  original_verification: "not_performed" | "failed";
+  member_count: number;
+  physical_page_gaps: {
+    role: "target" | "authority";
+    member_id: string;
+    first_page: number;
+    last_page: number;
+  }[];
+};
+
+export type PackageSubmissionGate_CoreCoverage = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  inventory_proof_digest: string | null;
+  run_id: string | null;
+  active_core_count: number;
+  judged_core_count: number;
+  unknown_core_count: number;
+  unfavorable_core_count: number;
+  human_declared_count: number;
+  extraction_range_proven: boolean;
+  inventory_complete: false;
+  quality_status: "not_measured";
+  overall_coverage: "partial" | "unknown";
+};
+
+export type PackageSubmissionGate_MandatoryConfirmation = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  core_rule_count: number;
+  confirmed_count: number;
+  pending_rule_ids: string[];
+  inactive_rule_ids: string[];
+  needs_revalidation_rule_ids: string[];
+  decisions: {
+    rule_id: string;
+    rule_digest: string;
+    decision_id: string | null;
+    decision_digest: string | null;
+    decision: string | null;
+  }[];
+};
+
+export type PackageSubmissionGate_KnownBlockingRisks = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "whole_bid_known_history";
+  history_digest: string | null;
+  history_complete: boolean;
+  runs_read: number;
+  result_rows_read: number;
+  unknown_run_ids: string[];
+  blocked_count: number;
+  unknown_count: number;
+  risks: (
+    | {
+        kind: "package_core_requirement";
+        state: "blocked" | "unknown";
+        scope: {
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          inventory_id: string;
+        };
+        run_id: string;
+        frozen_input_id: string;
+        execution_input_id: string;
+        result_digest: string;
+        row_digest: string;
+        requirement_id: string;
+        rule_digest: string;
+        rule_kind: "disqualification" | "mandatory";
+        verdict: "violated" | "not_found" | "unable_to_judge";
+        statement: string;
+        human_decision: {
+          id: string;
+          digest: string;
+          state: "confirmed" | "rejected" | "needs_review";
+          reason: string;
+        } | null;
+        resolution: "no_verified_package_recheck_resolution";
+      }
+    | {
+        kind: "legacy_finding";
+        state: "blocked";
+        finding: {
+          id: string;
+          bid_id: string;
+          origin_id: string;
+          review_id: string;
+          rule_id: string | null;
+          rule_kind:
+            | "mandatory"
+            | "disqualification"
+            | "scoring"
+            | "advisory"
+            | null;
+          severity: "critical" | "major" | "minor" | "info";
+          category:
+            | "disqualification"
+            | "response"
+            | "consistency"
+            | "scope"
+            | "improvement";
+          verdict:
+            | "satisfied"
+            | "violated"
+            | "not_found"
+            | "unable_to_judge"
+            | "not_applicable";
+          lifecycle: "open" | "deferred" | "dismissed";
+          statement: string;
+        };
+        finding_digest: string;
+        resolution: "no_verified_recheck_resolution";
+      }
+  )[];
 };
 
 export type PackageDependencyPlan_Assessment_Manifest =
@@ -8018,6 +8685,9 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections/{correction_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence/{evidence_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submission-preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submissions",
+  "POST /api/v1/submissions/{submission_id}/package-corrections",
   "GET /api/v1/technical-scale-capabilities",
   "GET /api/v1/bids/{bid_id}/technical-scale-context",
   "POST /api/v1/bids/{bid_id}/technical-scales",

@@ -38,4 +38,5 @@ BASE_SQL = (
     "deploy/sql/document-parse-runtime-grants.sql",
     "deploy/sql/vector-runtime-grants.sql",
     "deploy/sql/research-source-qualification.sql",
+    "packages/contracts/sql/bid-package-submissions.sql",
 )

@@ -1,5 +1,5 @@
 import { BusinessResults } from "./BusinessResults";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { api, supportsApi } from "./api";
 import type { ApiResult } from "./api";
 import type { FindingView } from "./contracts";
@@ -10,6 +10,7 @@ import type {
   SubmissionPage,
   SubmissionRequest,
   SubmissionView,
+  SingleBodySubmissionView,
 } from "./contracts";
 import { ArtifactActions } from "./ArtifactActions";
 import { Badge, ErrorNotice } from "./components";
@@ -22,6 +23,9 @@ import { useDirectory } from "./useDirectory";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { useResource } from "./useResource";
 import type { WorkspacePage } from "./workspaceTypes";
+import { PackageSubmissionPanel } from "./PackageSubmissionPanel";
+import type { PackageSubmissionOpenRequest } from "./PackageSubmissionPanel";
+import { PackageSubmissionCard } from "./PackageSubmissionCard";
 
 type FormInput = {
   open: boolean;
@@ -56,11 +60,17 @@ export function SubmissionPanel({
   onChanged: () => void;
 }) {
   const available = supportsApi("GET", `/bids/${bidId}/submission-gate`);
+  const packageAvailable = supportsApi(
+    "POST",
+    `/bids/${bidId}/packages/_/revisions/_/submissions`,
+  );
   const gate = useResource<GateView>(
     available ? `/bids/${bidId}/submission-gate` : null,
   );
   const history = useDirectory<SubmissionPage>(
-    available ? `/bids/${bidId}/submissions?limit=20` : null,
+    supportsApi("GET", `/bids/${bidId}/submissions`)
+      ? `/bids/${bidId}/submissions?limit=20`
+      : null,
   );
   const [input, setInput] = useKnowledgeInput<FormInput>(
     knowledgeStorageKey(memberId, bidId) + "submission",
@@ -70,9 +80,19 @@ export function SubmissionPanel({
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<SubmissionView | null>(null);
+  const [packageLocked, setPackageLocked] = useState(false);
+  const [packageRequest, setPackageRequest] =
+    useState<PackageSubmissionOpenRequest | null>(null);
+  const packageLock = useCallback(
+    (value: boolean) => setPackageLocked(value),
+    [],
+  );
   const foreign = history.items.some((item) => item.bid_id !== bidId);
-  async function begin(kind: FormInput["kind"], correction?: SubmissionView) {
-    if (busy) return;
+  async function begin(
+    kind: FormInput["kind"],
+    correction?: SingleBodySubmissionView,
+  ) {
+    if (busy || packageLocked) return;
     setBusy(true);
     setError(null);
     try {
@@ -80,7 +100,12 @@ export function SubmissionPanel({
         const { data } = await api<SubmissionView>(
           `/submissions/${correction.id}`,
         );
-        if (data.id !== correction.id || data.bid_id !== bidId || !data.current)
+        if (
+          data.subject_kind === "bid_package" ||
+          data.id !== correction.id ||
+          data.bid_id !== bidId ||
+          !data.current
+        )
           throw new Error(
             "原记录已不是当前实交记录，请刷新历史后选择更正目标。",
           );
@@ -110,127 +135,156 @@ export function SubmissionPanel({
       setBusy(false);
     }
   }
+  function beginPackageCorrection(record: SubmissionView) {
+    if (busy || input.open || packageLocked || foreign || !record.current)
+      return;
+    setPackageRequest((previous) => ({
+      sequence: (previous?.sequence ?? 0) + 1,
+      correction: record,
+    }));
+  }
   function refresh() {
     void gate.reload();
     void history.reload();
     onChanged();
     window.dispatchEvent(new Event("server-snapshot-change"));
   }
-  if (!available) return null;
+  if (!available && !packageAvailable) return null;
   return (
     <>
-      <section className="panel submission-panel">
-        <div className="section-heading">
-          <div>
-            <h2>提交检查与实交登记</h2>
-            <p className="small-note">
-              登记已经发生的提交。用户声明，未核验交易平台回执；这里不会代替您向交易平台提交。
-            </p>
+      <PackageSubmissionPanel
+        key={`${bidId}:${memberId}`}
+        bidId={bidId}
+        memberId={memberId}
+        disabled={
+          busy || input.open || foreign || history.loading || !!history.error
+        }
+        hasCurrent={history.items.some((item) => item.current)}
+        request={packageRequest}
+        onLock={packageLock}
+        onSaved={(record) => {
+          setSaved(record);
+          setPackageRequest(null);
+          refresh();
+        }}
+      />
+      {available && (
+        <section className="panel submission-panel">
+          <div className="section-heading">
+            <div>
+              <h2>提交检查与实交登记</h2>
+              <p className="small-note">
+                登记已经发生的提交。用户声明，未核验交易平台回执；这里不会代替您向交易平台提交。
+              </p>
+            </div>
+            <button className="text-button" onClick={refresh}>
+              刷新提交检查与记录
+            </button>
           </div>
-          <button className="text-button" onClick={refresh}>
-            刷新提交检查与记录
-          </button>
-        </div>
-        <ResourceState
-          {...gate}
-          hasData={!!gate.data}
-          onRetry={() => void gate.reload()}
-        />
-        {gate.data && (
-          <>
-            <div
-              className={`notice ${gate.data.allowed ? "neutral" : "warning"}`}
-            >
+          <ResourceState
+            {...gate}
+            hasData={!!gate.data}
+            onRetry={() => void gate.reload()}
+          />
+          {gate.data && (
+            <>
+              <div
+                className={`notice ${gate.data.allowed ? "neutral" : "warning"}`}
+              >
+                <div>
+                  <strong>
+                    {gate.data.allowed
+                      ? "当前核心提交检查满足登记条件"
+                      : "标准登记仍有待处理阻断"}
+                  </strong>
+                  <p>
+                    资料修订 {gate.data.material_revision} ·{" "}
+                    {gate.data.body_version_id
+                      ? `受检稿 ${gate.data.body_version_id.slice(0, 8)}`
+                      : "尚无受检稿"}
+                    。保存时服务端会重新核对，当前检查不能证明过去时点已经满足。
+                  </p>
+                </div>
+              </div>
+              <ul className="gate-blockers">
+                {gate.data.blockers.map((blocker, index) => (
+                  <li key={`${blocker.code}:${blocker.object_id}:${index}`}>
+                    <GateBlocker blocker={blocker} onNavigate={onNavigate} />
+                  </li>
+                ))}
+              </ul>
+              {gate.data.warnings.map((warning, index) => (
+                <p className="small-note" key={index}>
+                  {warning}
+                </p>
+              ))}
+            </>
+          )}
+          <ErrorNotice error={error} />
+          {saved && (
+            <div className="notice neutral" role="status">
               <div>
-                <strong>
-                  {gate.data.allowed
-                    ? "当前核心提交检查满足登记条件"
-                    : "标准登记仍有待处理阻断"}
-                </strong>
+                <strong>已保存实交记录</strong>
                 <p>
-                  资料修订 {gate.data.material_revision} ·{" "}
-                  {gate.data.body_version_id
-                    ? `受检稿 ${gate.data.body_version_id.slice(0, 8)}`
-                    : "尚无受检稿"}
-                  。保存时服务端会重新核对，当前检查不能证明过去时点已经满足。
+                  {saved.checks_label} ·
+                  用户声明，未核验交易平台回执。原稿和登记身份已留存。
                 </p>
               </div>
             </div>
-            <ul className="gate-blockers">
-              {gate.data.blockers.map((blocker, index) => (
-                <li key={`${blocker.code}:${blocker.object_id}:${index}`}>
-                  <GateBlocker blocker={blocker} onNavigate={onNavigate} />
-                </li>
-              ))}
-            </ul>
-            {gate.data.warnings.map((warning, index) => (
-              <p className="small-note" key={index}>
-                {warning}
-              </p>
-            ))}
-          </>
-        )}
-        <ErrorNotice error={error} />
-        {saved && (
-          <div className="notice neutral" role="status">
-            <div>
-              <strong>已保存实交记录</strong>
-              <p>
-                {saved.checks_label} ·
-                用户声明，未核验交易平台回执。原稿和登记身份已留存。
-              </p>
+          )}
+          {!input.open && (
+            <div className="review-shortcuts">
+              <button
+                className="button primary"
+                disabled={
+                  busy ||
+                  packageLocked ||
+                  gate.loading ||
+                  !!gate.error ||
+                  !gate.data?.allowed ||
+                  history.loading ||
+                  foreign ||
+                  history.items.some((item) => item.current)
+                }
+                onClick={() => void begin("standard")}
+              >
+                登记已检查的实际提交
+              </button>
+              <button
+                className="button secondary"
+                disabled={
+                  busy ||
+                  packageLocked ||
+                  foreign ||
+                  history.loading ||
+                  history.items.some((item) => item.current)
+                }
+                onClick={() => void begin("offline_fact")}
+              >
+                补录线下已发生的提交
+              </button>
             </div>
-          </div>
-        )}
-        {!input.open && (
-          <div className="review-shortcuts">
-            <button
-              className="button primary"
-              disabled={
-                busy ||
-                gate.loading ||
-                !!gate.error ||
-                !gate.data?.allowed ||
-                history.loading ||
-                foreign ||
-                history.items.some((item) => item.current)
-              }
-              onClick={() => void begin("standard")}
-            >
-              登记已检查的实际提交
-            </button>
-            <button
-              className="button secondary"
-              disabled={
-                busy ||
-                foreign ||
-                history.loading ||
-                history.items.some((item) => item.current)
-              }
-              onClick={() => void begin("offline_fact")}
-            >
-              补录线下已发生的提交
-            </button>
-          </div>
-        )}
-        {input.open && (
-          <SubmissionEditor
-            key={input.correctionId ?? "new"}
-            bidId={bidId}
-            memberId={memberId}
-            input={input}
-            setInput={setInput}
-            initialBasis={basis}
-            onSaved={(record) => {
-              setSaved(record);
-              setInput(empty);
-              setBasis(null);
-              refresh();
-            }}
-            onClose={() => setInput((old) => ({ ...old, open: false }))}
-          />
-        )}
-      </section>
+          )}
+          {input.open && (
+            <SubmissionEditor
+              key={input.correctionId ?? "new"}
+              bidId={bidId}
+              memberId={memberId}
+              input={input}
+              setInput={setInput}
+              initialBasis={basis}
+              externalDisabled={packageLocked}
+              onSaved={(record) => {
+                setSaved(record);
+                setInput(empty);
+                setBasis(null);
+                refresh();
+              }}
+              onClose={() => setInput((old) => ({ ...old, open: false }))}
+            />
+          )}
+        </section>
+      )}
       <section className="panel">
         <h2>实交记录与更正历史</h2>
         <ResourceState
@@ -244,17 +298,33 @@ export function SubmissionPanel({
             实交记录项目身份不一致，未展示其他项目记录。
           </div>
         ) : (
-          history.items.map((record) => (
-            <SubmissionCard
-              key={record.id}
-              bidId={bidId}
-              memberId={memberId}
-              record={record}
-              onNavigate={onNavigate}
-              onCorrect={() => void begin(record.kind, record)}
-              disabled={busy || input.open}
-            />
-          ))
+          history.items.map((record) =>
+            record.subject_kind === "bid_package" ? (
+              <PackageSubmissionCard
+                key={record.id}
+                bidId={bidId}
+                memberId={memberId}
+                record={record}
+                disabled={busy || input.open || packageLocked}
+                onCorrect={() => beginPackageCorrection(record)}
+              />
+            ) : (
+              <SubmissionCard
+                key={record.id}
+                bidId={bidId}
+                memberId={memberId}
+                record={record}
+                onNavigate={onNavigate}
+                onCorrect={() => void begin(record.kind, record)}
+                disabled={busy || input.open || packageLocked}
+                onPackageCorrect={
+                  packageAvailable
+                    ? () => beginPackageCorrection(record)
+                    : undefined
+                }
+              />
+            ),
+          )
         )}
         {history.data && !history.items.length && (
           <p className="small-empty">
@@ -281,6 +351,7 @@ function SubmissionEditor({
   input,
   setInput,
   initialBasis,
+  externalDisabled,
   onSaved,
   onClose,
 }: {
@@ -289,7 +360,8 @@ function SubmissionEditor({
   input: FormInput;
   setInput: (next: FormInput | ((old: FormInput) => FormInput)) => void;
   initialBasis: ApiResult<GateView> | null;
-  onSaved: (record: SubmissionView) => void;
+  externalDisabled: boolean;
+  onSaved: (record: SingleBodySubmissionView) => void;
   onClose: () => void;
 }) {
   const docs = useSubmissionDocuments(bidId);
@@ -302,7 +374,7 @@ function SubmissionEditor({
   const change = (field: keyof FormInput, value: string) =>
     setInput((old) => ({ ...old, [field]: value }));
   const gate = basis?.data;
-  const locked = command.busy || !!command.pending;
+  const locked = externalDisabled || command.busy || !!command.pending;
   const actualId =
     input.kind === "standard" ? gate?.body_version_id : input.actualId;
   const actual = docs.items.find(
@@ -322,6 +394,7 @@ function SubmissionEditor({
         );
         if (
           data.bid_id !== bidId ||
+          data.subject_kind === "bid_package" ||
           data.id !== input.correctionId ||
           !data.current
         )
@@ -339,13 +412,18 @@ function SubmissionEditor({
     }
   }
   function received(record: SubmissionView) {
-    if (record.bid_id !== bidId || record.supersedes_id !== input.correctionId)
+    if (
+      record.subject_kind === "bid_package" ||
+      record.bid_id !== bidId ||
+      record.supersedes_id !== input.correctionId
+    )
       throw new Error(
         "登记返回身份不一致，请刷新实交历史核对，未套用其他记录。",
       );
     onSaved(record);
   }
   async function submit() {
+    if (locked) return;
     setError(null);
     try {
       if (!basis?.etag || !actualId || !proof || !input.submittedAt)
@@ -701,13 +779,15 @@ function SubmissionCard({
   record,
   onNavigate,
   onCorrect,
+  onPackageCorrect,
   disabled,
 }: {
   bidId: string;
   memberId: string;
-  record: SubmissionView;
+  record: SingleBodySubmissionView;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
   onCorrect: () => void;
+  onPackageCorrect?: () => void;
   disabled: boolean;
 }) {
   return (
@@ -801,13 +881,25 @@ function SubmissionCard({
       )}
       <BusinessResults bidId={bidId} memberId={memberId} submission={record} />
       {record.current && (
-        <button
-          className="button secondary"
-          disabled={disabled}
-          onClick={onCorrect}
-        >
-          追加更正此实交记录
-        </button>
+        <div className="review-shortcuts">
+          <button
+            className="button secondary"
+            disabled={disabled}
+            onClick={onCorrect}
+          >
+            追加更正此实交记录
+          </button>
+          {onPackageCorrect && (
+            <button
+              type="button"
+              className="button secondary"
+              disabled={disabled}
+              onClick={onPackageCorrect}
+            >
+              按完整整包追加更正
+            </button>
+          )}
+        </div>
       )}
     </article>
   );

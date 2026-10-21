@@ -70,7 +70,12 @@ export function objectFetch(url: string, options: RequestInit = {}) {
   });
 }
 
-export type ApiResult<T> = { data: T; etag: string | null };
+export type ApiResult<T> = {
+  data: T;
+  etag: string | null;
+  bidEtag?: string;
+  outcomeHeadEtag?: string;
+};
 export async function api<T>(
   path: string,
   options: {
@@ -143,7 +148,14 @@ export async function api<T>(
     );
   }
   const data = response.status === 204 ? undefined : await response.json();
-  return { data: data as T, etag: response.headers.get("ETag") };
+  const bidEtag = response.headers.get("X-Bid-ETag");
+  const outcomeHeadEtag = response.headers.get("Outcome-Head-ETag");
+  return {
+    data: data as T,
+    etag: response.headers.get("ETag"),
+    ...(bidEtag ? { bidEtag } : {}),
+    ...(outcomeHeadEtag ? { outcomeHeadEtag } : {}),
+  };
 }
 
 export async function fileSha256(file: File) {

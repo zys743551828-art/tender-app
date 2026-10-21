@@ -1,0 +1,147 @@
+.package-submission-panel,
+.package-submission-card {
+  min-width: 0;
+}
+.package-submission-panel :is(p, dd, li, strong, span),
+.package-submission-card :is(p, dd, li, strong, span) {
+  overflow-wrap: anywhere;
+}
+.package-submission-panel .digest,
+.package-submission-card .digest {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.package-submission-panel fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.package-submission-panel label {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+.package-submission-panel :is(input:not([type="checkbox"]), select, textarea) {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.package-submission-panel select {
+  text-overflow: ellipsis;
+}
+.package-submission-panel :is(button, summary),
+.package-submission-card :is(button, summary) {
+  max-width: 100%;
+  white-space: normal;
+}
+.package-submission-fields,
+.package-submission-gate-grid,
+.package-submission-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.package-submission-selected {
+  background: var(--surface-secondary, #f6f8f8);
+  padding: 1rem;
+  border: 1px solid var(--border, #e3e8e6);
+  border-radius: 0.65rem;
+  margin: 1rem 0;
+}
+.package-submission-selected :is(p, dl) {
+  margin: 0.5rem 0;
+}
+.package-submission-panel details,
+.package-submission-card details {
+  margin: 1rem 0;
+}
+.package-submission-panel dl,
+.package-submission-card dl {
+  display: grid;
+  grid-template-columns: minmax(6rem, 0.3fr) minmax(0, 1fr);
+  gap: 0.5rem 0.75rem;
+}
+.package-submission-panel :is(dt, dd),
+.package-submission-card :is(dt, dd) {
+  margin: 0;
+  min-width: 0;
+}
+.package-submission-gates {
+  margin: 1.5rem 0;
+}
+.package-submission-gate-grid > article,
+.package-submission-modes > div,
+.package-submission-risk-list > article {
+  min-width: 0;
+  border: 1px solid var(--border, #e3e8e6);
+  border-radius: 0.65rem;
+  padding: 1rem;
+}
+.package-submission-gate-grid header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+.package-submission-gate-grid h4 {
+  margin: 0;
+}
+.package-submission-codes {
+  padding-left: 1.25rem;
+}
+.package-submission-codes li {
+  margin: 0.6rem 0;
+}
+.package-submission-codes .small-note {
+  display: block;
+  margin: 0.25rem 0;
+}
+.package-submission-risk-list > article {
+  margin: 0.75rem 0;
+}
+.package-submission-panel .package-submission-ack {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-weight: 400;
+}
+.package-submission-ack input {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.25rem;
+}
+.package-submission-card .badge {
+  white-space: normal;
+}
+.package-submission-card .digest {
+  display: block;
+}
+.package-submission-originals {
+  list-style: none;
+  padding: 0;
+}
+.package-submission-originals > li {
+  border-top: 1px solid var(--border, #e3e8e6);
+  padding: 1rem 0;
+}
+@media (max-width: 760px) {
+  .package-submission-fields,
+  .package-submission-gate-grid,
+  .package-submission-modes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .package-submission-panel dl,
+  .package-submission-card dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+  .package-submission-panel dd,
+  .package-submission-card dd {
+    margin-bottom: 0.6rem;
+  }
+}
