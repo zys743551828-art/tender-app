@@ -453,15 +453,52 @@ def same_intent(c, intent, *, bid=None, conversation=None):
     return None
 
 
-def queue_generation(c, bid, actor, body, command_id, origin_action=None, *, explicit_send=False):
+def queue_generation(
+    c,
+    bid,
+    actor,
+    body,
+    command_id,
+    origin_action=None,
+    *,
+    explicit_send=False,
+    generation_mode=None,
+    batch_context=None,
+    generation_scope=None,
+):
     from packages.assistant import budget
     from packages.assistant.generation import request_for, selected_range
     from packages.assistant.protocol import validate
+    from packages.authoring import section_patch_set
     from packages.authoring.generation import freeze_generation_plan
     from packages.lifecycle.service import assert_work_writable
 
     require_schema(c)
     validate("AssistantGenerationRequest", body)
+    if generation_mode not in (None, section_patch_set.MODE):
+        raise DomainError("AUTHORING_GENERATION_MODE_INVALID", "编写模式未经服务端支持", 422)
+    if generation_mode is None:
+        if batch_context is not None or generation_scope is not None:
+            raise DomainError(
+                "AUTHORING_GENERATION_MODE_INVALID", "批次范围必须使用受控编写模式", 422
+            )
+    else:
+        try:
+            if (
+                not isinstance(batch_context, dict)
+                or set(batch_context) != {"batch_id", "section_id", "attempt"}
+                or str(UUID(batch_context["batch_id"])) != batch_context["batch_id"]
+                or batch_context["section_id"] != body["section_id"]
+                or type(batch_context["attempt"]) is not int
+                or not 1 <= batch_context["attempt"] <= 100
+                or origin_action is not None
+                or any(field in body for field in ("node_id", "selection_start", "selection_end"))
+            ):
+                raise ValueError
+        except (ValueError, TypeError, AttributeError):
+            raise DomainError(
+                "AUTHORING_GENERATION_MODE_INVALID", "批次任务身份或文字范围不完整", 422
+            ) from None
     assert_work_writable(c, bid)
     # Resolve confirmed facts and freeze sources under the graph mutex before
     # budget.prepare takes 90129; never acquire source authority in reverse order.
@@ -477,7 +514,17 @@ def queue_generation(c, bid, actor, body, command_id, origin_action=None, *, exp
     )
     if "reuse_id" in prepared:
         return view(c, prepared["reuse_id"], actor)
-    frozen = freeze_generation_plan(c, bid, body)
+    frozen = (
+        freeze_generation_plan(c, bid, body)
+        if generation_mode is None
+        else freeze_generation_plan(
+            c,
+            bid,
+            body,
+            generation_mode=generation_mode,
+            generation_scope=generation_scope,
+        )
+    )
     for version in body["source_version_ids"]:
         context.document_source(c, UUID(version))
     selection = selected_range(frozen["plan"], body)
@@ -501,6 +548,8 @@ def queue_generation(c, bid, actor, body, command_id, origin_action=None, *, exp
             "logical_intent": prepared,
         }
     )
+    if generation_mode is not None:
+        manifest.update(generation_mode=generation_mode, batch_context=clean(batch_context))
     request_for(manifest)
     digest = sha(manifest)
     op = enqueue_plan(

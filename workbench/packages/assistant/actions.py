@@ -152,9 +152,13 @@ def records(c, identity, *, lock=False):
     proposed = fetch(c, "SELECT * FROM proposed_actions WHERE id=%s", (identity,))
     if sha(proposed["payload"]) != proposed["request_digest"]:
         raise DomainError("ACTION_IDENTITY_INVALID", "操作卡内容身份不一致", 409)
-    expected = "authoring_patch" if row["tool"] == "authoring.apply_patch" else "assistant_tool"
-    if proposed["payload"].get("kind") != expected or (
-        expected == "assistant_tool" and proposed["payload"].get("tool") != row["tool"]
+    expected = (
+        {"authoring_patch", "authoring_patch_set"}
+        if row["tool"] == "authoring.apply_patch"
+        else {"assistant_tool"}
+    )
+    if proposed["payload"].get("kind") not in expected or (
+        expected == {"assistant_tool"} and proposed["payload"].get("tool") != row["tool"]
     ):
         raise DomainError("ACTION_IDENTITY_INVALID", "操作卡类型与受控工具不一致", 409)
     return row, proposed
@@ -170,7 +174,28 @@ def view(c, identity):
     if consumption:
         state = consumption["result"].get("assistant_resolution", {}).get("state", "executed")
     payload = proposed["payload"]
-    if row["tool"] == "authoring.apply_patch":
+    if payload.get("kind") == "authoring_patch_set":
+        from packages.authoring.section_patch_set import materialize
+
+        source = jobs.job(c, row["job_id"])
+        manifest = source["input_manifest"]
+        if (
+            source["kind"] != "authoring"
+            or payload.get("job_id") != str(source["id"])
+            or payload.get("writing_plan_id") != manifest.get("writing_plan_id")
+            or payload.get("batch_context") != manifest.get("batch_context")
+            or payload.get("section_id") != manifest["request"]["section_id"]
+            or payload.get("base_section_revision") != manifest["request"]["base_section_revision"]
+        ):
+            raise DomainError("ACTION_IDENTITY_INVALID", "批次候选与冻结生成任务不符", 409)
+        preview = materialize(manifest["plan"], source["writing_plan_id"], payload["candidate"]) | {
+            "kind": "authoring_patch_set",
+            "section_id": payload["section_id"],
+            "base_section_revision": payload["base_section_revision"],
+            "batch_context": payload["batch_context"],
+            "effect": "在批次中明确选择成功章节后一次应用；未选章节保持不变",
+        }
+    elif row["tool"] == "authoring.apply_patch":
         from packages.authoring.patches import replace_node
 
         original = fetch(
@@ -234,6 +259,11 @@ def resolve(c, identity, actor, decision, command_id, condition):
     if prior:
         return view(c, identity), prior["result"].get("assistant_resolution", {}).get(
             "http_status", 200
+        )
+    if proposed["payload"].get("kind") == "authoring_patch_set":
+        # Do not let the ordinary card's reject/error path consume a batch leaf.
+        raise DomainError(
+            "AUTHORING_BATCH_CONFIRM_REQUIRED", "请在原编写批次统一选择章节并确认应用", 409
         )
     current = view(c, identity)
     if not condition:

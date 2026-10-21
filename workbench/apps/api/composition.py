@@ -4,6 +4,7 @@ from fastapi.routing import APIRoute
 
 
 def mount(app):
+    from apps.api.authoring_generation_batches import router as authoring_generation_batches
     from apps.api.authoring_rich import router as authoring_rich
     from apps.api.authoring_structure import router as authoring_structure
     from apps.api.authoring_word_import import router as authoring_word_import
@@ -17,6 +18,7 @@ def mount(app):
     from apps.api.technical_scale_routes import router as technical_scale
 
     routers = (
+        authoring_generation_batches,
         authoring_structure,
         authoring_rich,
         authoring_word_import,
@@ -50,6 +52,7 @@ def mount(app):
 
 def extend_openapi(actual):
     from apps.api.composition_contracts import extend_lifecycle
+    from packages.assistant.generation_batch_contracts import extend_openapi as generation_batches
     from packages.authoring.docx_import_contracts import extend_openapi as word_import
     from packages.authoring.rich_contracts import extend_openapi as rich
     from packages.authoring.structure_contracts import extend_openapi as structure
@@ -65,6 +68,7 @@ def extend_openapi(actual):
 
     # Target mappings run first. These projections only replace registered actual operations.
     for extension in (
+        generation_batches,
         structure,
         rich,
         word_import,

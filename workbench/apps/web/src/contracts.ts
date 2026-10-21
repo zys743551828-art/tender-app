@@ -1,5 +1,404 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type AuthoringGenerationBatchCreateRequest = {
+  base_draft_revision: number;
+  price_version_id: string;
+  currency: "USD" | "CNY";
+  amount_scale: 1000000000;
+  total_limit_minor: number;
+  sections: {
+    section_id: string;
+    base_section_revision: number;
+    instruction: string;
+    source_version_ids: string[];
+    selected_node_ids: string[] | null;
+    max_tokens: number;
+    budget_limit_minor: number;
+  }[];
+  reason: string;
+};
+
+export type AuthoringGenerationBatchRetryRequest = {
+  batch_digest: string;
+  section_id: string;
+  previous_attempt: number;
+  previous_job_id: string;
+  reason: string;
+};
+
+export type AuthoringGenerationBatchResolveRequest = {
+  decision: "apply" | "reject";
+  batch_digest: string;
+  selections: {
+    section_id: string;
+    attempt: number;
+    job_id: string;
+    action_id: string;
+    candidate_digest: string;
+  }[];
+  reason: string;
+};
+
+export type AuthoringGenerationBatchReceipt = {
+  protocol: "authoring-generation-batch-command/1";
+  bid_id: string;
+  draft_id: string;
+  batch_id: string;
+  batch_digest: string;
+  kind: "created" | "retried" | "applied" | "rejected";
+  batch_state: "open" | "applied" | "rejected";
+  created_job_ids: string[];
+  applied_section_ids: string[];
+  unselected_section_ids: string[];
+  draft_revision: number | null;
+  snapshot_id: string | null;
+  snapshot_digest: string | null;
+  recorded_at: string;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request:
+      | {
+          base_draft_revision: number;
+          price_version_id: string;
+          currency: "USD" | "CNY";
+          amount_scale: 1000000000;
+          total_limit_minor: number;
+          sections: {
+            section_id: string;
+            base_section_revision: number;
+            instruction: string;
+            source_version_ids: string[];
+            selected_node_ids: string[] | null;
+            max_tokens: number;
+            budget_limit_minor: number;
+          }[];
+          reason: string;
+        }
+      | {
+          batch_digest: string;
+          section_id: string;
+          previous_attempt: number;
+          previous_job_id: string;
+          reason: string;
+        }
+      | {
+          decision: "apply" | "reject";
+          batch_digest: string;
+          selections: {
+            section_id: string;
+            attempt: number;
+            job_id: string;
+            action_id: string;
+            candidate_digest: string;
+          }[];
+          reason: string;
+        };
+    if_match: string | null;
+  };
+};
+
+export type AuthoringGenerationBatch = {
+  batch_id: string;
+  bid_id: string;
+  draft_id: string;
+  batch_digest: string;
+  base_draft_revision: number;
+  state: "open" | "applied" | "rejected";
+  created_at: string;
+  created_by: string;
+  section_count: number;
+  ready_count: number;
+  failed_count: number;
+  running_count: number;
+  budget: {
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    limit_minor: number;
+    charged_minor: number;
+    reserved_minor: number;
+    exposure_minor: number;
+    remaining_minor: number;
+    requires_reconciliation: boolean;
+    over_limit: boolean;
+    estimate_not_provider_spend_cap: true;
+  };
+  protocol: "authoring-generation-batch/1";
+  generation_mode: "section_patch_set/1";
+  base_snapshot_id: string;
+  base_snapshot_digest: string;
+  base_draft_etag: string;
+  price: {
+    price_version_id: string;
+    version: string;
+    provider: string;
+    model: string;
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    input_upper: number;
+    output_upper: number;
+    input_per_million_minor: number;
+    output_per_million_minor: number;
+    valid_until: string;
+    source_kind: string;
+    source_uri: string;
+    source_sha256: string;
+  };
+  reason: string;
+  etag: string;
+  sections: {
+    section_id: string;
+    base_section_revision: number;
+    instruction: string;
+    source_version_ids: string[];
+    selected_node_ids: string[] | null;
+    max_tokens: number;
+    budget_limit_minor: number;
+    title: string;
+    ordinal: number;
+    before_digest: string;
+    current_attempt: number;
+    budget: {
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      limit_minor: number;
+      charged_minor: number;
+      reserved_minor: number;
+      exposure_minor: number;
+      remaining_minor: number;
+      requires_reconciliation: boolean;
+      over_limit: boolean;
+      estimate_not_provider_spend_cap: true;
+    };
+    attempts: {
+      attempt: number;
+      job_id: string;
+      operation_id: string;
+      writing_plan_id: string;
+      created_at: string;
+      created_by: string;
+      state:
+        | "queued"
+        | "running"
+        | "cancel_requested"
+        | "succeeded"
+        | "failed"
+        | "cancelled";
+      publication_state: "pending" | "published" | "stale" | "failed";
+      action_id: string | null;
+      candidate_digest: string | null;
+      candidate_url: string | null;
+      error_code: string | null;
+      budget_state: "held" | "sent" | "unknown" | "settled" | "released";
+      reserved_minor: number;
+      charged_minor: number | null;
+      requires_reconciliation: boolean;
+      retry_allowed: boolean;
+      retry_blocked_reason: {
+        code: string;
+        message: string;
+      } | null;
+    }[];
+  }[];
+  preparation: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      base_draft_revision: number;
+      price_version_id: string;
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      total_limit_minor: number;
+      sections: {
+        section_id: string;
+        base_section_revision: number;
+        instruction: string;
+        source_version_ids: string[];
+        selected_node_ids: string[] | null;
+        max_tokens: number;
+        budget_limit_minor: number;
+      }[];
+      reason: string;
+    };
+    if_match: string | null;
+  };
+  resolution: {
+    protocol: "authoring-generation-batch-command/1";
+    bid_id: string;
+    draft_id: string;
+    batch_id: string;
+    batch_digest: string;
+    kind: "created" | "retried" | "applied" | "rejected";
+    batch_state: "open" | "applied" | "rejected";
+    created_job_ids: string[];
+    applied_section_ids: string[];
+    unselected_section_ids: string[];
+    draft_revision: number | null;
+    snapshot_id: string | null;
+    snapshot_digest: string | null;
+    recorded_at: string;
+    command: {
+      command_id: string;
+      actor_id: string;
+      idempotency_key: string;
+      request_digest: string;
+      request:
+        | {
+            base_draft_revision: number;
+            price_version_id: string;
+            currency: "USD" | "CNY";
+            amount_scale: 1000000000;
+            total_limit_minor: number;
+            sections: {
+              section_id: string;
+              base_section_revision: number;
+              instruction: string;
+              source_version_ids: string[];
+              selected_node_ids: string[] | null;
+              max_tokens: number;
+              budget_limit_minor: number;
+            }[];
+            reason: string;
+          }
+        | {
+            batch_digest: string;
+            section_id: string;
+            previous_attempt: number;
+            previous_job_id: string;
+            reason: string;
+          }
+        | {
+            decision: "apply" | "reject";
+            batch_digest: string;
+            selections: {
+              section_id: string;
+              attempt: number;
+              job_id: string;
+              action_id: string;
+              candidate_digest: string;
+            }[];
+            reason: string;
+          };
+      if_match: string | null;
+    };
+  } | null;
+  current_validity: "rechecked_on_retry_and_apply";
+  requires_explicit_selection: true;
+  atomic_apply: true;
+};
+
+export type AuthoringGenerationBatchPage = {
+  bid_id: string;
+  draft_id: string;
+  items: {
+    batch_id: string;
+    bid_id: string;
+    draft_id: string;
+    batch_digest: string;
+    base_draft_revision: number;
+    state: "open" | "applied" | "rejected";
+    created_at: string;
+    created_by: string;
+    section_count: number;
+    ready_count: number;
+    failed_count: number;
+    running_count: number;
+    budget: {
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      limit_minor: number;
+      charged_minor: number;
+      reserved_minor: number;
+      exposure_minor: number;
+      remaining_minor: number;
+      requires_reconciliation: boolean;
+      over_limit: boolean;
+      estimate_not_provider_spend_cap: true;
+    };
+  }[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type AuthoringGenerationBatchCandidate = {
+  protocol: "authoring-generation-candidate/1";
+  generation_mode: "section_patch_set/1";
+  bid_id: string;
+  draft_id: string;
+  batch_id: string;
+  batch_digest: string;
+  section_id: string;
+  attempt: number;
+  job_id: string;
+  writing_plan_id: string;
+  action_id: string;
+  candidate_digest: string;
+  base_draft_revision: number;
+  base_section_revision: number;
+  base_draft_etag: string;
+  before_digest: string;
+  after_digest: string;
+  scope_digest: string;
+  before: AuthoringGenerationJson;
+  after: AuthoringGenerationJson;
+  changes: {
+    replaced_node_ids: string[];
+    insertions: {
+      after_node_id: string | null;
+      node_ids: string[];
+    }[];
+    added_paragraphs: number;
+  };
+  created_at: string;
+  expires_at: string;
+  state: "pending" | "executed" | "rejected" | "expired" | "stale" | "failed";
+  etag: string;
+};
+
+export type AuthoringGenerationBatchCapabilities = {
+  enabled: boolean;
+  unavailable_reason: {
+    code: string;
+    message: string;
+  } | null;
+  generation_mode: "section_patch_set/1";
+  max_sections: number;
+  max_attempts_per_section: number;
+  max_frozen_bytes: number;
+  max_instruction_chars: number;
+  max_limit_minor: number;
+  amount_scale: 1000000000;
+  default_max_tokens: number;
+  price: {
+    price_version_id: string;
+    version: string;
+    provider: string;
+    model: string;
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    input_upper: number;
+    output_upper: number;
+    input_per_million_minor: number;
+    output_per_million_minor: number;
+    valid_until: string;
+    source_kind: string;
+    source_uri: string;
+    source_sha256: string;
+  } | null;
+  estimates: {
+    max_tokens: number;
+    reservation_minor: number;
+  }[];
+  requires_explicit_selection: true;
+  atomic_apply: true;
+  requires_verified_identity: true;
+  automatic_retry_authorized: false;
+};
+
 export type AuthoringWordImportPrepareRequest = {
   source_document_version_id: string;
   source_digest: string;
@@ -4507,6 +4906,14 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type AuthoringGenerationJson =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringGenerationJson[]
+  | { [key: string]: AuthoringGenerationJson };
+
 export type AuthoringWordImportJson =
   | null
   | boolean
@@ -6799,6 +7206,13 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/word-originals/{version_id}",
   "POST /api/v1/bids/{bid_id}/word-originals/{version_id}/retry-conversion",
   "GET /api/v1/bids/{bid_id}/word-materials/{version_id}",
+  "GET /api/v1/authoring/generation-batch-capabilities",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/candidates/{action_id}",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/retry",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/resolve",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
   "POST /api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",

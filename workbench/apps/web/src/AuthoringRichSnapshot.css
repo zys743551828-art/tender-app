@@ -1,0 +1,71 @@
+.rich-snapshot {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.rich-snapshot-label {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #cfd9e5;
+  color: #46617a;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.rich-snapshot p {
+  margin-block: 0 0.65rem;
+  white-space: pre-wrap;
+}
+.rich-snapshot [role="heading"] {
+  margin-block: 0.7rem 0.45rem;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+.rich-snapshot-changed {
+  padding: 0.5rem 0.65rem;
+  border-left: 3px solid var(--primary);
+  background: var(--primary-soft);
+}
+.rich-snapshot-table {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block: 0.75rem;
+}
+.rich-snapshot-table table {
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.rich-snapshot-table caption {
+  padding-bottom: 0.4rem;
+  text-align: start;
+  font-weight: 600;
+}
+.rich-snapshot .rich-snapshot-table th,
+.rich-snapshot .rich-snapshot-table td {
+  padding: 0.5rem;
+  border: 1px solid var(--border-strong);
+  vertical-align: top;
+  white-space: normal;
+}
+.rich-snapshot-table th {
+  text-align: start;
+  background: var(--surface-muted);
+}
+.rich-snapshot-image {
+  margin: 0.8rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.rich-snapshot-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.rich-snapshot-image figcaption {
+  margin-top: 0.6rem;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+}

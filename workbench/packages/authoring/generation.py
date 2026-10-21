@@ -16,7 +16,13 @@ from packages.domain.runtime import DomainError, clean, fetch, sha, uid
 from packages.rag.indexing import parse_source_id
 
 
-def freeze_generation_plan(c, bid, body):
+def freeze_generation_plan(c, bid, body, *, generation_mode=None, generation_scope=None):
+    from packages.authoring import section_patch_set
+
+    if generation_mode not in (None, section_patch_set.MODE) or (
+        generation_mode is None and generation_scope is not None
+    ):
+        raise DomainError("AUTHORING_GENERATION_MODE_INVALID", "编写模式或范围未经服务端支持", 422)
     section_id = UUID(body["section_id"])
     original_section = fetch(
         c, "SELECT * FROM sections WHERE id=%s AND bid_id=%s", (section_id, bid)
@@ -124,6 +130,12 @@ def freeze_generation_plan(c, bid, body):
         "source_blocks": blocks,
         "output_policy": "propose_only_stable_node_replacement_no_mutation",
     }
+    if generation_mode == section_patch_set.MODE:
+        plan.update(
+            generation_mode=section_patch_set.MODE,
+            patch_scope=section_patch_set.freeze_scope(section["content"], generation_scope),
+            output_policy="propose_only_frozen_text_patch_set_no_mutation",
+        )
     c.execute(
         "INSERT INTO writing_plans(id,bid_id,section_id,base_section_revision,rule_ids,fact_set_id,source_version_ids,plan) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",
         (

@@ -16,6 +16,7 @@ import { useCommand } from "./useCommand";
 import { SectionEditor } from "./SectionEditor";
 import { AuthoringBuilds } from "./AuthoringBuilds";
 import { AuthoringWordImport } from "./AuthoringWordImport";
+import { AuthoringGenerationBatch } from "./AuthoringGenerationBatch";
 import type { SectionEditorHandle } from "./SectionEditor";
 
 export function AuthoringPanel({
@@ -281,6 +282,7 @@ function DraftEditor({
   const [building, setBuilding] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const editor = useRef<SectionEditorHandle>(null);
   const writingRef = useRef<HTMLElement>(null);
@@ -288,7 +290,15 @@ function DraftEditor({
     ? selected!
     : view?.sections[0]?.id;
   async function choose(id: string) {
-    if (switching || building || importing || id === sectionId) return;
+    if (
+      switching ||
+      building ||
+      importing ||
+      generating ||
+      structureBusy ||
+      id === sectionId
+    )
+      return;
     setSwitching(true);
     try {
       if (!editor.current || (await editor.current.flush())) {
@@ -325,7 +335,9 @@ function DraftEditor({
               draftId={draftId}
               draftRevision={view.revision}
               sectionId={sectionId}
-              disabled={disabled || switching || building || importing}
+              disabled={
+                disabled || switching || building || importing || generating
+              }
               onChoose={choose}
               onContinue={() => {
                 writingRef.current?.scrollIntoView({ block: "start" });
@@ -363,7 +375,8 @@ function DraftEditor({
                   switching ||
                   building ||
                   structureBusy ||
-                  importing
+                  importing ||
+                  generating
                 }
                 onSaved={() => void reloadHead().catch(setError)}
               />
@@ -377,13 +390,37 @@ function DraftEditor({
       )}
       {view &&
         current.etag &&
+        supportsApi("GET", "/authoring/generation-batch-capabilities") && (
+          <AuthoringGenerationBatch
+            bidId={bidId}
+            memberId={memberId}
+            draft={view}
+            disabled={
+              disabled || switching || building || structureBusy || importing
+            }
+            onChanged={reloadHead}
+            onBusy={setGenerating}
+            prepare={async () => {
+              if (
+                sectionId &&
+                (!editor.current || !(await editor.current.flush(true)))
+              )
+                return null;
+              return reloadHead();
+            }}
+          />
+        )}
+      {view &&
+        current.etag &&
         supportsApi("GET", "/authoring/word-import-capabilities") && (
           <AuthoringWordImport
             bidId={bidId}
             memberId={memberId}
             draftId={draftId}
             draftRevision={view.revision}
-            disabled={disabled || switching || building || structureBusy}
+            disabled={
+              disabled || switching || building || structureBusy || generating
+            }
             onChanged={reloadHead}
             onBusy={setImporting}
             onPackages={onPackages}
@@ -405,7 +442,9 @@ function DraftEditor({
           capabilities={capabilities}
           richCapabilities={richCapabilities}
           projectTitle={projectTitle}
-          disabled={disabled || switching || structureBusy || importing}
+          disabled={
+            disabled || switching || structureBusy || importing || generating
+          }
           onPackages={onPackages}
           setBusy={setBuilding}
           prepare={async () => {

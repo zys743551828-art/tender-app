@@ -111,6 +111,10 @@ def apply_proposal(c, bid, action, actor, command_id, condition):
     if c.execute("SELECT 1 FROM action_consumptions WHERE action_id=%s", (action,)).fetchone():
         raise DomainError("ACTION_CONSUMED", "该建议已有处理结果", 409)
     p = row["payload"]
+    if p.get("kind") == "authoring_patch_set":
+        raise DomainError(
+            "AUTHORING_BATCH_CONFIRM_REQUIRED", "批次候选必须在原批次统一确认，未应用单章", 409
+        )
     if p.get("kind") != "authoring_patch" or sha(p) != row["request_digest"]:
         raise DomainError("ACTION_KIND_INVALID", "建议类型或内容身份不正确", 409)
     from packages.assistant.actions import assert_linked_generation_context
