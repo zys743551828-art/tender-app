@@ -1,0 +1,196 @@
+{
+  "protocol": "source-feedback-layout-acceptance/1",
+  "base_checkpoint": "95d46dd2a61c39059493bb93742265f4d97807dd",
+  "owned_source_sha256": {
+    "apps/web/src/App.test.tsx": "5646aea683df6d22e40700a11b6459090d21c081c0538a0d57ce75fccd66d563",
+    "apps/web/src/App.tsx": "8a00e58931d40c978ec8028fc0e52ffa613d6b47a96f6bc68ca99a5f23816c03",
+    "apps/web/src/AssistantDrawer.tsx": "0e89fad37697cd9f313b59058c804f6a1264e4c1f79cbcf62001747c5288e034",
+    "apps/web/src/Evidence.tsx": "fed9e259014e2d4c42b485ff87552187f74ab983168b62fd5d8f780dfb5bbc92",
+    "apps/web/src/ResourceState.tsx": "a269f3ff0bc41a6c82afad59a8860b25bedddc7fe11a45b65a79d18906149508",
+    "apps/web/src/RetrievalDrawer.tsx": "cc7429e555b50332ffea1949493679cda748173c07f85ce8184226b2f26dbbd2",
+    "apps/web/src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "apps/web/src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "apps/web/src/useAssistantDock.ts": "5794b62752da0f19acf434afc31b65e2336ce2ba7a8f00403351af3b99ed8c7a",
+    "apps/web/src/useAuxiliaryFocus.ts": "2fe7445ff86a44012b19adbe0b2f629800fb04cae148fb2adc978f4eb4b1d0cf",
+    "apps/web/src/SourceSurface.tsx": "fd1f0d2a447b43d3a1d697e1295162a5678029f62757b10433d3ffe8ef74d3d0",
+    "apps/web/src/SourceSurface.css": "2589a12fbd6af0d9044383ac372e6b452cbaacd600f9d7db92d30de3e2453984",
+    "apps/web/src/SourceSurface.test.tsx": "07321ad7621209c575f33a9dd48ae91972ed5f587db1f3a90b308bb3a5ac0c41",
+    "apps/web/src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "apps/web/src/ResourceFeedback.test.tsx": "7c07da544500ac027f3d39646b5e35c138be8c2c21c1b80363cbf2abbde33765",
+    "apps/web/src/sourceSurfaceFixtures.test-support.ts": "57615778d6feba488a6355e6569c53b59bb94e1adcdf2e3bf6429cd990173ff6",
+    "apps/web/src/workspaceAuxiliaryContext.ts": "8f54e4b8d602096698ef4fd34304e552a955f727b975c0ba992320b3c24d1673",
+    "apps/web/src/workspaceDockReservation.ts": "64457bc4aa96e830082e1a15dbb47e660dd5ce407093f75d987b77ae9f3c9205",
+    "apps/web/scripts/check-source-feedback-browser.mjs": "99ca3d30bc79c38aa7c23dfde08b0f60e4273d29f60c1aa7f6e565f7f2b61516"
+  },
+  "unit_tests": {
+    "files": 8,
+    "passed": 43,
+    "failed": 0,
+    "seconds": 4.28,
+    "log_sha256": "50685c80079b36cdf9a3b3d4fa52ca28e45ec55f4db92b6e0fc2135b1651aabe"
+  },
+  "checks": {
+    "whole_app_typecheck": "passed",
+    "owned_eslint": "passed",
+    "visual_inspection": [
+      "original-dark-390.png",
+      "text-dark-390.png",
+      "original-light-1440.png"
+    ]
+  },
+  "browser": {
+    "scope": "Actual RetrievalDrawer/Evidence/SourceSurface/PdfPreview and shared feedback; synthetic HTTP and a real three-page synthetic PDF. No backend service, private originals or paid calls.",
+    "source_sha256": {
+      "src/contracts.ts": "b5929d019a34b994998448d25364fcbd4669deea805869cfa6411668f9c09647",
+      "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+      "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+      "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+      "src/DocumentRelationNotice.tsx": "df02434496e0e0b08450698f6592a718a954aa3ded67a0dd91c6cb3d685bdb6a",
+      "src/PdfPreview.tsx": "7e7648e1775b86c2eab23d4ae06c0a75583aed539b637ca9113907a78a8b7da5",
+      "src/assistantDock.ts": "af8b4011faf0ca6e9ee18285bbb4c5b1405eb00bf6339821b2854a20e48b7fa3",
+      "src/workspaceDockReservation.ts": "64457bc4aa96e830082e1a15dbb47e660dd5ce407093f75d987b77ae9f3c9205",
+      "src/useAssistantDock.ts": "5794b62752da0f19acf434afc31b65e2336ce2ba7a8f00403351af3b99ed8c7a",
+      "src/useAuxiliaryFocus.ts": "2fe7445ff86a44012b19adbe0b2f629800fb04cae148fb2adc978f4eb4b1d0cf",
+      "src/workspaceAuxiliaryContext.ts": "8f54e4b8d602096698ef4fd34304e552a955f727b975c0ba992320b3c24d1673",
+      "src/workspaceAuxiliary.ts": "e12542181c9c4bac5838211b1884b9ea2fc1f02558c8b66fa69dc2eadc14bdd8",
+      "src/AssistantDrawer.css": "7e3a45f33d7929afba06fd1e6780664199c82eb02c93cbf9b508d27b0a945d4d",
+      "src/SourceSurface.css": "2589a12fbd6af0d9044383ac372e6b452cbaacd600f9d7db92d30de3e2453984",
+      "src/SourceSurface.tsx": "fd1f0d2a447b43d3a1d697e1295162a5678029f62757b10433d3ffe8ef74d3d0",
+      "src/Evidence.tsx": "fed9e259014e2d4c42b485ff87552187f74ab983168b62fd5d8f780dfb5bbc92",
+      "src/RetrievalDrawer.tsx": "cc7429e555b50332ffea1949493679cda748173c07f85ce8184226b2f26dbbd2",
+      "src/ResourceState.tsx": "a269f3ff0bc41a6c82afad59a8860b25bedddc7fe11a45b65a79d18906149508",
+      "src/ThemePicker.tsx": "dc59a7a6e1564c91848b63fc138aac1f13602a7c3eca95eb2b70eb60ec6c0a2f",
+      "src/theme.ts": "49e457350c87066c0d45d8c5cefd96f150671516e7d15425bb475bc8cd19affc",
+      "src/sourceSurfaceFixtures.test-support.ts": "57615778d6feba488a6355e6569c53b59bb94e1adcdf2e3bf6429cd990173ff6",
+      "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+      "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+      "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85"
+    },
+    "bundle_sha256": "e579f0b6ec2ed4f5670e5cf7001ee648e56d3bdda0e6b74512d9b670e38a259b",
+    "pdf": {
+      "sha256": "3111cf0149add36c385bf88ecb90ee864c2126db3e3e15ba0d314621a10836f3",
+      "bytes": 1735,
+      "pages": 3
+    },
+    "cases": [
+      {
+        "width": 1440,
+        "theme": "light",
+        "source": "nonmodal beside editable body",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "source": "nonmodal beside editable body",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "source": "nonmodal beside editable body",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "source": "nonmodal beside editable body",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "source": "single modal task",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "source": "single modal task",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "source": "single modal task",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "source": "single modal task",
+        "real_pdf_pages": 3,
+        "exact_page_retained": 2,
+        "nested_focus_restored": true,
+        "body_and_query_preserved": true,
+        "error_details_explicit": true
+      }
+    ],
+    "screenshots": [
+      "feedback-light-1440.png",
+      "original-light-1440.png",
+      "text-light-1440.png",
+      "feedback-dark-1440.png",
+      "original-dark-1440.png",
+      "text-dark-1440.png",
+      "feedback-light-1280.png",
+      "original-light-1280.png",
+      "text-light-1280.png",
+      "feedback-dark-1280.png",
+      "original-dark-1280.png",
+      "text-dark-1280.png",
+      "feedback-light-768.png",
+      "original-light-768.png",
+      "text-light-768.png",
+      "feedback-dark-768.png",
+      "original-dark-768.png",
+      "text-dark-768.png",
+      "feedback-light-390.png",
+      "original-light-390.png",
+      "text-light-390.png",
+      "feedback-dark-390.png",
+      "original-dark-390.png",
+      "text-dark-390.png"
+    ],
+    "page_errors": [],
+    "external_requests": []
+  },
+  "corrected_failures": [
+    "First Chromium attempt used an ambiguous global text locator matching parent and nested source; narrowed to the original surface.",
+    "Second Chromium attempt exposed focus loss when asynchronous source validation disabled its opener. Fixed by capturing the opener before disabling and restoring it after the closing commit; the original strict assertion then passed at all eight viewport/theme combinations.",
+    "The delayed-focus unit initially used blur on a disabled jsdom control, which does not reproduce Chromium. The fixture now explicitly focuses body; production behavior and strict final focus assertion remain unchanged."
+  ],
+  "limits": [
+    "Explicit synthetic HTTP and three-page PDF; no live backend or private original acceptance.",
+    "No real external model request or paid call.",
+    "No claim of review completeness, original-version eligibility or full 39-point acceptance."
+  ]
+}

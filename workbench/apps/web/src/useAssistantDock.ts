@@ -1,22 +1,30 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { assistantDockBounds, assistantDockGap } from "./assistantDock";
+import {
+  reserveWorkspaceDock,
+  setWorkspaceDockWidth,
+} from "./workspaceDockReservation";
 
 export function useAssistantDock(
   targetId: string | undefined,
   memberId: string,
+  options?: { preferenceKey?: string; defaultWidth?: number },
 ) {
-  const preferenceKey = `tender:assistant-layout:${memberId}:width`;
+  const preferenceKey =
+    options?.preferenceKey ?? `tender:assistant-layout:${memberId}:width`;
+  const defaultWidth = options?.defaultWidth ?? 400;
   const [requested, setRequested] = useState(() => {
     try {
       const value = Number(localStorage.getItem(preferenceKey));
       return Number.isFinite(value) && value >= 340 && value <= 720
         ? value
-        : 400;
+        : defaultWidth;
     } catch {
-      return 400;
+      return defaultWidth;
     }
   });
   const [box, setBox] = useState({ available: 0, right: 0, top: 0 });
+  const owner = useRef(Symbol("workspace-dock"));
   useLayoutEffect(() => {
     const target = targetId ? document.getElementById(targetId) : null;
     if (!target) return;
@@ -53,20 +61,16 @@ export function useAssistantDock(
   const bounds = assistantDockBounds(box.available, requested);
   useLayoutEffect(() => {
     const target = targetId ? document.getElementById(targetId) : null;
-    if (!target || !bounds.docked) return;
-    const previous = target.getAttribute("data-assistant-docked");
-    const width = target.style.getPropertyValue("--assistant-dock-space");
-    target.setAttribute("data-assistant-docked", "true");
-    target.style.setProperty(
-      "--assistant-dock-space",
-      `${bounds.width + assistantDockGap}px`,
+    if (target) return reserveWorkspaceDock(target, owner.current);
+  }, [targetId]);
+  useLayoutEffect(() => {
+    const target = targetId ? document.getElementById(targetId) : null;
+    if (!target) return;
+    setWorkspaceDockWidth(
+      target,
+      owner.current,
+      bounds.docked ? bounds.width + assistantDockGap : null,
     );
-    return () => {
-      if (previous === null) target.removeAttribute("data-assistant-docked");
-      else target.setAttribute("data-assistant-docked", previous);
-      if (width) target.style.setProperty("--assistant-dock-space", width);
-      else target.style.removeProperty("--assistant-dock-space");
-    };
   }, [targetId, bounds.docked, bounds.width]);
   function resize(width: number) {
     const next = assistantDockBounds(box.available, width).width;

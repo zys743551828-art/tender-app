@@ -2034,7 +2034,7 @@ th,
   margin: 12px 0;
 }
 .small-note {
-  font-size: 10px !important;
+  font-size: 12px !important;
   color: var(--muted-foreground);
   line-height: 1.8 !important;
   margin-top: 9px;
@@ -2804,7 +2804,7 @@ textarea:focus-visible {
 }
 .error-details {
   margin-top: 10px;
-  font-size: 10px;
+  font-size: 12px;
   max-width: 100%;
 }
 .error-details summary {

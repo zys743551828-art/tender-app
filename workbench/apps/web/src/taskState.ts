@@ -50,6 +50,7 @@ export function claimsExactPackageRun(value: RunView) {
         String(config.source_selection.mode),
       )) ||
     (recordObject(value.result) &&
+      "kind" in value.result &&
       value.result.kind === "declared_package_scope_review")
   );
 }
@@ -77,6 +78,7 @@ export const taskRunNames: Record<RunView["state"], string> = {
   failed: "执行失败",
   cancelled: "已取消",
   awaiting_review: "等待后续核对",
+  awaiting_publication: "等待提案发布",
   blocked: "受阻，尚未完成",
   superseded: "原输入已过期",
   unknown: "结果或费用未知",

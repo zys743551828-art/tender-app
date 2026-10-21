@@ -4,6 +4,7 @@ import { AssistantWorkspace } from "./AssistantWorkspace";
 import { assistantMinimumWidth } from "./assistantDock";
 import { useAssistantDock } from "./useAssistantDock";
 import { useAuxiliaryFocus } from "./useAuxiliaryFocus";
+import { WorkspaceAuxiliaryContext } from "./workspaceAuxiliaryContext";
 import {
   announceWorkspaceAuxiliary,
   listenWorkspaceAuxiliary,
@@ -44,6 +45,8 @@ export function AssistantDrawer({
   return createPortal(
     <div
       className={`assistant-surface ${dock.docked ? "assistant-surface--docked" : "assistant-surface--modal"}`}
+      data-workspace-auxiliary-surface="true"
+      data-docked={dock.docked}
       style={
         dock.docked
           ? {
@@ -115,6 +118,7 @@ export function AssistantDrawer({
         aria-modal={dock.docked ? undefined : true}
         aria-label="项目主会话助手"
         tabIndex={-1}
+        data-workspace-auxiliary-panel="true"
       >
         <header className="retrieval-heading assistant-drawer-heading">
           <div>
@@ -132,7 +136,9 @@ export function AssistantDrawer({
             拖动左边界调整宽度；聚焦边界后可用左右方向键。
           </p>
         )}
-        <AssistantWorkspace bidId={bidId} memberId={memberId} embedded />
+        <WorkspaceAuxiliaryContext.Provider value={panel}>
+          <AssistantWorkspace bidId={bidId} memberId={memberId} embedded />
+        </WorkspaceAuxiliaryContext.Provider>
       </div>
     </div>,
     document.body,

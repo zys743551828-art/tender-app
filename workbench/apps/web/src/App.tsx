@@ -9,7 +9,14 @@ import {
 import type { FormEvent } from "react";
 import { api, setAuth, supportsApi } from "./api";
 import type { AuthView, Bid, BidPage } from "./contracts";
-import { Badge, Brand, ErrorNotice, Icon, Loading } from "./components";
+import {
+  Badge,
+  Brand,
+  ErrorNotice,
+  Icon,
+  Loading,
+  LoadingSkeleton,
+} from "./components";
 import { NavigationGuardContext } from "./navigationGuard";
 import type { NavigationGuard } from "./navigationGuard";
 import { clearAuthoringStorage } from "./editorStorage";
@@ -628,7 +635,9 @@ function Projects({
             />
           </label>
         </div>
-        {!projects && !error && <Loading />}
+        {!projects && !error && (
+          <LoadingSkeleton text="正在读取投标项目…" rows={4} />
+        )}
         {visible?.length === 0 && (
           <div className="empty-state">
             <div className="empty-icon">
@@ -640,7 +649,14 @@ function Projects({
                 ? "试试其他项目名称。"
                 : "只需项目名称。上传PDF后，查看已保存的原件和真实解析范围。"}
             </p>
-            {!search && (
+            {search ? (
+              <button
+                className="button secondary"
+                onClick={() => setSearch("")}
+              >
+                清除搜索，查看已加载项目
+              </button>
+            ) : (
               <button
                 className="button secondary"
                 onClick={() => setCreating(true)}
@@ -659,7 +675,7 @@ function Projects({
                   <th>项目名称</th>
                   <th>工作阶段</th>
                   <th>当前资料</th>
-                  <th>下一步</th>
+                  <th>单稿历史提示</th>
                   <th>
                     <span className="sr-only">打开</span>
                   </th>

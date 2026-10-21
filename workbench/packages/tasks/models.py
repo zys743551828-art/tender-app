@@ -151,6 +151,23 @@ class RunRequest(StrictModel):
     rerun: bool = Field(default=False, strict=True)
 
 
+class TaskAuthoringResult(StrictModel):
+    schema_version: Literal["task-authoring-result/1"] = Field(alias="schema")
+    job_id: UUID
+    job_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    writing_plan_id: UUID
+    operation_id: UUID
+    job_ref: str
+    section_id: UUID
+    base_section_revision: int = Field(ge=1)
+    publication_state: Literal["pending", "published", "stale", "failed"]
+    candidate_digest: str | None = Field(pattern="^[0-9a-f]{64}$")
+    action_id: UUID | None
+    action_ref: str | None
+    source_scope: Literal["legacy_section_and_source_versions"]
+    automatic_apply: Literal[False]
+
+
 class RunView(StrictModel):
     id: UUID
     bid_id: UUID
@@ -165,6 +182,7 @@ class RunView(StrictModel):
         "failed",
         "cancelled",
         "awaiting_review",
+        "awaiting_publication",
         "blocked",
         "superseded",
         "unknown",
@@ -172,7 +190,7 @@ class RunView(StrictModel):
     ]
     stage: Literal["preparation", "review", "execution"]
     frozen_manifest: dict
-    result: dict | None
+    result: TaskAuthoringResult | dict | None
     error_code: str | None
     formal_decisions_created: Literal[False]
     coverage: Literal["registered_effectivity_only_semantic_unknown", "not_formal_score"]

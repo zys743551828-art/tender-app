@@ -1,11 +1,6 @@
 import { useState } from "react";
-import type {
-  AssistantAction,
-  AssistantJob,
-  AuthoringDocument,
-  AuthoringNode,
-  Bid,
-} from "./contracts";
+import type { AssistantAction, AssistantJob, Bid } from "./contracts";
+import { AssistantPatchComparison } from "./AssistantPatchComparison";
 import { Badge, ErrorNotice } from "./components";
 import { ArtifactActions } from "./ArtifactActions";
 import { assistantJobs, assistantReason } from "./assistantState";
@@ -22,19 +17,6 @@ const actionNames = {
   stale: "依据已变化，未执行",
   failed: "执行失败",
 };
-function documentText(value: AuthoringDocument): string {
-  const walk = (node: AuthoringNode): string =>
-    node.type === "text"
-      ? (node.text ?? "")
-      : ("content" in node ? node.content : [])
-          .map(walk)
-          .join(
-            ["paragraph", "heading", "listItem"].includes(node.type)
-              ? "\n"
-              : "",
-          );
-  return value.content.map(walk).join("\n");
-}
 export function AssistantActionCard({
   id,
   memberId,
@@ -131,16 +113,12 @@ export function AssistantActionCard({
               <p>
                 应用后追加正文修订。采纳不表示风险已解决，未保存的本地编辑须保留后核对。
               </p>
-              <div className="assistant-patch">
-                <section>
-                  <h4>修改前</h4>
-                  <pre>{documentText(action.preview.before)}</pre>
-                </section>
-                <section>
-                  <h4>修改后</h4>
-                  <pre>{documentText(action.preview.after)}</pre>
-                </section>
-              </div>
+              <AssistantPatchComparison
+                key={`${action.action_id}:${action.request_digest}`}
+                bidId={action.target_bid_id}
+                before={action.preview.before}
+                after={action.preview.after}
+              />
             </>
           )}
           {action.error_code && (

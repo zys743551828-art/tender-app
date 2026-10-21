@@ -78,3 +78,15 @@
 | F13-05／06 | v14 当前 51 项 SQL、228 张表，含新自动模板、触发意图和复盘的真实 PG＋S3 恢复；见 [恢复](current-schema-recovery-v14-acceptance.md) | 同集群隔离数据库；移除旧未审定研究 WIP 后与旧结构不同，不宣称生产 RPO／RTO 或在途恢复 |
 
 正式评分和严格样本、其他整包任务、完整视觉交互等软件验收继续推进；最新代码、完整冻结回归和边界见 [PROGRESS](PROGRESS.md) 与 [检查点 11 汇总](task-retrospective-layout-regression-receipt.json)。
+
+
+### 检查点 12 后续证据
+
+| 对应工作包 | 新增实现与证据 | 仍保留的边界 |
+| --- | --- | --- |
+| F11-02／03 | 原生章节 job／publication／action 历史绑定、真实终态与关闭项目通知恢复，19 项真实 PG；见 [章节任务](task-chapter-publication-acceptance.md) | 仍是旧 section/source_version 输入；固定整包编制及其他任务领域路径继续实现 |
+| F12-10／11 | 助手确认卡实际增删、完整前后稿、来源确切版本和可用性详情；见 [助手核对](assistant-review-details-acceptance.md) | 不改确认／拒绝及原请求恢复；目录未知不推断撤回；真实模型效果未测量 |
+| F12-02／07／09／12／13／14 | 桌面来源侧栏、窄屏单份原件与物理页保持、嵌套焦点、列表骨架、空态动作、技术错误折叠；见 [来源与反馈](source-feedback-layout-acceptance.md) | 实际浏览器为合成 HTTP／PDF；完整读屏、软键盘和全 39 点用户验收仍分项推进 |
+| F12-06／08 | 已完成原生关系核对与只读上下文设计；见 [四阶段设计](package-work-context-readonly-design.md) | 本提交仅设计，尚未提供这批新只读 API、整包列表摘要或四阶段统一入口 |
+
+本批完整冻结候选验证和失败轮次修正见 [检查点 12 汇总](chapter-source-feedback-regression-receipt.json)。[39 点基线审阅](ui-39-point-review.md) 保留原观察；上述验收记录后续修复，不能把基线文字或单批截图当作全产品完成状态。

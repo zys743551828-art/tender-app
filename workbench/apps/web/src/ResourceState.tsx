@@ -1,4 +1,5 @@
-import { ErrorNotice, Loading } from "./components";
+import type { ReactNode } from "react";
+import { ErrorNotice, LoadingSkeleton } from "./components";
 
 export function ResourceState({
   unavailable,
@@ -7,6 +8,8 @@ export function ResourceState({
   hasData,
   onRetry,
   emptyLabel,
+  emptyAction,
+  loadingLabel,
 }: {
   unavailable?: boolean;
   loading?: boolean;
@@ -14,6 +17,8 @@ export function ResourceState({
   hasData: boolean;
   onRetry: () => void;
   emptyLabel?: string;
+  emptyAction?: ReactNode;
+  loadingLabel?: string;
 }) {
   if (unavailable)
     return (
@@ -35,8 +40,17 @@ export function ResourceState({
         )}
       </>
     );
-  if (loading && !hasData) return <Loading />;
+  if (loading && !hasData) return <LoadingSkeleton text={loadingLabel} />;
   if (!hasData && emptyLabel)
-    return <div className="small-empty">{emptyLabel}</div>;
+    return (
+      <div className="small-empty resource-empty">
+        <p>{emptyLabel}</p>
+        {emptyAction ?? (
+          <button type="button" className="text-button" onClick={onRetry}>
+            重新读取
+          </button>
+        )}
+      </div>
+    );
   return null;
 }

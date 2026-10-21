@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ApiError } from "./api";
+import "./ResourceFeedback.css";
 
 export function Brand() {
   return (
@@ -126,20 +127,25 @@ export function ErrorNotice({
         <strong>本次操作未完成</strong>
         <p>{error instanceof Error ? error.message : String(error)}</p>
         {error instanceof ApiError && (
-          <small>
-            {error.code}
-            {error.requestId ? ` · 排查编号 ${error.requestId}` : ""}
-          </small>
+          <details className="error-details">
+            <summary>查看错误详情</summary>
+            <dl className="error-reference">
+              <dt>错误代码</dt>
+              <dd>{error.code}</dd>
+              {error.requestId && (
+                <>
+                  <dt>排查编号</dt>
+                  <dd>{error.requestId}</dd>
+                </>
+              )}
+            </dl>
+            {error.details !== null &&
+              typeof error.details === "object" &&
+              Object.keys(error.details).length > 0 && (
+                <pre>{JSON.stringify(error.details, null, 2)}</pre>
+              )}
+          </details>
         )}
-        {error instanceof ApiError &&
-          error.details !== null &&
-          typeof error.details === "object" &&
-          Object.keys(error.details).length > 0 && (
-            <details className="error-details">
-              <summary>查看具体字段和影响范围</summary>
-              <pre>{JSON.stringify(error.details, null, 2)}</pre>
-            </details>
-          )}
       </div>
       {onRetry && (
         <button type="button" className="button secondary" onClick={onRetry}>
@@ -161,8 +167,34 @@ export function Badge({
 export function Loading({ text = "正在读取…" }: { text?: string }) {
   return (
     <div className="loading" role="status">
-      <span className="spinner" />
+      <span className="spinner" aria-hidden="true" />
       {text}
+    </div>
+  );
+}
+
+export function LoadingSkeleton({
+  text = "正在读取…",
+  rows = 3,
+}: {
+  text?: string;
+  rows?: number;
+}) {
+  return (
+    <div className="resource-skeleton" role="status" aria-live="polite">
+      <span className="resource-skeleton-label">{text}</span>
+      <div className="resource-skeleton-rows" aria-hidden="true">
+        {Array.from({ length: Math.max(1, Math.min(6, rows)) }, (_, index) => (
+          <div className="resource-skeleton-row" key={index}>
+            <span className="resource-skeleton-icon" />
+            <span className="resource-skeleton-lines">
+              <span />
+              <span />
+            </span>
+            <span className="resource-skeleton-badge" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

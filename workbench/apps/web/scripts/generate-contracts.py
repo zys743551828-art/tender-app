@@ -191,6 +191,7 @@ wanted = [
     "TemplatePage",
     "TemplateVersionView",
     "RunRequest",
+    "TaskAuthoringResult",
     "RunView",
     "RunPage",
     "PauseRequest",

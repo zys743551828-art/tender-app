@@ -94,6 +94,11 @@ def view(c, bid, identity):
     state = root["state"]
     stage = "execution"
     error = None
+    chapter_result = None
+    if frozen["task_kind"] == "chapter_suggestion":
+        from packages.tasks import authoring_result
+
+        state, error, chapter_result = authoring_result.project(c, row)
     if frozen["task_kind"] == "denial_check":
         stage = "preparation"
         if len(ids) > 1:
@@ -151,7 +156,9 @@ def view(c, bid, identity):
             "stage": stage,
             "frozen_manifest": frozen,
             "result": (
-                {"review_operation_ref": f"/api/v1/operations/{ids[-1]}"}
+                chapter_result
+                if frozen["task_kind"] == "chapter_suggestion"
+                else {"review_operation_ref": f"/api/v1/operations/{ids[-1]}"}
                 if stage == "review"
                 else result["result"]
                 if result and stage != "preparation"
@@ -277,7 +284,7 @@ def dispatch(
     if prior and (
         not rerun
         or view(c, bid, prior[-1]["id"])["state"]
-        in ("queued", "running", "cancel_requested", "awaiting_review")
+        in ("queued", "running", "cancel_requested", "awaiting_review", "awaiting_publication")
     ):
         audit(
             c,
@@ -361,6 +368,7 @@ def dispatch(
         c.execute("UPDATE review_slots SET pending_intent=%s WHERE bid_id=%s", (Jsonb(intent), bid))
     elif kind == "chapter_suggestion":
         from packages.assistant.jobs import queue_generation
+        from packages.tasks.authoring_result import bind
 
         section = context["section"]
         accepted = queue_generation(
@@ -377,6 +385,7 @@ def dispatch(
         )
         operation = UUID(accepted["operation"]["id"])
         frozen["assistant_job_id"] = accepted["id"]
+        frozen["authoring_binding"] = bind(c, bid, frozen, operation)
     else:
         from packages.domain.source_effectivity import evidence_impacts
 
@@ -466,4 +475,26 @@ def notify(c, bid, identity):
             "run_ref": f"/api/v1/bids/{bid}/task-runs/{identity}",
         },
     )
+    result = value["result"]
+    if (
+        value["frozen_manifest"]["task_kind"] == "chapter_suggestion"
+        and result
+        and result.get("schema") == "task-authoring-result/1"
+    ):
+        # Retain legacy notifications as history. A former operation-only success
+        # cannot suppress a newly verified publication notification on a closed bid.
+        audit(
+            c,
+            UUID(value["frozen_manifest"]["actor_id"]),
+            bid,
+            "task.authoring_notification_bound",
+            {
+                "notification_key": key,
+                "run_id": identity,
+                "job_id": result["job_id"],
+                "publication_state": result["publication_state"],
+                "action_id": result["action_id"],
+                "result_digest": sha(result),
+            },
+        )
     return True

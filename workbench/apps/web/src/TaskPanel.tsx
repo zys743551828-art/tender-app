@@ -286,7 +286,7 @@ export function TaskPanel({
         {showNotifications && (
           <>
             <p className="small-note">
-              以下是已持久保存的站内通知，不代表邮件或其他外部消息送达。
+              以下是已持久保存的站内通知，不代表邮件或其他外部消息送达。通知保留当时记录；当前发布状态请打开绑定任务核对。
             </p>
             <ResourceState
               {...notifications}

@@ -46,7 +46,12 @@ it("keeps an unread or failed package directory unknown, with no false empty-pro
       ),
     ),
   );
-  expect(await screen.findByText("DIRECTORY_UNAVAILABLE")).toBeVisible();
+  expect(await screen.findByText("合成目录读取失败")).toBeVisible();
+  expect(screen.getByText("DIRECTORY_UNAVAILABLE")).not.toBeVisible();
+  await userEvent.click(
+    screen.getByText("查看错误详情", { selector: "summary" }),
+  );
+  expect(screen.getByText("DIRECTORY_UNAVAILABLE")).toBeVisible();
   expect(
     screen.queryByText(/尚未登记投标包|已读取 0 个/),
   ).not.toBeInTheDocument();
@@ -190,10 +195,17 @@ it.each(["missing", "foreign", "digest"])(
     expect(
       await screen.findByText(
         failure === "missing"
-          ? "PACKAGE_NOT_FOUND"
+          ? "合成修订不存在"
           : /链接所指包修订的身份或摘要不一致/,
       ),
     ).toBeVisible();
+    if (failure === "missing") {
+      expect(screen.getByText("PACKAGE_NOT_FOUND")).not.toBeVisible();
+      await userEvent.click(
+        screen.getByText("查看错误详情", { selector: "summary" }),
+      );
+      expect(screen.getByText("PACKAGE_NOT_FOUND")).toBeVisible();
+    }
     expect(
       screen.queryByRole("heading", { name: /明确选择的冻结记录/ }),
     ).not.toBeInTheDocument();

@@ -72,7 +72,12 @@ it("only reads after explicit selection, pages 20 rows and opens the exact origi
   expect(screen.getAllByRole("article")).toHaveLength(20);
   const opener = screen.getByRole("button", { name: "查看右侧原结果与引用" });
   await userEvent.click(opener);
-  await screen.findByRole("region", { name: "整包范围核查结果" });
+  // The first open loads the lazy result workspace before its explicit reads.
+  await screen.findByRole(
+    "region",
+    { name: "整包范围核查结果" },
+    { timeout: 3000 },
+  );
   expect(
     screen.getAllByRole("region", { name: "两轮范围核查对比" }),
   ).toHaveLength(1);

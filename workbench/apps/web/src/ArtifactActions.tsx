@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api, objectFetch } from "./api";
 import type { DocumentView, DownloadGrant } from "./contracts";
 import { ErrorNotice } from "./components";
@@ -27,8 +27,11 @@ export function ArtifactActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [preview, setPreview] = useState<DocumentView | null>(null);
+  const previewTrigger = useRef<HTMLElement | null>(null);
   async function open(download: boolean) {
     if (busy) return;
+    if (!download)
+      previewTrigger.current = document.activeElement as HTMLElement | null;
     setBusy(true);
     setError(null);
     try {
@@ -99,6 +102,7 @@ export function ArtifactActions({
       {preview && (
         <Evidence
           document={preview}
+          returnFocus={previewTrigger}
           onClose={() => setPreview(null)}
           contextNotice={
             previewNotice ??

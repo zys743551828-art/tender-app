@@ -4907,6 +4907,23 @@ export type RunRequest = {
   rerun?: boolean;
 };
 
+export type TaskAuthoringResult = {
+  schema: "task-authoring-result/1";
+  job_id: string;
+  job_input_digest: string;
+  writing_plan_id: string;
+  operation_id: string;
+  job_ref: string;
+  section_id: string;
+  base_section_revision: number;
+  publication_state: "pending" | "published" | "stale" | "failed";
+  candidate_digest: string | null;
+  action_id: string | null;
+  action_ref: string | null;
+  source_scope: "legacy_section_and_source_versions";
+  automatic_apply: false;
+};
+
 export type RunView = {
   id: string;
   bid_id: string;
@@ -4921,13 +4938,14 @@ export type RunView = {
     | "failed"
     | "cancelled"
     | "awaiting_review"
+    | "awaiting_publication"
     | "blocked"
     | "superseded"
     | "unknown"
     | "reconciliation_required";
   stage: "preparation" | "review" | "execution";
   frozen_manifest: { [key: string]: unknown };
-  result: { [key: string]: unknown } | null;
+  result: TaskAuthoringResult | { [key: string]: unknown } | null;
   error_code: string | null;
   formal_decisions_created: false;
   coverage: "registered_effectivity_only_semantic_unknown" | "not_formal_score";

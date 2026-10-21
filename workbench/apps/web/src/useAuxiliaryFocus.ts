@@ -26,12 +26,14 @@ export function useAuxiliaryFocus({
   modal,
   panel,
   initialFocus,
+  returnFocus,
   onClose,
 }: {
   open: boolean;
   modal: boolean;
   panel: RefObject<HTMLElement | null>;
   initialFocus: RefObject<HTMLElement | null>;
+  returnFocus?: RefObject<HTMLElement | null>;
   onClose: () => void;
 }) {
   const close = useRef(onClose);
@@ -40,7 +42,10 @@ export function useAuxiliaryFocus({
   useLayoutEffect(() => {
     if (!open) return;
     closing.current = false;
-    const before = document.activeElement as HTMLElement | null;
+    // An asynchronous opener may disable its button while checking the source.
+    // Browsers can then move focus to body before the panel is mounted.
+    const before =
+      returnFocus?.current ?? (document.activeElement as HTMLElement | null);
     const surface = panel.current;
     initialFocus.current?.focus({ preventScroll: true });
     return () => {
@@ -57,7 +62,7 @@ export function useAuxiliaryFocus({
           before.focus({ preventScroll: true });
       });
     };
-  }, [open, panel, initialFocus]);
+  }, [open, panel, initialFocus, returnFocus]);
   useLayoutEffect(() => {
     if (open && modal) return lockScroll();
   }, [open, modal]);

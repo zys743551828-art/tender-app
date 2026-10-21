@@ -1,0 +1,326 @@
+{
+  "schema": "task-chapter-acceptance/1",
+  "started_at": "2026-10-21T11:04:20.299199+00:00",
+  "passed": true,
+  "paid_calls": 0,
+  "model_transport": "explicit synthetic HTTP transport; no external calls",
+  "postgres_version": "postgres (PostgreSQL) 17.11",
+  "python_version": "3.12.14",
+  "source_sha256": {
+    "packages/tasks/__init__.py": "9ff031ab841b41e3c72cf5113c6d91631404b41ca084d81937f64ae878b98218",
+    "packages/tasks/authoring_result.py": "2c0c9415ef6f9e40088892d1b1402c8c85b32ecc73c212eba027d73c1e67a5c9",
+    "packages/tasks/contracts.py": "a02fed4f61547166de02478d700d85b2f6e4e470cc3c069a386b95ca1946142f",
+    "packages/tasks/coordinator.py": "3ed3bcba3155ed79c8d8bfbe4a3d635f3f53adc6f7a74b8bbb59ad588c5bc093",
+    "packages/tasks/draft_interpreter.py": "529c1997f6f358f7b12fecc7a2c728f540588c0aba5354770c6e21fe1b044e3d",
+    "packages/tasks/drafts.py": "963328f18ee1caed703723892829e7cd233c827eb2e77487971d626a3eb33c52",
+    "packages/tasks/inputs.py": "e114bafa721f2b4601bf3cb705bc06c655a8363f53b931afe9f6392844fed4d3",
+    "packages/tasks/models.py": "4af1c35cf5313dcb116eec40f932db65381592efd0fad411a0eeb80ce8c519a5",
+    "packages/tasks/package_inputs.py": "a21146d8ce7080eff8ae8ea7eefc9da00b1c4e511fc8cd298d4366679b62100e",
+    "packages/tasks/package_repository.py": "9047895d6744272fd79502a4cddfe3fa4314b2b12da4b645ad6f4792af1b528b",
+    "packages/tasks/package_runs.py": "6a6123d3259e40b0845e4e49bbc6821ec14e64788ac88bc3a11f8e7323dc6258",
+    "packages/tasks/package_triggers.py": "e0f9b0ded3504256657a19b6a0567b893c92a1111baa5411738c23c2b8f35e79",
+    "packages/tasks/review_runtime.py": "60d004865108f8e4787bc348babbd2ccf9b2e01436b025c50306dd2c367f04f8",
+    "packages/tasks/runner.py": "cddd915082b83dd8cdd7912ea8b79cf1234dd7ce818389dccf6a60210c6a76bb",
+    "packages/tasks/runs.py": "dd5b34f8123b6af2f2376d69d081bc7f592bbb869685185f2b12b0031864f85a",
+    "packages/tasks/scheduling.py": "6fd5270cb17079c2181e80d69c19064673ef1124d91c33d38e322a87f5ff70f2",
+    "packages/tasks/templates.py": "a95f7f34cdcee42655dfe0ef5e1ca387bbfe8510c326fd919d108d3bba9ad664",
+    "apps/api/task_routes.py": "392538a4489d95f1a0fceba8e3437c1124fd01a4c386003430f2872a7668958e",
+    "deploy/task_chapter_acceptance.py": "1319dcf5c09c9ee2d83c0f06a9258e3c8fc1173f71dfd0318ccfeb963f9eca5c",
+    "tests/test_task_chapter_results_pg.py": "4fab67c881223abe143916d948aaf391ea070e048de0a4e398e72d3be3bb5df8",
+    "tests/test_authoring_generation_batches_pg.py": "4ebd5e3690ee669f5b8b62f24ab0f6ce4e7490485f927f123999e81d90f2dc6e",
+    "tests/test_assistant_budget_nonowner.py": "3a86e3eb73fceb0af3e02995ffe5d868e5814ebe6390c7b3d0c62836e7f0a1c0",
+    "packages/assistant/jobs.py": "7f80309f58ba76df4ffe9ae886888b66f3ee456540ed8dbda6d1df019dfdb974",
+    "packages/assistant/tasks.py": "100f49be9c64834f52a4afe1a947f373954b6f184f885c587b6e5f2d7d8f3f33",
+    "packages/assistant/coordinator.py": "865f330ab775817c9d37d820ef9d4ed91e122f17dc70921970676ce3b3784384",
+    "packages/authoring/generation.py": "fbe7f2ed7ce9d127d62fc6ec5b18bd3678c9b0d9c2b299375767c15b8ce00e14",
+    "apps/worker/engine.py": "337701f6d0526ecab44b4d055baf3ceba783a1b2b3b4c0e03555882596078d96"
+  },
+  "ordered_sql": [
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd"
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96"
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319"
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738"
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876"
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-requirements.sql",
+      "sha256": "d08c29c6b56a46674ab78f37dd5cb38fe074963c68d334b595fbf87fb0197bf9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-inputs.sql",
+      "sha256": "d066c92234ba5b3cba3990e51cab3316dc5b72ec6a6c563a5a776c9c13067da6"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-execution-inputs.sql",
+      "sha256": "f5f473c2b92f652b016e1eb0170eb2b22952160cf0432d831b5ba021390d8706"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-fact-scopes.sql",
+      "sha256": "4a86390f08d9ed4e16277220fe655d28f2d9f8df0310ed1671b44d87c2623a10"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-dependency-plans.sql",
+      "sha256": "443a3f1a82ef60120ffadfbd073623c2e98308792f2f6bdc5cf47715a5e41260"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-runs.sql",
+      "sha256": "5ef4cf1160b17abe4cf106cb1acd9676277f9b31f982c06f96bf0ea8a3de3281"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-decisions.sql",
+      "sha256": "a53f0210e68844fc339dcf0fe0cc10b685bcf049b0f0b20a6022deb5a68358e9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-report-exports.sql",
+      "sha256": "48adf4288f4e2ac4e0b94d2b59edde19229cc83b91bf773a48a1b653275e7184"
+    },
+    {
+      "path": "packages/contracts/sql/document-parses.sql",
+      "sha256": "b965bc6826d783e368517ffb505631196f051d8ddcb561eb3843f98c45011681"
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1"
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d"
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd"
+    },
+    {
+      "path": "packages/authoring/sql/docx_import.sql",
+      "sha256": "2a832ccf1b9a549105a9923705de0f720f64aeef30c8607ac12944ba305a92b0"
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e"
+    },
+    {
+      "path": "deploy/sql/bid-package-requirement-runtime-grants.sql",
+      "sha256": "4d510b265e9e98355d2794839ab204a9501a9cbcad1b9b82f4ad53c924d9498e"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-input-runtime-grants.sql",
+      "sha256": "eb4f56ecfa2ad25bf86468ab35d657cd7859ae1880ed3bffeb0a46a5def14d55"
+    },
+    {
+      "path": "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+      "sha256": "53bc424cfbcd1b8207875f3882c5738813ff6a1a9e5d8c6ad91988af7cb10373"
+    },
+    {
+      "path": "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+      "sha256": "12c23369c1e9a5abbc5beea52b82cdbad0d198e619b2f5d3655cf4db1aa791a7"
+    },
+    {
+      "path": "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
+      "sha256": "2c7170ac325fa3027aa137ad0934456c0b4a0a4298980caaaa672dc128da9a1c"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-run-runtime-grants.sql",
+      "sha256": "eb82e88cd04b60b10f5ff026596c20029a164ab64144075b48cd2433cf5fb624"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-rule-corrections.sql",
+      "sha256": "a87cc9ea616d2e7a9c151322450bb80f4cc4d0ee4b1e99ea26d6af8c1b889e87"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-decision-runtime-grants.sql",
+      "sha256": "e48a7d76ed72bc360854be02d63eb96d68d67b77d58fda43a89958dcc29c2911"
+    },
+    {
+      "path": "deploy/sql/bid-package-report-runtime-grants.sql",
+      "sha256": "8630b580795663dbd6d6a32bd242697e6dd4858294fe37aaa817cc7777bbfa24"
+    },
+    {
+      "path": "deploy/sql/document-parse-runtime-grants.sql",
+      "sha256": "155737233a97e71d40ade0a342ef33c819c2775172aa08bbb1ec8dbccbbc97c1"
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619"
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-submissions.sql",
+      "sha256": "d6fea7f77da4378e23fae217737ac7cffc38f30255d1bd39885852bc0aaf2b0c"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-technical-scopes.sql",
+      "sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-reviews.sql",
+      "sha256": "2e1c9ae9b24533402c0a8e5da43f6c5098539b6d8697098be2e2f14dc4e7e1f2"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-triggers.sql",
+      "sha256": "ca96f73baec6e5b3db739da5420db1e6efdde0769c0c2d8fd49e7c5fd8cea45f"
+    },
+    {
+      "path": "packages/contracts/sql/package-retrospectives.sql",
+      "sha256": "1cf9ad92465191277c1a99860acdf98bf377966a288ecafcb40644dad7caae71"
+    },
+    {
+      "path": "packages/assistant/sql/assistant.sql",
+      "sha256": "4030b5e6a749aa060956c4039aa0cdd34e057508ea6a4ce9c58100f5a6ca81b0"
+    },
+    {
+      "path": "packages/assistant/sql/live-facts.sql",
+      "sha256": "42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2"
+    },
+    {
+      "path": "packages/assistant/sql/intent-budget.sql",
+      "sha256": "173078b95a5cd58db9f8f8aa09ff2728bae2c4a1e1b3817a4b593e719b04a6b0"
+    },
+    {
+      "path": "packages/assistant/sql/generation-batches.sql",
+      "sha256": "1042f97f6fa25411a1eabb28444fa3ca8f4389b7137990ebf67d6f97992a72e0"
+    }
+  ],
+  "tests": {
+    "tests": 19,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "seconds": 30.708
+  },
+  "test_cases": [
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_candidate_is_not_task_success_until_real_proposal_and_one_notification",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_real_publication_rejects_changed_inputs_without_success_notification[section]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_real_publication_rejects_changed_inputs_without_success_notification[fact]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_real_publication_rejects_changed_inputs_without_success_notification[source]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_real_publication_failure_rolls_back_native_proposal_not_model_success",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_unknown_fee_blocks_new_rerun_key_and_stays_explained",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_cancel_original_operation_then_worker_converges_without_model",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_wrong_native_identity_never_projects_an_unrelated_success[assistant_job_id]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_wrong_native_identity_never_projects_an_unrelated_success[job_input_digest]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_wrong_native_identity_never_projects_an_unrelated_success[operation_id]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_wrong_native_identity_never_projects_an_unrelated_success[parse_id]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_accepted_legacy_job_reference_still_uses_exact_original_history",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_closed_project_runner_recovers_original_terminal_notification_only[published]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_closed_project_runner_recovers_original_terminal_notification_only[pending]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_closed_project_runner_recovers_original_terminal_notification_only[unknown_fee]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_invalid_model_structure_is_known_failure_without_candidate_or_proposal",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_withdrawal_before_worker_never_calls_model_or_creates_candidate",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_template_pause_keeps_accepted_original_job_and_published_history",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_chapter_results_pg",
+      "name": "test_legacy_operation_only_notification_cannot_suppress_real_publication_after_closure",
+      "outcome": "passed"
+    }
+  ],
+  "source_unchanged_during_execution": true,
+  "sql_unchanged_during_execution": true,
+  "completed_at": "2026-10-21T11:04:53.591776+00:00",
+  "synthetic_http_fixtures": {
+    "awaiting-publication.json": "c1e165bf69cec291a1c17623333f3b35471dab3969bcdce10e3cb1f8ac6f5107",
+    "cancelled.json": "a26313e3c22c09cdfeb87ac1fcca8e4f4c063dcefc3152d1fb3ef1894d946504",
+    "failed.json": "8bb9d1adfccdeeefda92bf63e8c5740a0f3d3ddbd4304295f29bb35e43942a1a",
+    "model-invalid.json": "a41f5cd70bcc65853e0944b87a4f291b70c5a46200d40a48d5a358e1f6ca4205",
+    "notifications.json": "04955144bcb07d15928b64999137400d0940fcca940bc3aa4f2a668202881af0",
+    "proposal.json": "67bbc8e73c32b25d153edd3abf2325f8984a32ddd34a37cd70c247dd97032d0f",
+    "published.json": "22e28f6297d59684c5cb7a78c655e2bfd781cced18f93b123a841183d0f6329f",
+    "queued.json": "d223e1927b7082cc3a41b37dbea15c4d59cf030a94f44942886d0b0f7c71c7b3",
+    "stale-fact.json": "57436175f31ad6fb548db6f45655a58cc66d87eabcd920860bb869c2afeacf0f",
+    "stale-section.json": "a17a241bf80eacbbf4d8a940e4840772b11229a7f744e5b9f984063b01f998b1",
+    "stale-source.json": "55de41666fbe5481420ec835f127e9de271ff03b2ab5cafb1079134063777ff2",
+    "template.json": "05883c0f023b6bf8fad6107c579621547e3ce2243cb029232c7465ef8a0552f7",
+    "unknown-fee.json": "88b8e48d9bb0c6c1104bc9404a41873ae59ff2418d2cd032d55cfe2f251c8c8d"
+  }
+}

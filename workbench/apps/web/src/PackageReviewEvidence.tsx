@@ -19,6 +19,7 @@ export default function PackageReviewEvidence({
 }) {
   const active = useRef(false),
     loading = useRef(false);
+  const sourceTrigger = useRef<HTMLElement | null>(null);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null);
   const [source, setSource] = useState<{
@@ -37,6 +38,7 @@ export default function PackageReviewEvidence({
     supportsApi("GET", `/documents/${quote.document_version_id}`);
   async function open() {
     if (!active.current || loading.current || !available) return;
+    sourceTrigger.current = document.activeElement as HTMLElement | null;
     loading.current = true;
     setBusy(true);
     setError(null);
@@ -101,6 +103,7 @@ export default function PackageReviewEvidence({
       {source && (
         <Evidence
           document={source.document}
+          returnFocus={sourceTrigger}
           initialPage={quote.physical_page}
           contextNotice={source.notice}
           onClose={close}

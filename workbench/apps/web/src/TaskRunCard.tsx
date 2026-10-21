@@ -16,6 +16,7 @@ import { ArtifactActions } from "./ArtifactActions";
 import { assistantReason } from "./assistantState";
 import { ExactPackageTaskScope } from "./ExactPackageTaskScope";
 import { historicalSame } from "./historicalImportProtocol";
+import { taskAuthoringProjection } from "./taskAuthoringProtocol";
 import {
   validateCurrentRun,
   type TaskPackageRunView,
@@ -23,6 +24,9 @@ import {
 
 const ExactPackageTaskRunDetails = lazy(
   () => import("./ExactPackageTaskRunDetails"),
+);
+const TaskAuthoringResultPanel = lazy(
+  () => import("./TaskAuthoringResultPanel"),
 );
 
 export function TaskRunCard({
@@ -68,6 +72,7 @@ export function TaskRunCard({
   const exactRun =
     checked?.run.id === id && checked.run.bid_id === bidId ? checked.run : null;
   const run = exactClaim ? (exactRun ?? undefined) : raw;
+  const chapter = !exactClaim ? taskAuthoringProjection(raw, bidId, id) : null;
   const exactStale =
     exactClaim &&
     (resource.loading ||
@@ -87,6 +92,11 @@ export function TaskRunCard({
     version.data?.id === run?.definition_version_id &&
     version.data?.bid_id === bidId &&
     version.data.definition_id === definitionId &&
+    (!chapter ||
+      historicalSame(
+        version.data.config.definition,
+        run?.frozen_manifest.configuration,
+      )) &&
     (!exactRun ||
       (version.data.digest === exactRun.frozen_manifest.configuration_digest &&
         historicalSame(
@@ -117,6 +127,7 @@ export function TaskRunCard({
   const [cancelOpen, setCancelOpen] = useState(false);
   const bodyId =
     !exactClaim &&
+    !chapter &&
     typeof run?.frozen_manifest.context === "object" &&
     run.frozen_manifest.context !== null &&
     "body_version_id" in run.frozen_manifest.context &&
@@ -159,7 +170,7 @@ export function TaskRunCard({
                   : ""
               }
             >
-              {taskRunNames[run.state]}
+              {chapter?.error ? "章节结果关联待核对" : taskRunNames[run.state]}
             </Badge>
           </div>
           {exactRun && (
@@ -229,6 +240,18 @@ export function TaskRunCard({
               )}
             </section>
           )}
+          <ErrorNotice error={chapter?.error} />
+          {chapter?.result && (
+            <Suspense fallback={<p role="status">正在加载章节任务结果…</p>}>
+              <TaskAuthoringResultPanel
+                key={`${memberId}:${run.id}:${chapter.result.job_id}`}
+                bidId={bidId}
+                state={run.state}
+                result={chapter.result}
+                stale={resource.loading || !!resource.error}
+              />
+            </Suspense>
+          )}
           {run.coverage === "registered_effectivity_only_semantic_unknown" ? (
             <p className="notice warning">
               已登记补遗关系核对：
@@ -238,7 +261,9 @@ export function TaskRunCard({
             </p>
           ) : (
             <p className="small-note">
-              任务未创建正式确认、提交、核验或发布。操作结束与业务通过分别核对，章节提案不会自动改稿。
+              {chapter
+                ? "章节任务只产生可审阅提案，不创建正式确认、提交或评分结论。采纳须在原提案中明确操作。"
+                : "任务未创建正式确认、提交、核验或发布。操作结束与业务通过分别核对，章节提案不会自动改稿。"}
             </p>
           )}
           {["unknown", "reconciliation_required"].includes(run.state) && (
@@ -297,7 +322,11 @@ export function TaskRunCard({
             </a>
           )}
           <fieldset
-            disabled={exactStale}
+            disabled={
+              exactStale ||
+              (!!chapter &&
+                (resource.loading || !!resource.error || !!chapter.error))
+            }
             className="exact-package-task-readonly"
           >
             <ErrorNotice error={command.error} />
