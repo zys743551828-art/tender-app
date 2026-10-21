@@ -110,6 +110,35 @@ def test_vector_diagram_is_not_complete_text_read(parser):
     assert result["coverage"] == "partial"
 
 
+def test_inferred_chapters_preserve_text_and_numbered_table_evidence_kinds(parser):
+    def draw(page):
+        page.drawString(30, 550, "1. Project requirements")
+        for x in (30, 180, 330):
+            page.line(x, 400, x, 500)
+        for y in (400, 450, 500):
+            page.line(30, y, 330, y)
+        for x, y, text in (
+            (40, 470, "1. Item"),
+            (190, 470, "Days"),
+            (40, 420, "Road"),
+            (190, 420, "120"),
+        ):
+            page.drawString(x, y, text)
+
+    result = parser.parse(pdf_bytes(draw))
+    blocks = result["pages"][0]["blocks"]
+    assert result["coverage"] == "usable"
+    assert result["chapters"][0]["title"] == "1. Project requirements"
+    assert all(chapter["inferred"] is True for chapter in result["chapters"])
+    assert blocks[0]["kind"] == "text"
+    assert blocks[0]["chapter_path"] == ["1. Project requirements"]
+    assert {block["kind"] for block in blocks} == {"text", "table"}
+    table = next(block for block in blocks if block["kind"] == "table")
+    assert table["text_content"].startswith("1. Item\tDays")
+    assert table["bbox"] == result["pages"][0]["tables"][0]["bbox"]
+    assert result["pages"][0]["tables"][0]["rows"] == [["1. Item", "Days"], ["Road", "120"]]
+
+
 def test_model_asset_tamper_rejected(tmp_path):
     source = Path(__file__).resolve().parents[1] / ".local/parsing-models"
     for name in ("eng", "chi_sim"):

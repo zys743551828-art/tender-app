@@ -4,10 +4,10 @@
 
 ## 1. 先选运行环境
 
-| 环境 | 实际组成 | 适合做什么 |
-| --- | --- | --- |
-| Fusion v10 预览 | PostgreSQL、初始化服务、API、Web；入口 `http://127.0.0.1:5188` | 登录、查看项目、编辑文字草稿、检查导航、真实空状态和未配置提示；已有历史按实际数据读取 |
-| 完整本地运行 | PostgreSQL、Kafka、私有 S3、API，以及分别启动的 Worker；默认 Web `http://127.0.0.1:5173` | 在对应能力已配置的前提下，实际上传、构建、解析、核查、对比和导出 |
+| 环境            | 实际组成                                                                                 | 适合做什么                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Fusion v10 预览 | PostgreSQL、初始化服务、API、Web；入口 `http://127.0.0.1:5188`                           | 登录、查看项目、编辑文字草稿、检查导航、真实空状态和未配置提示；已有历史按实际数据读取 |
+| 完整本地运行    | PostgreSQL、Kafka、私有 S3、API，以及分别启动的 Worker；默认 Web `http://127.0.0.1:5173` | 在对应能力已配置的前提下，实际上传、构建、解析、核查、对比和导出                       |
 
 **Fusion v10 是 API 预览环境。** [Compose](../../deploy/compose.fusion.yaml) 没有 Kafka、S3 或 Worker；[API 启动器](../../deploy/fusion_runtime.py) 只注入数据库、站点和会话配置，不提供模型、存储或转换器配置。页面可打开、请求被受理，都不表示后台任务已经执行。v10 使用新预览库和运行配置卷，保留旧卷，不自动迁移 v9 的项目数据。
 
@@ -33,14 +33,14 @@ pwsh -File deploy/fusion.ps1 -Action status
 
 以下入口均来自仓库 [Worker CLI](../../apps/worker/__main__.py) 和 README，必须在已经配置的环境中启动：
 
-| 进程入口 | 职责 |
-| --- | --- |
-| `python -m apps.api` | 登录、权限、读写业务记录、受理任务；使用 API 身份 |
-| `python -m apps.worker relay` | 将数据库 outbox 中的已提交任务发送到 Kafka |
-| `python -m apps.worker consume` | 文档通道：独立 PDF 解析、受控 Word 处理及派生索引 |
-| `python -m apps.worker consume-export` | 正文构建、核查报告文件生成；PDF 另需可用的受控转换能力 |
-| `python -m apps.worker consume-comparison` | 比较通道；不调用模型 |
-| `python -m apps.worker reconcile` | 处理租约失联等运行对账 |
+| 进程入口                                   | 职责                                                   |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `python -m apps.api`                       | 登录、权限、读写业务记录、受理任务；使用 API 身份      |
+| `python -m apps.worker relay`              | 将数据库 outbox 中的已提交任务发送到 Kafka             |
+| `python -m apps.worker consume`            | 文档通道：独立 PDF 解析、受控 Word 处理及派生索引      |
+| `python -m apps.worker consume-export`     | 正文构建、核查报告文件生成；PDF 另需可用的受控转换能力 |
+| `python -m apps.worker consume-comparison` | 比较通道；不调用模型                                   |
+| `python -m apps.worker reconcile`          | 处理租约失联等运行对账                                 |
 
 `python` 指已安装锁定依赖的虚拟环境解释器。API 与 Worker 使用各自非 owner 身份；owner 只用于初始化。已有独立 QA 配置时，可通过 [`deploy/run.py`](../../deploy/run.py) 显式选环境和角色，例如在 Linux/macOS：
 
@@ -53,6 +53,23 @@ pwsh -File deploy/fusion.ps1 -Action status
 QA 的基础设施、初始化方式、API 端口 `8801` 和 Web 端口 `5174` 均见 README 的 QA 段落。配置文件和凭据留在本机，不写入 Git。
 
 **真实模型需要你明确配置供应商、凭据与费用边界，并明确启用相关消费者。** `consume-review`、`consume-assistant` 可能产生模型费用，不属于上面的默认启动清单。模型未配置时，应验证“不可执行”的原因和恢复流程；不能把它计为核查结果。本轮验收没有调用付费模型。
+
+### 可选：接入已有的本机解析服务
+
+完整运行环境可使用 [本地 PDF 解析端口](../../packages/parsing/README.md)，实际方法为 PDFium、pdfplumber 和 Tesseract CPU profile。它与默认仅提取文字的解析不同；安装依赖、核验 OCR 资产、能力边界均以该说明为准，请勿将解析依赖锁直接覆盖到现有 API 环境。
+
+1. 在本机准备已校验的 OCR 资产，使用独立解析环境。私有 `.local/parsing.env` 保存 `PARSING_RUNTIME_URL=http://127.0.0.1:8812`、你本机生成的 `PARSING_RUNTIME_TOKEN`（至少 32 字符）和实际 `PARSING_ASSET_DIRECTORY`。配置文件权限为 `600`，令牌不写进命令参数或 Git。
+2. 按解析端口说明，用明确的配置启动服务：
+
+   ```sh
+   .venv/bin/python deploy/run.py --env-file .local/parsing.env -- .venv-parsing/bin/python -m packages.parsing.server --port 8812
+   ```
+
+3. 在实际启动 **API 和普通 document Worker** 的各自私有配置中，设置与解析服务一致的 `PARSING_RUNTIME_URL` 和 `PARSING_RUNTIME_TOKEN`，随后使用前面的 `deploy/run.py --role api`／`--role worker` 方式启动。API 在读取条件和受理时取得方法身份，Worker 在计算时重新核对；仅配置其中一端不能形成一致的解析申请。API／Worker 的数据库角色仍各自独立，不共享数据库口令。只有解析进程需要 OCR 资产路径和重依赖。
+
+地址必须是各进程实际可达的同一 `127.0.0.1` 服务；分离容器的回环地址彼此不同，不能直接套用这组同机命令。Fusion v10 的 API 配置白名单不包含这些键，本节属于完整运行环境。未配置令牌时使用默认文字解析；配置了令牌但服务不可达时会明确失败，不静默退回另一方法。
+
+配置后重新读取原件的解析条件，确认方法为 `configured_local`，再明确申请。真实服务返回无缺口的 `usable`，且页级校验也通过时，独立解析保存为 `complete`；工程图和扫描页的实际缺口继续保留 `partial`。方法或源码改变后，旧请求不会悄悄换方法执行，应读取新条件后另行明确申请。该路径的真实 HTTP、非 owner PG、表格和 OCR 验证见 [本机解析集成验收](configured-local-parser-acceptance.md)。
 
 ## 2. 路径一：编写 → 精确构建 → 采用 → 独立解析
 
@@ -84,24 +101,25 @@ QA 的基础设施、初始化方式、API 端口 `8801` 和 Web 端口 `5174` �
 
 ## 4. 暂无完整配置时，怎样验收才有意义？
 
-| 看到的情况 | 可做的有效检查 |
-| --- | --- |
-| 新预览库没有历史 | 创建自己的项目和文字草稿，检查保存、继续编辑和切换项目；不把空历史当成测试数据丢失 |
-| 构建／解析一直排队 | 确认完整环境的 relay、对应消费者和 Kafka 已运行；Fusion 预览没有这些进程 |
-| 存储、转换器或模型不可用 | 检查页面是否明确说明缺少什么，是否保留输入和恢复入口；能力配置完成前不期待成功文件或模型结果 |
-| 解析完成但 partial | 检查原页、覆盖缺口和禁止完整冻结的行为，这是当前默认解析的真实边界 |
-| 想看结果页和异常交互 | 使用 [合成界面夹具说明](../../apps/web/qa-previews/frozen-inputs/README.md)；它明确模拟响应，不连接业务库，不证明真实模型效果或生成文件有效 |
+| 看到的情况               | 可做的有效检查                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 新预览库没有历史         | 创建自己的项目和文字草稿，检查保存、继续编辑和切换项目；不把空历史当成测试数据丢失                                                          |
+| 构建／解析一直排队       | 确认完整环境的 relay、对应消费者和 Kafka 已运行；Fusion 预览没有这些进程                                                                    |
+| 存储、转换器或模型不可用 | 检查页面是否明确说明缺少什么，是否保留输入和恢复入口；能力配置完成前不期待成功文件或模型结果                                                |
+| 解析完成但 partial       | 检查原页、覆盖缺口和禁止完整冻结的行为，这是当前默认解析的真实边界                                                                          |
+| 想看结果页和异常交互     | 使用 [合成界面夹具说明](../../apps/web/qa-previews/frozen-inputs/README.md)；它明确模拟响应，不连接业务库，不证明真实模型效果或生成文件有效 |
 
 夹具仅供开发验收，普通 Vite 构建会移除 `/_qa`；交付页面不应包含夹具目录。实际业务验收应使用明确授权的资料，在完整环境中核对精确文件、页码、结果和下载字节。
 
 ## 5. 验收证据导航
 
-| 想核对什么 | 看哪里 |
-| --- | --- |
-| 当前交付、GitHub 状态、尚未完成的范围 | [PROGRESS](PROGRESS.md)、[全计划映射](product-acceptance-map.md) |
-| 编写、采用资格、独立解析及 partial 限制 | [编写与解析](authoring-m1-acceptance.md)、[解析界面](frontend-document-parse-acceptance.md) |
-| 核查、人工意见、对比和浏览器交互 | [前端范围核查验收](frontend-scope-review-acceptance.md) |
-| 报告真实 DOCX／PDF、字体与部署限制 | [报告渲染验收](report-render-acceptance.md) |
-| 真正的 Kafka、S3、Worker 和重复投递 | [真实运输验收](real-transport-acceptance.md)；使用隔离的合成资料，不能替代生产或模型质量验收 |
+| 想核对什么                               | 看哪里                                                                                                        |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 当前交付、GitHub 状态、尚未完成的范围    | [PROGRESS](PROGRESS.md)、[全计划映射](product-acceptance-map.md)                                              |
+| 编写、采用资格、独立解析及 partial 限制  | [编写与解析](authoring-m1-acceptance.md)、[解析界面](frontend-document-parse-acceptance.md)                   |
+| 核查、人工意见、对比和浏览器交互         | [前端范围核查验收](frontend-scope-review-acceptance.md)                                                       |
+| 报告真实 DOCX／PDF、字体与部署限制       | [报告渲染验收](report-render-acceptance.md)                                                                   |
+| 真正的 Kafka、S3、Worker 和重复投递      | [真实运输验收](real-transport-acceptance.md)；使用隔离的合成资料，不能替代生产或模型质量验收                  |
+| 已配置本机解析器的真实 HTTP 与数据库发布 | [本机解析集成验收](configured-local-parser-acceptance.md)；涵盖实际文字、表格、扫描与工程图样本的不同覆盖结果 |
 
 正式评分、投递资格、真实模型准确率和生产稳定运行仍各有独立验收条件；请按上表查对应证据，不将页面可操作或某一阶段成功折算为整个产品已经完成。
