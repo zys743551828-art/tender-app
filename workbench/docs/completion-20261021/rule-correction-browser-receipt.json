@@ -1,0 +1,170 @@
+{
+  "source_receipt_sha256": "c422bc1510b77151f7c9011e018ac99352d0c6af02055b4ac1f65c026c047956",
+  "cases": [
+    {
+      "width": 1200,
+      "fixtureSource": "Immutable actual non-owner PG synthetic add/replace/withdraw responses with full preview, evidence, saved ACK and history",
+      "boundary": "Local HTTP fixture transport, synthetic original-key selection and lost first ACK; original PDF bytes not exercised; no model calls",
+      "before": 3,
+      "after": 3,
+      "scoringTables": 1,
+      "pendingPreserved": true,
+      "pendingCleared": true,
+      "sameReplay": true,
+      "bounds": [
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "f254aa39875979344e6c9ff5986d232a3b6796bd69deb74df92509abc5222e9e",
+      "screenshots": [
+        {
+          "name": "form-source-1200.png",
+          "sha256": "91ac718543ac3ac336e2c3919497575e21eb9056c5e83f5114b2b186c3b22c22"
+        },
+        {
+          "name": "lost-ack-1200.png",
+          "sha256": "0301799cd0d91fb16f3f8da4132ebd769b84d4855f454c9760f2f2be7e53d010"
+        },
+        {
+          "name": "preview-1200.png",
+          "sha256": "d73d0d3d029aee43e518672bfa03111fcef3c0a581ef53ed97d665d3108e63bf"
+        },
+        {
+          "name": "restored-history-1200.png",
+          "sha256": "b98565fbf58651c15e9b3b836ff0a9872881b47241b7b796c37cd589241d2fd7"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "fixtureSource": "Immutable actual non-owner PG synthetic add/replace/withdraw responses with full preview, evidence, saved ACK and history",
+      "boundary": "Local HTTP fixture transport, synthetic original-key selection and lost first ACK; original PDF bytes not exercised; no model calls",
+      "before": 3,
+      "after": 3,
+      "scoringTables": 1,
+      "pendingPreserved": true,
+      "pendingCleared": true,
+      "sameReplay": true,
+      "bounds": [
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "f254aa39875979344e6c9ff5986d232a3b6796bd69deb74df92509abc5222e9e",
+      "screenshots": [
+        {
+          "name": "form-source-768.png",
+          "sha256": "d854c2c88e7e2bc0cdcb2756cc0c4a420665d62575a0e331d080771e01338513"
+        },
+        {
+          "name": "lost-ack-768.png",
+          "sha256": "c990c4d56ea0f1666e92c8a746830f4e6afec16fc85f91d3fa7c79b485f02e24"
+        },
+        {
+          "name": "preview-768.png",
+          "sha256": "58f3293cb98074ffa66ef8a2d296c337e93204a6534582917340e2f6512156e1"
+        },
+        {
+          "name": "restored-history-768.png",
+          "sha256": "9b065198033d0a008040e34b07a97595e930bdfa7161646ef27e9943f9894a91"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "fixtureSource": "Immutable actual non-owner PG synthetic add/replace/withdraw responses with full preview, evidence, saved ACK and history",
+      "boundary": "Local HTTP fixture transport, synthetic original-key selection and lost first ACK; original PDF bytes not exercised; no model calls",
+      "before": 3,
+      "after": 3,
+      "scoringTables": 1,
+      "pendingPreserved": true,
+      "pendingCleared": true,
+      "sameReplay": true,
+      "bounds": [
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "f254aa39875979344e6c9ff5986d232a3b6796bd69deb74df92509abc5222e9e",
+      "screenshots": [
+        {
+          "name": "form-source-390.png",
+          "sha256": "ffa22bd07d3405a84ca3d465032a3a72d64d0f74878523a92c066f65104389b0"
+        },
+        {
+          "name": "lost-ack-390.png",
+          "sha256": "36d53e5ccd4bd4f6208c24f23dc1702663b303383db0f3d7a0d91cbeaa086a79"
+        },
+        {
+          "name": "preview-390.png",
+          "sha256": "6b29702acc99bff8ff489fd07103f4ed64d0347292c13fd954a7d5f257cb03ea"
+        },
+        {
+          "name": "restored-history-390.png",
+          "sha256": "7d067fa77fc2d8fd729ca47d6cb9582b722759205bb41c260083bc6691c21dac"
+        }
+      ]
+    }
+  ]
+}

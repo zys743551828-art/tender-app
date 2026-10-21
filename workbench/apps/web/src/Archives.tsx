@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { api, supportsApi } from "./api";
 import type {
   ResearchHistoryPage,
@@ -10,7 +10,17 @@ import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 
-export function Archives({ onOpen }: { onOpen: (id: string) => void }) {
+const HistoricalImports = lazy(async () => ({
+  default: (await import("./HistoricalImports")).HistoricalImports,
+}));
+
+export function Archives({
+  onOpen,
+  memberId,
+}: {
+  onOpen: (id: string) => void;
+  memberId: string;
+}) {
   const [input, setInput] = useState("");
   const [query, setQuery] = useState("");
   const path = `/history?q=${encodeURIComponent(query)}`;
@@ -55,7 +65,7 @@ export function Archives({ onOpen }: { onOpen: (id: string) => void }) {
           <h1>项目档案</h1>
           <p>回看项目、实交与成绩记录，原件及其版本身份始终保留。</p>
         </div>
-        <Badge>只读归档视图</Badge>
+        <Badge>档案与历史导入</Badge>
       </header>
       <section className="panel">
         <form
@@ -124,6 +134,12 @@ export function Archives({ onOpen }: { onOpen: (id: string) => void }) {
           历史标书和官方成绩作为本系统新资料保存。成绩未知不会记成零分，已入库也不等于已核验或具备训练资格。
         </p>
       </section>
+      <Suspense fallback={<p role="status">正在打开历史导入…</p>}>
+        <HistoricalImports
+          memberId={memberId}
+          onImported={() => void history.reload()}
+        />
+      </Suspense>
     </div>
   );
 }

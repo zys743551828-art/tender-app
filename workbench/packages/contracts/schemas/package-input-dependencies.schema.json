@@ -197,7 +197,23 @@
         "applicability"
       ]
     },
-    "Manifest": {
+    "View": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "manifest",
+        "digest"
+      ]
+    },
+    "ManifestV1": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -305,20 +321,231 @@
         "policy_digest"
       ]
     },
-    "View": {
+    "DerivedRequirementAssessment": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "manifest": {
-          "$ref": "#/$defs/Manifest"
+        "requirement_id": {
+          "$ref": "#/$defs/Id"
         },
-        "digest": {
+        "requirement_digest": {
           "$ref": "#/$defs/Digest"
+        },
+        "declaration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Dependency"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fact_status": {
+          "enum": [
+            "unknown",
+            "missing",
+            "selected_unvalidated",
+            "not_used"
+          ]
+        },
+        "unselected_fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true,
+          "maxItems": 500
+        },
+        "coverage_state": {
+          "enum": [
+            "not_provided",
+            "missing",
+            "pending_parse",
+            "parse_gap",
+            "unsupported",
+            "verified",
+            "not_applicable",
+            "conflict",
+            "unknown"
+          ]
+        },
+        "source_bound": {
+          "type": "boolean"
+        },
+        "applicability": {
+          "enum": [
+            "applicable",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "rule_status": {
+          "enum": [
+            "active",
+            "inactive",
+            "needs_revalidation"
+          ]
         }
       },
       "required": [
-        "manifest",
-        "digest"
+        "requirement_id",
+        "requirement_digest",
+        "declaration",
+        "fact_status",
+        "unselected_fact_ids",
+        "coverage_state",
+        "source_bound",
+        "applicability",
+        "rule_status"
+      ]
+    },
+    "ManifestV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "package-input-dependencies/2"
+        },
+        "kind": {
+          "const": "input_dependency_assessment"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "inventory_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "usage_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "selected_fact_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependency_review_status": {
+          "enum": [
+            "incomplete",
+            "declared"
+          ]
+        },
+        "required_facts_assessment": {
+          "enum": [
+            "unknown",
+            "missing",
+            "selected_unvalidated",
+            "not_used"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DerivedRequirementAssessment"
+          }
+        },
+        "inventory_status": {
+          "const": "human_derivation_range_quality_unmeasured"
+        },
+        "declaration_kind": {
+          "const": "human_dependency_annotation"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "rule_state_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "active": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "inactive": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "needs_revalidation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "total",
+            "active",
+            "inactive",
+            "needs_revalidation"
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "purpose",
+        "prepared",
+        "frozen_digest",
+        "inventory_digest",
+        "usage_digest",
+        "selected_fact_count",
+        "requirement_count",
+        "dependency_review_status",
+        "required_facts_assessment",
+        "requirements",
+        "inventory_status",
+        "declaration_kind",
+        "inventory_complete",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "policy_digest",
+        "rule_state_counts"
+      ]
+    },
+    "Manifest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ManifestV1"
+        },
+        {
+          "$ref": "#/$defs/ManifestV2"
+        }
       ]
     }
   }

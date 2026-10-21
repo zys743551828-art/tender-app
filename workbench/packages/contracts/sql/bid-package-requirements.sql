@@ -11,7 +11,7 @@ BEGIN
  FOREACH key IN ARRAY ARRAY['id','bid_id'] LOOP
   IF NOT package_json_text(value->key) THEN RETURN false; END IF;
  END LOOP;
- IF value->>'version'='bid-package-requirements/1' THEN
+ IF value->>'version' IN('bid-package-requirements/1','bid-package-requirements/3') THEN
   FOREACH key IN ARRAY ARRAY['package_id','target_revision_id','authority_revision_id','rule_set_id','actor_id'] LOOP
    IF NOT package_json_text(value->key) THEN RETURN false; END IF;
   END LOOP;
@@ -172,6 +172,13 @@ CREATE TABLE bid_package_requirement_inventories(
    AND package_json_keys(manifest,ARRAY['version','id','bid_id','package_id','target_revision_id','package_digest','authority_revision_id','authority_digest','rule_set_id','rule_set_digest','revision','predecessor_digest','identity_digest','source_snapshot','requirements','inventory_complete','extraction_binding','review_ready','actor_id','extraction_input_digest','extraction_result_digest','extraction_result_id','extraction_range_status','extraction_coverage','extraction_quality_status'])
    AND manifest->'inventory_complete'='false'::jsonb AND manifest->'review_ready'='false'::jsonb
    AND manifest->>'extraction_binding'='exact_frozen_input_result')
+  OR
+  (manifest->>'version'='bid-package-requirements/3'
+   AND package_json_keys(manifest,ARRAY['version','id','bid_id','package_id','target_revision_id','package_digest','authority_revision_id','authority_digest','rule_set_id','rule_set_digest','revision','predecessor_digest','identity_digest','source_snapshot','requirements','inventory_complete','extraction_binding','review_ready','actor_id','extraction_basis','human_derivation'])
+   AND manifest->'inventory_complete'='false'::jsonb AND manifest->'review_ready'='false'::jsonb
+   AND manifest->>'extraction_binding'='frozen_extraction_plus_human_derivation'
+   AND jsonb_typeof(manifest->'extraction_basis')='object'
+   AND jsonb_typeof(manifest->'human_derivation')='object')
  ) IS TRUE),
  CHECK((manifest->>'id'=id::text AND manifest->>'bid_id'=bid_id::text AND manifest->>'package_id'=package_id::text AND manifest->>'target_revision_id'=target_revision_id::text AND manifest->>'authority_revision_id'=authority_revision_id::text AND manifest->>'rule_set_id'=rule_set_id::text) IS TRUE),
  CHECK((manifest->>'actor_id'=actor_id::text) IS TRUE),

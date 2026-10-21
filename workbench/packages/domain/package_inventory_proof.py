@@ -9,7 +9,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.domain.bid_packages import safe_integer
 from packages.domain.review_identity import canonical, digest
-from packages.domain.runtime import ROOT, sha
+from packages.domain.runtime import ROOT, DomainError, sha
 
 SCHEMA = json.loads(
     (
@@ -22,6 +22,10 @@ POLICY_FILES = (
     "packages/domain/bid_package_inventory_proof.py",
     "packages/contracts/schemas/package-inventory-proof.schema.json",
     "packages/domain/review_identity.py",
+    "packages/domain/package_rule_corrections.py",
+    "packages/domain/package_rule_correction_proof.py",
+    "packages/contracts/package_rule_corrections_api.py",
+    "packages/contracts/bid_package_requirements_api.py",
 )
 
 
@@ -202,11 +206,36 @@ def assess(original, prepared, receipt=None):
     )
     state, coverage, receipt_digest = "not_frozen", "unknown", None
     expected_read_digest = None
-    if im["version"] == "bid-package-requirements/2":
-        _require(im["extraction_binding"] == "exact_frozen_input_result")
+    derivation = None
+    if im["version"] in {"bid-package-requirements/2", "bid-package-requirements/3"}:
+        derived = im["version"] == "bid-package-requirements/3"
+        _require(
+            im["extraction_binding"]
+            == (
+                "frozen_extraction_plus_human_derivation"
+                if derived
+                else "exact_frozen_input_result"
+            )
+        )
         state = "archive_missing"
         if receipt is not None:
-            result = _receipt_matches(receipt, selection, im, expected_members, expected_parts)
+            original_inventory = im
+            if derived:
+                from packages.domain import package_rule_corrections as corrections
+
+                try:
+                    derivation = corrections.verify_derivation(
+                        inv,
+                        receipt["derivation"],
+                        authority,
+                        corrections.evidence_rows(authority, root["documents"]),
+                    )
+                except (DomainError, ValueError, TypeError, KeyError) as error:
+                    raise ValueError("inventory_derivation_binding") from error
+                original_inventory = receipt["derivation"]["root_inventory"]["manifest"]
+            result = _receipt_matches(
+                receipt, selection, original_inventory, expected_members, expected_parts
+            )
             receipt_digest = digest(receipt)
             coverage = result["extraction_coverage"]
             expected_read_digest = result["read_evidence_ids_digest"]
@@ -281,6 +310,24 @@ def assess(original, prepared, receipt=None):
             }
         ),
     }
+    if im["version"] == "bid-package-requirements/3":
+        from packages.domain import package_rule_corrections as corrections
+
+        corrections.verify_inventory_header(inv)
+        if derivation is None:
+            head, basis = im["human_derivation"], im["extraction_basis"]
+            counts = corrections.rule_counts([row["rule_snapshot"] for row in rows])
+            counts.update(human_withdrawn=None, inherited_superseded=None)
+            derivation = {
+                "state": "archive_missing",
+                "root_inventory_id": basis["inventory_id"],
+                "root_rule_set_id": basis["rule_set_id"],
+                "head_id": head["head_id"],
+                "head_digest": head["head_digest"],
+                "length": head["length"],
+                "counts": counts,
+            }
+        manifest.update(version="package-inventory-proof/2", human_derivation=derivation)
     _require(
         Draft202012Validator(
             {"$ref": "#/$defs/Manifest", "$defs": SCHEMA["$defs"]}, format_checker=FormatChecker()

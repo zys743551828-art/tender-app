@@ -8,6 +8,8 @@ const memberCommandKinds = [
   "package-review-run",
   "package-review-decision",
   "package-review-report-export",
+  "package-rule-correction",
+  "historical-import",
   "document-parse",
   "submission",
   "report",

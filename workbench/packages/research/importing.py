@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from psycopg.types.json import Jsonb
 
 from packages.domain.runtime import DomainError, audit, clean, fetch, match, now, sha, uid
+from packages.research import import_originals
 from packages.research.artifacts import commit_stage
 from packages.research.core import amount, validate_score
 from packages.research.outcomes import register
@@ -164,7 +165,7 @@ def view(c, identity, *, limit=100, offset=0):
     )
 
 
-def confirm(c, *, actor, identity, condition, manifest, command):
+def confirm(c, *, actor, identity, condition, manifest, command, originals):
     # 同批次和跨批次同资料确认串行；不能让重复导入制造独立实交/样本。
     c.execute("SELECT pg_advisory_xact_lock(91145,1)")
     batch = fetch(c, "SELECT * FROM import_batches WHERE id=%s FOR UPDATE", (identity,))
@@ -175,6 +176,7 @@ def confirm(c, *, actor, identity, condition, manifest, command):
         )
     if manifest.get("schema") != "historical-import/1":
         raise DomainError("IMPORT_MANIFEST_INVALID", "导入清单用途不匹配", 409)
+    import_originals.assert_batch(originals, identity, manifest)
     for item in manifest["records"]:
         record = fetch(
             c,
@@ -185,6 +187,9 @@ def confirm(c, *, actor, identity, condition, manifest, command):
             continue
         try:
             with c.transaction():
+                bid = item["bid_id"]
+                fetch(c, "SELECT id FROM bids WHERE id=%s FOR UPDATE", (bid,))
+                original_receipt = import_originals.receipt(c, originals, item, record)
                 checked = check_record(c, item)
                 if record_digest(checked) != record["source_digest"]:
                     raise DomainError(
@@ -205,8 +210,6 @@ def confirm(c, *, actor, identity, condition, manifest, command):
                         ),
                     )
                     continue
-                bid = item["bid_id"]
-                fetch(c, "SELECT id FROM bids WHERE id=%s FOR UPDATE", (bid,))
                 existing = c.execute(
                     "SELECT s.id FROM submission_records s JOIN document_versions d ON d.id=s.body_version_id JOIN blobs b ON b.id=d.blob_id WHERE s.bid_id=%s AND b.digest=%s AND s.submitted_at=%s ORDER BY s.created_at,s.id LIMIT 1",
                     (bid, checked["body_digest"], item["submitted_at"]),
@@ -226,6 +229,7 @@ def confirm(c, *, actor, identity, condition, manifest, command):
                                     "import_batch_id": str(identity),
                                     "external_record_id": item["external_record_id"],
                                     "gate_checked": False,
+                                    "original_verification": original_receipt,
                                 }
                             ),
                             item["submitted_at"],
@@ -272,6 +276,7 @@ def confirm(c, *, actor, identity, condition, manifest, command):
                         "submission_id": submission_id,
                         "gate_checked": False,
                         "sample_admission": "pending_separate_check",
+                        "original_verification": original_receipt,
                     },
                     command,
                 )

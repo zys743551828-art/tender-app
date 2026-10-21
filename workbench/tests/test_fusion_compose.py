@@ -24,6 +24,14 @@ def test_image_proxy_budget_is_limited_to_exact_image_registration():
     assert config.count("client_max_body_size 12m;") == 1
 
 
+def test_import_manifest_budget_is_limited_to_exact_preview_route():
+    config = (ROOT / "deploy/nginx-fusion.conf").read_text(encoding="utf-8")
+    body = re.search(r"location = /api/v1/research/import-previews \{([^}]+)\}", config).group(1)
+    assert "client_max_body_size 9m;" in body
+    assert "proxy_pass http://api:8000;" in body
+    assert config.count("client_max_body_size 9m;") == 1
+
+
 def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
     plan = yaml.safe_load((ROOT / "deploy/compose.fusion.yaml").read_text(encoding="utf-8"))
     assert plan["name"] == "tender-fusion"
@@ -60,15 +68,15 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
 def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
     plan = yaml.safe_load((ROOT / "deploy/compose.fusion.yaml").read_text(encoding="utf-8"))
     api = plan["services"]["api"]
-    assert "api_profile_v10:/runtime:ro" in api["volumes"]
+    assert "api_profile_v11:/runtime:ro" in api["volumes"]
     assert not any("init_state" in volume or ".env" in volume for volume in api["volumes"])
     assert not any(key.endswith("_DSN") for key in api["environment"])
     assert not api.get("secrets")
     assert plan["services"]["postgres"]["secrets"] == ["fusion_owner_password"]
     assert plan["services"]["checks-postgres"]["secrets"] == ["fusion_checks_owner_password"]
     assert plan["services"]["checks"]["secrets"] == ["fusion_checks_owner_password"]
-    assert "init_state_v10:/workspace/.local" in plan["services"]["init"]["volumes"]
-    assert "api_profile_v10:/runtime" in plan["services"]["init"]["volumes"]
+    assert "init_state_v11:/workspace/.local" in plan["services"]["init"]["volumes"]
+    assert "api_profile_v11:/runtime" in plan["services"]["init"]["volumes"]
     assert {
         "init_state",
         "api_profile",
@@ -90,6 +98,8 @@ def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
         "api_profile_v9",
         "init_state_v10",
         "api_profile_v10",
+        "init_state_v11",
+        "api_profile_v11",
     } <= plan["volumes"].keys()
     assert (
         "checks_postgres_data:/var/lib/postgresql/data"

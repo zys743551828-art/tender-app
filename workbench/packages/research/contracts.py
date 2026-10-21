@@ -26,9 +26,9 @@ def extend_openapi(actual):
     from apps.api.research_routes import (
         DatasetRequest,
         GroupingRequest,
-        HistoricalImportRequest,
         OutcomeVerification,
     )
+    from packages.research.import_contracts import HistoricalImportRequest
 
     schemas = actual["components"]["schemas"]
     uuid = {"type": "string", "format": "uuid"}
@@ -117,6 +117,48 @@ def extend_openapi(actual):
             ),
             "formal_sample_admission": {"const": "separate_verified_technical_label_check"},
             "standard_submission_gate_checked": {"const": False},
+        }
+    )
+    import_receipt = deepcopy(schemas["HistoricalImportBatch"])
+    import_receipt["properties"]["command"] = obj(
+        {
+            "command_id": uuid,
+            "actor_id": uuid,
+            "command_kind": {"enum": ["preview-historical-import", "confirm-historical-import"]},
+            "target_id": uuid,
+            "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 128},
+            "request_digest": digest_schema,
+            "if_match": {"type": ["string", "null"]},
+        }
+    )
+    import_receipt["required"].append("command")
+    schemas["HistoricalImportReceipt"] = import_receipt
+    schemas["HistoricalImportPage"] = obj(
+        {
+            "items": arr(
+                obj(
+                    {
+                        "id": uuid,
+                        "mode": {"enum": ["dry_run", "confirmed_import"]},
+                        "revision": {"type": "integer", "minimum": 1},
+                        "created_by": uuid,
+                        "created_at": {"type": ["string", "null"], "format": "date-time"},
+                        "counts": deepcopy(
+                            schemas["HistoricalImportBatch"]["properties"]["counts"]
+                        ),
+                    }
+                )
+            ),
+            "next_offset": {"type": ["integer", "null"], "minimum": 0},
+        }
+    )
+    schemas["HistoricalImportSource"] = obj(
+        {
+            "batch_id": uuid,
+            "manifest_blob_id": uuid,
+            "manifest_digest": digest_schema,
+            "request": ref("HistoricalImportRequest"),
+            "source_matches_saved_manifest": {"const": True},
         }
     )
     schemas["ResearchGroupingRequest"] = GroupingRequest.model_json_schema()
@@ -280,8 +322,17 @@ def extend_openapi(actual):
             "post",
             "previewHistoricalImport",
             "HistoricalImportRequest",
-            "HistoricalImportBatch",
+            "HistoricalImportReceipt",
             201,
+            False,
+        ),
+        (
+            "/research/imports",
+            "get",
+            "listHistoricalImports",
+            None,
+            "HistoricalImportPage",
+            200,
             False,
         ),
         (
@@ -298,9 +349,18 @@ def extend_openapi(actual):
             "post",
             "confirmHistoricalImport",
             "ResearchEmptyRequest",
-            "HistoricalImportBatch",
+            "HistoricalImportReceipt",
             200,
             True,
+        ),
+        (
+            "/research/imports/{batch_id}/source",
+            "get",
+            "getHistoricalImportSource",
+            None,
+            "HistoricalImportSource",
+            200,
+            False,
         ),
         (
             "/research/samples/{sample_id}/grouping",
@@ -471,7 +531,7 @@ def extend_openapi(actual):
         if method == "post":
             operation["parameters"] += [
                 {"name": name, "in": "header", "required": True, "schema": string}
-                for name in ["X-CSRF-Token", "Idempotency-Key"]
+                for name in ["Origin", "X-CSRF-Token", "Idempotency-Key"]
                 + (["If-Match"] if conditional else [])
             ]
         if request_schema:

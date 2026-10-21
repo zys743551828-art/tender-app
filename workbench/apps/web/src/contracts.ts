@@ -1,5 +1,497 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type KnowledgePackageReviewTargetPage = {
+  bid_id: string;
+  items: {
+    id: string;
+    target_kind: "package_review_run";
+    created_at: string;
+    input_digest: string;
+    execution_input_id: string;
+    state: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    frozen_input_id: string;
+    result_digest: string | null;
+  }[];
+  next_offset: number | null;
+  reference_only: true;
+  changes_frozen_result: false;
+  formal_score_allowed: false;
+};
+
+export type HistoricalImportRequest = {
+  records: HistoricalImportRecord[];
+};
+
+export type HistoricalImportBatch = {
+  id: string;
+  mode: "dry_run" | "confirmed_import";
+  revision: number;
+  manifest_blob_id: string;
+  records: {
+    batch_id: string;
+    external_record_id: string;
+    source_digest: string;
+    state: "pending" | "imported" | "conflict" | "failed";
+    bid_id: string | null;
+    errors: string[];
+  }[];
+  next_offset: number | null;
+  counts: {
+    total: number;
+    pending: number;
+    imported: number;
+    errors: number;
+  };
+  formal_sample_admission: "separate_verified_technical_label_check";
+  standard_submission_gate_checked: false;
+};
+
+export type HistoricalImportReceipt = {
+  id: string;
+  mode: "dry_run" | "confirmed_import";
+  revision: number;
+  manifest_blob_id: string;
+  records: {
+    batch_id: string;
+    external_record_id: string;
+    source_digest: string;
+    state: "pending" | "imported" | "conflict" | "failed";
+    bid_id: string | null;
+    errors: string[];
+  }[];
+  next_offset: number | null;
+  counts: {
+    total: number;
+    pending: number;
+    imported: number;
+    errors: number;
+  };
+  formal_sample_admission: "separate_verified_technical_label_check";
+  standard_submission_gate_checked: false;
+  command: {
+    command_id: string;
+    actor_id: string;
+    command_kind: "preview-historical-import" | "confirm-historical-import";
+    target_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    if_match: string | null;
+  };
+};
+
+export type HistoricalImportPage = {
+  items: {
+    id: string;
+    mode: "dry_run" | "confirmed_import";
+    revision: number;
+    created_by: string;
+    created_at: string | null;
+    counts: {
+      total: number;
+      pending: number;
+      imported: number;
+      errors: number;
+    };
+  }[];
+  next_offset: number | null;
+};
+
+export type HistoricalImportSource = {
+  batch_id: string;
+  manifest_blob_id: string;
+  manifest_digest: string;
+  request: HistoricalImportRequest;
+  source_matches_saved_manifest: true;
+};
+
+export type PackageRuleCorrectionRequest = {
+  base_inventory_digest: string;
+  base_rule_set_digest: string;
+  reason: string;
+  changes: (
+    | {
+        op: "add";
+        rule: PackageRuleCorrection_RuleAddition;
+      }
+    | {
+        op: "replace";
+        rule_id: string;
+        rule_digest: string;
+        rule: PackageRuleCorrection_RuleAddition;
+      }
+    | {
+        op: "withdraw";
+        rule_id: string;
+        rule_digest: string;
+        evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+      }
+  )[];
+};
+
+export type ApplyPackageRuleCorrection = {
+  request: {
+    base_inventory_digest: string;
+    base_rule_set_digest: string;
+    reason: string;
+    changes: (
+      | {
+          op: "add";
+          rule: PackageRuleCorrection_RuleAddition;
+        }
+      | {
+          op: "replace";
+          rule_id: string;
+          rule_digest: string;
+          rule: PackageRuleCorrection_RuleAddition;
+        }
+      | {
+          op: "withdraw";
+          rule_id: string;
+          rule_digest: string;
+          evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+        }
+    )[];
+  };
+  preview_digest: string;
+};
+
+export type PackageRuleCorrectionPreviewView = {
+  manifest: {
+    version: "package-rule-correction-preview/1";
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    base: {
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+    };
+    authority: {
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    };
+    extraction_basis: {
+      inventory_id: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      extraction_result_id: string;
+      extraction_input_digest: string;
+      extraction_result_digest: string;
+      extraction_range_status: "all_frozen_evidence_submitted";
+      extraction_coverage: "complete" | "partial" | "conflict";
+      extraction_quality_status: "not_measured";
+    };
+    previous: {
+      id: string;
+      digest: string;
+    } | null;
+    sequence_no: number;
+    policy_digest: string;
+    request: {
+      base_inventory_digest: string;
+      base_rule_set_digest: string;
+      reason: string;
+      changes: (
+        | {
+            op: "add";
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "replace";
+            rule_id: string;
+            rule_digest: string;
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "withdraw";
+            rule_id: string;
+            rule_digest: string;
+            evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+          }
+      )[];
+    };
+    request_digest: string;
+    source_snapshot_digest: string;
+    changes: {
+      index: number;
+      op: "add" | "replace" | "withdraw";
+      rule_id: string | null;
+      rule_digest: string | null;
+      before: {
+        kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+        statement: string;
+        conditions: string[];
+        exceptions: string[];
+        max_points: string | null;
+        evidence_ids: string[];
+        bands: PackageRuleCorrection_RuleBand[];
+        applicability_scope: { [key: string]: unknown };
+        provenance_status: "effective" | "needs_revalidation" | "superseded";
+      } | null;
+      after: {
+        kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+        statement: string;
+        conditions: string[];
+        exceptions: string[];
+        max_points: string | null;
+        evidence_ids: string[];
+        bands: PackageRuleCorrection_RuleBand[];
+        applicability_scope: { [key: string]: unknown };
+        provenance_status: "effective" | "needs_revalidation" | "superseded";
+      };
+      quotes: {
+        evidence_id: string;
+        member_id: string;
+        document_version_id: string;
+        parse_run_id: string;
+        physical_page: number;
+        evidence_digest: string;
+        part_ids: string[];
+        quote: string;
+      }[];
+    }[];
+    counts: {
+      before: number;
+      after: number;
+      carried: number;
+      added: number;
+      replaced: number;
+      withdrawn: number;
+      active_after: number;
+    };
+    limitations: string[];
+    inventory_complete: false;
+    review_ready: false;
+    original_bytes_verified: false;
+  };
+  digest: string;
+};
+
+export type PackageRuleCorrectionView = {
+  manifest: {
+    version: "package-rule-correction/1";
+    id: string;
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    base: {
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+    };
+    authority: {
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    };
+    extraction_basis: {
+      inventory_id: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      extraction_result_id: string;
+      extraction_input_digest: string;
+      extraction_result_digest: string;
+      extraction_range_status: "all_frozen_evidence_submitted";
+      extraction_coverage: "complete" | "partial" | "conflict";
+      extraction_quality_status: "not_measured";
+    };
+    previous: {
+      id: string;
+      digest: string;
+    } | null;
+    sequence_no: number;
+    policy_digest: string;
+    request: {
+      base_inventory_digest: string;
+      base_rule_set_digest: string;
+      reason: string;
+      changes: (
+        | {
+            op: "add";
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "replace";
+            rule_id: string;
+            rule_digest: string;
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "withdraw";
+            rule_id: string;
+            rule_digest: string;
+            evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+          }
+      )[];
+    };
+    request_digest: string;
+    source_snapshot_digest: string;
+    preview_digest: string;
+    actor_id: string;
+    command_id: string;
+    created_at: string;
+    result: {
+      inventory_id: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      rule_count: number;
+      rules_digest: string;
+    };
+    mappings: {
+      from_rule_id: string;
+      from_rule_digest: string;
+      to_rule_id: string;
+      to_rule_digest: string;
+      op: "carry" | "replace" | "withdraw";
+      change_index: number | null;
+    }[];
+    additions: {
+      change_index: number;
+      to_rule_id: string;
+      to_rule_digest: string;
+    }[];
+    decision_bindings: {
+      rule_id: string;
+      decision_id: string;
+      decision_digest: string;
+      mode: "carried" | "confirmed" | "rejected";
+    }[];
+  };
+  digest: string;
+};
+
+export type PackageRuleCorrectionAppliedView = {
+  correction: PackageRuleCorrectionView;
+  inventory: PackageRequirementInventoryView;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      request: {
+        base_inventory_digest: string;
+        base_rule_set_digest: string;
+        reason: string;
+        changes: (
+          | {
+              op: "add";
+              rule: PackageRuleCorrection_RuleAddition;
+            }
+          | {
+              op: "replace";
+              rule_id: string;
+              rule_digest: string;
+              rule: PackageRuleCorrection_RuleAddition;
+            }
+          | {
+              op: "withdraw";
+              rule_id: string;
+              rule_digest: string;
+              evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+            }
+        )[];
+      };
+      preview_digest: string;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageRuleCorrectionHistoryPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  items: {
+    id: string;
+    digest: string;
+    created_at: string;
+    actor_id: string;
+    base_inventory_id: string;
+    result_inventory_id: string;
+    added: number;
+    replaced: number;
+    withdrawn: number;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageRuleCorrectionDetail = PackageRuleCorrectionAppliedView;
+
+export type PackageRuleCorrectionEvidencePage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  inventory_digest: string;
+  authority: {
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  };
+  items: {
+    evidence_id: string;
+    member_id: string;
+    document_version_id: string;
+    parse_run_id: string;
+    physical_page: number;
+    evidence_digest: string;
+    part_ids: string[];
+    file_digest: string;
+    ordinal: number;
+    kind: "text" | "table" | "visual_observation";
+    excerpt: string;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageRuleCorrectionEvidenceDetail = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  inventory_digest: string;
+  authority: {
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  };
+  evidence: {
+    evidence_id: string;
+    member_id: string;
+    document_version_id: string;
+    parse_run_id: string;
+    physical_page: number;
+    evidence_digest: string;
+    part_ids: string[];
+    file_digest: string;
+    ordinal: number;
+    kind: "text" | "table" | "visual_observation";
+    text_content: string;
+  };
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -1780,6 +2272,60 @@ export type PackageRequirementInventoryManifest =
       extraction_range_status: "all_frozen_evidence_submitted";
       extraction_coverage: "complete" | "partial" | "conflict";
       extraction_quality_status: "not_measured";
+    }
+  | {
+      version: "bid-package-requirements/3";
+      id: string;
+      bid_id: string;
+      package_id: string;
+      target_revision_id: string;
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      revision: number;
+      predecessor_digest: string | null;
+      identity_digest: string;
+      source_snapshot: { [key: string]: unknown }[];
+      requirements: {
+        rule_id: string;
+        rule_digest: string;
+        rule_snapshot: { [key: string]: unknown };
+        decision_id: string | null;
+        decision_snapshot: { [key: string]: unknown } | null;
+        requirement: BidPackage_requirement;
+        requirement_digest: string;
+        source_bound: boolean;
+        annotation: {
+          kind: "human_check_plan_declaration";
+          mapped: boolean;
+          reason: string | null;
+          basis_evidence_ids: string[];
+        };
+      }[];
+      inventory_complete: false;
+      extraction_binding: "frozen_extraction_plus_human_derivation";
+      review_ready: false;
+      actor_id: string;
+      extraction_basis: {
+        inventory_id: string;
+        inventory_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        extraction_result_id: string;
+        extraction_input_digest: string;
+        extraction_result_digest: string;
+        extraction_range_status: "all_frozen_evidence_submitted";
+        extraction_coverage: "complete" | "partial" | "conflict";
+        extraction_quality_status: "not_measured";
+      };
+      human_derivation: {
+        version: "package-rule-derivation/1";
+        head_id: string;
+        head_digest: string;
+        length: number;
+      };
     };
 
 export type PackageCoverageAttemptManifest = {
@@ -1897,6 +2443,60 @@ export type PackageRequirementInventoryView = {
         extraction_range_status: "all_frozen_evidence_submitted";
         extraction_coverage: "complete" | "partial" | "conflict";
         extraction_quality_status: "not_measured";
+      }
+    | {
+        version: "bid-package-requirements/3";
+        id: string;
+        bid_id: string;
+        package_id: string;
+        target_revision_id: string;
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        revision: number;
+        predecessor_digest: string | null;
+        identity_digest: string;
+        source_snapshot: { [key: string]: unknown }[];
+        requirements: {
+          rule_id: string;
+          rule_digest: string;
+          rule_snapshot: { [key: string]: unknown };
+          decision_id: string | null;
+          decision_snapshot: { [key: string]: unknown } | null;
+          requirement: BidPackage_requirement;
+          requirement_digest: string;
+          source_bound: boolean;
+          annotation: {
+            kind: "human_check_plan_declaration";
+            mapped: boolean;
+            reason: string | null;
+            basis_evidence_ids: string[];
+          };
+        }[];
+        inventory_complete: false;
+        extraction_binding: "frozen_extraction_plus_human_derivation";
+        review_ready: false;
+        actor_id: string;
+        extraction_basis: {
+          inventory_id: string;
+          inventory_digest: string;
+          rule_set_id: string;
+          rule_set_digest: string;
+          extraction_result_id: string;
+          extraction_input_digest: string;
+          extraction_result_digest: string;
+          extraction_range_status: "all_frozen_evidence_submitted";
+          extraction_coverage: "complete" | "partial" | "conflict";
+          extraction_quality_status: "not_measured";
+        };
+        human_derivation: {
+          version: "package-rule-derivation/1";
+          head_id: string;
+          head_digest: string;
+          length: number;
+        };
       };
   digest: string;
 };
@@ -3980,7 +4580,12 @@ export type KnowledgeReferenceRequest = {
   bid_id: string;
   version_id: string;
   purpose: "assist" | "authoring" | "compliance" | "history";
-  target_kind: "project" | "section" | "operation" | "review";
+  target_kind:
+    | "project"
+    | "section"
+    | "operation"
+    | "review"
+    | "package_review_run";
   target_object_id: string;
   excerpt: string;
   applicability_reason: string;
@@ -4905,6 +5510,43 @@ export type UploadTarget =
       file_id: string;
       expected_file_revision: number;
     };
+
+export type HistoricalImportRecord = {
+  external_record_id: string;
+  bid_id: string;
+  actual_document_version_id: string;
+  submitted_at: string;
+  evidence_ref: string;
+  explanation: string;
+  score_kind: "technical_total" | "comprehensive_total" | "unknown";
+  value: string | null;
+  maximum: string | null;
+  source_version_id: string | null;
+  known_at: string | null;
+};
+
+export type PackageRuleCorrection_RuleAddition = {
+  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  statement: string;
+  conditions: string[];
+  exceptions: string[];
+  scope: PackageRuleCorrection_RuleScope;
+  maximum: string | null;
+  bands: PackageRuleCorrection_RuleBand[];
+  evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+};
+
+export type PackageRuleCorrection_RuleEvidenceQuote = {
+  evidence_id: string;
+  quote: string;
+};
+
+export type PackageRuleCorrection_RuleBand = {
+  label: string;
+  description: string;
+  points: string;
+  evidence_ids: string[];
+};
 
 export type AuthoringGenerationJson =
   | null
@@ -5978,7 +6620,12 @@ export type KnowledgeReference = {
   citation_ids: string[];
   excerpt: string;
   purpose: "assist" | "authoring" | "compliance" | "history";
-  target_kind: "project" | "section" | "operation" | "review";
+  target_kind:
+    | "project"
+    | "section"
+    | "operation"
+    | "review"
+    | "package_review_run";
   target_object_id: string;
   applicability_reason: string;
   source_manifest: KnowledgeAuthority[];
@@ -6398,6 +7045,11 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageRuleCorrection_RuleScope = {
+  bid_id: string;
+  description: string;
+};
+
 export type PackageScopeReview_Scope = {
   bid_id: PackageScopeReview_Id;
   package_id: PackageScopeReview_Id;
@@ -6512,33 +7164,9 @@ export type PackageInputDependencies_Id = string;
 
 export type PackageInputDependencies_Digest = string;
 
-export type PackageInputDependencies_Manifest = {
-  version: "package-input-dependencies/1";
-  kind: "input_dependency_assessment";
-  purpose: "prebid_compliance";
-  prepared: PackageInputDependencies_Prepared;
-  frozen_digest: PackageInputDependencies_Digest;
-  inventory_digest: PackageInputDependencies_Digest;
-  usage_digest: PackageInputDependencies_Digest;
-  selected_fact_count: number;
-  requirement_count: number;
-  dependency_review_status: "incomplete" | "declared";
-  required_facts_assessment:
-    | "unknown"
-    | "missing"
-    | "selected_unvalidated"
-    | "not_used";
-  requirements: PackageInputDependencies_RequirementAssessment[];
-  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
-  declaration_kind: "human_dependency_annotation";
-  inventory_complete: false;
-  original_bytes_verified: false;
-  facts_qualified: false;
-  review_ready: false;
-  launch_available: false;
-  publication_authorized: false;
-  policy_digest: PackageInputDependencies_Digest;
-};
+export type PackageInputDependencies_Manifest =
+  | PackageInputDependencies_ManifestV1
+  | PackageInputDependencies_ManifestV2;
 
 export type PackageFactChange_Digest = string;
 
@@ -6813,34 +7441,66 @@ export type PackageDependencyPlan_Usage_View = {
   digest: PackageDependencyPlan_Usage_Digest;
 };
 
-export type PackageInputDependencies_Prepared = {
-  bid_id: PackageInputDependencies_Id;
-  package_id: PackageInputDependencies_Id;
-  revision_id: PackageInputDependencies_Id;
-  inventory_id: PackageInputDependencies_Id;
-  frozen_input_id: PackageInputDependencies_Id;
-  execution_input_id: PackageInputDependencies_Id;
-  execution_input_digest: PackageInputDependencies_Digest;
+export type PackageInputDependencies_ManifestV1 = {
+  version: "package-input-dependencies/1";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageInputDependencies_Prepared;
+  frozen_digest: PackageInputDependencies_Digest;
+  inventory_digest: PackageInputDependencies_Digest;
+  usage_digest: PackageInputDependencies_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageInputDependencies_RequirementAssessment[];
+  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageInputDependencies_Digest;
 };
 
-export type PackageInputDependencies_RequirementAssessment = {
-  requirement_id: PackageInputDependencies_Id;
-  requirement_digest: PackageInputDependencies_Digest;
-  declaration: PackageInputDependencies_Dependency | null;
-  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
-  unselected_fact_ids: PackageInputDependencies_Id[];
-  coverage_state:
-    | "not_provided"
+export type PackageInputDependencies_ManifestV2 = {
+  version: "package-input-dependencies/2";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageInputDependencies_Prepared;
+  frozen_digest: PackageInputDependencies_Digest;
+  inventory_digest: PackageInputDependencies_Digest;
+  usage_digest: PackageInputDependencies_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
     | "missing"
-    | "pending_parse"
-    | "parse_gap"
-    | "unsupported"
-    | "verified"
-    | "not_applicable"
-    | "conflict"
-    | "unknown";
-  source_bound: boolean;
-  applicability: "applicable" | "unknown" | "not_applicable";
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageInputDependencies_DerivedRequirementAssessment[];
+  inventory_status: "human_derivation_range_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageInputDependencies_Digest;
+  rule_state_counts: {
+    total: number;
+    active: number;
+    inactive: number;
+    needs_revalidation: number;
+  };
 };
 
 export type PackageFactScope_ScopeBinding = {
@@ -6892,7 +7552,80 @@ export type MissedTaskSchedule = {
   resolution: "skipped_run_current_once_available";
 };
 
-export type PackageDependencyPlan_Assessment_Manifest = {
+export type PackageDependencyPlan_Assessment_Manifest =
+  | PackageDependencyPlan_Assessment_ManifestV1
+  | PackageDependencyPlan_Assessment_ManifestV2;
+
+export type PackageDependencyPlan_Usage_Manifest = {
+  version: "package-fact-usage/1";
+  kind: "fact_usage_selection";
+  purpose: "prebid_compliance";
+  prepared: PackageDependencyPlan_Usage_Prepared;
+  identity_digest: PackageDependencyPlan_Usage_Digest;
+  selected: PackageDependencyPlan_Usage_Selected[];
+  selection_digest: PackageDependencyPlan_Usage_Digest;
+  selected_facts_digest: PackageDependencyPlan_Usage_Digest;
+  required_facts_assessment: "not_performed";
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
+export type PackageDependencyPlan_Usage_Digest = string;
+
+export type PackageInputDependencies_Prepared = {
+  bid_id: PackageInputDependencies_Id;
+  package_id: PackageInputDependencies_Id;
+  revision_id: PackageInputDependencies_Id;
+  inventory_id: PackageInputDependencies_Id;
+  frozen_input_id: PackageInputDependencies_Id;
+  execution_input_id: PackageInputDependencies_Id;
+  execution_input_digest: PackageInputDependencies_Digest;
+};
+
+export type PackageInputDependencies_RequirementAssessment = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  declaration: PackageInputDependencies_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageInputDependencies_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+};
+
+export type PackageInputDependencies_DerivedRequirementAssessment = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  declaration: PackageInputDependencies_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageInputDependencies_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  rule_status: "active" | "inactive" | "needs_revalidation";
+};
+
+export type PackageDependencyPlan_Assessment_ManifestV1 = {
   version: "package-input-dependencies/1";
   kind: "input_dependency_assessment";
   purpose: "prebid_compliance";
@@ -6920,23 +7653,54 @@ export type PackageDependencyPlan_Assessment_Manifest = {
   policy_digest: PackageDependencyPlan_Assessment_Digest;
 };
 
-export type PackageDependencyPlan_Usage_Manifest = {
-  version: "package-fact-usage/1";
-  kind: "fact_usage_selection";
+export type PackageDependencyPlan_Assessment_ManifestV2 = {
+  version: "package-input-dependencies/2";
+  kind: "input_dependency_assessment";
   purpose: "prebid_compliance";
-  prepared: PackageDependencyPlan_Usage_Prepared;
-  identity_digest: PackageDependencyPlan_Usage_Digest;
-  selected: PackageDependencyPlan_Usage_Selected[];
-  selection_digest: PackageDependencyPlan_Usage_Digest;
-  selected_facts_digest: PackageDependencyPlan_Usage_Digest;
-  required_facts_assessment: "not_performed";
+  prepared: PackageDependencyPlan_Assessment_Prepared;
+  frozen_digest: PackageDependencyPlan_Assessment_Digest;
+  inventory_digest: PackageDependencyPlan_Assessment_Digest;
+  usage_digest: PackageDependencyPlan_Assessment_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageDependencyPlan_Assessment_DerivedRequirementAssessment[];
+  inventory_status: "human_derivation_range_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
   facts_qualified: false;
   review_ready: false;
   launch_available: false;
   publication_authorized: false;
+  policy_digest: PackageDependencyPlan_Assessment_Digest;
+  rule_state_counts: {
+    total: number;
+    active: number;
+    inactive: number;
+    needs_revalidation: number;
+  };
 };
 
-export type PackageDependencyPlan_Usage_Digest = string;
+export type PackageDependencyPlan_Usage_Prepared = {
+  bid_id: PackageDependencyPlan_Usage_Id;
+  package_id: PackageDependencyPlan_Usage_Id;
+  revision_id: PackageDependencyPlan_Usage_Id;
+  inventory_id: PackageDependencyPlan_Usage_Id;
+  frozen_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_digest: PackageDependencyPlan_Usage_Digest;
+};
+
+export type PackageDependencyPlan_Usage_Selected = {
+  fact_id: PackageDependencyPlan_Usage_Id;
+  fact_item_digest: PackageDependencyPlan_Usage_Digest;
+};
 
 export type PackageDependencyPlan_Assessment_RequirementAssessment = {
   requirement_id: PackageDependencyPlan_Assessment_Id;
@@ -6958,19 +7722,25 @@ export type PackageDependencyPlan_Assessment_RequirementAssessment = {
   applicability: "applicable" | "unknown" | "not_applicable";
 };
 
-export type PackageDependencyPlan_Usage_Prepared = {
-  bid_id: PackageDependencyPlan_Usage_Id;
-  package_id: PackageDependencyPlan_Usage_Id;
-  revision_id: PackageDependencyPlan_Usage_Id;
-  inventory_id: PackageDependencyPlan_Usage_Id;
-  frozen_input_id: PackageDependencyPlan_Usage_Id;
-  execution_input_id: PackageDependencyPlan_Usage_Id;
-  execution_input_digest: PackageDependencyPlan_Usage_Digest;
-};
-
-export type PackageDependencyPlan_Usage_Selected = {
-  fact_id: PackageDependencyPlan_Usage_Id;
-  fact_item_digest: PackageDependencyPlan_Usage_Digest;
+export type PackageDependencyPlan_Assessment_DerivedRequirementAssessment = {
+  requirement_id: PackageDependencyPlan_Assessment_Id;
+  requirement_digest: PackageDependencyPlan_Assessment_Digest;
+  declaration: PackageDependencyPlan_Assessment_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageDependencyPlan_Assessment_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  rule_status: "active" | "inactive" | "needs_revalidation";
 };
 
 export type PackageDependencyPlan_Usage_Id = string;
@@ -7044,7 +7814,9 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/research/capabilities",
   "GET /api/v1/history",
   "POST /api/v1/research/import-previews",
+  "GET /api/v1/research/imports",
   "GET /api/v1/research/imports/{batch_id}",
+  "GET /api/v1/research/imports/{batch_id}/source",
   "POST /api/v1/research/imports/{batch_id}/confirm",
   "GET /api/v1/bids/{bid_id}/outcomes",
   "POST /api/v1/bids/{bid_id}/outcomes",
@@ -7085,6 +7857,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/knowledge/{knowledge_id}/versions/{version_id}",
   "GET /api/v1/knowledge/{knowledge_id}/impacts",
   "POST /api/v1/knowledge/{knowledge_id}/references",
+  "GET /api/v1/bids/{bid_id}/knowledge-reference-targets",
   "GET /api/v1/knowledge-references/{citation_id}",
   "GET /api/v1/knowledge/{knowledge_id}/source-positions",
   "POST /api/v1/bids/{bid_id}/knowledge-retrievals",
@@ -7239,6 +8012,12 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/resolve",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/images/{image_key}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections/preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections/{correction_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence/{evidence_id}",
   "GET /api/v1/technical-scale-capabilities",
   "GET /api/v1/bids/{bid_id}/technical-scale-context",
   "POST /api/v1/bids/{bid_id}/technical-scales",

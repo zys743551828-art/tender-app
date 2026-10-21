@@ -92,7 +92,10 @@ def evaluate(manifest: dict[str, Any], observations: dict[str, Any], *, evidence
     )
     if gaps:
         codes.append("PACKAGE_REVIEW_PHYSICAL_RANGE_GAP")
-    if inv["extraction_binding"] != "exact_frozen_input_result":
+    if inv["extraction_binding"] != "exact_frozen_input_result" and not (
+        inv.get("version") == "bid-package-requirements/3"
+        and inv["extraction_binding"] == "frozen_extraction_plus_human_derivation"
+    ):
         codes.append("PACKAGE_REVIEW_EXTRACTION_UNPROVEN")
     if inv["inventory_complete"] is not True:
         codes.append("PACKAGE_REVIEW_REQUIREMENT_COMPLETENESS_UNPROVEN")

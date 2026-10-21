@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.contracts.bid_package_api import IDENTIFIER, UUID, object_schema
 from packages.contracts.bid_package_api import SCHEMAS as PACKAGE_SCHEMAS
+from packages.contracts.package_rule_corrections_api import DERIVATION_HEAD, EXTRACTION_BASIS
 from packages.domain.runtime import DomainError
 
 SHA = {"type": "string", "pattern": "^[a-f0-9]{64}$"}
@@ -129,7 +130,16 @@ INVENTORY_V2["required"].extend(
         "extraction_quality_status",
     ]
 )
-INVENTORY = {"oneOf": [INVENTORY_V1, INVENTORY_V2]}
+INVENTORY_V3 = deepcopy(INVENTORY_V1)
+INVENTORY_V3["properties"]["version"] = {"const": "bid-package-requirements/3"}
+INVENTORY_V3["properties"]["extraction_binding"] = {
+    "const": "frozen_extraction_plus_human_derivation"
+}
+INVENTORY_V3["properties"].update(
+    {"extraction_basis": deepcopy(EXTRACTION_BASIS), "human_derivation": deepcopy(DERIVATION_HEAD)}
+)
+INVENTORY_V3["required"].extend(["extraction_basis", "human_derivation"])
+INVENTORY = {"oneOf": [INVENTORY_V1, INVENTORY_V2, INVENTORY_V3]}
 ASSESSMENT = object_schema(
     {
         "package_digest": SHA,

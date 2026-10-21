@@ -33,6 +33,10 @@ const PackageCoverageWorkspace = lazy(async () => {
   const module = await import("./PackageCoverageWorkspace");
   return { default: module.PackageCoverageWorkspace };
 });
+const PackageRuleCorrections = lazy(async () => {
+  const module = await import("./PackageRuleCorrections");
+  return { default: module.PackageRuleCorrections };
+});
 
 type Props = {
   bidId: string;
@@ -356,6 +360,12 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     (value: boolean) => setCoverageWriteLocked(value),
     [],
   );
+  const [ruleCorrectionWriteLocked, setRuleCorrectionWriteLocked] =
+    useState(false);
+  const onRuleCorrectionPending = useCallback(
+    (value: boolean) => setRuleCorrectionWriteLocked(value),
+    [],
+  );
   const active = useRef(true);
   useEffect(() => {
     active.current = true;
@@ -429,7 +439,12 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     checked.inventory_digest === inventory.data?.digest &&
     checked.package_digest === packageView.digest;
   const locked =
-    disabled || busy || !!pending || recovery.blocked || coverageWriteLocked;
+    disabled ||
+    busy ||
+    !!pending ||
+    recovery.blocked ||
+    coverageWriteLocked ||
+    ruleCorrectionWriteLocked;
   const canCreate =
     supportsApi("POST", base) &&
     !locked &&
@@ -1008,6 +1023,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           type="button"
           key={item.id}
           aria-pressed={inventoryId === item.id}
+          disabled={ruleCorrectionWriteLocked}
           onClick={() => {
             setInventoryId(item.id);
             setAttemptId("");
@@ -1330,6 +1346,43 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           )}
         </>
       )}
+      <Suspense fallback={<p role="status">正在加载有据规则修订…</p>}>
+        <PackageRuleCorrections
+          bidId={bidId}
+          memberId={memberId}
+          packageView={packageView}
+          inventory={inventoryValid ? inventory.data! : null}
+          inventoryEtag={inventoryValid ? inventory.etag : null}
+          currentInventoryId={inventories.data?.current_inventory_id ?? null}
+          currentKnown={
+            !!inventories.data && !inventories.loading && !inventories.error
+          }
+          disabled={
+            disabled ||
+            busy ||
+            !!pending ||
+            recovery.blocked ||
+            coverageWriteLocked
+          }
+          onPendingChange={onRuleCorrectionPending}
+          onRefresh={() => {
+            void inventories.reload();
+            void inventory.reload();
+          }}
+          onApplied={(newInventoryId) => {
+            setInventoryId(newInventoryId);
+            setAttemptId("");
+            setDraft(null);
+            setPlan({ mappings: [], valid: false, dirty: false });
+            setPlanStale(false);
+            setNeedsRebase(false);
+            setRebase(null);
+            setEmptyBaseline(null);
+            void inventories.reload();
+            void rules.reload();
+          }}
+        />
+      </Suspense>
       <Suspense fallback={<p role="status">正在加载人工范围填写…</p>}>
         <PackageCoverageWorkspace
           bidId={bidId}
@@ -1342,7 +1395,13 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
             !!inventories.data && !inventories.loading && !inventories.error
           }
           onPendingChange={onCoveragePending}
-          disabled={disabled || !!pending || recovery.blocked || busy}
+          disabled={
+            disabled ||
+            !!pending ||
+            recovery.blocked ||
+            busy ||
+            ruleCorrectionWriteLocked
+          }
           onSaved={(savedInventoryId, savedAttemptId) => {
             setInventoryId(savedInventoryId);
             setAttemptId(savedAttemptId);
@@ -1357,7 +1416,13 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         inventory={inventoryValid ? inventory.data! : null}
         coverage={attemptValid ? attempt.data! : null}
         coveragePending={!!attemptId && !attemptValid}
-        disabled={busy || !!pending || recovery.blocked || coverageWriteLocked}
+        disabled={
+          busy ||
+          !!pending ||
+          recovery.blocked ||
+          coverageWriteLocked ||
+          ruleCorrectionWriteLocked
+        }
       />
       {!supportsApi("POST", base) && (
         <p>当前服务尚未提供清单创建接口，保留只读历史。</p>

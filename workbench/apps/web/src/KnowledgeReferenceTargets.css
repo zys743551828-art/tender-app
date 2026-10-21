@@ -1,0 +1,42 @@
+.knowledge-reference-targets {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.knowledge-reference-form .notice {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.knowledge-reference-targets select {
+  width: 100%;
+  min-width: 0;
+}
+
+.knowledge-reference-targets details {
+  margin-top: 12px;
+}
+
+.knowledge-reference-targets dl {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 8px 12px;
+}
+
+.knowledge-reference-targets dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .knowledge-reference-targets dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .knowledge-reference-targets dd + dt {
+    margin-top: 8px;
+  }
+}

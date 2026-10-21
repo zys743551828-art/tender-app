@@ -112,6 +112,7 @@ def create_inventory(
     body: dict[str, Any],
     *,
     expected_digest: str | None,
+    inventory_id: str | None = None,
 ):
     with c.transaction():
         target, authority, current, rule_set, snapshot = _context(
@@ -179,9 +180,22 @@ def create_inventory(
             authority.revision_id,
             authority.manifest_digest,
         )
+        from packages.domain.bid_package_rule_correction_repository import inherited
+
+        derived = (
+            inherited(
+                c, bid_id, str(rule_set["id"]), authority.revision_id, authority.manifest_digest
+            )
+            if not extracted
+            else None
+        )
         manifest = {
-            "version": "bid-package-requirements/2" if extracted else "bid-package-requirements/1",
-            "id": str(uuid4()),
+            "version": "bid-package-requirements/3"
+            if derived
+            else "bid-package-requirements/2"
+            if extracted
+            else "bid-package-requirements/1",
+            "id": inventory_id or str(uuid4()),
             "bid_id": bid_id,
             "package_id": package_id,
             "target_revision_id": target_id,
@@ -213,6 +227,8 @@ def create_inventory(
                     "extraction_quality_status": extracted["result"]["quality_status"],
                 }
             )
+        if derived:
+            manifest.update(derived)
         identity = manifest["id"]
         frozen_digest = digest(manifest)
         c.execute(
@@ -292,6 +308,45 @@ def load_inventory(c: Any, bid_id: str, package_id: str, target_id: str, invento
                 and value["extraction_coverage"] == result["result"]["extraction_coverage"]
                 and value["extraction_quality_status"] == result["result"]["quality_status"],
                 "PACKAGE_REQUIREMENT_STORED_CORRUPT",
+            )
+        elif value["version"] == "bid-package-requirements/3":
+            from packages.domain import bid_package_rule_correction_repository as corrections
+            from packages.domain.package_rule_corrections import verify_derivation
+
+            basis = value["extraction_basis"]
+            result = extraction.completion_for_rule_set(
+                c,
+                bid_id,
+                basis["rule_set_id"],
+                value["authority_revision_id"],
+                value["authority_digest"],
+            )
+            require(
+                result is not None
+                and basis["extraction_input_digest"] == result["input_digest"]
+                and basis["extraction_result_digest"] == result["result_digest"]
+                and basis["extraction_result_id"] == str(result["id"])
+                and basis["extraction_range_status"] == result["result"]["range_status"]
+                and basis["extraction_coverage"] == result["result"]["extraction_coverage"]
+                and basis["extraction_quality_status"] == result["result"]["quality_status"],
+                "PACKAGE_REQUIREMENT_STORED_CORRUPT",
+            )
+            chain = corrections.read_derivation(c, bid_id, value)
+            official = corrections.authority(c, bid_id, row)
+            ids = sorted(
+                {
+                    quote["evidence_id"]
+                    for step in chain["steps"]
+                    for change in step["manifest"]["request"]["changes"]
+                    for quote in (
+                        change["evidence_quotes"]
+                        if change["op"] == "withdraw"
+                        else change["rule"]["evidence_quotes"]
+                    )
+                }
+            )
+            verify_derivation(
+                row, chain, official, corrections.evidence_rows(c, bid_id, official, ids)
             )
         require(
             all(
@@ -493,6 +548,13 @@ def storage_error(error: psycopg.Error):
     # The route's outer error boundary must include connection.__exit__/COMMIT.
     # A deferred authority rejection rolls back the command ACK and all child rows.
     primary = getattr(error.diag, "message_primary", "") or ""
+    if primary.startswith("package_rule_correction_"):
+        return DomainError(
+            "PACKAGE_RULE_CORRECTION_STORAGE_REJECTED",
+            "人工更正的精确来源、完整映射、人工决定或原回执未通过事务核验，未保存更正",
+            409,
+            retryable=False,
+        )
     codes = {
         "requirement_source_not_effective": "PACKAGE_REQUIREMENT_SOURCE_NOT_EFFECTIVE",
         "requirement_source_snapshot_stale": "PACKAGE_REQUIREMENT_SOURCE_STALE",

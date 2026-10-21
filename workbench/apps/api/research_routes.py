@@ -11,8 +11,27 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from apps.api.auth import auth
-from packages.domain.runtime import Command, clean, connection, etag, fetch, validate
-from packages.research import artifacts, authority, batches, chapters, importing, outcomes
+from packages.domain.runtime import (
+    Command,
+    DomainError,
+    clean,
+    connection,
+    etag,
+    fetch,
+    require_read_committed,
+    validate,
+)
+from packages.research import (
+    artifacts,
+    authority,
+    batches,
+    chapters,
+    import_history,
+    import_originals,
+    importing,
+    outcomes,
+)
+from packages.research.import_contracts import HistoricalImportRequest
 
 router = APIRouter(prefix="/api/v1", tags=["research"])
 
@@ -43,24 +62,6 @@ class GroupingRequest(StrictBody):
     near_duplicate_key: str | None = Field(max_length=100)
     reviewed: bool
     reason: str = Field(min_length=1, max_length=4000)
-
-
-class HistoricalImportRecord(StrictBody):
-    external_record_id: str = Field(min_length=1, max_length=200)
-    bid_id: UUID
-    actual_document_version_id: UUID
-    submitted_at: datetime
-    evidence_ref: UUID
-    explanation: str = Field(min_length=1, max_length=4000)
-    score_kind: Literal["technical_total", "comprehensive_total", "unknown"]
-    value: str | None = Field(pattern=r"^(0|[1-9][0-9]*)(\.[0-9]+)?$")
-    maximum: str | None = Field(pattern=r"^(0|[1-9][0-9]*)(\.[0-9]+)?$")
-    source_version_id: UUID | None
-    known_at: datetime | None
-
-
-class HistoricalImportRequest(StrictBody):
-    records: list[HistoricalImportRecord] = Field(min_length=1, max_length=1000)
 
 
 def response(result, replay=False):
@@ -127,16 +128,31 @@ def history(
 def preview_import(request: Request, body: HistoricalImportRequest):
     actor = auth(request, True)
     value = body.model_dump(mode="json")
-    staged = artifacts.stage_json(
-        {"schema": "historical-import/1", "records": value["records"]}, importing.IMPORT_MEDIA
-    )
+    key = request.headers.get("idempotency-key")
+    import_history.checked_key(key)
     with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        prior = import_history.replay(
+            c,
+            actor["member_id"],
+            import_history.PREVIEW_KIND,
+            import_history.PREVIEW_TARGET,
+            key,
+            value,
+        )
+        if prior:
+            return response(prior, True)
+    staged = artifacts.stage_json(import_history.manifest(value["records"]), importing.IMPORT_MEDIA)
+    if str(auth(request, True)["member_id"]) != str(actor["member_id"]):
+        raise DomainError("ACTOR_CHANGED", "登录成员已变化，请保留原导入请求", 401)
+    with connection() as c:
+        require_read_committed(c)
         cmd = command(
             c,
             request,
             actor,
-            "preview-historical-import",
-            UUID("59696bb3-834e-4768-80fb-5662402f6975"),
+            import_history.PREVIEW_KIND,
+            import_history.PREVIEW_TARGET,
             value,
         )
         if cmd.replay:
@@ -144,10 +160,39 @@ def preview_import(request: Request, body: HistoricalImportRequest):
         result = importing.preview(
             c, actor=actor["member_id"], records=value["records"], staged=staged, command=cmd.id
         )
+        result["command"] = import_history.receipt(
+            cmd,
+            actor["member_id"],
+            import_history.PREVIEW_KIND,
+            import_history.PREVIEW_TARGET,
+            key,
+            value,
+        )
         return response(
             cmd.finish(
-                result, 201, {"ETag": etag("historical-import", result["id"], result["revision"])}
+                result,
+                201,
+                {
+                    "ETag": etag("historical-import", result["id"], result["revision"]),
+                    "Cache-Control": "private, no-store",
+                },
             )
+        )
+
+
+@router.get("/research/imports")
+def list_imports(
+    request: Request,
+    mode: Literal["dry_run", "confirmed_import"] | None = None,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=100000),
+):
+    auth(request)
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        return JSONResponse(
+            import_history.directory(c, mode=mode, limit=limit, offset=offset),
+            headers={"Cache-Control": "private, no-store"},
         )
 
 
@@ -163,8 +208,23 @@ def get_import(
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         value = importing.view(c, batch_id, limit=limit, offset=offset)
         return JSONResponse(
-            value, headers={"ETag": etag("historical-import", batch_id, value["revision"])}
+            value,
+            headers={
+                "ETag": etag("historical-import", batch_id, value["revision"]),
+                "Cache-Control": "private, no-store",
+            },
         )
+
+
+@router.get("/research/imports/{batch_id}/source")
+def get_import_source(batch_id: UUID, request: Request):
+    auth(request)
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        metadata = import_history.source_metadata(c, batch_id)
+    value = import_history.source(batch_id, metadata)
+    auth(request)
+    return JSONResponse(value, headers={"Cache-Control": "private, no-store"})
 
 
 @router.post("/research/imports/{batch_id}/confirm")
@@ -174,13 +234,30 @@ def confirm_import(batch_id: UUID, request: Request, body: dict = Body(...)):
         raise batches.DomainError(
             "INVALID_REQUEST", "确认只使用本批预检查清单，修改资料须重新预检查", 422
         )
+    key = request.headers.get("idempotency-key")
+    condition = request.headers.get("if-match")
+    import_history.checked_key(key)
+    if not condition:
+        raise DomainError("PRECONDITION_REQUIRED", "请读取并保留这份导入批次的 ETag", 428)
     with connection() as c:
-        batch = fetch(c, "SELECT manifest_blob_id FROM import_batches WHERE id=%s", (batch_id,))
-        metadata = batches.manifest_metadata(c, batch["manifest_blob_id"], importing.IMPORT_MEDIA)
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        prior = import_history.replay(
+            c, actor["member_id"], import_history.CONFIRM_KIND, batch_id, key, body, condition
+        )
+        if prior:
+            return response(prior, True)
+        metadata = import_history.source_metadata(c, batch_id)
     manifest = batches.read_manifest(metadata)
     with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        originals = import_originals.observe(c, batch_id, manifest)
+    checked_originals = import_originals.verify(originals)
+    if str(auth(request, True)["member_id"]) != str(actor["member_id"]):
+        raise DomainError("ACTOR_CHANGED", "登录成员已变化，请保留原导入请求", 401)
+    with connection() as c:
+        require_read_committed(c)
         cmd = command(
-            c, request, actor, "confirm-historical-import", batch_id, body, conditional=True
+            c, request, actor, import_history.CONFIRM_KIND, batch_id, body, conditional=True
         )
         if cmd.replay:
             return response(cmd.replay, True)
@@ -189,12 +266,20 @@ def confirm_import(batch_id: UUID, request: Request, body: dict = Body(...)):
             actor=actor["member_id"],
             identity=batch_id,
             manifest=manifest,
-            condition=request.headers.get("if-match"),
+            condition=condition,
             command=cmd.id,
+            originals=checked_originals,
+        )
+        value["command"] = import_history.receipt(
+            cmd, actor["member_id"], import_history.CONFIRM_KIND, batch_id, key, body, condition
         )
         return response(
             cmd.finish(
-                value, headers={"ETag": etag("historical-import", batch_id, value["revision"])}
+                value,
+                headers={
+                    "ETag": etag("historical-import", batch_id, value["revision"]),
+                    "Cache-Control": "private, no-store",
+                },
             )
         )
 

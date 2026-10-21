@@ -330,6 +330,7 @@ export function App() {
             ) : area === "history" ? (
               <Archives
                 key={auth.member.id}
+                memberId={auth.member.id}
                 onOpen={(id) => void navigate(id, "outcomes")}
               />
             ) : area === "research" ? (

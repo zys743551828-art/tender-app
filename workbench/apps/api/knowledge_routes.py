@@ -191,6 +191,22 @@ def reference(knowledge_id: UUID, r: Request, body: dict = Body(...)):
         return respond(cmd.finish(result, 201))
 
 
+@router.get("/bids/{bid_id}/knowledge-reference-targets")
+def reference_targets(
+    bid_id: UUID,
+    r: Request,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=100000),
+):
+    auth(r)
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        return JSONResponse(
+            bridge.package_review_targets(c, bid_id, limit=limit, offset=offset),
+            headers={"Cache-Control": "private, no-store"},
+        )
+
+
 @router.get("/knowledge-references/{citation_id}")
 def historical_reference(citation_id: UUID, r: Request):
     auth(r)

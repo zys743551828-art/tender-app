@@ -233,7 +233,7 @@ def test_actual_openapi_only_registers_real_routes_and_closes_references():
         if method in {"get", "post"}
     ]
     assert (
-        len(operations) == 23 and len({operation["operationId"] for operation in operations}) == 23
+        len(operations) == 25 and len({operation["operationId"] for operation in operations}) == 25
     )
 
     def walk(value):

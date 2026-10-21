@@ -28,6 +28,11 @@ import { KnowledgeRetrieval, KnowledgeIndex } from "./KnowledgeRetrieval";
 import { supportsApi } from "./api";
 import { KnowledgeVersionEditor } from "./KnowledgeVersionEditor";
 import { useBidChoices } from "./useBidChoices";
+import { KnowledgeReferenceTargets } from "./KnowledgeReferenceTargets";
+import {
+  useKnowledgeReferenceTargets,
+  type KnowledgeReferenceTargetKind,
+} from "./useKnowledgeReferenceTargets";
 import {
   useKnowledgeInput,
   knowledgeStorageKey,
@@ -946,7 +951,19 @@ function KnowledgeReferenceForm({
 }) {
   const [excerpt, setExcerpt] = useState("");
   const [reason, setReason] = useState("");
+  const [targetKind, setTargetKind] =
+    useState<KnowledgeReferenceTargetKind>("project");
+  const [targetId, setTargetId] = useState("");
+  const targets = useKnowledgeReferenceTargets(
+    bid.id,
+    targetKind === "package_review_run",
+  );
+  const targetReady =
+    targetKind === "project" ||
+    (targets.ready && targets.items.some((target) => target.id === targetId));
+  const actualTarget = targetKind === "project" ? bid.id : targetId;
   const [result, setResult] = useState<KnowledgeReference | null>(null);
+  const [receiptError, setReceiptError] = useState<unknown>(null);
   const [citation, setCitation] = useState<string | null>(null);
   const history = useResource<KnowledgeReferenceHistory>(
     citation ? `/knowledge-references/${citation}` : null,
@@ -959,7 +976,7 @@ function KnowledgeReferenceForm({
     item: KnowledgeView;
   } | null>(null);
   const command = useCommand(
-    `knowledge-reference:${item.id}:${bid.id}:${purpose}:${validation}`,
+    `knowledge-reference:${item.id}:${bid.id}:${purpose}:${targetKind}:${actualTarget}:${validation}`,
   );
   const context = checked?.bid ?? bid;
   const currentItem = checked?.item ?? item;
@@ -1007,12 +1024,21 @@ function KnowledgeReferenceForm({
     }
   }
   async function save() {
+    if (
+      !eligible ||
+      !targetReady ||
+      command.busy ||
+      rechecking ||
+      requiresRecheck
+    )
+      return;
+    setReceiptError(null);
     const body: KnowledgeReferenceRequest = {
       bid_id: bid.id,
       version_id: item.version_id,
       purpose,
-      target_kind: "project",
-      target_object_id: bid.id,
+      target_kind: targetKind,
+      target_object_id: actualTarget,
       excerpt: excerpt.trim(),
       applicability_reason: reason.trim(),
     };
@@ -1023,10 +1049,22 @@ function KnowledgeReferenceForm({
     );
     if (
       response &&
+      response.data.knowledge_id === item.id &&
       response.data.bid_id === bid.id &&
-      response.data.version_id === item.version_id
+      response.data.version_id === item.version_id &&
+      response.data.target_kind === body.target_kind &&
+      response.data.target_object_id === body.target_object_id &&
+      response.data.purpose === body.purpose &&
+      response.data.excerpt === body.excerpt &&
+      response.data.applicability_reason === body.applicability_reason &&
+      response.data.reference_only === true &&
+      response.data.project_fact_created === false
     )
       setResult(response.data);
+    else if (response)
+      setReceiptError(
+        new Error("返回的引用与本次选择不一致，尚未确认登记成功。"),
+      );
   }
   return (
     <section className="knowledge-reference-form">
@@ -1046,6 +1084,36 @@ function KnowledgeReferenceForm({
           void save();
         }}
       >
+        <label>
+          引用位置
+          <select
+            value={targetKind}
+            disabled={command.busy || rechecking}
+            onChange={(event) => {
+              setTargetKind(event.target.value as KnowledgeReferenceTargetKind);
+              setTargetId("");
+              setResult(null);
+              setCitation(null);
+              setReceiptError(null);
+            }}
+          >
+            <option value="project">项目参考</option>
+            <option value="package_review_run">指定的一次整包核查</option>
+          </select>
+        </label>
+        {targetKind === "package_review_run" && (
+          <KnowledgeReferenceTargets
+            targets={targets}
+            value={targetId}
+            disabled={command.busy || rechecking}
+            onChange={(value) => {
+              setTargetId(value);
+              setResult(null);
+              setCitation(null);
+              setReceiptError(null);
+            }}
+          />
+        )}
         <label>
           本次使用的实际摘录
           <textarea
@@ -1068,6 +1136,7 @@ function KnowledgeReferenceForm({
           />
         </label>
         <ErrorNotice error={command.error} />
+        <ErrorNotice error={receiptError} />
         <ErrorNotice error={recheckError} onRetry={() => void recheck()} />
         {requiresRecheck && (
           <button
@@ -1093,6 +1162,7 @@ function KnowledgeReferenceForm({
           className="button secondary"
           disabled={
             !eligible ||
+            !targetReady ||
             command.busy ||
             rechecking ||
             requiresRecheck ||
@@ -1107,6 +1177,9 @@ function KnowledgeReferenceForm({
         <div className="notice neutral">
           <div>
             <strong>参考已登记，未创建项目事实</strong>
+            {result.target_kind === "package_review_run" && (
+              <p>已关联核查 {result.target_object_id}；原核查结果保持冻结。</p>
+            )}
             <p>{result.excerpt}</p>
             {result.citation_ids.map((id) => (
               <button
@@ -1128,7 +1201,9 @@ function KnowledgeReferenceForm({
             onRetry={() => void history.reload()}
           />
           {history.data?.reference.version_id === item.version_id &&
-            history.data.reference.bid_id === bid.id && (
+            history.data.reference.bid_id === bid.id &&
+            history.data.reference.target_kind === targetKind &&
+            history.data.reference.target_object_id === actualTarget && (
               <div className="knowledge-reference-history">
                 <h4>当时固定的摘录</h4>
                 <blockquote>{history.data.reference.excerpt}</blockquote>
