@@ -1,0 +1,543 @@
+{
+  "additional_frontend_findings": [
+    {
+      "issue": "Saved picture digest not passed to renderer; second metadata could disagree with fixed image binding",
+      "owner": "root",
+      "state": "root product correction present; native positive binding accepted; root owns component rejection tests"
+    },
+    {
+      "issue": "Build relation output not compared with exact successful build.outputs",
+      "owner": "root",
+      "state": "root product correction present; native positive binding accepted; root owns component rejection tests"
+    }
+  ],
+  "artifacts": {
+    "candidate-manifest.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/candidate-manifest.json",
+      "sha256": "ba17b6e8101c05acb946ba661b112132207a52e7e57f44544d0719c68932ac85"
+    },
+    "check-front.mjs": {
+      "path": "/tmp/tender-review-work-context-native-responses/check-front.mjs",
+      "sha256": "eb760a3f63f776bde3365760eb8eafaef187913cf242f4f058243240381cf2ad"
+    },
+    "check-front.ts": {
+      "path": "/tmp/tender-review-work-context-native-responses/check-front.ts",
+      "sha256": "ad9408feae78baea93e804e252abb6b8ba5fc3854b202f6de3903db51bdd61f9"
+    },
+    "counterexample-image-bytes-receipt.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/counterexample-image-bytes-receipt.json",
+      "sha256": "00bac5e36ab9eeb491c089f2b5d63b27e42b9e8eebc7556a1b58eb3511516817"
+    },
+    "counterexample-image-bytes.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/counterexample-image-bytes.json",
+      "sha256": "3900175e3675025890ce9fe91ca8bcc8f281db428ff3909c2fe085f6076cf3ae"
+    },
+    "counterexample-invalid-ordinal-receipt.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/counterexample-invalid-ordinal-receipt.json",
+      "sha256": "237206b682f83fe2eb81bee19ecc3f3d0e4d932643096c0d8d3477e6cd93320a"
+    },
+    "counterexample-invalid-ordinal.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/counterexample-invalid-ordinal.json",
+      "sha256": "1c21e3a53ad0e93dc78e078902fb04976c908dfc935bd7c5b46951d2be349ed5"
+    },
+    "frontend-current-receipt.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/frontend-current-receipt.json",
+      "sha256": "3473b2b7b8a797dce3cce12ba9e81325de924e90c7d7c7dbd478719d54f31103"
+    },
+    "frontend-current-receipt.json.validators.mjs": {
+      "path": "/tmp/tender-review-work-context-native-responses/frontend-current-receipt.json.validators.mjs",
+      "sha256": "4212fcf5f139f2df15709eb9040c66db37b2b242b88b5f8d9ec96d07cc3a19df"
+    },
+    "frontend-validator-checks.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/frontend-validator-checks.json",
+      "sha256": "79e5b82e42b5662c3d7801ee3e6c5afaff632f8689f82d1a41f281e8f7fb79bf"
+    },
+    "native-responses.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/native-responses.json",
+      "sha256": "c4045efba7eab1f09dd53a0b40f0602e01f327f68681aa84de221852773ac1a1"
+    },
+    "run_pg.py": {
+      "path": "/tmp/tender-review-work-context-native-responses/run_pg.py",
+      "sha256": "d412f3a0d97428262c591ab47c869736286f5438430eba96531d11583e65ff82"
+    },
+    "work-context-pg-r1ox8vdl-receipt.json": {
+      "path": "/tmp/tender-review-work-context-native-responses/work-context-pg-r1ox8vdl-receipt.json",
+      "sha256": "53a6550e3e27cf6a0e60881566aa8250a401fbcfc91d784a95be863798cd999b"
+    }
+  },
+  "backend_product_changes": false,
+  "candidate_manifest_sha256": "daba37ef51de056c1ecfa5ed3733def250861c8c2760530152e40ca25ac29412",
+  "commands": {
+    "frontend": "node scripts/check-work-context-native.mjs /tmp/tender-review-work-context-native-responses/native-responses.json /tmp/tender-review-work-context-native-responses/frontend-current-receipt.json",
+    "native_runner": "/tmp/tender-review-venv/bin/python /tmp/tender-review-work-context-native-responses/run_pg.py --expected-manifest-sha daba37ef51de056c1ecfa5ed3733def250861c8c2760530152e40ca25ac29412",
+    "native_test": "python -m pytest -q --tb=short tests/test_work_context_native_bundle_pg.py",
+    "rerun_note": "Use a new output receipt path; the script intentionally preserves existing receipts. Native capture requires an explicit disposable PG and WORK_CONTEXT_SYNTHETIC_RESPONSE_BUNDLE absolute path."
+  },
+  "counterexamples": {
+    "image-bytes": {
+      "expected_exit_code": 1,
+      "input_kind": "explicitly altered independent copy, never an unmodified native response",
+      "observed_exit_code": 1,
+      "receipt": {
+        "body_values_modified": false,
+        "checks": [
+          {
+            "kind": "current_ts_protocol",
+            "label": "build",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "package_review_run",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "package_submission",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_package_review_run",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_package_submission",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "build_relations",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot_sparse_ordinal",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot_rich",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_draft_snapshot",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_build",
+            "passed": true
+          },
+          {
+            "kind": "image_binding_consistency",
+            "label": "historical_image_metadata",
+            "passed": true
+          },
+          {
+            "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'c7b0ee7925d30873874416e1c6846cf73fa8ac3911509d3cd6ade5b6ae731af9'\n- '1be3713b6de04a15710d609198e9866851517036e6f97f3adcf3a72e8bce404a'\n",
+            "kind": "image_byte_consistency",
+            "label": "synthetic_normalized_png",
+            "passed": false
+          }
+        ],
+        "compiled_validators": {
+          "path": "/tmp/tender-review-work-context-native-responses/counterexample-image-bytes-receipt.json.validators.mjs",
+          "sha256": "4212fcf5f139f2df15709eb9040c66db37b2b242b88b5f8d9ec96d07cc3a19df"
+        },
+        "esbuild": "0.25.12",
+        "finished_at": "2026-10-21T12:08:43.601Z",
+        "input": {
+          "bytes": 590318,
+          "path": "/tmp/tender-review-work-context-native-responses/counterexample-image-bytes.json",
+          "sha256": "3900175e3675025890ce9fe91ca8bcc8f281db428ff3909c2fe085f6076cf3ae",
+          "unchanged": true
+        },
+        "limitations": [
+          "Offline replay of real routed native API JSON from explicit synthetic fixtures; no live database or HTTP request is performed by this script.",
+          "Image bytes are the native test fixture's normalized PNG, not a captured bytes HTTP response; metadata/binding/hash/IHDR consistency does not assert browser decoding or transport correctness.",
+          "No renderer, navigation, pagination interaction, permissions, real document quality or prediction quality is established by this replay alone."
+        ],
+        "node": "v24.19.0",
+        "passed": false,
+        "protocol_checks_expected": 11,
+        "responses_expected": 12,
+        "source_sha256": {
+          "package-lock.json": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+          "package.json": "73f5c33f0ee13aea682b19ce92ddcee5423c16d2026ac90e7893721dc1665e67",
+          "scripts/check-work-context-native.mjs": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+          "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+          "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+          "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+          "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+          "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+          "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+          "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+          "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+          "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+          "src/workContextDirectoryProtocol.ts": "d024fdbb9d38e65709a7d6ff6cb639cda0b07aaa3272bbcc04560266603dc8c9",
+          "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+        },
+        "sources_unchanged": true,
+        "started_at": "2026-10-21T12:08:43.503Z",
+        "synthetic_only": true,
+        "version": "work-context-native-frontend/1"
+      }
+    },
+    "invalid-ordinal": {
+      "expected_exit_code": 1,
+      "input_kind": "explicitly altered independent copy, never an unmodified native response",
+      "observed_exit_code": 1,
+      "receipt": {
+        "body_values_modified": false,
+        "checks": [
+          {
+            "kind": "current_ts_protocol",
+            "label": "build",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "package_review_run",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "package_submission",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_package_review_run",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_package_submission",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "build_relations",
+            "passed": true
+          },
+          {
+            "error": "章节结构无法完整核对，原内容保留；请检查节点、表格合并或图片版本。",
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot_sparse_ordinal",
+            "passed": false
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "draft_snapshot_rich",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_draft_snapshot",
+            "passed": true
+          },
+          {
+            "kind": "current_ts_protocol",
+            "label": "choices_build",
+            "passed": true
+          },
+          {
+            "kind": "image_binding_consistency",
+            "label": "historical_image_metadata",
+            "passed": true
+          },
+          {
+            "kind": "image_byte_consistency",
+            "label": "synthetic_normalized_png",
+            "passed": true
+          }
+        ],
+        "compiled_validators": {
+          "path": "/tmp/tender-review-work-context-native-responses/counterexample-invalid-ordinal-receipt.json.validators.mjs",
+          "sha256": "4212fcf5f139f2df15709eb9040c66db37b2b242b88b5f8d9ec96d07cc3a19df"
+        },
+        "esbuild": "0.25.12",
+        "finished_at": "2026-10-21T12:08:43.603Z",
+        "input": {
+          "bytes": 590320,
+          "path": "/tmp/tender-review-work-context-native-responses/counterexample-invalid-ordinal.json",
+          "sha256": "1c21e3a53ad0e93dc78e078902fb04976c908dfc935bd7c5b46951d2be349ed5",
+          "unchanged": true
+        },
+        "limitations": [
+          "Offline replay of real routed native API JSON from explicit synthetic fixtures; no live database or HTTP request is performed by this script.",
+          "Image bytes are the native test fixture's normalized PNG, not a captured bytes HTTP response; metadata/binding/hash/IHDR consistency does not assert browser decoding or transport correctness.",
+          "No renderer, navigation, pagination interaction, permissions, real document quality or prediction quality is established by this replay alone."
+        ],
+        "node": "v24.19.0",
+        "passed": false,
+        "protocol_checks_expected": 11,
+        "responses_expected": 12,
+        "source_sha256": {
+          "package-lock.json": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+          "package.json": "73f5c33f0ee13aea682b19ce92ddcee5423c16d2026ac90e7893721dc1665e67",
+          "scripts/check-work-context-native.mjs": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+          "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+          "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+          "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+          "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+          "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+          "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+          "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+          "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+          "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+          "src/workContextDirectoryProtocol.ts": "d024fdbb9d38e65709a7d6ff6cb639cda0b07aaa3272bbcc04560266603dc8c9",
+          "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+        },
+        "sources_unchanged": true,
+        "started_at": "2026-10-21T12:08:43.505Z",
+        "synthetic_only": true,
+        "version": "work-context-native-frontend/1"
+      }
+    }
+  },
+  "current_frontend_crosscheck": {
+    "accepted": 13,
+    "body_values_modified": false,
+    "exit_code": 0,
+    "image_binding_checks": 1,
+    "image_byte_checks": 1,
+    "image_bytes_transport": "fixture direct normalized PNG, not a captured bytes HTTP response",
+    "native_http_transport": "authenticated ASGI TestClient; prior B real Uvicorn validation is separate",
+    "protocol_accepted": 11,
+    "protocol_checks": 11,
+    "sparse_ordinal_corrected_by": "root",
+    "total_checks": 13
+  },
+  "current_frontend_receipt": {
+    "body_values_modified": false,
+    "checks": [
+      {
+        "kind": "current_ts_protocol",
+        "label": "build",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "package_review_run",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "package_submission",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "choices_package_review_run",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "choices_package_submission",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "draft_snapshot",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "build_relations",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "draft_snapshot_sparse_ordinal",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "draft_snapshot_rich",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "choices_draft_snapshot",
+        "passed": true
+      },
+      {
+        "kind": "current_ts_protocol",
+        "label": "choices_build",
+        "passed": true
+      },
+      {
+        "kind": "image_binding_consistency",
+        "label": "historical_image_metadata",
+        "passed": true
+      },
+      {
+        "kind": "image_byte_consistency",
+        "label": "synthetic_normalized_png",
+        "passed": true
+      }
+    ],
+    "compiled_validators": {
+      "path": "/tmp/tender-review-work-context-native-responses/frontend-current-receipt.json.validators.mjs",
+      "sha256": "4212fcf5f139f2df15709eb9040c66db37b2b242b88b5f8d9ec96d07cc3a19df"
+    },
+    "esbuild": "0.25.12",
+    "finished_at": "2026-10-21T12:08:07.788Z",
+    "input": {
+      "bytes": 609364,
+      "path": "/tmp/tender-review-work-context-native-responses/native-responses.json",
+      "sha256": "c4045efba7eab1f09dd53a0b40f0602e01f327f68681aa84de221852773ac1a1",
+      "unchanged": true
+    },
+    "limitations": [
+      "Offline replay of real routed native API JSON from explicit synthetic fixtures; no live database or HTTP request is performed by this script.",
+      "Image bytes are the native test fixture's normalized PNG, not a captured bytes HTTP response; metadata/binding/hash/IHDR consistency does not assert browser decoding or transport correctness.",
+      "No renderer, navigation, pagination interaction, permissions, real document quality or prediction quality is established by this replay alone."
+    ],
+    "node": "v24.19.0",
+    "passed": true,
+    "protocol_checks_expected": 11,
+    "responses_expected": 12,
+    "source_sha256": {
+      "package-lock.json": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+      "package.json": "73f5c33f0ee13aea682b19ce92ddcee5423c16d2026ac90e7893721dc1665e67",
+      "scripts/check-work-context-native.mjs": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+      "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+      "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+      "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+      "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+      "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+      "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+      "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+      "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+      "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+      "src/workContextDirectoryProtocol.ts": "d024fdbb9d38e65709a7d6ff6cb639cda0b07aaa3272bbcc04560266603dc8c9",
+      "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+    },
+    "sources_unchanged": true,
+    "started_at": "2026-10-21T12:08:07.682Z",
+    "synthetic_only": true,
+    "version": "work-context-native-frontend/1"
+  },
+  "date": "2026-10-21",
+  "first_frontend_crosscheck": {
+    "accepted": 10,
+    "actual_native": {
+      "display_ordinal": 0,
+      "outline": null,
+      "saved_content_ordinal": 7
+    },
+    "failure": "validDocument incorrectly requires saved content ordinal equal continuous display ordinal; root owns correction",
+    "proof": "frontend-validator-checks.json and frozen compiled check-front.mjs",
+    "rejected": 1,
+    "rejected_label": "draft_snapshot_sparse_ordinal"
+  },
+  "frontend_product_files_edited_by_reviewer": false,
+  "limitations": [
+    "Offline replay of real routed native API JSON from explicit synthetic fixtures; no live database or HTTP request is performed by this script.",
+    "Image bytes are the native test fixture's normalized PNG, not a captured bytes HTTP response; metadata/binding/hash/IHDR consistency does not assert browser decoding or transport correctness.",
+    "No renderer, navigation, pagination interaction, permissions, real document quality or prediction quality is established by this replay alone.",
+    "Synthetic originals/model responses build genuine native history; no real document quality or formal scoring qualification is claimed.",
+    "Current frontend source hashes identify exactly the code replayed, independent of the backend candidate."
+  ],
+  "native_checks": {
+    "cluster_stopped": true,
+    "failed": 0,
+    "nonowner": true,
+    "passed": 2,
+    "postgres": "17.11",
+    "skipped": 0,
+    "synthetic_only": true
+  },
+  "native_receipt": {
+    "base_commit": "ebe7e80b05cec1699eb0ce449cbda1406f4dc5d2",
+    "cluster_stopped": true,
+    "exit_code": 0,
+    "manifest_sha256": "daba37ef51de056c1ecfa5ed3733def250861c8c2760530152e40ca25ac29412",
+    "original_io": "explicit synthetic fixtures; context reads forbid storage/model calls",
+    "overlay_sha256": {
+      "apps/api/work_context_catalog_routes.py": "20c6cd039728ac75977ad01e1a9eeeb22616f4cb75bb64849b0f666b4205d3d8",
+      "apps/api/work_context_routes.py": "8f03dd77b741c009f84c85a965895a28c863fb0f3868feef2dcbaecb37b8b244",
+      "deploy/work_context_catalog_readiness.py": "85650c2f4cb1016cfd927c0096d999e6a06275c0af35e678574737cdb2d4e7c0",
+      "deploy/work_context_readiness.py": "4e9e0176527e5451e25df50553bd84be4b5d440a879a3023fb89ba585c43f247",
+      "packages/contracts/work_context_api.py": "ca4f5b5d2ac78c2e56de18002beb556e55e524e4e0e356ad3803092a90f52569",
+      "packages/contracts/work_context_catalog_api.py": "7e30373451429eb801e2318bdb7d8a0cdbd91405f6d3f4b955fb31ec3c6f2b5c",
+      "packages/work_contexts/__init__.py": "4788f693d133ea62d52fe60d3ce79a3a7a1628b98f5b80bd3e41d0a43cec11d7",
+      "packages/work_contexts/authoring_observations.py": "8937bfb9cc5fe7eec32b883bc0532a4b0561d83e2ca10fe525bd2116055130c1",
+      "packages/work_contexts/authoring_repository.py": "42f74a204c600cd4535043aa8a66fa5a2e322ed65cc08393c2babf7168fe04be",
+      "packages/work_contexts/authoring_service.py": "a02d504557c563c42cf485413ae7f356f82d0e0e35668032e878b484c014ea52",
+      "packages/work_contexts/catalog.py": "5d0d0b10de72ac07545fd63be7fe2d9ba5340d7d1656343e4de3d61c83bfb4ba",
+      "packages/work_contexts/catalog_permissions.py": "cf69d531201a0cd8ad3464a436623ccda58126aaa8905bc0b8bcdae15fc7f356",
+      "packages/work_contexts/cursors.py": "64e1dcea54b15573e035ab5716edfb9128a8c5b835b572c94d18fac50be37e89",
+      "packages/work_contexts/observations.py": "565f84500f4a919c631622e51b2107c0153b4bd97f1acfe7cdc6c06043030694",
+      "packages/work_contexts/permissions.py": "e51d565b60f52aa585ac3585d7d967f14ae65940bf801b0946d7178cdd4516a7",
+      "packages/work_contexts/policy.py": "ed2c84c8245f2911252f78459355f064397fd1cc46e629bc1df1300aa9f1f0f0",
+      "packages/work_contexts/relations.py": "5597c761a2e9df27155f7eac3927ccc00a8a08770eab3cf1b0376fbf651c61fe",
+      "packages/work_contexts/repository.py": "7554cae617790345a77b45337271271a1e6532217cc4ab9eedc0e4a3ff843238",
+      "packages/work_contexts/service.py": "93e1393d25cd4240295108053b564e4aba24077e6378a4470cd60ed5168ac33b",
+      "tests/test_work_context_catalog.py": "1e30488380592489b7980ec401a5db5eb31d5178c60adaef2ea5bc957f12c694",
+      "tests/test_work_context_catalog_pg.py": "c882af7d1b1791c7e10d5d7d26616e161d819bd1c175034984badbf08a5622bd",
+      "tests/test_work_context_native_bundle_pg.py": "6ba73ba3565817b2228d7a4dc7e61deed08c263dd42d47fb9a5dadd37b910667",
+      "tests/test_work_contexts.py": "5b09b223ca09ead82a387b74b3e3ff1de0943288a4b4358c0830f2625d334f9d",
+      "tests/test_work_contexts_pg.py": "70eecea849557affcba8632f4e99abbf15a492e24ca00cea3f413eb34b165610",
+      "tests/work_context_catalog_fixtures.py": "d34d3873c0b11f9cbabb09af80599edcf832635ce26773570d453ef609f13759",
+      "tests/work_context_fixtures.py": "36138781ce63a7a063002b0233bcb704b04644134d0dffbfbe84e72367e13e45"
+    },
+    "paid_calls": 0,
+    "port": 36761,
+    "postgres": "17.11",
+    "roles": "fresh nonowner API and Worker logins",
+    "selection": null,
+    "suites": ["tests/test_work_context_native_bundle_pg.py"]
+  },
+  "native_responses": {
+    "body_values_modified": false,
+    "count": 12,
+    "rich_text_characters": 180000,
+    "source": "real authenticated routed HTTP requests against isolated native PostgreSQL with explicit synthetic fixture originals and model responses",
+    "tokens_or_object_paths_saved": false
+  },
+  "new_script_path": "apps/web/scripts/check-work-context-native.mjs",
+  "new_script_sha256": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+  "new_test_path": "tests/test_work_context_native_bundle_pg.py",
+  "new_test_sha256": "6ba73ba3565817b2228d7a4dc7e61deed08c263dd42d47fb9a5dadd37b910667",
+  "other_reviewed_boundaries": "Member/bid/stage remount and request tickets; complete observation, total, duplicates and cursor cycles; member-scoped restoration; draft navigation guard; exact original run/submission reads. No additional reproducible defect found in this review.",
+  "reproduction": "Set WORK_CONTEXT_SYNTHETIC_RESPONSE_BUNDLE to an explicit absolute test output path and run tests/test_work_context_native_bundle_pg.py with FUSION_REQUIREMENTS_ADMIN_DSN pointing to an isolated disposable fresh cluster. Feed recorded body values unchanged to root frontend validators.",
+  "static_checks": [
+    {
+      "command": "python -m ruff check tests/test_work_context_native_bundle_pg.py",
+      "cwd": "workbench",
+      "exit_code": 0
+    },
+    {
+      "command": "python -m ruff format --check tests/test_work_context_native_bundle_pg.py",
+      "cwd": "workbench",
+      "exit_code": 0
+    },
+    {
+      "command": "node_modules/.bin/eslint scripts/check-work-context-native.mjs",
+      "cwd": "workbench/apps/web",
+      "exit_code": 0
+    },
+    {
+      "command": "node_modules/.bin/prettier --check scripts/check-work-context-native.mjs",
+      "cwd": "workbench/apps/web",
+      "exit_code": 0
+    }
+  ],
+  "version": "work-context-native-response-review/2"
+}

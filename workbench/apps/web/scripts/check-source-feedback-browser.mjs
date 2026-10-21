@@ -282,6 +282,33 @@ try {
         "only compact source locks page",
       );
       if (desktop) {
+        const boundary = page.getByRole("separator", {
+          name: "调整来源面板宽度",
+          exact: true,
+        });
+        const before = Number(await boundary.getAttribute("aria-valuenow"));
+        await boundary.focus();
+        await page.keyboard.press("ArrowRight");
+        assert(
+          Number(await boundary.getAttribute("aria-valuenow")) === before - 24,
+          "source keyboard resize",
+        );
+        const handle = await boundary.boundingBox();
+        await page.mouse.move(
+          handle.x + handle.width / 2,
+          handle.y + handle.height / 2,
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+          handle.x + handle.width / 2 - 24,
+          handle.y + handle.height / 2,
+          { steps: 4 },
+        );
+        await page.mouse.up();
+        assert(
+          Number(await boundary.getAttribute("aria-valuenow")) === before,
+          "source pointer resize",
+        );
         await body.fill("查证期间继续编辑正文。");
         const bodyRect = await body.boundingBox(),
           pane = await retrieval.boundingBox();
@@ -306,6 +333,27 @@ try {
         exact: true,
       });
       await original.waitFor();
+      if (desktop) {
+        const nestedBoundary = page.getByRole("separator", {
+          name: "调整来源面板宽度",
+          exact: true,
+        });
+        assert(
+          (await nestedBoundary.count()) === 1,
+          "only the nested resize boundary is interactive",
+        );
+        const before = Number(
+          await nestedBoundary.getAttribute("aria-valuenow"),
+        );
+        await nestedBoundary.focus();
+        await page.keyboard.press("ArrowRight");
+        await page.waitForFunction((expected) => {
+          const boundary = document.querySelector(
+            '.source-surface--nested [role="separator"]',
+          );
+          return Number(boundary?.getAttribute("aria-valuenow")) === expected;
+        }, before - 24);
+      }
       const canvas = page.getByRole("img", {
         name: "合成工期要求.pdf，物理页3原页",
         exact: true,
@@ -382,6 +430,9 @@ try {
         real_pdf_pages: 3,
         exact_page_retained: 2,
         nested_focus_restored: true,
+        source_resize: desktop
+          ? "pointer and keyboard, shared with nested source"
+          : "compact single pane",
         body_and_query_preserved: true,
         error_details_explicit: true,
       });

@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
+import { AuxiliaryResizeHandle } from "./AuxiliaryResizeHandle";
 import { useAssistantDock } from "./useAssistantDock";
 import { useAuxiliaryFocus } from "./useAuxiliaryFocus";
 import { WorkspaceAuxiliaryContext } from "./workspaceAuxiliaryContext";
@@ -92,7 +93,7 @@ export function SourceSurface({
   const originatingPanel = useContext(WorkspaceAuxiliaryContext);
   const [parent] = useState(
     () =>
-      originatingPanel?.current ??
+      originatingPanel?.panel.current ??
       document.activeElement?.closest<HTMLElement>(
         '[data-workspace-auxiliary-panel], [role="dialog"]',
       ) ??
@@ -108,6 +109,8 @@ export function SourceSurface({
   );
   const parentDock = useParentSurface(parent);
   const dock = parent ? parentDock : ownDock;
+  const controls = parent ? originatingPanel?.dock : ownDock;
+  const panelId = `source-panel-${identity}`;
   const [viewport, setViewport] = useState(window.innerWidth);
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -125,15 +128,27 @@ export function SourceSurface({
   });
   useLayoutEffect(() => {
     if (!parent) return;
-    const inert = parent.getAttribute("inert");
-    const hidden = parent.getAttribute("aria-hidden");
-    parent.setAttribute("inert", "");
-    parent.setAttribute("aria-hidden", "true");
+    const surface = parent.closest<HTMLElement>(
+      "[data-workspace-auxiliary-surface]",
+    );
+    const elements =
+      surface && surface !== parent ? [parent, surface] : [parent];
+    const previous = elements.map((element) => ({
+      element,
+      inert: element.getAttribute("inert"),
+      hidden: element.getAttribute("aria-hidden"),
+    }));
+    for (const element of elements) {
+      element.setAttribute("inert", "");
+      element.setAttribute("aria-hidden", "true");
+    }
     return () => {
-      if (inert === null) parent.removeAttribute("inert");
-      else parent.setAttribute("inert", inert);
-      if (hidden === null) parent.removeAttribute("aria-hidden");
-      else parent.setAttribute("aria-hidden", hidden);
+      for (const { element, inert, hidden } of previous) {
+        if (inert === null) element.removeAttribute("inert");
+        else element.setAttribute("inert", inert);
+        if (hidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", hidden);
+      }
     };
   }, [parent]);
   useEffect(() => {
@@ -172,7 +187,18 @@ export function SourceSurface({
           : undefined
       }
     >
+      {dock.docked && controls && (
+        <AuxiliaryResizeHandle
+          label="来源"
+          controls={panelId}
+          width={dock.width}
+          max={controls.max}
+          onResize={controls.resize}
+          onClose={onClose}
+        />
+      )}
       <div
+        id={panelId}
         className={className}
         ref={panel}
         role={dock.docked ? "complementary" : "dialog"}
@@ -181,7 +207,9 @@ export function SourceSurface({
         tabIndex={-1}
         data-workspace-auxiliary-panel="true"
       >
-        <WorkspaceAuxiliaryContext.Provider value={panel}>
+        <WorkspaceAuxiliaryContext.Provider
+          value={{ panel, dock: controls ?? ownDock }}
+        >
           {children(dock.docked || viewport < 900)}
         </WorkspaceAuxiliaryContext.Provider>
       </div>

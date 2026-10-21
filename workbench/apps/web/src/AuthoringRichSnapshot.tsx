@@ -8,6 +8,14 @@ import { readAuthoringContent } from "./richEditorSchema";
 import "./AuthoringRichSnapshot.css";
 
 type ImageState = "loading" | "ready" | "failed";
+export type SavedImageBinding = {
+  asset_id: string;
+  asset_revision: number;
+  asset_version_id: string;
+  version_digest: string;
+  normalized_sha256: string;
+  media_type: "image/png";
+};
 const imageIdentity = (node: EditorNode) =>
   `${node.attrs.id}:${node.attrs.asset_id}:${node.attrs.asset_version_id}:${node.attrs.asset_revision}`;
 
@@ -16,10 +24,12 @@ function SnapshotImage({
   bidId,
   node,
   onState,
+  expectedImage,
 }: {
   bidId: string;
   node: EditorNode;
   onState: (identity: string, state: ImageState) => void;
+  expectedImage?: SavedImageBinding | null;
 }) {
   const {
     asset_id,
@@ -45,6 +55,19 @@ function SnapshotImage({
     onState(identity, "loading");
     void (async () => {
       try {
+        if (
+          expectedImage === null ||
+          (expectedImage !== undefined &&
+            (expectedImage.asset_id !== asset_id ||
+              expectedImage.asset_version_id !== asset_version_id ||
+              expectedImage.asset_revision !== asset_revision ||
+              expectedImage.media_type !== "image/png" ||
+              !executionSha(expectedImage.version_digest) ||
+              !executionSha(expectedImage.normalized_sha256)))
+        )
+          throw new Error(
+            "图片没有与所选保存记录一致的完整版本绑定，未显示其他图片。",
+          );
         const { data } = await api<AuthoringImageView>(path);
         if (!live) return;
         const proof = data.normalization_proof;
@@ -54,6 +77,9 @@ function SnapshotImage({
           data.id !== asset_version_id ||
           data.revision !== asset_revision ||
           !recordObject(proof) ||
+          (expectedImage !== undefined &&
+            (data.digest !== expectedImage.version_digest ||
+              proof.output_digest !== expectedImage.normalized_sha256)) ||
           proof.protocol !== "authoring-raster-normalization/1" ||
           proof.output_media_type !== "image/png" ||
           !executionSha(proof.output_digest) ||
@@ -125,6 +151,7 @@ function SnapshotImage({
     identity,
     onState,
     attempt,
+    expectedImage,
   ]);
   return (
     <figure className="rich-snapshot-image">
@@ -177,12 +204,14 @@ export function AuthoringRichSnapshot({
   label,
   changedNodeIds = [],
   onReady,
+  expectedImages,
 }: {
   bidId: string;
   content: unknown;
   label: string;
   changedNodeIds?: string[];
   onReady?: (ready: boolean) => void;
+  expectedImages?: readonly SavedImageBinding[];
 }) {
   const parsed = useMemo(() => {
     try {
@@ -334,6 +363,14 @@ export function AuthoringRichSnapshot({
             bidId={bidId}
             node={node}
             onState={onState}
+            expectedImage={
+              expectedImages === undefined
+                ? undefined
+                : (expectedImages.find(
+                    (img) =>
+                      img.asset_version_id === node.attrs.asset_version_id,
+                  ) ?? null)
+            }
           />
         );
       default:

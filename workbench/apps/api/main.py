@@ -17,6 +17,7 @@ from psycopg.types.json import Jsonb
 from apps.api.assistant_routes import router as assistant_router
 from apps.api.auth import COOKIE, auth, auth_view, csrf, origin, password_ok
 from apps.api.authoring import router as authoring_router
+from apps.api.authoring_package_inputs import router as authoring_package_input_router
 from apps.api.authoring_package_routes import router as authoring_package_router
 from apps.api.bid_package_requirement_routes import router as bid_package_requirement_router
 from apps.api.bid_package_review_comparison_routes import router as package_review_comparison_router
@@ -35,6 +36,12 @@ from apps.api.metrics_routes import router as metrics_router
 from apps.api.multipart_routes import router as multipart_router
 from apps.api.object_transfer import make_download_url, make_upload_url
 from apps.api.object_transfer import router as transfer_router
+from apps.api.package_historical_directory import router as package_history_directory_router
+from apps.api.package_historical_research import router as package_historical_research_router
+from apps.api.package_history_exposure_errors import (
+    install as install_package_history_exposure_errors,
+)
+from apps.api.package_history_public_gate import require_history_public_guard
 from apps.api.package_pricing_routes import router as package_pricing_router
 from apps.api.package_retrospective_routes import router as package_retrospective_router
 from apps.api.package_technical_eligibility import router as package_technical_eligibility_router
@@ -65,6 +72,8 @@ from apps.api.views import (
 )
 from apps.api.word_intake_routes import router as word_router
 from apps.api.word_material_routes import router as word_material_router
+from apps.api.work_context_catalog_routes import router as work_context_catalog_router
+from apps.api.work_context_routes import router as work_context_router
 from packages.domain import storage, word_materials
 from packages.domain.object_transfer_mode import same_origin as same_origin_transfers
 from packages.domain.parsing_profile import configured_parser
@@ -146,6 +155,13 @@ app.include_router(pricing_router)
 app.include_router(package_pricing_router)
 app.include_router(submission_router)
 app.include_router(package_retrospective_router)
+app.include_router(work_context_router)
+app.include_router(work_context_catalog_router)
+app.include_router(authoring_package_input_router)
+app.include_router(
+    package_historical_research_router, dependencies=[Depends(require_history_public_guard)]
+)
+app.include_router(package_history_directory_router)
 app.include_router(report_router)
 app.include_router(metrics_router)
 app.include_router(retained_upload_router)
@@ -216,6 +232,9 @@ async def storage_error(request, exc):
             "OBJECT_STORE_UNAVAILABLE", "对象存储暂不可用，请保留输入重试", 503, retryable=True
         ),
     )
+
+
+install_package_history_exposure_errors(app)
 
 
 def result(value, replay=False):

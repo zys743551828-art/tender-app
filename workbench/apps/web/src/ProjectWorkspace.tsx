@@ -1,4 +1,11 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { Bid, MaterialView, ReviewStateView } from "./contracts";
 import { supportsApi } from "./api";
 import { AssistantDrawer } from "./AssistantDrawer";
@@ -41,15 +48,21 @@ import { useProjectStream } from "./useProjectStream";
 import { actionTarget } from "./workspaceTypes";
 import { NextActionControl } from "./NextActionControl";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
-import { parseWorkspacePage, workspacePages } from "./workspaceTypes";
+import { parseWorkspacePage } from "./workspaceTypes";
 import type { WorkspacePage } from "./workspaceTypes";
 import { PackageOverviewNextStep } from "./PackageOverviewNextStep";
 import { PackageNavigationWorkspace } from "./PackageNavigationWorkspace";
+import type { PackageNavigationTarget } from "./packageNavigation";
+import type { WorkContextPosition } from "./workContextNavigation";
+const WorkContextWorkspace = lazy(() =>
+  import("./WorkContextWorkspace").then((module) => ({
+    default: module.WorkContextWorkspace,
+  })),
+);
 import {
-  packageLocation,
-  parsePackageLocation,
-  type PackageNavigationTarget,
-} from "./packageNavigation";
+  loadWorkspacePosition,
+  saveWorkspacePosition,
+} from "./workspacePosition";
 
 export function ProjectWorkspace({
   id,
@@ -58,6 +71,8 @@ export function ProjectWorkspace({
   onOpenDraft,
   onOpenPackage,
   onPackageLocation,
+  onOpenWorkContext,
+  onWorkContextLocation,
   onOpenKnowledge,
   onBack,
   onNavigate,
@@ -69,6 +84,11 @@ export function ProjectWorkspace({
   onOpenPackage?: (target: PackageNavigationTarget | null) => void;
   onPackageLocation?: (
     target: PackageNavigationTarget | null,
+    replace?: boolean,
+  ) => void;
+  onOpenWorkContext?: (position: WorkContextPosition) => void;
+  onWorkContextLocation?: (
+    position: WorkContextPosition,
     replace?: boolean,
   ) => void;
   onOpenKnowledge?: (knowledgeId: string) => void;
@@ -106,70 +126,38 @@ export function ProjectWorkspace({
   const explicitReview = new URLSearchParams(route.split("?")[1] ?? "").get(
     "review",
   );
+  const restoredPosition = useRef<string | null>(null);
   useEffect(() => {
-    if (page === "home" && bid) {
-      let saved: WorkspacePage | null = null;
-      let savedReview: string | undefined;
-      let savedPackage: PackageNavigationTarget | null = null;
-      try {
-        const value = localStorage.getItem(`tender:position:${id}`);
-        if (value) {
-          const position = JSON.parse(value) as {
-            page: string;
-            reviewId?: string;
-            packageTarget?: PackageNavigationTarget | null;
-          };
-          if (workspacePages.some(([key]) => key === position.page)) {
-            saved = position.page as WorkspacePage;
-            savedReview = position.reviewId;
-            if (saved === "packages" && position.packageTarget) {
-              try {
-                const parsed = parsePackageLocation(
-                  packageLocation(id, position.packageTarget),
-                );
-                if (parsed.ok) savedPackage = parsed.target;
-                else saved = "overview";
-              } catch {
-                saved = "overview";
-              }
-            }
-          }
-        }
-      } catch {
-        /* Browser preferences do not establish a business state. */
-      }
-      if (saved === "packages" && onOpenPackage) onOpenPackage(savedPackage);
-      else onNavigate(saved ?? "overview", savedReview);
+    if (page === "home" && bid?.id === id) {
+      const restorationKey = `${memberId}:${id}:${route}`;
+      if (restoredPosition.current === restorationKey) return;
+      restoredPosition.current = restorationKey;
+      const saved = loadWorkspacePosition(memberId, id);
+      if (saved?.page === "work-context" && saved.workContext) {
+        if (onOpenWorkContext) onOpenWorkContext(saved.workContext);
+        else onNavigate("overview");
+      } else if (saved?.page === "packages") {
+        if (onOpenPackage) onOpenPackage(saved.packageTarget);
+        else onNavigate("overview");
+      } else if (saved?.page === "authoring" && saved.draftId) {
+        if (onOpenDraft) onOpenDraft(saved.draftId);
+        else onNavigate("overview");
+      } else
+        onNavigate(saved?.page ?? "overview", saved?.reviewId ?? undefined);
     } else if (page !== "home") {
-      const packagePosition =
-        page === "packages" ? parsePackageLocation(route) : null;
-      if (packagePosition && !packagePosition.ok) return;
-      try {
-        localStorage.setItem(
-          `tender:position:${id}`,
-          JSON.stringify({
-            page,
-            reviewId: explicitReview ?? undefined,
-            ...(packagePosition?.ok
-              ? { packageTarget: packagePosition.target }
-              : {}),
-          }),
-        );
-      } catch {
-        /* A navigation preference cannot block the current workspace. */
-      }
+      restoredPosition.current = null;
+      saveWorkspacePosition(memberId, id, route);
     }
   }, [
     page,
     bid,
     id,
     onNavigate,
-    explicitReview,
-    reviewState.loading,
-    state,
-    defaultReview,
+    memberId,
     route,
     onOpenPackage,
+    onOpenDraft,
+    onOpenWorkContext,
   ]);
   const nav =
     page === "home" ? null : (
@@ -368,6 +356,21 @@ export function ProjectWorkspace({
               onLocation={onPackageLocation ?? (() => onNavigate("packages"))}
               onReset={() => onNavigate("packages")}
             />
+          )}
+          {page === "work-context" && (
+            <Suspense fallback={<Loading text="正在恢复稿件与阶段…" />}>
+              <WorkContextWorkspace
+                key={`${id}:${memberId}`}
+                bidId={id}
+                memberId={memberId}
+                route={route}
+                onLocation={
+                  onWorkContextLocation ?? (() => onNavigate("work-context"))
+                }
+                onOpenDraft={onOpenDraft ?? (() => onNavigate("authoring"))}
+                onOpenPackage={onOpenPackage ?? (() => onNavigate("packages"))}
+              />
+            </Suspense>
           )}
           {page === "review" && (
             <ReviewPanel

@@ -22,6 +22,22 @@ else:
     contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
+    "PackageAuthoringInputRequest",
+    "PackageAuthoringInputCapabilities",
+    "PackageAuthoringInputView",
+    "PackageAuthoringInputPage",
+    "PackageAuthoringInputContext",
+    "PackageAuthoringInputCheck",
+    "PackageAuthoringInputStatus",
+    "PackageAuthoringFactWithdrawal",
+    "PackageAuthoringFactScopeView",
+    "AuthoringWorkContext",
+    "WorkContextChoicePage",
+    "WorkContextAnySelection",
+    "WorkContextDraftSelection",
+    "WorkContextBuildSelection",
+    "PackageWorkContext",
+    "WorkContextRelationPage",
     "PricingRegisterPackageFormula",
     "PricingPackagePricingBinding",
     "PricingPackageSnapshot",

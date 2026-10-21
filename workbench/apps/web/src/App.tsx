@@ -44,6 +44,10 @@ import {
   packageLocation,
   type PackageNavigationTarget,
 } from "./packageNavigation";
+import {
+  workContextLocation,
+  type WorkContextPosition,
+} from "./workContextNavigation";
 
 function projectFromPath(pathname: string) {
   return pathname.match(/^\/bids\/([^/]+)/)?.[1] ?? null;
@@ -102,6 +106,7 @@ export function App() {
       reviewId?: string,
       draftId?: string,
       packageTarget?: PackageNavigationTarget | null,
+      workContext?: WorkContextPosition,
     ) => {
       if (navigating.current) return;
       navigating.current = true;
@@ -112,11 +117,16 @@ export function App() {
         if (reviewId) query.set("review", reviewId);
         if (draftId) query.set("draft", draftId);
         const path =
-          id && page === "packages"
-            ? packageLocation(id, packageTarget ?? null)
-            : id
-              ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
-              : "/projects";
+          id && page === "work-context"
+            ? workContextLocation(
+                id,
+                workContext ?? { stage: "draft_snapshot", selected: null },
+              )
+            : id && page === "packages"
+              ? packageLocation(id, packageTarget ?? null)
+              : id
+                ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
+                : "/projects";
         window.history.pushState({}, "", path);
         setRoute(path);
       } finally {
@@ -135,6 +145,18 @@ export function App() {
     ) => {
       if (routeRef.current.split("?")[0] !== `/bids/${bidId}/packages`) return;
       const path = packageLocation(bidId, target);
+      if (path === routeRef.current) return;
+      if (replace) window.history.replaceState({}, "", path);
+      else window.history.pushState({}, "", path);
+      setRoute(path);
+    },
+    [],
+  );
+  const locateWorkContext = useCallback(
+    (bidId: string, position: WorkContextPosition, replace = false) => {
+      if (routeRef.current.split("?")[0] !== `/bids/${bidId}/work-context`)
+        return;
+      const path = workContextLocation(bidId, position);
       if (path === routeRef.current) return;
       if (replace) window.history.replaceState({}, "", path);
       else window.history.pushState({}, "", path);
@@ -361,6 +383,19 @@ export function App() {
                 }
                 onPackageLocation={(target, replace) =>
                   locatePackage(projectId, target, replace)
+                }
+                onOpenWorkContext={(position) =>
+                  void navigate(
+                    projectId,
+                    "work-context",
+                    undefined,
+                    undefined,
+                    undefined,
+                    position,
+                  )
+                }
+                onWorkContextLocation={(position, replace) =>
+                  locateWorkContext(projectId, position, replace)
                 }
                 onBack={() => navigate(null)}
                 onNavigate={(page, reviewId) =>

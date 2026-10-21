@@ -1,0 +1,62 @@
+{
+  "bridge_unique_pg_tests": 13,
+  "date": "2026-10-21",
+  "default_installation": false,
+  "design_only": {
+    "docs/completion-20261021/package-technical-producer-v2-design.md": "872c6c8d96adf8cafc213379ad53f5d30604ce16e79ea71b688e568e1b6f38f7"
+  },
+  "design_only_implemented": false,
+  "files": {
+    "apps/api/package_historical_research.py": "6e30bb0ecfc383314ebc72d42f9e2adb6e89bcd0cfaa08069ada8c98fce668d4",
+    "apps/api/package_history_exposure_errors.py": "aaf608837fc85b2efd9193e1288c224e47a8a18f03c3e639f7e5ed8596d04870",
+    "apps/api/package_history_public_gate.py": "eb5f777b6c2b3a01b3778125ddd0495b37c6963c2b5308ff15483db6af5e5451",
+    "deploy/package_history_worker.py": "3fa508eef981a8d14d8018de7d3453e8eab159c85b3be994436da362ddf17ca0",
+    "deploy/sql/package-historical-admission.sql": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+    "deploy/sql/package-historical-research.sql": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+    "deploy/sql/package-history-exposure-bridge.sql": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+    "docs/completion-20261021/package-historical-research-acceptance.md": "026fa53acc45a87cf067ae5868a7b03398ff3868b91ed70b1441bb94831cf33a",
+    "docs/completion-20261021/package-historical-research-checks.json": "1202d4b06dee0f4ecfef245ec0785434f78f223161432ce21f888b8a9ea2510b",
+    "docs/completion-20261021/package-historical-research-design.md": "b55bfa4ff765dcf86bc2c98231316686e14a76ea6d10d40e9ea179bf013d13f6",
+    "docs/completion-20261021/package-history-exposure-bridge-acceptance.md": "6aa67cdedd3291912ddf12d8bccf26ec3280de285be64f38e5d163d7cba94d87",
+    "docs/completion-20261021/package-history-exposure-bridge-checks.json": "8210f06f86dc3cb1d5daef54ef5741c160548d2524e3ec150d4c6277f3cee5cd",
+    "docs/completion-20261021/package-history-exposure-bridge-design.md": "b0b8a283538269a0ff34924dce8668860e4f599d76769525c213e22677d7e4ad",
+    "packages/contracts/package_historical_research_api.py": "9e5d3982bee04e30b6c367946c17c6569897983aead2f1336bcdae37d1c7e681",
+    "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8",
+    "packages/model_governance/package_history_proofs.py": "2c6e306d5f02f1e7c583c88321dd01f4c56627ae7f4326979e7c63aaa377edd2",
+    "packages/model_governance/package_history_repository.py": "259dd2eec92ce2ff881437d59aebbf04af7a544cee9a7a2006aaa4ea3b89cbf1",
+    "packages/model_governance/package_history_runtime.py": "b06a51f5611dda34e1a275a0d59a5ec3c720b56f0d19da3e2ab0908a2c1dcfb3",
+    "packages/research/package_history_exposure_fence.py": "eeecc54dd31561743b155ada908fabc375910ee8c1a9c77b2fa597baf0a5b212",
+    "packages/research/worker.py": "7ba4fca90dc46f0c8ae5aec5f18fb40312162a3a51cfe19dff49b434e6656d30",
+    "requirements-package-history.txt": "68e3f7d026d2e0f0c208bcda478ce55ffb7b876a3a96e6c20c6eb58ab37ac69c",
+    "tests/package_history_fixtures.py": "b2a3f5e2214bab3b6ce1fafda595048591c8f26b371a4d5542815db17eb4c415",
+    "tests/package_history_legacy_fixtures.py": "20a74a1b7e4fd4b51a351027e06c28cc6ecdd313bce308383ba650c4a5a55637",
+    "tests/test_package_history.py": "dde256d4177e517e4d056ae00c30eff8d2c43318bea6efdea1c521ae11ccdbc2",
+    "tests/test_package_history_exposure_bridge_pg.py": "dd293d6844e9d0ced1fcc7579d4acd53251a210a1450bf6128e895f88250b2fb",
+    "tests/test_package_history_pg.py": "5411fcca4e226cf85657bf4f5c0f661fb9b21f212ed9cc9007f28e1ff16799b2"
+  },
+  "final_bridge_receipt": "/tmp/tender-review-f06/history-pg-hyjmd5st/test-receipt.json",
+  "formal_eligibility": "unavailable",
+  "http_fixture": {
+    "path": "/tmp/tender-review-current/package-historical-research-http.json",
+    "sha256": "a50f79595886995c2f1db8eb0b85b4d59b38ad1db0b671d11c31a7548cafec1d"
+  },
+  "native_http_regression_receipt": "/tmp/tender-review-f06/history-pg-gfc94nfr/test-receipt.json",
+  "native_pure_tests": 28,
+  "native_unique_pg_tests": 17,
+  "paid_calls": 0,
+  "provider_requests": 0,
+  "root_owned_integration_not_in_agent_manifest": [
+    "apps/api/main.py",
+    "apps/api/export_openapi.py",
+    "packages/contracts/fusion-implemented.openapi.json.gz",
+    "apps/api/package_historical_directory.py",
+    "deploy/sql/package-history-directory.sql",
+    "packages/contracts/package_history_directory_api.py",
+    "packages/model_governance/package_history_directory.py",
+    "tests/test_package_history_directory_pg.py",
+    "history frontend directory/protocol/UI files"
+  ],
+  "schema": "package-history-delivery-freeze/1",
+  "scope": "checkpoint13 native strict history + optional exposure bridge + mandatory public core gate",
+  "synthetic": true
+}

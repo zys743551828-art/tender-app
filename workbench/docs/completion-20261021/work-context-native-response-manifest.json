@@ -1,0 +1,25 @@
+{
+  "base_commit": "ebe7e80b05cec1699eb0ce449cbda1406f4dc5d2",
+  "date": "2026-10-21",
+  "files": {
+    "apps/web/scripts/check-work-context-native.mjs": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+    "docs/completion-20261021/work-context-native-response-acceptance.md": "bcbc3d968971864d7635053ff4e30968c5973d752ad712f19783bb99e9e5c2f6",
+    "docs/completion-20261021/work-context-native-response-checks.json": "13454711cabdf3b07227aadb3ea9ef0e98e3d48b42f5e5bcb9d0247bf3f02a68",
+    "tests/test_work_context_native_bundle_pg.py": "6ba73ba3565817b2228d7a4dc7e61deed08c263dd42d47fb9a5dadd37b910667"
+  },
+  "frozen_A_B_overlay_sha256_verified": true,
+  "manifest_self_excluded": true,
+  "path_base": "workbench",
+  "receipt_path": "docs/completion-20261021/work-context-native-response-checks.json",
+  "status": "frozen",
+  "verification": {
+    "current_frontend_image_consistency_passed": 2,
+    "current_frontend_protocol_passed": 11,
+    "deliberate_negative_copies_rejected": 2,
+    "native_pg_failed": 0,
+    "native_pg_passed": 2,
+    "native_pg_skipped": 0,
+    "static_checks_passed": true
+  },
+  "version": "work-context-native-response-manifest/1"
+}

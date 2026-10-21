@@ -29,6 +29,8 @@ export function WorkspaceNavigation({
   );
   const pages = workspacePages.filter(
     ([key]) =>
+      (key !== "work-context" ||
+        supportsApi("GET", `/bids/${bidId}/work-contexts/choices`)) &&
       (key !== "tasks" ||
         (taskTemplatesContractReady &&
           supportsApi("GET", `/bids/${bidId}/task-definitions`))) &&

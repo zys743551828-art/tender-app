@@ -8,6 +8,7 @@ export const workspacePages = [
   ["rules", "规则核对"],
   ["facts", "工程事实"],
   ["authoring", "章节编制"],
+  ["work-context", "稿件与阶段"],
   ["pricing", "报价情景"],
   ["outcomes", "实交与成绩"],
   ["operations", "处理记录"],

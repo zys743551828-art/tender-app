@@ -30,6 +30,12 @@ from packages.contracts.bid_package_requirements_api import (
     extend_openapi as extend_bid_package_requirements,
 )
 from packages.contracts.document_parses_api import extend_openapi as extend_document_parses
+from packages.contracts.package_historical_research_api import (
+    extend_openapi as extend_package_historical_research,
+)
+from packages.contracts.package_history_directory_api import (
+    extend_openapi as extend_package_history_directory,
+)
 from packages.contracts.package_retrospectives_api import (
     extend_openapi as extend_package_retrospectives,
 )
@@ -51,6 +57,10 @@ from packages.contracts.package_technical_execution_api import (
 )
 from packages.contracts.package_technical_scope_api import (
     extend_openapi as extend_package_technical_scopes,
+)
+from packages.contracts.work_context_api import extend_openapi as extend_work_contexts
+from packages.contracts.work_context_catalog_api import (
+    extend_openapi as extend_work_context_catalog,
 )
 from packages.domain.runtime import ROOT
 from packages.identity.contracts import extend_openapi as extend_identity
@@ -188,6 +198,10 @@ def implemented_openapi(app):
     extend_reports(actual)
     extend_metrics(actual)
     extend_package_retrospectives(actual)
+    extend_work_contexts(actual)
+    extend_work_context_catalog(actual)
+    extend_package_historical_research(actual)
+    extend_package_history_directory(actual)
     from packages.word_intake.contracts import extend_openapi as extend_word
 
     extend_word(actual)

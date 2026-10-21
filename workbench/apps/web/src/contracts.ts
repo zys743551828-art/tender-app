@@ -1,5 +1,584 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type PackageAuthoringInputRequest = {
+  protocol: "package-authoring-input-request/1";
+  purpose: "authoring";
+  target_relation: "draft_using_package_context";
+  package_context: PackageContext;
+  target_section: SectionSelection;
+  facts: FactSelection;
+};
+
+export type PackageAuthoringInputCapabilities = {
+  protocol: "package-authoring-input-capabilities/1";
+  capture_available: boolean;
+  generation_available: false;
+  publication_available: false;
+  apply_available: false;
+  build_available: false;
+  automatic_input_selection: false;
+  supported_target: "plain_text_stable_node";
+  target_relation: "draft_using_package_context";
+  context_limit_bytes: number;
+  blocking_reasons: string[];
+};
+
+export type PackageAuthoringInputView = {
+  manifest: { [key: string]: unknown };
+  digest: string;
+};
+
+export type PackageAuthoringInputPage = {
+  items: PackageAuthoringInputView[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type PackageAuthoringInputContext = {
+  input_id: string;
+  input_digest: string;
+  stored_context_digest: string;
+  context: { [key: string]: unknown };
+  redacted_fields: "documents[*].object_key"[];
+  original_bytes_reverified: false;
+};
+
+export type PackageAuthoringInputCheck = {
+  input_digest: string;
+};
+
+export type PackageAuthoringInputStatus = {
+  protocol: "package-authoring-input-status/1";
+  input_id: string;
+  input_digest: string;
+  current_input_matches: boolean;
+  original_bytes_reverified: false;
+  checked_at: string;
+  generation_available: false;
+  publication_available: false;
+  apply_available: false;
+  build_available: false;
+  blocking_reasons: string[];
+};
+
+export type PackageAuthoringFactWithdrawal = {
+  input_digest: string;
+  fact_id: string;
+  declaration_digest: string;
+  reason: string;
+};
+
+export type PackageAuthoringFactScopeView = {
+  manifest: { [key: string]: unknown };
+  digest: string;
+};
+
+export type AuthoringWorkContext = {
+  version: "authoring-work-context/1";
+  selection:
+    | {
+        kind: "draft_snapshot";
+        bid_id: string;
+        draft_id: string;
+        draft_revision: number;
+        snapshot_id: string;
+        snapshot_digest: string;
+      }
+    | {
+        kind: "build";
+        bid_id: string;
+        build_id: string;
+        draft_id: string;
+        draft_revision: number;
+        snapshot_id: string;
+        snapshot_digest: string;
+        build_input_id: string;
+        input_digest: string;
+        manifest_digest: string;
+        writer_kind: string;
+      };
+  selection_digest: string;
+  observed_at: string;
+  observation_digest: string;
+  snapshot: {
+    bid_id: string;
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    title: string;
+    created_at: string;
+    section_count: number;
+  };
+  document: {
+    sections: {
+      section_id: string;
+      section_revision_id: string;
+      section_revision: number;
+      schema_digest: string;
+      digest: string;
+      ordinal: number;
+      title: string;
+      content: WorkContextReadOnlyAuthoringRichDocument;
+    }[];
+    outline:
+      | {
+          section_id: string;
+          parent_id: string | null;
+          ordinal: number;
+          node_type: "chapter" | "appendix";
+        }[]
+      | null;
+    images: {
+      asset_id: string;
+      asset_revision: number;
+      asset_version_id: string;
+      version_digest: string;
+      normalized_sha256: string;
+      media_type: "image/png";
+    }[];
+    editable: false;
+  } | null;
+  build: {
+    operation_id: string;
+    operation_state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    created_at: string;
+    outputs: {
+      format: "docx" | "pdf";
+      requested: boolean;
+      state: "pending" | "succeeded" | "failed" | "not_published";
+      document: {
+        document_version_id: string;
+        sha256: string;
+        byte_size: number;
+        media_type:
+          | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          | "application/pdf";
+        publication_proof_digest: string;
+      } | null;
+      gaps: string[];
+    }[];
+  } | null;
+  current_observation: {
+    draft_head: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+    sources: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+    assets: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+  };
+  summary: {
+    perspective: "saved_authoring_history";
+    whole_package_blocking_risk_count: null;
+    whole_package_passed: null;
+    formal_scoring: {
+      status: "scope_not_selected";
+      scope_id: null;
+      numeric_prediction: null;
+    };
+    official_labels_read: false;
+    primary_action: "open_selected_snapshot" | "view_selected_build";
+    action_mode: "navigation_only";
+  };
+  native_targets: {
+    draft_snapshot: {
+      kind: "draft_snapshot";
+      bid_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+    };
+    current_draft: {
+      kind: "draft";
+      bid_id: string;
+      draft_id: string;
+    };
+    build: {
+      kind: "build";
+      bid_id: string;
+      build_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+      build_input_id: string;
+      input_digest: string;
+      manifest_digest: string;
+      writer_kind: string;
+    } | null;
+    build_relations: {
+      kind: "build_package_relations";
+      bid_id: string;
+      build_id: string;
+    } | null;
+  };
+  original_bytes_reverified: false;
+  qualification_assessed: false;
+  limitations: string[];
+};
+
+export type WorkContextChoicePage = {
+  version: "work-context-choice-page/1";
+  bid_id: string;
+  kind:
+    | "draft_snapshot"
+    | "build"
+    | "package_review_run"
+    | "package_submission";
+  filters: {
+    draft_id: string | null;
+    package_id: string | null;
+    revision_id: string | null;
+  };
+  observed_at: string;
+  observation_digest: string;
+  items: {
+    kind:
+      | "draft_snapshot"
+      | "build"
+      | "package_review_run"
+      | "package_submission";
+    id: string;
+    label: string;
+    created_at: string;
+    status:
+      | "saved"
+      | "standard"
+      | "offline_fact"
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    selection:
+      | {
+          kind: "draft_snapshot";
+          bid_id: string;
+          draft_id: string;
+          draft_revision: number;
+          snapshot_id: string;
+          snapshot_digest: string;
+        }
+      | {
+          kind: "build";
+          bid_id: string;
+          build_id: string;
+          draft_id: string;
+          draft_revision: number;
+          snapshot_id: string;
+          snapshot_digest: string;
+          build_input_id: string;
+          input_digest: string;
+          manifest_digest: string;
+          writer_kind: string;
+        }
+      | {
+          kind: "package_review_run";
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          package_digest: string;
+          inventory_id: string;
+          inventory_digest: string;
+          frozen_input_id: string;
+          frozen_input_digest: string;
+          execution_input_id: string;
+          execution_input_digest: string;
+          dependency_plan_id: string;
+          dependency_plan_digest: string;
+          run_id: string;
+          input_digest: string;
+          method_digest: string;
+          result_digest: string | null;
+        }
+      | {
+          kind: "package_submission";
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          package_digest: string;
+          submission_id: string;
+          package_binding_digest: string;
+          inventory: {
+            id: string;
+            digest: string;
+          } | null;
+          review_run: {
+            kind: "package_review_run";
+            bid_id: string;
+            package_id: string;
+            revision_id: string;
+            package_digest: string;
+            inventory_id: string;
+            inventory_digest: string;
+            frozen_input_id: string;
+            frozen_input_digest: string;
+            execution_input_id: string;
+            execution_input_digest: string;
+            dependency_plan_id: string;
+            dependency_plan_digest: string;
+            run_id: string;
+            input_digest: string;
+            method_digest: string;
+            result_digest: string | null;
+          } | null;
+        };
+    selection_digest: string;
+  }[];
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  complete_observation: true;
+  directory_basis: "native_record_identity_and_state";
+  selection_requires_resolution: true;
+  qualification_assessed: false;
+};
+
+export type WorkContextAnySelection =
+  | {
+      kind: "draft_snapshot";
+      bid_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+    }
+  | {
+      kind: "build";
+      bid_id: string;
+      build_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+      build_input_id: string;
+      input_digest: string;
+      manifest_digest: string;
+      writer_kind: string;
+    }
+  | {
+      kind: "package_review_run";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      frozen_input_id: string;
+      frozen_input_digest: string;
+      execution_input_id: string;
+      execution_input_digest: string;
+      dependency_plan_id: string;
+      dependency_plan_digest: string;
+      run_id: string;
+      input_digest: string;
+      method_digest: string;
+      result_digest: string | null;
+    }
+  | {
+      kind: "package_submission";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      submission_id: string;
+      package_binding_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        kind: "package_review_run";
+        bid_id: string;
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        frozen_input_id: string;
+        frozen_input_digest: string;
+        execution_input_id: string;
+        execution_input_digest: string;
+        dependency_plan_id: string;
+        dependency_plan_digest: string;
+        run_id: string;
+        input_digest: string;
+        method_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+
+export type WorkContextDraftSelection = {
+  kind: "draft_snapshot";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+};
+
+export type WorkContextBuildSelection = {
+  kind: "build";
+  bid_id: string;
+  build_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  build_input_id: string;
+  input_digest: string;
+  manifest_digest: string;
+  writer_kind: string;
+};
+
+export type PackageWorkContext = {
+  version: "package-work-context/1";
+  selection: WorkContextSelection;
+  selection_digest: string;
+  observed_at: string;
+  observation_digest: string;
+  identity:
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version?: "bid-identity/1";
+      }
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        lot_id: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version: "bid-identity/2";
+      };
+  state:
+    | {
+        kind: "package_review_run";
+        operation_id: string;
+        operation_state:
+          | "queued"
+          | "running"
+          | "cancel_requested"
+          | "succeeded"
+          | "failed"
+          | "cancelled";
+        result_available: boolean;
+      }
+    | {
+        kind: "package_submission";
+        registration_kind: "standard" | "offline_fact";
+        submitted_at: string;
+        recorded_at: string;
+        supersedes_id: string | null;
+        gate_checked_at_registration: boolean;
+        platform_submission_verified: false;
+        pre_submission_system_check_verified: false;
+      };
+  current_observation: {
+    identity: WorkContextDimensionObservation;
+    package_head: WorkContextDimensionObservation;
+    authority_head: WorkContextDimensionObservation;
+    inventory_head: WorkContextDimensionObservation;
+    rule_set_head: WorkContextDimensionObservation;
+    sources: WorkContextDimensionObservation;
+    selected_facts: WorkContextDimensionObservation;
+    executor_method: WorkContextDimensionObservation;
+    submission_head: WorkContextDimensionObservation;
+    review_run_head: WorkContextDimensionObservation;
+    bound_run_state: WorkContextDimensionObservation;
+  };
+  summary: WorkContextSummary;
+  native_targets: WorkContextNativeTargets;
+  original_bytes_reverified: false;
+  limitations: string[];
+};
+
+export type WorkContextRelationPage = {
+  version: "package-work-context-relations/1";
+  seed: {
+    bid_id: string;
+    build_id: string;
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    build_input_id: string;
+    input_digest: string;
+    manifest_digest: string;
+    writer_kind: string;
+  };
+  target: "package_revision";
+  observed_at: string;
+  observation_digest: string;
+  items: {
+    id: string;
+    kind: "adopted_into" | "contains_output";
+    output: {
+      document_version_id: string;
+      format: "docx" | "pdf";
+      sha256: string;
+    };
+    package_revision: {
+      kind: "package_revision";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+    };
+    package_revision_number: number;
+    proof_digest: string;
+    adoption_command_id: string | null;
+    adopted_at: string | null;
+    current_package_head: WorkContextDimensionObservation;
+    current_source_basis: WorkContextDimensionObservation;
+    qualification_assessed: false;
+  }[];
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  complete_observation: true;
+  original_bytes_reverified: false;
+  qualification_assessed: false;
+};
+
 export type PricingRegisterPackageFormula = {
   title: string;
   formula: PricingFormulaParameters;
@@ -7218,6 +7797,167 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageContext = {
+  target: PackageReference;
+  authority: PackageReference;
+  inventory: InventoryReference;
+};
+
+export type SectionSelection = {
+  draft_id: string;
+  snapshot_id: string;
+  snapshot_digest: string;
+  base_draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  base_section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  node_id: string;
+  before_node_digest: string;
+};
+
+export type FactSelection = {
+  fact_set_id: string;
+  fact_head_revision: number;
+  identity_fact_ids: string[];
+  uses: FactUse[];
+};
+
+export type WorkContextReadOnlyAuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: WorkContextReadOnlyAuthoringSourceReference[];
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringBlock
+    | WorkContextReadOnlyAuthoringRichTable
+    | WorkContextReadOnlyAuthoringRichImage
+  )[];
+};
+
+export type WorkContextSelection =
+  | {
+      kind: "package_review_run";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      frozen_input_id: string;
+      frozen_input_digest: string;
+      execution_input_id: string;
+      execution_input_digest: string;
+      dependency_plan_id: string;
+      dependency_plan_digest: string;
+      run_id: string;
+      input_digest: string;
+      method_digest: string;
+      result_digest: string | null;
+    }
+  | {
+      kind: "package_submission";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      submission_id: string;
+      package_binding_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        kind: "package_review_run";
+        bid_id: string;
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        frozen_input_id: string;
+        frozen_input_digest: string;
+        execution_input_id: string;
+        execution_input_digest: string;
+        dependency_plan_id: string;
+        dependency_plan_digest: string;
+        run_id: string;
+        input_digest: string;
+        method_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+
+export type WorkContextDimensionObservation = {
+  status: "matched" | "changed" | "unknown" | "not_applicable";
+  selected_digest: string | null;
+  observed_digest: string | null;
+  reason: string;
+};
+
+export type WorkContextSummary = {
+  perspective: "declared_scope_history" | "submission_history";
+  review_status:
+    | "result_available"
+    | "run_unfinished"
+    | "bound_result_missing"
+    | "not_selected";
+  review: WorkContextReviewSummary | null;
+  whole_package_blocking_risk_count: null;
+  whole_package_passed: null;
+  formal_scoring: {
+    status: "scope_not_selected";
+    scope_id: null;
+    numeric_prediction: null;
+  };
+  official_labels_read: false;
+  primary_action:
+    | "open_selected_review"
+    | "view_selected_operation"
+    | "inspect_changed_basis"
+    | "open_selected_submission";
+  action_mode: "navigation_only";
+};
+
+export type WorkContextNativeTargets = {
+  package_revision: {
+    kind: "package_revision";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+  };
+  authority_revision: {
+    kind: "package_revision";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+  } | null;
+  package_review_run: {
+    kind: "package_review_run";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    frozen_input_id: string;
+    execution_input_id: string;
+    run_id: string;
+    input_digest: string;
+    result_digest: string | null;
+  } | null;
+  package_submission: {
+    kind: "package_submission";
+    bid_id: string;
+    submission_id: string;
+    package_binding_digest: string;
+  } | null;
+};
+
 export type PricingFormulaParameters = {
   method: "lowest_valid_ratio" | "mean_valid_deviation";
   maximum: string;
@@ -8828,6 +9568,89 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type PackageReference = {
+  package_id: string;
+  revision_id: string;
+  manifest_digest: string;
+};
+
+export type InventoryReference = {
+  id: string;
+  digest: string;
+  rule_set_id: string;
+};
+
+export type FactUse = {
+  fact_id: string;
+  fact_item_digest: string;
+  subject: FactSubject;
+  reason: string;
+};
+
+export type WorkContextReadOnlyAuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type WorkContextReadOnlyAuthoringBlock =
+  | WorkContextReadOnlyAuthoringParagraph
+  | WorkContextReadOnlyAuthoringHeading
+  | WorkContextReadOnlyAuthoringBulletList
+  | WorkContextReadOnlyAuthoringOrderedList;
+
+export type WorkContextReadOnlyAuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: WorkContextReadOnlyAuthoringRichRow[];
+};
+
+export type WorkContextReadOnlyAuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
+export type WorkContextReviewSummary = {
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  requirement_count: number;
+  machine_counts: {
+    satisfied: number;
+    violated: number;
+    not_found: number;
+    unable_to_judge: number;
+    not_applicable: number;
+  };
+  human_counts: {
+    unreviewed: number;
+    confirmed: number;
+    rejected: number;
+    needs_review: number;
+  };
+  human_heads_digest: string;
+  human_basis: "current_heads_for_exact_result";
+  matrix_coverage: "complete" | "partial";
+  overall_coverage: "partial";
+  inventory_complete: false;
+  quality_status: "not_measured";
+  risk_resolution_assessed: false;
+};
+
 export type PackageRuleCorrection_RuleScope = {
   bid_id: string;
   description: string;
@@ -9215,6 +10038,58 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type FactSubject = {
+  kind: "engineering_project" | "lot" | "round" | "bidder";
+  id: string;
+};
+
+export type WorkContextReadOnlyAuthoringParagraph = {
+  type: "paragraph";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringText
+    | WorkContextReadOnlyAuthoringBreak
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringHeading = {
+  type: "heading";
+  attrs: {
+    id: string;
+    level: number;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringText
+    | WorkContextReadOnlyAuthoringBreak
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringBulletList = {
+  type: "bulletList";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringListItem[];
+};
+
+export type WorkContextReadOnlyAuthoringOrderedList = {
+  type: "orderedList";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringListItem[];
+};
+
+export type WorkContextReadOnlyAuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringRichCell[];
+};
+
 export type PackageScopeReview_Binding = {
   bid_id: PackageScopeReview_Id;
   package_id: PackageScopeReview_Id;
@@ -9515,6 +10390,45 @@ export type PackageSubmissionGate_KnownBlockingRisks = {
         finding_digest: string;
         resolution: "no_verified_recheck_resolution";
       }
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringText = {
+  type: "text";
+  text: string;
+  marks?: {
+    type: "bold" | "italic";
+  }[];
+};
+
+export type WorkContextReadOnlyAuthoringBreak = {
+  type: "hardBreak";
+};
+
+export type WorkContextReadOnlyAuthoringListItem = {
+  type: "listItem";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringParagraph
+    | WorkContextReadOnlyAuthoringBulletList
+    | WorkContextReadOnlyAuthoringOrderedList
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringParagraph
+    | WorkContextReadOnlyAuthoringBulletList
+    | WorkContextReadOnlyAuthoringOrderedList
   )[];
 };
 
@@ -9935,6 +10849,33 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/package-retrospectives",
   "GET /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}",
   "POST /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}/knowledge-candidate",
+  "GET /api/v1/bids/{bid_id}/work-contexts/package_review_run/{run_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/package_submission/{submission_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/build/{build_id}/relations",
+  "GET /api/v1/bids/{bid_id}/work-contexts/choices",
+  "GET /api/v1/bids/{bid_id}/work-contexts/draft_snapshot/{snapshot_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/build/{build_id}",
+  "GET /api/v1/authoring/package-input-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/context",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/check",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/fact-withdrawals",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/historical-admission-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/historical-admissions",
+  "GET /api/v1/package-historical-research/admissions/{admission_id}",
+  "GET /api/v1/package-historical-research/cpu-protocol-template",
+  "POST /api/v1/package-historical-research/protocols",
+  "GET /api/v1/package-historical-research/protocols",
+  "POST /api/v1/package-historical-research/cohorts",
+  "GET /api/v1/package-historical-research/cohorts",
+  "GET /api/v1/package-historical-research/cohorts/{cohort_id}",
+  "POST /api/v1/package-historical-research/cohorts/{cohort_id}/jobs",
+  "GET /api/v1/package-historical-research/cohorts/{cohort_id}/jobs",
+  "GET /api/v1/package-historical-research/jobs/{job_id}",
+  "POST /api/v1/package-historical-research/jobs/{job_id}/control",
+  "GET /api/v1/package-historical-research/admissions",
   "GET /api/v1/reviews/{review_id}/report-exports",
   "POST /api/v1/reviews/{review_id}/report-exports",
   "GET /api/v1/reviews/{review_id}/report-context",

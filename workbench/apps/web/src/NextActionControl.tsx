@@ -22,6 +22,7 @@ export function NextActionControl({
     materials: "上传与核对资料",
     packages: "打开整包核查",
     authoring: "打开章节编制",
+    "work-context": "查看稿件与阶段",
     pricing: "查看报价情景",
     outcomes: "查看实交与成绩",
     review: "查看风险与本轮处理",

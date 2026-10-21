@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { AuthoringRichSnapshot } from "./AuthoringRichSnapshot";
+import type { SavedImageBinding } from "./AuthoringRichSnapshot";
 import type { AuthoringImageView } from "./contracts";
 import {
   importCandidate,
@@ -24,6 +25,14 @@ afterEach(() => {
 });
 function setup() {
   const candidate = importCandidateWithImage();
+  const normalizationProof = {
+    protocol: "authoring-raster-normalization/1",
+    output_digest: candidate.images[0].digest,
+    output_byte_size: importImageBytes.length,
+    output_media_type: "image/png",
+    width_px: 2,
+    height_px: 2,
+  };
   const image: AuthoringImageView = {
     id: importId(31),
     bid_id: importScope.bidId,
@@ -38,14 +47,7 @@ function setup() {
     original_media_type: "image/png",
     width_px: 2,
     height_px: 2,
-    normalization_proof: {
-      protocol: "authoring-raster-normalization/1",
-      output_digest: candidate.images[0].digest,
-      output_byte_size: importImageBytes.length,
-      output_media_type: "image/png",
-      width_px: 2,
-      height_px: 2,
-    },
+    normalization_proof: normalizationProof,
     source_refs: [],
     digest: "a".repeat(64),
     created_by: importScope.memberId,
@@ -84,16 +86,26 @@ function setup() {
     },
   );
   const ready = vi.fn();
-  const show = () =>
+  const show = (expectedImages?: SavedImageBinding[]) =>
     render(
       <AuthoringRichSnapshot
         bidId={importScope.bidId}
         content={candidate.sections[0].content}
         label="修改前完整正文"
         onReady={ready}
+        expectedImages={expectedImages}
       />,
     );
-  return { candidate, state, fetch, create, revoke, ready, show };
+  return {
+    candidate,
+    state,
+    normalizationProof,
+    fetch,
+    create,
+    revoke,
+    ready,
+    show,
+  };
 }
 function loadedImage(element: HTMLElement) {
   Object.defineProperty(element, "naturalWidth", {
@@ -196,4 +208,47 @@ it("未知结构拒绝预览并保持未确认，不能静默丢失节点", asyn
   );
   expect(screen.getByRole("alert")).toHaveTextContent("章节结构无法完整核对");
   await waitFor(() => expect(ready).toHaveBeenLastCalledWith(false));
+});
+
+it.each(["version", "bytes", "missing"])(
+  "所选快照的图片绑定优先于二次元数据自证：%s",
+  async (kind) => {
+    const f = setup();
+    const binding: SavedImageBinding = {
+      asset_id: f.state.image.asset_id,
+      asset_version_id: f.state.image.id,
+      asset_revision: f.state.image.revision,
+      version_digest: f.state.image.digest,
+      normalized_sha256: f.candidate.images[0].digest,
+      media_type: "image/png",
+    };
+    if (kind === "version") f.state.image.digest = "d".repeat(64);
+    if (kind === "bytes") f.normalizationProof.output_digest = "e".repeat(64);
+    f.show(kind === "missing" ? [] : [binding]);
+    await screen.findByRole("alert");
+    expect(f.create).not.toHaveBeenCalled();
+    expect(
+      f.fetch.mock.calls.some(([path]) =>
+        String(path).endsWith("/bytes/normalized"),
+      ),
+    ).toBe(false);
+    expect(f.ready).toHaveBeenLastCalledWith(false);
+  },
+);
+
+it("快照明确绑定与真实规范图片字节一致时仍显示原图片", async () => {
+  const f = setup();
+  f.show([
+    {
+      asset_id: f.state.image.asset_id,
+      asset_version_id: f.state.image.id,
+      asset_revision: f.state.image.revision,
+      version_digest: f.state.image.digest,
+      normalized_sha256: f.candidate.images[0].digest,
+      media_type: "image/png",
+    },
+  ]);
+  const img = await screen.findByRole("img");
+  loadedImage(img);
+  await waitFor(() => expect(f.ready).toHaveBeenLastCalledWith(true));
 });

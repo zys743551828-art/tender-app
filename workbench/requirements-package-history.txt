@@ -1,0 +1,3 @@
+# Optional independent evidence verifier; does not enable any proof issuer.
+-r requirements.lock.txt
+pillow==12.3.0

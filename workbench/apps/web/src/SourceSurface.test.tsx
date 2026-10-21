@@ -166,6 +166,52 @@ it("replaces only the parent source surface and preserves the exact query and ne
   expect(opener).toHaveFocus();
 });
 
+it("shares keyboard width changes with nested originals and remembers the source width", async () => {
+  render(<Fixture />);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "打开查证" }));
+  const boundary = screen.getByRole("separator", { name: "调整来源面板宽度" });
+  boundary.focus();
+  await user.keyboard("{ArrowRight}");
+  expect(boundary).toHaveAttribute("aria-valuenow", "496");
+  await user.type(
+    screen.getByRole("textbox", { name: "想查证什么？" }),
+    "保留问题",
+  );
+  await user.click(screen.getByRole("button", { name: "查证当前项目资料" }));
+  await user.click(
+    await screen.findByRole("button", { name: "核对来源并打开引用原页" }),
+  );
+  const nestedBoundary = await screen.findByRole("separator", {
+    name: "调整来源面板宽度",
+  });
+  expect(nestedBoundary).not.toBe(boundary);
+  expect(screen.getAllByRole("separator")).toHaveLength(1);
+  nestedBoundary.focus();
+  await user.keyboard("{ArrowRight}");
+  await waitFor(() =>
+    expect(nestedBoundary).toHaveAttribute("aria-valuenow", "472"),
+  );
+  expect(
+    document
+      .getElementById("main-content")
+      ?.style.getPropertyValue("--assistant-dock-space"),
+  ).toBe("484px");
+  await user.keyboard("{Escape}");
+  expect(screen.getByRole("separator", { name: "调整来源面板宽度" })).toBe(
+    boundary,
+  );
+  expect(boundary).toHaveAttribute("aria-valuenow", "472");
+  expect(screen.getByRole("textbox", { name: "想查证什么？" })).toHaveValue(
+    "保留问题",
+  );
+  await user.click(screen.getByRole("button", { name: "关闭查证" }));
+  await user.click(screen.getByRole("button", { name: "打开查证" }));
+  expect(
+    screen.getByRole("separator", { name: "调整来源面板宽度" }),
+  ).toHaveAttribute("aria-valuenow", "472");
+});
+
 it("returns to the source trigger after an asynchronous check has lost browser focus", async () => {
   const fetcher = sourceSurfaceFixture().fetcher;
   let requests = 0;
