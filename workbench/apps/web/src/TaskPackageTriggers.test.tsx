@@ -84,7 +84,8 @@ it.each([
       template = record.data,
       config = template.configuration;
     const source = config.source_selection!;
-    if (!("input" in source)) throw new Error("fixture exact source");
+    if (!("input" in source) || source.mode === "exact_package_authoring")
+      throw new Error("fixture exact review source");
     const initial: TemplateRequest = {
       ...config,
       source_selection: { mode: "exact_package_review", input: source.input },
@@ -468,7 +469,8 @@ it.each(["valid", "lost-ack", "changed-source"] as const)(
     const record = f["event-template"],
       template = record.data;
     const source = template.configuration.source_selection!;
-    if (!("input" in source)) throw new Error("fixture source");
+    if (!("input" in source) || source.mode === "exact_package_authoring")
+      throw new Error("fixture review source");
     const identity = `package:${source.input.execution_input_id}:${source.input.dependency_plan_id}`;
     const props = {
       bidId: template.bid_id,
@@ -522,7 +524,8 @@ it.each(["valid", "lost-ack", "changed-source"] as const)(
         };
         if (
           mode === "changed-source" &&
-          "input" in interpretation.source_selection
+          "input" in interpretation.source_selection &&
+          interpretation.source_selection.mode !== "exact_package_authoring"
         )
           interpretation.source_selection.input.frozen_input_id =
             crypto.randomUUID();

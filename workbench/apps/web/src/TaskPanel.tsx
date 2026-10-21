@@ -18,6 +18,7 @@ import { taskNames, taskScopes, taskRunNames } from "./taskState";
 import { assistantReason } from "./assistantState";
 import { useAssistantPolling } from "./useAssistantFeed";
 import { TaskPackageTriggerPanel } from "./TaskPackageTriggerPanel";
+import { PackageAuthoringTemplateEditor } from "./PackageAuthoringTemplateEditor";
 
 export function TaskPanel({
   bidId,
@@ -27,6 +28,7 @@ export function TaskPanel({
   memberId: string;
 }) {
   const [creating, setCreating] = useState(false);
+  const [creatingAuthoring, setCreatingAuthoring] = useState(false);
   const [selectedRun, setSelectedRun] = useState(() =>
     new URLSearchParams(window.location.search).get("run"),
   );
@@ -137,6 +139,15 @@ export function TaskPanel({
         >
           新建任务模板
         </button>
+        <button
+          type="button"
+          className="button secondary"
+          disabled={!bid.etag}
+          onClick={() => setCreatingAuthoring(!creatingAuthoring)}
+          aria-expanded={creatingAuthoring}
+        >
+          新建固定整包编写模板
+        </button>
         {supportsApi("POST", `/bids/${bidId}/task-definition-drafts`) && (
           <TaskDraftPanel
             bidId={bidId}
@@ -157,6 +168,20 @@ export function TaskPanel({
             changed();
           }}
           onClose={() => setCreating(false)}
+        />
+      )}
+      {creatingAuthoring && (
+        <PackageAuthoringTemplateEditor
+          key={`${memberId}:${bidId}:new`}
+          bidId={bidId}
+          memberId={memberId}
+          template={null}
+          etag={bid.etag}
+          onSaved={() => {
+            setCreatingAuthoring(false);
+            changed();
+          }}
+          onClose={() => setCreatingAuthoring(false)}
         />
       )}
       <ResourceState

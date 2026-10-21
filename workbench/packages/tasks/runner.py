@@ -10,7 +10,7 @@ from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from packages.domain.runtime import DomainError, assert_role, connection, uid
-from packages.tasks import authoring_result, coordinator, package_triggers
+from packages.tasks import authoring_result, coordinator, package_authoring_result, package_triggers
 from packages.tasks.review_runtime import configure_review_guard
 
 configure_review_guard()
@@ -29,14 +29,18 @@ def cycle(after=None, limit=50):
         rows = c.execute(
             sql.SQL(
                 "SELECT b.id FROM bids b JOIN bid_profiles p ON p.bid_id=b.id WHERE "
-                "((p.archived_at IS NULL AND p.phase NOT IN('closed','terminated')){}{} "
+                "((p.archived_at IS NULL AND p.phase NOT IN('closed','terminated')){}{}{} "
                 "OR EXISTS(SELECT FROM task_runs t JOIN operations o ON o.id=t.operation_id "
                 "WHERE t.bid_id=b.id AND t.frozen_manifest->>'schema' IN('task-package-run/1','task-package-trigger-run/1') "
                 "AND NOT EXISTS(SELECT FROM audit_entries a WHERE a.bid_id=b.id AND a.event_type='task.notification' "
                 "AND a.payload->>'run_id'=t.id::text AND a.payload->>'state'=CASE WHEN EXISTS(SELECT FROM model_calls mc "
                 "WHERE mc.operation_id=o.id AND mc.state IN('reserved','unknown')) THEN 'reconciliation_required' ELSE o.state::text END))) "
                 "AND (%s::uuid IS NULL OR b.id>%s::uuid) AND EXISTS(SELECT FROM task_definitions d WHERE d.bid_id=b.id) ORDER BY b.id LIMIT %s"
-            ).format(pending, authoring_result.pending_notifications_sql(c)),
+            ).format(
+                pending,
+                authoring_result.pending_notifications_sql(c),
+                package_authoring_result.pending_notifications_sql(c),
+            ),
             (after, after, limit + 1),
         ).fetchall()
     processed = errors = 0

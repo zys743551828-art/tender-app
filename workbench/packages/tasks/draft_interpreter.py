@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import Field, model_validator
 
 from packages.tasks.models import (
+    ExactPackageAuthoringSelection,
     ExactPackageReviewSelection,
     ExactPackageTriggerSelection,
     SourceSelection,
@@ -22,7 +23,10 @@ class TaskDraftRequest(StrictModel):
     request: str = Field(min_length=1, max_length=8000, pattern=r"\S")
     section_id: UUID | None = None
     source_selection: (
-        SourceSelection | ExactPackageReviewSelection | ExactPackageTriggerSelection
+        SourceSelection
+        | ExactPackageReviewSelection
+        | ExactPackageTriggerSelection
+        | ExactPackageAuthoringSelection
     ) = Field(default_factory=SourceSelection, discriminator="mode")
 
     @model_validator(mode="before")
@@ -44,7 +48,10 @@ class TaskDraftInterpretation(StrictModel):
     instructions: str
     section_id: UUID | None
     source_selection: (
-        SourceSelection | ExactPackageReviewSelection | ExactPackageTriggerSelection
+        SourceSelection
+        | ExactPackageReviewSelection
+        | ExactPackageTriggerSelection
+        | ExactPackageAuthoringSelection
     ) = Field(discriminator="mode")
     trigger: Trigger
     target_description: str
@@ -92,6 +99,7 @@ def interpret(body: TaskDraftRequest) -> TaskDraftInterpretation:
         "selected_versions",
         "exact_package_review",
         "exact_package_trigger",
+        "exact_package_authoring",
     }:
         unknown("source_selection", "请求指向特定资料，请从可信版本列表明确选择")
 
@@ -151,6 +159,11 @@ def interpret(body: TaskDraftRequest) -> TaskDraftInterpretation:
             unknown("task_kind", "所选整包触发输入仅支持否决及强制项范围核查")
         if trigger.mode == "manual":
             unknown("trigger", "请显式确认事件或定时；触发只检查已保存输入，不选择最新包")
+    if body.source_selection.mode == "exact_package_authoring":
+        if task_kind != "chapter_suggestion":
+            unknown("task_kind", "所选固定整包编写输入只支持章节建议")
+        if trigger.mode != "manual":
+            unknown("trigger", "固定整包章节建议只支持明确手动运行，不能保存为自动执行模板")
     name = KINDS[task_kind][0] if task_kind else "待明确任务"
     outputs = {
         "denial_check": "否决及强制项核对结果与证据，未运行或失败保留未完成",
@@ -167,13 +180,22 @@ def interpret(body: TaskDraftRequest) -> TaskDraftInterpretation:
         source_selection=body.source_selection,
         trigger=trigger,
         target_description=(
-            "所选精确投标包、冻结输入、执行准备与依赖计划"
+            "已保存完整整包编写输入中的固定草稿、章节修订与目标节点"
+            if body.source_selection.mode == "exact_package_authoring"
+            else "所选精确投标包、冻结输入、执行准备与依赖计划"
             if body.source_selection.mode in ("exact_package_review", "exact_package_trigger")
             else "所选章节"
             if task_kind == "chapter_suggestion"
             else "本项目当前正文与所选来源"
         ),
-        output_description=outputs[task_kind] if task_kind else "请先选择任务类型和输出",
+        output_description=(
+            "固定整包章节候选；原生发布后供人工审阅，当前采用与后续构建尚未接通"
+            if body.source_selection.mode == "exact_package_authoring"
+            and task_kind == "chapter_suggestion"
+            else outputs[task_kind]
+            if task_kind
+            else "请先选择任务类型和输出"
+        ),
         unresolved=unresolved,
         ready_for_template_form=not unresolved,
     )

@@ -17,8 +17,20 @@ import {
   historicalDateTime,
   historicalSame as same,
 } from "./historicalImportProtocol";
+import {
+  validatePackageAuthoringPending,
+  verifyPackageAuthoringPending,
+  validatePackageAuthoringTemplate,
+  type PackageAuthoringExpected,
+  type PackageAuthoringTemplateView,
+} from "./taskPackageAuthoringProtocol";
 
-export type TaskPackageKind = "template" | "run" | "trigger_cancel";
+export type TaskPackageKind =
+  | "template"
+  | "run"
+  | "trigger_cancel"
+  | "authoring_template"
+  | "authoring_run";
 export type TaskPackageScope<K extends TaskPackageKind = TaskPackageKind> = {
   kind: K;
   memberId: string;
@@ -61,7 +73,8 @@ export type TaskPackageCommandRequest = {
   expected:
     | TaskPackageTemplateExpected
     | TaskPackageRunExpected
-    | TaskPackageTriggerCancelExpected;
+    | TaskPackageTriggerCancelExpected
+    | PackageAuthoringExpected;
 };
 export type PendingTaskPackageCommand = TaskPackageCommandRequest & {
   key: string;
@@ -442,12 +455,19 @@ export function assertTaskPackageScope(scope: TaskPackageScope) {
     !exactKeys(scope, ["kind", "memberId", "bidId", "identity"]) ||
     !uuid(scope.memberId) ||
     !uuid(scope.bidId) ||
-    !["template", "run", "trigger_cancel"].includes(scope.kind) ||
+    ![
+      "template",
+      "run",
+      "trigger_cancel",
+      "authoring_template",
+      "authoring_run",
+    ].includes(scope.kind) ||
     typeof scope.identity !== "string" ||
     !(
       uuid(scope.identity) ||
       (scope.kind === "template" &&
-        isTaskPackageCreationIdentity(scope.identity))
+        isTaskPackageCreationIdentity(scope.identity)) ||
+      (scope.kind === "authoring_template" && scope.identity === "new")
     )
   )
     fail("整包任务恢复范围无效，未发送请求。");
@@ -516,6 +536,8 @@ export function validateTaskPackagePending(
   scope: TaskPackageScope,
 ): PendingTaskPackageCommand {
   assertTaskPackageScope(scope);
+  if (scope.kind === "authoring_template" || scope.kind === "authoring_run")
+    return validatePackageAuthoringPending(value, scope);
   if (
     !object(value) ||
     !exactKeys(value, ["path", "method", "body", "etag", "expected", "key"]) ||
@@ -613,6 +635,10 @@ export async function verifyTaskPackagePending(
   value: unknown,
   scope: TaskPackageScope,
 ) {
+  if (scope.kind === "authoring_template" || scope.kind === "authoring_run") {
+    assertTaskPackageScope(scope);
+    return verifyPackageAuthoringPending(value, scope);
+  }
   const pending = validateTaskPackagePending(value, scope);
   const prior =
     pending.expected.kind === "template"
@@ -908,10 +934,20 @@ export async function validateTaskPackageBasis(
   value: unknown,
   etag: string | null,
   scope: TaskPackageScope,
-): Promise<Bid | TaskPackageTemplateView> {
+): Promise<Bid | TaskPackageTemplateView | PackageAuthoringTemplateView> {
   assertTaskPackageScope(scope);
   if (scope.kind === "trigger_cancel")
     fail("触发输入固定，取消请求不能自动更换修订条件。");
+  if (
+    uuid(scope.identity) &&
+    (scope.kind === "authoring_template" || scope.kind === "authoring_run")
+  )
+    return validatePackageAuthoringTemplate(
+      value,
+      etag,
+      scope.bidId,
+      scope.identity,
+    );
   if (uuid(scope.identity))
     return validateTaskPackageTemplate(
       value,
@@ -950,8 +986,31 @@ const definitiveCodes = new Set([
   "SOURCE_NOT_CURRENT",
   "SOURCE_CHANGED",
 ]);
-export const definitiveTaskPackageFailure = (error: unknown) =>
+const authoringRunRefusals = new Set([
+  "AUTHORING_PACKAGE_ORIGINAL_JOB_REQUIRED",
+  "AUTHORING_PACKAGE_RERUN_NOT_SUPPORTED",
+  "AUTHORING_PACKAGE_TEMPLATE_CHANGED",
+  "AUTHORING_PACKAGE_INPUT_CHANGED",
+  "ORIGINAL_NOT_AVAILABLE",
+  "ORIGINAL_BYTES_CORRUPTED",
+  "ASSISTANT_INDEPENDENCE_UNPROVEN",
+  "ASSISTANT_ORIGINAL_REFERENCE_AMBIGUOUS",
+  "ASSISTANT_ORIGINAL_REFERENCE_REQUIRED",
+  "ASSISTANT_PRICE_UNAVAILABLE",
+  "ASSISTANT_SYNTHETIC_PRICE_FORBIDDEN",
+  "ASSISTANT_INPUT_TOO_LARGE",
+  "AUTHORING_PACKAGE_CONTEXT_TOO_LARGE",
+]);
+export const definitiveTaskPackageFailure = (
+  error: unknown,
+  kind?: TaskPackageKind,
+) =>
   error instanceof ApiError &&
   !error.retryable &&
   [409, 412, 422].includes(error.status) &&
-  definitiveCodes.has(error.code);
+  (!kind?.startsWith("authoring_") ||
+    !error.code.endsWith("_BINDING_INVALID")) &&
+  (definitiveCodes.has(error.code) ||
+    (kind === "authoring_run" &&
+      [409, 422].includes(error.status) &&
+      authoringRunRefusals.has(error.code)));

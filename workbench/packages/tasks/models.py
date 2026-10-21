@@ -67,6 +67,16 @@ class ExactPackageTriggerSelection(StrictModel):
     input: PackageReviewSelection
 
 
+class PackageAuthoringSelection(StrictModel):
+    authoring_input_id: UUID
+    authoring_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class ExactPackageAuthoringSelection(StrictModel):
+    mode: Literal["exact_package_authoring"]
+    input: PackageAuthoringSelection
+
+
 def legacy_source_default(value):
     """Keep the original omitted-mode request semantics before union dispatch."""
     if isinstance(value, dict) and isinstance(value.get("source_selection"), dict):
@@ -82,7 +92,10 @@ class TemplateRequest(StrictModel):
     instructions: str = Field(min_length=1, max_length=8000, pattern=r"\S")
     section_id: UUID | None = None
     source_selection: (
-        SourceSelection | ExactPackageReviewSelection | ExactPackageTriggerSelection
+        SourceSelection
+        | ExactPackageReviewSelection
+        | ExactPackageTriggerSelection
+        | ExactPackageAuthoringSelection
     ) = Field(default_factory=SourceSelection, discriminator="mode")
     trigger: Trigger = Field(default_factory=Trigger)
 
@@ -103,6 +116,10 @@ class TemplateRequest(StrictModel):
             self.task_kind != "denial_check" or self.trigger.mode == "manual"
         ):
             raise ValueError("整包自动触发须显式选择事件或定时，只唤醒已保存的确切否决核查输入")
+        if isinstance(self.source_selection, ExactPackageAuthoringSelection) and (
+            self.task_kind != "chapter_suggestion" or self.trigger.mode != "manual"
+        ):
+            raise ValueError("固定整包编写只支持显式单章节手动任务")
         return self
 
 
@@ -168,6 +185,28 @@ class TaskAuthoringResult(StrictModel):
     automatic_apply: Literal[False]
 
 
+class TaskPackageAuthoringResult(StrictModel):
+    schema_version: Literal["task-package-authoring-result/1"] = Field(alias="schema")
+    job_id: UUID
+    job_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    writing_plan_id: UUID
+    operation_id: UUID
+    job_ref: str
+    section_id: UUID
+    base_section_revision: int = Field(ge=1)
+    authoring_input_id: UUID
+    authoring_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    context_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    publication_state: Literal["pending", "published", "stale", "failed"]
+    candidate_digest: str | None = Field(pattern="^[0-9a-f]{64}$")
+    action_id: UUID | None
+    action_ref: str | None
+    source_scope: Literal["exact_package_context"]
+    automatic_apply: Literal[False]
+    apply_available: Literal[False]
+    build_available: Literal[False]
+
+
 class RunView(StrictModel):
     id: UUID
     bid_id: UUID
@@ -190,7 +229,7 @@ class RunView(StrictModel):
     ]
     stage: Literal["preparation", "review", "execution"]
     frozen_manifest: dict
-    result: TaskAuthoringResult | dict | None
+    result: TaskAuthoringResult | TaskPackageAuthoringResult | dict | None
     error_code: str | None
     formal_decisions_created: Literal[False]
     coverage: Literal["registered_effectivity_only_semantic_unknown", "not_formal_score"]
@@ -223,6 +262,18 @@ class PackageTaskTriggerCapabilities(StrictModel):
     automatic_catchup_runs: Literal[0]
 
 
+class PackageTaskAuthoringCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_authoring"]
+    trigger: Literal["manual"]
+    source_scope: Literal["exact_package_context"]
+    automatic_input_selection: Literal[False]
+    rerun_supported: Literal[False]
+    apply_available: Literal[False]
+    build_available: Literal[False]
+
+
 class TaskKindView(StrictModel):
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     name: str
@@ -241,6 +292,7 @@ class TaskKindView(StrictModel):
     automatic_apply: Literal[False] | None = None
     exact_package_manual: PackageTaskManualCapabilities | None = None
     exact_package_triggers: PackageTaskTriggerCapabilities | None = None
+    exact_package_authoring: PackageTaskAuthoringCapabilities | None = None
 
 
 class TaskKindPage(StrictModel):

@@ -19,6 +19,8 @@ import {
   triggerDescription,
 } from "./taskState";
 import { ExactPackageTaskTemplateEditor } from "./ExactPackageTaskTemplateEditor";
+import { PackageAuthoringTemplateEditor } from "./PackageAuthoringTemplateEditor";
+import { isExactPackageAuthoring } from "./taskPackageAuthoringProtocol";
 import type { PackageNavigationState } from "./packageNavigation";
 
 export type TaskTemplateEditorProps = {
@@ -46,6 +48,13 @@ export type TaskTemplateEditorProps = {
 export function TaskTemplateEditor(props: TaskTemplateEditorProps) {
   const configuration =
     props.initialConfiguration ?? props.template?.configuration;
+  if (configuration && isExactPackageAuthoring(configuration))
+    return (
+      <PackageAuthoringTemplateEditor
+        key={`${props.memberId}:${props.bidId}:${props.template?.id ?? props.formIdentity ?? "new"}`}
+        {...props}
+      />
+    );
   return configuration && isExactPackageTask(configuration) ? (
     <ExactPackageTaskTemplateEditor
       key={`${props.memberId}:${props.bidId}:${props.template?.id ?? props.formIdentity ?? "new"}`}
@@ -99,7 +108,8 @@ function LegacyTaskTemplateEditor({
   const sourceSelection = input.source_selection;
   const source =
     sourceSelection?.mode === "exact_package_review" ||
-    sourceSelection?.mode === "exact_package_trigger"
+    sourceSelection?.mode === "exact_package_trigger" ||
+    sourceSelection?.mode === "exact_package_authoring"
       ? sourceSelection
       : {
           mode: sourceSelection?.mode ?? "current_project",
@@ -118,7 +128,11 @@ function LegacyTaskTemplateEditor({
     !!external?.pending;
   const conflict = command.conflict || external?.conflict;
   const missing = [
-    ...(["exact_package_review", "exact_package_trigger"].includes(source.mode)
+    ...([
+      "exact_package_review",
+      "exact_package_trigger",
+      "exact_package_authoring",
+    ].includes(source.mode)
       ? ["从原精确整包入口恢复此模板输入"]
       : []),
     ...(!kindSelected ? ["明确任务类型"] : []),
@@ -304,7 +318,8 @@ function LegacyTaskTemplateEditor({
               value={source.mode}
               disabled={
                 source.mode === "exact_package_review" ||
-                source.mode === "exact_package_trigger"
+                source.mode === "exact_package_trigger" ||
+                source.mode === "exact_package_authoring"
               }
               onChange={(event) =>
                 change({
@@ -320,7 +335,8 @@ function LegacyTaskTemplateEditor({
               <option value="current_project">运行时冻结本项目当前来源</option>
               <option value="selected_versions">明确选定资料版本</option>
               {(source.mode === "exact_package_review" ||
-                source.mode === "exact_package_trigger") && (
+                source.mode === "exact_package_trigger" ||
+                source.mode === "exact_package_authoring") && (
                 <option value={source.mode}>
                   精确整包输入，须从原入口恢复
                 </option>

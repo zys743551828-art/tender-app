@@ -6,6 +6,7 @@ from typing import Any
 from packages.assistant.generation import GENERATION_SCHEMA
 from packages.assistant.protocol import HASH, ID, MODEL_SCHEMA, array, obj
 from packages.assistant.protocol import SCHEMAS as INPUTS
+from packages.authoring.package_generation import MODEL_SCHEMA as PACKAGE_GENERATION_SCHEMA
 
 NID = {"type": ["string", "null"], "format": "uuid"}
 TIME = {"type": "string", "format": "date-time"}
@@ -132,6 +133,13 @@ def schemas():
     )
     candidate = deepcopy(GENERATION_SCHEMA)
     candidate["properties"]["replacement"] = ref("AuthoringNode")
+    package_candidate = obj(
+        {
+            **deepcopy(PACKAGE_GENERATION_SCHEMA["properties"]),
+            "protocol": {"const": "package-authoring-candidate/1"},
+            "input": obj({"id": ID, "digest": HASH, "context_digest": HASH}),
+        }
+    )
     job = obj(
         {
             "id": ID,
@@ -154,7 +162,7 @@ def schemas():
             ),
             "requires_billing_reconciliation": {"type": "boolean"},
             "publication": nullable(publication),
-            "candidate": {"oneOf": [MODEL_SCHEMA, candidate, {"type": "null"}]},
+            "candidate": {"oneOf": [MODEL_SCHEMA, candidate, package_candidate, {"type": "null"}]},
             "formal_scoring_input": {"const": False},
             "automatic_retry_authorized": {"const": False},
         }
@@ -196,6 +204,21 @@ def schemas():
             "effect": STRING,
         }
     )
+    package_patch = obj(
+        {
+            "kind": {"const": "package_authoring_patch"},
+            "section_id": ID,
+            "base_section_revision": POS,
+            "before": ref("AuthoringDocument"),
+            "after": ref("AuthoringDocument"),
+            "authoring_input_id": ID,
+            "authoring_input_digest": HASH,
+            "source_scope": {"const": "exact_package_context"},
+            "apply_available": {"const": False},
+            "build_available": {"const": False},
+            "effect": STRING,
+        }
+    )
     accepted = obj(
         {
             "resource_id": ID,
@@ -231,7 +254,7 @@ def schemas():
             "request_digest": HASH,
             "base_revision": POS,
             "expires_at": TIME,
-            "preview": {"oneOf": [review, generation, knowledge, patch]},
+            "preview": {"oneOf": [review, generation, knowledge, patch, package_patch]},
             "result": {
                 "oneOf": [
                     obj({"assistant_resolution": resolution}),

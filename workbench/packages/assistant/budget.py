@@ -78,7 +78,7 @@ def rpc(c, function, *arguments):
             ).fetchone()["value"]
     except psycopg.Error as error:
         code = error.diag.message_primary
-        if code in ERRORS:
+        if code in ERRORS or (code and code.startswith("AUTHORING_PACKAGE_")):
             raise DomainError(
                 code,
                 "暂不能受理本次调用；请核对独立对象、预算配置或待核清账本，输入已保留",
@@ -151,6 +151,45 @@ def checked_price(c, client):
 
 
 def prepare(c, actor, body, bid=None, *, generation=False, explicit_send=False, origin_action=None):
+    return _prepare(
+        c,
+        actor,
+        body,
+        bid,
+        generation=generation,
+        explicit_send=explicit_send,
+        origin_action=origin_action,
+    )
+
+
+def prepare_package(c, actor, body, bid, input_id, input_digest):
+    """Only a persisted input reference, never a caller-supplied target/proof.
+
+    Final reserve/dispatch authority is the protected exact job binding in SQL.
+    This shared preparation keeps legacy and exact requests in one fee scope.
+    """
+    return _prepare(
+        c,
+        actor,
+        body,
+        bid,
+        generation=True,
+        explicit_send=True,
+        package_input=(input_id, input_digest),
+    )
+
+
+def _prepare(
+    c,
+    actor,
+    body,
+    bid=None,
+    *,
+    generation=False,
+    explicit_send=False,
+    origin_action=None,
+    package_input=None,
+):
     from packages.assistant import jobs
     from packages.domain.providers.deepseek import DeepSeekClient
 
@@ -181,7 +220,12 @@ def prepare(c, actor, body, bid=None, *, generation=False, explicit_send=False, 
                 "ASSISTANT_EFFECT_IDENTITY_INVALID", "原操作卡不能被新问题重复执行", 409
             )
         explicit_send = True  # Trusted confirm path, not a body-supplied authorization.
-    target = intent_identity.resolve(c, actor, body, bid, generation=generation)
+    if package_input is None:
+        target = intent_identity.resolve(c, actor, body, bid, generation=generation)
+    else:
+        from packages.authoring.package_job_identity import target as package_target
+
+        target = package_target(c, bid, package_input[0], package_input[1])
     question, coarse, anti = intent_identity.keys(
         body.get("text", body.get("instruction", "")), target["target_key"], target["purpose"]
     )

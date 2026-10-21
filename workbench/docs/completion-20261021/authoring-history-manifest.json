@@ -1,0 +1,34 @@
+{
+  "base_commit": "318ee83b95b4871dadb91a01d7d31aafe02fe4c1",
+  "excluded_root_owned_integration": [
+    "apps/api/main.py",
+    "apps/api/export_openapi.py",
+    "apps/web/scripts/generate-contracts.py",
+    "apps/web/src/contracts.ts",
+    "packages/contracts/fusion-implemented.openapi.json.gz"
+  ],
+  "files": {
+    "apps/api/authoring_history_routes.py": "5bfcdbec1f94ba08f551b7d50cf151479103ba98d9d2711867462a830daaae7f",
+    "apps/web/scripts/check-authoring-history-browser.mjs": "967713214e40d20ffbd1bc6b4a2dcdc25f766d2a8fa373eded09fe2e6fd908f7",
+    "apps/web/src/AuthoringHistory.test.tsx": "0bf045a1348f1c1140e1437221af28a1070795a0aa7c547890168208fc5446a1",
+    "apps/web/src/AuthoringHistory.tsx": "32dbcd8062239392b1a4e46d1c22fb0ee19221e8660856abd04853adf4a8caf2",
+    "apps/web/src/authoringHistoryFixtures.test-support.ts": "85464b77d4963057b6406b41e1d669131e062a68e873f9d987d1a3c480f61087",
+    "apps/web/src/authoringHistoryProtocol.test.ts": "35a450bb75f019834728024c550ffbd82aac2befed3ca44f0583a5e2de9cb11c",
+    "apps/web/src/authoringHistoryProtocol.ts": "108dc0730efd4ffe84fe89ad6379d5e96b6e360fbbe374819d447bce6ae7a245",
+    "deploy/authoring_history_readiness.py": "04281542779c0ead010fc8d359d9a383161905a2b49142b341af3fe469de0a9d",
+    "docs/completion-20261021/authoring-history-acceptance.md": "4a54da6ecea0919df6e136546e4d992cec30aa3a15ac1232c42962823581957f",
+    "docs/completion-20261021/authoring-history-checks.json": "b5db70d8ff8bddea4c88727bfa63a11d0811c7ddf84c713eaee66a03cc6e43e1",
+    "packages/authoring_history/__init__.py": "226d087356e0dd6c7d863939917627d9e024d643735b942e50a63bc08fc204bd",
+    "packages/authoring_history/permissions.py": "14e4a4382f7134bda0aaecce6a7f82180682fef88ab32a0b525069652d5587a3",
+    "packages/authoring_history/repository.py": "dd644b4b697173439726808578a9c4bff72b8f751c8ec7313d3cf18e8ba3581b",
+    "packages/authoring_history/service.py": "9f550d44ba00e685b372a09481919641f8e526e72d0936d63e25ab166dafe5cb",
+    "packages/contracts/authoring_history_api.py": "c1c5b92b3cc2e904947ec16afb9619ba61d1a2edd5dbd2201a20bf24db7e7ca3",
+    "tests/authoring_history_fixtures.py": "f2b085c09601adc690d2b4eccf2db1874cdc91d02f72d357df6a7257b4a38e4d",
+    "tests/test_authoring_history.py": "cae925a2b7246c54e41176503e047d27a1ec54ebc790b5771fda8c6dab0afd54",
+    "tests/test_authoring_history_main.py": "2d145bc057156aab148cadb06cddc1871e520fe741c837b44ebcca0fc2eb9d80",
+    "tests/test_authoring_history_pg.py": "d3f25c3b42537c80cf668e1329d3ad565b04023387105701074ef6d709c9fa4a"
+  },
+  "frozen": true,
+  "note": "Manifest does not hash itself. All 19 listed files are frozen together; this manifest is an additional deliverable. No Git stage/commit/remote action performed.",
+  "version": "authoring-history-owned-files/1"
+}

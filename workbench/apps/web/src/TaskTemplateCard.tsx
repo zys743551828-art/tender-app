@@ -18,6 +18,10 @@ import { TaskTemplateEditor } from "./TaskTemplateEditor";
 import { ExactPackageTaskRunControl } from "./ExactPackageTaskRunControl";
 import { ExactPackageTaskScope } from "./ExactPackageTaskScope";
 import { emptyPackageNavigationState } from "./packageNavigation";
+import { isExactPackageAuthoring } from "./taskPackageAuthoringProtocol";
+import { packageAuthoringScope } from "./packageAuthoringInputProtocol";
+import { PackageAuthoringRunControl } from "./PackageAuthoringRunControl";
+import { taskPackageStorageKey } from "./useTaskPackageCommand";
 
 export function TaskTemplateCard({
   bidId,
@@ -61,6 +65,21 @@ export function TaskTemplateCard({
       run.error.code === "MODEL_CALL_REQUIRES_RECONCILIATION");
   const unavailable = !capability || capability.execution === "unavailable";
   const exact = item && isExactPackageTask(item.configuration);
+  const authoring = item && isExactPackageAuthoring(item.configuration);
+  let authoringRecovery = false;
+  try {
+    authoringRecovery =
+      sessionStorage.getItem(
+        taskPackageStorageKey({
+          kind: "authoring_run",
+          bidId,
+          memberId,
+          identity: id,
+        }),
+      ) !== null;
+  } catch {
+    /* An unavailable store is handled inside the command control. */
+  }
   const exactBusy = exactRunState.busy || exactRunState.pending;
   const editBlocked =
     editorState.busy || editorState.pending || editorState.dirty;
@@ -98,9 +117,11 @@ export function TaskTemplateCard({
           </p>
           <p className="preserve-text">{item.configuration.instructions}</p>
           <p className="small-note">
-            {exact
-              ? exactPackageTaskScope
-              : taskScopes[item.configuration.task_kind]}
+            {authoring
+              ? packageAuthoringScope
+              : exact
+                ? exactPackageTaskScope
+                : taskScopes[item.configuration.task_kind]}
           </p>
           {isExactPackageTask(item.configuration) && (
             <ExactPackageTaskScope
@@ -124,7 +145,7 @@ export function TaskTemplateCard({
               （Asia/Shanghai）
             </p>
           )}
-          {capability?.reason && (
+          {capability?.reason && !authoring && (
             <p className="notice warning">
               {assistantReason(capability.reason)}
             </p>
@@ -147,7 +168,9 @@ export function TaskTemplateCard({
             </p>
           )}
           <ErrorNotice
-            error={error ?? pause.error ?? (exact ? null : run.error)}
+            error={
+              error ?? pause.error ?? (exact || authoring ? null : run.error)
+            }
           />
           <div className="review-shortcuts">
             <button
@@ -192,7 +215,7 @@ export function TaskTemplateCard({
             >
               {item.paused ? "恢复后续触发" : "暂停后续触发"}
             </button>
-            {!exact && (
+            {!exact && !authoring && (
               <button
                 className="button primary"
                 disabled={
@@ -243,7 +266,7 @@ export function TaskTemplateCard({
               onStateChange={setExactRunState}
             />
           )}
-          {!exact && run.pending && !run.busy && (
+          {!exact && !authoring && run.pending && !run.busy && (
             <button
               className="button secondary"
               onClick={() =>
@@ -261,11 +284,11 @@ export function TaskTemplateCard({
               恢复原暂停或恢复操作结果
             </button>
           )}
-          {(exact ? editorMounted : edit) && (
+          {(exact || authoring ? editorMounted : edit) && (
             <div hidden={!edit}>
               <TaskTemplateEditor
                 key={
-                  exact
+                  exact || authoring
                     ? `${memberId}:${bidId}:${id}`
                     : `${id}:${item.version_id}`
                 }
@@ -291,6 +314,28 @@ export function TaskTemplateCard({
             </p>
           </details>
         </>
+      )}
+      {(authoring || authoringRecovery) && (
+        <PackageAuthoringRunControl
+          key={`${memberId}:${bidId}:${id}`}
+          bidId={bidId}
+          memberId={memberId}
+          id={id}
+          template={item}
+          etag={resource.etag}
+          kinds={kinds}
+          disabled={
+            resource.loading ||
+            !!resource.error ||
+            pause.busy ||
+            !!pause.pending ||
+            editBlocked ||
+            executionBlocked
+          }
+          onRun={onRun}
+          onChanged={changed}
+          onStateChange={setExactRunState}
+        />
       )}
     </article>
   );

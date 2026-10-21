@@ -22,12 +22,22 @@ import {
   type TaskPackageScope,
   type TaskPackageTemplateView,
 } from "./taskPackageProtocol";
+import {
+  validatePackageAuthoringTemplateACK,
+  validatePackageAuthoringRunACK,
+  type PackageAuthoringTemplateView,
+  type PackageAuthoringRunView,
+} from "./taskPackageAuthoringProtocol";
 
 type Result<K extends TaskPackageKind> = K extends "template"
   ? TaskPackageTemplateView
   : K extends "run"
     ? TaskPackageRunView
-    : PackageTriggerIntentView;
+    : K extends "authoring_template"
+      ? PackageAuthoringTemplateView
+      : K extends "authoring_run"
+        ? PackageAuthoringRunView
+        : PackageTriggerIntentView;
 type Recovery = {
   version: 1;
   scope: TaskPackageScope;
@@ -68,6 +78,15 @@ const storageFailure = () =>
   );
 export function taskPackageStorageKey(scope: TaskPackageScope) {
   assertTaskPackageScope(scope);
+  if (scope.kind === "authoring_template" || scope.kind === "authoring_run")
+    return recordedCommandStorageKey(
+      scope.kind === "authoring_template"
+        ? "task-package-authoring-template"
+        : "task-package-authoring-run",
+      scope.memberId,
+      scope.bidId,
+      scope.identity,
+    );
   if (scope.kind === "trigger_cancel")
     return recordedCommandStorageKey(
       "task-package-run",
@@ -279,12 +298,26 @@ export function useTaskPackageCommand<K extends TaskPackageKind>(
                 pending,
                 session.scope,
               )
-            : await validateTaskTriggerCancelACK(
-                response.data,
-                response.etag,
-                pending,
-                session.scope,
-              );
+            : pending.expected.kind === "authoring_template"
+              ? await validatePackageAuthoringTemplateACK(
+                  response.data,
+                  response.etag,
+                  pending,
+                  session.scope,
+                )
+              : pending.expected.kind === "authoring_run"
+                ? await validatePackageAuthoringRunACK(
+                    response.data,
+                    response.etag,
+                    pending,
+                    session.scope,
+                  )
+                : await validateTaskTriggerCancelACK(
+                    response.data,
+                    response.etag,
+                    pending,
+                    session.scope,
+                  );
       // Hashing is asynchronous too: check both component scope and the original
       // durable record after all ACK verification, before clearing or returning.
       if (!owns(raw, epoch)) return null;
@@ -294,7 +327,7 @@ export function useTaskPackageCommand<K extends TaskPackageKind>(
     } catch (error) {
       if (!owns(raw, epoch)) return null;
       update({ error, ...(!sent ? { blocked: true } : {}) });
-      if (sent && definitiveTaskPackageFailure(error)) {
+      if (sent && definitiveTaskPackageFailure(error, session.scope.kind)) {
         try {
           const conflict = error instanceof ApiError && error.status === 412;
           if (conflict)
@@ -383,7 +416,7 @@ export function useTaskPackageCommand<K extends TaskPackageKind>(
     return send(session.raw, epoch);
   }
   async function adoptBasis(): Promise<ApiResult<
-    Bid | TaskPackageTemplateView
+    Bid | TaskPackageTemplateView | PackageAuthoringTemplateView
   > | null> {
     if (!eligible() || session.recovery?.state === "pending") return null;
     if (session.scope.kind === "trigger_cancel") {

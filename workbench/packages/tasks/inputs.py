@@ -8,6 +8,7 @@ def capture(c, bid, configuration):
     if configuration["source_selection"]["mode"] in (
         "exact_package_review",
         "exact_package_trigger",
+        "exact_package_authoring",
     ):
         raise DomainError(
             "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",

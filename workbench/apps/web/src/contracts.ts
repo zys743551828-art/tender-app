@@ -1,5 +1,74 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type AuthoringHistoricalSectionView = {
+  version: "authoring-historical-section/1";
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  section_revision_id: string;
+  revision: number;
+  schema_digest: string;
+  digest: string;
+  content: AuthoringHistoryAuthoringRichDocument;
+  created_by: string;
+  created_at: string;
+  images: {
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    version_digest: string;
+    normalized_sha256: string;
+    media_type: "image/png";
+  }[];
+  read_only: true;
+  source_qualification_assessed: false;
+  restoration_authorized: false;
+};
+
+export type PackageAuthoringSelection = {
+  authoring_input_id: string;
+  authoring_input_digest: string;
+};
+
+export type ExactPackageAuthoringSelection = {
+  mode: "exact_package_authoring";
+  input: PackageAuthoringSelection;
+};
+
+export type TaskPackageAuthoringResult = {
+  schema: "task-package-authoring-result/1";
+  job_id: string;
+  job_input_digest: string;
+  writing_plan_id: string;
+  operation_id: string;
+  job_ref: string;
+  section_id: string;
+  base_section_revision: number;
+  authoring_input_id: string;
+  authoring_input_digest: string;
+  context_digest: string;
+  publication_state: "pending" | "published" | "stale" | "failed";
+  candidate_digest: string | null;
+  action_id: string | null;
+  action_ref: string | null;
+  source_scope: "exact_package_context";
+  automatic_apply: false;
+  apply_available: false;
+  build_available: false;
+};
+
+export type PackageTaskAuthoringCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_authoring";
+  trigger: "manual";
+  source_scope: "exact_package_context";
+  automatic_input_selection: false;
+  rerun_supported: false;
+  apply_available: false;
+  build_available: false;
+};
+
 export type PackageAuthoringInputRequest = {
   protocol: "package-authoring-input-request/1";
   purpose: "authoring";
@@ -5215,6 +5284,18 @@ export type AssistantJob = {
         replacement: AuthoringNode;
         evidence_ids: string[];
       }
+    | {
+        node_id: string;
+        before_digest: string;
+        replacement_text: string;
+        evidence_ids: string[];
+        protocol: "package-authoring-candidate/1";
+        input: {
+          id: string;
+          digest: string;
+          context_digest: string;
+        };
+      }
     | null;
   formal_scoring_input: false;
   automatic_retry_authorized: false;
@@ -5314,6 +5395,19 @@ export type AssistantAction = {
         before: AuthoringDocument;
         after: AuthoringDocument;
         effect: string;
+      }
+    | {
+        kind: "package_authoring_patch";
+        section_id: string;
+        base_section_revision: number;
+        before: AuthoringDocument;
+        after: AuthoringDocument;
+        authoring_input_id: string;
+        authoring_input_digest: string;
+        source_scope: "exact_package_context";
+        apply_available: false;
+        build_available: false;
+        effect: string;
       };
   result:
     | {
@@ -5409,7 +5503,8 @@ export type TemplateRequest = {
   source_selection?:
     | SourceSelection
     | ExactPackageReviewSelection
-    | ExactPackageTriggerSelection;
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
   trigger?: Trigger;
 };
 
@@ -5524,7 +5619,11 @@ export type RunView = {
     | "reconciliation_required";
   stage: "preparation" | "review" | "execution";
   frozen_manifest: { [key: string]: unknown };
-  result: TaskAuthoringResult | { [key: string]: unknown } | null;
+  result:
+    | TaskAuthoringResult
+    | TaskPackageAuthoringResult
+    | { [key: string]: unknown }
+    | null;
   error_code: string | null;
   formal_decisions_created: false;
   coverage: "registered_effectivity_only_semantic_unknown" | "not_formal_score";
@@ -5562,7 +5661,8 @@ export type TaskDraftRequest = {
   source_selection?:
     | SourceSelection
     | ExactPackageReviewSelection
-    | ExactPackageTriggerSelection;
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
 };
 
 export type TaskDraftView = {
@@ -7797,6 +7897,21 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type AuthoringHistoryAuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: AuthoringHistoryAuthoringSourceReference[];
+  };
+  content: (
+    | AuthoringHistoryAuthoringBlock
+    | AuthoringHistoryAuthoringRichTable
+    | AuthoringHistoryAuthoringRichImage
+  )[];
+};
+
 export type PackageContext = {
   target: PackageReference;
   authority: PackageReference;
@@ -8807,6 +8922,7 @@ export type TaskKindView = {
   automatic_apply?: false | null;
   exact_package_manual?: PackageTaskManualCapabilities | null;
   exact_package_triggers?: PackageTaskTriggerCapabilities | null;
+  exact_package_authoring?: PackageTaskAuthoringCapabilities | null;
 };
 
 export type TaskNotification = {
@@ -8836,7 +8952,8 @@ export type TaskDraftInterpretation = {
   source_selection:
     | SourceSelection
     | ExactPackageReviewSelection
-    | ExactPackageTriggerSelection;
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
   trigger: Trigger;
   target_description: string;
   output_description: string;
@@ -9568,6 +9685,43 @@ export type DocumentRelation = {
   evidence_ids: string[];
 };
 
+export type AuthoringHistoryAuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type AuthoringHistoryAuthoringBlock =
+  | AuthoringHistoryAuthoringParagraph
+  | AuthoringHistoryAuthoringHeading
+  | AuthoringHistoryAuthoringBulletList
+  | AuthoringHistoryAuthoringOrderedList;
+
+export type AuthoringHistoryAuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: AuthoringHistoryAuthoringRichRow[];
+};
+
+export type AuthoringHistoryAuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
 export type PackageReference = {
   package_id: string;
   revision_id: string;
@@ -10038,6 +10192,47 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type AuthoringHistoryAuthoringParagraph = {
+  type: "paragraph";
+  attrs: {
+    id: string;
+  };
+  content: (AuthoringHistoryAuthoringText | AuthoringHistoryAuthoringBreak)[];
+};
+
+export type AuthoringHistoryAuthoringHeading = {
+  type: "heading";
+  attrs: {
+    id: string;
+    level: number;
+  };
+  content: (AuthoringHistoryAuthoringText | AuthoringHistoryAuthoringBreak)[];
+};
+
+export type AuthoringHistoryAuthoringBulletList = {
+  type: "bulletList";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringListItem[];
+};
+
+export type AuthoringHistoryAuthoringOrderedList = {
+  type: "orderedList";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringListItem[];
+};
+
+export type AuthoringHistoryAuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringRichCell[];
+};
+
 export type FactSubject = {
   kind: "engineering_project" | "lot" | "round" | "bidder";
   id: string;
@@ -10393,6 +10588,45 @@ export type PackageSubmissionGate_KnownBlockingRisks = {
   )[];
 };
 
+export type AuthoringHistoryAuthoringText = {
+  type: "text";
+  text: string;
+  marks?: {
+    type: "bold" | "italic";
+  }[];
+};
+
+export type AuthoringHistoryAuthoringBreak = {
+  type: "hardBreak";
+};
+
+export type AuthoringHistoryAuthoringListItem = {
+  type: "listItem";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | AuthoringHistoryAuthoringParagraph
+    | AuthoringHistoryAuthoringBulletList
+    | AuthoringHistoryAuthoringOrderedList
+  )[];
+};
+
+export type AuthoringHistoryAuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (
+    | AuthoringHistoryAuthoringParagraph
+    | AuthoringHistoryAuthoringBulletList
+    | AuthoringHistoryAuthoringOrderedList
+  )[];
+};
+
 export type WorkContextReadOnlyAuthoringText = {
   type: "text";
   text: string;
@@ -10686,6 +10920,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/authoring-actions/{action_id}/apply",
   "GET /api/v1/sections/{section_id}/revisions",
   "POST /api/v1/bids/{bid_id}/sections/{section_id}/restore",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
   "POST /api/v1/bids/{bid_id}/builds/{build_id}/package-adoptions",
   "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-context",
   "POST /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",

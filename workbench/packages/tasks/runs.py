@@ -10,7 +10,10 @@ from packages.tasks import inputs, templates
 
 
 def operations(c, row):
-    from packages.tasks import package_repository
+    from packages.tasks import package_authoring_result, package_repository
+
+    if package_authoring_result.is_exact(row):
+        return [package_authoring_result.bound(c, row)[2]["id"]]
 
     if package_repository.is_package(row):
         return [UUID(package_repository.native(c, row)["operation"]["id"])]
@@ -57,9 +60,9 @@ def operations(c, row):
 
 def billing_operations(c, row):
     ids = operations(c, row)
-    from packages.tasks import package_repository
+    from packages.tasks import package_authoring_result, package_repository
 
-    if package_repository.is_package(row):
+    if package_repository.is_package(row) or package_authoring_result.is_exact(row):
         return ids
     frozen = row["frozen_manifest"]
     if frozen["task_kind"] == "denial_check":
@@ -96,9 +99,13 @@ def view(c, bid, identity):
     error = None
     chapter_result = None
     if frozen["task_kind"] == "chapter_suggestion":
-        from packages.tasks import authoring_result
+        from packages.tasks import authoring_result, package_authoring_result
 
-        state, error, chapter_result = authoring_result.project(c, row)
+        state, error, chapter_result = (
+            package_authoring_result.project(c, row)
+            if package_authoring_result.is_exact(row)
+            else authoring_result.project(c, row)
+        )
     if frozen["task_kind"] == "denial_check":
         stage = "preparation"
         if len(ids) > 1:
@@ -199,7 +206,11 @@ def dispatch(
         raise DomainError("TASK_TEMPLATE_PAUSED", "模板已暂停；在途任务没有取消", 409)
     config = row["config"]["definition"]
     kind = config["task_kind"]
-    if config["source_selection"]["mode"] in ("exact_package_review", "exact_package_trigger"):
+    if config["source_selection"]["mode"] in (
+        "exact_package_review",
+        "exact_package_trigger",
+        "exact_package_authoring",
+    ):
         raise DomainError(
             "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
             "精确整包任务当前只接受显式手动入口；旧定时器、资料事件或当前正文流程不能代为启动",
@@ -479,7 +490,7 @@ def notify(c, bid, identity):
     if (
         value["frozen_manifest"]["task_kind"] == "chapter_suggestion"
         and result
-        and result.get("schema") == "task-authoring-result/1"
+        and result.get("schema") in {"task-authoring-result/1", "task-package-authoring-result/1"}
     ):
         # Retain legacy notifications as history. A former operation-only success
         # cannot suppress a newly verified publication notification on a closed bid.
@@ -487,7 +498,9 @@ def notify(c, bid, identity):
             c,
             UUID(value["frozen_manifest"]["actor_id"]),
             bid,
-            "task.authoring_notification_bound",
+            "task.package_authoring_notification_bound"
+            if result.get("schema") == "task-package-authoring-result/1"
+            else "task.authoring_notification_bound",
             {
                 "notification_key": key,
                 "run_id": identity,

@@ -35,6 +35,8 @@ const memberCommandKinds = [
   "task-template",
   "task-package-template",
   "task-package-run",
+  "task-package-authoring-template",
+  "task-package-authoring-run",
   "task-pause",
   "task-run",
   "task-draft",

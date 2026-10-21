@@ -8,6 +8,11 @@ import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { useAssistantPolling } from "./useAssistantFeed";
+import {
+  claimsPackageAuthoringAction,
+  readPackageAuthoringProposal,
+} from "./taskPackageAuthoringProtocol";
+import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
 
 const actionNames = {
   pending: "待明确处理",
@@ -25,7 +30,17 @@ export function AssistantActionCard({
   memberId: string;
 }) {
   const resource = useResource<AssistantAction>(`/assistant/actions/${id}`);
-  const action = resource.data?.action_id === id ? resource.data : undefined;
+  let action = resource.data?.action_id === id ? resource.data : undefined;
+  let packageError: unknown = null;
+  const packageClaim = claimsPackageAuthoringAction(resource.data);
+  if (action && packageClaim) {
+    try {
+      action = readPackageAuthoringProposal(action, action.target_bid_id);
+    } catch (error) {
+      packageError = error;
+      action = undefined;
+    }
+  }
   const project = useResource<Bid>(
     action ? `/bids/${action.target_bid_id}` : null,
   );
@@ -50,6 +65,7 @@ export function AssistantActionCard({
       {resource.data && !action && (
         <p className="notice error">操作提议身份不一致，未执行其他卡片。</p>
       )}
+      <ErrorNotice error={packageError} />
       {action && (
         <>
           <div className="section-title">
@@ -121,6 +137,27 @@ export function AssistantActionCard({
               />
             </>
           )}
+          {action.preview.kind === "package_authoring_patch" && (
+            <>
+              <p className="notice neutral">
+                这是固定整包输入产生的章节候选。可以核对原稿与拟稿、明确拒绝；当前尚不提供正文采纳或交付包构建。
+              </p>
+              <PackageAuthoringInputDetails
+                key={`${memberId}:${action.target_bid_id}:${action.preview.authoring_input_id}:${action.preview.authoring_input_digest}`}
+                bidId={action.target_bid_id}
+                selection={{
+                  authoring_input_id: action.preview.authoring_input_id,
+                  authoring_input_digest: action.preview.authoring_input_digest,
+                }}
+              />
+              <AssistantPatchComparison
+                key={`${action.action_id}:${action.request_digest}`}
+                bidId={action.target_bid_id}
+                before={action.preview.before}
+                after={action.preview.after}
+              />
+            </>
+          )}
           {action.error_code && (
             <p className="notice warning">
               {assistantReason(action.error_code)}
@@ -156,6 +193,7 @@ export function AssistantActionCard({
               <button
                 className="button primary"
                 disabled={
+                  packageClaim ||
                   resource.loading ||
                   !!resource.error ||
                   project.loading ||
@@ -178,13 +216,15 @@ export function AssistantActionCard({
               >
                 {command.busy
                   ? "正在取得处理结果…"
-                  : action.tool === "review.request"
-                    ? "确认启动本轮评审"
-                    : action.tool === "authoring.generate"
-                      ? "确认生成章节候选"
-                      : action.tool === "knowledge.candidate"
-                        ? "确认建立知识候选"
-                        : "应用这份正文修改"}
+                  : packageClaim
+                    ? "此固定整包候选暂不可采纳"
+                    : action.tool === "review.request"
+                      ? "确认启动本轮评审"
+                      : action.tool === "authoring.generate"
+                        ? "确认生成章节候选"
+                        : action.tool === "knowledge.candidate"
+                          ? "确认建立知识候选"
+                          : "应用这份正文修改"}
               </button>
               <button
                 className="button secondary"

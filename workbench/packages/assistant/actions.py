@@ -153,7 +153,7 @@ def records(c, identity, *, lock=False):
     if sha(proposed["payload"]) != proposed["request_digest"]:
         raise DomainError("ACTION_IDENTITY_INVALID", "操作卡内容身份不一致", 409)
     expected = (
-        {"authoring_patch", "authoring_patch_set"}
+        {"authoring_patch", "authoring_patch_set", "package_authoring_patch"}
         if row["tool"] == "authoring.apply_patch"
         else {"assistant_tool"}
     )
@@ -174,7 +174,11 @@ def view(c, identity):
     if consumption:
         state = consumption["result"].get("assistant_resolution", {}).get("state", "executed")
     payload = proposed["payload"]
-    if payload.get("kind") == "authoring_patch_set":
+    if payload.get("kind") == "package_authoring_patch":
+        from packages.authoring.package_publication import preview as package_preview
+
+        preview = package_preview(c, identity)
+    elif payload.get("kind") == "authoring_patch_set":
         from packages.authoring.section_patch_set import materialize
 
         source = jobs.job(c, row["job_id"])
@@ -264,6 +268,12 @@ def resolve(c, identity, actor, decision, command_id, condition):
         # Do not let the ordinary card's reject/error path consume a batch leaf.
         raise DomainError(
             "AUTHORING_BATCH_CONFIRM_REQUIRED", "请在原编写批次统一选择章节并确认应用", 409
+        )
+    if proposed["payload"].get("kind") == "package_authoring_patch" and decision == "confirm":
+        raise DomainError(
+            "AUTHORING_PACKAGE_APPLY_NOT_CONFIGURED",
+            "固定整包候选采用资格尚未接通，原草稿已保留",
+            409,
         )
     current = view(c, identity)
     if not condition:

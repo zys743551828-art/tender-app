@@ -163,6 +163,10 @@ def request_for(manifest):
                 key: target[key] for key in ("kind", "id", "purpose", "object_context")
             }
         schema = MODEL_SCHEMA
+    elif manifest.get("generation_mode") == "exact_package_authoring/1":
+        from packages.authoring.package_generation import request_parts
+
+        system, payload, schema = request_parts(manifest)
     elif _patch_set_mode(manifest):
         from packages.authoring import section_patch_set
 
@@ -289,6 +293,10 @@ def citation_position(source, quote):
 def validate_generation(manifest, value, *, canonical=False):
     from jsonschema import Draft202012Validator, FormatChecker
 
+    if manifest.get("generation_mode") == "exact_package_authoring/1":
+        from packages.authoring.package_generation import validate as validate_package
+
+        return validate_package(manifest, value, canonical=canonical)
     if _patch_set_mode(manifest):
         from packages.authoring import section_patch_set
 

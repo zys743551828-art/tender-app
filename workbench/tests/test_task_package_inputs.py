@@ -287,6 +287,7 @@ def test_actual_task_contract_exposes_union_and_truthful_manual_capability():
         "selected_versions",
         "exact_package_review",
         "exact_package_trigger",
+        "exact_package_authoring",
     }
     assert schemas["SourceSelection"]["properties"].keys() == {"mode", "version_ids"}
     assert len(schemas["PackageReviewSelection"]["required"]) == 10
@@ -295,3 +296,9 @@ def test_actual_task_contract_exposes_union_and_truthful_manual_capability():
     assert capability["overall_coverage"]["const"] == "partial"
     assert capability["submission_eligible"]["const"] is False
     assert capability["automatic_input_selection"]["const"] is False
+    authoring = schemas["PackageTaskAuthoringCapabilities"]["properties"]
+    assert authoring["trigger"]["const"] == "manual"
+    assert authoring["source_scope"]["const"] == "exact_package_context"
+    assert authoring["rerun_supported"]["const"] is False
+    assert authoring["apply_available"]["const"] is False
+    assert authoring["build_available"]["const"] is False

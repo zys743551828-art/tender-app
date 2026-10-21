@@ -3,6 +3,9 @@
   min-width: 0;
   margin-block: 12px;
 }
+.assistant-action-card .identity-details p {
+  overflow-wrap: anywhere;
+}
 .assistant-card-preview__note,
 .assistant-source-picker .assistant-source-basis-note {
   color: var(--foreground);

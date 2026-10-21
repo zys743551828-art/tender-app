@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { Operation, RunView, TemplateVersionView } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
@@ -21,12 +21,20 @@ import {
   validateCurrentRun,
   type TaskPackageRunView,
 } from "./taskPackageProtocol";
+import {
+  claimsPackageAuthoringRun,
+  validatePackageAuthoringRun,
+  type PackageAuthoringRunView,
+} from "./taskPackageAuthoringProtocol";
 
 const ExactPackageTaskRunDetails = lazy(
   () => import("./ExactPackageTaskRunDetails"),
 );
 const TaskAuthoringResultPanel = lazy(
   () => import("./TaskAuthoringResultPanel"),
+);
+const PackageAuthoringTaskResult = lazy(
+  () => import("./PackageAuthoringTaskResult"),
 );
 
 export function TaskRunCard({
@@ -48,8 +56,20 @@ export function TaskRunCard({
     source: RunView;
     run: TaskPackageRunView;
   } | null>(null);
+  const [checkedAuthoring, setCheckedAuthoring] = useState<{
+    source: RunView;
+    run: PackageAuthoringRunView;
+  } | null>(null);
+  const [authoringError, setAuthoringError] = useState<unknown>(null);
+  const originalAuthoring = useRef<PackageAuthoringRunView | null>(null);
+  const authoringClaim =
+    !!raw &&
+    (claimsPackageAuthoringRun(raw) ||
+      (checkedAuthoring?.run.id === raw.id &&
+        checkedAuthoring.run.bid_id === bidId));
   const exactClaim =
     !!raw &&
+    !authoringClaim &&
     (claimsExactPackageRun(raw) ||
       (checked?.run.id === raw.id && checked.run.bid_id === bidId));
   const [exactError, setExactError] = useState<unknown>(null);
@@ -69,10 +89,58 @@ export function TaskRunCard({
       active = false;
     };
   }, [raw, exactClaim, bidId, id]);
+  useEffect(() => {
+    let active = true;
+    setAuthoringError(null);
+    if (raw && authoringClaim)
+      void validatePackageAuthoringRun(raw, bidId, id)
+        .then((run) => {
+          if (active) {
+            const original = originalAuthoring.current;
+            if (
+              original?.id === run.id &&
+              original.bid_id === run.bid_id &&
+              !historicalSame(original.frozen_manifest, run.frozen_manifest)
+            )
+              throw new Error(
+                "同一编写运行的原冻结身份发生变化，保留此前已核验记录并暂停操作。",
+              );
+            originalAuthoring.current = run;
+            setCheckedAuthoring({ source: raw, run });
+          }
+        })
+        .catch((error) => {
+          if (active) setAuthoringError(error);
+        });
+    return () => {
+      active = false;
+    };
+  }, [raw, authoringClaim, bidId, id]);
+  const authoringRun =
+    authoringClaim &&
+    checkedAuthoring?.run.id === id &&
+    checkedAuthoring.run.bid_id === bidId
+      ? checkedAuthoring.run
+      : null;
   const exactRun =
-    checked?.run.id === id && checked.run.bid_id === bidId ? checked.run : null;
-  const run = exactClaim ? (exactRun ?? undefined) : raw;
-  const chapter = !exactClaim ? taskAuthoringProjection(raw, bidId, id) : null;
+    exactClaim && checked?.run.id === id && checked.run.bid_id === bidId
+      ? checked.run
+      : null;
+  const run = authoringClaim
+    ? (authoringRun ?? undefined)
+    : exactClaim
+      ? (exactRun ?? undefined)
+      : raw;
+  const chapter =
+    !exactClaim && !authoringClaim
+      ? taskAuthoringProjection(raw, bidId, id)
+      : null;
+  const authoringStale =
+    authoringClaim &&
+    (resource.loading ||
+      !!resource.error ||
+      checkedAuthoring?.source !== raw ||
+      !!authoringError);
   const exactStale =
     exactClaim &&
     (resource.loading ||
@@ -92,6 +160,17 @@ export function TaskRunCard({
     version.data?.id === run?.definition_version_id &&
     version.data?.bid_id === bidId &&
     version.data.definition_id === definitionId &&
+    (!authoringRun ||
+      (version.data.digest ===
+        authoringRun.frozen_manifest.configuration_digest &&
+        historicalSame(
+          version.data.config.definition,
+          authoringRun.frozen_manifest.configuration,
+        ) &&
+        version.data.instructions ===
+          authoringRun.frozen_manifest.configuration.instructions &&
+        version.data.config.formal_decisions_allowed === false &&
+        version.data.config.paused === false)) &&
     (!chapter ||
       historicalSame(
         version.data.config.definition,
@@ -127,6 +206,7 @@ export function TaskRunCard({
   const [cancelOpen, setCancelOpen] = useState(false);
   const bodyId =
     !exactClaim &&
+    !authoringClaim &&
     !chapter &&
     typeof run?.frozen_manifest.context === "object" &&
     run.frozen_manifest.context !== null &&
@@ -148,15 +228,21 @@ export function TaskRunCard({
         <p role="status">正在核验任务的固定整包身份与原生运行引用…</p>
       )}
       <ErrorNotice error={exactError} />
+      {authoringClaim && !authoringRun && !authoringError && (
+        <p role="status">正在核验固定整包编写输入、原生任务与发布关联…</p>
+      )}
+      <ErrorNotice error={authoringError} />
       {run && (
         <>
           <div className="section-title">
             <h3>
-              {exactRun
-                ? "整包否决核对"
-                : config
-                  ? taskNames[config.config.definition.task_kind]
-                  : "固定版本任务"}
+              {authoringRun
+                ? "固定整包章节编写"
+                : exactRun
+                  ? "整包否决核对"
+                  : config
+                    ? taskNames[config.config.definition.task_kind]
+                    : "固定版本任务"}
             </h3>
             <Badge
               tone={
@@ -173,6 +259,15 @@ export function TaskRunCard({
               {chapter?.error ? "章节结果关联待核对" : taskRunNames[run.state]}
             </Badge>
           </div>
+          {authoringRun && (
+            <Suspense fallback={<p role="status">正在加载固定整包编写结果…</p>}>
+              <PackageAuthoringTaskResult
+                key={`${memberId}:${bidId}:${id}`}
+                run={authoringRun}
+                stale={authoringStale}
+              />
+            </Suspense>
+          )}
           {exactRun && (
             <section className="exact-package-task-result">
               {exactStale && (
@@ -284,7 +379,7 @@ export function TaskRunCard({
             hasData={!!config}
             onRetry={() => void version.reload()}
           />
-          {exactRun && version.data && !config && (
+          {(exactRun || authoringRun) && version.data && !config && (
             <p className="notice error">
               固定模板版本与这次任务的冻结说明不一致，未显示其他模板内容。
             </p>
@@ -324,6 +419,7 @@ export function TaskRunCard({
           <fieldset
             disabled={
               exactStale ||
+              authoringStale ||
               (!!chapter &&
                 (resource.loading || !!resource.error || !!chapter.error))
             }

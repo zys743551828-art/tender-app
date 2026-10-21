@@ -161,7 +161,20 @@ def get_template_version(bid_id: UUID, definition_id: UUID, version_id: UUID, r:
 )
 def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest):
     actor = auth(r, True)
-    from packages.tasks import package_runs
+    from packages.tasks import package_authoring_runs, package_runs
+
+    authoring_result = package_authoring_runs.start(
+        actor["member_id"],
+        bid_id,
+        definition_id,
+        r.headers.get("idempotency-key"),
+        r.headers.get("if-match"),
+        body.model_dump(mode="json"),
+        final_auth=lambda: auth(r, True)["member_id"],
+    )
+    if authoring_result is not None:
+        saved, replay = authoring_result
+        return response(saved, replay)
 
     package_result = package_runs.start(
         actor["member_id"],
@@ -312,6 +325,7 @@ def task_recoveries(
 @router.get("/task-kinds", response_model=TaskKindPage, response_model_exclude_unset=True)
 def task_kinds(r: Request):
     auth(r)
+    from packages.authoring.package_job_authority import available as authoring_available
     from packages.domain import reviews
     from packages.domain.package_scope_review import method_profile
     from packages.domain.review_identity import digest
@@ -324,6 +338,7 @@ def task_kinds(r: Request):
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
         package_ready = available(c)
         triggers_ready = package_ready and triggers_available(c)
+        authoring_ready = authoring_available(c)
     return {
         "items": [
             {
@@ -377,6 +392,19 @@ def task_kinds(r: Request):
                 "purpose": "assist",
                 "execution": "existing_authoring_proposal_queue",
                 "automatic_apply": False,
+                "exact_package_authoring": {
+                    "available": authoring_ready,
+                    "reason": None
+                    if authoring_ready
+                    else "AUTHORING_PACKAGE_EXECUTOR_NOT_CONFIGURED",
+                    "input_mode": "exact_package_authoring",
+                    "trigger": "manual",
+                    "source_scope": "exact_package_context",
+                    "automatic_input_selection": False,
+                    "rerun_supported": False,
+                    "apply_available": False,
+                    "build_available": False,
+                },
             },
         ],
         "default_trigger": "manual",
