@@ -1,11 +1,11 @@
 import { ApiError } from "./api";
+import type { Bid, PackageReviewSelection, RunView } from "./contracts";
 import type {
-  Bid,
-  PackageReviewSelection,
-  RunView,
+  PackageTriggerIntentPage,
+  PackageTriggerIntentView,
   TemplateRequest,
   TemplateView,
-} from "./contracts";
+} from "./taskTriggerContracts";
 import { jsonDigest } from "./editorSchema";
 import {
   exactKeys,
@@ -18,7 +18,7 @@ import {
   historicalSame as same,
 } from "./historicalImportProtocol";
 
-export type TaskPackageKind = "template" | "run";
+export type TaskPackageKind = "template" | "run" | "trigger_cancel";
 export type TaskPackageScope<K extends TaskPackageKind = TaskPackageKind> = {
   kind: K;
   memberId: string;
@@ -29,15 +29,19 @@ export type TaskPackageConfiguration = TemplateRequest & {
   task_kind: "denial_check";
   section_id: null;
   source_selection: {
-    mode: "exact_package_review";
+    mode: "exact_package_review" | "exact_package_trigger";
     input: PackageReviewSelection;
   };
-  trigger: { mode: "manual"; cron: null; timezone: string };
+  trigger: {
+    mode: "manual" | "material_updated" | "schedule";
+    cron: string | null;
+    timezone: string;
+  };
 };
 export type TaskPackageTemplateView = TemplateView & {
   purpose: "compliance";
   configuration: TaskPackageConfiguration;
-  next_run_at: null;
+  next_run_at: string | null;
 };
 export type TaskPackageTemplateExpected = {
   kind: "template";
@@ -45,12 +49,19 @@ export type TaskPackageTemplateExpected = {
   previous: TemplateView | null;
 };
 export type TaskPackageRunExpected = { kind: "run"; template: TemplateView };
+export type TaskPackageTriggerCancelExpected = {
+  kind: "trigger_cancel";
+  intent: PackageTriggerIntentView;
+};
 export type TaskPackageCommandRequest = {
   path: string;
   method: "POST" | "PUT";
-  body: TemplateRequest | { rerun: false };
+  body: TemplateRequest | { rerun: false } | { reason: string };
   etag: string;
-  expected: TaskPackageTemplateExpected | TaskPackageRunExpected;
+  expected:
+    | TaskPackageTemplateExpected
+    | TaskPackageRunExpected
+    | TaskPackageTriggerCancelExpected;
 };
 export type PendingTaskPackageCommand = TaskPackageCommandRequest & {
   key: string;
@@ -73,7 +84,7 @@ export type TaskPackageContext = {
   submission_eligible: false;
 };
 export type TaskPackageManifest = {
-  schema: "task-package-run/1";
+  schema: "task-package-run/1" | "task-package-trigger-run/1";
   definition_id: string;
   definition_version_id: string;
   configuration_digest: string;
@@ -85,9 +96,10 @@ export type TaskPackageManifest = {
   context: TaskPackageContext;
   input_digest: string;
   fee_scope: string;
-  trigger: "manual";
-  trigger_event_id: null;
-  scheduled_at: null;
+  trigger: "manual" | "material_updated" | "schedule";
+  trigger_event_id: string | null;
+  scheduled_at: string | null;
+  trigger_intent_id?: string;
   accepted_at: string;
   formal_decisions_allowed: false;
   package_review: {
@@ -243,6 +255,116 @@ export function isTaskPackageSelection(
   );
 }
 
+export const taskTriggerIntentEtag = (item: PackageTriggerIntentView) =>
+  `"task-package-trigger-intent:${item.id}:${item.input_digest}"`;
+
+/** The manifest digest is server-owned; validate the complete exposed identity without pretending to recompute it. */
+export function validateTaskTriggerIntent(
+  value: unknown,
+  bidId: string,
+  identity?: string,
+  original?: PackageTriggerIntentView,
+): PackageTriggerIntentView {
+  if (
+    !object(value) ||
+    !exactKeys(value, [
+      "id",
+      "bid_id",
+      "definition_id",
+      "definition_version_id",
+      "trigger",
+      "trigger_event_id",
+      "scheduled_at",
+      "created_at",
+      "selection",
+      "input_digest",
+      "state",
+      "error_code",
+      "run_id",
+      "run_ref",
+      "reused",
+      "automatic_input_selection",
+    ]) ||
+    ![
+      value.id,
+      value.bid_id,
+      value.definition_id,
+      value.definition_version_id,
+    ].every(uuid) ||
+    value.bid_id !== bidId ||
+    (identity !== undefined && value.id !== identity) ||
+    !sha(value.input_digest) ||
+    !isTaskPackageSelection(value.selection) ||
+    !timestamp(value.created_at) ||
+    typeof value.reused !== "boolean" ||
+    value.automatic_input_selection !== false ||
+    (value.trigger === "material_updated"
+      ? !uuid(value.trigger_event_id) || value.scheduled_at !== null
+      : value.trigger !== "schedule" ||
+        value.trigger_event_id !== null ||
+        !timestamp(value.scheduled_at)) ||
+    (value.state === "accepted"
+      ? !uuid(value.run_id) ||
+        value.run_ref !== `/api/v1/bids/${bidId}/task-runs/${value.run_id}` ||
+        value.error_code !== null
+      : !["pending", "blocked", "cancelled"].includes(String(value.state)) ||
+        value.run_id !== null ||
+        value.run_ref !== null ||
+        value.reused ||
+        (value.state === "pending"
+          ? value.error_code !== null
+          : !text(value.error_code, 200)) ||
+        (value.state === "cancelled" &&
+          value.error_code !== "TASK_TRIGGER_CANCELLED"))
+  )
+    fail("触发记录的固定输入、事件或运行身份不一致，未采用。");
+  if (original) {
+    const current = value as unknown as PackageTriggerIntentView;
+    const keys = [
+      "id",
+      "bid_id",
+      "definition_id",
+      "definition_version_id",
+      "trigger",
+      "trigger_event_id",
+      "scheduled_at",
+      "created_at",
+      "selection",
+      "input_digest",
+      "automatic_input_selection",
+    ] as const;
+    if (
+      keys.some((key) => !same(current[key], original[key])) ||
+      (original.state !== "pending" && !same(current, original))
+    )
+      fail("原触发输入或已记录终态发生变化，保留原记录。 ");
+  }
+  return value as unknown as PackageTriggerIntentView;
+}
+
+export function validateTaskTriggerPage(
+  value: unknown,
+  bidId: string,
+): PackageTriggerIntentPage {
+  if (
+    !object(value) ||
+    !exactKeys(value, ["items", "next_after"]) ||
+    !Array.isArray(value.items) ||
+    value.items.length > 100
+  )
+    fail();
+  const items = value.items.map((item) =>
+    validateTaskTriggerIntent(item, bidId),
+  );
+  if (
+    new Set(items.map((item) => item.id)).size !== items.length ||
+    (value.next_after !== null &&
+      (value.next_after !== items.at(-1)?.id || !uuid(value.next_after)))
+  )
+    fail();
+  return { items, next_after: value.next_after as string | null };
+}
+
 /** Explicit exact mode is mandatory. Only the server's ordinary optional defaults are filled. */
 export function normalizeTaskPackageRequest(
   value: unknown,
@@ -260,18 +382,26 @@ export function normalizeTaskPackageRequest(
   if (
     !object(source) ||
     !exactKeys(source, ["mode", "input"]) ||
-    source.mode !== "exact_package_review" ||
+    !["exact_package_review", "exact_package_trigger"].includes(
+      String(source.mode),
+    ) ||
     !isTaskPackageSelection(source.input)
   )
     fail();
   const trigger = value.trigger === undefined ? {} : value.trigger;
+  const automatic = source.mode === "exact_package_trigger";
   if (
     !object(trigger) ||
     Object.keys(trigger).some(
       (key) => !["mode", "cron", "timezone"].includes(key),
     ) ||
-    (trigger.mode !== undefined && trigger.mode !== "manual") ||
-    (trigger.cron !== undefined && trigger.cron !== null) ||
+    (automatic
+      ? !["material_updated", "schedule"].includes(String(trigger.mode))
+      : trigger.mode !== undefined && trigger.mode !== "manual") ||
+    (trigger.mode === "schedule"
+      ? !text(trigger.cron, 200) ||
+        trigger.cron.trim().split(/\s+/u).length !== 5
+      : trigger.cron !== undefined && trigger.cron !== null) ||
     !timezone(
       trigger.timezone === undefined ? "Asia/Shanghai" : trigger.timezone,
     )
@@ -283,12 +413,16 @@ export function normalizeTaskPackageRequest(
     instructions: value.instructions,
     section_id: null,
     source_selection: {
-      mode: "exact_package_review",
+      mode: automatic ? "exact_package_trigger" : "exact_package_review",
       input: { ...source.input },
     },
     trigger: {
-      mode: "manual",
-      cron: null,
+      mode: (trigger.mode ??
+        "manual") as TaskPackageConfiguration["trigger"]["mode"],
+      cron:
+        trigger.mode === "schedule"
+          ? String(trigger.cron).trim().split(/\s+/u).join(" ")
+          : null,
       timezone: (trigger.timezone ?? "Asia/Shanghai") as string,
     },
   };
@@ -308,7 +442,7 @@ export function assertTaskPackageScope(scope: TaskPackageScope) {
     !exactKeys(scope, ["kind", "memberId", "bidId", "identity"]) ||
     !uuid(scope.memberId) ||
     !uuid(scope.bidId) ||
-    !["template", "run"].includes(scope.kind) ||
+    !["template", "run", "trigger_cancel"].includes(scope.kind) ||
     typeof scope.identity !== "string" ||
     !(
       uuid(scope.identity) ||
@@ -335,13 +469,19 @@ function templateShape(
     !sha(value.digest) ||
     value.purpose !== "compliance" ||
     typeof value.paused !== "boolean" ||
-    value.next_run_at !== null ||
+    !(value.next_run_at === null || timestamp(value.next_run_at)) ||
     value.run_created !== false ||
     value.active_runs_cancelled !== false
   )
     fail();
   const configuration = normalizeTaskPackageRequest(value.configuration);
-  if (!same(configuration, value.configuration)) fail();
+  if (
+    !same(configuration, value.configuration) ||
+    (configuration.trigger.mode === "schedule" && !value.paused
+      ? value.next_run_at === null
+      : value.next_run_at !== null)
+  )
+    fail();
   return value as unknown as TaskPackageTemplateView;
 }
 async function templateDigest(
@@ -438,9 +578,32 @@ export function validateTaskPackagePending(
     if (
       !uuid(scope.identity) ||
       template.paused ||
+      template.configuration.source_selection.mode !== "exact_package_review" ||
+      template.configuration.trigger.mode !== "manual" ||
       value.path !== `${base}/${template.id}/runs` ||
       value.method !== "POST" ||
       value.etag !== taskPackageTemplateEtag(template.id, template.revision)
+    )
+      fail();
+  } else if (expected.kind === "trigger_cancel") {
+    if (
+      !exactKeys(expected, ["kind", "intent"]) ||
+      !object(value.body) ||
+      !exactKeys(value.body, ["reason"]) ||
+      !text(value.body.reason, 1000)
+    )
+      fail();
+    const intent = validateTaskTriggerIntent(
+      expected.intent,
+      scope.bidId,
+      scope.identity,
+    );
+    if (
+      intent.state !== "pending" ||
+      value.method !== "POST" ||
+      value.path !==
+        `/bids/${scope.bidId}/task-package-trigger-intents/${scope.identity}/cancel` ||
+      value.etag !== taskTriggerIntentEtag(intent)
     )
       fail();
   } else fail();
@@ -454,7 +617,9 @@ export async function verifyTaskPackagePending(
   const prior =
     pending.expected.kind === "template"
       ? pending.expected.previous
-      : pending.expected.template;
+      : pending.expected.kind === "run"
+        ? pending.expected.template
+        : null;
   if (prior)
     await validateTaskPackageTemplate(
       prior,
@@ -463,6 +628,25 @@ export async function verifyTaskPackagePending(
       scope.identity,
     );
   return pending;
+}
+
+export async function validateTaskTriggerCancelACK(
+  value: unknown,
+  etag: string | null,
+  pending: PendingTaskPackageCommand,
+  scope: TaskPackageScope,
+): Promise<PackageTriggerIntentView> {
+  await verifyTaskPackagePending(pending, scope);
+  if (pending.expected.kind !== "trigger_cancel" || etag !== null) fail();
+  const item = validateTaskTriggerIntent(
+    value,
+    scope.bidId,
+    scope.identity,
+    pending.expected.intent,
+  );
+  if (!["cancelled", "blocked"].includes(item.state))
+    fail("取消尚未取得可信终态回执，保留原请求。");
+  return item;
 }
 
 export async function validateTemplateACK(
@@ -522,10 +706,14 @@ async function validateRun(
   )
     fail();
   const m = value.frozen_manifest;
+  const automatic = object(m) && m.schema === "task-package-trigger-run/1";
   if (
     !object(m) ||
-    !exactKeys(m, manifestKeys) ||
-    m.schema !== "task-package-run/1" ||
+    !exactKeys(
+      m,
+      automatic ? [...manifestKeys, "trigger_intent_id"] : manifestKeys,
+    ) ||
+    (!automatic && m.schema !== "task-package-run/1") ||
     ![m.definition_id, m.definition_version_id, m.actor_id, m.request_id].every(
       uuid,
     ) ||
@@ -533,15 +721,28 @@ async function validateRun(
     ![m.configuration_digest, m.input_digest, m.fee_scope].every(sha) ||
     m.task_kind !== "denial_check" ||
     m.purpose !== "compliance" ||
-    m.trigger !== "manual" ||
-    m.trigger_event_id !== null ||
-    m.scheduled_at !== null ||
+    (automatic
+      ? !uuid(m.trigger_intent_id) ||
+        (m.trigger === "material_updated"
+          ? !uuid(m.trigger_event_id) || m.scheduled_at !== null
+          : m.trigger !== "schedule" ||
+            m.trigger_event_id !== null ||
+            !timestamp(m.scheduled_at))
+      : m.trigger !== "manual" ||
+        m.trigger_event_id !== null ||
+        m.scheduled_at !== null) ||
     m.formal_decisions_allowed !== false ||
     !timestamp(m.accepted_at)
   )
     fail();
   const configuration = normalizeTaskPackageRequest(m.configuration);
-  if (!same(configuration, m.configuration)) fail();
+  if (
+    !same(configuration, m.configuration) ||
+    configuration.source_selection.mode !==
+      (automatic ? "exact_package_trigger" : "exact_package_review") ||
+    configuration.trigger.mode !== m.trigger
+  )
+    fail();
   const context = m.context,
     selected = configuration.source_selection.input;
   if (
@@ -635,7 +836,7 @@ async function validateRun(
   const [configurationDigest, inputDigest, feeScope] = await Promise.all([
     templateDigest(configuration, false),
     jsonDigest({
-      schema: "task-package-run/1",
+      schema: automatic ? "task-package-trigger-run/1" : "task-package-run/1",
       definition_version_id: m.definition_version_id,
       configuration_digest: m.configuration_digest,
       context,
@@ -669,6 +870,7 @@ export async function validateRunACK(
   const item = await validateRun(value, scope.bidId),
     template = pending.expected.template;
   if (
+    item.frozen_manifest.schema !== "task-package-run/1" ||
     item.frozen_manifest.definition_id !== template.id ||
     item.definition_version_id !== template.version_id ||
     item.frozen_manifest.configuration_digest !== template.digest ||
@@ -708,6 +910,8 @@ export async function validateTaskPackageBasis(
   scope: TaskPackageScope,
 ): Promise<Bid | TaskPackageTemplateView> {
   assertTaskPackageScope(scope);
+  if (scope.kind === "trigger_cancel")
+    fail("触发输入固定，取消请求不能自动更换修订条件。");
   if (uuid(scope.identity))
     return validateTaskPackageTemplate(
       value,
@@ -738,6 +942,8 @@ const definitiveCodes = new Set([
   "TASK_PACKAGE_SELECTION_INVALID",
   "TASK_PACKAGE_REPREPARE_REQUIRED",
   "TASK_PACKAGE_BINDING_INVALID",
+  "TASK_TRIGGER_ALREADY_ACCEPTED",
+  "TASK_PACKAGE_TRIGGER_EXPLICIT_WAKEUP_REQUIRED",
   "MODEL_CALL_REQUIRES_RECONCILIATION",
   "BID_ARCHIVED",
   "BID_WORK_NOT_WRITABLE",

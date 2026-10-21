@@ -13,11 +13,17 @@ from packages.tasks.models import PackageReviewSelection
 
 SCHEMA = "task-package-run/1"
 MODE = "exact_package_review"
+TRIGGER_SCHEMA = "task-package-trigger-run/1"
+TRIGGER_MODE = "exact_package_trigger"
 SCOPE_KEYS = ("bid_id", "package_id", "revision_id", "inventory_id")
 
 
 def is_exact(configuration):
-    return configuration.get("source_selection", {}).get("mode") == MODE
+    return configuration.get("source_selection", {}).get("mode") in (MODE, TRIGGER_MODE)
+
+
+def is_trigger(configuration):
+    return configuration.get("source_selection", {}).get("mode") == TRIGGER_MODE
 
 
 def selection(configuration):
@@ -25,7 +31,8 @@ def selection(configuration):
         if (
             not is_exact(configuration)
             or configuration["task_kind"] != "denial_check"
-            or configuration["trigger"]["mode"] != "manual"
+            or configuration["trigger"]["mode"]
+            not in ({"material_updated", "schedule"} if is_trigger(configuration) else {"manual"})
             or configuration["section_id"] is not None
         ):
             raise ValueError("task scope")
@@ -124,11 +131,11 @@ def context(bid, value, manifest):
     }
 
 
-def input_digest(version, configuration_digest, value):
+def input_digest(version, configuration_digest, value, *, schema=SCHEMA):
     return sha(
         clean(
             {
-                "schema": SCHEMA,
+                "schema": schema,
                 "definition_version_id": version,
                 "configuration_digest": configuration_digest,
                 "context": value,

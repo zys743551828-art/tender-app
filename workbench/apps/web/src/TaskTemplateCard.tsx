@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ApiError } from "./api";
-import type { RunView, TemplateView, TaskKindPage } from "./contracts";
+import type { RunView } from "./contracts";
+import type { TemplateView, TaskKindPage } from "./taskTriggerContracts";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
@@ -108,6 +109,12 @@ export function TaskTemplateCard({
             />
           )}
           <p>{triggerDescription(item.configuration.trigger)}</p>
+          {item.configuration.source_selection?.mode ===
+            "exact_package_trigger" && (
+            <p className="notice neutral">
+              只唤醒本模板已保存的确切输入；需独立调度服务启用后处理。手动执行须先核对输入并将模板明确保存为手动模式。已受理的原运行不随改版或暂停而消失。
+            </p>
+          )}
           {item.next_run_at && (
             <p>
               下一次计划时刻：

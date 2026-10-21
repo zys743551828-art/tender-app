@@ -1,0 +1,855 @@
+{
+  "blocked-close": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/2a67a315-b8a9-476f-840d-4fb790be6bae/task-package-trigger-intents/bb77c0af-4166-4e47-a995-275f6b8b7b53",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:bb77c0af-4166-4e47-a995-275f6b8b7b53:c6a99308d4f0fdd58a1e064c873ecff641721384c4937b4d2ca5d2bea8dc7747\""
+    },
+    "data": {
+      "id": "bb77c0af-4166-4e47-a995-275f6b8b7b53",
+      "bid_id": "2a67a315-b8a9-476f-840d-4fb790be6bae",
+      "definition_id": "ba40713f-0f4e-421f-9eb3-edf1df2a8507",
+      "definition_version_id": "97ad6e57-503b-47f1-8b2b-8e0fefd7cd43",
+      "trigger": "material_updated",
+      "trigger_event_id": "0d9c511d-be94-4a32-9379-2275c529bcbd",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:38.858224-07:00",
+      "selection": {
+        "package_id": "9d62993f-4278-4353-aa74-d5e84d6d2836",
+        "revision_id": "972217af-3411-4071-91e0-8b9a1338814a",
+        "inventory_id": "2d203c9c-a766-4bd4-885c-e7f603ced6a9",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "89a8b66f-21dd-4d4e-b3eb-8ddfd70f2981",
+        "dependency_plan_id": "2d620ea9-3042-4f96-90a3-1125953df439",
+        "execution_input_id": "3b3b72a7-a928-40be-80ce-750548de467d",
+        "frozen_input_digest": "39eca5431d0db566bda72abbeaf787f972f8d8456d545d7f7afa0ad203089547",
+        "dependency_plan_digest": "2f6b11fafee573307df5b0fe3b2484030c03fa4f6a857dfdbd60f9c2cf009c08",
+        "execution_input_digest": "a5d74db94b29eaeeae236559e66f89e068ec5ef60d80802a21e2bb5f6664682c"
+      },
+      "input_digest": "c6a99308d4f0fdd58a1e064c873ecff641721384c4937b4d2ca5d2bea8dc7747",
+      "state": "blocked",
+      "error_code": "PACKAGE_REVIEW_INPUT_CHANGED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "blocked-event": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/9dc670ba-2831-4dfa-b1f9-2ff9bbda617b/task-package-trigger-intents/7e7186e5-2340-420f-9932-18385ac5ae49",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:7e7186e5-2340-420f-9932-18385ac5ae49:7618a5eab216c4fb82202e035704bb0109954e6bd4e23348b8b0b21d0aeffbc1\""
+    },
+    "data": {
+      "id": "7e7186e5-2340-420f-9932-18385ac5ae49",
+      "bid_id": "9dc670ba-2831-4dfa-b1f9-2ff9bbda617b",
+      "definition_id": "618c99a1-918c-4643-9a02-c75520da7603",
+      "definition_version_id": "7d166201-88dd-451f-82c9-42f0d4c598f8",
+      "trigger": "material_updated",
+      "trigger_event_id": "3266bb01-90e6-4786-8c7f-3ad0599d41c7",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:46.700607-07:00",
+      "selection": {
+        "package_id": "564f904b-738d-4143-911e-fdd9077e18de",
+        "revision_id": "d9d813e4-3159-4fe2-8168-7e432973cc2a",
+        "inventory_id": "8c98ce05-5bba-4818-ba72-31c79d65493b",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "94e4ac19-8244-46f4-9d3b-5c0b18c20be0",
+        "dependency_plan_id": "33ca47c7-1167-4fb9-a199-206e7bd25fe8",
+        "execution_input_id": "0eac282d-014f-4052-8de2-93761adc6657",
+        "frozen_input_digest": "19e723eb6c485860dbd9d22bc3f8dc3155022a511bda4089bf6a38fdb461a570",
+        "dependency_plan_digest": "599d6dc21a0ef92f5985afaf0a45daba5176b896efd5a4a384e3a3c2145dd62e",
+        "execution_input_digest": "cc661d7a662fb0745fdaf3bac7c54d142811198161e8e528efcb29b8476a38d0"
+      },
+      "input_digest": "7618a5eab216c4fb82202e035704bb0109954e6bd4e23348b8b0b21d0aeffbc1",
+      "state": "blocked",
+      "error_code": "TASK_EVENT_SUPERSEDED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "blocked-pause": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/ee00b81f-616b-4058-8fc5-4dd70ee0d5a1/task-package-trigger-intents/771c76da-6ade-4ad3-8fa9-86ab399ab586",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:771c76da-6ade-4ad3-8fa9-86ab399ab586:53b0e4d8080a4034d056267f82dd066e99530395540ce83d01dc64571e78ab63\""
+    },
+    "data": {
+      "id": "771c76da-6ade-4ad3-8fa9-86ab399ab586",
+      "bid_id": "ee00b81f-616b-4058-8fc5-4dd70ee0d5a1",
+      "definition_id": "0e50398e-480f-4951-baa7-2f8a68738739",
+      "definition_version_id": "e89ef011-c906-4f3b-93b2-ee78a2c62664",
+      "trigger": "material_updated",
+      "trigger_event_id": "dc6653f3-3e01-4401-ad12-73b022b1ffaf",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:34.813519-07:00",
+      "selection": {
+        "package_id": "b1d647f0-d6d4-4743-94e9-5515309d66e8",
+        "revision_id": "468fa1dd-df02-4aa1-89cc-4500c62f545b",
+        "inventory_id": "bafe8bba-aa2a-4304-a8e5-b5011ef77644",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "815633d5-ce09-4a7c-b7a2-d44c65e5e592",
+        "dependency_plan_id": "2f446d63-9775-4cb0-8e29-c77605f06526",
+        "execution_input_id": "ae9498fe-09b4-4c7e-9338-3891d3a4aaaa",
+        "frozen_input_digest": "7d3b95171e2133a282c9cfcb491de9db8ebef7331d19408d4069c9edff508c10",
+        "dependency_plan_digest": "5f299f0ea46b35fe132e4f7982214229312f9da69c1f35a3118e91fc967171c0",
+        "execution_input_digest": "aea5a36a9339e99b0f8b41f4097cbefd0613735b7ec8d5fc667ddce1e6b81fa6"
+      },
+      "input_digest": "53b0e4d8080a4034d056267f82dd066e99530395540ce83d01dc64571e78ab63",
+      "state": "blocked",
+      "error_code": "TASK_TEMPLATE_PAUSED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "blocked-source": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/40d77a24-387b-4f71-9424-6d6d5f9f2019/task-package-trigger-intents/5d4b1613-c4e5-4f1c-adc3-67452b1c4684",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:5d4b1613-c4e5-4f1c-adc3-67452b1c4684:87d3fa40bbbb40fb66407544f15c2dfd4adb209a225d0223f2efdfe132a2cfbb\""
+    },
+    "data": {
+      "id": "5d4b1613-c4e5-4f1c-adc3-67452b1c4684",
+      "bid_id": "40d77a24-387b-4f71-9424-6d6d5f9f2019",
+      "definition_id": "0ad18392-9143-4c79-b6b4-e13adb5ee610",
+      "definition_version_id": "3114c9f7-c5b4-47fc-8c96-2b0a86bb3336",
+      "trigger": "material_updated",
+      "trigger_event_id": "23cb7aa7-2844-45f7-927a-151e8056c16c",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:42.835064-07:00",
+      "selection": {
+        "package_id": "9d5a66df-4812-43bd-ace8-f7bb82245101",
+        "revision_id": "485a11ff-1e38-405a-b6b6-fa10e837c2b4",
+        "inventory_id": "443884a2-13ee-433a-828b-74defcb5fc49",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "1b7a9672-c59a-4d57-877b-f31805c75944",
+        "dependency_plan_id": "7877ba53-446b-4a4b-ad1e-287e84e2efee",
+        "execution_input_id": "cd06ce82-197d-4e08-ad93-17997853de59",
+        "frozen_input_digest": "51be89d69e2f4a28813888083d2ac604b83df112a99d8bc06c4b8addedcb84b2",
+        "dependency_plan_digest": "828f52609ac25527f6e64b93ce5f455ebe0483c05c276dae80d9bfe2ec104da5",
+        "execution_input_digest": "3ec21e5b895c5f61428dabdbe14f00089a5d695cf78e2094de9204d21191a0b1"
+      },
+      "input_digest": "87d3fa40bbbb40fb66407544f15c2dfd4adb209a225d0223f2efdfe132a2cfbb",
+      "state": "blocked",
+      "error_code": "PACKAGE_REVIEW_INPUT_CHANGED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "blocked-template": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/a475109b-1626-4c11-a1f2-c7417506194c/task-package-trigger-intents/0e8e8a5c-72ae-47d6-a9ad-e35a97a21b4b",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:0e8e8a5c-72ae-47d6-a9ad-e35a97a21b4b:d55ed21a1340b91109e646aa69a2fba569e8aae20a9f7e14037c9c82dd40d44d\""
+    },
+    "data": {
+      "id": "0e8e8a5c-72ae-47d6-a9ad-e35a97a21b4b",
+      "bid_id": "a475109b-1626-4c11-a1f2-c7417506194c",
+      "definition_id": "8d754205-34d2-48e1-a6bc-2abdd3966891",
+      "definition_version_id": "3117d6df-d821-4e9b-a098-3131ccfd7a9a",
+      "trigger": "material_updated",
+      "trigger_event_id": "5cc98e61-6879-4e67-85c9-c191d14034a6",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:30.244723-07:00",
+      "selection": {
+        "package_id": "62215e43-ceba-4e9a-af37-6520b660ff53",
+        "revision_id": "550f57c3-b0a7-4246-aad7-c99e5d2ca379",
+        "inventory_id": "aa25ddfc-e467-4670-8143-b8dd506ab40b",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "c0528582-bafc-41bc-b505-c29e475764d7",
+        "dependency_plan_id": "9c953a98-a330-4d24-8709-9d34e650b6f5",
+        "execution_input_id": "6f945d10-1430-4428-9412-6eddacc0cca7",
+        "frozen_input_digest": "6f2fa666498f321c9d0ff7b72c66690c6d891ae95eb0a07e6466e8a24402db0c",
+        "dependency_plan_digest": "950800c6fde86514f2967f53205b7818a2613900cef6f64bc732941f70534b41",
+        "execution_input_digest": "7cf46322954a908d397ead1459751dd0e5975120e342ba0dd93abb370dc77abb"
+      },
+      "input_digest": "d55ed21a1340b91109e646aa69a2fba569e8aae20a9f7e14037c9c82dd40d44d",
+      "state": "blocked",
+      "error_code": "TASK_PACKAGE_TEMPLATE_CHANGED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "cancel-pending": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/a0281fb5-8492-43fb-80d9-5bf8ba7f05c7/task-package-trigger-intents/d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae:f402cdcf2859d53aa82909874aa76cc1ba0e9568c9ec0059f7bf414f8e959317\""
+    },
+    "data": {
+      "id": "d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae",
+      "bid_id": "a0281fb5-8492-43fb-80d9-5bf8ba7f05c7",
+      "definition_id": "5e49d769-d0cd-46cb-925a-8c1b952d0c93",
+      "definition_version_id": "a2ad98bc-eefa-415d-b447-381ec76ef3e5",
+      "trigger": "material_updated",
+      "trigger_event_id": "26f00ffd-80c2-4fcf-aa48-aa65dbd9bad4",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:55.222698-07:00",
+      "selection": {
+        "package_id": "2e016621-9647-462b-a4f5-1ccbafb5ba33",
+        "revision_id": "167041d0-808f-4b36-91b3-69e93319454f",
+        "inventory_id": "242d1634-bf7d-40a8-8e29-4836e0c135e6",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "a3d19f9a-0e56-47ac-ba56-7f86152a3bd8",
+        "dependency_plan_id": "b61b78b3-10fa-4148-b6ce-3ec558dc46d1",
+        "execution_input_id": "8c879289-2691-47c4-8c14-60f466f26713",
+        "frozen_input_digest": "15702370551dcf3bcc890918342ed26fafda661362d6e288c53c90bfa84ca1a4",
+        "dependency_plan_digest": "0da6ea13f98a7523af52dfbd03bc398f28f51f63d04a475f6168297389f1cc12",
+        "execution_input_digest": "cf15e5cf35f0669dab97a141183b4c59b7cc2b2d9ed0b9b99b6e785e290bcccc"
+      },
+      "input_digest": "f402cdcf2859d53aa82909874aa76cc1ba0e9568c9ec0059f7bf414f8e959317",
+      "state": "pending",
+      "error_code": null,
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "cancelled": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/bids/a0281fb5-8492-43fb-80d9-5bf8ba7f05c7/task-package-trigger-intents/d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae/cancel",
+      "body": {
+        "reason": "Synthetic explicit pending cancel"
+      },
+      "headers": {
+        "idempotency-key": "f2f53a5a-f012-4461-af88-4b9812712357",
+        "if-match": "\"task-package-trigger-intent:d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae:f402cdcf2859d53aa82909874aa76cc1ba0e9568c9ec0059f7bf414f8e959317\""
+      }
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "id": "d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae",
+      "bid_id": "a0281fb5-8492-43fb-80d9-5bf8ba7f05c7",
+      "definition_id": "5e49d769-d0cd-46cb-925a-8c1b952d0c93",
+      "definition_version_id": "a2ad98bc-eefa-415d-b447-381ec76ef3e5",
+      "trigger": "material_updated",
+      "trigger_event_id": "26f00ffd-80c2-4fcf-aa48-aa65dbd9bad4",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:55.222698-07:00",
+      "selection": {
+        "package_id": "2e016621-9647-462b-a4f5-1ccbafb5ba33",
+        "revision_id": "167041d0-808f-4b36-91b3-69e93319454f",
+        "inventory_id": "242d1634-bf7d-40a8-8e29-4836e0c135e6",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "a3d19f9a-0e56-47ac-ba56-7f86152a3bd8",
+        "dependency_plan_id": "b61b78b3-10fa-4148-b6ce-3ec558dc46d1",
+        "execution_input_id": "8c879289-2691-47c4-8c14-60f466f26713",
+        "frozen_input_digest": "15702370551dcf3bcc890918342ed26fafda661362d6e288c53c90bfa84ca1a4",
+        "dependency_plan_digest": "0da6ea13f98a7523af52dfbd03bc398f28f51f63d04a475f6168297389f1cc12",
+        "execution_input_digest": "cf15e5cf35f0669dab97a141183b4c59b7cc2b2d9ed0b9b99b6e785e290bcccc"
+      },
+      "input_digest": "f402cdcf2859d53aa82909874aa76cc1ba0e9568c9ec0059f7bf414f8e959317",
+      "state": "cancelled",
+      "error_code": "TASK_TRIGGER_CANCELLED",
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "event-accepted": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-package-trigger-intents/ffffffff-ffff-ffff-ffff-fffffffffffe",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:ffffffff-ffff-ffff-ffff-fffffffffffe:e086593f740920981d68f70fe73c7cd13bad6b129c820679ff7d6672c56df568\""
+    },
+    "data": {
+      "id": "ffffffff-ffff-ffff-ffff-fffffffffffe",
+      "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+      "definition_id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+      "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+      "trigger": "material_updated",
+      "trigger_event_id": "67733170-0ddb-446c-aac6-2cd6e00a54f1",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:19.688064-07:00",
+      "selection": {
+        "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+        "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+        "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+        "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+        "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+        "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+        "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+        "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7"
+      },
+      "input_digest": "e086593f740920981d68f70fe73c7cd13bad6b129c820679ff7d6672c56df568",
+      "state": "accepted",
+      "error_code": null,
+      "run_id": "26526b43-60f1-455c-b8ad-e1ef06378356",
+      "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-runs/26526b43-60f1-455c-b8ad-e1ef06378356",
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "event-intents": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-package-trigger-intents",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "items": [
+        {
+          "id": "ffffffff-ffff-ffff-ffff-fffffffffffe",
+          "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+          "definition_id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+          "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+          "trigger": "material_updated",
+          "trigger_event_id": "67733170-0ddb-446c-aac6-2cd6e00a54f1",
+          "scheduled_at": null,
+          "created_at": "2026-10-21T02:52:19.688064-07:00",
+          "selection": {
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+            "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+            "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+            "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+            "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7",
+            "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+            "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855"
+          },
+          "input_digest": "e086593f740920981d68f70fe73c7cd13bad6b129c820679ff7d6672c56df568",
+          "state": "accepted",
+          "error_code": null,
+          "run_id": "26526b43-60f1-455c-b8ad-e1ef06378356",
+          "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-runs/26526b43-60f1-455c-b8ad-e1ef06378356",
+          "reused": false,
+          "automatic_input_selection": false
+        },
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+          "definition_id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+          "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+          "trigger": "material_updated",
+          "trigger_event_id": "759cd4a9-b14c-4e20-9f9b-543aaf46231f",
+          "scheduled_at": null,
+          "created_at": "2026-10-21T02:52:21.024851-07:00",
+          "selection": {
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+            "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+            "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+            "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+            "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7",
+            "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+            "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855"
+          },
+          "input_digest": "8a723ef43d6f3a82e3e2370b390fbe9ed56614069b618ec2de8222ef032c1a51",
+          "state": "accepted",
+          "error_code": null,
+          "run_id": "26526b43-60f1-455c-b8ad-e1ef06378356",
+          "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-runs/26526b43-60f1-455c-b8ad-e1ef06378356",
+          "reused": true,
+          "automatic_input_selection": false
+        }
+      ],
+      "next_after": null
+    }
+  },
+  "event-notifications": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-notifications",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "items": [
+        {
+          "id": "6f490fc1-b776-48a8-8eda-f2b34efdaa59",
+          "payload": {
+            "key": "520ceff9407b26b649c0711523be70acd0b9874e3d67b6c40cccb1920b1dc862",
+            "run_id": "26526b43-60f1-455c-b8ad-e1ef06378356",
+            "state": "succeeded",
+            "error_code": null,
+            "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-runs/26526b43-60f1-455c-b8ad-e1ef06378356"
+          },
+          "created_at": "2026-10-21T02:52:20.856000-07:00"
+        }
+      ],
+      "next_after": null
+    }
+  },
+  "event-pending": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-package-trigger-intents/ffffffff-ffff-ffff-ffff-fffffffffffe",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {
+      "etag": "\"task-package-trigger-intent:ffffffff-ffff-ffff-ffff-fffffffffffe:e086593f740920981d68f70fe73c7cd13bad6b129c820679ff7d6672c56df568\""
+    },
+    "data": {
+      "id": "ffffffff-ffff-ffff-ffff-fffffffffffe",
+      "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+      "definition_id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+      "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+      "trigger": "material_updated",
+      "trigger_event_id": "67733170-0ddb-446c-aac6-2cd6e00a54f1",
+      "scheduled_at": null,
+      "created_at": "2026-10-21T02:52:19.688064-07:00",
+      "selection": {
+        "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+        "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+        "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+        "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+        "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+        "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+        "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+        "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+        "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+        "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7"
+      },
+      "input_digest": "e086593f740920981d68f70fe73c7cd13bad6b129c820679ff7d6672c56df568",
+      "state": "pending",
+      "error_code": null,
+      "run_id": null,
+      "run_ref": null,
+      "reused": false,
+      "automatic_input_selection": false
+    }
+  },
+  "event-succeeded-run": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-runs/26526b43-60f1-455c-b8ad-e1ef06378356",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "id": "26526b43-60f1-455c-b8ad-e1ef06378356",
+      "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+      "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+      "root_operation_id": "74eadc2a-bca4-4e79-875f-7c986f967eb6",
+      "final_operation_id": "74eadc2a-bca4-4e79-875f-7c986f967eb6",
+      "state": "succeeded",
+      "stage": "review",
+      "frozen_manifest": {
+        "schema": "task-package-trigger-run/1",
+        "context": {
+          "subject": {
+            "kind": "bid_package",
+            "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0"
+          },
+          "selection": {
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+            "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+            "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+            "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+            "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+            "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7"
+          },
+          "limitations": ["INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED"],
+          "overall_coverage": "partial",
+          "model_input_digest": "2232d0773135ef2f4216cd02f8403ed98d9d6ab872c758a1e30c2f3e8085fc20",
+          "review_input_digest": "0fa3eb87d3b9c85658a9f479b1a0cbe9f00598cd5eee1db4e8bcbe88a358117d",
+          "submission_eligible": false,
+          "formal_scoring_eligible": false
+        },
+        "purpose": "compliance",
+        "trigger": "material_updated",
+        "actor_id": "9a359185-c8c6-4f1f-b2a2-c66fdd7dc0c3",
+        "fee_scope": "aee5b386c6ac85194537bb92aac43a74e2a2dfcc803cdf966509296d2a801f08",
+        "task_kind": "denial_check",
+        "request_id": "6837416e-d33b-4b07-b9ec-15057228cd88",
+        "accepted_at": "2026-10-21T02:52:20.208168-07:00",
+        "input_digest": "bd147461d94adee60e19e53e0b93cf7162dcd85d3b2b99ce13569a1a7a373884",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "Synthetic explicit saved-package trigger",
+          "trigger": {
+            "cron": null,
+            "mode": "material_updated",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "denial_check",
+          "section_id": null,
+          "instructions": "仅核对本次明确保存的原包，不改最新包、不确认、不提交",
+          "source_selection": {
+            "mode": "exact_package_trigger",
+            "input": {
+              "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+              "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+              "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+              "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+              "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+              "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+              "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+              "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+              "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+              "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7"
+            }
+          }
+        },
+        "definition_id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+        "package_review": {
+          "run_id": "54aaf6ec-690e-475c-ad47-142cd89e2f91",
+          "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/packages/649727b9-353d-47de-afb8-a92b43b76fff/revisions/2c3f374e-2474-4d42-87e4-912e93fdb173/requirement-inventories/49b79216-dd89-4b5c-9926-c3de96bdb3c0/frozen-review-inputs/c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c/execution-inputs/3905a2bc-2051-4ca8-bdc1-511b32ef3b95/review-runs/54aaf6ec-690e-475c-ad47-142cd89e2f91",
+          "input_digest": "0fa3eb87d3b9c85658a9f479b1a0cbe9f00598cd5eee1db4e8bcbe88a358117d",
+          "operation_id": "74eadc2a-bca4-4e79-875f-7c986f967eb6",
+          "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+          "start_command_id": "9ab6db36-5694-4da9-9afa-c86dcccfbcd1"
+        },
+        "trigger_event_id": "67733170-0ddb-446c-aac6-2cd6e00a54f1",
+        "trigger_intent_id": "ffffffff-ffff-ffff-ffff-fffffffffffe",
+        "configuration_digest": "798df9744842f889a6045d8f9b94303de8516087e1464e352d494eae190c6524",
+        "definition_version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "kind": "declared_package_scope_review",
+        "run_id": "54aaf6ec-690e-475c-ad47-142cd89e2f91",
+        "run_ref": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/packages/649727b9-353d-47de-afb8-a92b43b76fff/revisions/2c3f374e-2474-4d42-87e4-912e93fdb173/requirement-inventories/49b79216-dd89-4b5c-9926-c3de96bdb3c0/frozen-review-inputs/c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c/execution-inputs/3905a2bc-2051-4ca8-bdc1-511b32ef3b95/review-runs/54aaf6ec-690e-475c-ad47-142cd89e2f91",
+        "input_digest": "0fa3eb87d3b9c85658a9f479b1a0cbe9f00598cd5eee1db4e8bcbe88a358117d",
+        "result_digest": "ada7da0bb50b60a5913e9c64fe512c5bc868c5f29284267a16c7df8d40e609a9",
+        "overall_coverage": "partial",
+        "formal_scoring_eligible": false,
+        "submission_eligible": false
+      },
+      "error_code": null,
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    }
+  },
+  "event-template": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definitions",
+      "body": {
+        "name": "Synthetic explicit saved-package trigger",
+        "task_kind": "denial_check",
+        "instructions": "仅核对本次明确保存的原包，不改最新包、不确认、不提交",
+        "source_selection": {
+          "mode": "exact_package_trigger",
+          "input": {
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+            "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+            "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+            "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+            "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7",
+            "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+            "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855"
+          }
+        },
+        "trigger": {
+          "mode": "material_updated"
+        }
+      },
+      "headers": {
+        "idempotency-key": "c2ea46cb-e966-42a2-8b98-59070b41abf4",
+        "if-match": "\"bid:d406e920-f62c-4ccd-acc5-195ac785155c:a47709f507a56a671f36a1024bb3fc0b8d65b5c266e9f3f589fae22454562a41\""
+      }
+    },
+    "status": 201,
+    "headers": {
+      "etag": "\"task-template:4fa6a8f3-62b8-41bd-9c30-faa166f0e467:1\""
+    },
+    "data": {
+      "id": "4fa6a8f3-62b8-41bd-9c30-faa166f0e467",
+      "bid_id": "d406e920-f62c-4ccd-acc5-195ac785155c",
+      "revision": 1,
+      "version_id": "883e916c-252f-4795-9300-7b6f2d83c882",
+      "digest": "798df9744842f889a6045d8f9b94303de8516087e1464e352d494eae190c6524",
+      "purpose": "compliance",
+      "paused": false,
+      "configuration": {
+        "name": "Synthetic explicit saved-package trigger",
+        "trigger": {
+          "cron": null,
+          "mode": "material_updated",
+          "timezone": "Asia/Shanghai"
+        },
+        "task_kind": "denial_check",
+        "section_id": null,
+        "instructions": "仅核对本次明确保存的原包，不改最新包、不确认、不提交",
+        "source_selection": {
+          "mode": "exact_package_trigger",
+          "input": {
+            "package_id": "649727b9-353d-47de-afb8-a92b43b76fff",
+            "revision_id": "2c3f374e-2474-4d42-87e4-912e93fdb173",
+            "inventory_id": "49b79216-dd89-4b5c-9926-c3de96bdb3c0",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "frozen_input_id": "c8bbe84d-3d8c-4aca-83ab-7ac56bd4213c",
+            "dependency_plan_id": "132a9c93-2399-4aca-b86f-57f419ee2165",
+            "execution_input_id": "3905a2bc-2051-4ca8-bdc1-511b32ef3b95",
+            "frozen_input_digest": "988740f292d4406ad327c838e05fd379214016b0441b42882a62e519a8d56f9a",
+            "dependency_plan_digest": "358237f005305751041139a263e98e07849a3d78f39a83300994cf1e56351e9f",
+            "execution_input_digest": "a9603208eb5b85d154f26ebd63055adc115e0142939328e9b219d9e0fe2f1ed7"
+          }
+        }
+      },
+      "next_run_at": null,
+      "run_created": false,
+      "active_runs_cancelled": false
+    }
+  },
+  "schedule-missed": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-schedule-recoveries",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "items": [
+        {
+          "id": "8dfcbb24-1aeb-4c29-85e4-3eefb7534f51",
+          "payload": {
+            "schedule_id": "ee02adff-9c03-4bb8-821f-30023f4d5b3f",
+            "definition_id": "9b044490-4a21-4160-bb11-0c7a857a92f3",
+            "run_current_once_ref": null,
+            "reconfirm_template_ref": "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-definitions/9b044490-4a21-4160-bb11-0c7a857a92f3",
+            "definition_version_id": "f2a328a1-e7f6-4cfc-817c-0757398444a6",
+            "next_fire_at": "2026-10-22T01:00:00Z",
+            "missed": {
+              "from": "2026-10-18T09:52:25.139077Z",
+              "through": "2026-10-21T09:52:25.139077Z",
+              "count": null,
+              "count_status": "not_enumerated",
+              "resolution": "skipped_reconfirm_exact_input"
+            },
+            "automatic_catchup_runs": 0
+          },
+          "created_at": "2026-10-21T02:52:25.701928-07:00"
+        }
+      ],
+      "next_after": null,
+      "run_current_once_supported": true
+    }
+  },
+  "schedule-template": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "POST",
+      "path": "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-definitions",
+      "body": {
+        "name": "Synthetic explicit saved-package trigger",
+        "task_kind": "denial_check",
+        "instructions": "仅核对本次明确保存的原包，不改最新包、不确认、不提交",
+        "source_selection": {
+          "mode": "exact_package_trigger",
+          "input": {
+            "package_id": "5d67b555-b3b1-4156-9eb1-4febf87ae4ee",
+            "revision_id": "da4bce46-19ef-480d-a786-0f1710eca0ae",
+            "inventory_id": "e2fdf37f-1c23-4d17-8e5c-f4b96f539c04",
+            "frozen_input_id": "32b04b45-eb02-49c7-8f1b-f1d75be700b0",
+            "frozen_input_digest": "b8b8a3def9e66066afab52b36b5dc5637fca24a987598f9580c32ab47ce4767e",
+            "execution_input_id": "359a7bc6-6d0d-4f71-98d9-d31e2531b52d",
+            "execution_input_digest": "c6526253737a83708804d500e8e692743a306a08e19e5a3ccc9a013902cd7f52",
+            "dependency_plan_id": "a760b4b9-82ed-4d57-9b32-a813b0bab2e6",
+            "dependency_plan_digest": "d38636c84cd0e28ddde46bdc7697b11ec5c1e05cbc7b8d52fb0ef2a52cf8546a",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855"
+          }
+        },
+        "trigger": {
+          "mode": "schedule",
+          "cron": "0 9 * * *"
+        }
+      },
+      "headers": {
+        "idempotency-key": "746ea082-4e47-4dc0-8621-17daaec86278",
+        "if-match": "\"bid:48d61958-8eee-4b7c-b641-36eaf1d3c078:ab8bd3df7661e8f75a613f69fab929bc7d95d51d6ac0f56f74ae2206edeebad9\""
+      }
+    },
+    "status": 201,
+    "headers": {
+      "etag": "\"task-template:9b044490-4a21-4160-bb11-0c7a857a92f3:1\""
+    },
+    "data": {
+      "id": "9b044490-4a21-4160-bb11-0c7a857a92f3",
+      "bid_id": "48d61958-8eee-4b7c-b641-36eaf1d3c078",
+      "revision": 1,
+      "version_id": "f2a328a1-e7f6-4cfc-817c-0757398444a6",
+      "digest": "aa9e3314484592376ad5ecea0ff64413258941c4f034d332c26fd43e2fafb5dc",
+      "purpose": "compliance",
+      "paused": false,
+      "configuration": {
+        "name": "Synthetic explicit saved-package trigger",
+        "trigger": {
+          "cron": "0 9 * * *",
+          "mode": "schedule",
+          "timezone": "Asia/Shanghai"
+        },
+        "task_kind": "denial_check",
+        "section_id": null,
+        "instructions": "仅核对本次明确保存的原包，不改最新包、不确认、不提交",
+        "source_selection": {
+          "mode": "exact_package_trigger",
+          "input": {
+            "package_id": "5d67b555-b3b1-4156-9eb1-4febf87ae4ee",
+            "revision_id": "da4bce46-19ef-480d-a786-0f1710eca0ae",
+            "inventory_id": "e2fdf37f-1c23-4d17-8e5c-f4b96f539c04",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "frozen_input_id": "32b04b45-eb02-49c7-8f1b-f1d75be700b0",
+            "dependency_plan_id": "a760b4b9-82ed-4d57-9b32-a813b0bab2e6",
+            "execution_input_id": "359a7bc6-6d0d-4f71-98d9-d31e2531b52d",
+            "frozen_input_digest": "b8b8a3def9e66066afab52b36b5dc5637fca24a987598f9580c32ab47ce4767e",
+            "dependency_plan_digest": "d38636c84cd0e28ddde46bdc7697b11ec5c1e05cbc7b8d52fb0ef2a52cf8546a",
+            "execution_input_digest": "c6526253737a83708804d500e8e692743a306a08e19e5a3ccc9a013902cd7f52"
+          }
+        }
+      },
+      "next_run_at": "2026-10-21T18:00:00-07:00",
+      "run_created": false,
+      "active_runs_cancelled": false
+    }
+  },
+  "task-kinds": {
+    "fixture_kind": "actual ASGI response over synthetic package/model data",
+    "request": {
+      "method": "GET",
+      "path": "/api/v1/task-kinds",
+      "body": null,
+      "headers": {}
+    },
+    "status": 200,
+    "headers": {},
+    "data": {
+      "items": [
+        {
+          "task_kind": "denial_check",
+          "name": "否决核对",
+          "purpose": "compliance",
+          "execution": "existing_review_control_plane",
+          "reason": null,
+          "formal_scoring_eligible": false,
+          "exact_package_manual": {
+            "available": true,
+            "reason": null,
+            "input_mode": "exact_package_review",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "trigger": "manual",
+            "overall_coverage": "partial",
+            "formal_scoring_eligible": false,
+            "submission_eligible": false,
+            "automatic_input_selection": false
+          },
+          "exact_package_triggers": {
+            "available": true,
+            "reason": null,
+            "input_mode": "exact_package_trigger",
+            "triggers": ["material_updated", "schedule"],
+            "requires_independent_runner": true,
+            "automatic_input_selection": false,
+            "automatic_catchup_runs": 0
+          }
+        },
+        {
+          "task_kind": "scoring_review",
+          "name": "评分项评审",
+          "purpose": "compliance",
+          "execution": "unavailable",
+          "reason": "TASK_SCORING_NOT_QUALIFIED",
+          "formal_scoring_eligible": false
+        },
+        {
+          "task_kind": "supplement_impact",
+          "name": "已登记补遗关系核对",
+          "purpose": "assist",
+          "execution": "partial",
+          "coverage": "registered_effectivity_only",
+          "semantic_impact_coverage": "unknown",
+          "formal_decisions_allowed": false
+        },
+        {
+          "task_kind": "chapter_suggestion",
+          "name": "章节修改建议",
+          "purpose": "assist",
+          "execution": "existing_authoring_proposal_queue",
+          "automatic_apply": false
+        }
+      ],
+      "default_trigger": "manual",
+      "saving_preset_creates_run": false
+    }
+  }
+}

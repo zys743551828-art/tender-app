@@ -17,6 +17,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
+import completion_recovery_native_records as native_records
 import psycopg
 import pytest
 from botocore.exceptions import ClientError
@@ -237,6 +238,9 @@ def recovered(exact, monkeypatch):
     correction = apply(w)
     assert correction.status_code == 201, correction.text
     saved_submission = save_package_fact(w, correction.json()["inventory"])
+    saved_native_records = native_records.persist(
+        w, correction.json()["inventory"], saved_submission
+    )
     client = recovery.s3_client(database["native"]["configuration"])
     source_bucket, target_bucket = ("completion-recovery-" + uuid4().hex for _ in range(2))
     created_buckets, objects_by_bucket = [], {source_bucket: set(), target_bucket: set()}
@@ -367,6 +371,7 @@ def recovered(exact, monkeypatch):
             "proofs": receipts,
             "payloads": payloads,
             "saved_submission": saved_submission,
+            "saved_native_records": saved_native_records,
             "source_after_snapshot": source_after_snapshot,
         }
     finally:
@@ -450,6 +455,7 @@ def test_latest_complete_schema_rows_acl_originals_and_failure_controls(recovere
             submissions.load(c, r["saved_submission"]["bid_id"], r["saved_submission"]["id"])
             == r["saved_submission"]
         )
+        restored_native_records = native_records.assert_restored(c, r["saved_native_records"])
     failure_controls(r)
     for item in r["originals"]["objects"]:
         for bucket in (r["source_bucket"], r["target_bucket"]):
@@ -479,6 +485,7 @@ def test_latest_complete_schema_rows_acl_originals_and_failure_controls(recovere
                 "deploy/application_recovery/definition_equivalence.py",
                 "tests/test_completion_recovery.py",
                 "tests/test_completion_recovery_pg.py",
+                "tests/completion_recovery_native_records.py",
             )
         },
         "pg_server_version": r["database"]["native"]["server_version"],
@@ -498,6 +505,7 @@ def test_latest_complete_schema_rows_acl_originals_and_failure_controls(recovere
         "real_column_update_with_read_only_disabled_denied": True,
         "f04_native_correction_rows_and_f05_native_binding_restored": True,
         "f05_historical_service_response_unchanged": True,
+        "new_task_and_retrospective_records": restored_native_records,
         "concurrent_commit_excluded": True,
         "originals": len(r["originals"]["objects"]),
         "original_bytes": sum(item["bytes"] for item in r["originals"]["objects"]),

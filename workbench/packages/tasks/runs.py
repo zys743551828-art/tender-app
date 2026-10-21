@@ -192,7 +192,7 @@ def dispatch(
         raise DomainError("TASK_TEMPLATE_PAUSED", "模板已暂停；在途任务没有取消", 409)
     config = row["config"]["definition"]
     kind = config["task_kind"]
-    if config["source_selection"]["mode"] == "exact_package_review":
+    if config["source_selection"]["mode"] in ("exact_package_review", "exact_package_trigger"):
         raise DomainError(
             "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
             "精确整包任务当前只接受显式手动入口；旧定时器、资料事件或当前正文流程不能代为启动",

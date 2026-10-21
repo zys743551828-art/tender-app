@@ -42,7 +42,6 @@ EXTENSIONS = (
     "deploy/sql/technical-scale-authority.sql",
     "deploy/sql/technical-scale-package-identity.sql",
     "deploy/sql/score-denominator.sql",
-    "deploy/sql/retrospective-research.sql",
 )
 REQUIRED_BASE = {
     "packages/identity/sql/stable-lot-identity.sql",
@@ -50,11 +49,23 @@ REQUIRED_BASE = {
     "packages/contracts/sql/bid-package-rule-corrections.sql",
     "packages/contracts/sql/bid-package-submissions.sql",
     "packages/contracts/sql/bid-package-technical-scopes.sql",
+    "packages/contracts/sql/task-package-reviews.sql",
+    "packages/contracts/sql/task-package-triggers.sql",
+    "packages/contracts/sql/package-retrospectives.sql",
 }
 ORIGINALS_FORMAT = "completion-recovery-originals/1"
 # Exact pg_dump/pg_restore CHECK reparse pairs observed on the current optional
 # schemas. No values, operators, fields or unrecognized identities are normalized.
 REPARSED_CHECKS = {
+    (
+        "design",
+        "package_retrospective_knowledge_links_reason_check",
+        "package_retrospective_knowledge_links",
+        "",
+    ): (
+        "CHECK ((((length(reason) >= 1) AND (length(reason) <= 4000)) AND (reason ~ '\\S'::text)))",
+        "CHECK (((length(reason) >= 1) AND (length(reason) <= 4000) AND (reason ~ '\\S'::text)))",
+    ),
     ("score_execution", "current_chapters_raw_content_check", "current_chapters", ""): (
         definition_equivalence.NESTED,
         definition_equivalence.FLAT,

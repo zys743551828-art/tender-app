@@ -36,7 +36,9 @@ from apps.api.multipart_routes import router as multipart_router
 from apps.api.object_transfer import make_download_url, make_upload_url
 from apps.api.object_transfer import router as transfer_router
 from apps.api.package_pricing_routes import router as package_pricing_router
+from apps.api.package_retrospective_routes import router as package_retrospective_router
 from apps.api.package_technical_eligibility import router as package_technical_eligibility_router
+from apps.api.package_technical_execution import router as package_technical_execution_router
 from apps.api.package_technical_scope import router as package_technical_scope_router
 from apps.api.pricing_routes import router as pricing_router
 from apps.api.rag_routes import router as rag_router
@@ -139,9 +141,11 @@ app.include_router(package_review_comparison_router)
 app.include_router(package_discovery_router)
 app.include_router(package_technical_scope_router)
 app.include_router(package_technical_eligibility_router)
+app.include_router(package_technical_execution_router)
 app.include_router(pricing_router)
 app.include_router(package_pricing_router)
 app.include_router(submission_router)
+app.include_router(package_retrospective_router)
 app.include_router(report_router)
 app.include_router(metrics_router)
 app.include_router(retained_upload_router)

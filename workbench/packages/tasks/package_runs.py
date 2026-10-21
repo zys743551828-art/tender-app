@@ -61,13 +61,20 @@ def _assert_unresolved(c, bid, context):
         )
 
 
-def _publish(c, *, bid, definition, actor, key, condition, body, original, selected, verified):
+def _publish(
+    c, *, bid, definition, actor, key, condition, body, original, selected, verified, intent=None
+):
     lock(c, bid)
-    previous = repository.replay(c, bid, definition, actor, key, body, condition)
+    previous = (
+        repository.replay(c, bid, definition, actor, key, body, condition)
+        if intent is None
+        else None
+    )
     if previous is not None:
         return previous, True
     row = templates.current(c, bid, definition)
-    match(condition, "task-template", definition, row["revision"])
+    if intent is None:
+        match(condition, "task-template", definition, row["revision"])
     assert_work_writable(c, bid)
     if row["paused"]:
         raise DomainError("TASK_TEMPLATE_PAUSED", "模板已暂停；在途任务没有取消", 409)
@@ -80,15 +87,29 @@ def _publish(c, *, bid, definition, actor, key, condition, body, original, selec
     manifest = admission.recheck(c, verified)
     context = inputs.context(bid, selected, manifest)
     _assert_unresolved(c, bid, context)
-    digest = inputs.input_digest(row["version_id"], row["digest"], context)
-    command = Command(c, actor, repository.COMMAND_KIND, definition, key, body, condition)
+    schema = inputs.SCHEMA if intent is None else inputs.TRIGGER_SCHEMA
+    trigger = {
+        "trigger": "manual" if intent is None else intent["trigger"],
+        "trigger_event_id": None if intent is None else intent["trigger_event_id"],
+        "scheduled_at": None if intent is None else intent["scheduled_at"],
+    }
+    digest = inputs.input_digest(row["version_id"], row["digest"], context, schema=schema)
+    command = Command(
+        c,
+        actor,
+        repository.COMMAND_KIND if intent is None else "task-package-trigger-run",
+        definition if intent is None else intent["id"],
+        key,
+        body,
+        condition,
+    )
     if command.replay is not None:
         return command.replay, True
     old = c.execute(
         """SELECT * FROM task_runs WHERE bid_id=%s AND definition_version_id=%s
         AND frozen_manifest->>'schema'=%s AND frozen_manifest->>'input_digest'=%s
         ORDER BY id LIMIT 1""",
-        (bid, row["version_id"], inputs.SCHEMA, digest),
+        (bid, row["version_id"], schema, digest),
     ).fetchone()
     if old is not None:
         value = repository.view(c, old)
@@ -100,9 +121,7 @@ def _publish(c, *, bid, definition, actor, key, condition, body, original, selec
             {
                 "run_id": old["id"],
                 "definition_version_id": row["version_id"],
-                "trigger": "manual",
-                "trigger_event_id": None,
-                "scheduled_at": None,
+                **trigger,
             },
             command.id,
         )
@@ -127,7 +146,7 @@ def _publish(c, *, bid, definition, actor, key, condition, body, original, selec
     identity = uid()
     frozen = clean(
         {
-            "schema": inputs.SCHEMA,
+            "schema": schema,
             "definition_id": definition,
             "definition_version_id": row["version_id"],
             "configuration_digest": row["digest"],
@@ -139,9 +158,8 @@ def _publish(c, *, bid, definition, actor, key, condition, body, original, selec
             "context": context,
             "input_digest": digest,
             "fee_scope": inputs.fee_scope(context),
-            "trigger": "manual",
-            "trigger_event_id": None,
-            "scheduled_at": None,
+            **trigger,
+            **({"trigger_intent_id": intent["id"]} if intent is not None else {}),
             "accepted_at": templates.clock(c),
             "formal_decisions_allowed": False,
             "package_review": {
@@ -195,6 +213,12 @@ def start(actor, bid, definition, key, condition, body, *, final_auth=None):
         row = templates.current(c, bid, definition)
         if not inputs.is_exact(row["config"]["definition"]):
             return None
+        if inputs.is_trigger(row["config"]["definition"]):
+            raise DomainError(
+                "TASK_PACKAGE_TRIGGER_EXPLICIT_WAKEUP_REQUIRED",
+                "自动模板只执行已登记的明确触发；单次手动执行请显式保存手动模板版本，输入不会自动变化",
+                409,
+            )
         if not available(c):
             raise DomainError("TASK_PACKAGE_EXECUTOR_NOT_READY", "精确整包任务存储尚未安装", 503)
         _assert_request(body)

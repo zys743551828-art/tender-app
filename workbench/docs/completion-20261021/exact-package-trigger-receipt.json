@@ -1,0 +1,394 @@
+{
+  "schema": "task-package-trigger-acceptance/1",
+  "started_at": "2026-10-21T09:52:12.589807+00:00",
+  "passed": true,
+  "paid_calls": 0,
+  "model_transport": "explicit synthetic HTTP transport; no external calls",
+  "postgres_version": "postgres (PostgreSQL) 17.11",
+  "python_version": "3.12.14",
+  "reviewed_sql_sha256": "ca96f73baec6e5b3db739da5420db1e6efdde0769c0c2d8fd49e7c5fd8cea45f",
+  "source_sha256": {
+    "packages/tasks/__init__.py": "9ff031ab841b41e3c72cf5113c6d91631404b41ca084d81937f64ae878b98218",
+    "packages/tasks/contracts.py": "a02fed4f61547166de02478d700d85b2f6e4e470cc3c069a386b95ca1946142f",
+    "packages/tasks/coordinator.py": "3ed3bcba3155ed79c8d8bfbe4a3d635f3f53adc6f7a74b8bbb59ad588c5bc093",
+    "packages/tasks/draft_interpreter.py": "529c1997f6f358f7b12fecc7a2c728f540588c0aba5354770c6e21fe1b044e3d",
+    "packages/tasks/drafts.py": "963328f18ee1caed703723892829e7cd233c827eb2e77487971d626a3eb33c52",
+    "packages/tasks/inputs.py": "e114bafa721f2b4601bf3cb705bc06c655a8363f53b931afe9f6392844fed4d3",
+    "packages/tasks/models.py": "979f4cfccf3be73abee4d6e3aec4d57e918ecbfdc8fcbd79faa1bce002bf9e4e",
+    "packages/tasks/package_inputs.py": "a21146d8ce7080eff8ae8ea7eefc9da00b1c4e511fc8cd298d4366679b62100e",
+    "packages/tasks/package_repository.py": "9047895d6744272fd79502a4cddfe3fa4314b2b12da4b645ad6f4792af1b528b",
+    "packages/tasks/package_runs.py": "6a6123d3259e40b0845e4e49bbc6821ec14e64788ac88bc3a11f8e7323dc6258",
+    "packages/tasks/package_triggers.py": "e0f9b0ded3504256657a19b6a0567b893c92a1111baa5411738c23c2b8f35e79",
+    "packages/tasks/review_runtime.py": "60d004865108f8e4787bc348babbd2ccf9b2e01436b025c50306dd2c367f04f8",
+    "packages/tasks/runner.py": "8880c067f86b3666f9060ec7b9b670f51b1e9b6e990722489a6cf4efff95b7a8",
+    "packages/tasks/runs.py": "466ec4455ac47b8237b01a2ac71e51ac8009cee8efabf4eb86181457cf6455c4",
+    "packages/tasks/scheduling.py": "6fd5270cb17079c2181e80d69c19064673ef1124d91c33d38e322a87f5ff70f2",
+    "packages/tasks/templates.py": "a95f7f34cdcee42655dfe0ef5e1ca387bbfe8510c326fd919d108d3bba9ad664",
+    "packages/contracts/sql/task-package-triggers.sql": "ca96f73baec6e5b3db739da5420db1e6efdde0769c0c2d8fd49e7c5fd8cea45f",
+    "apps/api/task_routes.py": "392538a4489d95f1a0fceba8e3437c1124fd01a4c386003430f2872a7668958e",
+    "deploy/task_package_trigger_acceptance.py": "a4719627f83cbf37866a67a75045191764e145e3e2f325de81e8a615f772b516",
+    "tests/test_task_package_triggers_pg.py": "d4745a5932920c29edcc2d0337711f729f61434051b398161ee62540d743e655",
+    "tests/test_task_package_runs_pg.py": "a3f1c3938ad3d9e0cbe123413967a3fa8a28731959f7087b44e7f95fb9497bbb"
+  },
+  "ordered_sql": [
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd"
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96"
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319"
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738"
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876"
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-requirements.sql",
+      "sha256": "d08c29c6b56a46674ab78f37dd5cb38fe074963c68d334b595fbf87fb0197bf9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-inputs.sql",
+      "sha256": "d066c92234ba5b3cba3990e51cab3316dc5b72ec6a6c563a5a776c9c13067da6"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-execution-inputs.sql",
+      "sha256": "f5f473c2b92f652b016e1eb0170eb2b22952160cf0432d831b5ba021390d8706"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-fact-scopes.sql",
+      "sha256": "4a86390f08d9ed4e16277220fe655d28f2d9f8df0310ed1671b44d87c2623a10"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-dependency-plans.sql",
+      "sha256": "443a3f1a82ef60120ffadfbd073623c2e98308792f2f6bdc5cf47715a5e41260"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-runs.sql",
+      "sha256": "5ef4cf1160b17abe4cf106cb1acd9676277f9b31f982c06f96bf0ea8a3de3281"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-decisions.sql",
+      "sha256": "a53f0210e68844fc339dcf0fe0cc10b685bcf049b0f0b20a6022deb5a68358e9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-report-exports.sql",
+      "sha256": "48adf4288f4e2ac4e0b94d2b59edde19229cc83b91bf773a48a1b653275e7184"
+    },
+    {
+      "path": "packages/contracts/sql/document-parses.sql",
+      "sha256": "b965bc6826d783e368517ffb505631196f051d8ddcb561eb3843f98c45011681"
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1"
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d"
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd"
+    },
+    {
+      "path": "packages/authoring/sql/docx_import.sql",
+      "sha256": "2a832ccf1b9a549105a9923705de0f720f64aeef30c8607ac12944ba305a92b0"
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e"
+    },
+    {
+      "path": "deploy/sql/bid-package-requirement-runtime-grants.sql",
+      "sha256": "4d510b265e9e98355d2794839ab204a9501a9cbcad1b9b82f4ad53c924d9498e"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-input-runtime-grants.sql",
+      "sha256": "eb4f56ecfa2ad25bf86468ab35d657cd7859ae1880ed3bffeb0a46a5def14d55"
+    },
+    {
+      "path": "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+      "sha256": "53bc424cfbcd1b8207875f3882c5738813ff6a1a9e5d8c6ad91988af7cb10373"
+    },
+    {
+      "path": "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+      "sha256": "12c23369c1e9a5abbc5beea52b82cdbad0d198e619b2f5d3655cf4db1aa791a7"
+    },
+    {
+      "path": "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
+      "sha256": "2c7170ac325fa3027aa137ad0934456c0b4a0a4298980caaaa672dc128da9a1c"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-run-runtime-grants.sql",
+      "sha256": "eb82e88cd04b60b10f5ff026596c20029a164ab64144075b48cd2433cf5fb624"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-rule-corrections.sql",
+      "sha256": "a87cc9ea616d2e7a9c151322450bb80f4cc4d0ee4b1e99ea26d6af8c1b889e87"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-decision-runtime-grants.sql",
+      "sha256": "e48a7d76ed72bc360854be02d63eb96d68d67b77d58fda43a89958dcc29c2911"
+    },
+    {
+      "path": "deploy/sql/bid-package-report-runtime-grants.sql",
+      "sha256": "8630b580795663dbd6d6a32bd242697e6dd4858294fe37aaa817cc7777bbfa24"
+    },
+    {
+      "path": "deploy/sql/document-parse-runtime-grants.sql",
+      "sha256": "155737233a97e71d40ade0a342ef33c819c2775172aa08bbb1ec8dbccbbc97c1"
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619"
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-submissions.sql",
+      "sha256": "d6fea7f77da4378e23fae217737ac7cffc38f30255d1bd39885852bc0aaf2b0c"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-technical-scopes.sql",
+      "sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-reviews.sql",
+      "sha256": "2e1c9ae9b24533402c0a8e5da43f6c5098539b6d8697098be2e2f14dc4e7e1f2"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-triggers.sql",
+      "sha256": "ca96f73baec6e5b3db739da5420db1e6efdde0769c0c2d8fd49e7c5fd8cea45f"
+    }
+  ],
+  "tests": {
+    "tests": 37,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "seconds": 164.553
+  },
+  "test_cases": [
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_event_intent_native_worker_notifications_replay_and_exact_input_reuse[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_schedule_once_missed_window_skipped_and_original_due_is_recorded[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_changes_during_unlocked_original_io_block_without_rebasing[template-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_changes_during_unlocked_original_io_block_without_rebasing[pause-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_changes_during_unlocked_original_io_block_without_rebasing[close-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_changes_during_unlocked_original_io_block_without_rebasing[source-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_changes_during_unlocked_original_io_block_without_rebasing[event-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_concurrent_resumers_accept_one_native_run[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_pending_cancel_replay_and_native_cancel_use_separate_exact_targets[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_unknown_cost_blocks_new_event_but_preserves_original_intent_ack[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_native_binding_guard_rejects_forged_ack_without_dropping_pending_intent[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_independent_runner_recovers_closed_pending_intent_and_no_provider_calls[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_closed_project_recovers_existing_native_terminal_notification[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_triggers_pg.TestExactPackageTriggers",
+      "name": "test_roles_cannot_rewrite_or_publish_intents_and_manual_mode_stays_manual[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_actual_template_task_worker_result_notification_and_original_ack[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_explicit_natural_language_draft_and_save_do_not_execute_or_read_originals[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_binding_grants_remain_api_append_only_and_unavailable_to_worker[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_other_template_reuses_completed_native_result_and_same_template_reuses_task[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_ack_survives_failure_withdrawal_template_pause_and_closed_project[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_concurrent_manual_requests_never_duplicate_native_work[True-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_concurrent_manual_requests_never_duplicate_native_work[False-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_changed_admission_during_unlocked_original_io_rolls_back_every_publication[template-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_changed_admission_during_unlocked_original_io_rolls_back_every_publication[source-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_changed_admission_during_unlocked_original_io_rolls_back_every_publication[project-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_changed_admission_during_unlocked_original_io_rolls_back_every_publication[session-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_corrupt_originals_and_implicit_rerun_never_create_work[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_unknown_model_cost_blocks_new_template_and_explicit_prepared_rerun[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_cancel_uses_the_real_native_operation_and_never_calls_provider[synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_api_role_cannot_hide_exact_template_or_native_operation_behind_legacy_manifest[both-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_api_role_cannot_hide_exact_template_or_native_operation_behind_legacy_manifest[template-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_api_role_cannot_hide_exact_template_or_native_operation_behind_legacy_manifest[operation-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_deferred_guard_rejects_forged_parent_and_child_ack_atomically[parent_state-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_deferred_guard_rejects_forged_parent_and_child_ack_atomically[parent_result-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_deferred_guard_rejects_forged_parent_and_child_ack_atomically[parent_error-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_deferred_guard_rejects_forged_parent_and_child_ack_atomically[child_method-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_deferred_guard_rejects_forged_parent_and_child_ack_atomically[child_prepared-synthetic-original-v1]",
+      "outcome": "passed"
+    },
+    {
+      "module_class": "tests.test_task_package_runs_pg.TestExactPackageTasks",
+      "name": "test_legacy_manual_path_remains_usable_and_package_trigger_bypass_is_blocked[synthetic-original-v1]",
+      "outcome": "passed"
+    }
+  ],
+  "source_unchanged_during_execution": true,
+  "sql_unchanged_during_execution": true,
+  "completed_at": "2026-10-21T09:54:59.160793+00:00",
+  "synthetic_http_fixtures": {
+    "blocked-close.json": "37ce6525ebdb23dbc7ebb1b7ea87f6865cd5d09081eee8c883734ec3387008f6",
+    "blocked-event.json": "f6b8bd3719d1a5053facfd6cc040f5a686c51f13f4377ab868e9490ff9fc6412",
+    "blocked-pause.json": "46b6706158671b667abc27003d433a5e18c871de29a458748b09aa7ca4dfa04b",
+    "blocked-source.json": "c54fb53b40a9ae2de24d4122f69de6be3c8174990f77dc0fe2326d8f9490d709",
+    "blocked-template.json": "b526d2b985cee2091674bf748dfdc305ebe3d382ed6068f8d833bfb102ea28fd",
+    "cancel-pending.json": "106c46550d2788877de5c11dd7817b9c6498e16c658b4f1dc46f1f344842378b",
+    "cancelled.json": "2995bc6078e8f74893943247de724da8e2d58511fa59084d7b153c88584109f7",
+    "event-accepted.json": "9fa875c94436fccead7f74ab22a112e865c69a20e0d7537c4179730d7f2ef032",
+    "event-intents.json": "8d1184044b0153cfbb6db2742f41d1a07166f610a53ec78b943fba8c2e9184c6",
+    "event-notifications.json": "582a0508d737296f94a5a8f661c8cda58348baa28bd11c15d32e5c27fab98d35",
+    "event-pending.json": "3a57100541ebf7cb0987cb2b2fe4f2e0394a43f9c110ce8ad37978e9bb5398c6",
+    "event-succeeded-run.json": "565922f65baa8f0035046a889877e36388b43222df06f002508d3f0aa11b48cc",
+    "event-template.json": "58561b56ae855d828546712b332dd7f21e2a402f77062e4b782232d93e1ff630",
+    "schedule-missed.json": "a5c78b31c8bfd36e3f15f98f019d27e4045dad5285ad4a2f9bd7df4cf8c32cc6",
+    "schedule-template.json": "34c7b60af00d936064db1754b5a7568af7e1162d04fa8d55eac1f2f0a4e108a4",
+    "task-kinds.json": "3d0c36d78f2943e0aa88afd76855c90370b5e29af40052b230a48bb9c7ae4c6a"
+  }
+}

@@ -68,15 +68,15 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
 def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
     plan = yaml.safe_load((ROOT / "deploy/compose.fusion.yaml").read_text(encoding="utf-8"))
     api = plan["services"]["api"]
-    assert "api_profile_v13:/runtime:ro" in api["volumes"]
+    assert "api_profile_v14:/runtime:ro" in api["volumes"]
     assert not any("init_state" in volume or ".env" in volume for volume in api["volumes"])
     assert not any(key.endswith("_DSN") for key in api["environment"])
     assert not api.get("secrets")
     assert plan["services"]["postgres"]["secrets"] == ["fusion_owner_password"]
     assert plan["services"]["checks-postgres"]["secrets"] == ["fusion_checks_owner_password"]
     assert plan["services"]["checks"]["secrets"] == ["fusion_checks_owner_password"]
-    assert "init_state_v13:/workspace/.local" in plan["services"]["init"]["volumes"]
-    assert "api_profile_v13:/runtime" in plan["services"]["init"]["volumes"]
+    assert "init_state_v14:/workspace/.local" in plan["services"]["init"]["volumes"]
+    assert "api_profile_v14:/runtime" in plan["services"]["init"]["volumes"]
     assert {
         "init_state",
         "api_profile",
@@ -104,6 +104,8 @@ def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
         "api_profile_v12",
         "init_state_v13",
         "api_profile_v13",
+        "init_state_v14",
+        "api_profile_v14",
     } <= plan["volumes"].keys()
     assert (
         "checks_postgres_data:/var/lib/postgresql/data"

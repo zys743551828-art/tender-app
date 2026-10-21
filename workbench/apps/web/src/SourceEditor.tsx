@@ -8,6 +8,7 @@ import { EditorView } from "prosemirror-view";
 import { baseKeymap, chainCommands, toggleMark } from "prosemirror-commands";
 import { keymap } from "prosemirror-keymap";
 import { history, undo, redo } from "prosemirror-history";
+import { EditorToolsDisclosure } from "./EditorToolsDisclosure";
 import {
   liftListItem,
   sinkListItem,
@@ -193,79 +194,85 @@ export function SourceEditor({
     selection?.storedMarks ?? selection?.selection.$from.marks() ?? [];
   return (
     <div className="source-editor">
-      <div className="editor-toolbar" role="toolbar" aria-label="章节正文格式">
-        <select
-          aria-label="段落样式"
-          disabled={disabled}
-          value={
-            selection?.selection.$from.parent.type.name === "heading"
-              ? String(selection.selection.$from.parent.attrs.level)
-              : "paragraph"
-          }
-          onChange={(event) =>
-            run(
-              event.target.value === "paragraph"
-                ? blockStyle()
-                : blockStyle(Number(event.target.value)),
-            )
-          }
+      <EditorToolsDisclosure>
+        <div
+          className="editor-toolbar"
+          role="toolbar"
+          aria-label="章节正文格式"
         >
-          <option value="paragraph">正文段落</option>
-          {[1, 2, 3, 4, 5, 6].map((level) => (
-            <option value={level} key={level}>
-              标题 {level}
-            </option>
-          ))}
-        </select>
-        {(
-          [
-            {
-              label: "粗体",
-              command: toggleMark(editorSchema.marks.bold),
-              active: marks.some(
-                (mark) => mark.type === editorSchema.marks.bold,
-              ),
-            },
-            {
-              label: "斜体",
-              command: toggleMark(editorSchema.marks.italic),
-              active: marks.some(
-                (mark) => mark.type === editorSchema.marks.italic,
-              ),
-            },
-            {
-              label: "无序列表",
-              command: wrapInList(editorSchema.nodes.bulletList),
-            },
-            {
-              label: "有序列表",
-              command: wrapInList(editorSchema.nodes.orderedList),
-            },
-            {
-              label: "减少缩进",
-              command: liftListItem(editorSchema.nodes.listItem),
-            },
-            {
-              label: "增加缩进",
-              command: sinkListItem(editorSchema.nodes.listItem),
-            },
-            { label: "撤销文字修改", command: undo },
-            { label: "重做文字修改", command: redo },
-          ] as const
-        ).map((item) => (
-          <button
-            type="button"
-            className="editor-tool"
+          <select
+            aria-label="段落样式"
             disabled={disabled}
-            aria-pressed={"active" in item ? item.active : undefined}
-            key={item.label}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => run(item.command)}
+            value={
+              selection?.selection.$from.parent.type.name === "heading"
+                ? String(selection.selection.$from.parent.attrs.level)
+                : "paragraph"
+            }
+            onChange={(event) =>
+              run(
+                event.target.value === "paragraph"
+                  ? blockStyle()
+                  : blockStyle(Number(event.target.value)),
+              )
+            }
           >
-            {item.label}
-          </button>
-        ))}
-      </div>
+            <option value="paragraph">正文段落</option>
+            {[1, 2, 3, 4, 5, 6].map((level) => (
+              <option value={level} key={level}>
+                标题 {level}
+              </option>
+            ))}
+          </select>
+          {(
+            [
+              {
+                label: "粗体",
+                command: toggleMark(editorSchema.marks.bold),
+                active: marks.some(
+                  (mark) => mark.type === editorSchema.marks.bold,
+                ),
+              },
+              {
+                label: "斜体",
+                command: toggleMark(editorSchema.marks.italic),
+                active: marks.some(
+                  (mark) => mark.type === editorSchema.marks.italic,
+                ),
+              },
+              {
+                label: "无序列表",
+                command: wrapInList(editorSchema.nodes.bulletList),
+              },
+              {
+                label: "有序列表",
+                command: wrapInList(editorSchema.nodes.orderedList),
+              },
+              {
+                label: "减少缩进",
+                command: liftListItem(editorSchema.nodes.listItem),
+              },
+              {
+                label: "增加缩进",
+                command: sinkListItem(editorSchema.nodes.listItem),
+              },
+              { label: "撤销文字修改", command: undo },
+              { label: "重做文字修改", command: redo },
+            ] as const
+          ).map((item) => (
+            <button
+              type="button"
+              className="editor-tool"
+              disabled={disabled}
+              aria-pressed={"active" in item ? item.active : undefined}
+              key={item.label}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => run(item.command)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </EditorToolsDisclosure>
       <ErrorNotice error={pasteError} />
       <div ref={host} className="editor-surface" />
       <p className="small-note">

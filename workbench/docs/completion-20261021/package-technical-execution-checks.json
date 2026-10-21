@@ -1,0 +1,152 @@
+{
+  "checks": [
+    {
+      "actual_postgresql": "17.11",
+      "exit_code": 0,
+      "passed": 21,
+      "path": "tests/test_package_scoring_pg.py",
+      "seconds": 94.04
+    },
+    {
+      "configuration": "BASE only; zero-budget request; paired scope/context/refusal fixture",
+      "exit_code": 0,
+      "passed": 1,
+      "path": "tests/test_package_technical_execution_pg.py",
+      "seconds": 4.58
+    },
+    {
+      "exit_code": 0,
+      "last_seconds": 1.78,
+      "passed": 25,
+      "paths": [
+        "apps/web/src/packageTechnicalExecutionProtocol.test.ts",
+        "apps/web/src/PackageTechnicalExecution.test.tsx"
+      ]
+    },
+    {
+      "exit_code": 0,
+      "files": 9,
+      "tool": "ruff check + format check"
+    },
+    {
+      "exit_code": 0,
+      "source_files": 7,
+      "tool": "mypy --follow-imports=silent"
+    },
+    {
+      "exit_code": 0,
+      "scoped_suppressions": [
+        "B404 fixed subprocess module",
+        "B603 current interpreter, fixed owned script, no shell, purpose-only environment"
+      ],
+      "source_files": 7,
+      "tool": "bandit"
+    },
+    {
+      "exit_code": 0,
+      "files": 4,
+      "tool": "eslint"
+    },
+    {
+      "exit_code": 1,
+      "note": "parallel task-trigger edits still in progress; root must rerun global checks",
+      "our_files_have_no_reported_type_errors": true,
+      "remaining_errors_outside_this_increment": [
+        "TaskPanel.test.tsx:20",
+        "TaskTemplateEditor.tsx:108",
+        "TaskTemplateEditor.tsx:352",
+        "TaskTemplateEditor.tsx:362"
+      ],
+      "tool": "whole frontend tsc -b"
+    }
+  ],
+  "commit_state": "independent uncommitted increment; integration commit recorded by root",
+  "date": "2026-10-21",
+  "docs_commit": "13bfcf194f997c68216179bec72ab657d517d734",
+  "formal_capabilities_missing": [
+    "independent complete necessary-range authority",
+    "complete original graphic/visual reading authority",
+    "current original bytes execution recheck",
+    "qualified real provider/model method",
+    "executable official aggregation",
+    "strict historical package sample and timing authority"
+  ],
+  "formal_scoring_eligible": false,
+  "http_fixture": "apps/web/src/test-fixtures/technical-execution-http.json",
+  "material_origin": "all originals, rules, rates, and model responses are synthetic",
+  "method_digest": "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996",
+  "metrics_eligible": false,
+  "paid_calls": 0,
+  "pg_receipts": [
+    {
+      "receipt": {
+        "exit_code": 0,
+        "original_io": "synthetic bounded stream; transaction-free assertion",
+        "paid_calls": 0,
+        "pg_roles": "actual isolated API and Worker logins",
+        "port": 42693,
+        "postgres": "17.11",
+        "provider_invoked": false,
+        "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+        "test": "tests/test_package_scoring_pg.py",
+        "uuid_extension": "uuid-ossp/1.1"
+      },
+      "source": "/tmp/tender-review-f06/scope-pg-w0gv4_xx/test-receipt.json"
+    },
+    {
+      "receipt": {
+        "exit_code": 0,
+        "original_io": "synthetic bounded stream; transaction-free assertion",
+        "paid_calls": 0,
+        "pg_roles": "actual isolated API and Worker logins",
+        "port": 47835,
+        "postgres": "17.11",
+        "provider_invoked": false,
+        "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+        "test": "tests/test_package_technical_execution_pg.py",
+        "uuid_extension": "uuid-ossp/1.1"
+      },
+      "source": "/tmp/tender-review-f06/scope-pg-7e6n_4us/test-receipt.json"
+    }
+  ],
+  "positive_worker_run": {
+    "applicable_rules": 2,
+    "distinct_mock_http_calls": 6,
+    "network_fallback": false,
+    "same_request_digest_per_rule": true,
+    "valid_replicates_per_rule": 3
+  },
+  "real_provider_calls": 0,
+  "recovery_implemented": [
+    "explicit pause/resume and generation fencing",
+    "reuse of recorded successful calls without retransmission",
+    "truthful usage settlement after lease expiry or source withdrawal",
+    "unknown/not_sent blocks resume and new input/job nonce"
+  ],
+  "recovery_remaining": [
+    "trusted provider receipt reconciliation for unknown state",
+    "independently authorized new attempt for proven not_sent or invalid billed response"
+  ],
+  "schema": "package-technical-execution-checks/1",
+  "scope": "actual isolated PostgreSQL owned-job and subprocess HTTP-adapter mechanism; authenticated formal refusal API; explicit frontend execution checks",
+  "source_base_commit": "65433caebe5385c4bb0c6546fe53479c2cdefd86",
+  "source_sha256": {
+    "apps/api/package_technical_execution.py": "f978ad94ce53439e297df21ccb78390539a705729b0fdab8b12ee9bd8b8a7780",
+    "apps/web/src/PackageTechnicalExecution.test.tsx": "f93186fa82772b36bdc130f7d9d9d25470a72b9be3259f9958b0817dd661e025",
+    "apps/web/src/PackageTechnicalExecution.tsx": "740d714ae0c3020d402a2d309e53ed7bfb03523efa27daff50b2bad594cadc8e",
+    "apps/web/src/packageTechnicalExecutionProtocol.test.ts": "9ed82d0bfa6cc90698fcfe74144a60a961ba86cd8d67d85e4d775a62c8b892de",
+    "apps/web/src/packageTechnicalExecutionProtocol.ts": "d63a1c75c89ccf57939a09c0c50cb271b84246bc06b498b8f7c79c7ccb2e26b5",
+    "apps/web/src/test-fixtures/technical-execution-http.json": "3d546df8ad8e4a981b179e3cc58dadc6471bfd2a5c945d90a1fc1bde3aaac718",
+    "deploy/package_scoring_worker.py": "37e2c64cad6b9a27e13844aaf06d04492f203063da642ab85056853e365e4811",
+    "deploy/sql/package-score-execution.sql": "2e92d270cbfa98e03812a23cb4221bb5af45764f77d1b5d057bfc2e2aa31c76f",
+    "docs/completion-20261021/package-technical-execution-acceptance.md": "242807eaf34522c9cf8e07216c365390ab0c572fb12d1e1e780110e5db16b2c3",
+    "packages/contracts/package_technical_execution_api.py": "06effa9f87de11a83b31fed1737c281a414a11e4e2a3f3c4aa2afbb4c8511161",
+    "packages/model_governance/package_scoring_producer.py": "8443549847286e4ea31d42d67fb3f0d9c23c853d8ff11e8bfcb30dfb5c1fba35",
+    "packages/model_governance/package_scoring_profile.py": "9279e84eb2880084cf14e072c4bf8472f326f00f97a6476490c36974864f7ecb",
+    "packages/model_governance/package_scoring_readiness.py": "d288876c7b720e14544ae578bf344f2996dee0349741d08b276752b89a1dc3d1",
+    "packages/model_governance/package_scoring_runtime.py": "51732d60c002275335b38da27220885556d6a345904aa3470d595ed58c18bc94",
+    "tests/test_package_scoring_pg.py": "27213b3efb639265316d91b5d5ca42b50c90fa5e268ee8b6c824e6ce78688738",
+    "tests/test_package_technical_execution_pg.py": "84413d0f62cd8b94c473fc6b0ad5f20f5109bd26e0acc15eda8945ff6d3d8bea"
+  },
+  "training_eligible": false
+}

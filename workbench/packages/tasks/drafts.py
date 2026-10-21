@@ -96,7 +96,7 @@ def persist(
     selected = interpretation
     if selected.section_id:
         fetch(c, "SELECT id FROM sections WHERE bid_id=%s AND id=%s", (bid, selected.section_id))
-    if selected.source_selection.mode == "exact_package_review":
+    if selected.source_selection.mode in ("exact_package_review", "exact_package_trigger"):
         from packages.tasks.package_inputs import selected as package_selected
 
         package_selected(c, bid, selected.source_selection.input.model_dump(mode="json"))
@@ -156,7 +156,8 @@ def revise(c, *, previous: TaskDraftView, configuration: TemplateRequest, comman
             "ready_for_template_form": True,
             "target_description": (
                 "所选精确投标包、冻结输入、执行准备与依赖计划"
-                if configuration.source_selection.mode == "exact_package_review"
+                if configuration.source_selection.mode
+                in ("exact_package_review", "exact_package_trigger")
                 else "所选章节"
                 if configuration.task_kind == "chapter_suggestion"
                 else "本项目当前正文与所选来源"

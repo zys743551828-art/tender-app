@@ -6,6 +6,8 @@ import type {
 } from "./contracts";
 import { ErrorNotice } from "./components";
 import { AuthoringRichSnapshot } from "./AuthoringRichSnapshot";
+import { TextChangePreview } from "./TextChangePreview";
+import { editorText } from "./editorSchema";
 import { generationPath } from "./authoringGenerationRecovery";
 import type { GenerationScope } from "./authoringGenerationRecovery";
 import {
@@ -45,6 +47,7 @@ export function AuthoringGenerationCandidate({
   const [afterReady, setAfterReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [textComparison, setTextComparison] = useState(false);
   const active = useRef(true);
   const working = useRef(false);
   const attempt = currentGenerationAttempt(section);
@@ -133,6 +136,22 @@ export function AuthoringGenerationCandidate({
           <p className="small-note">
             绿色标记对应候选修改或新增的正文节点。以下完整保留表格、图片和未修改内容，请对照核实；生成内容仍需人工判断事实与投标要求。
           </p>
+          <details
+            onToggle={(event) => setTextComparison(event.currentTarget.open)}
+          >
+            <summary>核对具体文字变化</summary>
+            {textComparison && (
+              <>
+                <p className="small-note">
+                  此处对照文字增删；表格结构和图片请核对下方完整前后稿。
+                </p>
+                <TextChangePreview
+                  before={editorText(candidate.before)}
+                  after={editorText(candidate.after)}
+                />
+              </>
+            )}
+          </details>
           <div className="generation-rich-comparison">
             <AuthoringRichSnapshot
               bidId={scope.bidId}

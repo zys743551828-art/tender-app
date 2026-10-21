@@ -13,6 +13,8 @@ const memberCommandKinds = [
   "historical-import",
   "package-submission",
   "package-official-outcome",
+  "package-retrospective",
+  "package-retrospective-knowledge",
   "document-parse",
   "submission",
   "report",
@@ -54,6 +56,13 @@ export function recordedCommandStorageKey(
 
 export function clearRecordedCommands(keepMemberId?: string) {
   for (const key of Object.keys(sessionStorage)) {
+    const draft = key.match(
+      /^tender:retrospective-(?:draft|handoff|selection):([^:]+):/,
+    );
+    if (draft && (!keepMemberId || draft[1] !== keepMemberId)) {
+      sessionStorage.removeItem(key);
+      continue;
+    }
     const match = key.match(/^tender:command(?:-record)?:([^:]+):([^:]+):/);
     if (
       match &&

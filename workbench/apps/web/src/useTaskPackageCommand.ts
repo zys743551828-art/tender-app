@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, type ApiResult } from "./api";
 import type { Bid } from "./contracts";
+import type { PackageTriggerIntentView } from "./taskTriggerContracts";
 import { exactKeys, recordObject } from "./executionInputValidation";
 import { historicalSame } from "./historicalImportProtocol";
 import { recordedCommandStorageKey } from "./recordedCommandStorage";
@@ -9,6 +10,7 @@ import {
   definitiveTaskPackageFailure,
   isTaskPackageCreationIdentity,
   validateRunACK,
+  validateTaskTriggerCancelACK,
   validateTaskPackageBasis,
   validateTaskPackagePending,
   validateTemplateACK,
@@ -23,7 +25,9 @@ import {
 
 type Result<K extends TaskPackageKind> = K extends "template"
   ? TaskPackageTemplateView
-  : TaskPackageRunView;
+  : K extends "run"
+    ? TaskPackageRunView
+    : PackageTriggerIntentView;
 type Recovery = {
   version: 1;
   scope: TaskPackageScope;
@@ -64,6 +68,14 @@ const storageFailure = () =>
   );
 export function taskPackageStorageKey(scope: TaskPackageScope) {
   assertTaskPackageScope(scope);
+  if (scope.kind === "trigger_cancel")
+    return recordedCommandStorageKey(
+      "task-package-run",
+      scope.memberId,
+      scope.bidId,
+      "trigger-cancel",
+      scope.identity,
+    );
   return recordedCommandStorageKey(
     scope.kind === "template" ? "task-package-template" : "task-package-run",
     scope.memberId,
@@ -260,12 +272,19 @@ export function useTaskPackageCommand<K extends TaskPackageKind>(
               pending,
               session.scope,
             )
-          : await validateRunACK(
-              response.data,
-              response.etag,
-              pending,
-              session.scope,
-            );
+          : pending.expected.kind === "run"
+            ? await validateRunACK(
+                response.data,
+                response.etag,
+                pending,
+                session.scope,
+              )
+            : await validateTaskTriggerCancelACK(
+                response.data,
+                response.etag,
+                pending,
+                session.scope,
+              );
       // Hashing is asynchronous too: check both component scope and the original
       // durable record after all ACK verification, before clearing or returning.
       if (!owns(raw, epoch)) return null;
@@ -367,6 +386,12 @@ export function useTaskPackageCommand<K extends TaskPackageKind>(
     Bid | TaskPackageTemplateView
   > | null> {
     if (!eligible() || session.recovery?.state === "pending") return null;
+    if (session.scope.kind === "trigger_cancel") {
+      update({
+        error: new Error("触发输入固定；请核对原触发记录，不能替换取消条件。"),
+      });
+      return null;
+    }
     const epoch = session.epoch,
       raw = session.raw;
     if (!owns(raw, epoch)) return null;

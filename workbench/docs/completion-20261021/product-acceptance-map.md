@@ -67,4 +67,14 @@
 | F10-01／02 | 双包确切修订、冻结条款、受限 Decimal 公式、方案保存与当前来源失效；见 [报价](exact-pricing-acceptance.md) | 不扩大公式类型，不推算中标概率；真实条款语义与经营结果另验 |
 | F12-01／04 | 同源语义令牌、浅／深／系统三态、记忆与浏览器三档；见 [主题](theme-acceptance.md) | 39 项交互目标继续分项推进，不能以主题统一替代全部 UI 验收 |
 
-评分执行和正式样本机制、其他整包任务、复盘流转、完整视觉交互等软件验收继续推进；最新代码和证据统一见 [PROGRESS](PROGRESS.md)。
+以下为检查点 11 的后续证据，不改写上表各早期收据的历史运行范围。
+
+| 对应工作包 | 新增实现与证据 | 仍保留的边界 |
+| --- | --- | --- |
+| F11-01／02／03 | 固定整包否决任务的资料变更／定时触发、意图取消、原生运行和通知；见 [后端](exact-package-trigger-acceptance.md) 与 [界面](exact-package-trigger-frontend-acceptance.md) | 其余三类任务仍需独立领域接线；不自动追赶错过的定时任务或换最新输入 |
+| F05／F09／F10 | 精确实交、官方记录、经营结果和两轮核查生成待核复盘，再明确转企业知识候选；见 [复盘](package-retrospective-acceptance.md) | 后验来源与缺项保留，不授正式样本、不自动推断扣分因果或发布知识 |
+| F06／F08 | 独立三次调用、目的隔离 Worker、未知费用追加对账与明确恢复；见 [执行](package-technical-execution-acceptance.md) 和 [对账](package-technical-reconciliation-acceptance.md) | 仅隔离机制验证，正式公开执行入口仍拒绝；实际供应商与完整图文／方法资格尚缺 |
+| F12-09／11／12 | 正文优先、可调助手侧栏、窄屏单任务与完整文字差异；见 [编写布局](authoring-assistant-layout-acceptance.md) 和 [文字差异](text-change-preview-acceptance.md) | 真实浏览器为明确合成 HTTP；其余 39 点及用户验收继续逐项补齐 |
+| F13-05／06 | v14 当前 51 项 SQL、228 张表，含新自动模板、触发意图和复盘的真实 PG＋S3 恢复；见 [恢复](current-schema-recovery-v14-acceptance.md) | 同集群隔离数据库；移除旧未审定研究 WIP 后与旧结构不同，不宣称生产 RPO／RTO 或在途恢复 |
+
+正式评分和严格样本、其他整包任务、完整视觉交互等软件验收继续推进；最新代码、完整冻结回归和边界见 [PROGRESS](PROGRESS.md) 与 [检查点 11 汇总](task-retrospective-layout-regression-receipt.json)。

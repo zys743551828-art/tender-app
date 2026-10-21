@@ -93,7 +93,7 @@ it("does no automatic IO and opens a fixed exact package selection only after th
     <PackageTaskTemplate {...{ ...selection, onRequestRerun: vi.fn() }} />,
   );
   expect(fetchMock).not.toHaveBeenCalled();
-  await userEvent.click(screen.getByRole("button", { name: "保存为手动任务" }));
+  await userEvent.click(screen.getByRole("button", { name: "保存为任务模板" }));
   await screen.findByRole("region", { name: "测试任务表单" });
   expect(fetchMock.mock.calls).toHaveLength(2);
   expect(
@@ -120,7 +120,7 @@ it("does no automatic IO and opens a fixed exact package selection only after th
 
 it("keeps the opened plan and mounted editor when another plan is inspected or the form is collapsed", async () => {
   const view = render(<PackageTaskTemplate {...selection} />);
-  await userEvent.click(screen.getByRole("button", { name: "保存为手动任务" }));
+  await userEvent.click(screen.getByRole("button", { name: "保存为任务模板" }));
   await screen.findByRole("region", { name: "测试任务表单" });
   const original = editor.mock.lastCall![0].initialConfiguration;
   const other = structuredClone(selection);
@@ -137,7 +137,7 @@ it("keeps the opened plan and mounted editor when another plan is inspected or t
     screen.getByRole("region", { name: "测试任务表单", hidden: true }),
   ).toBeInTheDocument();
   await userEvent.click(
-    screen.getByRole("button", { name: "继续填写手动任务模板" }),
+    screen.getByRole("button", { name: "继续填写整包任务模板" }),
   );
   expect(editor.mock.lastCall![0].initialConfiguration).toEqual(original);
   expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -148,7 +148,7 @@ it("allows saving a manual template while execution is unavailable and does not 
   kinds.items[0].exact_package_manual!.reason =
     "PACKAGE_REVIEW_EXECUTOR_NOT_READY";
   render(<PackageTaskTemplate {...selection} />);
-  await userEvent.click(screen.getByRole("button", { name: "保存为手动任务" }));
+  await userEvent.click(screen.getByRole("button", { name: "保存为任务模板" }));
   await screen.findByRole("region", { name: "测试任务表单" });
   expect(screen.getByText(/仍可保存这份手动模板/)).toBeInTheDocument();
   expect(
@@ -180,7 +180,7 @@ it.each(["wrong-bid", "wrong-etag", "promoted-qualification", "bad-digest"])(
       );
     render(<PackageTaskTemplate {...selection} />);
     await userEvent.click(
-      screen.getByRole("button", { name: "保存为手动任务" }),
+      screen.getByRole("button", { name: "保存为任务模板" }),
     );
     await waitFor(() =>
       expect(
@@ -203,7 +203,7 @@ it("ignores late initialization after the exact selection workspace unmounts", a
       }),
   );
   const view = render(<PackageTaskTemplate {...selection} />);
-  await userEvent.click(screen.getByRole("button", { name: "保存为手动任务" }));
+  await userEvent.click(screen.getByRole("button", { name: "保存为任务模板" }));
   view.unmount();
   await act(async () => {
     finishes[0](json(kinds));

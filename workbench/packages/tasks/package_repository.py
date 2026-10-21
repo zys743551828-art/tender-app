@@ -10,7 +10,7 @@ COMMAND_KIND = "task-run-manual"
 
 
 def is_package(row):
-    return row["frozen_manifest"].get("schema") == inputs.SCHEMA
+    return row["frozen_manifest"].get("schema") in (inputs.SCHEMA, inputs.TRIGGER_SCHEMA)
 
 
 def native(c, row):
@@ -24,6 +24,10 @@ def native(c, row):
         if binding is None:
             raise ValueError("missing binding")
         binding = clean(binding)
+        if frozen.get("schema") == inputs.TRIGGER_SCHEMA:
+            from packages.tasks.package_triggers import assert_run_binding
+
+            assert_run_binding(c, row, binding)
         selected = inputs.selection(frozen["configuration"])
         scope = inputs.scope(row["bid_id"], selected)
         native_row = fetch(
@@ -56,7 +60,9 @@ def native(c, row):
             or frozen["configuration_digest"] != version["digest"]
             or sha(version["config"]) != version["digest"]
             or frozen["input_digest"]
-            != inputs.input_digest(version["id"], version["digest"], frozen["context"])
+            != inputs.input_digest(
+                version["id"], version["digest"], frozen["context"], schema=frozen["schema"]
+            )
             or frozen["fee_scope"] != inputs.fee_scope(frozen["context"])
             or frozen["context"]["selection"] != selected
             or frozen["context"]

@@ -1,5 +1,5 @@
 import { BusinessResults } from "./BusinessResults";
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { api, supportsApi } from "./api";
 import type { ApiResult } from "./api";
 import type { FindingView } from "./contracts";
@@ -27,6 +27,12 @@ import { PackageSubmissionPanel } from "./PackageSubmissionPanel";
 import type { PackageSubmissionOpenRequest } from "./PackageSubmissionPanel";
 import { PackageSubmissionCard } from "./PackageSubmissionCard";
 
+const PackageRetrospectives = lazy(() =>
+  import("./PackageRetrospectives").then((module) => ({
+    default: module.PackageRetrospectives,
+  })),
+);
+
 type FormInput = {
   open: boolean;
   kind: "standard" | "offline_fact";
@@ -53,11 +59,13 @@ export function SubmissionPanel({
   memberId,
   onNavigate,
   onChanged,
+  onOpenKnowledge,
 }: {
   bidId: string;
   memberId: string;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
   onChanged: () => void;
+  onOpenKnowledge?: (knowledgeId: string) => void;
 }) {
   const available = supportsApi("GET", `/bids/${bidId}/submission-gate`);
   const packageAvailable = supportsApi(
@@ -80,6 +88,7 @@ export function SubmissionPanel({
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<SubmissionView | null>(null);
+  const [retrospectivesStarted, setRetrospectivesStarted] = useState(false);
   const [packageLocked, setPackageLocked] = useState(false);
   const [packageRequest, setPackageRequest] =
     useState<PackageSubmissionOpenRequest | null>(null);
@@ -341,6 +350,26 @@ export function SubmissionPanel({
           </button>
         )}
       </section>
+      {supportsApi("GET", `/bids/${bidId}/package-retrospectives`) && (
+        <details
+          className="panel"
+          onToggle={(event) => {
+            if (event.currentTarget.open) setRetrospectivesStarted(true);
+          }}
+        >
+          <summary>整包复盘与知识候选</summary>
+          {retrospectivesStarted && (
+            <Suspense fallback={<p role="status">正在打开整包复盘…</p>}>
+              <PackageRetrospectives
+                key={`${bidId}:${memberId}`}
+                bidId={bidId}
+                memberId={memberId}
+                onKnowledgeCreated={onOpenKnowledge}
+              />
+            </Suspense>
+          )}
+        </details>
+      )}
     </>
   );
 }

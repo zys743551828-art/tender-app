@@ -179,6 +179,16 @@ export function TaskRunCard({
                 bidId={bidId}
                 selection={exactRun.frozen_manifest.context.selection}
               />
+              {exactRun.frozen_manifest.trigger_intent_id && (
+                <p>
+                  <a
+                    className="text-link"
+                    href={`/bids/${bidId}/tasks?task_trigger=${exactRun.frozen_manifest.trigger_intent_id}`}
+                  >
+                    查看唤醒这份原输入的事件或计划
+                  </a>
+                </p>
+              )}
               {exactRun.result && (
                 <p>已保存这次声明范围内的核查结果，整体覆盖仍为部分。</p>
               )}

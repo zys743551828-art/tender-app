@@ -20,6 +20,7 @@ import { ThemePicker } from "./src/ThemePicker";
 import { useTheme } from "./src/theme";
 import { SourceEditor } from "./src/SourceEditor";
 import { editorSchema } from "./src/editorSchema";
+import { TextChangePreview } from "./src/TextChangePreview";
 import "./src/styles.css";
 const auth = {member:{id:"00000000-0000-4000-8000-000000000001",display_name:"合成验收账号",active:true},csrf_token:"synthetic-not-a-credential",expires_at:"2030-01-01T00:00:00Z"};
 window.fetch = async (url) => {
@@ -33,7 +34,7 @@ function Gallery(){
  const [value,setValue]=useState(()=>editorSchema.nodeFromJSON({type:"doc",attrs:{title:"合成章节",ordinal:1,rule_ids:[],source_refs:[]},content:[{type:"heading",attrs:{id:"00000000-0000-4000-8000-000000000002",level:2},content:[{type:"text",text:"施工安排"}]},{type:"paragraph",attrs:{id:"00000000-0000-4000-8000-000000000003"},content:[{type:"text",text:"合成界面验收：工期90日，混凝土C30。主题切换不更改正文。"}]}]}));
  return <main className="page-content" style={{maxWidth:1100}}><header className="section-heading"><div><h1>工作界面外观核对</h1><p>合成页面：真实编辑组件，状态卡与表格为视觉样例。</p></div><ThemePicker {...theme}/></header>
  <section className="panel" style={{padding:20,marginBottom:16}}><h2>可读状态与操作</h2><div style={{display:"flex",flexWrap:"wrap",gap:12,marginTop:16}}><button className="button primary">主要操作</button><button className="button secondary">次要操作</button><button className="button danger">危险操作</button></div><p className="notice error">原件未取得：请恢复连接后重试。</p><p className="notice warning">仍有条款待核对；本次输入保持原样。</p><p className="notice neutral">技术满分未知；数值结果保持空白。</p><div className="assistant-message role-assistant"><div className="assistant-message-heading">AI建议 · 尚未采用</div><p>建议核对工期和进度表；正式决定需明确确认。</p></div></section>
- <section className="panel" style={{padding:20,marginBottom:16}}><h2>章节正文</h2><SourceEditor value={value} onChange={setValue} onTarget={()=>{}}/><details><summary>核对差异与表格</summary><div className="editor-comparison"><pre>原文：90日</pre><pre>候选：90日，分三阶段</pre></div><table className="data-table"><thead><tr><th>项目</th><th>原值</th><th>来源</th></tr></thead><tbody><tr><td>工期</td><td>90</td><td>物理页1</td></tr><tr><td>技术满分</td><td>未知</td><td>尚未取得</td></tr></tbody></table></details></section>
+ <section className="panel" style={{padding:20,marginBottom:16}}><h2>章节正文</h2><SourceEditor value={value} onChange={setValue} onTarget={()=>{}}/><details><summary>核对差异与表格</summary><TextChangePreview before="工期90日。原文保留。👩🏽‍🔧" after="工期90日，分三阶段。原文保留。👩🏽‍🔧"/><table className="data-table"><thead><tr><th>项目</th><th>原值</th><th>来源</th></tr></thead><tbody><tr><td>工期</td><td>90</td><td>物理页1</td></tr><tr><td>技术满分</td><td>未知</td><td>尚未取得</td></tr></tbody></table></details></section>
  <section className="panel" style={{padding:20}}><h2>原件阅读区域</h2><p>此处只核对界面背景；不是PDF解析或版式验收。</p><div className="pdf-canvas-container"><canvas aria-label="合成纸张色样" width="260" height="100"/></div></section></main>
 }
 createRoot(document.getElementById("root")).render(location.pathname==="/gallery"?<Gallery/>:<App/>);
@@ -111,6 +112,7 @@ const receipt = {
   provider_calls: 0,
   cases: [],
   contrast: [],
+  text_comparisons: [],
 };
 try {
   browser = await chromium.launch({
@@ -159,6 +161,38 @@ try {
           path: path.join(out, `${surface}-${theme}-${width}.png`),
         });
         if (surface === "gallery") {
+          const before = page.locator(".text-change-preview__before pre"),
+            after = page.locator(".text-change-preview__after pre");
+          if (
+            (await before.textContent()) !== "工期90日。原文保留。👩🏽‍🔧" ||
+            (await after.textContent()) !== "工期90日，分三阶段。原文保留。👩🏽‍🔧"
+          )
+            throw Error("comparison text changed or truncated");
+          if (width <= 760) {
+            if ((await before.isVisible()) || !(await after.isVisible()))
+              throw Error("mobile comparison must open one proposal pane");
+            await page
+              .getByRole("button", { name: "修改前", exact: true })
+              .focus();
+            await page.keyboard.press("Enter");
+            if (!(await before.isVisible()) || (await after.isVisible()))
+              throw Error("keyboard did not switch to full original");
+            await page
+              .getByRole("button", { name: "拟修改后", exact: true })
+              .click();
+          } else if (
+            !(await before.isVisible()) ||
+            !(await after.isVisible())
+          ) {
+            throw Error("desktop must show both comparison panes");
+          }
+          receipt.text_comparisons.push({
+            width,
+            theme,
+            full_text_preserved: true,
+            mobile_single_pane: width <= 760,
+            keyboard_switch: width <= 760,
+          });
           const contrast = await page.evaluate(() => {
             const root = document.documentElement,
               css = getComputedStyle(root);

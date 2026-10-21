@@ -41,4 +41,6 @@ BASE_SQL = (
     "packages/contracts/sql/bid-package-submissions.sql",
     "packages/contracts/sql/bid-package-technical-scopes.sql",
     "packages/contracts/sql/task-package-reviews.sql",
+    "packages/contracts/sql/task-package-triggers.sql",
+    "packages/contracts/sql/package-retrospectives.sql",
 )

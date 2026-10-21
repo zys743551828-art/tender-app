@@ -359,6 +359,9 @@ export function App() {
                 onNavigate={(page, reviewId) =>
                   navigate(projectId, page, reviewId)
                 }
+                onOpenKnowledge={(knowledgeId) =>
+                  void openArea("knowledge", knowledgeId)
+                }
               />
             ) : area === "assistant" ? (
               <Suspense fallback={<Loading text="正在恢复主会话…" />}>

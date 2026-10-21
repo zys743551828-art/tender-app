@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { api, supportsApi } from "./api";
+import type { Bid } from "./contracts";
 import type {
-  Bid,
   TaskKindPage,
   TemplateRequest,
   TemplateView,
-} from "./contracts";
+} from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import {
   packageTaskCapability,
@@ -14,6 +14,7 @@ import {
 import type { PackageTaskSelectionProps } from "./packageTaskTemplateSelection";
 import { usePackageScopeGuard } from "./packageScopeGuard";
 import { TaskTemplateEditor } from "./TaskTemplateEditor";
+import { ExactPackageTaskDraftStart } from "./ExactPackageTaskDraftStart";
 
 /** Keep the explicitly opened selection stable while a different plan is inspected. */
 export default function PackageTaskTemplate(props: PackageTaskSelectionProps) {
@@ -27,10 +28,10 @@ export default function PackageTaskTemplate(props: PackageTaskSelectionProps) {
     `/bids/${props.scope.bidId}/task-definitions`,
   );
   return (
-    <section className="package-review__selected" aria-label="保存整包手动任务">
-      <h4>把这份输入保存为手动任务</h4>
+    <section className="package-review__selected" aria-label="保存整包任务模板">
+      <h4>把这份输入保存为任务模板</h4>
       <p>
-        模板记录已选整包修订、冻结输入和依赖计划。保存后，可在“可复用任务”中明确启动；保存本身不运行核查。
+        模板记录已选整包修订、冻结输入和依赖计划，默认手动。表单内可明确选择事件或定时；保存本身不运行核查。
       </p>
       <button
         type="button"
@@ -50,7 +51,7 @@ export default function PackageTaskTemplate(props: PackageTaskSelectionProps) {
           setOpen(true);
         }}
       >
-        {session ? "继续填写手动任务模板" : "保存为手动任务"}
+        {session ? "继续填写整包任务模板" : "保存为任务模板"}
       </button>
       {!available && (
         <p className="muted">当前服务尚未提供任务模板保存接口。</p>
@@ -78,7 +79,7 @@ export default function PackageTaskTemplate(props: PackageTaskSelectionProps) {
           <strong>已保存模板：{saved.configuration.name}</strong>
           <p>此操作没有启动核查。模板版本：{saved.revision}。</p>
           <a className="text-link" href={`/bids/${props.scope.bidId}/tasks`}>
-            前往可复用任务查看并手动运行
+            前往可复用任务核对模板与运行
           </a>
         </div>
       )}
@@ -169,6 +170,13 @@ function TemplateSession({
             initialConfiguration={ready.configuration}
             onSaved={onSaved}
             onClose={onClose}
+          />
+          <ExactPackageTaskDraftStart
+            bidId={selection.scope.bidId}
+            memberId={selection.scope.memberId}
+            identity={identity}
+            configuration={ready.configuration}
+            etag={ready.etag}
           />
         </>
       )}

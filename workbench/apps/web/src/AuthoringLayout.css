@@ -1,0 +1,125 @@
+.authoring-workspace > .panel.authoring-draft-management {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+.authoring-management-summary {
+  cursor: pointer;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+.authoring-management-summary > span:last-child {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  margin-inline-start: 12px;
+}
+.authoring-management-content {
+  margin-top: 16px;
+}
+.authoring-task-toolbar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+.authoring-task-toolbar > span {
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.authoring-task-toolbar > button {
+  flex-shrink: 0;
+}
+.authoring-columns.authoring-columns--body-first {
+  grid-template-columns: minmax(0, 1fr);
+}
+.authoring-columns.authoring-columns--directory {
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+}
+.authoring-directory[hidden] {
+  display: none;
+}
+.authoring-directory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.authoring-directory-heading > button {
+  flex-shrink: 0;
+}
+.authoring-directory.authoring-directory--compact:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  width: 100%;
+  height: 100dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 18px;
+  background: var(--card);
+}
+.authoring-columns--body-first .chapter-writing {
+  width: 100%;
+  min-width: 0;
+}
+.authoring-columns--body-first .editor-save-status {
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.authoring-columns--body-first .editor-title-label {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  margin-block: 12px;
+}
+.authoring-columns--body-first .chapter-writing input,
+.authoring-columns--body-first .chapter-writing select,
+.authoring-directory input,
+.authoring-directory select {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .authoring-workspace > .panel.authoring-draft-management {
+    padding: 12px;
+  }
+  .authoring-management-summary > span:last-child {
+    font-size: 12px;
+    margin-inline-start: 8px;
+  }
+  .project-page--authoring > .page-heading h1 {
+    font-size: 18px;
+  }
+  .authoring-task-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .authoring-columns--body-first .chapter-writing.panel {
+    padding: 12px;
+  }
+}
+.project-page.project-page--authoring {
+  padding-block-start: 18px;
+}
+.project-page--authoring > .back-link {
+  margin-bottom: 10px;
+}
+.project-page--authoring > .page-heading {
+  margin-bottom: 14px;
+}
+.project-page--authoring > .page-heading .eyebrow {
+  display: none;
+}
+.project-page--authoring > .page-heading h1 {
+  font-size: 22px;
+  line-height: 1.35;
+}
+.project-page--authoring .project-meta {
+  margin-top: 8px;
+}

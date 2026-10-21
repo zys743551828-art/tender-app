@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import type { Bid, AssistantSourcePage } from "./contracts";
 import type {
-  Bid,
-  AssistantSourcePage,
   TaskDraftView,
   TaskDraftPage,
   TaskDraftRequest,
   TemplateRequest,
   TemplateView,
-} from "./contracts";
+  TaskKindPage,
+} from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import { knowledgeStorageKey, useKnowledgeInput } from "./knowledgeStorage";
 import { ResourceState } from "./ResourceState";
@@ -17,8 +17,17 @@ import { useTaskPage } from "./useTaskPage";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { TaskTemplateEditor } from "./TaskTemplateEditor";
 import { TaskTemplateCard } from "./TaskTemplateCard";
-import { newTaskConfiguration } from "./taskState";
-import type { TaskKindPage } from "./contracts";
+import {
+  isExactPackageTask,
+  newTaskConfiguration,
+  sameTaskPackageSource,
+} from "./taskState";
+import {
+  normalizeTaskPackageRequest,
+  validateTaskPackageTemplate,
+} from "./taskPackageProtocol";
+import { historicalSame } from "./historicalImportProtocol";
+import { jsonDigest } from "./editorSchema";
 
 export function TaskDraftPanel({
   bidId,
@@ -263,12 +272,70 @@ function TaskDraftDetail({
     resource.data.created_by === memberId
       ? resource.data
       : undefined;
-  const edit = useRecordedCommand(`task-draft:${memberId}:${bidId}:${id}:edit`);
-  const save = useRecordedCommand(`task-draft:${memberId}:${bidId}:${id}:save`);
-  const [failure, setFailure] = useState<unknown>(null);
-  const [ack, setAck] = useKnowledgeInput<{ etag: string } | null>(
-    knowledgeStorageKey(memberId, id) + "task-draft-save-ack",
+  const editExpected = useRef<{ input: TemplateRequest; etag: string } | null>(
     null,
+  );
+  const edit = useRecordedCommand(
+    `task-draft:${memberId}:${bidId}:${id}:edit`,
+    async (reply) => {
+      const original = editExpected.current;
+      if (original && isExactPackageTask(original.input)) {
+        const item = reply.data as TaskDraftView;
+        const revision = original.etag.match(
+          new RegExp(`^"task-draft:${id}:(\\d+)"$`),
+        );
+        if (
+          !revision ||
+          item.id !== id ||
+          item.bid_id !== bidId ||
+          item.created_by !== memberId ||
+          item.revision !== Number(revision[1]) + 1 ||
+          reply.etag !== `"task-draft:${id}:${item.revision}"` ||
+          !historicalSame(
+            normalizeTaskPackageRequest(draftConfiguration(item)),
+            normalizeTaskPackageRequest(original.input),
+          ) ||
+          item.configuration_digest !== (await jsonDigest(item.interpretation))
+        )
+          throw new Error(
+            "整包草案更新回执与原请求不一致，保留同一次更新请求。",
+          );
+      }
+    },
+  );
+  if (edit.pending)
+    editExpected.current = {
+      input: edit.pending.body as TemplateRequest,
+      etag: edit.pending.etag,
+    };
+  const [failure, setFailure] = useState<unknown>(null);
+  const [ack, setAck] = useKnowledgeInput<{
+    etag: string;
+    configuration?: TemplateRequest;
+  } | null>(knowledgeStorageKey(memberId, id) + "task-draft-save-ack", null);
+  const ackRef = useRef(ack);
+  ackRef.current = ack;
+  const save = useRecordedCommand(
+    `task-draft:${memberId}:${bidId}:${id}:save`,
+    async (result) => {
+      const original = ackRef.current?.configuration;
+      if (original && isExactPackageTask(original)) {
+        const item = await validateTaskPackageTemplate(
+          result.data,
+          result.etag,
+          bidId,
+        );
+        if (
+          item.revision !== 1 ||
+          item.paused ||
+          !historicalSame(
+            item.configuration,
+            normalizeTaskPackageRequest(original),
+          )
+        )
+          throw new Error("原草案保存的整包输入或模板回执不一致，保留原请求。");
+      }
+    },
   );
   const [intent, setIntent] = useKnowledgeInput<"draft" | "template">(
     knowledgeStorageKey(memberId, id) + "task-draft-intent",
@@ -276,6 +343,7 @@ function TaskDraftDetail({
   );
   async function saveAck(
     value: { data: TaskDraftView; etag: string | null } | null,
+    expected?: TemplateRequest,
   ) {
     if (!value) return;
     const current = value.data;
@@ -291,11 +359,25 @@ function TaskDraftDetail({
       !current.interpretation.ready_for_template_form
     )
       throw new Error("仍有待明确项；输入可继续编辑，未保存模板。");
-    setAck({ etag: value.etag });
+    const configuration = draftConfiguration(current);
+    if (isExactPackageTask(configuration)) {
+      if (
+        !expected ||
+        !historicalSame(
+          normalizeTaskPackageRequest(expected),
+          normalizeTaskPackageRequest(configuration),
+        ) ||
+        current.configuration_digest !==
+          (await jsonDigest(current.interpretation))
+      )
+        throw new Error("原草案更新回执与明确整包输入不一致，未继续保存模板。");
+    }
+    const accepted = { etag: value.etag, configuration };
+    setAck(accepted);
+    ackRef.current = accepted;
     const result = await save.run<TemplateView>(`${path}/save`, {}, value.etag);
     if (result?.data.bid_id === bidId) {
       void resource.reload();
-      onSaved();
       return result.data;
     }
     void resource.reload();
@@ -304,13 +386,14 @@ function TaskDraftDetail({
     setIntent("template");
     setFailure(null);
     try {
+      editExpected.current = { input, etag: ack?.etag ?? resource.etag ?? "" };
       const result = await edit.run<TaskDraftView>(
         path,
         input,
         ack?.etag ?? resource.etag ?? "",
         "PUT",
       );
-      return await saveAck(result);
+      return await saveAck(result, input);
     } catch (error) {
       setFailure(error);
     }
@@ -319,6 +402,7 @@ function TaskDraftDetail({
     setIntent("draft");
     setFailure(null);
     try {
+      editExpected.current = { input, etag: ack?.etag ?? resource.etag ?? "" };
       const value = await edit.run<TaskDraftView>(
         path,
         input,
@@ -332,6 +416,16 @@ function TaskDraftDetail({
           !value.etag
         )
           throw new Error("草案保存身份不一致。");
+        if (
+          isExactPackageTask(input) &&
+          (!historicalSame(
+            normalizeTaskPackageRequest(draftConfiguration(value.data)),
+            normalizeTaskPackageRequest(input),
+          ) ||
+            value.data.configuration_digest !==
+              (await jsonDigest(value.data.interpretation)))
+        )
+          throw new Error("原草案的整包输入回执不一致，输入保留。");
         setAck({ etag: value.etag });
         void resource.reload();
       }
@@ -347,6 +441,17 @@ function TaskDraftDetail({
       !current.etag
     )
       throw new Error("草案基准身份不一致。");
+    if (
+      draft &&
+      isExactPackageTask(draftConfiguration(draft)) &&
+      !sameTaskPackageSource(
+        draftConfiguration(draft),
+        draftConfiguration(current.data),
+      )
+    )
+      throw new Error(
+        "当前草案的原输入已改变，保留本地输入，不自动采用新来源。",
+      );
     setAck({ etag: current.etag });
     edit.clearError();
     save.clearError();
@@ -354,15 +459,8 @@ function TaskDraftDetail({
     return current.etag;
   }
   const proposal = draft?.interpretation;
-  const initial: TemplateRequest = proposal
-    ? {
-        name: proposal.name,
-        task_kind: proposal.task_kind ?? "supplement_impact",
-        instructions: proposal.instructions,
-        section_id: proposal.section_id,
-        source_selection: proposal.source_selection,
-        trigger: proposal.trigger,
-      }
+  const initial: TemplateRequest = draft
+    ? draftConfiguration(draft)
     : newTaskConfiguration();
   return (
     <section className="task-draft-detail">
@@ -454,7 +552,14 @@ function TaskDraftDetail({
                 void edit
                   .retry<TaskDraftView>()
                   .then(async (value) => {
-                    if (intent === "template") return saveAck(value);
+                    if (intent === "template") {
+                      const result = await saveAck(
+                        value,
+                        edit.pending?.body as TemplateRequest | undefined,
+                      );
+                      if (result) onSaved();
+                      return;
+                    }
                     if (value?.data.id === id && value.etag) {
                       setAck({ etag: value.etag });
                       void resource.reload();
@@ -470,7 +575,8 @@ function TaskDraftDetail({
             <button
               className="button secondary"
               onClick={() =>
-                void save.retry<TemplateView>().then(() => {
+                void save.retry<TemplateView>().then((value) => {
+                  if (!value) return;
                   void resource.reload();
                   onSaved();
                 })
@@ -483,4 +589,16 @@ function TaskDraftDetail({
       )}
     </section>
   );
+}
+
+function draftConfiguration(draft: TaskDraftView): TemplateRequest {
+  const proposal = draft.interpretation;
+  return {
+    name: proposal.name,
+    task_kind: proposal.task_kind ?? "supplement_impact",
+    instructions: proposal.instructions,
+    section_id: proposal.section_id,
+    source_selection: proposal.source_selection,
+    trigger: proposal.trigger,
+  };
 }

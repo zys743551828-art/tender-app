@@ -20,6 +20,7 @@ import {
 } from "./PackageTechnicalScopeSnapshot";
 import { technicalPartLabel } from "./packageTechnicalScopeLabels";
 import { PackageTechnicalEligibility } from "./PackageTechnicalEligibility";
+import { PackageTechnicalExecution } from "./PackageTechnicalExecution";
 import {
   technicalContextPath,
   technicalDefaultRequest,
@@ -529,6 +530,7 @@ function TechnicalScopeWorkspace({
             title="本次已保存范围"
           />
           <PackageTechnicalEligibility saved={command.result} />
+          <PackageTechnicalExecution saved={command.result} />
         </div>
       )}
       {historyOpen && (
@@ -578,6 +580,7 @@ function TechnicalScopeWorkspace({
                 title="历史技术范围"
               />
               <PackageTechnicalEligibility saved={historical} />
+              <PackageTechnicalExecution saved={historical} />
             </>
           )}
         </section>

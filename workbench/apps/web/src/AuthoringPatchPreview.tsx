@@ -17,6 +17,7 @@ import {
 } from "./richEditorSchema";
 import type { EditorDocument } from "./richEditorSchema";
 import { useCommand } from "./useCommand";
+import { TextChangePreview } from "./TextChangePreview";
 
 function findNode(document: EditorDocument, id: string): AuthoringNode | null {
   function visit(nodes: AuthoringNode[]): AuthoringNode | null {
@@ -191,18 +192,11 @@ export function AuthoringPatchPreview({
         )}
         {preview && (
           <>
-            <div className="editor-comparison">
-              <div>
-                <strong>
-                  修改前 · 草稿修订 {preview.value.base_draft_revision}
-                </strong>
-                <pre>{editorText(preview.value.before)}</pre>
-              </div>
-              <div>
-                <strong>拟修改后 · 尚未应用</strong>
-                <pre>{editorText(preview.value.after)}</pre>
-              </div>
-            </div>
+            <TextChangePreview
+              before={editorText(preview.value.before)}
+              after={editorText(preview.value.after)}
+              beforeLabel={`修改前 · 草稿修订 ${preview.value.base_draft_revision}`}
+            />
             <p className="small-note">
               仅改变这次段落及明确关联的来源；规则、事实、来源效力仍由服务端在应用时再次核验。
             </p>

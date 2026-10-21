@@ -25,7 +25,9 @@ def receipt(c, bid, key):
     ).fetchone()
 
 
-def accept(c, *, bid, definition, actor, trigger, key, event_id=None, scheduled_at=None):
+def accept(
+    c, *, bid, definition, actor, trigger, key, event_id=None, scheduled_at=None, schedule_id=None
+):
     old = receipt(c, bid, key)
     if old:
         return old["payload"]
@@ -45,25 +47,42 @@ def accept(c, *, bid, definition, actor, trigger, key, event_id=None, scheduled_
         return cmd.replay["body"]
     try:
         with c.transaction():
-            value, reused = runs.dispatch(
-                c,
-                bid=bid,
-                definition=definition,
-                actor=actor,
-                command=cmd.id,
-                trigger=trigger,
-                event_id=event_id,
-                scheduled_at=scheduled_at,
-            )
-        outcome = {
-            "key": key,
-            "trigger": trigger,
-            "event_id": str(event_id) if event_id else None,
-            "run_id": value["id"],
-            "reused": reused,
-            "state": "accepted",
-            "error_code": None,
-        }
+            from packages.tasks import package_inputs, package_triggers
+
+            configured = templates.current(c, bid, definition)
+            if package_inputs.is_trigger(configured["config"]["definition"]):
+                outcome = package_triggers.register(
+                    c,
+                    bid=bid,
+                    definition=definition,
+                    actor=actor,
+                    command=cmd.id,
+                    trigger=trigger,
+                    key=key,
+                    event_id=event_id,
+                    scheduled_at=scheduled_at,
+                    schedule_id=schedule_id,
+                )
+            else:
+                value, reused = runs.dispatch(
+                    c,
+                    bid=bid,
+                    definition=definition,
+                    actor=actor,
+                    command=cmd.id,
+                    trigger=trigger,
+                    event_id=event_id,
+                    scheduled_at=scheduled_at,
+                )
+                outcome = {
+                    "key": key,
+                    "trigger": trigger,
+                    "event_id": str(event_id) if event_id else None,
+                    "run_id": value["id"],
+                    "reused": reused,
+                    "state": "accepted",
+                    "error_code": None,
+                }
     except DomainError as error:
         outcome = {
             "key": key,
@@ -174,6 +193,15 @@ def tick(c, *, bid, limit=50):
                 "definition_version_id": str(definition["version_id"]),
                 **clean(recovery),
             }
+            from packages.tasks.package_inputs import is_trigger
+
+            if is_trigger(definition["config"]["definition"]):
+                value["run_current_once_ref"] = None
+                value["reconfirm_template_ref"] = (
+                    f"/api/v1/bids/{bid}/task-definitions/{row['definition_id']}"
+                )
+                if value["missed"]:
+                    value["missed"]["resolution"] = "skipped_reconfirm_exact_input"
             audit(c, owner(c, bid, definition["id"]), bid, "task.schedule_skipped", value)
             outcomes.append(value)
         else:
@@ -192,6 +220,7 @@ def tick(c, *, bid, limit=50):
                 trigger="schedule",
                 key=key,
                 scheduled_at=due,
+                schedule_id=row["id"],
             )
             if value["run_id"]:
                 operation = fetch(

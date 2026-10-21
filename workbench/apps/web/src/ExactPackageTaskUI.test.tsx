@@ -140,7 +140,7 @@ it("saves the full exact source unchanged, stays manual and does not read single
     props = editorProps();
   render(<TaskTemplateEditor {...props} />);
   expect(screen.getByLabelText("任务类型")).toHaveAttribute("readonly");
-  expect(screen.getByLabelText("触发方式")).toHaveValue("仅手动运行");
+  expect(screen.getByLabelText("触发方式")).toHaveValue("manual");
   expect(
     screen.queryByRole("combobox", { name: "来源范围" }),
   ).not.toBeInTheDocument();
@@ -190,8 +190,10 @@ it("reports only changed input as dirty and releases it after explicit reset or 
     screen.getByRole("button", { name: "保存任务模板，不运行" }),
   );
   await waitFor(() => expect(props.onSaved).toHaveBeenCalledTimes(1));
-  expect(screen.getByLabelText("真实任务导航状态")).toHaveTextContent(
-    '"pending":false',
+  await waitFor(() =>
+    expect(screen.getByLabelText("真实任务导航状态")).toHaveTextContent(
+      '"pending":false',
+    ),
   );
 });
 

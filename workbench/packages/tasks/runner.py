@@ -6,10 +6,11 @@ import signal
 import threading
 from uuid import UUID
 
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from packages.domain.runtime import DomainError, assert_role, connection, uid
-from packages.tasks import coordinator
+from packages.tasks import coordinator, package_triggers
 from packages.tasks.review_runtime import configure_review_guard
 
 configure_review_guard()
@@ -19,8 +20,23 @@ STOP = threading.Event()
 
 def cycle(after=None, limit=50):
     with connection() as c:
+        pending = sql.SQL(
+            " OR EXISTS(SELECT FROM design.task_package_trigger_intents i "
+            "WHERE i.bid_id=b.id AND NOT EXISTS(SELECT FROM design.task_package_trigger_resolutions r WHERE r.intent_id=i.id))"
+            if package_triggers.available(c)
+            else ""
+        )
         rows = c.execute(
-            "SELECT b.id FROM bids b JOIN bid_profiles p ON p.bid_id=b.id WHERE p.archived_at IS NULL AND p.phase NOT IN('closed','terminated') AND (%s::uuid IS NULL OR b.id>%s::uuid) AND EXISTS(SELECT FROM task_definitions d WHERE d.bid_id=b.id) ORDER BY b.id LIMIT %s",
+            sql.SQL(
+                "SELECT b.id FROM bids b JOIN bid_profiles p ON p.bid_id=b.id WHERE "
+                "((p.archived_at IS NULL AND p.phase NOT IN('closed','terminated')){} "
+                "OR EXISTS(SELECT FROM task_runs t JOIN operations o ON o.id=t.operation_id "
+                "WHERE t.bid_id=b.id AND t.frozen_manifest->>'schema' IN('task-package-run/1','task-package-trigger-run/1') "
+                "AND NOT EXISTS(SELECT FROM audit_entries a WHERE a.bid_id=b.id AND a.event_type='task.notification' "
+                "AND a.payload->>'run_id'=t.id::text AND a.payload->>'state'=CASE WHEN EXISTS(SELECT FROM model_calls mc "
+                "WHERE mc.operation_id=o.id AND mc.state IN('reserved','unknown')) THEN 'reconciliation_required' ELSE o.state::text END))) "
+                "AND (%s::uuid IS NULL OR b.id>%s::uuid) AND EXISTS(SELECT FROM task_definitions d WHERE d.bid_id=b.id) ORDER BY b.id LIMIT %s"
+            ).format(pending),
             (after, after, limit + 1),
         ).fetchall()
     processed = errors = 0
@@ -29,6 +45,13 @@ def cycle(after=None, limit=50):
             with connection() as c:
                 coordinator.tick(c, bid=row["id"])
                 coordinator.pending_events(c, bid=row["id"])
+        except DomainError:
+            errors += 1
+        # The acceptance transaction is committed and closed before original IO.
+        # Already accepted intents recover once even if a later closure blocks them.
+        package_triggers.drain(row["id"])
+        try:
+            with connection() as c:
                 # Per-bid notification batches are bounded; resume via recorded cursor audit.
                 cursor = c.execute(
                     "SELECT payload FROM audit_entries WHERE bid_id=%s AND event_type='task.notification_scan_cursor' ORDER BY (payload->>'epoch')::bigint DESC LIMIT 1",

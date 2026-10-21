@@ -130,6 +130,21 @@ def test_legacy_source_bytes_and_unselected_draft_stay_unchanged():
     assert draft.target_description == "本项目当前正文与所选来源"
 
 
+@pytest.mark.parametrize("mode", ["material_updated", "schedule"])
+def test_explicit_trigger_mode_preserves_the_same_exact_selection(package_case, mode):
+    data = package_case["template"].model_dump(mode="json")
+    data["source_selection"]["mode"] = "exact_package_trigger"
+    with pytest.raises(ValidationError):
+        TemplateRequest.model_validate(data)
+    data["trigger"] = {"mode": mode, **({"cron": "0 9 * * *"} if mode == "schedule" else {})}
+    accepted = TemplateRequest.model_validate(data).model_dump(mode="json")
+    assert package_inputs.selection(accepted) == package_case["selected"]
+    assert accepted["source_selection"]["mode"] == "exact_package_trigger"
+    accepted["trigger"]["mode"] = "unknown"
+    with pytest.raises(DomainError):
+        package_inputs.selection(accepted)
+
+
 @pytest.mark.parametrize("source", [{}, {"version_ids": []}])
 def test_legacy_source_with_omitted_mode_keeps_identical_canonical_request(source):
     base = {"name": "旧任务", "task_kind": "denial_check", "instructions": "核对否决项"}
@@ -271,6 +286,7 @@ def test_actual_task_contract_exposes_union_and_truthful_manual_capability():
         "current_project",
         "selected_versions",
         "exact_package_review",
+        "exact_package_trigger",
     }
     assert schemas["SourceSelection"]["properties"].keys() == {"mode", "version_ids"}
     assert len(schemas["PackageReviewSelection"]["required"]) == 10

@@ -62,6 +62,11 @@ class ExactPackageReviewSelection(StrictModel):
     input: PackageReviewSelection
 
 
+class ExactPackageTriggerSelection(StrictModel):
+    mode: Literal["exact_package_trigger"]
+    input: PackageReviewSelection
+
+
 def legacy_source_default(value):
     """Keep the original omitted-mode request semantics before union dispatch."""
     if isinstance(value, dict) and isinstance(value.get("source_selection"), dict):
@@ -76,9 +81,9 @@ class TemplateRequest(StrictModel):
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     instructions: str = Field(min_length=1, max_length=8000, pattern=r"\S")
     section_id: UUID | None = None
-    source_selection: SourceSelection | ExactPackageReviewSelection = Field(
-        default_factory=SourceSelection, discriminator="mode"
-    )
+    source_selection: (
+        SourceSelection | ExactPackageReviewSelection | ExactPackageTriggerSelection
+    ) = Field(default_factory=SourceSelection, discriminator="mode")
     trigger: Trigger = Field(default_factory=Trigger)
 
     @model_validator(mode="before")
@@ -94,6 +99,10 @@ class TemplateRequest(StrictModel):
             self.task_kind != "denial_check" or self.trigger.mode != "manual"
         ):
             raise ValueError("精确整包输入仅用于手动否决及强制项范围核查，不自动触发或用于其他任务")
+        if isinstance(self.source_selection, ExactPackageTriggerSelection) and (
+            self.task_kind != "denial_check" or self.trigger.mode == "manual"
+        ):
+            raise ValueError("整包自动触发须显式选择事件或定时，只唤醒已保存的确切否决核查输入")
         return self
 
 
@@ -186,6 +195,16 @@ class PackageTaskManualCapabilities(StrictModel):
     automatic_input_selection: Literal[False]
 
 
+class PackageTaskTriggerCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_trigger"]
+    triggers: list[Literal["material_updated", "schedule"]]
+    requires_independent_runner: Literal[True]
+    automatic_input_selection: Literal[False]
+    automatic_catchup_runs: Literal[0]
+
+
 class TaskKindView(StrictModel):
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     name: str
@@ -203,6 +222,7 @@ class TaskKindView(StrictModel):
     formal_decisions_allowed: Literal[False] | None = None
     automatic_apply: Literal[False] | None = None
     exact_package_manual: PackageTaskManualCapabilities | None = None
+    exact_package_triggers: PackageTaskTriggerCapabilities | None = None
 
 
 class TaskKindPage(StrictModel):
@@ -235,13 +255,14 @@ class MissedTaskSchedule(StrictModel):
     through: datetime
     count: None
     count_status: Literal["not_enumerated"]
-    resolution: Literal["skipped_run_current_once_available"]
+    resolution: Literal["skipped_run_current_once_available", "skipped_reconfirm_exact_input"]
 
 
 class TaskScheduleRecoveryPayload(StrictModel):
     schedule_id: UUID
     definition_id: UUID
-    run_current_once_ref: str
+    run_current_once_ref: str | None
+    reconfirm_template_ref: str | None = None
     definition_version_id: UUID
     next_fire_at: datetime
     missed: MissedTaskSchedule | None
@@ -258,3 +279,31 @@ class TaskScheduleRecoveryPage(StrictModel):
     items: list[TaskScheduleRecovery]
     next_after: UUID | None
     run_current_once_supported: Literal[True]
+
+
+class PackageTriggerIntentView(StrictModel):
+    id: UUID
+    bid_id: UUID
+    definition_id: UUID
+    definition_version_id: UUID
+    trigger: Literal["material_updated", "schedule"]
+    trigger_event_id: UUID | None
+    scheduled_at: datetime | None
+    created_at: datetime
+    selection: PackageReviewSelection
+    input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    state: Literal["pending", "accepted", "blocked", "cancelled"]
+    error_code: str | None
+    run_id: UUID | None
+    run_ref: str | None
+    reused: bool
+    automatic_input_selection: Literal[False]
+
+
+class PackageTriggerIntentPage(StrictModel):
+    items: list[PackageTriggerIntentView]
+    next_after: UUID | None
+
+
+class CancelPackageTriggerIntent(StrictModel):
+    reason: str = Field(min_length=1, max_length=1000, pattern=r"\S")

@@ -1,0 +1,1363 @@
+{
+  "notice": "Explicit synthetic originals and synthetic model HTTP only; not real scoring evidence.",
+  "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+  "member_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+  "selection": {
+    "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+    "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+    "outcome_missing_reason": null,
+    "business_result_id": null,
+    "business_result_missing_reason": "Synthetic award notice is not yet available",
+    "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+    "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+    "reviews_missing_reason": null
+  },
+  "preview": {
+    "manifest": {
+      "version": "package-retrospective-preview/1",
+      "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+      "selection": {
+        "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+        "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+        "outcome_missing_reason": null,
+        "business_result_id": null,
+        "business_result_missing_reason": "Synthetic award notice is not yet available",
+        "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+        "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+        "reviews_missing_reason": null
+      },
+      "submission": {
+        "id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+        "kind": "offline_fact",
+        "submitted_at": "2026-10-21T10:02:41.010986Z",
+        "recorded_at": "2026-10-21T10:02:41.243870Z",
+        "current": true,
+        "identity": {
+          "lot": "same visible lot",
+          "digest": "5b5fb4324d75e1ca0130e0e4e598d16e16289fa90cdd070152dd9c5f191a74eb",
+          "lot_id": "fa9afb12-df00-4a4f-bc9d-389726bc8b2d",
+          "region": null,
+          "round_id": "170b682d-240e-40f1-b3f9-0f3089322aaf",
+          "round_no": 1,
+          "bidder_id": "2391cf53-7f22-4b25-80b7-7599419981fc",
+          "bidder_name": "synthetic bidder",
+          "authority_id": "bf8038cd-3358-4709-ab8e-8a9b9f38a15e",
+          "binding_status": "confirmed",
+          "engineering_type": null,
+          "identity_version": "bid-identity/2",
+          "engineering_title": "synthetic project",
+          "engineering_project_id": "44d4acb2-0bb0-4005-80d6-dd83d5ae12f2"
+        },
+        "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+        "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+        "package_digest": "d8d77b17d4d22d3369481e39647f415dab1a41b0836cf95c95936aac4e173190",
+        "binding_digest": "0e858982d85411f6d5f6297a8c551eac1508072f3b9ac4d6fbf3df78393b1b4f",
+        "registration_risk_digest": "b30d965f6c3ded357710825f65dc2558cf936eaf383430fbc2df01bf61df43b9",
+        "registration_assessed_at": "2026-10-21T10:02:41.221422Z",
+        "risk_resolution_assessed": false
+      },
+      "outcome": {
+        "id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+        "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+        "score_kind": "technical_total",
+        "value": "0",
+        "maximum": "60",
+        "source_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+        "known_at": "2026-10-21T06:02:41.375816-04:00",
+        "supersedes_id": null,
+        "verification": "verified",
+        "verification_revision": 1,
+        "verification_id": "5b926c7e-7113-4803-b8fb-b0f9b6ad2317",
+        "verification_details_digest": "16efdcff7c1556e1aba406f4a010b624c93964e1c9021f59b7aa99b606500390",
+        "aggregation": "Technical total stated on original page",
+        "published_at": "2026-10-21T06:02:41.375816-04:00",
+        "evidence_refs": [
+          {
+            "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+            "evidence_id": "af08b64a-bf64-4cbe-bbe7-31190838be70",
+            "physical_page": 1,
+            "quote": "Synthetic official technical total: 0 points out of 60."
+          }
+        ],
+        "current": true,
+        "association_reasons": []
+      },
+      "business_result": null,
+      "comparison": {
+        "manifest": {
+          "version": "package-review-comparison/1",
+          "kind": "declared_scope_review_comparison",
+          "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "match_policy": "exact_requirement_id_and_definition_digests/1",
+          "left": {
+            "id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+            "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+            "created_at": "2026-10-21T10:02:39.453416Z",
+            "scope": {
+              "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+              "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+              "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+              "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+            },
+            "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+            "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+            "execution_input_id": "dd68b3e8-0903-4ae4-a722-813744472b90",
+            "execution_input_digest": "f2be2f13557f2736b1778a9202f171ab89b2224283ee2b2c0a6f9e1fc1483c9d",
+            "execution_digest": "d7179c9608a4f06e2312a974c82d5194b37ebf6e7347f7482fa24b0e54f0f073",
+            "input_digest": "27616d32ff49aeff8fd28f92ffd25ccbfc6466ac816d56c011be860b6a3657c1",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "dependency_plan_id": "4c5a4f9d-7fc6-436f-b0e8-b3313aca0f87",
+            "dependency_plan_digest": "6d2f3157414d0d5f3e78e16ac41b1ab97cb48dba305fa65aec978639068723f2",
+            "result_digest": "33b1278c1ca50766b697c35b968e516388839e9ab9c320f3795735f7e97e3074",
+            "requirement_count": 1,
+            "matrix_coverage": "complete",
+            "overall_coverage": "partial",
+            "human_heads_digest": "816702be9a9cb04193955619512aeba8971762ecd57c0e0a1d012f84d691cfcd"
+          },
+          "right": {
+            "id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+            "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+            "created_at": "2026-10-21T10:02:40.281067Z",
+            "scope": {
+              "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+              "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+              "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+              "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+            },
+            "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+            "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+            "execution_input_id": "a0887921-ff4f-4133-9d07-882f2a3d7ad2",
+            "execution_input_digest": "bdefff23d7db82b0461fc431523a2b7255ce89ae64e16acb8d1ac81182e242b4",
+            "execution_digest": "942b669b92a514a70c525b6b19b6cc269257dc6b24e0d69859eafd4bed2e3acd",
+            "input_digest": "8b1738e56f6e972ea42bae5b54e6c306f075a477504df0ddeda2a255cccc76f4",
+            "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+            "dependency_plan_id": "a73bdf33-5d9d-4e2a-ba6c-f8c6afa9c606",
+            "dependency_plan_digest": "f5b5be5c85d8966c57d5e5802d208f256ee118bf25b2065ae422b893308e7fb6",
+            "result_digest": "3a44166c8482d9eb721f180db522608e5d057108ecdf00ff97b767c17bf419e7",
+            "requirement_count": 1,
+            "matrix_coverage": "complete",
+            "overall_coverage": "partial",
+            "human_heads_digest": "21d81fe908211d354e571cbe24da29f204c34692950f25d7643c43ebcec612d9"
+          },
+          "input_changes": {
+            "run_input": true,
+            "scope": false,
+            "frozen_input": false,
+            "prepared_input": true,
+            "rerun_intent": true,
+            "requirements": false,
+            "submitted_documents": false,
+            "selected_facts": false,
+            "fact_admission": true,
+            "dependency_plan": true,
+            "inventory_proof": true,
+            "method": false,
+            "method_fields": []
+          },
+          "counts": {
+            "added": 0,
+            "removed": 0,
+            "changed": 0,
+            "unchanged": 1,
+            "machine_row_changed": 0,
+            "verdict_changed": 0
+          },
+          "overall_coverage": "partial",
+          "risk_resolution_assessed": false,
+          "inventory_complete": false,
+          "formal_scoring_eligible": false,
+          "submission_eligible": false,
+          "items": [
+            {
+              "requirement_id": "42f156b8-1e08-49cc-a67e-22772c391c5d",
+              "definition_change": "unchanged",
+              "machine_row_changed": false,
+              "verdict_transition": {
+                "from": "satisfied",
+                "to": "satisfied",
+                "changed": false
+              },
+              "left": {
+                "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                "rule_kind": "mandatory",
+                "requirement_statement": "Synthetic original obligation",
+                "applicability": "applicable",
+                "target_part_ids": ["tech"],
+                "verdict": "satisfied",
+                "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                "limitations": []
+              },
+              "right": {
+                "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                "rule_kind": "mandatory",
+                "requirement_statement": "Synthetic original obligation",
+                "applicability": "applicable",
+                "target_part_ids": ["tech"],
+                "verdict": "satisfied",
+                "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                "limitations": []
+              },
+              "left_human": null,
+              "right_human": null
+            }
+          ]
+        },
+        "digest": "ea63d7da5564a7106d912b4d23c93403a22ef539c674bb91578b0fb3391926e5"
+      },
+      "source_ids": [
+        "094a71dc-fcf2-502d-980d-01c215f1873b",
+        "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+        "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+        "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+        "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+        "acf3455e-6eb4-5900-bf47-f91a14ba69d7"
+      ],
+      "source_snapshot": [
+        {
+          "source_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+          "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+          "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "official_label",
+          "known_at": "2026-10-21T06:02:41.357418-04:00",
+          "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:41.357418-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+          "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+          "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.258231-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.258231-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+          "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+          "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.264691-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.264691-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+          "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+          "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.264691-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.264691-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+          "ancestor_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+          "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.264691-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.264691-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+          "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+          "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.258231-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.258231-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+          "ancestor_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+          "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "prebid_content",
+          "known_at": "2026-10-21T06:02:37.258231-04:00",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:37.258231-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+          "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+          "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "official_label",
+          "known_at": "2026-10-21T06:02:41.357418-04:00",
+          "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:41.357418-04:00",
+          "valid_until": null
+        },
+        {
+          "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+          "ancestor_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+          "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+          "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+          "kind": "document",
+          "policy_class": "official_label",
+          "known_at": "2026-10-21T06:02:41.357418-04:00",
+          "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+          "revision": 2,
+          "status": "published",
+          "valid_from": "2026-10-21T06:02:41.357418-04:00",
+          "valid_until": null
+        }
+      ],
+      "documents": [
+        {
+          "id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+          "original_name": "synthetic-authority.pdf",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "byte_size": 21
+        },
+        {
+          "id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+          "original_name": "synthetic.pdf",
+          "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+          "byte_size": 21
+        },
+        {
+          "id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+          "original_name": "synthetic-official-result.txt",
+          "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+          "byte_size": 62
+        }
+      ],
+      "gaps": [
+        {
+          "code": "business_result_missing",
+          "message": "业务阶段结果待补：Synthetic award notice is not yet available"
+        },
+        {
+          "code": "risk_resolution_unproven",
+          "message": "两轮差异和人工整改意见不证明风险已解决；整包风险闭环资格仍待独立复检依据。"
+        },
+        {
+          "code": "item_deductions_unavailable",
+          "message": "所选成绩没有逐项扣分数据，不能从技术总分或综合总分推断具体扣分原因。"
+        },
+        {
+          "code": "formal_sample_unavailable",
+          "message": "复盘不会创建正式研究样本，也不授予模型或评分资格；需另走研究准入。"
+        }
+      ],
+      "timing": "post_outcome_retrospective",
+      "official_deduction_reasons_inferred": false,
+      "risk_resolution_assessed": false,
+      "formal_sample_eligible": false,
+      "model_qualification_granted": false,
+      "knowledge_published": false
+    },
+    "digest": "b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7"
+  },
+  "preview_etag": "\"package-retrospective-preview:223882dc-4cff-46ac-895e-aba2dcf83605:b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7\"",
+  "request": {
+    "selection": {
+      "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+      "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+      "outcome_missing_reason": null,
+      "business_result_id": null,
+      "business_result_missing_reason": "Synthetic award notice is not yet available",
+      "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+      "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+      "reviews_missing_reason": null
+    },
+    "preview_digest": "b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7",
+    "title": "合成整包待核复盘",
+    "notes": {
+      "observations": "合成总分仅记录原值；没有逐项扣分事实。",
+      "hypotheses": "成员假设：需要另查原页，尚无结论。",
+      "next_actions": "补齐官方逐项资料并人工复核。",
+      "additional_missing_materials": "真实工程师标注尚未提供。"
+    }
+  },
+  "saved": {
+    "retrospective": {
+      "manifest": {
+        "version": "package-retrospective/1",
+        "id": "8659f1c9-7c66-4632-ad52-8afe5257b576",
+        "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+        "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+        "command_id": "f9bb6b20-f3eb-46ca-93f7-0ae74561a0f4",
+        "created_at": "2026-10-21T10:02:42.026448Z",
+        "state": "pending_review",
+        "title": "合成整包待核复盘",
+        "notes": {
+          "observations": "合成总分仅记录原值；没有逐项扣分事实。",
+          "hypotheses": "成员假设：需要另查原页，尚无结论。",
+          "next_actions": "补齐官方逐项资料并人工复核。",
+          "additional_missing_materials": "真实工程师标注尚未提供。"
+        },
+        "preview": {
+          "manifest": {
+            "version": "package-retrospective-preview/1",
+            "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+            "selection": {
+              "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+              "outcome_missing_reason": null,
+              "business_result_id": null,
+              "business_result_missing_reason": "Synthetic award notice is not yet available",
+              "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+              "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+              "reviews_missing_reason": null
+            },
+            "submission": {
+              "id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "kind": "offline_fact",
+              "submitted_at": "2026-10-21T10:02:41.010986Z",
+              "recorded_at": "2026-10-21T10:02:41.243870Z",
+              "current": true,
+              "identity": {
+                "lot": "same visible lot",
+                "digest": "5b5fb4324d75e1ca0130e0e4e598d16e16289fa90cdd070152dd9c5f191a74eb",
+                "lot_id": "fa9afb12-df00-4a4f-bc9d-389726bc8b2d",
+                "region": null,
+                "round_id": "170b682d-240e-40f1-b3f9-0f3089322aaf",
+                "round_no": 1,
+                "bidder_id": "2391cf53-7f22-4b25-80b7-7599419981fc",
+                "bidder_name": "synthetic bidder",
+                "authority_id": "bf8038cd-3358-4709-ab8e-8a9b9f38a15e",
+                "binding_status": "confirmed",
+                "engineering_type": null,
+                "identity_version": "bid-identity/2",
+                "engineering_title": "synthetic project",
+                "engineering_project_id": "44d4acb2-0bb0-4005-80d6-dd83d5ae12f2"
+              },
+              "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+              "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+              "package_digest": "d8d77b17d4d22d3369481e39647f415dab1a41b0836cf95c95936aac4e173190",
+              "binding_digest": "0e858982d85411f6d5f6297a8c551eac1508072f3b9ac4d6fbf3df78393b1b4f",
+              "registration_risk_digest": "b30d965f6c3ded357710825f65dc2558cf936eaf383430fbc2df01bf61df43b9",
+              "registration_assessed_at": "2026-10-21T10:02:41.221422Z",
+              "risk_resolution_assessed": false
+            },
+            "outcome": {
+              "id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+              "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "score_kind": "technical_total",
+              "value": "0",
+              "maximum": "60",
+              "source_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+              "known_at": "2026-10-21T06:02:41.375816-04:00",
+              "supersedes_id": null,
+              "verification": "verified",
+              "verification_revision": 1,
+              "verification_id": "5b926c7e-7113-4803-b8fb-b0f9b6ad2317",
+              "verification_details_digest": "16efdcff7c1556e1aba406f4a010b624c93964e1c9021f59b7aa99b606500390",
+              "aggregation": "Technical total stated on original page",
+              "published_at": "2026-10-21T06:02:41.375816-04:00",
+              "evidence_refs": [
+                {
+                  "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                  "evidence_id": "af08b64a-bf64-4cbe-bbe7-31190838be70",
+                  "physical_page": 1,
+                  "quote": "Synthetic official technical total: 0 points out of 60."
+                }
+              ],
+              "current": true,
+              "association_reasons": []
+            },
+            "business_result": null,
+            "comparison": {
+              "manifest": {
+                "version": "package-review-comparison/1",
+                "kind": "declared_scope_review_comparison",
+                "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "match_policy": "exact_requirement_id_and_definition_digests/1",
+                "left": {
+                  "id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+                  "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+                  "created_at": "2026-10-21T10:02:39.453416Z",
+                  "scope": {
+                    "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                    "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+                    "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+                    "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+                  },
+                  "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+                  "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+                  "execution_input_id": "dd68b3e8-0903-4ae4-a722-813744472b90",
+                  "execution_input_digest": "f2be2f13557f2736b1778a9202f171ab89b2224283ee2b2c0a6f9e1fc1483c9d",
+                  "execution_digest": "d7179c9608a4f06e2312a974c82d5194b37ebf6e7347f7482fa24b0e54f0f073",
+                  "input_digest": "27616d32ff49aeff8fd28f92ffd25ccbfc6466ac816d56c011be860b6a3657c1",
+                  "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+                  "dependency_plan_id": "4c5a4f9d-7fc6-436f-b0e8-b3313aca0f87",
+                  "dependency_plan_digest": "6d2f3157414d0d5f3e78e16ac41b1ab97cb48dba305fa65aec978639068723f2",
+                  "result_digest": "33b1278c1ca50766b697c35b968e516388839e9ab9c320f3795735f7e97e3074",
+                  "requirement_count": 1,
+                  "matrix_coverage": "complete",
+                  "overall_coverage": "partial",
+                  "human_heads_digest": "816702be9a9cb04193955619512aeba8971762ecd57c0e0a1d012f84d691cfcd"
+                },
+                "right": {
+                  "id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+                  "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+                  "created_at": "2026-10-21T10:02:40.281067Z",
+                  "scope": {
+                    "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                    "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+                    "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+                    "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+                  },
+                  "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+                  "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+                  "execution_input_id": "a0887921-ff4f-4133-9d07-882f2a3d7ad2",
+                  "execution_input_digest": "bdefff23d7db82b0461fc431523a2b7255ce89ae64e16acb8d1ac81182e242b4",
+                  "execution_digest": "942b669b92a514a70c525b6b19b6cc269257dc6b24e0d69859eafd4bed2e3acd",
+                  "input_digest": "8b1738e56f6e972ea42bae5b54e6c306f075a477504df0ddeda2a255cccc76f4",
+                  "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+                  "dependency_plan_id": "a73bdf33-5d9d-4e2a-ba6c-f8c6afa9c606",
+                  "dependency_plan_digest": "f5b5be5c85d8966c57d5e5802d208f256ee118bf25b2065ae422b893308e7fb6",
+                  "result_digest": "3a44166c8482d9eb721f180db522608e5d057108ecdf00ff97b767c17bf419e7",
+                  "requirement_count": 1,
+                  "matrix_coverage": "complete",
+                  "overall_coverage": "partial",
+                  "human_heads_digest": "21d81fe908211d354e571cbe24da29f204c34692950f25d7643c43ebcec612d9"
+                },
+                "input_changes": {
+                  "run_input": true,
+                  "scope": false,
+                  "frozen_input": false,
+                  "prepared_input": true,
+                  "rerun_intent": true,
+                  "requirements": false,
+                  "submitted_documents": false,
+                  "selected_facts": false,
+                  "fact_admission": true,
+                  "dependency_plan": true,
+                  "inventory_proof": true,
+                  "method": false,
+                  "method_fields": []
+                },
+                "counts": {
+                  "added": 0,
+                  "removed": 0,
+                  "changed": 0,
+                  "unchanged": 1,
+                  "machine_row_changed": 0,
+                  "verdict_changed": 0
+                },
+                "overall_coverage": "partial",
+                "risk_resolution_assessed": false,
+                "inventory_complete": false,
+                "formal_scoring_eligible": false,
+                "submission_eligible": false,
+                "items": [
+                  {
+                    "requirement_id": "42f156b8-1e08-49cc-a67e-22772c391c5d",
+                    "definition_change": "unchanged",
+                    "machine_row_changed": false,
+                    "verdict_transition": {
+                      "from": "satisfied",
+                      "to": "satisfied",
+                      "changed": false
+                    },
+                    "left": {
+                      "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                      "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                      "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                      "rule_kind": "mandatory",
+                      "requirement_statement": "Synthetic original obligation",
+                      "applicability": "applicable",
+                      "target_part_ids": ["tech"],
+                      "verdict": "satisfied",
+                      "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                      "limitations": []
+                    },
+                    "right": {
+                      "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                      "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                      "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                      "rule_kind": "mandatory",
+                      "requirement_statement": "Synthetic original obligation",
+                      "applicability": "applicable",
+                      "target_part_ids": ["tech"],
+                      "verdict": "satisfied",
+                      "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                      "limitations": []
+                    },
+                    "left_human": null,
+                    "right_human": null
+                  }
+                ]
+              },
+              "digest": "ea63d7da5564a7106d912b4d23c93403a22ef539c674bb91578b0fb3391926e5"
+            },
+            "source_ids": [
+              "094a71dc-fcf2-502d-980d-01c215f1873b",
+              "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+              "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+              "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+              "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+              "acf3455e-6eb4-5900-bf47-f91a14ba69d7"
+            ],
+            "source_snapshot": [
+              {
+                "source_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "official_label",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "ancestor_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "ancestor_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "prebid_content",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "official_label",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "valid_until": null
+              },
+              {
+                "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "ancestor_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "kind": "document",
+                "policy_class": "official_label",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "revision": 2,
+                "status": "published",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "valid_until": null
+              }
+            ],
+            "documents": [
+              {
+                "id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+                "original_name": "synthetic-authority.pdf",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "byte_size": 21
+              },
+              {
+                "id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+                "original_name": "synthetic.pdf",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "byte_size": 21
+              },
+              {
+                "id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                "original_name": "synthetic-official-result.txt",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "byte_size": 62
+              }
+            ],
+            "gaps": [
+              {
+                "code": "business_result_missing",
+                "message": "业务阶段结果待补：Synthetic award notice is not yet available"
+              },
+              {
+                "code": "risk_resolution_unproven",
+                "message": "两轮差异和人工整改意见不证明风险已解决；整包风险闭环资格仍待独立复检依据。"
+              },
+              {
+                "code": "item_deductions_unavailable",
+                "message": "所选成绩没有逐项扣分数据，不能从技术总分或综合总分推断具体扣分原因。"
+              },
+              {
+                "code": "formal_sample_unavailable",
+                "message": "复盘不会创建正式研究样本，也不授予模型或评分资格；需另走研究准入。"
+              }
+            ],
+            "timing": "post_outcome_retrospective",
+            "official_deduction_reasons_inferred": false,
+            "risk_resolution_assessed": false,
+            "formal_sample_eligible": false,
+            "model_qualification_granted": false,
+            "knowledge_published": false
+          },
+          "digest": "b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7"
+        },
+        "official_deduction_reasons_inferred": false,
+        "risk_resolution_assessed": false,
+        "formal_sample_eligible": false,
+        "model_qualification_granted": false,
+        "knowledge_published": false
+      },
+      "digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874"
+    },
+    "command": {
+      "command_id": "f9bb6b20-f3eb-46ca-93f7-0ae74561a0f4",
+      "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+      "idempotency_key": "b6d59002-edf4-433b-8155-6fdcfa3bad78",
+      "request_digest": "20cd5f7e6936f45221778f4e0f29190ed7bae36e8eb13405c3f7be47b1a7d183",
+      "request": {
+        "selection": {
+          "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+          "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+          "outcome_missing_reason": null,
+          "business_result_id": null,
+          "business_result_missing_reason": "Synthetic award notice is not yet available",
+          "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+          "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+          "reviews_missing_reason": null
+        },
+        "preview_digest": "b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7",
+        "title": "合成整包待核复盘",
+        "notes": {
+          "observations": "合成总分仅记录原值；没有逐项扣分事实。",
+          "hypotheses": "成员假设：需要另查原页，尚无结论。",
+          "next_actions": "补齐官方逐项资料并人工复核。",
+          "additional_missing_materials": "真实工程师标注尚未提供。"
+        }
+      },
+      "if_match": "\"package-retrospective-preview:223882dc-4cff-46ac-895e-aba2dcf83605:b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7\""
+    }
+  },
+  "saved_etag": "\"package-retrospective:8659f1c9-7c66-4632-ad52-8afe5257b576:cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874\"",
+  "save_key": "b6d59002-edf4-433b-8155-6fdcfa3bad78",
+  "candidate": {
+    "link": {
+      "retrospective_id": "8659f1c9-7c66-4632-ad52-8afe5257b576",
+      "retrospective_digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874",
+      "knowledge_id": "11a4632f-4b62-4b37-a4e0-06966e913ed3",
+      "knowledge_version_id": "4c70d950-d06c-46f5-b308-1662ed0d12e1",
+      "source_id": "fbb2f829-5553-41d4-b122-83a820a4f4d3",
+      "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+      "reason": "成员明确建立待核企业知识候选",
+      "created_at": "2026-10-21T10:02:42.225532Z",
+      "policy_class": "derived_mixed",
+      "knowledge_published": false,
+      "formal_sample_eligible": false
+    },
+    "command": {
+      "command_id": "68a153e6-44ce-4119-a5e2-5acc57c5e2fa",
+      "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+      "idempotency_key": "4c096bad-fd70-4644-b465-f7d1e64f8fa6",
+      "request_digest": "108d1063032a9856636cc27039910bf1a67420ad97558d60b417d6e88675bc95",
+      "request": {
+        "retrospective_digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874",
+        "reason": "成员明确建立待核企业知识候选"
+      },
+      "if_match": "\"package-retrospective:8659f1c9-7c66-4632-ad52-8afe5257b576:cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874\""
+    }
+  },
+  "candidate_request": {
+    "retrospective_digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874",
+    "reason": "成员明确建立待核企业知识候选"
+  },
+  "candidate_key": "4c096bad-fd70-4644-b465-f7d1e64f8fa6",
+  "detail": {
+    "retrospective": {
+      "manifest": {
+        "id": "8659f1c9-7c66-4632-ad52-8afe5257b576",
+        "notes": {
+          "hypotheses": "成员假设：需要另查原页，尚无结论。",
+          "next_actions": "补齐官方逐项资料并人工复核。",
+          "observations": "合成总分仅记录原值；没有逐项扣分事实。",
+          "additional_missing_materials": "真实工程师标注尚未提供。"
+        },
+        "state": "pending_review",
+        "title": "合成整包待核复盘",
+        "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+        "preview": {
+          "digest": "b6059f8a210f336f6aaef42a2be07b5233a5660f7008bd8dce01c5c2a998a3d7",
+          "manifest": {
+            "gaps": [
+              {
+                "code": "business_result_missing",
+                "message": "业务阶段结果待补：Synthetic award notice is not yet available"
+              },
+              {
+                "code": "risk_resolution_unproven",
+                "message": "两轮差异和人工整改意见不证明风险已解决；整包风险闭环资格仍待独立复检依据。"
+              },
+              {
+                "code": "item_deductions_unavailable",
+                "message": "所选成绩没有逐项扣分数据，不能从技术总分或综合总分推断具体扣分原因。"
+              },
+              {
+                "code": "formal_sample_unavailable",
+                "message": "复盘不会创建正式研究样本，也不授予模型或评分资格；需另走研究准入。"
+              }
+            ],
+            "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+            "timing": "post_outcome_retrospective",
+            "outcome": {
+              "id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+              "value": "0",
+              "current": true,
+              "maximum": "60",
+              "known_at": "2026-10-21T06:02:41.375816-04:00",
+              "score_kind": "technical_total",
+              "aggregation": "Technical total stated on original page",
+              "published_at": "2026-10-21T06:02:41.375816-04:00",
+              "verification": "verified",
+              "evidence_refs": [
+                {
+                  "quote": "Synthetic official technical total: 0 points out of 60.",
+                  "evidence_id": "af08b64a-bf64-4cbe-bbe7-31190838be70",
+                  "physical_page": 1,
+                  "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06"
+                }
+              ],
+              "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "supersedes_id": null,
+              "verification_id": "5b926c7e-7113-4803-b8fb-b0f9b6ad2317",
+              "source_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+              "association_reasons": [],
+              "verification_revision": 1,
+              "verification_details_digest": "16efdcff7c1556e1aba406f4a010b624c93964e1c9021f59b7aa99b606500390"
+            },
+            "version": "package-retrospective-preview/1",
+            "documents": [
+              {
+                "id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "byte_size": 21,
+                "original_name": "synthetic-authority.pdf"
+              },
+              {
+                "id": "591eec0b-712a-4dea-b9b7-70b20adf0474",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "byte_size": 21,
+                "original_name": "synthetic.pdf"
+              },
+              {
+                "id": "7aab6b93-d827-40b2-a713-057c7f7c7c06",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "byte_size": 62,
+                "original_name": "synthetic-official-result.txt"
+              }
+            ],
+            "selection": {
+              "outcome_id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+              "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "baseline_run_id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+              "submitted_run_id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+              "business_result_id": null,
+              "outcome_missing_reason": null,
+              "reviews_missing_reason": null,
+              "business_result_missing_reason": "Synthetic award notice is not yet available"
+            },
+            "comparison": {
+              "digest": "ea63d7da5564a7106d912b4d23c93403a22ef539c674bb91578b0fb3391926e5",
+              "manifest": {
+                "kind": "declared_scope_review_comparison",
+                "left": {
+                  "id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+                  "scope": {
+                    "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                    "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+                    "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+                    "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+                  },
+                  "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+                  "created_at": "2026-10-21T10:02:39.453416Z",
+                  "input_digest": "27616d32ff49aeff8fd28f92ffd25ccbfc6466ac816d56c011be860b6a3657c1",
+                  "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+                  "result_digest": "33b1278c1ca50766b697c35b968e516388839e9ab9c320f3795735f7e97e3074",
+                  "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+                  "matrix_coverage": "complete",
+                  "execution_digest": "d7179c9608a4f06e2312a974c82d5194b37ebf6e7347f7482fa24b0e54f0f073",
+                  "overall_coverage": "partial",
+                  "requirement_count": 1,
+                  "dependency_plan_id": "4c5a4f9d-7fc6-436f-b0e8-b3313aca0f87",
+                  "execution_input_id": "dd68b3e8-0903-4ae4-a722-813744472b90",
+                  "human_heads_digest": "816702be9a9cb04193955619512aeba8971762ecd57c0e0a1d012f84d691cfcd",
+                  "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+                  "dependency_plan_digest": "6d2f3157414d0d5f3e78e16ac41b1ab97cb48dba305fa65aec978639068723f2",
+                  "execution_input_digest": "f2be2f13557f2736b1778a9202f171ab89b2224283ee2b2c0a6f9e1fc1483c9d"
+                },
+                "items": [
+                  {
+                    "left": {
+                      "verdict": "satisfied",
+                      "rule_kind": "mandatory",
+                      "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                      "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                      "limitations": [],
+                      "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                      "applicability": "applicable",
+                      "target_part_ids": ["tech"],
+                      "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                      "requirement_statement": "Synthetic original obligation"
+                    },
+                    "right": {
+                      "verdict": "satisfied",
+                      "rule_kind": "mandatory",
+                      "statement": "合成HTTP响应仅验证交付机制，待人工核对原文",
+                      "row_digest": "84df2f7e6329dc6c2de18fdd792547157c800278f55557a530dadd3fe0489980",
+                      "limitations": [],
+                      "rule_digest": "da2389a17e1f9a6a159e2a48a3a9755cc37fc00ca6563bfb871b5420450fb270",
+                      "applicability": "applicable",
+                      "target_part_ids": ["tech"],
+                      "requirement_digest": "03e0bd6ab9087541a5b5b3018030245cb4f9780517067d9bb7d9928a8444bdcc",
+                      "requirement_statement": "Synthetic original obligation"
+                    },
+                    "left_human": null,
+                    "right_human": null,
+                    "requirement_id": "42f156b8-1e08-49cc-a67e-22772c391c5d",
+                    "definition_change": "unchanged",
+                    "verdict_transition": {
+                      "to": "satisfied",
+                      "from": "satisfied",
+                      "changed": false
+                    },
+                    "machine_row_changed": false
+                  }
+                ],
+                "right": {
+                  "id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+                  "scope": {
+                    "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                    "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+                    "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+                    "inventory_id": "8fa1cd30-622b-4f57-bb16-dda3880fd3fe"
+                  },
+                  "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+                  "created_at": "2026-10-21T10:02:40.281067Z",
+                  "input_digest": "8b1738e56f6e972ea42bae5b54e6c306f075a477504df0ddeda2a255cccc76f4",
+                  "method_digest": "b80cc4fdd415e35415c8fe3b211b56ea69e8e4c05d45101b840d57fa25640855",
+                  "result_digest": "3a44166c8482d9eb721f180db522608e5d057108ecdf00ff97b767c17bf419e7",
+                  "frozen_input_id": "937c8954-06a4-43ba-8529-3de1700818d0",
+                  "matrix_coverage": "complete",
+                  "execution_digest": "942b669b92a514a70c525b6b19b6cc269257dc6b24e0d69859eafd4bed2e3acd",
+                  "overall_coverage": "partial",
+                  "requirement_count": 1,
+                  "dependency_plan_id": "a73bdf33-5d9d-4e2a-ba6c-f8c6afa9c606",
+                  "execution_input_id": "a0887921-ff4f-4133-9d07-882f2a3d7ad2",
+                  "human_heads_digest": "21d81fe908211d354e571cbe24da29f204c34692950f25d7643c43ebcec612d9",
+                  "frozen_input_digest": "9b541835b7a70a05683991c43ee2846c8ab129401a27e3610db66d4a2ba32eef",
+                  "dependency_plan_digest": "f5b5be5c85d8966c57d5e5802d208f256ee118bf25b2065ae422b893308e7fb6",
+                  "execution_input_digest": "bdefff23d7db82b0461fc431523a2b7255ce89ae64e16acb8d1ac81182e242b4"
+                },
+                "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "counts": {
+                  "added": 0,
+                  "changed": 0,
+                  "removed": 0,
+                  "unchanged": 1,
+                  "verdict_changed": 0,
+                  "machine_row_changed": 0
+                },
+                "version": "package-review-comparison/1",
+                "match_policy": "exact_requirement_id_and_definition_digests/1",
+                "input_changes": {
+                  "scope": false,
+                  "method": false,
+                  "run_input": true,
+                  "frozen_input": false,
+                  "requirements": false,
+                  "rerun_intent": true,
+                  "method_fields": [],
+                  "fact_admission": true,
+                  "prepared_input": true,
+                  "selected_facts": false,
+                  "dependency_plan": true,
+                  "inventory_proof": true,
+                  "submitted_documents": false
+                },
+                "overall_coverage": "partial",
+                "inventory_complete": false,
+                "submission_eligible": false,
+                "formal_scoring_eligible": false,
+                "risk_resolution_assessed": false
+              }
+            },
+            "source_ids": [
+              "094a71dc-fcf2-502d-980d-01c215f1873b",
+              "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+              "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+              "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+              "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+              "acf3455e-6eb4-5900-bf47-f91a14ba69d7"
+            ],
+            "submission": {
+              "id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+              "kind": "offline_fact",
+              "current": true,
+              "identity": {
+                "lot": "same visible lot",
+                "digest": "5b5fb4324d75e1ca0130e0e4e598d16e16289fa90cdd070152dd9c5f191a74eb",
+                "lot_id": "fa9afb12-df00-4a4f-bc9d-389726bc8b2d",
+                "region": null,
+                "round_id": "170b682d-240e-40f1-b3f9-0f3089322aaf",
+                "round_no": 1,
+                "bidder_id": "2391cf53-7f22-4b25-80b7-7599419981fc",
+                "bidder_name": "synthetic bidder",
+                "authority_id": "bf8038cd-3358-4709-ab8e-8a9b9f38a15e",
+                "binding_status": "confirmed",
+                "engineering_type": null,
+                "identity_version": "bid-identity/2",
+                "engineering_title": "synthetic project",
+                "engineering_project_id": "44d4acb2-0bb0-4005-80d6-dd83d5ae12f2"
+              },
+              "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+              "recorded_at": "2026-10-21T10:02:41.243870Z",
+              "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561",
+              "submitted_at": "2026-10-21T10:02:41.010986Z",
+              "binding_digest": "0e858982d85411f6d5f6297a8c551eac1508072f3b9ac4d6fbf3df78393b1b4f",
+              "package_digest": "d8d77b17d4d22d3369481e39647f415dab1a41b0836cf95c95936aac4e173190",
+              "registration_assessed_at": "2026-10-21T10:02:41.221422Z",
+              "registration_risk_digest": "b30d965f6c3ded357710825f65dc2558cf936eaf383430fbc2df01bf61df43b9",
+              "risk_resolution_assessed": false
+            },
+            "business_result": null,
+            "source_snapshot": [
+              {
+                "kind": "document",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "revision": 2,
+                "source_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "valid_until": null,
+                "policy_class": "official_label",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "revision": 2,
+                "source_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "revision": 2,
+                "source_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "revision": 2,
+                "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "ancestor_id": "110ddf4d-6e65-54d9-9b8d-68a202cba293",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.264691-04:00",
+                "revision": 2,
+                "source_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "valid_from": "2026-10-21T06:02:37.264691-04:00",
+                "ancestor_id": "483c6253-89fb-5ba1-aa63-ee73e8f8dc96",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "029d0aea-f9de-4d9f-8f8f-7f74aee146d8"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "revision": 2,
+                "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "ancestor_id": "10d6fb4a-ed21-55f8-a511-8a85edbe4943",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474"
+              },
+              {
+                "kind": "document",
+                "digest": "b681f5fc8c583d2fc704a735b996b318a2f5f4478446fd32e57fed2f4ad00b56",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:37.258231-04:00",
+                "revision": 2,
+                "source_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "valid_from": "2026-10-21T06:02:37.258231-04:00",
+                "ancestor_id": "7a035e11-0cc8-54da-9e25-7b87ec75b6a9",
+                "valid_until": null,
+                "policy_class": "prebid_content",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "591eec0b-712a-4dea-b9b7-70b20adf0474"
+              },
+              {
+                "kind": "document",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "revision": 2,
+                "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "ancestor_id": "094a71dc-fcf2-502d-980d-01c215f1873b",
+                "valid_until": null,
+                "policy_class": "official_label",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06"
+              },
+              {
+                "kind": "document",
+                "digest": "6af1c844caaabb7452147ba363f1c43b3327c7e8f7fa2e46f61221c8eaae19b4",
+                "status": "published",
+                "known_at": "2026-10-21T06:02:41.357418-04:00",
+                "revision": 2,
+                "source_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "valid_from": "2026-10-21T06:02:41.357418-04:00",
+                "ancestor_id": "acf3455e-6eb4-5900-bf47-f91a14ba69d7",
+                "valid_until": null,
+                "policy_class": "official_label",
+                "document_bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+                "document_version_id": "7aab6b93-d827-40b2-a713-057c7f7c7c06"
+              }
+            ],
+            "knowledge_published": false,
+            "formal_sample_eligible": false,
+            "risk_resolution_assessed": false,
+            "model_qualification_granted": false,
+            "official_deduction_reasons_inferred": false
+          }
+        },
+        "version": "package-retrospective/1",
+        "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+        "command_id": "f9bb6b20-f3eb-46ca-93f7-0ae74561a0f4",
+        "created_at": "2026-10-21T10:02:42.026448Z",
+        "knowledge_published": false,
+        "formal_sample_eligible": false,
+        "risk_resolution_assessed": false,
+        "model_qualification_granted": false,
+        "official_deduction_reasons_inferred": false
+      },
+      "digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874"
+    },
+    "current": {
+      "unchanged": true,
+      "issues": []
+    },
+    "knowledge_link": {
+      "retrospective_id": "8659f1c9-7c66-4632-ad52-8afe5257b576",
+      "retrospective_digest": "cda6eb8c4f342c7c16ae7782b99c515c0dfd33d2bd6c630e21ef9e8b385e9874",
+      "knowledge_id": "11a4632f-4b62-4b37-a4e0-06966e913ed3",
+      "knowledge_version_id": "4c70d950-d06c-46f5-b308-1662ed0d12e1",
+      "source_id": "fbb2f829-5553-41d4-b122-83a820a4f4d3",
+      "actor_id": "a1392690-e63b-40d9-9e86-ab8e4f8bec60",
+      "reason": "成员明确建立待核企业知识候选",
+      "created_at": "2026-10-21T10:02:42.225532Z",
+      "policy_class": "derived_mixed",
+      "knowledge_published": false,
+      "formal_sample_eligible": false
+    }
+  },
+  "choices": {
+    "submissions": {
+      "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+      "kind": "submissions",
+      "submission_id": null,
+      "items": [
+        {
+          "id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+          "label": "补录实交 · 2026-10-21T06:02:41.010986-04:00 · 包修订 6580aecb-a72d-4f4e-a784-3a7adf926561",
+          "current": true,
+          "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+          "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561"
+        }
+      ],
+      "next_offset": null
+    },
+    "outcomes": {
+      "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+      "kind": "outcomes",
+      "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+      "items": [
+        {
+          "id": "5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+          "label": "技术总分 0 / 60 · synthetic-official-result.txt · 5b1bbf0b-93c6-475c-b055-2b09e5e8421c",
+          "current": true,
+          "package_id": null,
+          "revision_id": null
+        }
+      ],
+      "next_offset": null
+    },
+    "business_results": {
+      "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+      "kind": "business_results",
+      "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+      "items": [],
+      "next_offset": null
+    },
+    "runs": {
+      "bid_id": "223882dc-4cff-46ac-895e-aba2dcf83605",
+      "kind": "runs",
+      "submission_id": "a4454f06-f589-487c-af47-62f1ae9026ab",
+      "items": [
+        {
+          "id": "b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+          "label": "已完成核查 · 2026-10-21T06:02:40.281067-04:00 · 包修订 6580aecb-a72d-4f4e-a784-3a7adf926561 · b5fd4269-f8a4-42ea-bf0f-3e9b773bbff2",
+          "current": null,
+          "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+          "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561"
+        },
+        {
+          "id": "45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+          "label": "已完成核查 · 2026-10-21T06:02:39.453416-04:00 · 包修订 6580aecb-a72d-4f4e-a784-3a7adf926561 · 45e7d9ae-c23a-4a32-b34c-681aae3a8f89",
+          "current": null,
+          "package_id": "25ec9764-0033-4d69-9454-c91b2ab9a98d",
+          "revision_id": "6580aecb-a72d-4f4e-a784-3a7adf926561"
+        }
+      ],
+      "next_offset": null
+    }
+  }
+}

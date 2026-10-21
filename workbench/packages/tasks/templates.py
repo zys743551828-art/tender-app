@@ -58,10 +58,15 @@ def view(c, bid, definition):
 
 
 def assert_targets(c, bid, definition):
-    if definition.source_selection.mode == "exact_package_review":
+    if definition.source_selection.mode in ("exact_package_review", "exact_package_trigger"):
         from packages.tasks.package_inputs import selected
 
         selected(c, bid, definition.source_selection.input.model_dump(mode="json"))
+        if definition.source_selection.mode == "exact_package_trigger":
+            from packages.tasks.package_triggers import available
+
+            if not available(c):
+                raise DomainError("TASK_PACKAGE_TRIGGER_NOT_READY", "整包触发存储尚未安装", 503)
         return
     if definition.section_id:
         fetch(c, "SELECT id FROM sections WHERE bid_id=%s AND id=%s", (bid, definition.section_id))

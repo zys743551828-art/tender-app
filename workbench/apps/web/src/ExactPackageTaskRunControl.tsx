@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "./api";
-import type { RunView, TaskKindPage, TemplateView } from "./contracts";
+import type { RunView } from "./contracts";
+import type { TaskKindPage, TemplateView } from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import { packageTaskCapability } from "./packageTaskTemplateSelection";
 import type { PackageNavigationState } from "./packageNavigation";
@@ -88,7 +89,11 @@ export function ExactPackageTaskRunControl({
       "TASK_RECONCILIATION_REQUIRED",
     ].includes(command.error.code);
   const waitingForFreshTemplate = adoptedEtag !== null && adoptedEtag !== etag;
+  const manual =
+    template.configuration.source_selection?.mode === "exact_package_review" &&
+    template.configuration.trigger?.mode === "manual";
   const available =
+    manual &&
     !!checked &&
     checked === template &&
     !!capability?.available &&
@@ -126,14 +131,22 @@ export function ExactPackageTaskRunControl({
       setAdopting(false);
     }
   }
+  // A later automatic template must not hide an earlier unresolved manual request.
+  if (!manual && !pending && !command.error) return null;
   return (
     <section
       className="exact-package-task-command"
       aria-label="整包任务手动启动"
     >
-      <p className="notice neutral">
-        仅手动启动本模板绑定的精确输入。启动可能调用模型并产生费用；本入口不建立定时或资料事件触发，也不创建新输入重跑。
-      </p>
+      {manual ? (
+        <p className="notice neutral">
+          仅手动启动本模板绑定的精确输入。启动可能调用模型并产生费用；本入口不建立定时或资料事件触发，也不创建新输入重跑。
+        </p>
+      ) : (
+        <p className="notice neutral">
+          当前模板已明确使用事件或定时。本区仅恢复此前的原手动请求，不用自动模板新发手动运行。
+        </p>
+      )}
       {!kinds && (
         <p className="notice warning">尚未读到整包手动任务能力，不能启动。</p>
       )}
@@ -160,14 +173,16 @@ export function ExactPackageTaskRunControl({
         <p role="status">正在读取已明确采用的当前模板；尚不使用旧头启动。</p>
       )}
       <ErrorNotice error={command.error ?? readError ?? capabilityError} />
-      <button
-        type="button"
-        className="button primary"
-        disabled={!available || busy || pending || command.conflict}
-        onClick={() => void run()}
-      >
-        手动运行这份整包输入
-      </button>
+      {manual && (
+        <button
+          type="button"
+          className="button primary"
+          disabled={!available || busy || pending || command.conflict}
+          onClick={() => void run()}
+        >
+          手动运行这份整包输入
+        </button>
+      )}
       {command.conflict && (
         <div className="notice warning">
           <p>模板修订已变化。原启动未被默认为成功，也不会自动用新版本再发。</p>

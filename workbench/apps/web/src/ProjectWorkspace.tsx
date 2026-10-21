@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import type { Bid, MaterialView, ReviewStateView } from "./contracts";
 import { supportsApi } from "./api";
 import { AssistantDrawer } from "./AssistantDrawer";
+import { announceWorkspaceAuxiliary } from "./workspaceAuxiliary";
 import { Badge, Icon, Loading } from "./components";
 const TaskPanel = lazy(() =>
   import("./TaskPanel").then((module) => ({ default: module.TaskPanel })),
@@ -57,6 +58,7 @@ export function ProjectWorkspace({
   onOpenDraft,
   onOpenPackage,
   onPackageLocation,
+  onOpenKnowledge,
   onBack,
   onNavigate,
 }: {
@@ -69,6 +71,7 @@ export function ProjectWorkspace({
     target: PackageNavigationTarget | null,
     replace?: boolean,
   ) => void;
+  onOpenKnowledge?: (knowledgeId: string) => void;
   onBack: () => void;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
 }) {
@@ -175,14 +178,22 @@ export function ProjectWorkspace({
         {supportsApi("GET", `/bids/${id}/conversations/main`) && (
           <button
             className="button secondary"
-            onClick={() => setAssistantOpen(true)}
+            onClick={() => {
+              setRetrievalOpen(false);
+              announceWorkspaceAuxiliary(id, "assistant");
+              setAssistantOpen(true);
+            }}
           >
             项目助手
           </button>
         )}
         <button
           className="button secondary"
-          onClick={() => setRetrievalOpen(true)}
+          onClick={() => {
+            setAssistantOpen(false);
+            announceWorkspaceAuxiliary(id, "sources");
+            setRetrievalOpen(true);
+          }}
         >
           查证资料
         </button>
@@ -195,6 +206,7 @@ export function ProjectWorkspace({
           bidId={id}
           memberId={memberId}
           onClose={closeAssistant}
+          dockTargetId="main-content"
         />
       )}
       {retrievalOpen && (
@@ -262,7 +274,9 @@ export function ProjectWorkspace({
     explicitReview !== state?.request?.review_id &&
     explicitReview !== state?.current_review?.id;
   return (
-    <div className="page-content project-page">
+    <div
+      className={`page-content project-page${page === "authoring" ? " project-page--authoring" : ""}`}
+    >
       <button className="back-link" onClick={onBack}>
         <Icon name="back" />
         返回项目列表
@@ -431,6 +445,7 @@ export function ProjectWorkspace({
                   memberId={memberId}
                   onNavigate={onNavigate}
                   onChanged={refresh}
+                  onOpenKnowledge={onOpenKnowledge}
                 />
               </Suspense>
               <OutcomesPanel bidId={bid.id} />

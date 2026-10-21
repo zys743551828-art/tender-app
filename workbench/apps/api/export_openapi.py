@@ -30,6 +30,9 @@ from packages.contracts.bid_package_requirements_api import (
     extend_openapi as extend_bid_package_requirements,
 )
 from packages.contracts.document_parses_api import extend_openapi as extend_document_parses
+from packages.contracts.package_retrospectives_api import (
+    extend_openapi as extend_package_retrospectives,
+)
 from packages.contracts.package_review_comparisons_api import (
     extend_openapi as extend_package_review_comparisons,
 )
@@ -42,6 +45,9 @@ from packages.contracts.package_review_reports_api import (
 from packages.contracts.package_review_runs_api import extend_openapi as extend_package_review_runs
 from packages.contracts.package_technical_eligibility_api import (
     extend_openapi as extend_package_technical_eligibility,
+)
+from packages.contracts.package_technical_execution_api import (
+    extend_openapi as extend_package_technical_execution,
 )
 from packages.contracts.package_technical_scope_api import (
     extend_openapi as extend_package_technical_scopes,
@@ -174,12 +180,14 @@ def implemented_openapi(app):
     extend_package_review_reports(actual)
     extend_package_technical_scopes(actual)
     extend_package_technical_eligibility(actual)
+    extend_package_technical_execution(actual)
     extend_authoring_packages(actual)
     extend_document_parses(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)
     extend_metrics(actual)
+    extend_package_retrospectives(actual)
     from packages.word_intake.contracts import extend_openapi as extend_word
 
     extend_word(actual)

@@ -1022,6 +1022,169 @@ export type PackageTechnicalSampleContext = {
   official_label_access: "association_check_only";
 };
 
+export type PackageTechnicalExecutionContext = {
+  version: "package-technical-execution-context/1";
+  qualification: {
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+      scope_id: string;
+      scope_digest: string;
+    };
+    basis: {
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      identity_digest: string;
+    };
+    observed_at: string;
+    coverage: {
+      state: "partial" | "unknown";
+      all_part_count: number;
+      selected_part_count: number;
+      all_scoring_rule_count: number;
+      included_rule_count: number;
+      frozen_parse_member_count: number;
+      gaps: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+      visual_coverage: "unproven";
+      required_range_completeness: "unproven";
+    };
+    denominator: {
+      state:
+        | "unselected"
+        | "not_configured"
+        | "unavailable"
+        | "mismatched"
+        | "matched";
+      scale_id: string | null;
+      scale_digest: string | null;
+      purpose: "current_prebid" | "historical_backtest";
+      technical_maximum: string | null;
+      scale_description: string | null;
+      aggregation: {
+        status: "unknown" | "unsupported";
+        description: string;
+      } | null;
+      maximum_usable: boolean;
+      aggregation_usable: false;
+      evidence_refs: {
+        id: string;
+        document_version_id: string;
+        parse_id: string;
+        evidence_id: string;
+        source_id: string;
+        blob_digest: string;
+        evidence_digest: string;
+        physical_page: number;
+        source_revision: number | null;
+        quote: string;
+        supported_fields: (
+          | "technical_maximum"
+          | "scale_description"
+          | "aggregation"
+        )[];
+      }[];
+      reasons: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+    };
+    judgments: {
+      required_valid_independent: 3;
+      recorded_valid_independent: 0;
+      producer_authority: "not_configured_for_exact_package";
+      previous_answers_in_input: false;
+      retries_count_as_independent: false;
+      unknown_send_auto_retry: false;
+      execution_enabled: false;
+    };
+    numeric_prediction: null;
+    blockers: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+    version: "package-technical-scoring-context/1";
+    purpose: "current_prebid";
+    current_input: {
+      state: "matched" | "changed" | "unavailable";
+      stored_context_digest: string;
+      current_context_digest: string | null;
+      method_matches: boolean;
+      original_bytes_reverified: false;
+      reasons: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+    };
+    official_label_access: "forbidden";
+  };
+  producer: {
+    software_foundation: "not_installed" | "installed";
+    real_provider_configured: false;
+    formal_input_authority_configured: false;
+    mechanism_test_publicly_available: false;
+  };
+  method: {
+    schema: "package-technical-judgment-method/1";
+    provider: "deepseek";
+    model_alias: "deepseek-flash";
+    immutable_weights_verified: false;
+    input_protocol: "package-technical-judgment-input/1";
+    output_protocol: "package-technical-judgments/1";
+    transport_protocol: "controlled-score-response/1";
+    thinking: "disabled";
+    temperature: 0;
+    context_tokens: 1000000;
+    max_output_tokens: 4096;
+    maximum_prompt_characters: 262144;
+    prompt_digest: "b0f0dbab7ff8604813d50c9caf838f66c7d810f254b47773c68f5dda39a92eea";
+    output_schema_digest: "c41b1c0d5685dcddc247f1c0343046c6c52a749b039440f312fb62be7065829c";
+    valid_replicates_required: 3;
+    retry_is_replicate: false;
+    complete_package_snapshot_required: true;
+    visual_interpretation_supported: false;
+    formal_scoring_eligible: false;
+    digest: "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996";
+  };
+  execution_enabled: false;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+};
+
+export type CreatePackageTechnicalExecution = {
+  purpose: "current_prebid";
+  scope_digest: string;
+  method_digest: "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996";
+  scale_id: string | null;
+  budget: string;
+  reason: string;
+};
+
 export type KnowledgePackageReviewTargetPage = {
   bid_id: string;
   items: {
@@ -4664,8 +4827,50 @@ export type TemplateRequest = {
     | "chapter_suggestion";
   instructions: string;
   section_id?: string | null;
-  source_selection?: SourceSelection | ExactPackageReviewSelection;
+  source_selection?:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection;
   trigger?: Trigger;
+};
+
+export type ExactPackageTriggerSelection = {
+  mode: "exact_package_trigger";
+  input: PackageReviewSelection;
+};
+
+export type PackageTaskTriggerCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_trigger";
+  triggers: ("material_updated" | "schedule")[];
+  requires_independent_runner: true;
+  automatic_input_selection: false;
+  automatic_catchup_runs: 0;
+};
+
+export type PackageTriggerIntentView = {
+  id: string;
+  bid_id: string;
+  definition_id: string;
+  definition_version_id: string;
+  trigger: "material_updated" | "schedule";
+  trigger_event_id: string | null;
+  scheduled_at: string | null;
+  created_at: string;
+  selection: PackageReviewSelection;
+  input_digest: string;
+  state: "pending" | "accepted" | "blocked" | "cancelled";
+  error_code: string | null;
+  run_id: string | null;
+  run_ref: string | null;
+  reused: boolean;
+  automatic_input_selection: false;
+};
+
+export type PackageTriggerIntentPage = {
+  items: PackageTriggerIntentView[];
+  next_after: string | null;
 };
 
 export type TemplateView = {
@@ -4757,7 +4962,10 @@ export type TaskScheduleRecoveryPage = {
 export type TaskDraftRequest = {
   request: string;
   section_id?: string | null;
-  source_selection?: SourceSelection | ExactPackageReviewSelection;
+  source_selection?:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection;
 };
 
 export type TaskDraftView = {
@@ -7800,6 +8008,19 @@ export type Trigger = {
   timezone?: string;
 };
 
+export type PackageReviewSelection = {
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  method_digest: string;
+};
+
 export type TemplateSnapshotConfig = {
   schema: "task-template/1";
   definition: TemplateRequest;
@@ -7827,6 +8048,7 @@ export type TaskKindView = {
   formal_decisions_allowed?: false | null;
   automatic_apply?: false | null;
   exact_package_manual?: PackageTaskManualCapabilities | null;
+  exact_package_triggers?: PackageTaskTriggerCapabilities | null;
 };
 
 export type TaskNotification = {
@@ -7853,7 +8075,10 @@ export type TaskDraftInterpretation = {
     | null;
   instructions: string;
   section_id: string | null;
-  source_selection: SourceSelection | ExactPackageReviewSelection;
+  source_selection:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection;
   trigger: Trigger;
   target_description: string;
   output_description: string;
@@ -8829,19 +9054,6 @@ export type BidPackage_part = {
   heading_path: number[];
 };
 
-export type PackageReviewSelection = {
-  package_id: string;
-  revision_id: string;
-  inventory_id: string;
-  frozen_input_id: string;
-  frozen_input_digest: string;
-  execution_input_id: string;
-  execution_input_digest: string;
-  dependency_plan_id: string;
-  dependency_plan_digest: string;
-  method_digest: string;
-};
-
 export type PackageTaskManualCapabilities = {
   available: boolean;
   reason: string | null;
@@ -8865,7 +9077,8 @@ export type TaskNotificationPayload = {
 export type TaskScheduleRecoveryPayload = {
   schedule_id: string;
   definition_id: string;
-  run_current_once_ref: string;
+  run_current_once_ref: string | null;
+  reconfirm_template_ref?: string | null;
   definition_version_id: string;
   next_fire_at: string;
   missed: MissedTaskSchedule | null;
@@ -9155,7 +9368,9 @@ export type MissedTaskSchedule = {
   through: string;
   count: null;
   count_status: "not_enumerated";
-  resolution: "skipped_run_current_once_available";
+  resolution:
+    | "skipped_run_current_once_available"
+    | "skipped_reconfirm_exact_input";
 };
 
 export type PackageSubmissionGate_CurrentInput = {
@@ -9674,6 +9889,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/scoring-context",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/sample-context",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/execution-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/executions",
   "GET /api/v1/bids/{bid_id}/pricing-context",
   "GET /api/v1/bids/{bid_id}/pricing-formula-sources",
   "POST /api/v1/bids/{bid_id}/pricing-formulas",
@@ -9694,6 +9911,12 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/submissions/{submission_id}/corrections",
   "GET /api/v1/submissions/{submission_id}",
   "GET /api/v1/bids/{bid_id}/submission-documents",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives/choices",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives/preview",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}/knowledge-candidate",
   "GET /api/v1/reviews/{review_id}/report-exports",
   "POST /api/v1/reviews/{review_id}/report-exports",
   "GET /api/v1/reviews/{review_id}/report-context",
@@ -9716,6 +9939,9 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/task-runs/{run_id}",
   "GET /api/v1/bids/{bid_id}/task-runs",
   "GET /api/v1/bids/{bid_id}/task-notifications",
+  "GET /api/v1/bids/{bid_id}/task-package-trigger-intents",
+  "GET /api/v1/bids/{bid_id}/task-package-trigger-intents/{intent_id}",
+  "POST /api/v1/bids/{bid_id}/task-package-trigger-intents/{intent_id}/cancel",
   "GET /api/v1/bids/{bid_id}/task-schedule-recoveries",
   "GET /api/v1/task-kinds",
   "GET /api/v1/bids/{bid_id}/word-originals",

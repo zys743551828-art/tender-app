@@ -1,15 +1,18 @@
+import type { ExactPackageReviewSelection, RunView } from "./contracts";
 import type {
-  ExactPackageReviewSelection,
-  RunView,
+  ExactPackageTriggerSelection,
   TemplateRequest,
-} from "./contracts";
+} from "./taskTriggerContracts";
 import { recordObject } from "./executionInputValidation";
 export function isExactPackageTask(
   configuration: TemplateRequest,
 ): configuration is TemplateRequest & {
-  source_selection: ExactPackageReviewSelection;
+  source_selection: ExactPackageReviewSelection | ExactPackageTriggerSelection;
 } {
-  return configuration.source_selection?.mode === "exact_package_review";
+  return (
+    configuration.source_selection?.mode === "exact_package_review" ||
+    configuration.source_selection?.mode === "exact_package_trigger"
+  );
 }
 export const exactPackageTaskScope =
   "只核查明确选择的整包修订、需求清单、冻结输入和依赖计划；范围覆盖仍为部分，不授予正式评分或提交资格。";
@@ -37,12 +40,15 @@ export function claimsExactPackageRun(value: RunView) {
   const config = manifest.configuration;
   return (
     manifest.schema === "task-package-run/1" ||
+    manifest.schema === "task-package-trigger-run/1" ||
     (recordObject(context) &&
       recordObject(context.subject) &&
       context.subject.kind === "bid_package") ||
     (recordObject(config) &&
       recordObject(config.source_selection) &&
-      config.source_selection.mode === "exact_package_review") ||
+      ["exact_package_review", "exact_package_trigger"].includes(
+        String(config.source_selection.mode),
+      )) ||
     (recordObject(value.result) &&
       value.result.kind === "declared_package_scope_review")
   );

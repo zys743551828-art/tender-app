@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import type { TemplateRequest, TemplateView } from "./contracts";
+import type {
+  TaskKindPage,
+  TemplateRequest,
+  TemplateView,
+} from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import { ExactPackageTaskScope } from "./ExactPackageTaskScope";
 import {
@@ -16,9 +20,24 @@ import {
   sameTaskPackageSource,
 } from "./taskState";
 import { useTaskPackageCommand } from "./useTaskPackageCommand";
+import { useResource } from "./useResource";
+import {
+  packageTaskTriggerCapability,
+  taskPackageTriggerMissing,
+} from "./packageTaskTemplateSelection";
+import { ExactPackageTaskTriggerFields } from "./ExactPackageTaskTriggerFields";
+import { ExactPackageTaskDraftEditor } from "./ExactPackageTaskDraftEditor";
+
+export function ExactPackageTaskTemplateEditor(props: TaskTemplateEditorProps) {
+  return props.external ? (
+    <ExactPackageTaskDraftEditor {...props} />
+  ) : (
+    <DirectExactPackageTaskTemplateEditor {...props} />
+  );
+}
 
 /** Exact package templates use their own verified command; old task commands are unchanged. */
-export function ExactPackageTaskTemplateEditor({
+function DirectExactPackageTaskTemplateEditor({
   bidId,
   memberId,
   template,
@@ -27,7 +46,6 @@ export function ExactPackageTaskTemplateEditor({
   onClose,
   initialConfiguration,
   formIdentity,
-  external,
   onStateChange,
 }: TaskTemplateEditorProps) {
   const identity = template?.id ?? formIdentity ?? "new";
@@ -55,6 +73,17 @@ export function ExactPackageTaskTemplateEditor({
     observedProp: string | null;
   } | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
+  const kinds = useResource<TaskKindPage>("/task-kinds");
+  let triggerCapability = null;
+  let capabilityError: unknown = null;
+  try {
+    triggerCapability = kinds.data
+      ? packageTaskTriggerCapability(kinds.data)
+      : null;
+  } catch (error) {
+    capabilityError = error;
+  }
+  const triggerMissing = taskPackageTriggerMissing(input, triggerCapability);
   const command = useTaskPackageCommand({
     kind: "template",
     memberId,
@@ -96,9 +125,7 @@ export function ExactPackageTaskTemplateEditor({
     ...(input.task_kind !== "denial_check" || input.section_id != null
       ? ["整包否决核对类型"]
       : []),
-    ...(input.trigger?.mode !== "manual" || input.trigger.cron != null
-      ? ["仅手动触发"]
-      : []),
+    ...(triggerMissing ? [triggerMissing] : []),
     ...(typeof input.name !== "string" || !input.name.trim()
       ? ["模板名称"]
       : []),
@@ -106,7 +133,6 @@ export function ExactPackageTaskTemplateEditor({
       ? ["任务说明"]
       : []),
     ...(!basis ? ["服务器修订基准"] : []),
-    ...(external ? ["从精确整包入口使用受核验的保存命令"] : []),
   ];
   function accept(value: TemplateView | undefined) {
     if (!value) return;
@@ -169,7 +195,7 @@ export function ExactPackageTaskTemplateEditor({
   return (
     <section className="panel task-editor exact-package-task-command">
       <div className="section-title">
-        <h3>{template ? "保存整包任务的新版本" : "保存精确整包手动任务"}</h3>
+        <h3>{template ? "保存整包任务的新版本" : "保存精确整包任务"}</h3>
         <button type="button" className="text-button" onClick={onClose}>
           收起表单，保留输入
         </button>
@@ -225,12 +251,13 @@ export function ExactPackageTaskTemplateEditor({
               }
             />
           </label>
-          <label>
-            触发方式
-            <input aria-label="触发方式" readOnly value="仅手动运行" />
-          </label>
+          <ExactPackageTaskTriggerFields
+            input={input}
+            change={setInput}
+            capability={triggerCapability}
+          />
         </fieldset>
-        <ErrorNotice error={failure ?? command.error} />
+        <ErrorNotice error={failure ?? command.error ?? capabilityError} />
         {staleBasis && !saved && (
           <p className="notice warning">
             服务器模板修订已更新；表单与原基准仍保留。请明确读取并采用当前修订，再保存新版本。

@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { api } from "./api";
-import type {
-  AssistantSourcePage,
-  Bid,
-  MaterialView,
-  TemplateRequest,
-  TemplateView,
-} from "./contracts";
+import type { AssistantSourcePage, Bid, MaterialView } from "./contracts";
+import type { TemplateRequest, TemplateView } from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import {
   knowledgeStorageKey,
@@ -18,6 +13,7 @@ import { useResource } from "./useResource";
 import { useRecordedCommand } from "./useRecordedCommand";
 import {
   newTaskConfiguration,
+  isExactPackageTask,
   taskNames,
   taskScopes,
   triggerDescription,
@@ -50,7 +46,7 @@ export type TaskTemplateEditorProps = {
 export function TaskTemplateEditor(props: TaskTemplateEditorProps) {
   const configuration =
     props.initialConfiguration ?? props.template?.configuration;
-  return configuration?.source_selection?.mode === "exact_package_review" ? (
+  return configuration && isExactPackageTask(configuration) ? (
     <ExactPackageTaskTemplateEditor
       key={`${props.memberId}:${props.bidId}:${props.template?.id ?? props.formIdentity ?? "new"}`}
       {...props}
@@ -100,12 +96,14 @@ function LegacyTaskTemplateEditor({
         item.bid_id === bidId &&
         item.reference?.kind === "section",
     ) ?? [];
+  const sourceSelection = input.source_selection;
   const source =
-    input.source_selection?.mode === "exact_package_review"
-      ? input.source_selection
+    sourceSelection?.mode === "exact_package_review" ||
+    sourceSelection?.mode === "exact_package_trigger"
+      ? sourceSelection
       : {
-          mode: input.source_selection?.mode ?? "current_project",
-          version_ids: input.source_selection?.version_ids ?? [],
+          mode: sourceSelection?.mode ?? "current_project",
+          version_ids: sourceSelection?.version_ids ?? [],
         };
   const trigger = input.trigger ?? {
     mode: "manual" as const,
@@ -120,7 +118,7 @@ function LegacyTaskTemplateEditor({
     !!external?.pending;
   const conflict = command.conflict || external?.conflict;
   const missing = [
-    ...(source.mode === "exact_package_review"
+    ...(["exact_package_review", "exact_package_trigger"].includes(source.mode)
       ? ["从原精确整包入口恢复此模板输入"]
       : []),
     ...(!kindSelected ? ["明确任务类型"] : []),
@@ -304,7 +302,10 @@ function LegacyTaskTemplateEditor({
             <select
               aria-label="来源范围"
               value={source.mode}
-              disabled={source.mode === "exact_package_review"}
+              disabled={
+                source.mode === "exact_package_review" ||
+                source.mode === "exact_package_trigger"
+              }
               onChange={(event) =>
                 change({
                   source_selection: {
@@ -318,8 +319,9 @@ function LegacyTaskTemplateEditor({
             >
               <option value="current_project">运行时冻结本项目当前来源</option>
               <option value="selected_versions">明确选定资料版本</option>
-              {source.mode === "exact_package_review" && (
-                <option value="exact_package_review">
+              {(source.mode === "exact_package_review" ||
+                source.mode === "exact_package_trigger") && (
+                <option value={source.mode}>
                   精确整包输入，须从原入口恢复
                 </option>
               )}

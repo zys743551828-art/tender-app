@@ -5,7 +5,10 @@ from packages.domain.runtime import DomainError, audit, clean, fetch, sha
 
 
 def capture(c, bid, configuration):
-    if configuration["source_selection"]["mode"] == "exact_package_review":
+    if configuration["source_selection"]["mode"] in (
+        "exact_package_review",
+        "exact_package_trigger",
+    ):
         raise DomainError(
             "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
             "精确整包任务必须使用独立的原件核验与原子启动入口，不能读取当前正文替代",

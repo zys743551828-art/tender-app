@@ -47,6 +47,9 @@ def test_frozen_schema_contains_current_features_and_explicit_optional_capabilit
     paths = {item.path for item in plan}
     assert recovery.REQUIRED_BASE <= paths and set(recovery.EXTENSIONS) <= paths
     assert len(paths) == len(plan)
+    assert "deploy/sql/retrospective-research.sql" not in paths
+    assert "deploy/sql/package-score-execution.sql" not in paths
+    assert "deploy/sql/package-score-reconciliation.sql" not in paths
     assert all(run.digest(item.content) == item.sha256 for item in plan)
     assert recovery.plan_receipt(plan) == [
         {"path": item.path, "sha256": item.sha256} for item in plan

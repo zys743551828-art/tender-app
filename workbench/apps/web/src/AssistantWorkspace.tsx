@@ -24,6 +24,7 @@ import {
   isSelectedAssistantSource,
 } from "./assistantState";
 import { AssistantSourcePicker } from "./AssistantSourcePicker";
+import { AssistantSourceSurface } from "./AssistantSourceSurface";
 import { AssistantActionCard, AssistantJobCard } from "./AssistantActionCard";
 import { Badge, ErrorNotice } from "./components";
 import { ArtifactActions } from "./ArtifactActions";
@@ -397,6 +398,9 @@ function ConversationContent({
     (!!messages.data || !!messages.error) && !messages.loading && !jobs.loading,
     !new URLSearchParams(window.location.search).has("action"),
   );
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const previousMessages = messages.items.slice(0, -2);
+  const currentMessages = messages.items.slice(-2);
   return (
     <div className="assistant-conversation" ref={continuation.content}>
       <nav className="assistant-continue-bar" aria-label="会话快速定位">
@@ -419,7 +423,10 @@ function ConversationContent({
           <button
             className="text-button"
             disabled={messages.moreBusy}
-            onClick={() => void messages.more()}
+            onClick={() => {
+              setHistoryOpen(true);
+              void messages.more();
+            }}
           >
             加载更早消息
           </button>
@@ -429,7 +436,23 @@ function ConversationContent({
             尚无已保存消息。下方草稿只有明确保存或受理后才进入服务器记录。
           </p>
         )}
-        {messages.items.map((message) => (
+        {previousMessages.length > 0 && (
+          <details
+            className="assistant-history"
+            open={historyOpen}
+            onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
+          >
+            <summary>更早的讨论 · {previousMessages.length} 条已读取</summary>
+            {previousMessages.map((message) => (
+              <AssistantMessageCard
+                key={message.id}
+                message={message}
+                memberId={memberId}
+              />
+            ))}
+          </details>
+        )}
+        {currentMessages.map((message) => (
           <AssistantMessageCard
             key={message.id}
             message={message}
@@ -740,16 +763,18 @@ function AssistantComposer({
           ＋ / @ 选择可信来源
         </button>
         {showSources && (
-          <AssistantSourcePicker
-            bidId={conversation.bid_id}
-            selected={sources}
-            onChange={(value) => {
-              capture();
-              setSources(value);
-            }}
-            disabled={locked}
-            traceId={new URLSearchParams(window.location.search).get("trace")}
-          />
+          <AssistantSourceSurface onClose={() => setShowSources(false)}>
+            <AssistantSourcePicker
+              bidId={conversation.bid_id}
+              selected={sources}
+              onChange={(value) => {
+                capture();
+                setSources(value);
+              }}
+              disabled={locked}
+              traceId={new URLSearchParams(window.location.search).get("trace")}
+            />
+          </AssistantSourceSurface>
         )}
         {sources.some((source) => source.reference.kind === "section") && (
           <label>
