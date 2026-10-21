@@ -7,6 +7,7 @@ import type {
 import { ErrorNotice } from "./components";
 import { packageReviewEnded } from "./packageReviewProtocol";
 import { definitelyRejectedPackageReview } from "./packageReviewRecovery";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 import type { PendingPackageReviewCancel } from "./packageReviewRecovery";
 import { validPackageReviewReportOperation } from "./packageReviewReportProtocol";
 import {
@@ -47,6 +48,11 @@ export default function PackageReviewReportCancel({
   const path = `/operations/${report.operation.id}`,
     available =
       supportsApi("GET", path) && supportsApi("POST", `${path}/cancel`);
+  usePackageScopeGuard(`cancel-report:${memberId}:${report.id}`, {
+    busy,
+    pending: !!pending || !!loaded.error,
+    dirty: !!reason && !pending,
+  });
   useEffect(() => {
     active.current = true;
     return () => {
@@ -85,6 +91,7 @@ export default function PackageReviewReportCancel({
           throw new Error("报告任务身份或状态版本不符，未请求取消其他任务。");
         if (packageReviewEnded(data.state)) {
           setOpen(false);
+          setReason("");
           setNotice("报告任务已经结束，未发送新的取消请求。已重新读取原报告。");
           await onReload();
           return;
@@ -115,6 +122,7 @@ export default function PackageReviewReportCancel({
       setNotice("报告取消回执已确认，最终生成状态以重读报告为准。");
       persist(null);
       setOpen(false);
+      setReason("");
       await onReload();
     } catch (failure) {
       if (active.current) setError(failure);
@@ -185,6 +193,19 @@ export default function PackageReviewReportCancel({
             </button>
           </form>
         )
+      )}
+      {!pending && !!reason && (
+        <button
+          type="button"
+          className="text-button"
+          disabled={busy}
+          onClick={() => {
+            setReason("");
+            setOpen(false);
+          }}
+        >
+          放弃未发送的报告取消理由
+        </button>
       )}
       {notice && <p role="status">{notice}</p>}
       {error != null && <ErrorNotice error={error} />}

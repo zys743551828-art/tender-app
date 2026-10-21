@@ -29,6 +29,10 @@ import DependencyRequirementPager, {
   DEPENDENCY_PAGE_SIZE,
 } from "./DependencyRequirementPager";
 import { assertDependencyRequestFits } from "./dependencyRequestLimits";
+import {
+  usePackageScopeGuard,
+  usePackageScopeState,
+} from "./packageScopeGuard";
 
 const PackageDependencyPlanWorkspace = lazy(
   () => import("./PackageDependencyPlanWorkspace"),
@@ -65,6 +69,8 @@ export default function PackageInputDependencyWorkspace(props: Props) {
   );
 }
 function Workspace(props: Props) {
+  const scopeState = usePackageScopeState();
+  const [savedDrafts, setSavedDrafts] = useState<string | null>(null);
   const [inventory, setInventory] =
       useState<PackageRequirementInventoryView | null>(null),
     [drafts, setDrafts] = useState<
@@ -88,6 +94,12 @@ function Workspace(props: Props) {
     ticket = useRef(0);
   const path = dependencyPath(props),
     available = supportsApi("POST", path);
+  const draftIdentity = JSON.stringify({ drafts, selected });
+  const dirty =
+    !!editing ||
+    ((Object.keys(drafts).length > 0 || selected.length > 0) &&
+      savedDrafts !== draftIdentity);
+  usePackageScopeGuard(`dependencies:${path}`, { busy, dirty });
   const resultById = useMemo(
     () =>
       new Map(
@@ -241,6 +253,22 @@ function Workspace(props: Props) {
           >
             {busy && !inventory ? "正在读取原要求…" : "读取原要求清单"}
           </button>
+          {dirty && (
+            <button
+              type="button"
+              className="button secondary"
+              disabled={busy || scopeState.pending}
+              onClick={() => {
+                invalidate();
+                setDrafts({});
+                setSelected([]);
+                setEditing(null);
+                setSavedDrafts(null);
+              }}
+            >
+              放弃未保存的依赖标注
+            </button>
+          )}
           <button
             type="button"
             className="button secondary"
@@ -538,6 +566,13 @@ function Workspace(props: Props) {
             {...props}
             candidate={checkedPlan}
             onRecheck={invalidate}
+            onSaved={(plan) => {
+              if (
+                checkedPlan?.assessment.digest ===
+                plan.manifest.assessment.digest
+              )
+                setSavedDrafts(draftIdentity);
+            }}
           />
         </Suspense>
       </div>

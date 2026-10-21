@@ -1,4 +1,52 @@
-import type { RunView, TemplateRequest } from "./contracts";
+import type {
+  ExactPackageReviewSelection,
+  RunView,
+  TemplateRequest,
+} from "./contracts";
+import { recordObject } from "./executionInputValidation";
+export function isExactPackageTask(
+  configuration: TemplateRequest,
+): configuration is TemplateRequest & {
+  source_selection: ExactPackageReviewSelection;
+} {
+  return configuration.source_selection?.mode === "exact_package_review";
+}
+export const exactPackageTaskScope =
+  "只核查明确选择的整包修订、需求清单、冻结输入和依赖计划；范围覆盖仍为部分，不授予正式评分或提交资格。";
+/** Equality for the read-only form scope, never an authorization decision. */
+export function sameTaskPackageSource(a: TemplateRequest, b: TemplateRequest) {
+  if (!isExactPackageTask(a) || !isExactPackageTask(b)) return false;
+  const left = a.source_selection.input;
+  const right = b.source_selection.input;
+  return (
+    left != null &&
+    right != null &&
+    Object.keys(left).length === Object.keys(right).length &&
+    Object.entries(left).every(
+      ([key, value]) =>
+        Object.prototype.hasOwnProperty.call(right, key) &&
+        right[key as keyof typeof right] === value,
+    )
+  );
+}
+/** A claimed package subject must pass package validation; it cannot fall back to single-body UI. */
+export function claimsExactPackageRun(value: RunView) {
+  const manifest = value.frozen_manifest;
+  if (!recordObject(manifest)) return false;
+  const context = manifest.context;
+  const config = manifest.configuration;
+  return (
+    manifest.schema === "task-package-run/1" ||
+    (recordObject(context) &&
+      recordObject(context.subject) &&
+      context.subject.kind === "bid_package") ||
+    (recordObject(config) &&
+      recordObject(config.source_selection) &&
+      config.source_selection.mode === "exact_package_review") ||
+    (recordObject(value.result) &&
+      value.result.kind === "declared_package_scope_review")
+  );
+}
 export const taskNames: Record<TemplateRequest["task_kind"], string> = {
   denial_check: "否决核对",
   scoring_review: "评分核对",

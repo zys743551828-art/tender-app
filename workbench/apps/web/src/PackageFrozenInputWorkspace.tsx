@@ -21,6 +21,7 @@ import type {
 import "./packageFrozenInput.css";
 import PackageFrozenInputDirectory from "./PackageFrozenInputDirectory";
 import PackageReviewEligibility from "./PackageReviewEligibility";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 import { matchesFrozenInputSummary } from "./frozenInputDirectory";
 import type { FrozenInputSummary } from "./frozenInputDirectory";
 const PackageFactChangeWorkspace = lazy(
@@ -77,6 +78,10 @@ function Workspace({ scope, candidate, disabled = false }: Props) {
     };
   }, []);
   const path = freezePath(scope);
+  usePackageScopeGuard(`freeze:${JSON.stringify(scope)}`, {
+    busy,
+    pending: !!record?.pending || !!loaded.error,
+  });
   const available = supportsApi("POST", path);
   function persist(next: FreezeRecord) {
     storeFreezeRecord(next);

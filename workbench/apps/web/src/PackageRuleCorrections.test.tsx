@@ -255,9 +255,10 @@ beforeEach(() => {
 it("keeps preview separate from save and submits exact frozen-source content only after explicit confirmation", async () => {
   const { server } = await setup(),
     user = userEvent.setup(),
-    { props } = mount(server);
+    { props } = mount(server, { onDirtyChange: vi.fn() });
   expect(server.writes).toHaveLength(0);
   await queueAdd(user);
+  expect(props.onDirtyChange).toHaveBeenLastCalledWith(true);
   await previewAndConfirm(user);
   expect(server.writes.map((item) => item.kind)).toEqual(["preview"]);
   expect(screen.getByText(/解析仍有缺口/)).toBeVisible();
@@ -280,6 +281,21 @@ it("keeps preview separate from save and submits exact frozen-source content onl
   await waitFor(() =>
     expect(props.onPendingChange).toHaveBeenLastCalledWith(false),
   );
+  expect(props.onDirtyChange).toHaveBeenLastCalledWith(false);
+});
+it("reports an unfinished inner editor until the member explicitly cancels it", async () => {
+  const { server } = await setup(),
+    user = userEvent.setup(),
+    onDirtyChange = vi.fn();
+  mount(server, { onDirtyChange });
+  await openEditor(user);
+  fireEvent.change(screen.getByLabelText("条款解释"), {
+    target: { value: "尚未加入预览的合成解释" },
+  });
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true);
+  await user.click(screen.getByRole("button", { name: "取消本项编辑" }));
+  expect(onDirtyChange).toHaveBeenLastCalledWith(false);
+  expect(server.writes).toHaveLength(0);
 });
 it("recovers a lost successful ACK with the identical body/key/etag after remount, even if the current inventory changed", async () => {
   const { server, accept } = await setup(),

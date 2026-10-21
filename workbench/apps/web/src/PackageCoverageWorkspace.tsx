@@ -21,6 +21,7 @@ type Props = {
   disabled: boolean;
   onSaved: (inventoryId: string, attemptId: string) => void;
   onPendingChange?: (locked: boolean) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 };
 type Context = {
   inventory: PackageRequirementInventoryView;
@@ -203,6 +204,7 @@ export function PackageCoverageWorkspace({
   disabled,
   onSaved,
   onPendingChange,
+  onDirtyChange,
 }: Props) {
   const p = packageView.manifest;
   const scope: Pending["scope"] = {
@@ -241,7 +243,13 @@ export function PackageCoverageWorkspace({
   const [notice, setNotice] = useState("");
   useEffect(() => {
     onPendingChange?.(busy || !!pending || recovery.blocked);
+    return () => onPendingChange?.(false);
   }, [busy, pending, recovery.blocked, onPendingChange]);
+  const dirty = !!draft && value.dirty;
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+    return () => onDirtyChange?.(false);
+  }, [dirty, onDirtyChange]);
   const active = useRef(true);
   useEffect(() => {
     active.current = true;

@@ -31,6 +31,10 @@ const Knowledge = lazy(() =>
 );
 import { CreateIdentityForm } from "./Identity";
 import type { WorkspacePage } from "./workspaceTypes";
+import {
+  packageLocation,
+  type PackageNavigationTarget,
+} from "./packageNavigation";
 
 function projectFromPath(pathname: string) {
   return pathname.match(/^\/bids\/([^/]+)/)?.[1] ?? null;
@@ -87,6 +91,7 @@ export function App() {
       page?: WorkspacePage,
       reviewId?: string,
       draftId?: string,
+      packageTarget?: PackageNavigationTarget | null,
     ) => {
       if (navigating.current) return;
       navigating.current = true;
@@ -96,14 +101,34 @@ export function App() {
         const query = new URLSearchParams();
         if (reviewId) query.set("review", reviewId);
         if (draftId) query.set("draft", draftId);
-        const path = id
-          ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
-          : "/projects";
+        const path =
+          id && page === "packages"
+            ? packageLocation(id, packageTarget ?? null)
+            : id
+              ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
+              : "/projects";
         window.history.pushState({}, "", path);
         setRoute(path);
       } finally {
         navigating.current = false;
       }
+    },
+    [],
+  );
+  // Business panels call this after their local scope guard or a verified ACK.
+  // It records the already selected mounted view; external navigation still uses navigate().
+  const locatePackage = useCallback(
+    (
+      bidId: string,
+      target: PackageNavigationTarget | null,
+      replace = false,
+    ) => {
+      if (routeRef.current.split("?")[0] !== `/bids/${bidId}/packages`) return;
+      const path = packageLocation(bidId, target);
+      if (path === routeRef.current) return;
+      if (replace) window.history.replaceState({}, "", path);
+      else window.history.pushState({}, "", path);
+      setRoute(path);
     },
     [],
   );
@@ -311,6 +336,18 @@ export function App() {
                 route={route}
                 onOpenDraft={(draftId) =>
                   void navigate(projectId, "authoring", undefined, draftId)
+                }
+                onOpenPackage={(target) =>
+                  void navigate(
+                    projectId,
+                    "packages",
+                    undefined,
+                    undefined,
+                    target,
+                  )
+                }
+                onPackageLocation={(target, replace) =>
+                  locatePackage(projectId, target, replace)
                 }
                 onBack={() => navigate(null)}
                 onNavigate={(page, reviewId) =>

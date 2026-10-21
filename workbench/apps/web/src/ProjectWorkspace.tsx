@@ -31,7 +31,7 @@ import { ReviewHistory } from "./ReviewHistory";
 import { RetrievalDrawer } from "./RetrievalDrawer";
 import { Project } from "./Project";
 import { ResourceState } from "./ResourceState";
-import { ReviewPanel, ReviewStart } from "./ReviewPanel";
+import { ReviewPanel } from "./ReviewPanel";
 import { RulesPanel } from "./RulesPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { IdentityPanel } from "./Identity";
@@ -42,12 +42,21 @@ import { NextActionControl } from "./NextActionControl";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { parseWorkspacePage, workspacePages } from "./workspaceTypes";
 import type { WorkspacePage } from "./workspaceTypes";
+import { PackageOverviewNextStep } from "./PackageOverviewNextStep";
+import { PackageNavigationWorkspace } from "./PackageNavigationWorkspace";
+import {
+  packageLocation,
+  parsePackageLocation,
+  type PackageNavigationTarget,
+} from "./packageNavigation";
 
 export function ProjectWorkspace({
   id,
   route,
   memberId = "",
   onOpenDraft,
+  onOpenPackage,
+  onPackageLocation,
   onBack,
   onNavigate,
 }: {
@@ -55,6 +64,11 @@ export function ProjectWorkspace({
   route: string;
   memberId?: string;
   onOpenDraft?: (id: string) => void;
+  onOpenPackage?: (target: PackageNavigationTarget | null) => void;
+  onPackageLocation?: (
+    target: PackageNavigationTarget | null,
+    replace?: boolean,
+  ) => void;
   onBack: () => void;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
 }) {
@@ -90,30 +104,53 @@ export function ProjectWorkspace({
     "review",
   );
   useEffect(() => {
-    if (page === "home" && bid && !(reviewState.loading && !state)) {
+    if (page === "home" && bid) {
       let saved: WorkspacePage | null = null;
       let savedReview: string | undefined;
+      let savedPackage: PackageNavigationTarget | null = null;
       try {
         const value = localStorage.getItem(`tender:position:${id}`);
         if (value) {
           const position = JSON.parse(value) as {
             page: string;
             reviewId?: string;
+            packageTarget?: PackageNavigationTarget | null;
           };
           if (workspacePages.some(([key]) => key === position.page)) {
             saved = position.page as WorkspacePage;
             savedReview = position.reviewId;
+            if (saved === "packages" && position.packageTarget) {
+              try {
+                const parsed = parsePackageLocation(
+                  packageLocation(id, position.packageTarget),
+                );
+                if (parsed.ok) savedPackage = parsed.target;
+                else saved = "overview";
+              } catch {
+                saved = "overview";
+              }
+            }
           }
         }
       } catch {
         /* Browser preferences do not establish a business state. */
       }
-      onNavigate(saved ?? (defaultReview ? "review" : "overview"), savedReview);
+      if (saved === "packages" && onOpenPackage) onOpenPackage(savedPackage);
+      else onNavigate(saved ?? "overview", savedReview);
     } else if (page !== "home") {
+      const packagePosition =
+        page === "packages" ? parsePackageLocation(route) : null;
+      if (packagePosition && !packagePosition.ok) return;
       try {
         localStorage.setItem(
           `tender:position:${id}`,
-          JSON.stringify({ page, reviewId: explicitReview ?? undefined }),
+          JSON.stringify({
+            page,
+            reviewId: explicitReview ?? undefined,
+            ...(packagePosition?.ok
+              ? { packageTarget: packagePosition.target }
+              : {}),
+          }),
         );
       } catch {
         /* A navigation preference cannot block the current workspace. */
@@ -128,6 +165,8 @@ export function ProjectWorkspace({
     reviewState.loading,
     state,
     defaultReview,
+    route,
+    onOpenPackage,
   ]);
   const nav =
     page === "home" ? null : (
@@ -186,21 +225,27 @@ export function ProjectWorkspace({
           memberId={memberId}
           onBack={onBack}
           onAuthoring={() => onNavigate("authoring")}
+          onPackages={() => onNavigate("packages")}
           navigation={nav}
           reviewNotice={
             <>
-              {(state?.request || stateError) && progress}
+              {(state?.request || stateError) && (
+                <details>
+                  <summary>单稿处理记录</summary>
+                  {progress}
+                </details>
+              )}
               <div className="notice neutral">
                 <div>
-                  <strong>资料入库与评审分别记录</strong>
+                  <strong>原件入库后明确选择整包修订</strong>
                   <p>
-                    解析完成不表示核心规则已满足。进入评审工作面查看真实执行范围、风险与下一步；已有历史原件及评审身份保留。
+                    解析完成不表示核心规则已满足。进入整包核查工作面选择确切包、要求清单和输入；已有单稿历史与原件继续保留。
                   </p>
                   <button
                     className="text-button"
-                    onClick={() => onNavigate("review")}
+                    onClick={() => onNavigate("packages")}
                   >
-                    查看评审与风险
+                    选择整包继续核查
                   </button>
                 </div>
               </div>
@@ -261,7 +306,9 @@ export function ProjectWorkspace({
       />
       {nav}
       {retrieval}
-      {!viewingOtherReview && progress}
+      {!viewingOtherReview &&
+        ["review", "matrix", "operations"].includes(page) &&
+        progress}
       {bid && (
         <>
           {page === "overview" &&
@@ -290,9 +337,22 @@ export function ProjectWorkspace({
             <Overview
               bid={bid}
               onNavigate={onNavigate}
-              onChanged={refresh}
-              reviewState={state}
-              statePending={statePending}
+              onOpenPackage={onOpenPackage ?? (() => onNavigate("packages"))}
+            />
+          )}
+          {page === "packages" && (
+            <PackageNavigationWorkspace
+              key={`${id}:${memberId}`}
+              bidId={id}
+              memberId={memberId}
+              route={route}
+              disabled={
+                !!bid.archived_at ||
+                bid.phase === "closed" ||
+                bid.phase === "terminated"
+              }
+              onLocation={onPackageLocation ?? (() => onNavigate("packages"))}
+              onReset={() => onNavigate("packages")}
             />
           )}
           {page === "review" && (
@@ -343,7 +403,7 @@ export function ProjectWorkspace({
                   bid.phase === "closed" ||
                   bid.phase === "terminated"
                 }
-                onPackages={() => onNavigate("materials")}
+                onPackages={() => onNavigate("packages")}
                 draftId={new URLSearchParams(route.split("?")[1] ?? "").get(
                   "draft",
                 )}
@@ -402,15 +462,11 @@ export function ProjectWorkspace({
 function Overview({
   bid,
   onNavigate,
-  onChanged,
-  reviewState,
-  statePending,
+  onOpenPackage,
 }: {
-  reviewState?: ReviewStateView;
-  statePending: boolean;
   bid: Bid;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
-  onChanged: () => void;
+  onOpenPackage: (target: PackageNavigationTarget | null) => void;
 }) {
   const materials = useResource<MaterialView>(
     `/bids/${bid.id}/materials`,
@@ -418,34 +474,19 @@ function Overview({
   );
   const counts = materials.data?.documents;
   const next = bid.next_action;
-  const page = actionTarget(bid.id, next)?.page;
   return (
     <div>
-      <section className="next-step overview-next-step">
-        <div className="next-step-icon">
-          <Icon name="arrow" />
-        </div>
-        <div>
-          <span className="eyebrow">当前主要下一步</span>
-          <h2>{next.reason}</h2>
-          <p>
-            来自当前业务记录；资料、覆盖、风险和提交资格分别判断，不以任务成功代替通过。
-          </p>
-          {page && page !== "review" && (
-            <NextActionControl
-              bidId={bid.id}
-              action={next}
-              onNavigate={onNavigate}
-            />
-          )}
-        </div>
-      </section>
+      <PackageOverviewNextStep
+        bidId={bid.id}
+        onOpen={onOpenPackage}
+        onMaterials={() => onNavigate("materials")}
+      />
       <section className="panel">
         <div className="section-heading">
           <div>
             <h2>当前资料</h2>
             <p className="muted">
-              已有PDF可直接开始；核对补遗是否完整，不按文件名或上传顺序推断生效关系。
+              核对原件及补遗的实际生效关系，再明确选入资料包；文件数和解析状态不代表整包齐全。
             </p>
           </div>
           <button
@@ -502,31 +543,47 @@ function Overview({
           </div>
         ))}
       </section>
-      {bid.current_review_id ? (
-        <section className="panel">
-          <div className="section-heading">
+      <section className="panel">
+        <details className="package-legacy-entry">
+          <summary>单稿评审历史与原流程</summary>
+          <p className="small-note">
+            以下建议来自单稿业务记录，不代表整包清单或整包核查的当前进度。原轮次、风险和原件继续可查。
+          </p>
+          <p>{next.reason}</p>
+          {actionTarget(bid.id, next) && (
+            <NextActionControl
+              bidId={bid.id}
+              action={next}
+              onNavigate={onNavigate}
+            />
+          )}
+          {bid.current_review_id && (
             <div>
-              <h2>已有可读取的评审轮次</h2>
-              <p className="muted">
-                打开风险、分层覆盖及对应原页，确认本轮是否仍属于当前资料。
-              </p>
+              <div className="section-heading">
+                <div>
+                  <h2>已有可读取的单稿轮次</h2>
+                  <p className="muted">
+                    打开风险、分层覆盖及对应原页，确认本轮是否仍属于当前资料。
+                  </p>
+                </div>
+                <button
+                  className="button primary"
+                  onClick={() => onNavigate("review", bid.current_review_id!)}
+                >
+                  打开此单稿轮次
+                </button>
+              </div>
             </div>
-            <button
-              className="button primary"
-              onClick={() => onNavigate("review")}
-            >
-              打开当前评审
-            </button>
-          </div>
-        </section>
-      ) : page === "review" ? (
-        <ReviewStart
-          bid={bid}
-          onAccepted={onChanged}
-          reviewState={reviewState}
-          statePending={statePending}
-        />
-      ) : null}
+          )}
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => onNavigate("review")}
+          >
+            查看单稿评审历史工作面
+          </button>
+        </details>
+      </section>
     </div>
   );
 }

@@ -10,6 +10,10 @@ from packages.tasks import inputs, templates
 
 
 def operations(c, row):
+    from packages.tasks import package_repository
+
+    if package_repository.is_package(row):
+        return [UUID(package_repository.native(c, row)["operation"]["id"])]
     manifest = row["frozen_manifest"]
     ids = [row["operation_id"]]
     if manifest["task_kind"] == "denial_check":
@@ -53,6 +57,10 @@ def operations(c, row):
 
 def billing_operations(c, row):
     ids = operations(c, row)
+    from packages.tasks import package_repository
+
+    if package_repository.is_package(row):
+        return ids
     frozen = row["frozen_manifest"]
     if frozen["task_kind"] == "denial_check":
         possible = c.execute(
@@ -70,6 +78,10 @@ def billing_operations(c, row):
 
 def view(c, bid, identity):
     row = fetch(c, "SELECT * FROM task_runs WHERE bid_id=%s AND id=%s", (bid, identity))
+    from packages.tasks import package_repository
+
+    if package_repository.is_package(row):
+        return package_repository.view(c, row)
     frozen = row["frozen_manifest"]
     ids = operations(c, row)
     root = fetch(
@@ -180,6 +192,12 @@ def dispatch(
         raise DomainError("TASK_TEMPLATE_PAUSED", "模板已暂停；在途任务没有取消", 409)
     config = row["config"]["definition"]
     kind = config["task_kind"]
+    if config["source_selection"]["mode"] == "exact_package_review":
+        raise DomainError(
+            "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
+            "精确整包任务当前只接受显式手动入口；旧定时器、资料事件或当前正文流程不能代为启动",
+            409,
+        )
     if kind == "scoring_review":
         raise DomainError(
             "TASK_SCORING_NOT_QUALIFIED",

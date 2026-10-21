@@ -20,6 +20,7 @@ export function NextActionControl({
     );
   const label: Record<WorkspacePage, string> = {
     materials: "上传与核对资料",
+    packages: "打开整包核查",
     authoring: "打开章节编制",
     pricing: "查看报价情景",
     outcomes: "查看实交与成绩",

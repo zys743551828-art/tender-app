@@ -158,6 +158,20 @@ def get_template_version(bid_id: UUID, definition_id: UUID, version_id: UUID, r:
 )
 def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest):
     actor = auth(r, True)
+    from packages.tasks import package_runs
+
+    package_result = package_runs.start(
+        actor["member_id"],
+        bid_id,
+        definition_id,
+        r.headers.get("idempotency-key"),
+        r.headers.get("if-match"),
+        body.model_dump(mode="json"),
+        final_auth=lambda: auth(r, True)["member_id"],
+    )
+    if package_result is not None:
+        saved, replay = package_result
+        return response(saved, replay)
     with connection() as c:
         lock(c, bid_id)
         row = templates.current(c, bid_id, definition_id)
@@ -244,9 +258,15 @@ def task_recoveries(
 def task_kinds(r: Request):
     auth(r)
     from packages.domain import reviews
+    from packages.domain.package_scope_review import method_profile
+    from packages.domain.review_identity import digest
     from packages.tasks.inputs import review_guard
+    from packages.tasks.package_runs import available
 
     review_ready = getattr(reviews, "TASK_INPUT_GUARD", None) is review_guard
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        package_ready = available(c)
     return {
         "items": [
             {
@@ -256,6 +276,17 @@ def task_kinds(r: Request):
                 "execution": "existing_review_control_plane" if review_ready else "unavailable",
                 "reason": None if review_ready else "TASK_REVIEW_EXECUTOR_NOT_READY",
                 "formal_scoring_eligible": False,
+                "exact_package_manual": {
+                    "available": package_ready,
+                    "reason": None if package_ready else "TASK_PACKAGE_EXECUTOR_NOT_READY",
+                    "input_mode": "exact_package_review",
+                    "method_digest": digest(method_profile()),
+                    "trigger": "manual",
+                    "overall_coverage": "partial",
+                    "formal_scoring_eligible": False,
+                    "submission_eligible": False,
+                    "automatic_input_selection": False,
+                },
             },
             {
                 "task_kind": "scoring_review",

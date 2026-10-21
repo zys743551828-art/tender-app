@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import PackageFactCheck from "./PackageFactCheck";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 import type {
   PackageExecutionInputView,
   PackageReviewEligibilityObservation,
@@ -79,6 +80,11 @@ function Workspace({
   );
   const rerunReasonInput = useRef<HTMLTextAreaElement>(null);
   const path = executionPath(scope, frozen.manifest.id);
+  usePackageScopeGuard(`execution:${JSON.stringify(recordScope)}`, {
+    busy,
+    pending: !!record?.pending || !!loaded.error,
+    dirty: rerunOpen && !!rerunReason && !record?.pending,
+  });
   const available = supportsApi("POST", path);
   useEffect(() => {
     active.current = true;
@@ -273,6 +279,17 @@ function Workspace({
             }
           >
             保存带理由的复检准备
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy || !!record?.pending}
+            onClick={() => {
+              setRerunOpen(false);
+              setRerunReason("");
+            }}
+          >
+            放弃未发送的复检理由
           </button>
         </form>
       )}

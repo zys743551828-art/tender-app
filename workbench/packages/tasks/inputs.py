@@ -1,10 +1,16 @@
 """Server-side task context; instruction text is never executable configuration."""
 
 from packages.domain.reviews import method_profile
-from packages.domain.runtime import audit, clean, fetch, sha
+from packages.domain.runtime import DomainError, audit, clean, fetch, sha
 
 
 def capture(c, bid, configuration):
+    if configuration["source_selection"]["mode"] == "exact_package_review":
+        raise DomainError(
+            "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
+            "精确整包任务必须使用独立的原件核验与原子启动入口，不能读取当前正文替代",
+            409,
+        )
     profile = fetch(
         c,
         "SELECT b.material_revision,b.settings,p.current_body_id,p.current_material_id,p.current_rule_set_id FROM bids b JOIN bid_profiles p ON p.bid_id=b.id WHERE b.id=%s",

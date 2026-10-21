@@ -13,6 +13,7 @@ import {
   definitelyRejectedPackageReview,
 } from "./packageReviewRecovery";
 import type { PendingPackageReviewCancel } from "./packageReviewRecovery";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 type Props = DependencyProps & {
   run: PackageReviewRunView;
@@ -39,6 +40,11 @@ export default function PackageReviewCancel(props: Props) {
   const path = `/operations/${run.operation.id}`,
     available =
       supportsApi("GET", path) && supportsApi("POST", `${path}/cancel`);
+  usePackageScopeGuard(`cancel-review:${props.scope.memberId}:${run.id}`, {
+    busy,
+    pending: !!pending || !!loaded.error,
+    dirty: !!reason && !pending,
+  });
   useEffect(() => {
     active.current = true;
     return () => {
@@ -81,6 +87,7 @@ export default function PackageReviewCancel(props: Props) {
         if (packageReviewEnded(operation.state)) {
           setNotice("任务已经结束，未再发送取消请求。已重新读取本次核查状态。");
           setOpen(false);
+          setReason("");
           await props.onReload();
           return;
         }
@@ -109,6 +116,7 @@ export default function PackageReviewCancel(props: Props) {
       if (!active.current) return;
       persist(null);
       setOpen(false);
+      setReason("");
       setNotice("取消请求已确认，最终状态以重新读取的本次核查记录为准。");
       await props.onReload();
     } catch (failure) {
@@ -182,6 +190,19 @@ export default function PackageReviewCancel(props: Props) {
             </button>
           </form>
         )
+      )}
+      {!pending && !!reason && (
+        <button
+          type="button"
+          className="text-button"
+          disabled={busy}
+          onClick={() => {
+            setReason("");
+            setOpen(false);
+          }}
+        >
+          放弃未发送的核查取消理由
+        </button>
       )}
       {notice && <p role="status">{notice}</p>}
       {error != null && <ErrorNotice error={error} />}

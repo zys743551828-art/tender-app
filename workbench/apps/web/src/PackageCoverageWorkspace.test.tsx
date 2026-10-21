@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { PackageCoverageWorkspace } from "./PackageCoverageWorkspace";
@@ -227,6 +227,68 @@ beforeEach(() => {
   sessionStorage.clear();
   vi.unstubAllGlobals();
   props.onSaved.mockClear();
+});
+
+it("reports actual unsent edits and clears only the draft guard on explicit cancel or a verified save", async () => {
+  const writes = install(),
+    dirty = vi.fn(),
+    pending = vi.fn();
+  render(
+    <PackageCoverageWorkspace
+      {...props}
+      onDirtyChange={dirty}
+      onPendingChange={pending}
+    />,
+  );
+  expect(dirty).toHaveBeenLastCalledWith(false);
+  await fill();
+  expect(dirty).toHaveBeenLastCalledWith(true);
+  await userEvent.click(
+    screen.getByRole("button", { name: "放弃未发送或已明确失败的填写" }),
+  );
+  expect(dirty).toHaveBeenLastCalledWith(false);
+  expect(writes).toHaveLength(0);
+  await fill();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存本次人工范围记录" }),
+  );
+  await screen.findByText(/已保存本次人工范围记录/);
+  await waitFor(() => expect(dirty).toHaveBeenLastCalledWith(false));
+  expect(pending).toHaveBeenLastCalledWith(false);
+});
+
+it("does not release an unknown original command when its selected inventory changes", async () => {
+  install(async () => {
+    throw new TypeError("synthetic lost ACK");
+  });
+  const pending = vi.fn(),
+    dirty = vi.fn();
+  const view = render(
+    <PackageCoverageWorkspace
+      {...props}
+      onDirtyChange={dirty}
+      onPendingChange={pending}
+    />,
+  );
+  await fill();
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存本次人工范围记录" }),
+  );
+  await screen.findByText(/保存结果未知/);
+  const original = sessionStorage.getItem(storage);
+  view.rerender(
+    <PackageCoverageWorkspace
+      {...props}
+      inventory={null}
+      onDirtyChange={dirty}
+      onPendingChange={pending}
+    />,
+  );
+  expect(pending).toHaveBeenLastCalledWith(true);
+  expect(sessionStorage.getItem(storage)).toBe(original);
+  expect(
+    screen.getByRole("button", { name: "放弃未发送或已明确失败的填写" }),
+  ).toBeDisabled();
 });
 
 it("requires explicit start and saves exact digest-bound observations without inventing an ETag", async () => {

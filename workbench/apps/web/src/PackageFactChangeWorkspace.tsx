@@ -27,6 +27,7 @@ import type { FactChangeRecord } from "./factChangeRecovery";
 import PackageFactEvidenceChoices from "./PackageFactEvidenceChoices";
 import type { FactEvidenceChoice } from "./PackageFactEvidenceChoices";
 import "./packageFactChange.css";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 type Props = {
   scope: FreezeScope;
@@ -126,6 +127,11 @@ function Workspace({
       supportsApi("POST", `${base}/fact-confirmations`) &&
       supportsApi("POST", `${base}/fact-withdrawals`);
   const locked = disabled || busy || !!record?.pending || !record;
+  usePackageScopeGuard(`fact-change:${JSON.stringify(keyScope)}`, {
+    busy,
+    pending: !!record?.pending || !!loaded.error,
+    dirty: !record?.pending && (!!form || !!withdrawReason),
+  });
   useEffect(() => {
     const requests = [listTicket, detailTicket, historyTicket];
     for (const request of requests) request.current++;

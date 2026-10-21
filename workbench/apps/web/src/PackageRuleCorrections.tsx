@@ -46,6 +46,7 @@ type Props = {
   currentKnown: boolean;
   disabled?: boolean;
   onPendingChange: (value: boolean) => void;
+  onDirtyChange?: (value: boolean) => void;
   onApplied: (inventoryId: string) => void;
   onRefresh: () => void;
 };
@@ -57,6 +58,7 @@ function DraftCorrection({
   current,
   rejection,
   onBusy,
+  onDirty,
   onApply,
 }: {
   scope: CorrectionScope;
@@ -66,6 +68,7 @@ function DraftCorrection({
   current: boolean;
   rejection: number;
   onBusy: (busy: boolean) => void;
+  onDirty?: (dirty: boolean) => void;
   onApply: (pending: PendingCorrection) => Promise<void>;
 }) {
   const base = correctionBase(inventory);
@@ -79,6 +82,12 @@ function DraftCorrection({
   const [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null);
+  const [formVersion, setFormVersion] = useState(0);
+  const dirty = changes.length > 0 || reason.length > 0 || editing;
+  useEffect(() => {
+    onDirty?.(dirty);
+    return () => onDirty?.(false);
+  }, [dirty, onDirty]);
   const active = useRef(false),
     running = useRef(false);
   useEffect(() => {
@@ -224,6 +233,7 @@ function DraftCorrection({
         <p role="alert">清单缺少准确版本条件，修订暂不可用。</p>
       )}
       <PackageRuleCorrectionForm
+        key={formVersion}
         scope={scope}
         base={base}
         inventory={inventory}
@@ -266,6 +276,24 @@ function DraftCorrection({
         >
           {busy ? "正在核对原清单…" : "预览本次修订"}
         </button>
+        {dirty && (
+          <button
+            type="button"
+            className="secondary"
+            disabled={disabled || busy}
+            onClick={() => {
+              setChanges([]);
+              setReason("");
+              setEditing(false);
+              setPreview(null);
+              setConfirmed(false);
+              setError(null);
+              setFormVersion((value) => value + 1);
+            }}
+          >
+            放弃未发送或已明确失败的规则修订
+          </button>
+        )}
         {editing && (
           <p className="small-note">
             先将正在编辑的条款加入本次修订，或取消该项编辑。
@@ -319,6 +347,7 @@ export function PackageRuleCorrections({
   currentKnown,
   disabled = false,
   onPendingChange,
+  onDirtyChange,
   onApplied,
   onRefresh,
 }: Props) {
@@ -516,7 +545,7 @@ export function PackageRuleCorrections({
         )}
         {valid && inventory && (
           <DraftCorrection
-            key={`${inventory.manifest.id}:${inventory.digest}`}
+            key={`${inventory.manifest.id}:${inventory.digest}:${historyVersion}`}
             scope={scope}
             inventory={inventory}
             etag={inventoryEtag}
@@ -526,6 +555,7 @@ export function PackageRuleCorrections({
             }
             rejection={rejection}
             onBusy={onDraftBusy}
+            onDirty={onDirtyChange}
             onApply={send}
           />
         )}

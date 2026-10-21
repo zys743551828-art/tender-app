@@ -26,6 +26,7 @@ import {
 } from "./packageReviewDecisionRecovery";
 import { definitelyRejectedPackageReview } from "./packageReviewRecovery";
 import { frozenManifestDigest } from "./packageFrozenInput";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 type Head = PackageReviewHumanDecisionCurrent["items"][number]["current"];
 const emptyDraft: PackageReviewDecisionDraft = { reason: "", quoteIndexes: [] };
@@ -57,6 +58,15 @@ export function usePackageReviewDecisions(p: PackageReviewDecisionProps) {
     ticket = useRef(0),
     headsRef = useRef<PackageReviewHumanDecisionCurrent | null>(null),
     observedHeads = useRef(new Map<string, NonNullable<Head>>());
+  usePackageScopeGuard(`decisions:${p.scope.memberId}:${p.run.id}`, {
+    busy,
+    pending: !!record?.pending || !!loaded.error,
+    dirty:
+      !record?.pending &&
+      Object.values(record?.drafts ?? {}).some(
+        (value) => !!value.reason || !!value.quoteIndexes.length,
+      ),
+  });
   useEffect(() => {
     active.current = true;
     const requests = ticket;

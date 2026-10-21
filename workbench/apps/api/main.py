@@ -61,6 +61,7 @@ from apps.api.views import (
 from apps.api.word_intake_routes import router as word_router
 from apps.api.word_material_routes import router as word_material_router
 from packages.domain import storage, word_materials
+from packages.domain.object_transfer_mode import same_origin as same_origin_transfers
 from packages.domain.parsing_profile import configured_parser
 from packages.domain.parsing_profile import profile as parser_profile
 from packages.domain.reviews import on_material_commit
@@ -586,7 +587,7 @@ def create_upload(bid_id: UUID, r: Request, body: dict = Body(...)):
                 revision=1,
                 expires_at=min(now() + timedelta(minutes=15), expires),
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(key, "put_object"),
             "part_size": body["byte_size"],
             "part_count": 1,
@@ -1094,7 +1095,7 @@ def download(artifact_id: UUID, r: Request):
                 filename=doc["original_name"],
                 byte_size=doc["byte_size"],
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(doc["object_key"]),
             "expires_at": (now() + timedelta(minutes=15)).isoformat(),
             "filename": doc["original_name"],
@@ -1169,7 +1170,7 @@ def refresh_upload(upload_id: UUID, r: Request, body: dict = Body(...)):
                 revision=revision,
                 expires_at=expires,
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(
                 u["staging_key"],
                 "put_object",

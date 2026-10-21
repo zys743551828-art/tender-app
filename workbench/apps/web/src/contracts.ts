@@ -3642,7 +3642,7 @@ export type TemplateRequest = {
     | "chapter_suggestion";
   instructions: string;
   section_id?: string | null;
-  source_selection?: SourceSelection;
+  source_selection?: SourceSelection | ExactPackageReviewSelection;
   trigger?: Trigger;
 };
 
@@ -3735,7 +3735,7 @@ export type TaskScheduleRecoveryPage = {
 export type TaskDraftRequest = {
   request: string;
   section_id?: string | null;
-  source_selection?: SourceSelection;
+  source_selection?: SourceSelection | ExactPackageReviewSelection;
 };
 
 export type TaskDraftView = {
@@ -6737,6 +6737,11 @@ export type SourceSelection = {
   version_ids?: string[];
 };
 
+export type ExactPackageReviewSelection = {
+  mode: "exact_package_review";
+  input: PackageReviewSelection;
+};
+
 export type Trigger = {
   mode?: "manual" | "material_updated" | "schedule";
   cron?: string | null;
@@ -6769,6 +6774,7 @@ export type TaskKindView = {
   semantic_impact_coverage?: "unknown" | null;
   formal_decisions_allowed?: false | null;
   automatic_apply?: false | null;
+  exact_package_manual?: PackageTaskManualCapabilities | null;
 };
 
 export type TaskNotification = {
@@ -6795,7 +6801,7 @@ export type TaskDraftInterpretation = {
     | null;
   instructions: string;
   section_id: string | null;
-  source_selection: SourceSelection;
+  source_selection: SourceSelection | ExactPackageReviewSelection;
   trigger: Trigger;
   target_description: string;
   output_description: string;
@@ -7786,6 +7792,31 @@ export type BidPackage_part = {
   last_page: number;
   shared_attachment: boolean;
   heading_path: number[];
+};
+
+export type PackageReviewSelection = {
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  method_digest: string;
+};
+
+export type PackageTaskManualCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_review";
+  method_digest: string;
+  trigger: "manual";
+  overall_coverage: "partial";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  automatic_input_selection: false;
 };
 
 export type TaskNotificationPayload = {

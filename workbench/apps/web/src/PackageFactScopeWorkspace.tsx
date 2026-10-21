@@ -11,6 +11,7 @@ import type {
 import type { FreezeScope } from "./packageFrozenInput";
 import { executionPath } from "./executionInputRecovery";
 import { executionId } from "./executionInputValidation";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 import { loadFactScopeRecord, storeFactScopeRecord } from "./factScopeRecovery";
 import type {
   FactScopeKey,
@@ -86,6 +87,11 @@ function Workspace({
     ticket = useRef(0);
   const base = `${executionPath(scope, frozenId)}/${prepared.manifest.id}`,
     path = `${base}/fact-scope-declarations`;
+  usePackageScopeGuard(`fact-scope:${JSON.stringify(keyScope)}`, {
+    busy,
+    pending: !!record?.pending || !!loaded.error,
+    dirty: (!!reason || !!subjectKind) && !record?.pending,
+  });
   const available = supportsApi("POST", path);
   useEffect(() => {
     active.current = true;
@@ -269,6 +275,19 @@ function Workspace({
         明确事实适用的工程、标段、轮次或投标主体。声明另行留存，不改旧准备快照；仍需正式资格核验。
       </p>
       {!available && <p>当前服务尚未提供事实范围保存。</p>}
+      {!record?.pending && (!!reason || !!subjectKind) && (
+        <button
+          type="button"
+          className="text-button"
+          disabled={busy}
+          onClick={() => {
+            setReason("");
+            setSubjectKind("");
+          }}
+        >
+          放弃未发送的事实范围填写
+        </button>
+      )}
       {record?.pending && (
         <div role="status">
           <p>有一条范围操作的结果尚未确认。请按原请求恢复，再进行其他保存。</p>

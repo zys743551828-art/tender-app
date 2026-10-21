@@ -22,25 +22,17 @@ import {
   taskScopes,
   triggerDescription,
 } from "./taskState";
+import { ExactPackageTaskTemplateEditor } from "./ExactPackageTaskTemplateEditor";
+import type { PackageNavigationState } from "./packageNavigation";
 
-export function TaskTemplateEditor({
-  bidId,
-  memberId,
-  template,
-  etag,
-  onSaved,
-  onClose,
-  initialConfiguration,
-  requireKindSelection = false,
-  external,
-  formIdentity,
-}: {
+export type TaskTemplateEditorProps = {
   bidId: string;
   memberId: string;
   template: TemplateView | null;
   etag: string | null;
   onSaved: (item: TemplateView) => void;
   onClose: () => void;
+  onStateChange?: (state: PackageNavigationState) => void;
   formIdentity?: string;
   initialConfiguration?: TemplateRequest;
   requireKindSelection?: boolean;
@@ -53,7 +45,33 @@ export function TaskTemplateEditor({
     saveDraftOnly?: (input: TemplateRequest) => Promise<void>;
     rebase: () => Promise<string>;
   };
-}) {
+};
+
+export function TaskTemplateEditor(props: TaskTemplateEditorProps) {
+  const configuration =
+    props.initialConfiguration ?? props.template?.configuration;
+  return configuration?.source_selection?.mode === "exact_package_review" ? (
+    <ExactPackageTaskTemplateEditor
+      key={`${props.memberId}:${props.bidId}:${props.template?.id ?? props.formIdentity ?? "new"}`}
+      {...props}
+    />
+  ) : (
+    <LegacyTaskTemplateEditor {...props} />
+  );
+}
+
+function LegacyTaskTemplateEditor({
+  bidId,
+  memberId,
+  template,
+  etag,
+  onSaved,
+  onClose,
+  initialConfiguration,
+  requireKindSelection = false,
+  external,
+  formIdentity,
+}: TaskTemplateEditorProps) {
   const formKey =
     knowledgeStorageKey(memberId, bidId) +
     `task-template:${formIdentity ?? template?.id ?? "new"}:`;
@@ -82,10 +100,13 @@ export function TaskTemplateEditor({
         item.bid_id === bidId &&
         item.reference?.kind === "section",
     ) ?? [];
-  const source = {
-    mode: input.source_selection?.mode ?? "current_project",
-    version_ids: input.source_selection?.version_ids ?? [],
-  };
+  const source =
+    input.source_selection?.mode === "exact_package_review"
+      ? input.source_selection
+      : {
+          mode: input.source_selection?.mode ?? "current_project",
+          version_ids: input.source_selection?.version_ids ?? [],
+        };
   const trigger = input.trigger ?? {
     mode: "manual" as const,
     cron: null,
@@ -99,6 +120,9 @@ export function TaskTemplateEditor({
     !!external?.pending;
   const conflict = command.conflict || external?.conflict;
   const missing = [
+    ...(source.mode === "exact_package_review"
+      ? ["从原精确整包入口恢复此模板输入"]
+      : []),
     ...(!kindSelected ? ["明确任务类型"] : []),
     ...(!input.name.trim() ? ["模板名称"] : []),
     ...(!input.instructions.trim() ? ["任务说明"] : []),
@@ -280,10 +304,13 @@ export function TaskTemplateEditor({
             <select
               aria-label="来源范围"
               value={source.mode}
+              disabled={source.mode === "exact_package_review"}
               onChange={(event) =>
                 change({
                   source_selection: {
-                    mode: event.target.value as typeof source.mode,
+                    mode: event.target.value as
+                      | "current_project"
+                      | "selected_versions",
                     version_ids: [],
                   },
                 })
@@ -291,6 +318,11 @@ export function TaskTemplateEditor({
             >
               <option value="current_project">运行时冻结本项目当前来源</option>
               <option value="selected_versions">明确选定资料版本</option>
+              {source.mode === "exact_package_review" && (
+                <option value="exact_package_review">
+                  精确整包输入，须从原入口恢复
+                </option>
+              )}
             </select>
           </label>
           {source.mode === "selected_versions" && (

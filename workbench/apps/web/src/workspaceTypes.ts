@@ -2,7 +2,8 @@ import type { NextAction } from "./contracts";
 export const workspacePages = [
   ["overview", "项目概览"],
   ["materials", "项目资料"],
-  ["review", "评审与风险"],
+  ["packages", "整包核查"],
+  ["review", "单稿评审历史"],
   ["matrix", "响应矩阵"],
   ["rules", "规则核对"],
   ["facts", "工程事实"],

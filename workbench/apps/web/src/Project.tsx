@@ -82,6 +82,7 @@ export function Project({
   navigation,
   reviewNotice,
   onAuthoring,
+  onPackages,
 }: {
   id: string;
   memberId?: string;
@@ -89,6 +90,7 @@ export function Project({
   navigation?: ReactNode;
   reviewNotice?: ReactNode;
   onAuthoring?: () => void;
+  onPackages?: () => void;
 }) {
   const [bid, setBid] = useState<Bid | null>(null);
   const [etag, setEtag] = useState<string | null>(null);
@@ -1035,16 +1037,36 @@ export function Project({
           </div>
         </section>
       )}
-      <BidPackages
-        bidId={id}
-        memberId={memberId}
-        disabled={
-          busy ||
-          !!bid?.archived_at ||
-          bid?.phase === "closed" ||
-          bid?.phase === "terminated"
-        }
-      />
+      {onPackages ? (
+        <section className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>继续整包核查</h2>
+              <p className="muted">
+                从已入库原件建立资料包，选择确切修订、要求清单与核查输入。
+              </p>
+            </div>
+            <button
+              type="button"
+              className="button primary"
+              onClick={onPackages}
+            >
+              打开整包核查工作面
+            </button>
+          </div>
+        </section>
+      ) : (
+        <BidPackages
+          bidId={id}
+          memberId={memberId}
+          disabled={
+            busy ||
+            !!bid?.archived_at ||
+            bid?.phase === "closed" ||
+            bid?.phase === "terminated"
+          }
+        />
+      )}
       <WordOriginals
         bidId={id}
         memberId={memberId}

@@ -24,6 +24,7 @@ import {
 } from "./packageReviewReportRecovery";
 import type { PackageReviewReportRecord } from "./packageReviewReportRecovery";
 import PackageReviewReportProgress from "./PackageReviewReportProgress";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 type Props = DependencyProps & { run: PackageReviewRunView };
 export default function PackageReviewReportExports(p: Props) {
@@ -64,6 +65,10 @@ function Exports(p: Props) {
     contextPath = path.replace(/\/report-exports$/, "/report-context"),
     writable = supportsApi("POST", path),
     readable = supportsApi("GET", path);
+  usePackageScopeGuard(
+    `report:${JSON.stringify(packageReviewReportScope(p.scope.memberId, p.run))}`,
+    { busy, pending: !!record?.pending || !!loaded.error },
+  );
   useEffect(() => {
     active.current = true;
     const requests = ticket;

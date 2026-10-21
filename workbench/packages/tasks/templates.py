@@ -58,6 +58,11 @@ def view(c, bid, definition):
 
 
 def assert_targets(c, bid, definition):
+    if definition.source_selection.mode == "exact_package_review":
+        from packages.tasks.package_inputs import selected
+
+        selected(c, bid, definition.source_selection.input.model_dump(mode="json"))
+        return
     if definition.section_id:
         fetch(c, "SELECT id FROM sections WHERE bid_id=%s AND id=%s", (bid, definition.section_id))
     for version in definition.source_selection.version_ids:

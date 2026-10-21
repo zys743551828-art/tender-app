@@ -96,8 +96,13 @@ def persist(
     selected = interpretation
     if selected.section_id:
         fetch(c, "SELECT id FROM sections WHERE bid_id=%s AND id=%s", (bid, selected.section_id))
-    for version in selected.source_selection.version_ids:
-        fetch(c, "SELECT id FROM document_versions WHERE bid_id=%s AND id=%s", (bid, version))
+    if selected.source_selection.mode == "exact_package_review":
+        from packages.tasks.package_inputs import selected as package_selected
+
+        package_selected(c, bid, selected.source_selection.input.model_dump(mode="json"))
+    else:
+        for version in selected.source_selection.version_ids:
+            fetch(c, "SELECT id FROM document_versions WHERE bid_id=%s AND id=%s", (bid, version))
     created = c.execute("SELECT clock_timestamp() AS at").fetchone()["at"]
     result = TaskDraftView(
         id=identity,
@@ -149,9 +154,13 @@ def revise(c, *, previous: TaskDraftView, configuration: TemplateRequest, comman
             "trigger": configuration.trigger,
             "unresolved": [],
             "ready_for_template_form": True,
-            "target_description": "所选章节"
-            if configuration.task_kind == "chapter_suggestion"
-            else "本项目当前正文与所选来源",
+            "target_description": (
+                "所选精确投标包、冻结输入、执行准备与依赖计划"
+                if configuration.source_selection.mode == "exact_package_review"
+                else "所选章节"
+                if configuration.task_kind == "chapter_suggestion"
+                else "本项目当前正文与所选来源"
+            ),
         }
     )
     # Obtain the output description from the selected controlled task, not raw instructions.

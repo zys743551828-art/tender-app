@@ -1,0 +1,4 @@
+# Dedicated application image: existing API pins plus the real Rich/OOXML image codec.
+# No OCR, semantic retrieval models, office renderer or research runtime is implied.
+-r ../requirements.lock.txt
+pillow==12.3.0

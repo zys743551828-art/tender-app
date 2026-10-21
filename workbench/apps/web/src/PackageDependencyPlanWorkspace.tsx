@@ -26,6 +26,7 @@ import DependencyRequirementPager, {
   DEPENDENCY_PAGE_SIZE,
 } from "./DependencyRequirementPager";
 import { assertDependencyRequestFits } from "./dependencyRequestLimits";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 export type DependencyPlanCandidate = {
   request: CheckPackageInputDependencies;
@@ -35,6 +36,7 @@ type Props = DependencyProps & {
   candidate: DependencyPlanCandidate | null;
   onRecheck: () => void;
   onSelectPlan?: (plan: PackageDependencyPlanView) => void;
+  onSaved?: (plan: PackageDependencyPlanView) => void;
   selectedPlanId?: string | null;
 };
 const states = {
@@ -86,6 +88,11 @@ function Workspace(props: Props) {
     ticket = useRef(0);
   const path = dependencyPlanPath(props),
     scope = dependencyPlanScope(props);
+  usePackageScopeGuard(`dependency-plan:${JSON.stringify(scope)}`, {
+    busy: saving,
+    pending: !!record?.pending || !!loaded.error,
+    dirty: !!reason && !record?.pending,
+  });
   const saveAvailable = supportsApi("POST", path),
     readAvailable = supportsApi("GET", path);
   useEffect(() => {
@@ -195,6 +202,8 @@ function Workspace(props: Props) {
       setHistory(data);
       setHistoryPage(0);
       setPage(null);
+      setReason("");
+      props.onSaved?.(data);
     } catch (failure) {
       if (active.current && ticket.current === request) setError(failure);
     } finally {
@@ -321,6 +330,17 @@ function Workspace(props: Props) {
                 }}
               />
             </label>
+            <button
+              type="button"
+              className="text-button"
+              disabled={busy || !!record?.pending || !reason}
+              onClick={() => {
+                setReason("");
+                setConfirmed(false);
+              }}
+            >
+              清空未发送的计划保存理由
+            </button>
             <label className="package-dependency-plans__choice">
               <input
                 type="checkbox"

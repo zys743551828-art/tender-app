@@ -30,6 +30,8 @@ const memberCommandKinds = [
   "assistant-cancel",
   "assistant-action",
   "task-template",
+  "task-package-template",
+  "task-package-run",
   "task-pause",
   "task-run",
   "task-draft",

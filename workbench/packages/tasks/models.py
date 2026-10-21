@@ -44,18 +44,56 @@ class SourceSelection(StrictModel):
         return self
 
 
+class PackageReviewSelection(StrictModel):
+    package_id: UUID
+    revision_id: UUID
+    inventory_id: UUID
+    frozen_input_id: UUID
+    frozen_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    execution_input_id: UUID
+    execution_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    dependency_plan_id: UUID
+    dependency_plan_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    method_digest: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class ExactPackageReviewSelection(StrictModel):
+    mode: Literal["exact_package_review"]
+    input: PackageReviewSelection
+
+
+def legacy_source_default(value):
+    """Keep the original omitted-mode request semantics before union dispatch."""
+    if isinstance(value, dict) and isinstance(value.get("source_selection"), dict):
+        source = value["source_selection"]
+        if "mode" not in source:
+            return {**value, "source_selection": {"mode": "current_project", **source}}
+    return value
+
+
 class TemplateRequest(StrictModel):
     name: str = Field(min_length=1, max_length=200, pattern=r"\S")
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     instructions: str = Field(min_length=1, max_length=8000, pattern=r"\S")
     section_id: UUID | None = None
-    source_selection: SourceSelection = Field(default_factory=SourceSelection)
+    source_selection: SourceSelection | ExactPackageReviewSelection = Field(
+        default_factory=SourceSelection, discriminator="mode"
+    )
     trigger: Trigger = Field(default_factory=Trigger)
+
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_source(cls, value):
+        return legacy_source_default(value)
 
     @model_validator(mode="after")
     def exact_target(self):
         if (self.task_kind == "chapter_suggestion") != (self.section_id is not None):
             raise ValueError("章节建议须指定真实章节；其他任务以项目当前正文为目标")
+        if isinstance(self.source_selection, ExactPackageReviewSelection) and (
+            self.task_kind != "denial_check" or self.trigger.mode != "manual"
+        ):
+            raise ValueError("精确整包输入仅用于手动否决及强制项范围核查，不自动触发或用于其他任务")
         return self
 
 
@@ -136,6 +174,18 @@ class RunPage(StrictModel):
     next_after: UUID | None
 
 
+class PackageTaskManualCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_review"]
+    method_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    trigger: Literal["manual"]
+    overall_coverage: Literal["partial"]
+    formal_scoring_eligible: Literal[False]
+    submission_eligible: Literal[False]
+    automatic_input_selection: Literal[False]
+
+
 class TaskKindView(StrictModel):
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     name: str
@@ -152,6 +202,7 @@ class TaskKindView(StrictModel):
     semantic_impact_coverage: Literal["unknown"] | None = None
     formal_decisions_allowed: Literal[False] | None = None
     automatic_apply: Literal[False] | None = None
+    exact_package_manual: PackageTaskManualCapabilities | None = None
 
 
 class TaskKindPage(StrictModel):

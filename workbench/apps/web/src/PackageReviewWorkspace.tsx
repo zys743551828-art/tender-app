@@ -26,6 +26,8 @@ import type { PackageReviewRecord } from "./packageReviewRecovery";
 import { packageReviewHistoricalSummary } from "./packageReviewHistoricalRun";
 import type { PackageReviewHistoricalReference } from "./packageReviewHistoricalRun";
 import "./packageReview.css";
+import { usePackageScopeGuard } from "./packageScopeGuard";
+import PackageTaskTemplate from "./PackageTaskTemplate";
 
 const PackageReviewOriginalRunDetails = lazy(
   () => import("./PackageReviewOriginalRunDetails"),
@@ -69,6 +71,10 @@ function Workspace(props: Props) {
   const path = packageReviewPath(props),
     available = supportsApi("POST", path),
     readable = supportsApi("GET", path);
+  usePackageScopeGuard(`review:${JSON.stringify(dependencyPlanScope(props))}`, {
+    busy: launching,
+    pending: !!record?.pending || !!loaded.error,
+  });
   const seenCursors = useRef(new Set<string>());
   useEffect(() => {
     active.current = true;
@@ -282,6 +288,7 @@ function Workspace(props: Props) {
             先在上方“保存与查阅依赖计划”中打开一份计划，再点击“选择这份计划继续核查”。读取历史不会自动启动。
           </p>
         )}
+        {selected && <PackageTaskTemplate {...props} plan={selected} />}
         {overLimit && (
           <p className="package-review__notice">
             本轮核查最多 {reviewRequirementLimit} 条要求；当前{" "}
