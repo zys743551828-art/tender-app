@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import { ErrorNotice } from "./components";
 import { EvidenceLinks } from "./EvidenceLinks";
@@ -9,6 +9,7 @@ import type {
   PackageInputDependencies_Dependency,
   PackagePreparedFactSummary,
   PackageRequirementInventoryView,
+  PackageDependencyPlanView,
 } from "./contracts";
 import {
   dependencyInventoryPath,
@@ -24,6 +25,10 @@ import type {
 } from "./inputDependencyProtocol";
 import "./packageInputDependencies.css";
 import type { DependencyPlanCandidate } from "./PackageDependencyPlanWorkspace";
+import DependencyRequirementPager, {
+  DEPENDENCY_PAGE_SIZE,
+} from "./DependencyRequirementPager";
+import { assertDependencyRequestFits } from "./dependencyRequestLimits";
 
 const PackageDependencyPlanWorkspace = lazy(
   () => import("./PackageDependencyPlanWorkspace"),
@@ -42,9 +47,11 @@ const statusNames = {
   selected_unvalidated: "已选事实，当前资格仍须核验",
   not_used: "已声明本次不依赖事实",
 };
-export default function PackageInputDependencyWorkspace(
-  props: DependencyProps,
-) {
+type Props = DependencyProps & {
+  onSelectPlan?: (plan: PackageDependencyPlanView | null) => void;
+  selectedPlanId?: string | null;
+};
+export default function PackageInputDependencyWorkspace(props: Props) {
   return (
     <Workspace
       key={JSON.stringify([
@@ -57,7 +64,7 @@ export default function PackageInputDependencyWorkspace(
     />
   );
 }
-function Workspace(props: DependencyProps) {
+function Workspace(props: Props) {
   const [inventory, setInventory] =
       useState<PackageRequirementInventoryView | null>(null),
     [drafts, setDrafts] = useState<
@@ -68,7 +75,7 @@ function Workspace(props: DependencyProps) {
       {},
     ),
     [selected, setSelected] = useState<string[]>([]),
-    [visible, setVisible] = useState(20),
+    [page, setPage] = useState(0),
     [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null),
     [result, setResult] = useState<PackageInputDependencyAssessment | null>(
@@ -81,6 +88,14 @@ function Workspace(props: DependencyProps) {
     ticket = useRef(0);
   const path = dependencyPath(props),
     available = supportsApi("POST", path);
+  const resultById = useMemo(
+    () =>
+      new Map(
+        result?.manifest.requirements.map((row) => [row.requirement_id, row]) ??
+          [],
+      ),
+    [result],
+  );
   useEffect(() => {
     const requests = ticket;
     active.current = true;
@@ -97,6 +112,7 @@ function Workspace(props: DependencyProps) {
     setResult(null);
     setCheckedPlan(null);
     setError(null);
+    props.onSelectPlan?.(null);
   }
   async function load() {
     if (busy || !available) return;
@@ -110,7 +126,10 @@ function Workspace(props: DependencyProps) {
         dependencyInventoryPath(props.scope),
       );
       await validateDependencyInventory(data, props);
-      if (active.current && ticket.current === current) setInventory(data);
+      if (active.current && ticket.current === current) {
+        setInventory(data);
+        setPage(0);
+      }
     } catch (failure) {
       if (active.current && ticket.current === current) setError(failure);
     } finally {
@@ -174,6 +193,12 @@ function Workspace(props: DependencyProps) {
       setError(new Error("本轮事实选择或依赖草稿不符合协议，未发送核对请求。"));
       return;
     }
+    try {
+      assertDependencyRequestFits(body);
+    } catch (failure) {
+      setError(failure);
+      return;
+    }
     const current = ++ticket.current;
     setBusy(true);
     setError(null);
@@ -203,14 +228,15 @@ function Workspace(props: DependencyProps) {
           以此准备输入的原要求及原事实为依据，明确哪些事实是本次核对所需。空选择不表示无需事实。
         </p>
         <p>
-          草稿只保留在当前页面；计算不会保存声明或启动评审，抽取完整性与当前事实资格仍须分别核验。
+          草稿在本页面内跨页保留，刷新或离开会丢失未保存标注。计算不会保存声明或启动评审，抽取完整性与当前事实资格仍须分别核验。
         </p>
+        <p>每次核对和保存都包含本轮全部标注，上限 10,000 条、4 MiB。</p>
         {!available && <p>当前服务尚未提供逐条事实依赖评估。</p>}
         <div className="package-input-dependencies__actions">
           <button
             type="button"
             className="button secondary"
-            disabled={busy || !available}
+            disabled={busy || editing !== null || !available}
             onClick={() => void load()}
           >
             {busy && !inventory ? "正在读取原要求…" : "读取原要求清单"}
@@ -228,7 +254,7 @@ function Workspace(props: DependencyProps) {
         {inventory && (
           <>
             <p>
-              原要求 {inventory.manifest.requirements.length} 条；本页草稿已标注{" "}
+              原要求 {inventory.manifest.requirements.length} 条；本轮已标注{" "}
               {Object.keys(drafts).length} 条，本轮明确选用事实{" "}
               {selected.length} 条。
             </p>
@@ -263,11 +289,16 @@ function Workspace(props: DependencyProps) {
             )}
             <ol className="package-input-dependencies__requirements">
               {inventory.manifest.requirements
-                .slice(0, visible)
+                .slice(
+                  page * DEPENDENCY_PAGE_SIZE,
+                  (page + 1) * DEPENDENCY_PAGE_SIZE,
+                )
                 .map((row, index) => (
                   <li key={row.rule_id}>
                     <div>
-                      <strong>要求 {index + 1}</strong>
+                      <strong>
+                        要求 {page * DEPENDENCY_PAGE_SIZE + index + 1}
+                      </strong>
                       <p>
                         {typeof row.rule_snapshot.statement === "string"
                           ? Array.from(row.rule_snapshot.statement)
@@ -291,9 +322,7 @@ function Workspace(props: DependencyProps) {
                         <p>
                           {
                             statusNames[
-                              result.manifest.requirements.find(
-                                (r) => r.requirement_id === row.rule_id,
-                              )!.fact_status
+                              resultById.get(row.rule_id)!.fact_status
                             ]
                           }
                         </p>
@@ -302,23 +331,21 @@ function Workspace(props: DependencyProps) {
                     <button
                       type="button"
                       className="button secondary"
-                      disabled={busy}
+                      disabled={busy || editing !== null}
                       onClick={() => edit(row)}
                     >
-                      核对第 {index + 1} 条要求
+                      核对第 {page * DEPENDENCY_PAGE_SIZE + index + 1} 条要求
                     </button>
                   </li>
                 ))}
             </ol>
-            {visible < inventory.manifest.requirements.length && (
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => setVisible((n) => n + 20)}
-              >
-                展开更多原要求
-              </button>
-            )}
+            <DependencyRequirementPager
+              label="原要求"
+              count={inventory.manifest.requirements.length}
+              page={page}
+              disabled={busy || editing !== null}
+              onPage={setPage}
+            />
           </>
         )}
         {editing && (

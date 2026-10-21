@@ -250,7 +250,13 @@ def member(c, scope, kind, item):
         AND state='verified' AND role=%s AND declared_digest=%s AND declared_size=%s LIMIT 1""",
         (scope.bid_id, item["document_version_id"], row["role"], row["digest"], row["byte_size"]),
     )
-    require(verified is not None, "PACKAGE_VERIFIED_UPLOAD_REQUIRED")
+    if verified is None:
+        from packages.authoring.package_outputs import admitted
+
+        require(
+            kind == PackageKind.BID and admitted(c, scope.bid_id, item["document_version_id"]),
+            "PACKAGE_VERIFIED_UPLOAD_REQUIRED",
+        )
     parse_id = item.get("parse_run_id")
     if parse_id:
         identity = repository.read_parse_identity(

@@ -1,22 +1,64 @@
 """Generate only schema types consumed by this UI, without inventing API routes."""
 
 import argparse
+import gzip
 import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--openapi", type=Path, default=root / "packages/contracts/fusion-implemented.openapi.json"
+    "--openapi", type=Path, default=root / "packages/contracts/fusion-implemented.openapi.json.gz"
 )
 parser.add_argument("--output", type=Path, default=root / "apps/web/src/contracts.ts")
 parser.add_argument(
     "--schemas", help="Generate only these comma-separated schema roots, without capability flags"
 )
 args = parser.parse_args()
-contract = json.loads(args.openapi.read_text(encoding="utf-8"))
+if args.openapi.suffix == ".gz":
+    with gzip.open(args.openapi, "rt", encoding="utf-8") as source_file:
+        contract = json.load(source_file)
+else:
+    contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
+    "DocumentParseContext",
+    "StartDocumentParse",
+    "DocumentParseView",
+    "DocumentParseStarted",
+    "DocumentParsePage",
+    "AdoptAuthoringOutput",
+    "AuthoringOutputAdopted",
+    "AuthoringOutputQualification",
+    "PackageReviewReportContext",
+    "StartPackageReviewReport",
+    "PackageReviewReportView",
+    "PackageReviewReportPage",
+    "PackageReviewComparisonPage",
+    "PackageReviewComparisonRun",
+    "PackageReviewComparisonRow",
+    "PackageReviewComparisonRowSide",
+    "StartPackageReviewRun",
+    "PackageReviewRunInput",
+    "PackageReviewRunInputView",
+    "PackageReviewRunView",
+    "PackageReviewRunSummary",
+    "SavePackageReviewHumanDecision",
+    "PackageReviewHumanDecision",
+    "PackageReviewHumanDecisionView",
+    "PackageReviewHumanDecisionCurrent",
+    "PackageReviewHumanDecisionPage",
+    "AuthoringRichCapabilities",
+    "AuthoringRichBuildRequest",
+    "AuthoringRichDocument",
+    "AuthoringImageUpload",
+    "AuthoringImageCreated",
+    "AuthoringImageView",
+    "AuthoringImagePage",
+    "AuthoringImageUploadStatus",
+    "AuthoringBuildLayout",
+    "PackageReviewRunPage",
+    "PackageReviewResult",
     "SavePackageDependencyPlan",
     "PackageDependencyPlanView",
     "PackageDependencyPlanPage",
@@ -293,8 +335,8 @@ def render(s):
 
 
 source = (
-    "packages/contracts/fusion-implemented.openapi.json"
-    if args.openapi == root / "packages/contracts/fusion-implemented.openapi.json"
+    "packages/contracts/fusion-implemented.openapi.json.gz"
+    if args.openapi == root / "packages/contracts/fusion-implemented.openapi.json.gz"
     else str(args.openapi)
 )
 lines = [f"// Generated from {source}. Run python scripts/generate-contracts.py.\n"]

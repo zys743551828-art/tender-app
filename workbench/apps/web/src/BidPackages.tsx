@@ -14,6 +14,7 @@ import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import { PackageRequirements } from "./PackageRequirements";
+import DocumentParseWorkspace from "./DocumentParseWorkspace";
 
 type Member = CreateBidPackage["members"][number];
 type Part = Member["parts"][number];
@@ -617,6 +618,7 @@ function PackageWorkspace({
         <MemberEditor
           key={m.document_version_id}
           bidId={bidId}
+          memberId={memberId}
           member={m}
           document={documents.items.find((d) => d.id === m.document_version_id)}
           disabled={
@@ -713,6 +715,7 @@ function PackageWorkspace({
 
 function MemberEditor({
   bidId,
+  memberId,
   member,
   document,
   disabled,
@@ -720,6 +723,7 @@ function MemberEditor({
   onRemove,
 }: {
   bidId: string;
+  memberId: string;
   member: Member;
   document?: Document;
   disabled: boolean;
@@ -736,175 +740,187 @@ function MemberEditor({
     });
   }
   return (
-    <fieldset disabled={disabled}>
-      <legend>{document?.filename ?? "已选原件（版本身份见详情）"}</legend>
-      <button className="text-button" onClick={onRemove}>
-        从本次选择移除
-      </button>
-      <label>
-        用途（逗号分隔）
-        <input
-          list={`package-purposes-${member.document_version_id}`}
-          aria-label={`用途 ${member.document_version_id}`}
-          value={purposeText}
-          onChange={(e) => {
-            setPurposeText(e.target.value);
-            onChange({
-              purposes: e.target.value
-                .split(/[,，]/)
-                .map((s) => s.trim())
-                .filter(Boolean),
-            });
-          }}
-        />
-      </label>
-      <datalist id={`package-purposes-${member.document_version_id}`}>
-        {["资格", "商务", "技术", "报价", "附件", "要求依据"].map((value) => (
-          <option key={value} value={value} />
-        ))}
-      </datalist>
-      <p className="small-note">
-        可选资格、商务、技术、报价、附件，也可输入自定义用途；多个用途以逗号分隔。
-      </p>
-      <details>
-        <summary>原件与解析身份</summary>
-        <p>文件版本 {member.document_version_id}</p>
-        {parses.items.map((p) => (
-          <p key={p.id}>
-            {new Date(p.created_at).toLocaleString()} · {p.id} ·{" "}
-            {p.parser_digest}
-          </p>
-        ))}
-      </details>
-      <ResourceState
-        {...parses}
-        hasData={!!parses.data}
-        onRetry={() => void parses.reload()}
-      />
-      <label>
-        明确选择解析记录
-        <select
-          aria-label={`解析记录 ${member.document_version_id}`}
-          value={member.parse_run_id ?? ""}
-          onChange={(e) =>
-            onChange({ parse_run_id: e.target.value || undefined, parts: [] })
-          }
-        >
-          <option value="">不冻结解析（未知页数，不划逻辑范围）</option>
-          {member.parse_run_id &&
-            !parses.items.some((p) => p.id === member.parse_run_id) && (
-              <option value={member.parse_run_id}>
-                已保存的精确解析 {member.parse_run_id}（待目录核对）
-              </option>
-            )}
-          {parses.items
-            .filter((p) => p.document_version_id === member.document_version_id)
-            .map((p) => (
-              <option
-                value={p.id}
-                key={p.id}
-                disabled={p.coverage !== "complete" || p.page_count < 1}
-              >
-                {new Date(p.created_at).toLocaleString()} · {p.id.slice(0, 8)} ·{" "}
-                {p.coverage === "complete"
-                  ? "完整标记，保存时重核"
-                  : p.coverage === "partial"
-                    ? "存在缺口，不可冻结"
-                    : "失败，不可冻结"}{" "}
-                · {p.page_count} 页
-              </option>
-            ))}
-        </select>
-      </label>
-      {parses.hasMore && (
-        <button
-          className="text-button"
-          disabled={parses.moreBusy}
-          onClick={() => void parses.loadMore()}
-        >
-          加载更多解析记录
+    <>
+      <fieldset disabled={disabled}>
+        <legend>{document?.filename ?? "已选原件（版本身份见详情）"}</legend>
+        <button className="text-button" onClick={onRemove}>
+          从本次选择移除
         </button>
-      )}
-      <ErrorNotice error={parses.moreError} />
-      <p className="small-note">
-        更换解析会清空本地页段，需重新明确范围；不会自动选最新解析。历史已冻结记录保持原样。
-      </p>
-      {member.parts.map((p, index) => (
-        <fieldset key={index}>
-          <legend>逻辑范围 {index + 1}</legend>
-          <label>
-            范围分类
-            <input
-              aria-label={`范围分类 ${member.document_version_id} ${index}`}
-              value={p.category}
-              onChange={(e) => part(index, { category: e.target.value })}
-            />
-          </label>
-          <label>
-            起始物理页
-            <input
-              type="number"
-              min="1"
-              aria-label={`起始页 ${member.document_version_id} ${index}`}
-              value={p.first_page}
-              onChange={(e) =>
-                part(index, { first_page: Number(e.target.value) })
-              }
-            />
-          </label>
-          <label>
-            结束物理页
-            <input
-              type="number"
-              min="1"
-              aria-label={`结束页 ${member.document_version_id} ${index}`}
-              value={p.last_page}
-              onChange={(e) =>
-                part(index, { last_page: Number(e.target.value) })
-              }
-            />
-          </label>
-          <label className="evidence-select-item">
-            <input
-              type="checkbox"
-              checked={p.shared_attachment}
-              onChange={(e) =>
-                part(index, { shared_attachment: e.target.checked })
-              }
-            />
-            共享附件范围（仅明确重叠双方均声明时允许）
-          </label>
-          <button
-            className="text-button"
-            onClick={() =>
-              onChange({ parts: member.parts.filter((_, i) => i !== index) })
+        <label>
+          用途（逗号分隔）
+          <input
+            list={`package-purposes-${member.document_version_id}`}
+            aria-label={`用途 ${member.document_version_id}`}
+            value={purposeText}
+            onChange={(e) => {
+              setPurposeText(e.target.value);
+              onChange({
+                purposes: e.target.value
+                  .split(/[,，]/)
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              });
+            }}
+          />
+        </label>
+        <datalist id={`package-purposes-${member.document_version_id}`}>
+          {["资格", "商务", "技术", "报价", "附件", "要求依据"].map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <p className="small-note">
+          可选资格、商务、技术、报价、附件，也可输入自定义用途；多个用途以逗号分隔。
+        </p>
+        <details>
+          <summary>原件与解析身份</summary>
+          <p>文件版本 {member.document_version_id}</p>
+          {parses.items.map((p) => (
+            <p key={p.id}>
+              {new Date(p.created_at).toLocaleString()} · {p.id} ·{" "}
+              {p.parser_digest}
+            </p>
+          ))}
+        </details>
+        <ResourceState
+          {...parses}
+          hasData={!!parses.data}
+          onRetry={() => void parses.reload()}
+        />
+        <label>
+          明确选择解析记录
+          <select
+            aria-label={`解析记录 ${member.document_version_id}`}
+            value={member.parse_run_id ?? ""}
+            onChange={(e) =>
+              onChange({ parse_run_id: e.target.value || undefined, parts: [] })
             }
           >
-            移除此范围
+            <option value="">不冻结解析（未知页数，不划逻辑范围）</option>
+            {member.parse_run_id &&
+              !parses.items.some((p) => p.id === member.parse_run_id) && (
+                <option value={member.parse_run_id}>
+                  已保存的精确解析 {member.parse_run_id}（待目录核对）
+                </option>
+              )}
+            {parses.items
+              .filter(
+                (p) => p.document_version_id === member.document_version_id,
+              )
+              .map((p) => (
+                <option
+                  value={p.id}
+                  key={p.id}
+                  disabled={p.coverage !== "complete" || p.page_count < 1}
+                >
+                  {new Date(p.created_at).toLocaleString()} · {p.id.slice(0, 8)}{" "}
+                  ·{" "}
+                  {p.coverage === "complete"
+                    ? "完整标记，保存时重核"
+                    : p.coverage === "partial"
+                      ? "存在缺口，不可冻结"
+                      : "失败，不可冻结"}{" "}
+                  · {p.page_count} 页
+                </option>
+              ))}
+          </select>
+        </label>
+        {parses.hasMore && (
+          <button
+            className="text-button"
+            disabled={parses.moreBusy}
+            onClick={() => void parses.loadMore()}
+          >
+            加载更多解析记录
           </button>
-        </fieldset>
-      ))}
-      <button
-        className="button secondary"
-        disabled={!member.parse_run_id}
-        onClick={() =>
-          onChange({
-            parts: [
-              ...member.parts,
-              {
-                part_id: crypto.randomUUID(),
-                category: member.purposes[0] || "技术",
-                first_page: 1,
-                last_page: 1,
-                shared_attachment: false,
-                heading_path: [],
-              },
-            ],
-          })
-        }
-      >
-        添加明确逻辑范围
-      </button>
-    </fieldset>
+        )}
+        <ErrorNotice error={parses.moreError} />
+        <p className="small-note">
+          更换解析会清空本地页段，需重新明确范围；不会自动选最新解析。历史已冻结记录保持原样。
+        </p>
+        {member.parts.map((p, index) => (
+          <fieldset key={index}>
+            <legend>逻辑范围 {index + 1}</legend>
+            <label>
+              范围分类
+              <input
+                aria-label={`范围分类 ${member.document_version_id} ${index}`}
+                value={p.category}
+                onChange={(e) => part(index, { category: e.target.value })}
+              />
+            </label>
+            <label>
+              起始物理页
+              <input
+                type="number"
+                min="1"
+                aria-label={`起始页 ${member.document_version_id} ${index}`}
+                value={p.first_page}
+                onChange={(e) =>
+                  part(index, { first_page: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label>
+              结束物理页
+              <input
+                type="number"
+                min="1"
+                aria-label={`结束页 ${member.document_version_id} ${index}`}
+                value={p.last_page}
+                onChange={(e) =>
+                  part(index, { last_page: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label className="evidence-select-item">
+              <input
+                type="checkbox"
+                checked={p.shared_attachment}
+                onChange={(e) =>
+                  part(index, { shared_attachment: e.target.checked })
+                }
+              />
+              共享附件范围（仅明确重叠双方均声明时允许）
+            </label>
+            <button
+              className="text-button"
+              onClick={() =>
+                onChange({ parts: member.parts.filter((_, i) => i !== index) })
+              }
+            >
+              移除此范围
+            </button>
+          </fieldset>
+        ))}
+        <button
+          className="button secondary"
+          disabled={!member.parse_run_id}
+          onClick={() =>
+            onChange({
+              parts: [
+                ...member.parts,
+                {
+                  part_id: crypto.randomUUID(),
+                  category: member.purposes[0] || "技术",
+                  first_page: 1,
+                  last_page: 1,
+                  shared_attachment: false,
+                  heading_path: [],
+                },
+              ],
+            })
+          }
+        >
+          添加明确逻辑范围
+        </button>
+      </fieldset>
+      <DocumentParseWorkspace
+        bidId={bidId}
+        memberId={memberId}
+        documentId={member.document_version_id}
+        disabled={disabled}
+        onParsed={() => void parses.reload()}
+      />
+    </>
   );
 }

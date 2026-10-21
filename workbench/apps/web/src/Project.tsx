@@ -81,12 +81,14 @@ export function Project({
   onBack,
   navigation,
   reviewNotice,
+  onAuthoring,
 }: {
   id: string;
   memberId?: string;
   onBack: () => void;
   navigation?: ReactNode;
   reviewNotice?: ReactNode;
+  onAuthoring?: () => void;
 }) {
   const [bid, setBid] = useState<Bid | null>(null);
   const [etag, setEtag] = useState<string | null>(null);
@@ -1013,6 +1015,26 @@ export function Project({
           </div>
         )}
       </section>
+      {onAuthoring && (
+        <section className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>编写与生成投标正文</h2>
+              <p className="muted">
+                从章节计划继续编辑，保存精确修订，生成 Word 或 PDF
+                后明确采用到投标包。
+              </p>
+            </div>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={onAuthoring}
+            >
+              打开章节编写与生成
+            </button>
+          </div>
+        </section>
+      )}
       <BidPackages
         bidId={id}
         memberId={memberId}

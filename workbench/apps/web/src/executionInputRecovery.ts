@@ -10,6 +10,7 @@ import {
   executionSha,
   contextKeys,
   recordObject,
+  validExecutionRerun,
 } from "./executionInputValidation";
 import { freezePath } from "./packageFrozenInput";
 import { matchesExecutionContext } from "./packageReviewContext";
@@ -85,7 +86,7 @@ export function loadExecutionRecord(scope: ExecutionScope): ExecutionRecord {
       !exactKeys(p.body, ["frozen_digest", "context_digest", "rerun"]) ||
       p.body.frozen_digest !== scope.frozenDigest ||
       !executionSha(p.body.context_digest) ||
-      p.body.rerun !== null ||
+      !validExecutionRerun(p.body.rerun) ||
       !recordObject(p.context) ||
       !exactKeys(p.context, contextKeys) ||
       !matchesExecutionContext(

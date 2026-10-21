@@ -1,44 +1,28 @@
-import { useRef, useState } from "react";
-import { api, ApiError, commandKey, completeCommand } from "./api";
+import { useEffect, useRef, useState } from "react";
+import { api, completeCommand } from "./api";
 import type { ApiResult } from "./api";
 import type {
   Accepted,
   AuthoringCapabilities,
+  AuthoringRichCapabilities,
   AuthoringTreeView,
-  AuthoringSnapshot,
+  BuildPage,
   BuildRequest,
   BuildView,
-  BuildPage,
   DraftView,
-  Operation,
 } from "./contracts";
-import { ArtifactActions } from "./ArtifactActions";
-import { generatedFilename } from "./artifactNames";
+import { AuthoringBuildResult } from "./AuthoringBuildResult";
 import { Badge, ErrorNotice } from "./components";
-import { editorText } from "./editorSchema";
+import {
+  definitiveBuildFailure,
+  matchBuildAck,
+  readBuildCache,
+  validBuildView,
+} from "./authoringBuildRecovery";
+import type { BuildCache } from "./authoringBuildRecovery";
 import { rememberOperation } from "./operationStorage";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
-
-type PendingBuild = { key: string; body: BuildRequest };
-type ReceivedBuild = {
-  id: string;
-  snapshotId: string;
-  revision: number | null;
-};
-type BuildCache = { pending: PendingBuild | null; received: ReceivedBuild[] };
-function readCache(key: string): BuildCache {
-  try {
-    const value = JSON.parse(
-      sessionStorage.getItem(key) ?? "null",
-    ) as BuildCache | null;
-    return value && Array.isArray(value.received)
-      ? value
-      : { pending: null, received: [] };
-  } catch {
-    return { pending: null, received: [] };
-  }
-}
 
 export function AuthoringBuilds({
   bidId,
@@ -46,79 +30,117 @@ export function AuthoringBuilds({
   projectTitle = "当前项目",
   draftId,
   capabilities,
+  richCapabilities,
   disabled,
   prepare,
   setBusy,
+  onPackages,
 }: {
   bidId: string;
   memberId: string;
   projectTitle?: string;
   draftId: string;
   capabilities: AuthoringCapabilities;
+  richCapabilities?: AuthoringRichCapabilities;
   disabled: boolean;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   setBusy: (busy: boolean) => void;
+  onPackages?: () => void;
 }) {
   const cacheKey = `tender:authoring:${memberId}:${bidId}:${draftId}:builds`;
   const scope = `authoring-build:${memberId}:${bidId}:${draftId}`;
-  const [cache, setCache] = useState(() => readCache(cacheKey));
+  const [recovery] = useState(() =>
+    readBuildCache(cacheKey, bidId, memberId, draftId),
+  );
+  const [cache, setCache] = useState(recovery.cache);
   const cacheRef = useRef(cache);
-  const [formats, setFormats] = useState<("docx" | "pdf")[]>(["docx", "pdf"]);
+  const [expandedBuild, setExpandedBuild] = useState<string | null>(
+    cache.received[0]?.id ?? null,
+  );
+  const [formats, setFormats] = useState<("docx" | "pdf")[]>(
+    capabilities.formats,
+  );
+  const [pagination, setPagination] = useState<
+    "chapter_start_new_page" | "continuous"
+  >("chapter_start_new_page");
   const [busy, setLocalBusy] = useState(false);
   const working = useRef(false);
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const [error, setError] = useState<unknown>(null);
-  const history = useResource<BuildPage>(`/bids/${bidId}/builds`);
+  const historyPath = `/bids/${bidId}/builds?draft_id=${encodeURIComponent(draftId)}`;
+  const history = useResource<BuildPage>(historyPath);
   const [more, setMore] = useState<BuildPage[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  const serverBuilds = [
-    ...new Map(
-      [
-        ...(history.data?.items ?? []),
-        ...more.flatMap((page) => page.items),
-      ].map((build) => [build.id, build]),
-    ).values(),
+  const rawHistory = [
+    ...(history.data?.items ?? []),
+    ...more.flatMap((page) => page.items),
   ];
-  const known = new Map(cache.received.map((item) => [item.id, item]));
+  const historyInvalid = rawHistory.some(
+    (row) => !validBuildView(row, bidId, draftId),
+  );
+  const serverBuilds = rawHistory.filter((row) =>
+    validBuildView(row, bidId, draftId),
+  );
   const builds = [
     ...new Map(
       [
         ...cache.received,
-        ...serverBuilds.map(
-          (build) =>
-            known.get(build.id) ?? {
-              id: build.id,
-              snapshotId: build.draft_snapshot_id,
-              revision: null,
-            },
-        ),
-      ].map((item) => [item.id, item]),
+        ...serverBuilds.map((row) => ({
+          id: row.id,
+          snapshotId: row.draft_snapshot_id,
+          revision: row.identity.draft_revision,
+        })),
+      ].map((row) => [row.id, row]),
     ).values(),
   ];
   const lastPage = more.at(-1) ?? history.data;
   function persist(value: BuildCache) {
-    cacheRef.current = value;
     sessionStorage.setItem(cacheKey, JSON.stringify(value));
+    cacheRef.current = value;
     setCache(value);
   }
   async function build() {
-    if (working.current || disabled || !formats.length) return;
+    if (
+      working.current ||
+      recovery.blocked ||
+      (!cacheRef.current.pending && (disabled || !formats.length))
+    )
+      return;
     working.current = true;
     setLocalBusy(true);
     setBusy(true);
     setError(null);
+    let sent = false;
+    let responseReceived = false;
     try {
       let pending = cacheRef.current.pending;
       if (!pending) {
         const head = await prepare();
-        if (!head) return;
-        if (!head.data.snapshot_id)
-          throw new Error("当前草稿尚无已确认快照，请先完成章节保存。");
+        if (!head || !active.current) return;
+        if (
+          head.data.id !== draftId ||
+          head.data.bid_id !== bidId ||
+          !head.etag ||
+          !head.data.snapshot_id ||
+          !Number.isSafeInteger(head.data.revision) ||
+          head.data.revision < 1
+        )
+          throw new Error("当前草稿尚无可核对的保存确认，请先完成章节保存。");
         const structure = await api<AuthoringTreeView>(
           `/bids/${bidId}/drafts/${draftId}/structure`,
         );
+        if (!active.current) return;
         if (
           structure.data.draft_id !== draftId ||
-          structure.data.draft_revision !== head.data.revision
+          structure.data.draft_revision !== head.data.revision ||
+          !structure.data.directory_template_version_id ||
+          !structure.data.style_template_version_id
         )
           throw new Error(
             "目录与已保存正文修订不一致，请读取最新目录后重试生成。",
@@ -129,54 +151,91 @@ export function AuthoringBuilds({
           directory_template_version_id:
             structure.data.directory_template_version_id,
           style_template_version_id: structure.data.style_template_version_id,
-          formats,
+          formats: [...formats],
           follow_up: "none",
+          ...(richCapabilities ? { pagination_mode: pagination } : {}),
         };
-        pending = { body, key: commandKey(scope, body) };
+        pending = {
+          body,
+          key: crypto.randomUUID(),
+          snapshotId: head.data.snapshot_id,
+        };
         persist({ ...cacheRef.current, pending });
       }
-      // Retain the exact revision/body/key across lost responses and refreshes.
-      const accepted = await api<Accepted>(`/bids/${bidId}/builds`, {
+      if (!active.current) return;
+      sent = true;
+      const { data: accepted } = await api<Accepted>(`/bids/${bidId}/builds`, {
         method: "POST",
         body: pending.body,
         key: pending.key,
       });
+      responseReceived = true;
+      if (!active.current) return;
       if (
-        accepted.data.resource_kind !== "build" ||
-        accepted.data.operation.bid_id !== bidId
+        accepted?.resource_kind !== "build" ||
+        typeof accepted.resource_id !== "string" ||
+        !accepted.operation ||
+        accepted.operation.bid_id !== bidId
       )
-        throw new Error("受理结果身份不一致，未展示其他项目的生成结果。");
-      rememberOperation(bidId, accepted.data.operation.id);
-      const received = {
-        id: accepted.data.resource_id,
-        snapshotId: "",
-        revision: pending.body.draft_revision,
-      };
+        throw new Error("受理响应身份无法核对，原构建请求保留。");
+      const { data: result } = await api<BuildView>(
+        `/builds/${accepted.resource_id}`,
+      );
+      if (!active.current) return;
+      if (!matchBuildAck(accepted, result, bidId, draftId, pending))
+        throw new Error(
+          "受理结果与原草稿修订、模板或固定快照不一致。原请求保留，未采用其他版本。",
+        );
       persist({
+        ...cacheRef.current,
         pending: null,
         received: [
-          received,
-          ...cacheRef.current.received.filter(
-            (item) => item.id !== received.id,
-          ),
+          {
+            id: result.id,
+            snapshotId: result.draft_snapshot_id,
+            revision: result.identity.draft_revision,
+          },
+          ...cacheRef.current.received.filter((row) => row.id !== result.id),
         ].slice(0, 30),
       });
+      setExpandedBuild(result.id);
       completeCommand(scope);
+      try {
+        rememberOperation(bidId, accepted.operation.id);
+      } catch {
+        /* The verified build receipt and server history remain the recovery authority. */
+      }
       setMore([]);
       void history.reload();
     } catch (failure) {
-      if (
-        failure instanceof ApiError &&
-        [400, 409, 412, 422].includes(failure.status)
-      ) {
-        persist({ ...cacheRef.current, pending: null });
-        completeCommand(scope);
+      if (active.current) {
+        if (sent && !responseReceived && definitiveBuildFailure(failure)) {
+          try {
+            persist({ ...cacheRef.current, pending: null });
+            completeCommand(scope);
+          } catch {
+            setError(
+              new Error("无法更新恢复记录，原请求仍保留；请从历史核对后重试。"),
+            );
+            return;
+          }
+        }
+        setError(
+          failure instanceof DOMException
+            ? new Error(
+                sent
+                  ? "构建恢复记录未能更新，原请求可能已受理；请按原记录或历史核对。"
+                  : "本机恢复存储空间不足，本次尚未发送构建；正文和原记录保留。",
+              )
+            : failure,
+        );
       }
-      setError(failure);
     } finally {
       working.current = false;
-      setBusy(false);
-      setLocalBusy(false);
+      if (active.current) {
+        setBusy(false);
+        setLocalBusy(false);
+      }
     }
   }
   async function next() {
@@ -185,13 +244,13 @@ export function AuthoringBuilds({
     setError(null);
     try {
       const { data } = await api<BuildPage>(
-        `/bids/${bidId}/builds?cursor=${encodeURIComponent(lastPage.next_cursor)}`,
+        `${historyPath}&cursor=${encodeURIComponent(lastPage.next_cursor)}`,
       );
-      setMore((old) => [...old, data]);
+      if (active.current) setMore((old) => [...old, data]);
     } catch (failure) {
-      setError(failure);
+      if (active.current) setError(failure);
     } finally {
-      setLoadingMore(false);
+      if (active.current) setLoadingMore(false);
     }
   }
   return (
@@ -218,16 +277,39 @@ export function AuthoringBuilds({
                   setFormats((old) =>
                     event.target.checked
                       ? [...old, format]
-                      : old.filter((value) => value !== format),
+                      : old.filter((item) => item !== format),
                   )
                 }
               />
               {format === "docx" ? "Word" : "PDF"}
             </label>
           ))}
+        {richCapabilities && (
+          <label>
+            章页排版
+            <select
+              aria-label="章页排版"
+              value={pagination}
+              disabled={busy || !!cache.pending}
+              onChange={(event) =>
+                setPagination(event.target.value as typeof pagination)
+              }
+            >
+              <option value="chapter_start_new_page">
+                每章另起一页（页数可能增加）
+              </option>
+              <option value="continuous">连续排版（章末页可能未知）</option>
+            </select>
+          </label>
+        )}
         <button
+          type="button"
           className="button primary"
-          disabled={busy || disabled || !formats.length}
+          disabled={
+            busy ||
+            recovery.blocked ||
+            (!cache.pending && (disabled || !formats.length))
+          }
           onClick={() => void build()}
         >
           {busy
@@ -240,11 +322,22 @@ export function AuthoringBuilds({
       <p className="small-note">
         本次仅生成文件，不自动切换受检正文或开始评审。Word与PDF独立显示结果，生成成功不表示内容通过。
       </p>
+      {richCapabilities && !richCapabilities.renderer_configured && (
+        <p className="notice warning">
+          表图转换器尚未配置；可生成
+          Word，PDF、真实目录页码与章页范围可能不可用。构建会如实保留各格式结果。
+        </p>
+      )}
       {cache.pending && (
         <div className="notice warning">
           上次生成受理尚未确认。重试会核对原草稿修订{" "}
           {cache.pending.body.draft_revision}
           ，不会改用现在的新稿；当前编辑仍保留。
+        </div>
+      )}
+      {recovery.blocked && (
+        <div role="alert" className="notice error">
+          构建恢复记录无法核对，原记录保留，已停止新建构建。可先查阅本草稿的服务器生成历史。
         </div>
       )}
       <ErrorNotice error={error} />
@@ -253,29 +346,53 @@ export function AuthoringBuilds({
         hasData={!!history.data}
         onRetry={() => void history.reload()}
       />
-      {builds.length > 0 && (
+      {historyInvalid && (
+        <div role="alert" className="notice error">
+          部分生成历史与当前项目、草稿或固定输入不一致，未展示这些输出。
+        </div>
+      )}
+      {!!builds.length && (
         <>
-          <h4>本项目生成版本</h4>
+          <h4>本草稿生成版本</h4>
           <p className="small-note">
-            从服务器恢复已受理任务与固定快照，Word和PDF分别保留实际结果。草稿修订只在已取得其确认身份时显示。
+            选择生成记录，核对精确草稿修订和固定快照；Word与PDF分别保留实际结果。
           </p>
         </>
       )}
       {builds.map((item) => (
-        <BuildResult
-          key={item.id}
-          bidId={bidId}
-          item={item}
-          projectTitle={projectTitle}
-        />
+        <div key={item.id}>
+          <button
+            type="button"
+            className="button secondary"
+            aria-expanded={expandedBuild === item.id}
+            onClick={() =>
+              setExpandedBuild((old) => (old === item.id ? null : item.id))
+            }
+          >
+            {expandedBuild === item.id ? "收起生成记录" : "查看生成记录"} · 修订{" "}
+            {item.revision ?? "待核对"} · {item.id.slice(0, 8)}
+          </button>
+          {expandedBuild === item.id && (
+            <AuthoringBuildResult
+              bidId={bidId}
+              draftId={draftId}
+              item={item}
+              projectTitle={projectTitle}
+              memberId={memberId}
+              disabled={disabled || busy}
+              onPackages={onPackages}
+            />
+          )}
+        </div>
       ))}
-      {history.data && !builds.length && (
+      {history.data && !builds.length && !historyInvalid && (
         <p className="small-empty">
-          本项目尚无已受理的文件生成。先保存正文，再生成固定版本。
+          本草稿尚无已受理的文件生成。先保存正文，再生成固定版本。
         </p>
       )}
       {lastPage?.has_more && lastPage.next_cursor && (
         <button
+          type="button"
           className="text-button"
           disabled={loadingMore}
           onClick={() => void next()}
@@ -284,153 +401,5 @@ export function AuthoringBuilds({
         </button>
       )}
     </section>
-  );
-}
-
-function BuildResult({
-  bidId,
-  item,
-  projectTitle,
-}: {
-  bidId: string;
-  item: ReceivedBuild;
-  projectTitle: string;
-}) {
-  const result = useResource<BuildView>(`/builds/${item.id}`, 2500);
-  const operation = useResource<Operation>(
-    result.data ? `/operations/${result.data.operation_id}` : null,
-    2500,
-  );
-  const [showSnapshot, setShowSnapshot] = useState(false);
-  const snapshot = useResource<AuthoringSnapshot>(
-    showSnapshot && result.data
-      ? `/bids/${bidId}/draft-snapshots/${result.data.draft_snapshot_id}`
-      : null,
-  );
-  if (
-    (result.data && result.data.id !== item.id) ||
-    (operation.data && operation.data.bid_id !== bidId)
-  )
-    return (
-      <div role="alert" className="notice error">
-        生成任务身份不一致，未展示输出。
-      </div>
-    );
-  const terminal =
-    operation.data &&
-    ["failed", "cancelled", "succeeded"].includes(operation.data.state);
-  return (
-    <article className="build-result">
-      <div className="section-heading">
-        <strong>
-          {item.revision === null
-            ? "固定快照生成版本"
-            : `来自草稿修订 ${item.revision}`}
-        </strong>
-        <Badge
-          tone={operation.data?.state === "failed" ? "warning" : "neutral"}
-        >
-          {operation.data?.state === "failed"
-            ? "生成任务失败"
-            : operation.data?.state === "cancelled"
-              ? "生成任务已取消"
-              : operation.data?.state === "succeeded"
-                ? "生成任务已完成"
-                : "生成处理中"}
-        </Badge>
-      </div>
-      <ResourceState
-        {...result}
-        hasData={!!result.data}
-        onRetry={() => void result.reload()}
-      />
-      <ResourceState
-        {...operation}
-        hasData={!!operation.data}
-        onRetry={() => void operation.reload()}
-      />
-      {result.data && (
-        <>
-          <details className="coverage-details">
-            <summary>核对本次固定快照身份</summary>
-            <p className="small-note identity-ref">
-              {result.data.draft_snapshot_id}
-            </p>
-          </details>
-          <button
-            className="text-button"
-            onClick={() => setShowSnapshot((old) => !old)}
-          >
-            {showSnapshot ? "收起本次快照正文" : "查看本次快照正文"}
-          </button>
-          {showSnapshot && (
-            <>
-              <ResourceState
-                {...snapshot}
-                hasData={!!snapshot.data}
-                onRetry={() => void snapshot.reload()}
-              />
-              {snapshot.data &&
-                snapshot.data.snapshot_id === result.data.draft_snapshot_id && (
-                  <div className="snapshot-reading">
-                    <h4>{snapshot.data.title}</h4>
-                    {snapshot.data.sections.map((section, index) => (
-                      <section key={index}>
-                        <strong>{section.attrs.title}</strong>
-                        <pre>{editorText(section)}</pre>
-                      </section>
-                    ))}
-                  </div>
-                )}
-            </>
-          )}
-          {!result.data.outputs.length && (
-            <p className="small-note">
-              {terminal
-                ? "任务已结束，尚无可用格式输出。请查看操作状态与失败原因。"
-                : "尚无格式输出；受理不表示文件已生成。"}
-            </p>
-          )}
-          {result.data.outputs.map((output) => (
-            <div className="build-output" key={output.format}>
-              <strong>{output.format === "docx" ? "Word" : "PDF"}</strong>
-              <Badge
-                tone={output.state === "succeeded" ? "success" : "warning"}
-              >
-                {output.state === "succeeded"
-                  ? "此格式生成成功"
-                  : output.state === "failed"
-                    ? "此格式生成失败"
-                    : "此格式正在生成"}
-              </Badge>
-              {output.gaps.map((gap, index) => (
-                <p className="small-note" key={index}>
-                  {gap === "RENDER_SANDBOX_NOT_ATTESTED"
-                    ? "文件已生成，正式提交前请核对字体、分页与版面；当前转换环境尚未完成正式交付验收。"
-                    : gap === "TOC_PAGE_NUMBERS_UNKNOWN"
-                      ? "目录页码尚未实测，当前目录不能作为准确页码依据。"
-                      : gap === "ACTUAL_SECTION_PAGE_RANGES_UNKNOWN"
-                        ? "各章实际物理页范围尚未测得；计划页数不代表实际页数。"
-                        : gap}
-                </p>
-              ))}
-              {output.state === "succeeded" && output.document_version_id && (
-                <ArtifactActions
-                  bidId={bidId}
-                  documentId={output.document_version_id}
-                  isPdf={output.format === "pdf"}
-                  downloadLabel={`下载投标正文（${output.format === "docx" ? "Word" : "PDF"}）`}
-                  suggestedFilename={generatedFilename(
-                    projectTitle,
-                    result.data!.draft_snapshot_id,
-                    output.format,
-                  )}
-                />
-              )}
-            </div>
-          ))}
-        </>
-      )}
-    </article>
   );
 }

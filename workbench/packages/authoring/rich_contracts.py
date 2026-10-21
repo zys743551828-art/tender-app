@@ -11,6 +11,11 @@ TIME = {"type": "string", "format": "date-time"}
 
 
 def extend_openapi(actual):
+    if not any(
+        path == "/api/v1/authoring/rich-capabilities" or "/authoring-images" in path
+        for path in actual["paths"]
+    ):
+        return
     schemas = actual["components"]["schemas"]
     schemas["AuthoringRichBuildRequest"] = deepcopy(BUILD)
     previous_build = deepcopy(schemas["BuildRequest"])
@@ -262,6 +267,8 @@ def extend_openapi(actual):
         ),
     ]
     for method, path, operation, request, output, status in entries:
+        if method not in actual["paths"].get(path, {}):
+            continue
         parameters = [
             {
                 "name": key,
@@ -309,6 +316,8 @@ def extend_openapi(actual):
             }
         actual["paths"].setdefault(path, {})[method] = spec
     path = root + "/authoring-images/{asset_id}/versions/{version_id}/bytes/{variant}"
+    if "get" not in actual["paths"].get(path, {}):
+        return
     actual["paths"][path] = {
         "get": {
             "operationId": "downloadAuthoringImageVersion",

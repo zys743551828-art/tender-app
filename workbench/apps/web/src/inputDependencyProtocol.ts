@@ -13,6 +13,7 @@ import {
   executionSha,
   recordObject,
 } from "./executionInputValidation";
+import { MAX_DEPENDENCY_DECLARATIONS } from "./dependencyRequestLimits";
 export type DependencyProps = {
   scope: FreezeScope;
   frozen: PackageReviewFrozenInputView;
@@ -47,7 +48,7 @@ export async function validateDependencyInventory(
     m.target_revision_id !== p.scope.revisionId ||
     !executionSha(v.digest) ||
     !Array.isArray(m.requirements) ||
-    m.requirements.length > 10000 ||
+    m.requirements.length > MAX_DEPENDENCY_DECLARATIONS ||
     m.inventory_complete !== false ||
     m.review_ready !== false ||
     (await frozenManifestDigest(m)) !== v.digest
@@ -88,7 +89,7 @@ export function validDependencyRequest(
     v.purpose !== "prebid_compliance" ||
     !ids(v.fact_ids) ||
     !Array.isArray(v.dependencies) ||
-    v.dependencies.length > 500
+    v.dependencies.length > MAX_DEPENDENCY_DECLARATIONS
   )
     return false;
   const seen = new Set<string>();
@@ -201,20 +202,22 @@ export async function validateDependencyAssessment(
   const rows = [...inventory.manifest.requirements].sort((a, b) =>
     a.rule_id < b.rule_id ? -1 : a.rule_id > b.rule_id ? 1 : 0,
   );
+  const byId = new Map(rows.map((row) => [row.rule_id, row])),
+    declarations = new Map(
+      body.dependencies.map((row) => [row.requirement_id, row]),
+    ),
+    selected = new Set(body.fact_ids);
   for (const d of body.dependencies) {
-    const row = rows.find((r) => r.rule_id === d.requirement_id);
-    if (
-      !row ||
-      row.requirement_digest !== d.requirement_digest ||
-      d.evidence_ids.some((id) => !ruleEvidenceIds(row).includes(id))
-    )
-      return bad();
+    const row = byId.get(d.requirement_id);
+    if (!row || row.requirement_digest !== d.requirement_digest) return bad();
+    const evidence = new Set(ruleEvidenceIds(row));
+    if (d.evidence_ids.some((id) => !evidence.has(id))) return bad();
   }
   const states = new Set<string>();
   let declared = rows.length > 0;
   for (const [n, r] of rows.entries()) {
     const item = m.requirements[n],
-      d = body.dependencies.find((x) => x.requirement_id === r.rule_id);
+      d = declarations.get(r.rule_id);
     if (
       !recordObject(item) ||
       !exactKeys(item, [
@@ -257,7 +260,7 @@ export async function validateDependencyAssessment(
     )
       return bad();
     const missing = d
-      ? d.fact_ids.filter((id) => !body.fact_ids.includes(id)).sort()
+      ? d.fact_ids.filter((id) => !selected.has(id)).sort()
       : [];
     const status =
       !d || d.state === "unknown" || !r.source_bound

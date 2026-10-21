@@ -222,12 +222,6 @@ def get_evidence(evidence_id: UUID, r: Request):
     auth(r)
     with connection() as c:
         body = evidence_view(c, evidence_id)
-        source = c.execute(
-            "SELECT h.status FROM evidence_blocks e JOIN parse_runs p ON p.id=e.parse_id JOIN retrieval.source_nodes n ON n.document_version_id=p.document_version_id JOIN retrieval.source_heads h ON h.source_id=n.id WHERE e.id=%s AND h.status='withdrawn' LIMIT 1",
-            (evidence_id,),
-        ).fetchone()
-        if source:
-            body["source_status"] = "withdrawn"
         validate("EvidenceView", body)
         return _response(body, "evidence", evidence_id)
 

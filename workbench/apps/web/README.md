@@ -33,10 +33,10 @@ API_PROXY_TARGET=http://127.0.0.1:8801 npm run dev -- --port 5174
 
 ## 契约与验证
 
-`src/contracts.ts` 仅生成当前UI消费的schema闭包，来源是与该候选绑定的实际实现OpenAPI；共享契约已集中更新时可使用默认路径，当前候选10固定使用末节列出的task05组合（与task04同字节）。生成类型不表示完整目标系统已实现；本页面只调用当前注册接口。生成文件也包含实际method/path能力列表；目标schema存在不代表对应服务已注册。后端actual契约更新后重新生成才能开放对应工作面。
+`src/contracts.ts` 仅生成当前 UI 消费的 schema 闭包，默认读取完整的实施版快照 `packages/contracts/fusion-implemented.openapi.json.gz`。gzip 只改变仓库存储格式，不删减路径或 schema；API 的 `/openapi.json` 仍返回普通 JSON。生成文件包含实际 method/path 能力列表；目标 schema 存在不表示服务已注册。更新后端路由后，先在 `workbench` 执行 `python -m apps.api.export_openapi --output packages/contracts/fusion-implemented.openapi.json.gz`，再在本目录生成类型。历史候选仍可用 `--openapi path/to/plain.json` 指定原普通 JSON 快照；下方冻结 QA 记录不随本轮改写。
 
 ```bash
-python scripts/generate-contracts.py --openapi qa-previews/assistant-task-10/implemented-task04.openapi.json
+python scripts/generate-contracts.py
 npx prettier --write src/contracts.ts
 npm run format:check
 npm run lint

@@ -28,6 +28,24 @@ DIGEST = {"type": "string", "pattern": "^[0-9a-f]{64}$"}
 
 def extend_openapi(actual):
     schemas = actual["components"]["schemas"]
+    schemas["AuthoringBuildIdentity"] = obj(
+        {
+            "protocol": {"const": "authoring-build-identity/1"},
+            "bid_id": UUID,
+            "draft_id": UUID,
+            "draft_revision": INTEGER,
+            "snapshot_id": UUID,
+            "snapshot_digest": DIGEST,
+            "build_input_id": UUID,
+            "input_digest": DIGEST,
+            "manifest_digest": DIGEST,
+            "writer_kind": STRING,
+            "request": ref("BuildRequest"),
+        }
+    )
+    schemas["BuildView"]["properties"]["identity"] = ref("AuthoringBuildIdentity")
+    if "identity" not in schemas["BuildView"]["required"]:
+        schemas["BuildView"]["required"].append("identity")
     nullable_uuid = {"type": ["string", "null"], "format": "uuid"}
     follow_ids = ["adopted_document_version_id", "parse_operation_id", "request_id", "review_id"]
     follow_up = obj(

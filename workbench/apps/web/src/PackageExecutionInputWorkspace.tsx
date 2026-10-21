@@ -19,9 +19,7 @@ import {
   storeExecutionRecord,
 } from "./executionInputRecovery";
 
-const PackageInputDependencyWorkspace = lazy(
-  () => import("./PackageInputDependencyWorkspace"),
-);
+const PackageReviewWorkspace = lazy(() => import("./PackageReviewWorkspace"));
 import type {
   ExecutionRecord,
   ExecutionScope,
@@ -73,6 +71,13 @@ function Workspace({
   const [result, setResult] = useState<PackageExecutionInputView | null>(null);
   const [historyId, setHistoryId] = useState(loaded.record?.lastId ?? "");
   const [historyError, setHistoryError] = useState<unknown>(null);
+  const [rerunOpen, setRerunOpen] = useState(
+    !!loaded.record?.pending?.body.rerun,
+  );
+  const [rerunReason, setRerunReason] = useState(
+    loaded.record?.pending?.body.rerun?.reason ?? "",
+  );
+  const rerunReasonInput = useRef<HTMLTextAreaElement>(null);
   const path = executionPath(scope, frozen.manifest.id);
   const available = supportsApi("POST", path);
   useEffect(() => {
@@ -86,7 +91,11 @@ function Workspace({
     recordRef.current = next;
     setRecord(next);
   }
-  async function save(recover: boolean) {
+  function requestRerun() {
+    setRerunOpen(true);
+    window.setTimeout(() => rerunReasonInput.current?.focus(), 0);
+  }
+  async function save(recover: boolean, rerun = false) {
     const current = recordRef.current;
     if (
       !active.current ||
@@ -100,13 +109,18 @@ function Workspace({
       ? current.pending
       : !current.pending &&
           candidate &&
-          candidate.parse_evidence_status === "matched"
+          candidate.parse_evidence_status === "matched" &&
+          (!rerun ||
+            (rerunReason.trim() &&
+              Array.from(rerunReason.trim()).length <= 2000))
         ? {
             key: crypto.randomUUID(),
             body: {
               frozen_digest: frozen.digest,
               context_digest: candidate.current_context.semantic_digest,
-              rerun: null,
+              rerun: rerun
+                ? { nonce: crypto.randomUUID(), reason: rerunReason.trim() }
+                : null,
             },
             context: { ...candidate.current_context },
           }
@@ -146,6 +160,7 @@ function Workspace({
       setHistoryError(null);
       setHistoryId(data.manifest.id);
       setResult(data);
+      setRerunOpen(false);
     } catch (failure) {
       if (active.current) setError(failure);
     } finally {
@@ -219,10 +234,52 @@ function Workspace({
         </div>
       )}
       {error != null && <ErrorNotice error={error} />}
+      {rerunOpen && (
+        <form
+          className="package-review__prepare-rerun"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void save(false, true);
+          }}
+        >
+          <h5>保存复检准备输入</h5>
+          <p>
+            请说明为何再次执行。保存会重新核验当前输入，生成独立复检身份；之后仍需明确选用依赖计划并启动核查。
+          </p>
+          <label>
+            本次复检理由
+            <textarea
+              ref={rerunReasonInput}
+              rows={3}
+              value={rerunReason}
+              onChange={(event) => setRerunReason(event.target.value)}
+              maxLength={2000}
+              required
+              disabled={busy || !!record?.pending}
+            />
+          </label>
+          {!candidate && <p>先复核此冻结输入的当前条件，再保存复检准备。</p>}
+          <button
+            className="button primary"
+            disabled={
+              !available ||
+              !record ||
+              !!record.pending ||
+              !candidate ||
+              candidate.parse_evidence_status !== "matched" ||
+              busy ||
+              disabled ||
+              !rerunReason.trim()
+            }
+          >
+            保存带理由的复检准备
+          </button>
+        </form>
+      )}
       {result && (
         <>
           <div role="status">
-            <p>执行准备输入已读回并校验，尚未启动评审。</p>
+            <p>执行准备输入已读回并校验；任务受理与结果见下方核查记录。</p>
             <p>
               准备输入编号：<code>{result.manifest.id}</code>
             </p>
@@ -251,11 +308,12 @@ function Workspace({
             frozenId={frozen.manifest.id}
             prepared={result}
           />
-          <Suspense fallback={<p>正在加载逐条事实需求核对…</p>}>
-            <PackageInputDependencyWorkspace
+          <Suspense fallback={<p>正在加载整包范围核查工作区…</p>}>
+            <PackageReviewWorkspace
               scope={scope}
               frozen={frozen}
               prepared={result}
+              onRequestRerun={requestRerun}
             />
           </Suspense>
         </>

@@ -16,13 +16,13 @@ def project_rules(c, bid):
     ).fetchall()
 
 
-def confirmed_basis(c, bid, rule):
+def confirmed_basis(c, bid, rule, *, lock_sources=True):
     decision = current_decision(c, bid, "rule", rule["id"])
     if not decision or decision["decision"] != "confirmed":
         raise DomainError(
             "AUTHORING_FORMAT_RULE_UNCONFIRMED", "格式绑定需要当前有据确认的有效要求", 409
         )
-    basis = evidence_basis(c, bid, rule["evidence_ids"], publish=False)
+    basis = evidence_basis(c, bid, rule["evidence_ids"], publish=False, lock_sources=lock_sources)
     if basis != decision_basis(c, decision["id"]):
         raise DomainError(
             "AUTHORING_FORMAT_RULE_STALE", "格式要求的确认依据已变化，请重新核对要求", 409
@@ -58,7 +58,7 @@ def confirmed_basis(c, bid, rule):
     )
 
 
-def evaluate(c, bid, style, bindings):
+def evaluate(c, bid, style, bindings, *, lock_sources=True):
     rules = project_rules(c, bid)
     by_id = {str(r["id"]): r for r in rules}
     effective = deepcopy(style)
@@ -72,7 +72,7 @@ def evaluate(c, bid, style, bindings):
                 "AUTHORING_FORMAT_BINDING_INVALID", "格式字段不能重复，要求必须属于当前有效包", 422
             )
         fields.add(binding["field"])
-        basis = confirmed_basis(c, bid, rule)
+        basis = confirmed_basis(c, bid, rule, lock_sources=lock_sources)
         refs = binding["source_refs"]
         if not refs or not {ref["evidence_id"] for ref in refs} <= set(
             map(str, rule["evidence_ids"])
@@ -82,7 +82,7 @@ def evaluate(c, bid, style, bindings):
             )
         checked = empty_content("格式依据核验", 0)
         checked["attrs"]["source_refs"] = refs
-        assert_sources(c, bid, checked)
+        assert_sources(c, bid, checked, lock_sources=lock_sources)
         value = clean(
             binding
             | {
@@ -118,10 +118,14 @@ def evaluate(c, bid, style, bindings):
     return report
 
 
-def assert_snapshot(c, bid, extension):
+def assert_snapshot(c, bid, extension, *, lock_sources=True):
     metadata = extension["metadata"]
     report = evaluate(
-        c, bid, extension["style_template"]["config"], metadata.get("format_bindings", [])
+        c,
+        bid,
+        extension["style_template"]["config"],
+        metadata.get("format_bindings", []),
+        lock_sources=lock_sources,
     )
     if (
         metadata.get("format_binding_manifest", []) != report["binding_manifest"]

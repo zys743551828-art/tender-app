@@ -34,8 +34,10 @@ def lock_draft(c, bid, draft):
     return fetch(c, "SELECT * FROM drafts WHERE bid_id=%s AND id=%s FOR UPDATE", (bid, draft))
 
 
-def assert_sources(c, bid, content, target=None):
+def assert_sources(c, bid, content, target=None, *, lock_sources=True):
     """Final-use check; indexed publication flags never grant authority."""
+    if target is not None and not lock_sources:
+        raise ValueError("Citation writes require locked source authority")
     validate_content(content)
     attrs = content["attrs"]
     rule_ids = list(dict.fromkeys(attrs["rule_ids"]))
@@ -50,7 +52,7 @@ def assert_sources(c, bid, content, target=None):
     refs = attrs["source_refs"]
     source_ids = sorted({UUID(ref["source_id"]) for ref in refs}, key=str)
     # Same graph mutex as lineage and source mutation; then deterministic ancestor locks.
-    if source_ids:
+    if source_ids and lock_sources:
         c.execute("SELECT pg_advisory_xact_lock(90127,1)")
         c.execute(
             """SELECT h.source_id FROM retrieval.source_heads h

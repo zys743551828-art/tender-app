@@ -8,9 +8,11 @@ from datetime import timedelta
 from typing import Any
 
 from confluent_kafka import Consumer, Producer, TopicPartition
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from apps.worker.handlers import compute, publish
+from packages.domain.bounded_sweep import KeysetSweep
 from packages.domain.runtime import (
     DomainError,
     assert_role,
@@ -31,11 +33,14 @@ STOP = threading.Event()
 ORDINARY_HANDLERS = (
     "document/2",
     "document/1",
+    "document-parse/1",
     "word-render/1",
     "prepare/1",
     "review/1",
+    "package-review/1",
     "export/1",
     "report/1",
+    "package-report/1",
     "rag-index/1",
     "knowledge-index/1",
     "comparison/1",
@@ -43,9 +48,16 @@ ORDINARY_HANDLERS = (
     "authoring-generate/1",
 )
 LANE_HANDLERS = {
-    "document": ("document/1", "document/2", "word-render/1", "rag-index/1", "knowledge-index/1"),
-    "review": ("prepare/1", "review/1"),
-    "export": ("export/1", "report/1"),
+    "document": (
+        "document/1",
+        "document/2",
+        "document-parse/1",
+        "word-render/1",
+        "rag-index/1",
+        "knowledge-index/1",
+    ),
+    "review": ("prepare/1", "review/1", "package-review/1"),
+    "export": ("export/1", "report/1", "package-report/1"),
     "comparison": ("comparison/1",),
     "assistant": ("assistant/1", "authoring-generate/1"),
 }
@@ -56,11 +68,11 @@ def task_topic(handler):
         return "tender.task.assistant.v1"
     if handler == "comparison/1":
         return "tender.task.comparison.v1"
-    if handler in ("export/1", "report/1"):
+    if handler in ("export/1", "report/1", "package-report/1"):
         return "tender.task.export.v1"
     return (
         "tender.task.review.v1"
-        if handler in ("review/1", "prepare/1")
+        if handler in ("review/1", "prepare/1", "package-review/1")
         else "tender.task.document.v1"
     )
 
@@ -72,6 +84,7 @@ def work_error(c, message):
         "knowledge-index/1",
         "comparison/1",
         "assistant/1",
+        "package-report/1",
     ):
         return None
     try:
@@ -445,6 +458,10 @@ def finish(message, lease, outcome, error=None):
                 from packages.assistant.tasks import publish as publish_assistant
 
                 output = publish_assistant(c, message, outcome)
+            elif message["handler_version"] == "document-parse/1":
+                from apps.worker.document_parse_handlers import publish as publish_document_parse
+
+                output = publish_document_parse(c, message, outcome)
             elif message["handler_version"] == "word-render/1":
                 from apps.worker.word_intake_handlers import publish as publish_word
 
@@ -461,6 +478,10 @@ def finish(message, lease, outcome, error=None):
                 from apps.worker.report_handlers import publish as publish_report
 
                 output = publish_report(c, message, outcome)
+            elif message["handler_version"] == "package-report/1":
+                from apps.worker.package_report_handlers import publish as publish_package_report
+
+                output = publish_package_report(c, message, outcome)
             elif message["handler_version"] == "rag-index/1":
                 from packages.rag.tasks import publish as publish_index
 
@@ -473,6 +494,10 @@ def finish(message, lease, outcome, error=None):
                 from apps.worker.review_handlers import publish as publish_review
 
                 output = publish_review(c, message, outcome)
+            elif message["handler_version"] == "package-review/1":
+                from apps.worker.package_review_handlers import publish as publish_package_review
+
+                output = publish_package_review(c, message, outcome)
             else:
                 output = publish(c, message, outcome)
             state = "succeeded"
@@ -547,6 +572,10 @@ def renew(message, lease):
 
 
 def run_compute(message, lease):
+    if message["handler_version"] == "document-parse/1":
+        from apps.worker.document_parse_handlers import compute as compute_document_parse
+
+        return compute_document_parse(message, lease)
     if message["handler_version"] == "word-render/1":
         from apps.worker.word_intake_handlers import compute as compute_word
 
@@ -567,6 +596,10 @@ def run_compute(message, lease):
         from apps.worker.report_handlers import compute as compute_report
 
         return compute_report(message, lease)
+    if message["handler_version"] == "package-report/1":
+        from apps.worker.package_report_handlers import compute as compute_package_report
+
+        return compute_package_report(message, lease)
     if message["handler_version"] == "rag-index/1":
         from packages.rag.tasks import compute as compute_index
 
@@ -579,6 +612,10 @@ def run_compute(message, lease):
         from apps.worker.review_handlers import compute as compute_review
 
         return compute_review(message, lease)
+    if message["handler_version"] == "package-review/1":
+        from apps.worker.package_review_handlers import compute as compute_package_review
+
+        return compute_package_review(message, lease)
     return compute(message)
 
 
@@ -700,12 +737,16 @@ def consume(kind="document"):
 
 def reconcile(once=False):
     assert_role(True)
+    sweep = KeysetSweep(("created_at", "id"))
     while not STOP.is_set():
         with connection(True) as c:
-            ids = c.execute(
-                "SELECT id,bid_id FROM operations WHERE state IN ('cancel_requested','queued','running') AND handler_version=ANY(%s) ORDER BY created_at LIMIT 100",
+            ids = sweep.read(
+                c,
+                sql.SQL(
+                    "SELECT id,bid_id,created_at FROM operations WHERE state IN ('cancel_requested','queued','running') AND handler_version=ANY(%s)"
+                ),
                 (list(ORDINARY_HANDLERS),),
-            ).fetchall()
+            )
         for item in ids:
             with connection(True) as c:
                 c.execute("SELECT design.lock_worker_bid(%s)", (item["bid_id"],))

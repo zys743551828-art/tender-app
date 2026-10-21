@@ -10,6 +10,9 @@ from psycopg.types.json import Jsonb
 
 from packages.domain.runtime import DomainError, assert_role, connection, uid
 from packages.tasks import coordinator
+from packages.tasks.review_runtime import configure_review_guard
+
+configure_review_guard()
 
 STOP = threading.Event()
 

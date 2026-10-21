@@ -2,6 +2,7 @@
 
 import hashlib
 import io
+import os
 from pathlib import Path
 
 import pytest
@@ -55,7 +56,12 @@ def test_actual_bytes_page_rotation_text_and_blank(parser):
 def test_chinese_scanned_page_real_ocr_and_explicit_visual_gaps(parser):
     image = Image.new("RGB", (1400, 1800), "white")
     painter = ImageDraw.Draw(image)
-    font = ImageFont.truetype("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc", 56)
+    font = ImageFont.truetype(
+        os.environ.get(
+            "PARSING_TEST_FONT_PATH", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
+        ),
+        56,
+    )
     painter.text((100, 160), "施工工期 120 天", font=font, fill="black")
     painter.text((100, 280), "质量要求：合格", font=font, fill="black")
     data = pdf_bytes(lambda page: page.drawImage(ImageReader(image), 0, 0, width=420, height=595))

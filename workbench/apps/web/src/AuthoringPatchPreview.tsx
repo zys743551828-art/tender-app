@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { api } from "./api";
 import type {
-  AuthoringDocument,
   AuthoringNode,
   AuthoringPreview,
   AuthoringPreviewRequest,
@@ -10,13 +9,16 @@ import type {
 } from "./contracts";
 import type { AuthoringHead } from "./SectionEditor";
 import { ErrorNotice } from "./components";
-import { editorSchema, editorText, jsonDigest } from "./editorSchema";
+import { jsonDigest } from "./editorSchema";
+import {
+  authoringText as editorText,
+  richEditorSchema as editorSchema,
+  serializeAuthoringNode,
+} from "./richEditorSchema";
+import type { EditorDocument } from "./richEditorSchema";
 import { useCommand } from "./useCommand";
 
-function findNode(
-  document: AuthoringDocument,
-  id: string,
-): AuthoringNode | null {
+function findNode(document: EditorDocument, id: string): AuthoringNode | null {
   function visit(nodes: AuthoringNode[]): AuthoringNode | null {
     for (const node of nodes) {
       if ("attrs" in node && node.attrs.id === id) return node;
@@ -27,7 +29,15 @@ function findNode(
     }
     return null;
   }
-  return visit(document.content);
+  const nodes: AuthoringNode[] = [];
+  editorSchema.nodeFromJSON(document).descendants((node) => {
+    if (
+      (node.type.name === "paragraph" || node.type.name === "heading") &&
+      node.attrs.id === id
+    )
+      nodes.push(serializeAuthoringNode(node) as AuthoringNode);
+  });
+  return visit(nodes);
 }
 export function AuthoringPatchPreview({
   bidId,
@@ -42,7 +52,7 @@ export function AuthoringPatchPreview({
 }: {
   bidId: string;
   sectionId: string;
-  content: AuthoringDocument;
+  content: EditorDocument;
   target: AuthoringNode | null;
   disabled: boolean;
   flush: () => Promise<boolean>;

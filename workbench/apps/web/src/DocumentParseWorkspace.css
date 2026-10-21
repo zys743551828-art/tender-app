@@ -1,0 +1,94 @@
+.document-parse {
+  margin-block: 1rem;
+  min-width: 0;
+}
+.document-parse__body {
+  margin-block-start: 0.75rem;
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--border, #dfe4ec);
+  border-radius: 0.75rem;
+  background: var(--surface, #fff);
+}
+.document-parse__body h4,
+.document-parse__body h5,
+.document-parse__body p {
+  margin: 0;
+}
+.document-parse__body h5 {
+  font-size: 1rem;
+}
+.document-parse__body code,
+.document-parse__body li,
+.document-parse__body small {
+  overflow-wrap: anywhere;
+}
+.document-parse__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+.document-parse__context,
+.document-parse__progress,
+.document-parse__history,
+.document-parse__original,
+.document-parse__original section {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.document-parse__progress,
+.document-parse__history {
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--border, #dfe4ec);
+}
+.document-parse__history ul {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.document-parse__history li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f5f7fb;
+  border-radius: 0.5rem;
+}
+.document-parse__history li > div {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+.document-parse__metrics {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.document-parse__metrics dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.document-parse__original input[type="number"] {
+  width: 5rem;
+}
+.document-parse__body > input {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 480px) {
+  .document-parse__body {
+    padding: 0.75rem;
+  }
+  .document-parse__actions .button,
+  .document-parse__history .button {
+    white-space: normal;
+  }
+}

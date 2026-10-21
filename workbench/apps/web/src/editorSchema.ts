@@ -7,9 +7,8 @@ const idAttribute = { id: { default: null } };
 /** Formatting changes a block's presentation without changing its patch identity. */
 export function blockStyle(level?: number): Command {
   return (state, dispatch) => {
-    const type = level
-      ? editorSchema.nodes.heading
-      : editorSchema.nodes.paragraph;
+    const schema = state.schema;
+    const type = level ? schema.nodes.heading : schema.nodes.paragraph;
     const transaction = state.tr;
     let changed = false;
     state.doc.nodesBetween(
@@ -17,8 +16,8 @@ export function blockStyle(level?: number): Command {
       state.selection.to,
       (node, position) => {
         if (
-          node.type !== editorSchema.nodes.paragraph &&
-          node.type !== editorSchema.nodes.heading
+          node.type !== schema.nodes.paragraph &&
+          node.type !== schema.nodes.heading
         )
           return;
         const place = state.doc.resolve(position);

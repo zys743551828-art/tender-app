@@ -6,11 +6,40 @@ The caller owns a repeatable-read snapshot; object storage belongs outside that 
 
 from typing import Any
 
+from packages.authoring import package_outputs
 from packages.domain.bid_package_repository import read_parse_identity
 from packages.domain.bid_packages import PackageError, require
+from packages.domain.runtime import DomainError
 
 
-def read_member(c: Any, bid: str, member: dict[str, Any]) -> dict[str, Any]:
+def generated_observations(c: Any, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    """Current generated-body qualification, separate from exact parse identity.
+
+    The same read-only observer runs in RR input snapshots and under the final
+    bid/source locks. Prepared snapshots retain these safe summaries, so a
+    withdrawn image or changed authoring basis cannot escape the IO recheck.
+    """
+    values = []
+    for role in ("target", "authority"):
+        for member in manifest[role]["manifest"]["members"]:
+            admission = package_outputs.observe_admission(
+                c, manifest["bid_id"], member["document_version_id"]
+            )
+            if admission is not None:
+                values.append(
+                    {
+                        "package_role": role,
+                        "member_id": member["member_id"],
+                        "document_version_id": member["document_version_id"],
+                        "admission": admission,
+                    }
+                )
+    return values
+
+
+def read_member(
+    c: Any, bid: str, member: dict[str, Any], *, check_generated: bool = True
+) -> dict[str, Any]:
     frozen = member["parse"]
     require(frozen["status"] == "frozen", "PACKAGE_REVIEW_PARSE_UNPROVEN")
     row = c.execute(
@@ -35,6 +64,14 @@ def read_member(c: Any, bid: str, member: dict[str, Any]) -> dict[str, Any]:
         and actual.evidence_digest == frozen["evidence_digest"],
         "PACKAGE_REVIEW_EVIDENCE_CHANGED",
     )
+    if check_generated:
+        admission = package_outputs.observe_admission(c, bid, member["document_version_id"])
+        if admission is not None and admission["state"] != "matched":
+            raise DomainError(
+                "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN",
+                "所选生成正文的采用依据或图片资格已变化，请核对后重新生成并明确采用",
+                409,
+            )
     pages = c.execute(
         "SELECT physical_page,quality,gaps FROM design.pages WHERE bid_id=%s AND parse_id=%s ORDER BY physical_page",
         (bid, frozen["parse_run_id"]),
@@ -61,7 +98,9 @@ def evidence_matches(c: Any, manifest: dict[str, Any]) -> bool:
             if member["parse"]["status"] != "frozen":
                 continue
             try:
-                read_member(c, manifest["bid_id"], member)
+                # Qualification is evaluated separately through generated_outputs;
+                # an image withdrawal is not a corruption of an immutable parse.
+                read_member(c, manifest["bid_id"], member, check_generated=False)
             except PackageError as error:
                 if error.code not in expected_errors:
                     raise

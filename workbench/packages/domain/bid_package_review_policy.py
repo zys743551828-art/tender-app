@@ -81,6 +81,10 @@ def evaluate(manifest: dict[str, Any], observations: dict[str, Any], *, evidence
         for row in snapshot
     ):
         codes.append("PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE")
+    if any(
+        row["admission"]["state"] != "matched" for row in observations.get("generated_outputs", [])
+    ):
+        codes.append("PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN")
     if not target_view["storage_eligible"] or not authority_view["storage_eligible"]:
         codes.append("PACKAGE_REVIEW_MEMBERS_UNPROVEN")
     gaps = physical_gaps(target_view["manifest"], "target") + physical_gaps(

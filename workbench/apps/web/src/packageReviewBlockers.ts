@@ -13,6 +13,8 @@ export const reviewInputBlockers: Record<
   PACKAGE_REVIEW_SOURCE_UNPROVEN: "尚无可证明的完整来源范围。",
   PACKAGE_REVIEW_SOURCE_CHANGED: "来源效力记录已变化，旧输入保持原样。",
   PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE: "来源尚未生效、已撤回、过期或用途不符。",
+  PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN:
+    "生成正文的编写依据、确认状态或输出来源已无法核验，请重新核对后生成。",
   PACKAGE_REVIEW_MEMBERS_UNPROVEN: "成员的解析、页数或逻辑范围仍未明确。",
   PACKAGE_REVIEW_EVIDENCE_CHANGED:
     "冻结解析对应的文件、页或证据记录无法核对，需检查原件与解析。",

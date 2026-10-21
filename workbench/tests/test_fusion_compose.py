@@ -1,5 +1,6 @@
 """Fusion group configuration and API profile isolation; no daemon or live connection."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -7,6 +8,20 @@ import yaml  # type: ignore[import-untyped]
 
 from deploy.fusion_runtime import API_KEYS, api_environment
 from deploy.initialize_database import ROOT
+
+
+def test_image_proxy_budget_is_limited_to_exact_image_registration():
+    config = (ROOT / "deploy/nginx-fusion.conf").read_text(encoding="utf-8")
+    before, routes = config.split("location = /nginx-health", 1)
+    assert "client_max_body_size 5m;" in before
+    pattern, body = re.search(r'location ~ "([^"\n]+)" \{([^}]+)\}', routes).groups()
+    bid = "00000000-0000-4000-8000-000000000001"
+    assert re.fullmatch(pattern, f"/api/v1/bids/{bid}/authoring-images")
+    assert not re.fullmatch(pattern, f"/api/v1/bids/{bid}/authoring-images/asset")
+    assert not re.fullmatch(pattern, f"/api/v1/bids/{bid}/packages")
+    assert "client_max_body_size 12m;" in body
+    assert "proxy_pass http://api:8000;" in body
+    assert config.count("client_max_body_size 12m;") == 1
 
 
 def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
@@ -45,15 +60,15 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
 def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
     plan = yaml.safe_load((ROOT / "deploy/compose.fusion.yaml").read_text(encoding="utf-8"))
     api = plan["services"]["api"]
-    assert "api_profile_v8:/runtime:ro" in api["volumes"]
+    assert "api_profile_v10:/runtime:ro" in api["volumes"]
     assert not any("init_state" in volume or ".env" in volume for volume in api["volumes"])
     assert not any(key.endswith("_DSN") for key in api["environment"])
     assert not api.get("secrets")
     assert plan["services"]["postgres"]["secrets"] == ["fusion_owner_password"]
     assert plan["services"]["checks-postgres"]["secrets"] == ["fusion_checks_owner_password"]
     assert plan["services"]["checks"]["secrets"] == ["fusion_checks_owner_password"]
-    assert "init_state_v8:/workspace/.local" in plan["services"]["init"]["volumes"]
-    assert "api_profile_v8:/runtime" in plan["services"]["init"]["volumes"]
+    assert "init_state_v10:/workspace/.local" in plan["services"]["init"]["volumes"]
+    assert "api_profile_v10:/runtime" in plan["services"]["init"]["volumes"]
     assert {
         "init_state",
         "api_profile",
@@ -71,6 +86,10 @@ def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():
         "api_profile_v7",
         "init_state_v8",
         "api_profile_v8",
+        "init_state_v9",
+        "api_profile_v9",
+        "init_state_v10",
+        "api_profile_v10",
     } <= plan["volumes"].keys()
     assert (
         "checks_postgres_data:/var/lib/postgresql/data"

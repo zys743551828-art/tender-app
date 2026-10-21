@@ -8,7 +8,7 @@ import type {
 } from "./contracts";
 import type { AuthoringHead } from "./SectionEditor";
 import { Badge, ErrorNotice } from "./components";
-import { editorText } from "./editorSchema";
+import { authoringText } from "./richEditorSchema";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useCommand } from "./useCommand";
@@ -198,11 +198,11 @@ function RevisionList({
               <div className="editor-comparison">
                 <div>
                   <strong>当前已保存正文</strong>
-                  <pre>{editorText(getHead().section.content)}</pre>
+                  <pre>{authoringText(getHead().section.content)}</pre>
                 </div>
                 <div>
                   <strong>拟恢复的历史正文</strong>
-                  <pre>{editorText(historical.data!.content)}</pre>
+                  <pre>{authoringText(historical.data!.content)}</pre>
                 </div>
               </div>
               <button

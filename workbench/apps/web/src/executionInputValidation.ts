@@ -22,6 +22,20 @@ export const executionId = (v: unknown): v is string =>
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(v);
 export const executionSha = (v: unknown): v is string =>
   typeof v === "string" && v.length === 64 && /^[a-f0-9]{64}$/.test(v);
+export function validExecutionRerun(
+  value: unknown,
+): value is SavePackageExecutionInput["rerun"] {
+  return (
+    value === null ||
+    (recordObject(value) &&
+      exactKeys(value, ["nonce", "reason"]) &&
+      executionId(value.nonce) &&
+      typeof value.reason === "string" &&
+      value.reason.trim() === value.reason &&
+      !!value.reason &&
+      Array.from(value.reason).length <= 2000)
+  );
+}
 export type ExecutionExpectation = {
   body: SavePackageExecutionInput;
   context: PackageReviewExecutionContext;
@@ -212,17 +226,7 @@ export async function validateExecutionInput(
     )
   )
     return fail();
-  if (
-    rerun !== null &&
-    (!recordObject(rerun) ||
-      !exactKeys(rerun, ["nonce", "reason"]) ||
-      !executionId(rerun.nonce) ||
-      typeof rerun.reason !== "string" ||
-      rerun.reason.trim() !== rerun.reason ||
-      !rerun.reason ||
-      [...rerun.reason].length > 2000)
-  )
-    return fail();
+  if (!validExecutionRerun(rerun)) return fail();
   const verified = micros(m.originals_verified_at),
     saved = micros(m.saved_at),
     frozenAt = micros(frozen.manifest.frozen_at);

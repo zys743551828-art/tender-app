@@ -4,6 +4,7 @@ from fastapi.routing import APIRoute
 
 
 def mount(app):
+    from apps.api.authoring_rich import router as authoring_rich
     from apps.api.authoring_structure import router as authoring_structure
     from apps.api.historical_input_routes import router as historical_input
     from apps.api.historical_routes import router as historical_proof
@@ -16,6 +17,7 @@ def mount(app):
 
     routers = (
         authoring_structure,
+        authoring_rich,
         technical_scale,
         lifecycle,
         task_drafts,
@@ -46,6 +48,7 @@ def mount(app):
 
 def extend_openapi(actual):
     from apps.api.composition_contracts import extend_lifecycle
+    from packages.authoring.rich_contracts import extend_openapi as rich
     from packages.authoring.structure_contracts import extend_openapi as structure
     from packages.model_governance.contracts import extend_openapi as governance
     from packages.model_governance.historical_contracts import extend_openapi as historical_proof
@@ -60,6 +63,7 @@ def extend_openapi(actual):
     # Target mappings run first. These projections only replace registered actual operations.
     for extension in (
         structure,
+        rich,
         governance,
         historical_proof,
         historical_input,

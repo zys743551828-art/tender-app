@@ -4,10 +4,11 @@ from contextlib import contextmanager
 from uuid import UUID
 
 import psycopg
-from fastapi import APIRouter, Body, Query, Request
+from fastapi import APIRouter, Body, Depends, Query, Request
 
 from apps.api.auth import auth
 from apps.api.bid_package_review_input_routes import input_errors
+from apps.api.dependency_body_limit import require_dependency_request_bytes
 from apps.api.identity_routes import saved
 from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_dependency_plans as service
@@ -29,7 +30,7 @@ def plan_errors():
             ) from error
 
 
-@router.post(BASE)
+@router.post(BASE, dependencies=[Depends(require_dependency_request_bytes)])
 def save_plan(
     bid_id: UUID,
     package_id: UUID,

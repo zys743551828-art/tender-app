@@ -1,4 +1,759 @@
-// Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
+// Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
+
+export type DocumentParseContext = {
+  context: {
+    protocol: "document-parse-context/1";
+    bid_id: string;
+    document_version_id: string;
+    document: {
+      sha256: string;
+      byte_size: number;
+      media_type: "application/pdf";
+      filename: string;
+      file_id: string;
+      file_revision: number;
+      role: "body" | "tender" | "supplement" | "drawing" | "boq";
+      artifact_kind: "source_original" | "bid_body";
+      locator_digest: string;
+    };
+    qualification: {
+      kind: "verified_upload" | "adopted_generated";
+      identity_digest: string;
+    };
+    source: {
+      root_id: string;
+      state: "unregistered" | "published";
+      authority_digest: string;
+    };
+    method: {
+      protocol: "document-parse-method/1";
+      mode: "physical_text_only" | "configured_local";
+      parser_digest: string;
+      config_digest: string;
+      implementation_digest: string;
+      max_bytes: 104857600;
+      max_pages: 1000;
+    };
+    word_coverage_claimed: false;
+    current_body_changed: false;
+    automatically_started_review: false;
+  };
+  context_digest: string;
+};
+
+export type StartDocumentParse = {
+  context_digest: string;
+  reason: string;
+};
+
+export type DocumentParseView = {
+  protocol: "document-parse-request/1";
+  id: string;
+  bid_id: string;
+  document_version_id: string;
+  actor_id: string;
+  created_at: string;
+  context: {
+    protocol: "document-parse-context/1";
+    bid_id: string;
+    document_version_id: string;
+    document: {
+      sha256: string;
+      byte_size: number;
+      media_type: "application/pdf";
+      filename: string;
+      file_id: string;
+      file_revision: number;
+      role: "body" | "tender" | "supplement" | "drawing" | "boq";
+      artifact_kind: "source_original" | "bid_body";
+      locator_digest: string;
+    };
+    qualification: {
+      kind: "verified_upload" | "adopted_generated";
+      identity_digest: string;
+    };
+    source: {
+      root_id: string;
+      state: "unregistered" | "published";
+      authority_digest: string;
+    };
+    method: {
+      protocol: "document-parse-method/1";
+      mode: "physical_text_only" | "configured_local";
+      parser_digest: string;
+      config_digest: string;
+      implementation_digest: string;
+      max_bytes: 104857600;
+      max_pages: 1000;
+    };
+    word_coverage_claimed: false;
+    current_body_changed: false;
+    automatically_started_review: false;
+  };
+  context_digest: string;
+  reason: string;
+  operation: {
+    id: string;
+    kind: "parse-document";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "cancelled"
+      | "succeeded"
+      | "failed";
+    input_digest: string;
+    handler_version: "document-parse/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    parse_run_id: string;
+    document_version_id: string;
+    source_digest: string;
+    parser_digest: string;
+    config_digest: string;
+    parsed_digest: string;
+    coverage: "complete" | "partial" | "failed";
+    page_count: number;
+    evidence_count: number;
+    gaps: string[];
+    gap_count: number;
+    word_coverage_claimed: false;
+  } | null;
+  current_body_changed: false;
+  automatically_started_review: false;
+};
+
+export type DocumentParseStarted = {
+  protocol: "document-parse-start/1";
+  actor_id: string;
+  command_id: string;
+  request_digest: string;
+  reused: boolean;
+  request: DocumentParseView;
+};
+
+export type DocumentParsePage = {
+  bid_id: string;
+  document_version_id: string;
+  items: DocumentParseView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type AdoptAuthoringOutput = {
+  snapshot_id: string;
+  snapshot_digest: string;
+  package_id: string | null;
+  member: {
+    member_id: string;
+    document_version_id: string;
+    parse_run_id?: string;
+    purposes: string[];
+    parts: {
+      part_id: string;
+      category: string;
+      first_page: number;
+      last_page: number;
+      shared_attachment: boolean;
+      heading_path: number[];
+    }[];
+  };
+  reason: string;
+};
+
+export type AuthoringOutputAdopted = {
+  protocol: "authoring-output-adoption/1";
+  bid_id: string;
+  build_id: string;
+  actor_id: string;
+  command_id: string;
+  request_digest: string;
+  output: AuthoringOutputQualification;
+  package: BidPackageStoredView;
+  package_etag: string;
+  automatically_started_review: false;
+  current_body_changed: false;
+};
+
+export type AuthoringOutputQualification = {
+  protocol: "authoring-build-output/1";
+  bid_id: string;
+  build_id: string;
+  document_version_id: string;
+  format: "docx" | "pdf";
+  sha256: string;
+  byte_size: number;
+  build_identity: {
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    build_input_id: string;
+    input_digest: string;
+    manifest_digest: string;
+    writer_kind:
+      | "strict_text/1"
+      | "structured_text/1"
+      | "generated_text/2"
+      | "generated_rich/3";
+  };
+  word_document_version_id: string;
+  word_sha256: string;
+  word_pdf_relation: "verified" | "not_applicable";
+  publication_receipt_digest: string;
+  source_authority_digest: string;
+  direct_source_ids: string[];
+};
+
+export type PackageReviewReportContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  human_decisions_digest: string;
+  method_digest: string;
+  context_digest: string;
+  formats: ("docx" | "pdf")[];
+  pdf_unavailable_code: string | null;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type StartPackageReviewReport = {
+  context_digest: string;
+  format: "docx" | "pdf";
+};
+
+export type PackageReviewReportView = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  id: string;
+  actor_id: string;
+  created_at: string;
+  context_digest: string;
+  report_input_digest: string;
+  format: "docx" | "pdf";
+  artifact_kind: "review_report";
+  operation: {
+    id: string;
+    kind: "package-scope-report";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-report/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    document_version_id: string;
+    blob_digest: string;
+    byte_size: number;
+    media_type:
+      | "application/pdf"
+      | "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    filename: string;
+    gaps: string[];
+  } | null;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type PackageReviewReportPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  items: PackageReviewReportView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewComparisonPage = {
+  version: "package-review-comparison/1";
+  kind: "declared_scope_review_comparison";
+  bid_id: string;
+  match_policy: "exact_requirement_id_and_definition_digests/1";
+  left: PackageReviewComparisonRun;
+  right: PackageReviewComparisonRun;
+  input_changes: {
+    run_input: boolean;
+    scope: boolean;
+    frozen_input: boolean;
+    prepared_input: boolean;
+    rerun_intent: boolean;
+    requirements: boolean;
+    submitted_documents: boolean;
+    selected_facts: boolean;
+    fact_admission: boolean;
+    dependency_plan: boolean;
+    inventory_proof: boolean;
+    method: boolean;
+    method_fields: (
+      | "assessment"
+      | "batch_limit"
+      | "batch_rule_limit"
+      | "endpoint"
+      | "engine"
+      | "formal_scoring_eligible"
+      | "input_character_limit"
+      | "input_scope"
+      | "model"
+      | "model_json_encoding"
+      | "output_tokens_per_batch"
+      | "purpose"
+      | "semantic_quality"
+      | "source_digest"
+      | "submission_eligible"
+    )[];
+  };
+  counts: {
+    added: number;
+    removed: number;
+    changed: number;
+    unchanged: number;
+    machine_row_changed: number;
+    verdict_changed: number;
+  };
+  overall_coverage: "partial";
+  risk_resolution_assessed: false;
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  comparison_digest: string;
+  items: PackageReviewComparisonRow[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewComparisonRun = {
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  input_digest: string;
+  method_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  result_digest: string;
+  requirement_count: number;
+  matrix_coverage: "partial" | "complete";
+  overall_coverage: "partial";
+  human_heads_digest: string;
+};
+
+export type PackageReviewComparisonRow = {
+  requirement_id: string;
+  definition_change: "added" | "removed" | "changed" | "unchanged";
+  machine_row_changed: boolean | null;
+  verdict_transition: {
+    from:
+      | "satisfied"
+      | "violated"
+      | "not_found"
+      | "unable_to_judge"
+      | "not_applicable";
+    to:
+      | "satisfied"
+      | "violated"
+      | "not_found"
+      | "unable_to_judge"
+      | "not_applicable";
+    changed: boolean;
+  } | null;
+  left: PackageReviewComparisonRowSide | null;
+  right: PackageReviewComparisonRowSide | null;
+  left_human: PackageReviewHumanDecisionSummary | null;
+  right_human: PackageReviewHumanDecisionSummary | null;
+};
+
+export type PackageReviewComparisonRowSide = {
+  row_digest: string;
+  requirement_digest: PackageScopeReview_Digest;
+  rule_digest: PackageScopeReview_Digest;
+  rule_kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  requirement_statement: string;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  target_part_ids: string[];
+  verdict:
+    | "satisfied"
+    | "violated"
+    | "not_found"
+    | "unable_to_judge"
+    | "not_applicable";
+  statement: string;
+  limitations: string[];
+};
+
+export type StartPackageReviewRun = {
+  execution_input_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+};
+
+export type PackageReviewRunInput = PackageScopeReview_Input;
+
+export type PackageReviewRunInputView = {
+  manifest: PackageReviewRunInput;
+  digest: string;
+};
+
+export type PackageReviewRunView = {
+  kind: "package_review_run";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  input_digest: string;
+  method_digest: string;
+  operation: {
+    id: string;
+    kind: "package-scope-review";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-review/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    manifest: PackageReviewResult;
+    digest: string;
+  } | null;
+};
+
+export type PackageReviewRunSummary = {
+  kind: "package_review_run";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  input_digest: string;
+  method_digest: string;
+  operation: {
+    id: string;
+    kind: "package-scope-review";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-review/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    digest: string;
+    requirement_count: number;
+    matrix_coverage: "complete" | "partial";
+    overall_coverage: "partial";
+  } | null;
+};
+
+export type SavePackageReviewHumanDecision = {
+  result_digest: string;
+  row_digest: string;
+  expected_head: {
+    id: string;
+    digest: string;
+  } | null;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+  selected_quotes: PackageScopeReview_Quote[];
+};
+
+export type PackageReviewHumanDecision = {
+  version: "package-review-human-decision/1";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  sequence_no: number;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  requirement_id: string;
+  input_digest: string;
+  result_digest: string;
+  row_digest: string;
+  previous_head: {
+    id: string;
+    digest: string;
+  } | null;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+  selected_quotes: PackageScopeReview_Quote[];
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type PackageReviewHumanDecisionView = {
+  manifest: PackageReviewHumanDecision;
+  digest: string;
+};
+
+export type PackageReviewHumanDecisionCurrent = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  result_digest: string;
+  items: {
+    requirement_id: string;
+    row_digest: string;
+    current: PackageReviewHumanDecisionSummary | null;
+  }[];
+};
+
+export type PackageReviewHumanDecisionPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  result_digest: string;
+  requirement_id: string;
+  row_digest: string;
+  items: PackageReviewHumanDecisionView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type AuthoringRichCapabilities = {
+  schema_digest: string;
+  schema: AuthoringJsonValue;
+  build_schema_digest: string;
+  image_upload_max_bytes: 8388608;
+  renderer_configured: boolean;
+  runtime_verified_by_this_read: false;
+  table_pdf_geometry: "unverified";
+  pagination_modes: {
+    mode: "chapter_start_new_page" | "continuous";
+    page_count_impact: string;
+  }[];
+};
+
+export type AuthoringRichBuildRequest = {
+  draft_id: string;
+  draft_revision: number;
+  directory_template_version_id: string;
+  style_template_version_id: string;
+  formats: ("docx" | "pdf")[];
+  follow_up: "none" | "review";
+  pagination_mode: "chapter_start_new_page" | "continuous";
+};
+
+export type AuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: AuthoringSourceReference[];
+  };
+  content: (AuthoringBlock | AuthoringRichTable | AuthoringRichImage)[];
+};
+
+export type AuthoringImageUpload = {
+  title: string;
+  reason: string;
+  media_type: "image/png" | "image/jpeg";
+  content_base64: string;
+  source_refs: AuthoringSourceReference[];
+};
+
+export type AuthoringImageCreated = {
+  id: string;
+  bid_id: string;
+  asset_id: string;
+  revision: number;
+  previous_revision: number | null;
+  previous_version_id: string | null;
+  state: "active" | "withdrawn";
+  reason: string;
+  original_blob_id: string;
+  normalized_blob_id: string;
+  original_media_type: "image/png" | "image/jpeg";
+  width_px: number;
+  height_px: number;
+  normalization_proof: AuthoringJsonValue;
+  source_refs: AuthoringSourceReference[];
+  digest: string;
+  created_by: string;
+  created_at: string;
+  title: string;
+  head_revision: number;
+  head_version_id: string;
+  is_current: boolean;
+  etag: string;
+  upload_id: string;
+};
+
+export type AuthoringImageView = {
+  id: string;
+  bid_id: string;
+  asset_id: string;
+  revision: number;
+  previous_revision: number | null;
+  previous_version_id: string | null;
+  state: "active" | "withdrawn";
+  reason: string;
+  original_blob_id: string;
+  normalized_blob_id: string;
+  original_media_type: "image/png" | "image/jpeg";
+  width_px: number;
+  height_px: number;
+  normalization_proof: AuthoringJsonValue;
+  source_refs: AuthoringSourceReference[];
+  digest: string;
+  created_by: string;
+  created_at: string;
+  title: string;
+  head_revision: number;
+  head_version_id: string;
+  is_current: boolean;
+  etag: string;
+};
+
+export type AuthoringImagePage = {
+  items: AuthoringImageView[];
+  next_cursor: string | null;
+};
+
+export type AuthoringImageUploadStatus = {
+  upload_id: string;
+  state: "prepared" | "unconfirmed" | "rejected" | "completed";
+  asset_id: string | null;
+  asset_version_id: string | null;
+  error_code: string | null;
+  automatic_retry: false;
+  retry_requires_same_input: true;
+  updated_at: string;
+};
+
+export type AuthoringBuildLayout = {
+  scope: "navigation_only";
+  pagination_mode: "chapter_start_new_page" | "continuous";
+  state: "pending" | "partial" | "complete";
+  fixed_point: boolean;
+  page_count: number | null;
+  iteration_count: number;
+  entries: {
+    section_id: string;
+    start_page: number | null;
+    end_page: number | null;
+    printed_toc_page: number | null;
+    gaps: string[];
+  }[];
+  gaps: string[];
+};
+
+export type PackageReviewRunPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  items: PackageReviewRunSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewResult = PackageScopeReview_Result;
 
 export type SavePackageDependencyPlan = PackageDependencyPlan_Save;
 
@@ -181,6 +936,7 @@ export type PackageReviewEligibilityObservation = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -243,6 +999,7 @@ export type PackageReviewOriginalVerification = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -293,6 +1050,7 @@ export type PackageReviewInputPreview = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -3011,8 +3769,8 @@ export type AuthoringPreviewRequest = {
 export type AuthoringPreview = {
   action_id: string;
   base_draft_revision: number;
-  before: AuthoringDocument;
-  after: AuthoringDocument;
+  before: AuthoringDocument | AuthoringRichDocument;
+  after: AuthoringDocument | AuthoringRichDocument;
   expires_in_seconds: number;
 };
 
@@ -3020,8 +3778,9 @@ export type AuthoringSnapshot = {
   snapshot_id: string;
   snapshot_digest: string;
   title: string;
-  sections: AuthoringDocument[];
+  sections: (AuthoringDocument | AuthoringRichDocument)[];
   authoring_structure?: AuthoringStructureExtension;
+  authoring_images?: AuthoringJsonValue;
 };
 
 export type AuthoringSectionAdded = {
@@ -3060,7 +3819,7 @@ export type SectionView = {
   draft_id: string;
   revision: number;
   schema_digest: string;
-  content: AuthoringDocument;
+  content: AuthoringDocument | AuthoringRichDocument;
   writing_plan_id: string | null;
 };
 
@@ -3077,14 +3836,17 @@ export type DraftSaved = {
 };
 
 export type BuildRequest =
-  | {
-      draft_id: string;
-      draft_revision: number;
-      template_version_id: string;
-      formats: ("docx" | "pdf")[];
-      follow_up: "none" | "review";
-    }
-  | AuthoringStructuredBuildRequest;
+  | (
+      | {
+          draft_id: string;
+          draft_revision: number;
+          template_version_id: string;
+          formats: ("docx" | "pdf")[];
+          follow_up: "none" | "review";
+        }
+      | AuthoringStructuredBuildRequest
+    )
+  | AuthoringRichBuildRequest;
 
 export type BuildView = {
   id: string;
@@ -3096,7 +3858,9 @@ export type BuildView = {
     document_version_id: string | null;
     gaps: string[];
   }[];
+  identity: AuthoringBuildIdentity;
   follow_up: BuildFollowUpView;
+  layout?: AuthoringBuildLayout | null;
 };
 
 export type BuildPage = {
@@ -3553,6 +4317,148 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageReviewHumanDecisionSummary = {
+  id: string;
+  digest: string;
+  sequence_no: number;
+  actor_id: string;
+  created_at: string;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+};
+
+export type PackageScopeReview_Digest = string;
+
+export type PackageScopeReview_Input = {
+  version: "package-scope-review-input/1";
+  purpose: "prebid_compliance";
+  scope: PackageScopeReview_Scope;
+  frozen_input: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+    input_digest: PackageScopeReview_Digest;
+    evidence_digest: PackageScopeReview_Digest;
+  };
+  execution_input: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+    identity: PackageScopeReview_Identity;
+  };
+  dependency_plan: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+  };
+  usage_digest: PackageScopeReview_Digest;
+  selected_facts_digest: PackageScopeReview_Digest;
+  fact_admission: {
+    content_digest: PackageScopeReview_Digest;
+    proofs_digest: PackageScopeReview_Digest;
+    policy_digest: PackageScopeReview_Digest;
+    fact_declarations: {
+      fact_id: PackageScopeReview_Id;
+      declaration_id: PackageScopeReview_Id;
+      declaration_digest: PackageScopeReview_Digest;
+    }[];
+  };
+  inventory_proof_digest: PackageScopeReview_Digest;
+  executor_method: {
+    profile: PackageScopeReview_MethodProfile;
+    digest: PackageScopeReview_Digest;
+  };
+  model_input_digest: PackageScopeReview_Digest;
+  limitations: "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED"[];
+};
+
+export type PackageScopeReview_Quote = {
+  member_id: string;
+  evidence_id: PackageScopeReview_Id;
+  quote: string;
+  package_role: "target" | "authority";
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  physical_page: number;
+  part_ids: string[];
+  evidence_digest: PackageScopeReview_Digest;
+};
+
+export type AuthoringJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringJsonValue[]
+  | { [key: string]: AuthoringJsonValue };
+
+export type AuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type AuthoringBlock =
+  | AuthoringParagraph
+  | AuthoringHeading
+  | AuthoringBulletList
+  | AuthoringOrderedList;
+
+export type AuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: AuthoringRichRow[];
+};
+
+export type AuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
+export type PackageScopeReview_Result = {
+  version: "package-scope-review-result/1";
+  kind: "declared_package_scope_review";
+  purpose: "prebid_compliance";
+  run_id: PackageScopeReview_Id;
+  bid_id: PackageScopeReview_Id;
+  input_digest: PackageScopeReview_Digest;
+  execution_input_id: PackageScopeReview_Id;
+  execution_input_digest: PackageScopeReview_Digest;
+  execution_digest: PackageScopeReview_Digest;
+  dependency_plan_id: PackageScopeReview_Id;
+  dependency_plan_digest: PackageScopeReview_Digest;
+  method_digest: PackageScopeReview_Digest;
+  scope: PackageScopeReview_Scope;
+  submitted_documents: PackageScopeReview_SubmittedDocument[];
+  requirement_count: number;
+  matrix_coverage: "complete" | "partial";
+  overall_coverage: "partial";
+  quality_status: "not_measured";
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  limitations: string[];
+  counts: {
+    satisfied: number;
+    violated: number;
+    not_found: number;
+    unable_to_judge: number;
+    not_applicable: number;
+  };
+  matrix: PackageScopeReview_MatrixRow[];
+};
+
 export type PackageDependencyPlan_Save = {
   execution_input_digest: PackageDependencyPlan_Assessment_Digest;
   purpose: "prebid_compliance";
@@ -3753,6 +4659,7 @@ export type PackageExecutionInputManifest = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -3815,6 +4722,7 @@ export type PackageReviewFrozenInputManifest = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -3985,14 +4893,6 @@ export type AuthoringPlanVersion = {
   created_by: string;
   created_at: string;
 };
-
-export type AuthoringJsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | AuthoringJsonValue[]
-  | { [key: string]: AuthoringJsonValue };
 
 export type AuthoringTreeNode = {
   section_id: string;
@@ -4522,19 +5422,6 @@ export type ResearchListedSample = {
   current: boolean;
 };
 
-export type AuthoringSourceReference = {
-  source_id: string;
-  source_revision: number;
-  evidence_id: string;
-  document_version_id: string;
-};
-
-export type AuthoringBlock =
-  | AuthoringParagraph
-  | AuthoringHeading
-  | AuthoringBulletList
-  | AuthoringOrderedList;
-
 export type AuthoringBreak = {
   type: "hardBreak";
 };
@@ -4612,7 +5499,7 @@ export type SectionChange = {
   section_id: string;
   base_section_revision: number;
   schema_digest: string;
-  content: AuthoringDocument;
+  content: AuthoringDocument | AuthoringRichDocument;
 };
 
 export type AuthoringStructuredBuildRequest = {
@@ -4622,6 +5509,20 @@ export type AuthoringStructuredBuildRequest = {
   style_template_version_id: string;
   formats: ("docx" | "pdf")[];
   follow_up: "none" | "review";
+};
+
+export type AuthoringBuildIdentity = {
+  protocol: "authoring-build-identity/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  build_input_id: string;
+  input_digest: string;
+  manifest_digest: string;
+  writer_kind: string;
+  request: BuildRequest;
 };
 
 export type BuildFollowUpView = {
@@ -4890,6 +5791,84 @@ export type DocumentRelation = {
   kind: "user_declared_same_draft" | "controlled_render";
   verification: "unverified" | "verified" | "rejected";
   evidence_ids: string[];
+};
+
+export type PackageScopeReview_Scope = {
+  bid_id: PackageScopeReview_Id;
+  package_id: PackageScopeReview_Id;
+  revision_id: PackageScopeReview_Id;
+  inventory_id: PackageScopeReview_Id;
+};
+
+export type PackageScopeReview_Id = string;
+
+export type PackageScopeReview_Identity = {
+  version: "package-review-execution/1";
+  kind: "identity";
+  binding: PackageScopeReview_Binding;
+  rerun: PackageScopeReview_RerunIntent | null;
+  content_digest: PackageScopeReview_Digest;
+  execution_digest: PackageScopeReview_Digest;
+};
+
+export type PackageScopeReview_MethodProfile = {
+  engine: "package-review/1";
+  purpose: "prebid_compliance";
+  assessment: "declared_requirement_response";
+  input_scope: "all_frozen_target_and_authority_members";
+  model_json_encoding: "finite-json-numbers/1";
+  model: "deepseek-flash" | "deepseek-v4-pro";
+  endpoint: "https://api.deepseek.com" | "https://api.deepseek.com/v1";
+  source_digest: PackageScopeReview_Digest;
+  batch_rule_limit: 100;
+  batch_limit: 4;
+  output_tokens_per_batch: 8192;
+  input_character_limit: 240000;
+  semantic_quality: "not_measured";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type AuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringRichCell[];
+};
+
+export type PackageScopeReview_SubmittedDocument = {
+  package_role: "target" | "authority";
+  member_id: string;
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  file_digest: PackageScopeReview_Digest;
+  page_count: number;
+  parts: PackageScopeReview_Part[];
+  evidence_count: number;
+};
+
+export type PackageScopeReview_MatrixRow = {
+  requirement_id: PackageScopeReview_Id;
+  requirement_digest: PackageScopeReview_Digest;
+  rule_digest: PackageScopeReview_Digest;
+  rule_kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  requirement_statement: string;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  target_part_ids: string[];
+  inspected_ranges: PackageScopeReview_InspectedRange[];
+  verdict:
+    | "satisfied"
+    | "violated"
+    | "not_found"
+    | "unable_to_judge"
+    | "not_applicable";
+  statement: string;
+  target_quotes: PackageScopeReview_Quote[];
+  authority_quotes: PackageScopeReview_Quote[];
+  used_fact_ids: PackageScopeReview_Id[];
+  limitations: string[];
+  human_review_state: "unreviewed";
 };
 
 export type PackageDependencyPlan_Assessment_Digest = string;
@@ -5166,6 +6145,59 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type PackageScopeReview_Binding = {
+  bid_id: PackageScopeReview_Id;
+  package_id: PackageScopeReview_Id;
+  revision_id: PackageScopeReview_Id;
+  inventory_id: PackageScopeReview_Id;
+  identity_digest: PackageScopeReview_Digest;
+  frozen_input_id: PackageScopeReview_Id;
+  frozen_digest: PackageScopeReview_Digest;
+  input_digest: PackageScopeReview_Digest;
+  evidence_digest: PackageScopeReview_Digest;
+  context_digest: PackageScopeReview_Digest;
+  method_digest: PackageScopeReview_Digest;
+  policy_digest: PackageScopeReview_Digest;
+  purpose: "prebid_compliance";
+};
+
+export type PackageScopeReview_RerunIntent = {
+  nonce: PackageScopeReview_Id;
+  reason: string;
+};
+
+export type AuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (AuthoringParagraph | AuthoringBulletList | AuthoringOrderedList)[];
+};
+
+export type PackageScopeReview_Part = {
+  part_id: string;
+  category: string;
+  first_page: number;
+  last_page: number;
+  shared_attachment: boolean;
+  heading_path: number[];
+};
+
+export type PackageScopeReview_InspectedRange = {
+  member_id: string;
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  part_id: string;
+  category: string;
+  first_page: number;
+  last_page: number;
+  shared_attachment: boolean;
+  heading_path: number[];
+};
+
 export type PackageDependencyPlan_Assessment_View = {
   manifest: PackageDependencyPlan_Assessment_Manifest;
   digest: PackageDependencyPlan_Assessment_Digest;
@@ -5399,6 +6431,11 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/authoring-actions/{action_id}/apply",
   "GET /api/v1/sections/{section_id}/revisions",
   "POST /api/v1/bids/{bid_id}/sections/{section_id}/restore",
+  "POST /api/v1/bids/{bid_id}/builds/{build_id}/package-adoptions",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-context",
+  "POST /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests/{request_id}",
   "GET /api/v1/research/capabilities",
   "GET /api/v1/history",
   "POST /api/v1/research/import-previews",
@@ -5497,6 +6534,17 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans/{plan_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/input",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/human-decisions",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/requirements/{requirement_id}/human-decisions",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/requirements/{requirement_id}/human-decisions",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports/{export_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",
@@ -5505,6 +6553,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts/{attempt_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
+  "GET /api/v1/bids/{bid_id}/package-review-comparisons",
   "GET /api/v1/bids/{bid_id}/package-documents",
   "GET /api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
   "GET /api/v1/bids/{bid_id}/pricing-context",
@@ -5564,6 +6613,14 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/style-template/preview",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/restore-preview",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/history",
+  "GET /api/v1/authoring/rich-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring-images",
+  "GET /api/v1/bids/{bid_id}/authoring-images",
+  "GET /api/v1/bids/{bid_id}/authoring-image-uploads/{upload_id}",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}",
+  "POST /api/v1/bids/{bid_id}/authoring-images/{asset_id}/withdraw",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}/bytes/{variant}",
   "GET /api/v1/technical-scale-capabilities",
   "GET /api/v1/bids/{bid_id}/technical-scale-context",
   "POST /api/v1/bids/{bid_id}/technical-scales",

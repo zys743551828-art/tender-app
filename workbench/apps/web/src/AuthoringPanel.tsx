@@ -1,9 +1,10 @@
 import { AuthoringStructure } from "./AuthoringStructure";
 import { useEffect, useRef, useState } from "react";
-import { api } from "./api";
+import { api, supportsApi } from "./api";
 import type { ApiResult } from "./api";
 import type {
   AuthoringCapabilities,
+  AuthoringRichCapabilities,
   AuthoringDraftPage,
   CreateDraftRequest,
   DraftView,
@@ -22,12 +23,16 @@ export function AuthoringPanel({
   projectTitle,
   draftId,
   onOpenDraft,
+  disabled = false,
+  onPackages,
 }: {
   bidId: string;
   memberId: string;
   projectTitle: string;
   draftId: string | null;
   onOpenDraft: (id: string) => void;
+  disabled?: boolean;
+  onPackages?: () => void;
 }) {
   const active = useRef(true);
   useEffect(() => {
@@ -38,6 +43,11 @@ export function AuthoringPanel({
   }, []);
   const capabilities = useResource<AuthoringCapabilities>(
     "/authoring/capabilities",
+  );
+  const richCapabilities = useResource<AuthoringRichCapabilities>(
+    supportsApi("GET", "/authoring/rich-capabilities")
+      ? "/authoring/rich-capabilities"
+      : null,
   );
   const drafts = useResource<AuthoringDraftPage>(`/bids/${bidId}/drafts`);
   const [more, setMore] = useState<AuthoringDraftPage[]>([]);
@@ -56,15 +66,20 @@ export function AuthoringPanel({
   const last = more.at(-1) ?? drafts.data;
   const positionKey = `tender:authoring:${memberId}:${bidId}:selected-draft`;
   useEffect(() => {
-    if (draftId) {
-      sessionStorage.setItem(positionKey, draftId);
-      return;
+    try {
+      if (draftId) {
+        sessionStorage.setItem(positionKey, draftId);
+        return;
+      }
+      const saved = sessionStorage.getItem(positionKey);
+      if (saved && drafts.data?.items.some((item) => item.id === saved))
+        onOpenDraft(saved);
+    } catch {
+      // Navigation position is optional; it cannot block server-backed drafts.
     }
-    const saved = sessionStorage.getItem(positionKey);
-    if (saved && drafts.data?.items.some((item) => item.id === saved))
-      onOpenDraft(saved);
   }, [draftId, drafts.data, onOpenDraft, positionKey]);
   async function create() {
+    if (disabled) return;
     const body: CreateDraftRequest = {
       title: title.trim(),
       outline_template_version_id: null,
@@ -159,6 +174,7 @@ export function AuthoringPanel({
                 新正文草稿名称
                 <input
                   value={title}
+                  disabled={disabled || command.busy}
                   required
                   maxLength={200}
                   placeholder="例如：技术投标文件"
@@ -167,25 +183,44 @@ export function AuthoringPanel({
               </label>
               <button
                 className="button secondary"
-                disabled={command.busy || !title.trim() || !memberId}
+                disabled={
+                  disabled || command.busy || !title.trim() || !memberId
+                }
               >
                 {command.busy ? "正在创建…" : "创建正文草稿"}
               </button>
             </form>
+            {disabled && (
+              <p className="notice neutral">
+                当前项目已结束或归档，可查看草稿与生成历史；新编写、构建和文件采用已停止。
+              </p>
+            )}
             <p className="small-note">
-              支持文字、标题、列表、章节目录、编写计划与分别固定的目录和版式模板。表格、图片编辑、Word结构导入及真实目录章页尚待后续完整成稿包，原Word可先保存或转PDF核对。
+              支持文字、标题、列表、章节目录、编写计划与分别固定的目录和版式模板。
+              {richCapabilities.data
+                ? "表格和已登记图片可在章节中明确插入、编辑和保存；构建会分别记录实际目录、章页范围及未核验项。"
+                : "表格和图片编辑能力尚未就绪，请保留原稿。"}
+              外部Word结构导入仍需单独接通，原Word可先保存或转PDF核对。
             </p>
+            <ResourceState
+              {...richCapabilities}
+              hasData={!!richCapabilities.data}
+              onRetry={() => void richCapabilities.reload()}
+            />
           </>
         )}
       </section>
       {draftId && capabilities.data && (
         <DraftEditor
-          key={draftId}
+          key={`${memberId}:${bidId}:${draftId}`}
           bidId={bidId}
           memberId={memberId}
           draftId={draftId}
           capabilities={capabilities.data}
+          richCapabilities={richCapabilities.data}
           projectTitle={projectTitle}
+          disabled={disabled}
+          onPackages={onPackages}
         />
       )}
     </div>
@@ -197,13 +232,19 @@ function DraftEditor({
   memberId,
   draftId,
   capabilities,
+  richCapabilities,
   projectTitle,
+  disabled,
+  onPackages,
 }: {
   bidId: string;
   memberId: string;
   draftId: string;
   capabilities: AuthoringCapabilities;
+  richCapabilities?: AuthoringRichCapabilities;
   projectTitle: string;
+  disabled: boolean;
+  onPackages?: () => void;
 }) {
   const draft = useResource<DraftView>(`/bids/${bidId}/drafts/${draftId}`);
   const [fresh, setFresh] = useState<ApiResult<DraftView> | null>(null);
@@ -226,9 +267,13 @@ function DraftEditor({
     return result;
   }
   const sectionPositionKey = `tender:authoring:${memberId}:${bidId}:${draftId}:selected-section`;
-  const [selected, setSelected] = useState<string | null>(() =>
-    sessionStorage.getItem(sectionPositionKey),
-  );
+  const [selected, setSelected] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem(sectionPositionKey);
+    } catch {
+      return null;
+    }
+  });
   const [switching, setSwitching] = useState(false);
   const [building, setBuilding] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
@@ -276,7 +321,7 @@ function DraftEditor({
               draftId={draftId}
               draftRevision={view.revision}
               sectionId={sectionId}
-              disabled={switching || building}
+              disabled={disabled || switching || building}
               onChoose={choose}
               onContinue={() => {
                 writingRef.current?.scrollIntoView({ block: "start" });
@@ -308,7 +353,8 @@ function DraftEditor({
                 etag={current.etag}
                 sectionId={sectionId}
                 capabilities={capabilities}
-                disabled={switching || building || structureBusy}
+                richCapabilities={richCapabilities}
+                disabled={disabled || switching || building || structureBusy}
                 onSaved={() => void reloadHead().catch(setError)}
               />
             ) : (
@@ -325,8 +371,10 @@ function DraftEditor({
           memberId={memberId}
           draftId={draftId}
           capabilities={capabilities}
+          richCapabilities={richCapabilities}
           projectTitle={projectTitle}
-          disabled={switching || structureBusy}
+          disabled={disabled || switching || structureBusy}
+          onPackages={onPackages}
           setBusy={setBuilding}
           prepare={async () => {
             if (

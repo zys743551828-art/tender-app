@@ -13,6 +13,7 @@ from packages.authoring.build_repository import (
     configured_render_identity,
     freeze_build,
 )
+from packages.authoring.build_views import build_view
 from packages.authoring.content import (
     SCHEMA,
     SCHEMA_DIGEST,
@@ -31,8 +32,6 @@ from packages.authoring.repository import (
     save_draft,
     snapshot_content,
 )
-from packages.authoring.rich_build import layout_view as build_layout_view
-from packages.domain.build_followups import follow_up_view
 from packages.domain.runtime import (
     DomainError,
     accepted,
@@ -260,30 +259,7 @@ def get_build(build_id: UUID, r: Request):
     auth(r)
     with connection() as c:
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
-        row = fetch(
-            c,
-            "SELECT b.*,i.draft_snapshot_id,i.manifest FROM builds b JOIN build_inputs i ON i.id=b.input_id WHERE b.id=%s",
-            (build_id,),
-        )
-        outputs = c.execute(
-            "SELECT format,state,document_version_id,gaps FROM build_outputs WHERE build_id=%s ORDER BY format",
-            (build_id,),
-        ).fetchall()
-        by_format = {o["format"]: dict(o) for o in outputs}
-        for fmt in list(dict.fromkeys(["docx"] + row["manifest"]["formats"])):
-            by_format.setdefault(
-                fmt, {"format": fmt, "state": "pending", "document_version_id": None, "gaps": []}
-            )
-        return clean(
-            {
-                "id": build_id,
-                "draft_snapshot_id": row["draft_snapshot_id"],
-                "operation_id": row["operation_id"],
-                "outputs": list(by_format.values()),
-                "follow_up": follow_up_view(c, build_id, row["manifest"]),
-                "layout": build_layout_view(c, build_id, row["manifest"]),
-            }
-        )
+        return build_view(c, build_id)
 
 
 @router.post("/bids/{bid_id}/sections/{section_id}/patch-previews")

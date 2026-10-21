@@ -109,11 +109,16 @@ export function ProjectWorkspace({
         /* Browser preferences do not establish a business state. */
       }
       onNavigate(saved ?? (defaultReview ? "review" : "overview"), savedReview);
-    } else if (page !== "home")
-      localStorage.setItem(
-        `tender:position:${id}`,
-        JSON.stringify({ page, reviewId: explicitReview ?? undefined }),
-      );
+    } else if (page !== "home") {
+      try {
+        localStorage.setItem(
+          `tender:position:${id}`,
+          JSON.stringify({ page, reviewId: explicitReview ?? undefined }),
+        );
+      } catch {
+        /* A navigation preference cannot block the current workspace. */
+      }
+    }
   }, [
     page,
     bid,
@@ -180,6 +185,7 @@ export function ProjectWorkspace({
           id={id}
           memberId={memberId}
           onBack={onBack}
+          onAuthoring={() => onNavigate("authoring")}
           navigation={nav}
           reviewNotice={
             <>
@@ -332,6 +338,12 @@ export function ProjectWorkspace({
                 bidId={id}
                 memberId={memberId}
                 projectTitle={bid.title}
+                disabled={
+                  !!bid.archived_at ||
+                  bid.phase === "closed" ||
+                  bid.phase === "terminated"
+                }
+                onPackages={() => onNavigate("materials")}
                 draftId={new URLSearchParams(route.split("?")[1] ?? "").get(
                   "draft",
                 )}

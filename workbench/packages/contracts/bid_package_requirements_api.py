@@ -247,6 +247,7 @@ SCHEMAS["PackageReviewInputPreview"] = object_schema(
                     "PACKAGE_REVIEW_PACKAGE_STALE",
                     "PACKAGE_REVIEW_INVENTORY_STALE",
                     "PACKAGE_REVIEW_RULE_SET_STALE",
+                    "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN",
                     "PACKAGE_REVIEW_SOURCE_UNPROVEN",
                     "PACKAGE_REVIEW_SOURCE_CHANGED",
                     "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
@@ -578,7 +579,7 @@ SCHEMAS["CheckPackageInputDependencies"] = object_schema(
         "fact_ids": IDS,
         "dependencies": {
             "type": "array",
-            "maxItems": 500,
+            "maxItems": 10000,
             "items": {"$ref": "#/components/schemas/PackageInputDependencies_Dependency"},
         },
     }
@@ -1088,3 +1089,11 @@ def extend_openapi(actual):
             },
             "default": {"$ref": "#/components/responses/DomainError"},
         }
+        if operation_id in {"checkPackageInputDependencies", "savePackageDependencyPlan"}:
+            operation["requestBody"]["description"] = (
+                "One complete annotation snapshot, up to 10,000 dependencies. "
+                "New checks/saves require compact UTF-8 JSON <= 4 MiB; the exact HTTP "
+                "body is limited to 5 MiB. An existing exact command ACK is replayed "
+                "before the new-save budget. Oversize returns 413 without a new write."
+            )
+            operation["responses"]["413"] = {"$ref": "#/components/responses/DomainError"}

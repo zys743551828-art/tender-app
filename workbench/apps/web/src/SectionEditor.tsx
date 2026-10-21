@@ -9,6 +9,7 @@ import type { Node as EditorNode } from "prosemirror-model";
 import { api, ApiError, commandKey, completeCommand } from "./api";
 import type {
   AuthoringCapabilities,
+  AuthoringRichCapabilities,
   AuthoringDocument,
   AuthoringNode,
   DraftSaved,
@@ -19,8 +20,16 @@ import type {
 import { AuthoringPatchPreview } from "./AuthoringPatchPreview";
 import { AuthoringReferences } from "./AuthoringReferences";
 import { AuthoringHistory } from "./AuthoringHistory";
+import { AuthoringRichTools } from "./AuthoringRichTools";
 import { ErrorNotice } from "./components";
-import { editorSchema, editorText } from "./editorSchema";
+import {
+  authoringText as editorText,
+  hasRichContent,
+  readAuthoringContent,
+  serializeAuthoringContent,
+  serializeAuthoringNode,
+} from "./richEditorSchema";
+import type { EditorDocument } from "./richEditorSchema";
 import { authoringStorageKey } from "./editorStorage";
 import { SourceEditor } from "./SourceEditor";
 import { ResourceState } from "./ResourceState";
@@ -34,7 +43,7 @@ export type SectionEditorHandle = {
 type PendingSave = { body: SaveDraft; etag: string; key: string };
 type LocalDraft = {
   sectionId: string;
-  value: AuthoringDocument;
+  value: EditorDocument;
   draftRevision: number;
   sectionRevision: number;
   schemaDigest: string;
@@ -55,6 +64,7 @@ export const SectionEditor = forwardRef<
     etag: string;
     sectionId: string;
     capabilities: AuthoringCapabilities;
+    richCapabilities?: AuthoringRichCapabilities;
     disabled: boolean;
     onSaved: () => void;
   }
@@ -79,6 +89,22 @@ export const SectionEditor = forwardRef<
         章节身份不一致，未打开其他正文。
       </div>
     );
+  if (section.data) {
+    try {
+      if (
+        ![
+          props.capabilities.schema_digest,
+          props.richCapabilities?.schema_digest,
+        ].includes(section.data.schema_digest)
+      )
+        throw new Error(
+          "章节格式无法核对，未把原表格或图片降为文字稿。请恢复对应编辑能力后重试。",
+        );
+      readAuthoringContent(section.data.content, !!props.richCapabilities);
+    } catch (failure) {
+      return <ErrorNotice error={failure} />;
+    }
+  }
   return (
     <>
       <ResourceState
@@ -107,11 +133,22 @@ const SectionBody = forwardRef<
     etag: string;
     initial: SectionView;
     capabilities: AuthoringCapabilities;
+    richCapabilities?: AuthoringRichCapabilities;
     disabled: boolean;
     onSaved: () => void;
   }
 >(function SectionBody(
-  { bidId, memberId, draft, etag, initial, capabilities, disabled, onSaved },
+  {
+    bidId,
+    memberId,
+    draft,
+    etag,
+    initial,
+    capabilities,
+    richCapabilities,
+    disabled,
+    onSaved,
+  },
   ref,
 ) {
   const key = authoringStorageKey(memberId, bidId, `${draft.id}:${initial.id}`);
@@ -119,7 +156,7 @@ const SectionBody = forwardRef<
   const head = useRef<AuthoringHead>({ draft, section: initial, etag });
   const pending = useRef<PendingSave | null>(null);
   const [value, setValue] = useState(() =>
-    editorSchema.nodeFromJSON(initial.content),
+    readAuthoringContent(initial.content, !!richCapabilities),
   );
   const latest = useRef(value);
   latest.current = value;
@@ -141,7 +178,7 @@ const SectionBody = forwardRef<
   });
   const [extensionBusy, setExtensionBusy] = useState(false);
   const [target, setTarget] = useState<EditorNode | null>(null);
-  function persist(document: AuthoringDocument) {
+  function persist(document: EditorDocument) {
     const state = head.current;
     const local: LocalDraft = {
       sectionId: initial.id,
@@ -175,20 +212,33 @@ const SectionBody = forwardRef<
       etag: currentDraft.etag,
     };
   }
-  const queue = useSaveQueue<AuthoringDocument>(
+  const queue = useSaveQueue<EditorDocument>(
     async (content) => {
-      if (head.current.section.schema_digest !== capabilities.schema_digest)
+      if (
+        ![capabilities.schema_digest, richCapabilities?.schema_digest].includes(
+          head.current.section.schema_digest,
+        )
+      )
         throw new Error(
           "编辑格式已更新，未覆盖本地内容。请保留副本并重新核对当前章节。",
         );
       if (!pending.current) {
+        readAuthoringContent(content, !!richCapabilities);
+        const rich =
+          hasRichContent(content) ||
+          head.current.section.schema_digest ===
+            richCapabilities?.schema_digest;
+        if (rich && !richCapabilities)
+          throw new Error("表图编辑能力尚未就绪，原稿保留。");
         const body: SaveDraft = {
           base_draft_revision: head.current.draft.revision,
           changes: [
             {
               section_id: initial.id,
               base_section_revision: head.current.section.revision,
-              schema_digest: head.current.section.schema_digest,
+              schema_digest: rich
+                ? richCapabilities!.schema_digest
+                : capabilities.schema_digest,
               content,
             },
           ],
@@ -199,7 +249,7 @@ const SectionBody = forwardRef<
           key: commandKey(scope, { body, etag: head.current.etag }),
         };
       }
-      persist(latest.current.toJSON() as AuthoringDocument);
+      persist(serializeAuthoringContent(latest.current));
       try {
         const command = pending.current;
         const saved = await api<DraftSaved>(
@@ -219,9 +269,13 @@ const SectionBody = forwardRef<
         if (
           current.data.id !== initial.id ||
           current.data.draft_id !== draft.id ||
-          !editorSchema
-            .nodeFromJSON(current.data.content)
-            .eq(editorSchema.nodeFromJSON(content))
+          ![
+            capabilities.schema_digest,
+            richCapabilities?.schema_digest,
+          ].includes(current.data.schema_digest) ||
+          !readAuthoringContent(current.data.content, !!richCapabilities).eq(
+            readAuthoringContent(content, !!richCapabilities),
+          )
         ) {
           setConflict(await readHead());
           throw new ApiError(
@@ -246,9 +300,11 @@ const SectionBody = forwardRef<
         pending.current = null;
         completeCommand(scope);
         setConflict(null);
-        if (latest.current.eq(editorSchema.nodeFromJSON(content)))
+        if (
+          latest.current.eq(readAuthoringContent(content, !!richCapabilities))
+        )
           sessionStorage.removeItem(key);
-        else persist(latest.current.toJSON() as AuthoringDocument);
+        else persist(serializeAuthoringContent(latest.current));
         onSaved();
       } catch (failure) {
         if (
@@ -268,7 +324,7 @@ const SectionBody = forwardRef<
           pending.current = null;
           completeCommand(scope);
         }
-        persist(latest.current.toJSON() as AuthoringDocument);
+        persist(serializeAuthoringContent(latest.current));
         throw failure;
       }
     },
@@ -279,10 +335,18 @@ const SectionBody = forwardRef<
   function change(node: EditorNode) {
     latest.current = node;
     setValue(node);
-    const content = node.toJSON() as AuthoringDocument;
-    persist(content);
+    const content = serializeAuthoringContent(node);
     queue.change(content);
-    setNotice(null);
+    try {
+      persist(content);
+      setNotice(null);
+    } catch {
+      setNotice(
+        new Error(
+          "本机暂时无法保留恢复副本；当前编辑仍在页面中，保存会在恢复记录写入后发送。请保留页面。",
+        ),
+      );
+    }
   }
   const guard = useRef(async () => true);
   guard.current = () => queue.flush();
@@ -317,7 +381,10 @@ const SectionBody = forwardRef<
       head.current = current;
       pending.current = null;
       completeCommand(scope);
-      latest.current = editorSchema.nodeFromJSON(current.section.content);
+      latest.current = readAuthoringContent(
+        current.section.content,
+        !!richCapabilities,
+      );
       setValue(latest.current);
       setAck({
         section: current.section.revision,
@@ -335,7 +402,7 @@ const SectionBody = forwardRef<
   function restoreLocal() {
     if (!recovery) return;
     try {
-      const restored = editorSchema.nodeFromJSON(recovery.value);
+      const restored = readAuthoringContent(recovery.value, !!richCapabilities);
       head.current = {
         etag: recovery.etag,
         draft: { ...draft, revision: recovery.draftRevision },
@@ -364,7 +431,7 @@ const SectionBody = forwardRef<
     pending.current = null;
     completeCommand(scope);
     setConflict(null);
-    const content = latest.current.toJSON() as AuthoringDocument;
+    const content = serializeAuthoringContent(latest.current);
     persist(content);
     queue.change(content);
     await queue.flush();
@@ -376,7 +443,10 @@ const SectionBody = forwardRef<
     head.current = current;
     pending.current = null;
     completeCommand(scope);
-    latest.current = editorSchema.nodeFromJSON(current.section.content);
+    latest.current = readAuthoringContent(
+      current.section.content,
+      !!richCapabilities,
+    );
     setValue(latest.current);
     setAck({
       section: current.section.revision,
@@ -443,7 +513,7 @@ const SectionBody = forwardRef<
             <div className="editor-comparison">
               <div>
                 <strong>本地待保存</strong>
-                <pre>{editorText(value.toJSON())}</pre>
+                <pre>{editorText(serializeAuthoringContent(value))}</pre>
               </div>
               <div>
                 <strong>
@@ -489,14 +559,25 @@ const SectionBody = forwardRef<
         />
       </label>
       <SourceEditor
+        bidId={bidId}
         value={value}
         disabled={disabled || extensionBusy || !!recovery}
         onChange={change}
         onTarget={setTarget}
       />
+      {richCapabilities && (
+        <AuthoringRichTools
+          bidId={bidId}
+          memberId={memberId}
+          value={value}
+          capabilities={richCapabilities}
+          disabled={disabled || extensionBusy || !!recovery}
+          onChange={change}
+        />
+      )}
       <AuthoringReferences
         bidId={bidId}
-        content={value.toJSON() as AuthoringDocument}
+        content={serializeAuthoringContent(value)}
         disabled={disabled || extensionBusy || !!recovery}
         changeAttrs={(update) => {
           const current = latest.current;
@@ -511,8 +592,10 @@ const SectionBody = forwardRef<
       <AuthoringPatchPreview
         bidId={bidId}
         sectionId={initial.id}
-        content={value.toJSON() as AuthoringDocument}
-        target={target ? (target.toJSON() as AuthoringNode) : null}
+        content={serializeAuthoringContent(value)}
+        target={
+          target ? (serializeAuthoringNode(target) as AuthoringNode) : null
+        }
         disabled={disabled || !!recovery}
         flush={queue.flush}
         getHead={() => head.current}

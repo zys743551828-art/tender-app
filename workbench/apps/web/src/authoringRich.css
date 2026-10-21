@@ -1,0 +1,89 @@
+.authoring-rich-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line, #d8dfdf);
+  border-radius: 0.65rem;
+}
+.authoring-rich-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 7rem;
+  flex: 1 1 10rem;
+}
+.authoring-rich-form input[type="number"] {
+  max-width: 11rem;
+}
+.authoring-rich-form .checkbox-label {
+  flex-direction: row;
+  align-items: center;
+}
+.authoring-image-picker {
+  padding-top: 0.5rem;
+}
+.source-editor .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+.source-editor .ProseMirror td,
+.source-editor .ProseMirror th {
+  border: 1px solid #879694;
+  vertical-align: top;
+  min-width: 2rem;
+  padding: 0.5rem;
+}
+.source-editor .ProseMirror th {
+  background: #edf3f1;
+  text-align: left;
+}
+.source-editor .ProseMirror td p,
+.source-editor .ProseMirror th p {
+  margin: 0.15rem 0;
+}
+.authoring-image-node {
+  margin: 1rem 0;
+  max-width: 100%;
+  border: 1px solid var(--line, #d8dfdf);
+  padding: 0.6rem;
+  background: #f6f8f7;
+}
+.authoring-image-node img {
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+}
+.authoring-image-node figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #566661;
+}
+.editor-surface {
+  overflow-x: auto;
+}
+.authoring-layout-measurements {
+  overflow-x: auto;
+}
+.authoring-layout-measurements table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.authoring-layout-measurements td,
+.authoring-layout-measurements th {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--line, #d8dfdf);
+  text-align: left;
+}
+@media (max-width: 700px) {
+  .authoring-rich-form {
+    align-items: stretch;
+  }
+  .authoring-rich-form label {
+    flex-basis: 100%;
+  }
+}

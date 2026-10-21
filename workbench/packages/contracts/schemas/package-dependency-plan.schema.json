@@ -117,7 +117,7 @@
           "items": {
             "$ref": "#/$defs/Assessment_Dependency"
           },
-          "maxItems": 500
+          "maxItems": 10000
         }
       },
       "required": [
@@ -510,7 +510,7 @@
           "items": {
             "$ref": "#/$defs/Assessment_Dependency"
           },
-          "maxItems": 500
+          "maxItems": 10000
         },
         "assessment_digest": {
           "$ref": "#/$defs/Assessment_Digest"

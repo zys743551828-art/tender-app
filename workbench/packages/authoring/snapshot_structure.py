@@ -258,7 +258,7 @@ def check_snapshot_sections(extension, sections):
             )
 
 
-def frozen_authority(c, bid, extension, sections):
+def frozen_authority(c, bid, extension, sections, *, lock_sources=True):
     """Same final guard for API freeze and Worker publish; only frozen core JSON is read."""
     from packages.authoring.content import empty_content
     from packages.authoring.format_bindings import assert_snapshot
@@ -267,18 +267,18 @@ def frozen_authority(c, bid, extension, sections):
     checked(extension)
     refs = []
     for content in sections:
-        assert_sources(c, bid, content)
+        assert_sources(c, bid, content, lock_sources=lock_sources)
         refs.extend(content["attrs"]["source_refs"])
     for plan_row in extension["plans"].values():
         from packages.authoring.planning import assert_budget
 
-        assert_budget(c, bid, plan_row)
+        assert_budget(c, bid, plan_row, lock_sources=lock_sources)
         content = empty_content("冻结计划依据", 0)
         content["attrs"]["source_refs"] = plan_row["payload"]["source_refs"]
         content["attrs"]["rule_ids"] = plan_row["payload"]["rule_ids"]
-        assert_sources(c, bid, content)
+        assert_sources(c, bid, content, lock_sources=lock_sources)
         refs.extend(content["attrs"]["source_refs"])
-    report = assert_snapshot(c, bid, extension)
+    report = assert_snapshot(c, bid, extension, lock_sources=lock_sources)
     for binding in extension["metadata"].get("format_bindings", []):
         refs.extend(binding["source_refs"])
     return {"sources": source_authority_manifest(c, refs), "format": report}
