@@ -22,6 +22,19 @@ else:
     contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
 wanted = [
+    "PricingRegisterPackageFormula",
+    "PricingPackagePricingBinding",
+    "PricingPackageSnapshot",
+    "PricingPackageContext",
+    "PackageTechnicalScopeRequest",
+    "FreezePackageTechnicalScope",
+    "PackageTechnicalScopePreview",
+    "PackageTechnicalScopeView",
+    "PackageTechnicalScopeApplied",
+    "PackageTechnicalScopeContext",
+    "PackageTechnicalScopePage",
+    "PackageTechnicalScoringContext",
+    "PackageTechnicalSampleContext",
     "KnowledgePackageReviewTargetPage",
     "HistoricalImportRequest",
     "HistoricalImportBatch",

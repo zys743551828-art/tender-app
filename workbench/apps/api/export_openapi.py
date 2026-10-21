@@ -40,6 +40,12 @@ from packages.contracts.package_review_reports_api import (
     extend_openapi as extend_package_review_reports,
 )
 from packages.contracts.package_review_runs_api import extend_openapi as extend_package_review_runs
+from packages.contracts.package_technical_eligibility_api import (
+    extend_openapi as extend_package_technical_eligibility,
+)
+from packages.contracts.package_technical_scope_api import (
+    extend_openapi as extend_package_technical_scopes,
+)
 from packages.domain.runtime import ROOT
 from packages.identity.contracts import extend_openapi as extend_identity
 from packages.knowledge.contracts import extend_openapi as extend_knowledge
@@ -166,6 +172,8 @@ def implemented_openapi(app):
     extend_package_review_decisions(actual)
     extend_package_review_comparisons(actual)
     extend_package_review_reports(actual)
+    extend_package_technical_scopes(actual)
+    extend_package_technical_eligibility(actual)
     extend_authoring_packages(actual)
     extend_document_parses(actual)
     extend_pricing(actual)

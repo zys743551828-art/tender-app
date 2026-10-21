@@ -1,5 +1,1027 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type PricingRegisterPackageFormula = {
+  title: string;
+  formula: PricingFormulaParameters;
+  amount_unit: "元" | "万元";
+  currency: "CNY" | null;
+  rounding_policy: "half_up_2dp" | "half_even_2dp";
+  interpretation: PricingInterpretation;
+  terms_complete_confirmed: true;
+  matches_source_confirmed: true;
+  evidence_quotes: PricingEvidenceQuote[];
+  reason: string;
+  package_binding: PricingPackagePricingBinding;
+};
+
+export type PricingPackagePricingBinding = {
+  package_id: string;
+  revision_id: string;
+  authority_package_id: string;
+  authority_revision_id: string;
+};
+
+export type PricingPackageSnapshot = {
+  version: "package-pricing-authority/1";
+  binding: PricingPackagePricingBinding;
+  package_digest: string;
+  authority_digest: string;
+  identity_digest: string;
+  source_heads_digest: string;
+  rule_set_id: string | null;
+  inventory_id: string | null;
+  inventory_digest: string | null;
+};
+
+export type PricingPackageContext = {
+  bid_id: string;
+  material_snapshot_id: string | null;
+  material_revision: number;
+  scope: {
+    bid_id: string;
+    round_id: string;
+    effective_documents: {
+      role: "tender" | "supplement";
+      document_version_id: string;
+      digest: string;
+    }[];
+  };
+  parses: {
+    id: string;
+    document_version_id: string;
+  }[];
+  source_heads: {
+    id: string;
+    digest: string;
+    revision: number | null;
+    status: string | null;
+    valid_from: string | null;
+    valid_until: string | null;
+  }[];
+  package_binding: PricingPackagePricingBinding;
+  package_snapshot: {
+    version: "package-pricing-authority/1";
+    binding: PricingPackagePricingBinding;
+    package_digest: string;
+    authority_digest: string;
+    identity_digest: string;
+    source_heads_digest: string;
+    rule_set_id: string | null;
+    inventory_id: string | null;
+    inventory_digest: string | null;
+  };
+};
+
+export type PackageTechnicalScopeRequest = {
+  purpose: "current_prebid";
+  package_digest: string;
+  authority_revision_id: string;
+  authority_digest: string;
+  inventory_id: string;
+  inventory_digest: string;
+  technical_part_ids: string[];
+  rule_scopes: {
+    rule_id: string;
+    rule_digest: string;
+    selection: "include" | "exclude" | "unclassified";
+    part_ids: string[];
+    reason: string;
+  }[];
+  reason: string;
+};
+
+export type FreezePackageTechnicalScope = {
+  request: {
+    purpose: "current_prebid";
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_id: string;
+    inventory_digest: string;
+    technical_part_ids: string[];
+    rule_scopes: {
+      rule_id: string;
+      rule_digest: string;
+      selection: "include" | "exclude" | "unclassified";
+      part_ids: string[];
+      reason: string;
+    }[];
+    reason: string;
+  };
+  preview_digest: string;
+};
+
+export type PackageTechnicalScopePreview = {
+  manifest: {
+    version: "package-technical-scope-preview/1";
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    basis: {
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      identity_digest: string;
+    };
+    method: {
+      version: "package-technical-scope-policy/1";
+      digest: string;
+      sources: {
+        "packages/domain/package_technical_scope.py": string;
+        "packages/domain/bid_package_technical_scope_repository.py": string;
+        "packages/domain/bid_package_technical_scope_service.py": string;
+        "packages/contracts/package_technical_scope_api.py": string;
+        "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+        "packages/domain/bid_package_review_documents.py": string;
+        "packages/domain/bid_package_repository.py": string;
+        "packages/rag/indexing.py": string;
+      };
+      limits: {
+        members: 500;
+        parts: 2000;
+        rules: 1000;
+        source_rows: 20000;
+        blocks: 100000;
+        pages: 100000;
+        request_bytes: 1048576;
+        snapshot_bytes: 33554432;
+        original_bytes: 1073741824;
+      };
+    };
+    request: {
+      purpose: "current_prebid";
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      technical_part_ids: string[];
+      rule_scopes: {
+        rule_id: string;
+        rule_digest: string;
+        selection: "include" | "exclude" | "unclassified";
+        part_ids: string[];
+        reason: string;
+      }[];
+      reason: string;
+    };
+    request_digest: string;
+    context_digest: string;
+    parts: {
+      member_id: string;
+      document_version_id: string;
+      file_digest: string;
+      part: {
+        part_id: string;
+        category: string;
+        first_page: number;
+        last_page: number;
+        shared_attachment: boolean;
+        heading_path: number[];
+      };
+      selected: boolean;
+      read_physical_pages: number[];
+      block_ids: string[];
+      text_evidence_present: boolean;
+      visual_coverage: "unproven";
+    }[];
+    rules: {
+      rule_id: string;
+      rule_digest: string;
+      selection: "include" | "exclude" | "unclassified";
+      part_ids: string[];
+      reason: string;
+      rule_snapshot: { [key: string]: unknown };
+      requirement_digest: string;
+      declared_target_part_ids: string[];
+      source_evidence: {
+        member_id: string;
+        document_version_id: string;
+        file_digest: string;
+        parse_run_id: string;
+        physical_page: number;
+        evidence_id: string;
+        evidence_digest: string;
+        text_content: string;
+        part_ids: string[];
+      }[];
+    }[];
+    documents: {
+      package_role: "target" | "authority";
+      member_id: string;
+      document_version_id: string;
+      file_digest: string;
+      byte_size: number;
+      parse: {
+        status: "frozen" | "not_frozen";
+        parse_run_id: string | null;
+        parser_digest: string | null;
+        config_digest: string | null;
+        evidence_digest: string | null;
+        reason: string | null;
+      };
+      page_count: number | null;
+      pages: {
+        physical_page: number;
+        quality: "usable" | "partial" | "failed";
+        gaps: string[];
+      }[];
+      blocks: {
+        id: string;
+        physical_page: number;
+        ordinal: number;
+        kind: "text" | "table" | "visual_observation";
+        text_content: string;
+        digest: string;
+        bbox_json: string | null;
+        structure_json: string | null;
+      }[];
+    }[];
+    source_snapshot: { [key: string]: unknown }[];
+    coverage: {
+      state: "partial" | "unknown";
+      all_part_count: number;
+      selected_part_count: number;
+      all_scoring_rule_count: number;
+      included_rule_count: number;
+      frozen_parse_member_count: number;
+      gaps: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+      visual_coverage: "unproven";
+      required_range_completeness: "unproven";
+    };
+    timing: {
+      purpose: "current_prebid";
+      historical_as_of: null;
+      submitted_at: null;
+      label_known_at: null;
+      training_frozen_at: null;
+      submission_split_at: null;
+      label_available_as_of: null;
+      historical_qualification: "not_established";
+    };
+    original_bytes_verified: false;
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+  };
+  digest: string;
+};
+
+export type PackageTechnicalScopeView = {
+  manifest: {
+    version: "package-technical-scope/1";
+    id: string;
+    actor_id: string;
+    command_id: string;
+    frozen_at: string;
+    preview: {
+      manifest: {
+        version: "package-technical-scope-preview/1";
+        scope: {
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          inventory_id: string;
+        };
+        basis: {
+          package_digest: string;
+          authority_revision_id: string;
+          authority_digest: string;
+          inventory_digest: string;
+          rule_set_id: string;
+          rule_set_digest: string;
+          identity_digest: string;
+        };
+        method: {
+          version: "package-technical-scope-policy/1";
+          digest: string;
+          sources: {
+            "packages/domain/package_technical_scope.py": string;
+            "packages/domain/bid_package_technical_scope_repository.py": string;
+            "packages/domain/bid_package_technical_scope_service.py": string;
+            "packages/contracts/package_technical_scope_api.py": string;
+            "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+            "packages/domain/bid_package_review_documents.py": string;
+            "packages/domain/bid_package_repository.py": string;
+            "packages/rag/indexing.py": string;
+          };
+          limits: {
+            members: 500;
+            parts: 2000;
+            rules: 1000;
+            source_rows: 20000;
+            blocks: 100000;
+            pages: 100000;
+            request_bytes: 1048576;
+            snapshot_bytes: 33554432;
+            original_bytes: 1073741824;
+          };
+        };
+        request: {
+          purpose: "current_prebid";
+          package_digest: string;
+          authority_revision_id: string;
+          authority_digest: string;
+          inventory_id: string;
+          inventory_digest: string;
+          technical_part_ids: string[];
+          rule_scopes: {
+            rule_id: string;
+            rule_digest: string;
+            selection: "include" | "exclude" | "unclassified";
+            part_ids: string[];
+            reason: string;
+          }[];
+          reason: string;
+        };
+        request_digest: string;
+        context_digest: string;
+        parts: {
+          member_id: string;
+          document_version_id: string;
+          file_digest: string;
+          part: {
+            part_id: string;
+            category: string;
+            first_page: number;
+            last_page: number;
+            shared_attachment: boolean;
+            heading_path: number[];
+          };
+          selected: boolean;
+          read_physical_pages: number[];
+          block_ids: string[];
+          text_evidence_present: boolean;
+          visual_coverage: "unproven";
+        }[];
+        rules: {
+          rule_id: string;
+          rule_digest: string;
+          selection: "include" | "exclude" | "unclassified";
+          part_ids: string[];
+          reason: string;
+          rule_snapshot: { [key: string]: unknown };
+          requirement_digest: string;
+          declared_target_part_ids: string[];
+          source_evidence: {
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            parse_run_id: string;
+            physical_page: number;
+            evidence_id: string;
+            evidence_digest: string;
+            text_content: string;
+            part_ids: string[];
+          }[];
+        }[];
+        documents: {
+          package_role: "target" | "authority";
+          member_id: string;
+          document_version_id: string;
+          file_digest: string;
+          byte_size: number;
+          parse: {
+            status: "frozen" | "not_frozen";
+            parse_run_id: string | null;
+            parser_digest: string | null;
+            config_digest: string | null;
+            evidence_digest: string | null;
+            reason: string | null;
+          };
+          page_count: number | null;
+          pages: {
+            physical_page: number;
+            quality: "usable" | "partial" | "failed";
+            gaps: string[];
+          }[];
+          blocks: {
+            id: string;
+            physical_page: number;
+            ordinal: number;
+            kind: "text" | "table" | "visual_observation";
+            text_content: string;
+            digest: string;
+            bbox_json: string | null;
+            structure_json: string | null;
+          }[];
+        }[];
+        source_snapshot: { [key: string]: unknown }[];
+        coverage: {
+          state: "partial" | "unknown";
+          all_part_count: number;
+          selected_part_count: number;
+          all_scoring_rule_count: number;
+          included_rule_count: number;
+          frozen_parse_member_count: number;
+          gaps: {
+            id: string;
+            code: string;
+            subject: string | null;
+            message: string;
+          }[];
+          visual_coverage: "unproven";
+          required_range_completeness: "unproven";
+        };
+        timing: {
+          purpose: "current_prebid";
+          historical_as_of: null;
+          submitted_at: null;
+          label_known_at: null;
+          training_frozen_at: null;
+          submission_split_at: null;
+          label_available_as_of: null;
+          historical_qualification: "not_established";
+        };
+        original_bytes_verified: false;
+        inventory_complete: false;
+        scoring_ready: false;
+        formal_scoring_eligible: false;
+        model_execution_enabled: false;
+        training_eligible: false;
+      };
+      digest: string;
+    };
+    original_verification: {
+      state: "verified_at_recording";
+      verified_at: string;
+      files: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      }[];
+    };
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+  };
+  digest: string;
+};
+
+export type PackageTechnicalScopeApplied = {
+  scope: {
+    manifest: {
+      version: "package-technical-scope/1";
+      id: string;
+      actor_id: string;
+      command_id: string;
+      frozen_at: string;
+      preview: {
+        manifest: {
+          version: "package-technical-scope-preview/1";
+          scope: {
+            bid_id: string;
+            package_id: string;
+            revision_id: string;
+            inventory_id: string;
+          };
+          basis: {
+            package_digest: string;
+            authority_revision_id: string;
+            authority_digest: string;
+            inventory_digest: string;
+            rule_set_id: string;
+            rule_set_digest: string;
+            identity_digest: string;
+          };
+          method: {
+            version: "package-technical-scope-policy/1";
+            digest: string;
+            sources: {
+              "packages/domain/package_technical_scope.py": string;
+              "packages/domain/bid_package_technical_scope_repository.py": string;
+              "packages/domain/bid_package_technical_scope_service.py": string;
+              "packages/contracts/package_technical_scope_api.py": string;
+              "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+              "packages/domain/bid_package_review_documents.py": string;
+              "packages/domain/bid_package_repository.py": string;
+              "packages/rag/indexing.py": string;
+            };
+            limits: {
+              members: 500;
+              parts: 2000;
+              rules: 1000;
+              source_rows: 20000;
+              blocks: 100000;
+              pages: 100000;
+              request_bytes: 1048576;
+              snapshot_bytes: 33554432;
+              original_bytes: 1073741824;
+            };
+          };
+          request: {
+            purpose: "current_prebid";
+            package_digest: string;
+            authority_revision_id: string;
+            authority_digest: string;
+            inventory_id: string;
+            inventory_digest: string;
+            technical_part_ids: string[];
+            rule_scopes: {
+              rule_id: string;
+              rule_digest: string;
+              selection: "include" | "exclude" | "unclassified";
+              part_ids: string[];
+              reason: string;
+            }[];
+            reason: string;
+          };
+          request_digest: string;
+          context_digest: string;
+          parts: {
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            part: {
+              part_id: string;
+              category: string;
+              first_page: number;
+              last_page: number;
+              shared_attachment: boolean;
+              heading_path: number[];
+            };
+            selected: boolean;
+            read_physical_pages: number[];
+            block_ids: string[];
+            text_evidence_present: boolean;
+            visual_coverage: "unproven";
+          }[];
+          rules: {
+            rule_id: string;
+            rule_digest: string;
+            selection: "include" | "exclude" | "unclassified";
+            part_ids: string[];
+            reason: string;
+            rule_snapshot: { [key: string]: unknown };
+            requirement_digest: string;
+            declared_target_part_ids: string[];
+            source_evidence: {
+              member_id: string;
+              document_version_id: string;
+              file_digest: string;
+              parse_run_id: string;
+              physical_page: number;
+              evidence_id: string;
+              evidence_digest: string;
+              text_content: string;
+              part_ids: string[];
+            }[];
+          }[];
+          documents: {
+            package_role: "target" | "authority";
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            byte_size: number;
+            parse: {
+              status: "frozen" | "not_frozen";
+              parse_run_id: string | null;
+              parser_digest: string | null;
+              config_digest: string | null;
+              evidence_digest: string | null;
+              reason: string | null;
+            };
+            page_count: number | null;
+            pages: {
+              physical_page: number;
+              quality: "usable" | "partial" | "failed";
+              gaps: string[];
+            }[];
+            blocks: {
+              id: string;
+              physical_page: number;
+              ordinal: number;
+              kind: "text" | "table" | "visual_observation";
+              text_content: string;
+              digest: string;
+              bbox_json: string | null;
+              structure_json: string | null;
+            }[];
+          }[];
+          source_snapshot: { [key: string]: unknown }[];
+          coverage: {
+            state: "partial" | "unknown";
+            all_part_count: number;
+            selected_part_count: number;
+            all_scoring_rule_count: number;
+            included_rule_count: number;
+            frozen_parse_member_count: number;
+            gaps: {
+              id: string;
+              code: string;
+              subject: string | null;
+              message: string;
+            }[];
+            visual_coverage: "unproven";
+            required_range_completeness: "unproven";
+          };
+          timing: {
+            purpose: "current_prebid";
+            historical_as_of: null;
+            submitted_at: null;
+            label_known_at: null;
+            training_frozen_at: null;
+            submission_split_at: null;
+            label_available_as_of: null;
+            historical_qualification: "not_established";
+          };
+          original_bytes_verified: false;
+          inventory_complete: false;
+          scoring_ready: false;
+          formal_scoring_eligible: false;
+          model_execution_enabled: false;
+          training_eligible: false;
+        };
+        digest: string;
+      };
+      original_verification: {
+        state: "verified_at_recording";
+        verified_at: string;
+        files: {
+          document_version_id: string;
+          digest: string;
+          byte_size: number;
+        }[];
+      };
+      inventory_complete: false;
+      scoring_ready: false;
+      formal_scoring_eligible: false;
+      model_execution_enabled: false;
+      training_eligible: false;
+    };
+    digest: string;
+  };
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      request: {
+        purpose: "current_prebid";
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        technical_part_ids: string[];
+        rule_scopes: {
+          rule_id: string;
+          rule_digest: string;
+          selection: "include" | "exclude" | "unclassified";
+          part_ids: string[];
+          reason: string;
+        }[];
+        reason: string;
+      };
+      preview_digest: string;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageTechnicalScopeContext = {
+  target: BidPackageStoredView;
+  authority: BidPackageStoredView;
+  inventory: PackageRequirementInventoryView;
+  method: {
+    version: "package-technical-scope-policy/1";
+    digest: string;
+    sources: {
+      "packages/domain/package_technical_scope.py": string;
+      "packages/domain/bid_package_technical_scope_repository.py": string;
+      "packages/domain/bid_package_technical_scope_service.py": string;
+      "packages/contracts/package_technical_scope_api.py": string;
+      "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+      "packages/domain/bid_package_review_documents.py": string;
+      "packages/domain/bid_package_repository.py": string;
+      "packages/rag/indexing.py": string;
+    };
+    limits: {
+      members: 500;
+      parts: 2000;
+      rules: 1000;
+      source_rows: 20000;
+      blocks: 100000;
+      pages: 100000;
+      request_bytes: 1048576;
+      snapshot_bytes: 33554432;
+      original_bytes: 1073741824;
+    };
+  };
+  context_digest: string;
+  etag: string;
+  can_freeze: boolean;
+  blocking_reasons: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  catalog_complete: true;
+  timing: {
+    purpose: "current_prebid";
+    historical_as_of: null;
+    submitted_at: null;
+    label_known_at: null;
+    training_frozen_at: null;
+    submission_split_at: null;
+    label_available_as_of: null;
+    historical_qualification: "not_established";
+  };
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+};
+
+export type PackageTechnicalScopePage = {
+  items: {
+    id: string;
+    digest: string;
+    inventory_id: string;
+    created_at: string;
+    coverage_state: "partial" | "unknown";
+    selected_part_count: number;
+    included_rule_count: number;
+    scoring_ready: false;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageTechnicalScoringContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    scope_id: string;
+    scope_digest: string;
+  };
+  basis: {
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_digest: string;
+    rule_set_id: string;
+    rule_set_digest: string;
+    identity_digest: string;
+  };
+  observed_at: string;
+  coverage: {
+    state: "partial" | "unknown";
+    all_part_count: number;
+    selected_part_count: number;
+    all_scoring_rule_count: number;
+    included_rule_count: number;
+    frozen_parse_member_count: number;
+    gaps: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    visual_coverage: "unproven";
+    required_range_completeness: "unproven";
+  };
+  denominator: {
+    state:
+      | "unselected"
+      | "not_configured"
+      | "unavailable"
+      | "mismatched"
+      | "matched";
+    scale_id: string | null;
+    scale_digest: string | null;
+    purpose: "current_prebid" | "historical_backtest";
+    technical_maximum: string | null;
+    scale_description: string | null;
+    aggregation: {
+      status: "unknown" | "unsupported";
+      description: string;
+    } | null;
+    maximum_usable: boolean;
+    aggregation_usable: false;
+    evidence_refs: {
+      id: string;
+      document_version_id: string;
+      parse_id: string;
+      evidence_id: string;
+      source_id: string;
+      blob_digest: string;
+      evidence_digest: string;
+      physical_page: number;
+      source_revision: number | null;
+      quote: string;
+      supported_fields: (
+        | "technical_maximum"
+        | "scale_description"
+        | "aggregation"
+      )[];
+    }[];
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  judgments: {
+    required_valid_independent: 3;
+    recorded_valid_independent: 0;
+    producer_authority: "not_configured_for_exact_package";
+    previous_answers_in_input: false;
+    retries_count_as_independent: false;
+    unknown_send_auto_retry: false;
+    execution_enabled: false;
+  };
+  numeric_prediction: null;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+  version: "package-technical-scoring-context/1";
+  purpose: "current_prebid";
+  current_input: {
+    state: "matched" | "changed" | "unavailable";
+    stored_context_digest: string;
+    current_context_digest: string | null;
+    method_matches: boolean;
+    original_bytes_reverified: false;
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  official_label_access: "forbidden";
+};
+
+export type PackageTechnicalSampleContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    scope_id: string;
+    scope_digest: string;
+  };
+  basis: {
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_digest: string;
+    rule_set_id: string;
+    rule_set_digest: string;
+    identity_digest: string;
+  };
+  observed_at: string;
+  coverage: {
+    state: "partial" | "unknown";
+    all_part_count: number;
+    selected_part_count: number;
+    all_scoring_rule_count: number;
+    included_rule_count: number;
+    frozen_parse_member_count: number;
+    gaps: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    visual_coverage: "unproven";
+    required_range_completeness: "unproven";
+  };
+  denominator: {
+    state:
+      | "unselected"
+      | "not_configured"
+      | "unavailable"
+      | "mismatched"
+      | "matched";
+    scale_id: string | null;
+    scale_digest: string | null;
+    purpose: "current_prebid" | "historical_backtest";
+    technical_maximum: string | null;
+    scale_description: string | null;
+    aggregation: {
+      status: "unknown" | "unsupported";
+      description: string;
+    } | null;
+    maximum_usable: boolean;
+    aggregation_usable: false;
+    evidence_refs: {
+      id: string;
+      document_version_id: string;
+      parse_id: string;
+      evidence_id: string;
+      source_id: string;
+      blob_digest: string;
+      evidence_digest: string;
+      physical_page: number;
+      source_revision: number | null;
+      quote: string;
+      supported_fields: (
+        | "technical_maximum"
+        | "scale_description"
+        | "aggregation"
+      )[];
+    }[];
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  judgments: {
+    required_valid_independent: 3;
+    recorded_valid_independent: 0;
+    producer_authority: "not_configured_for_exact_package";
+    previous_answers_in_input: false;
+    retries_count_as_independent: false;
+    unknown_send_auto_retry: false;
+    execution_enabled: false;
+  };
+  numeric_prediction: null;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+  version: "package-technical-sample-context/1";
+  purpose: "historical_backtest";
+  submission: {
+    id: string;
+    binding_digest: string;
+    submitted_at: string;
+    recorded_at: string;
+    is_current_head: boolean;
+    matches_scope: boolean;
+    platform_submission_verified: false;
+  };
+  official_result: {
+    outcome_id: string | null;
+    score_kind: "technical_total" | "comprehensive_total" | "unknown" | null;
+    technical_value: string | null;
+    reported_maximum: string | null;
+    label_known_at: string | null;
+    current_association: boolean;
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  timing: {
+    scope_frozen_at: string;
+    historical_as_of: string;
+    submitted_at: string;
+    label_known_at: string | null;
+    training_frozen_at: null;
+    submission_split_at: null;
+    label_available_as_of: null;
+    strict_timing_ready: false;
+  };
+  original_scope_precedes_submission: boolean;
+  source_metadata_matches: boolean;
+  sample_state: "pending";
+  sample_created: false;
+  official_label_access: "association_check_only";
+};
+
 export type KnowledgePackageReviewTargetPage = {
   bid_id: string;
   items: {
@@ -4829,6 +5851,7 @@ export type PricingFormulaPage = {
     confirmed_at: string;
     confirmed_by: string;
     current_applicability: PricingApplicability;
+    package_binding?: PricingPackagePricingBinding;
   }[];
   next_cursor: string | null;
 };
@@ -5969,6 +6992,35 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PricingFormulaParameters = {
+  method: "lowest_valid_ratio" | "mean_valid_deviation";
+  maximum: string;
+  minimum_price: string | null;
+  maximum_price: string | null;
+  minimum_valid_bids: number;
+  above_coefficient: string;
+  below_coefficient: string;
+};
+
+export type PricingInterpretation = {
+  baseline_set: "own_and_all_numerically_eligible_assumptions";
+  exclusions: "none";
+  random_parameters: "none";
+  intermediate_rounding: "none";
+  clamping: "zero_to_maximum";
+};
+
+export type PricingEvidenceQuote = {
+  source_id: string;
+  source_revision: number;
+  document_version_id: string;
+  parse_id: string;
+  physical_page: number;
+  evidence_id: string;
+  quote: string;
+  supported_fields: string[];
+};
+
 export type HistoricalImportRecord = {
   external_record_id: string;
   bid_id: string;
@@ -6978,42 +8030,13 @@ export type SubmissionDocumentView = {
   media_type: string;
 };
 
-export type PricingFormulaParameters = {
-  method: "lowest_valid_ratio" | "mean_valid_deviation";
-  maximum: string;
-  minimum_price: string | null;
-  maximum_price: string | null;
-  minimum_valid_bids: number;
-  above_coefficient: string;
-  below_coefficient: string;
-};
-
-export type PricingInterpretation = {
-  baseline_set: "own_and_all_numerically_eligible_assumptions";
-  exclusions: "none";
-  random_parameters: "none";
-  intermediate_rounding: "none";
-  clamping: "zero_to_maximum";
-};
-
-export type PricingEvidenceQuote = {
-  source_id: string;
-  source_revision: number;
-  document_version_id: string;
-  parse_id: string;
-  physical_page: number;
-  evidence_id: string;
-  quote: string;
-  supported_fields: string[];
-};
-
 export type PricingApplicability = {
   applicable: boolean;
   reasons: string[];
 };
 
 export type PricingFormulaManifest = {
-  schema: "pricing-formula/1";
+  schema: "pricing-formula/1" | "pricing-formula/2";
   formula_version_id: string;
   bid_id: string;
   material_snapshot_id: string | null;
@@ -7068,7 +8091,19 @@ export type PricingFormulaManifest = {
       valid_until: string | null;
       bid_id: string;
     }[];
+    package_snapshot?: {
+      version: "package-pricing-authority/1";
+      binding: PricingPackagePricingBinding;
+      package_digest: string;
+      authority_digest: string;
+      identity_digest: string;
+      source_heads_digest: string;
+      rule_set_id: string | null;
+      inventory_id: string | null;
+      inventory_digest: string | null;
+    };
   };
+  package_binding?: PricingPackagePricingBinding;
 };
 
 export type PricingCurveRange = {
@@ -8632,6 +9667,13 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/package-review-comparisons",
   "GET /api/v1/bids/{bid_id}/package-documents",
   "GET /api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scope-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scope-previews",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/scoring-context",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/sample-context",
   "GET /api/v1/bids/{bid_id}/pricing-context",
   "GET /api/v1/bids/{bid_id}/pricing-formula-sources",
   "POST /api/v1/bids/{bid_id}/pricing-formulas",
@@ -8642,6 +9684,9 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/pricing-plans",
   "GET /api/v1/bids/{bid_id}/pricing-plans",
   "GET /api/v1/bids/{bid_id}/pricing-plans/{plan_id}",
+  "GET /api/v1/bids/{bid_id}/package-pricing-context",
+  "GET /api/v1/bids/{bid_id}/package-pricing-formula-sources",
+  "POST /api/v1/bids/{bid_id}/package-pricing-formulas",
   "GET /api/v1/bids/{bid_id}/submission-gate",
   "POST /api/v1/bids/{bid_id}/submissions",
   "GET /api/v1/bids/{bid_id}/submissions",

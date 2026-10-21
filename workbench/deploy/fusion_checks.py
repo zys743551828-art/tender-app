@@ -21,6 +21,17 @@ SUITES = {
     ],
     "budget": ["tests/test_assistant_budget_nonowner.py"],
     "requirements-pure": ["tests/test_bid_package_requirements.py"],
+    "technical-scope-pure": [
+        "tests/test_package_technical_scope.py",
+        "tests/test_package_technical_eligibility.py",
+        "tests/test_scale_authority.py",
+    ],
+    "technical-scope-api": [
+        "tests/test_package_technical_scope_pg.py",
+        "tests/test_package_technical_eligibility_pg.py",
+        "tests/test_package_technical_eligibility_catalog_pg.py",
+        "tests/test_package_technical_scale_pg.py",
+    ],
     "requirements-api": [
         "tests/test_bid_package_requirements_api.py",
         "tests/test_bid_package_evidence_api.py",
@@ -94,7 +105,13 @@ def main():
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         "WORKBENCH_ENV_FILE": "explicit-fusion-checks-no-business-profile",
     }
-    if suite in {"budget", "requirements-api", "scope-review-api", "completion-api"}:
+    if suite in {
+        "budget",
+        "requirements-api",
+        "scope-review-api",
+        "completion-api",
+        "technical-scope-api",
+    }:
         password = (
             Path("/run/secrets/fusion_checks_owner_password")
             .read_text(encoding="utf-8")
@@ -122,6 +139,8 @@ def main():
             environment["FUSION_NONOWNER_RECEIPT"] = "/evidence/budget-receipt.jsonl"
         else:
             environment["FUSION_REQUIREMENTS_ADMIN_DSN"] = check_dsn
+            if suite == "technical-scope-api":
+                environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
     # The executable and suite paths are trusted constants; shell remains disabled.
     result = subprocess.run(  # nosec B603
         [

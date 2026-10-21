@@ -18,6 +18,8 @@ import { clearRecordedCommands } from "./useRecordedCommand";
 import { ProjectWorkspace } from "./ProjectWorkspace";
 import { Archives } from "./Archives";
 import { Research } from "./Research";
+import { ThemePicker } from "./ThemePicker";
+import { useTheme } from "./theme";
 const AssistantHub = lazy(() =>
   import("./AssistantWorkspace").then((module) => ({
     default: module.AssistantHub,
@@ -41,6 +43,7 @@ function projectFromPath(pathname: string) {
 }
 
 export function App() {
+  const theme = useTheme();
   const [auth, updateAuth] = useState<AuthView | null>(null);
   const [restoring, setRestoring] = useState(true);
   const [expired, setExpired] = useState(false);
@@ -183,7 +186,7 @@ export function App() {
         <Loading text="正在恢复工作区…" />
       </div>
     );
-  if (!auth) return <Login onLogin={loggedIn} />;
+  if (!auth) return <Login onLogin={loggedIn} theme={theme} />;
   return (
     <NavigationGuardContext.Provider value={registerGuard}>
       <div className="app-shell">
@@ -325,7 +328,10 @@ export function App() {
                 <option value="knowledge">企业知识</option>
               )}
             </select>
-            <span className="environment-label">资料工作区</span>
+            <div className="topbar-actions">
+              <span className="environment-label">资料工作区</span>
+              <ThemePicker {...theme} />
+            </div>
           </header>
           <main id="main-content">
             {projectId ? (
@@ -402,7 +408,7 @@ export function App() {
             aria-modal="true"
             aria-label="重新登录工作区"
           >
-            <Login onLogin={loggedIn} expired />
+            <Login onLogin={loggedIn} expired theme={theme} />
           </div>
         )}
       </div>
@@ -413,9 +419,11 @@ export function App() {
 function Login({
   onLogin,
   expired = false,
+  theme,
 }: {
   onLogin: (auth: AuthView) => void;
   expired?: boolean;
+  theme: ReturnType<typeof useTheme>;
 }) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -460,6 +468,9 @@ function Login({
         <small>AI 投标标书工作台</small>
       </div>
       <section className="login-panel">
+        <div className="login-theme">
+          <ThemePicker {...theme} />
+        </div>
         <form onSubmit={(event) => void submit(event)} className="login-form">
           <div className="mobile-brand">
             <Brand />

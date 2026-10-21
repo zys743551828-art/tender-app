@@ -40,6 +40,7 @@ EXTENSIONS = (
     "deploy/sql/historical-input-qualification.sql",
     "deploy/sql/score-execution.sql",
     "deploy/sql/technical-scale-authority.sql",
+    "deploy/sql/technical-scale-package-identity.sql",
     "deploy/sql/score-denominator.sql",
     "deploy/sql/retrospective-research.sql",
 )
@@ -48,6 +49,7 @@ REQUIRED_BASE = {
     "packages/authoring/sql/docx_import.sql",
     "packages/contracts/sql/bid-package-rule-corrections.sql",
     "packages/contracts/sql/bid-package-submissions.sql",
+    "packages/contracts/sql/bid-package-technical-scopes.sql",
 }
 ORIGINALS_FORMAT = "completion-recovery-originals/1"
 # Exact pg_dump/pg_restore CHECK reparse pairs observed on the current optional

@@ -100,7 +100,7 @@
   border-radius: 12px;
 }
 .rule-correction-editor {
-  background: #fafbfd;
+  background: var(--subtle);
 }
 .rule-correction-toolbar {
   display: flex;
@@ -151,8 +151,8 @@
   display: grid;
   gap: 8px;
   min-width: 0;
-  border-left: 3px solid #bfd3e8;
-  background: #f5f8fc;
+  border-left: 3px solid var(--border-strong);
+  background: var(--subtle);
   padding: 14px 16px;
 }
 .rule-correction-source blockquote {
@@ -178,7 +178,7 @@
   text-align: left;
   white-space: normal;
   padding: 14px 16px;
-  background: #fff;
+  background: var(--card);
   color: var(--text, #1e293b);
   border: 1px solid var(--line, #dbe3ed);
   border-radius: 9px;
@@ -187,7 +187,7 @@
 .rule-correction-evidence-list > button[aria-pressed="true"],
 .rule-correction-history-list > button[aria-pressed="true"] {
   border-color: var(--primary, #2563eb);
-  background: #f0f6ff;
+  background: var(--primary-soft);
 }
 .rule-correction-evidence-list span,
 .rule-correction-history-list span {
@@ -200,7 +200,7 @@
   max-height: 360px;
   overflow-y: auto;
   padding: 16px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--line, #dbe3ed);
   border-radius: 8px;
   margin: 0;
@@ -224,7 +224,7 @@
   align-content: start;
   gap: 10px;
   min-width: 0;
-  background: #f7f9fc;
+  background: var(--subtle);
   border: 1px solid var(--line, #dbe3ed);
   padding: 16px;
   border-radius: 9px;
@@ -282,7 +282,7 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   padding: 16px;
-  background: #f0f6ff;
+  background: var(--primary-soft);
   border-radius: 10px;
 }
 .rule-correction-counts dt {

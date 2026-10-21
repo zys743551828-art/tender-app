@@ -39,5 +39,6 @@ BASE_SQL = (
     "deploy/sql/vector-runtime-grants.sql",
     "deploy/sql/research-source-qualification.sql",
     "packages/contracts/sql/bid-package-submissions.sql",
+    "packages/contracts/sql/bid-package-technical-scopes.sql",
     "packages/contracts/sql/task-package-reviews.sql",
 )

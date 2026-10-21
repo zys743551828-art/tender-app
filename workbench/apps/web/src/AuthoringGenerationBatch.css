@@ -144,7 +144,7 @@
   gap: 12px;
   padding: 16px;
   border-radius: 9px;
-  background: #f4f7fb;
+  background: var(--subtle);
 }
 .generation-budget-summary dt {
   color: var(--muted, #64748b);
@@ -192,21 +192,21 @@
 }
 .generation-candidate-confirm {
   padding: 12px 14px;
-  border: 1px solid #a7d1bf;
+  border: 1px solid var(--primary);
   border-radius: 8px;
-  background: #f1faf5;
+  background: var(--primary-soft);
 }
 .generation-resolve {
   padding: 20px;
-  background: #f7f8fc;
+  background: var(--subtle);
   border-radius: 12px;
 }
 .generation-receipt {
   display: grid;
   gap: 8px;
   padding: 16px;
-  background: #f0f8f4;
-  border: 1px solid #bed9cb;
+  background: var(--primary-soft);
+  border: 1px solid var(--primary);
   border-radius: 10px;
   overflow-wrap: anywhere;
 }

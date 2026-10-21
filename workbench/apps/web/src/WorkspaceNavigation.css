@@ -40,7 +40,7 @@
   background: var(--card);
   border: 1px solid var(--border-strong);
   border-radius: 0.65rem;
-  box-shadow: 0 10px 30px #00000014;
+  box-shadow: 0 10px 30px rgb(var(--shadow-color) / 12%);
 }
 .workspace-navigation__secondary:not([hidden]) {
   display: grid;

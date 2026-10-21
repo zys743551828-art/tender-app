@@ -123,16 +123,34 @@ def validate_terms(value):
     terms.validate_quotes(value)
 
 
+def source_capsule(c, *, bid, value):
+    if value.get("package_binding") is not None:
+        from packages.pricing import package_sources
+
+        return package_sources.exact_sources(
+            c, bid=bid, quotes=value["evidence_quotes"], binding=value["package_binding"]
+        )
+    return sources.exact_sources(c, bid=bid, quotes=value["evidence_quotes"])
+
+
+def source_context(c, bid, value):
+    if value.get("package_binding") is not None:
+        from packages.pricing import package_sources
+
+        return package_sources.context(c, bid, value["package_binding"])
+    return sources.context(c, bid)
+
+
 def prepare_formula(c, *, bid, actor, value, condition):
     _work(c, bid)
     sources.enabled_bid(c, bid)
     validate_terms(value)
-    capsule = sources.exact_sources(c, bid=bid, quotes=value["evidence_quotes"])
+    capsule = source_capsule(c, bid=bid, value=value)
     sources.validate_measures(c, bid=bid, value=value)
-    context, tag = sources.context(c, bid)
+    context, tag = source_context(c, bid, value)
     exact_match(condition, tag)
     manifest = {
-        "schema": "pricing-formula/1",
+        "schema": "pricing-formula/2" if value.get("package_binding") else "pricing-formula/1",
         "formula_version_id": str(uid()),
         "bid_id": str(bid),
         "material_snapshot_id": context["material_snapshot_id"],
@@ -168,9 +186,9 @@ def stage_formula(manifest):
 def publish_formula(c, *, bid, actor, manifest, staged, condition, command):
     _work(c, bid)
     sources.enabled_bid(c, bid, lock=True)
-    capsule = sources.exact_sources(c, bid=bid, quotes=manifest["evidence_quotes"])
+    capsule = source_capsule(c, bid=bid, value=manifest)
     sources.validate_measures(c, bid=bid, value=manifest)
-    _, current_tag = sources.context(c, bid)
+    _, current_tag = source_context(c, bid, manifest)
     exact_match(condition, current_tag)
     if sha(capsule) != sha(manifest["source_authority"]):
         raise DomainError(
@@ -218,6 +236,11 @@ def publish_formula(c, *, bid, actor, manifest, staged, condition, command):
         "rounding_policy": manifest["rounding_policy"],
         "confirmed_at": manifest["confirmed_at"],
         "confirmed_by": str(actor),
+        **(
+            {"package_binding": manifest["package_binding"]}
+            if "package_binding" in manifest
+            else {}
+        ),
     }
     c.execute(
         "INSERT INTO decisions(id,bid_id,object_kind,object_id,object_revision,decision,reason,evidence_ids,actor_id) VALUES(%s,%s,'pricing_formula',%s,1,'confirmed',%s,%s,%s)",
@@ -259,9 +282,10 @@ def read_formula(blob, *, bid):
     try:
         manifest = json.loads(raw)
         if (
-            manifest["schema"] != "pricing-formula/1"
+            manifest["schema"] not in {"pricing-formula/1", "pricing-formula/2"}
             or manifest["bid_id"] != str(bid)
             or manifest["formula_version_id"] != str(blob["id"])
+            or ((manifest["schema"] == "pricing-formula/2") != ("package_binding" in manifest))
         ):
             raise ValueError
     except (ValueError, KeyError, TypeError):
@@ -270,7 +294,9 @@ def read_formula(blob, *, bid):
 
 
 def applicability(c, *, bid, manifest, digest):
-    sources.enabled_bid(c, bid)
+    # Exact package checks also read the bid head; keep bid -> graph order for
+    # both modes so a mixed history page cannot invert the writer lock order.
+    sources.enabled_bid(c, bid, lock=True)
     if (
         c.execute("SELECT current_setting('transaction_isolation') AS value").fetchone()["value"]
         != "read committed"
@@ -307,7 +333,7 @@ def applicability(c, *, bid, manifest, digest):
         reasons.append("计算方法实现已变化，历史记录仍可还原，新试算须使用核对后的版本")
     try:
         validate_terms(manifest)
-        current = sources.exact_sources(c, bid=bid, quotes=manifest["evidence_quotes"])
+        current = source_capsule(c, bid=bid, value=manifest)
         sources.validate_measures(c, bid=bid, value=manifest)
         if sha(current) != sha(manifest["source_authority"]):
             reasons.append("公式依据或生效招标补遗已更新，请核对后重新试算")

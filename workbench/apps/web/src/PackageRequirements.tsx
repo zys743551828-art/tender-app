@@ -43,6 +43,10 @@ const PackageRuleCorrections = lazy(async () => {
   const module = await import("./PackageRuleCorrections");
   return { default: module.PackageRuleCorrections };
 });
+const PackageTechnicalScope = lazy(async () => {
+  const module = await import("./PackageTechnicalScope");
+  return { default: module.PackageTechnicalScope };
+});
 
 type Props = {
   bidId: string;
@@ -1593,6 +1597,28 @@ function Workspace({
           }}
         />
       </Suspense>
+      {inventoryValid && (
+        <Suspense fallback={<p role="status">正在加载施组评分范围…</p>}>
+          <PackageTechnicalScope
+            bidId={bidId}
+            memberId={memberId}
+            packageView={packageView}
+            inventory={inventoryValid ? displayedInventory! : null}
+            disabled={
+              disabled ||
+              busy ||
+              !!pending ||
+              recovery.blocked ||
+              coverageWriteLocked ||
+              coverageDirty ||
+              ruleCorrectionWriteLocked ||
+              ruleCorrectionDirty ||
+              !!draft ||
+              selectedReadUnverified
+            }
+          />
+        </Suspense>
+      )}
       <PackageReviewInputPreview
         memberId={memberId}
         bidId={bidId}

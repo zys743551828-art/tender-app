@@ -45,7 +45,13 @@ def extend_openapi(actual):
             "digest": sha,
         }
     )
-    identity = {"anyOf": [identity, ref("HistoricalIdentityProjection"), null]}
+    # Keep immutable v1 records readable; current fusion identities carry the
+    # stable lot and explicit version, which must not be dropped from the view.
+    identity_v2 = obj(
+        identity["properties"]
+        | {"lot_id": nullable(uuid), "identity_version": {"const": "bid-identity/2"}}
+    )
+    identity = {"anyOf": [identity_v2, identity, ref("HistoricalIdentityProjection"), null]}
     head = obj(
         {
             "bid_id": uuid,
