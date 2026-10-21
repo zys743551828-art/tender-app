@@ -13,6 +13,8 @@ import {
   readPackageAuthoringProposal,
 } from "./taskPackageAuthoringProtocol";
 import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
+import { PackageAuthoringActionControls } from "./PackageAuthoringActionControls";
+import type { VerifiedAuthoringInput } from "./packageAuthoringInputProtocol";
 
 const actionNames = {
   pending: "待明确处理",
@@ -29,6 +31,8 @@ export function AssistantActionCard({
   id: string;
   memberId: string;
 }) {
+  const [packageInput, setPackageInput] =
+    useState<VerifiedAuthoringInput | null>(null);
   const resource = useResource<AssistantAction>(`/assistant/actions/${id}`);
   let action = resource.data?.action_id === id ? resource.data : undefined;
   let packageError: unknown = null;
@@ -140,7 +144,7 @@ export function AssistantActionCard({
           {action.preview.kind === "package_authoring_patch" && (
             <>
               <p className="notice neutral">
-                这是固定整包输入产生的章节候选。可以核对原稿与拟稿、明确拒绝；当前尚不提供正文采纳或交付包构建。
+                这是固定整包输入产生的章节候选。请核对完整原稿与拟稿后明确处理；正文采纳、文件构建和入包分别记录。
               </p>
               <PackageAuthoringInputDetails
                 key={`${memberId}:${action.target_bid_id}:${action.preview.authoring_input_id}:${action.preview.authoring_input_digest}`}
@@ -149,12 +153,33 @@ export function AssistantActionCard({
                   authoring_input_id: action.preview.authoring_input_id,
                   authoring_input_digest: action.preview.authoring_input_digest,
                 }}
+                onVerified={setPackageInput}
               />
               <AssistantPatchComparison
                 key={`${action.action_id}:${action.request_digest}`}
                 bidId={action.target_bid_id}
                 before={action.preview.before}
                 after={action.preview.after}
+              />
+              <PackageAuthoringActionControls
+                key={`${memberId}:${action.action_id}`}
+                action={readPackageAuthoringProposal(
+                  action,
+                  action.target_bid_id,
+                )}
+                etag={resource.etag}
+                memberId={memberId}
+                input={packageInput}
+                fresh={!resource.loading && !resource.error}
+                projectWritable={
+                  !!target &&
+                  !project.loading &&
+                  !project.error &&
+                  !target.archived_at &&
+                  target.phase !== "closed" &&
+                  target.phase !== "terminated"
+                }
+                onChanged={changed}
               />
             </>
           )}
@@ -163,7 +188,7 @@ export function AssistantActionCard({
               {assistantReason(action.error_code)}
             </p>
           )}
-          {resolution && (
+          {resolution && !packageClaim && (
             <>
               <p>
                 {resolution.business_effect_executed
@@ -187,8 +212,8 @@ export function AssistantActionCard({
               )}
             </>
           )}
-          <ErrorNotice error={command.error} />
-          {action.state === "pending" && (
+          {!packageClaim && <ErrorNotice error={command.error} />}
+          {action.state === "pending" && !packageClaim && (
             <div className="review-shortcuts">
               <button
                 className="button primary"
@@ -249,7 +274,7 @@ export function AssistantActionCard({
               </button>
             </div>
           )}
-          {command.pending && !command.busy && (
+          {command.pending && !command.busy && !packageClaim && (
             <div className="notice warning">
               <p>
                 原操作的答复尚未取得。先读取当前卡片，再恢复同一请求；不另建确认。

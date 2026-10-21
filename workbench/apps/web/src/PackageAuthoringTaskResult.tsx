@@ -49,8 +49,12 @@ function Proposal({
       {action && (
         <>
           <p>
-            保存的章节基准：修订 {action.preview.base_section_revision}
-            。候选已发布供核对，尚未采纳正文。
+            保存的章节基准：修订 {action.preview.base_section_revision}。
+            {action.state === "executed"
+              ? "此候选已有采纳结果，请在操作卡核对确切正文修订。"
+              : action.state === "pending"
+                ? "候选已发布供核对，尚未采纳正文。"
+                : "此候选已有明确处理结果，详情见操作卡。"}
           </p>
           <Suspense fallback={<p role="status">正在加载完整正文对照…</p>}>
             <AssistantPatchComparison
@@ -61,7 +65,9 @@ function Proposal({
             />
           </Suspense>
           <p className="notice neutral">
-            此候选目前可核对、拒绝；正文采纳和交付包构建尚不可用。
+            {action.preview.apply_available
+              ? "正文采纳须在原操作卡完整核对后明确确认；文件构建和入包继续单独处理。"
+              : "此候选可核对、拒绝；当前服务尚未开放这份候选的正文采纳。"}
           </p>
           {!stale && !resource.loading && !resource.error && (
             <a
@@ -86,7 +92,7 @@ export default function PackageAuthoringTaskResult({
   const state = run.result.publication_state;
   const explanation =
     state === "published"
-      ? "章节候选已由服务器发布；任务成功表示候选可供核对，正文尚未采纳。"
+      ? "章节候选已由服务器发布；任务成功表示候选可供核对。是否已采纳正文，请读取原操作卡的实际结果。"
       : state === "stale"
         ? "发布前依据已变化，原候选没有成为可处理提议。"
         : state === "failed"

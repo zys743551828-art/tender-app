@@ -162,7 +162,10 @@ def view(c, bid, draft):
 
 
 def preview(c, bid, draft, actor, body, condition, *, prospective=None):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     row = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     match(condition, "draft", draft, row["revision"])
     if body["base_draft_revision"] != row["revision"]:
         raise DomainError("DRAFT_REVISION_CONFLICT", "草稿已更新，请重新预览", 412)
@@ -232,6 +235,9 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
 
 
 def commit(c, bid, draft, actor, state, contents, revision):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, draft)
     current = {
         str(r["section_id"]): r for r in latest_sections(c, bid, draft, include_deleted=True)
     }
@@ -318,7 +324,10 @@ def resolve(c, bid, action, actor, command_id, decision, condition):
 
 
 def save_plan(c, bid, draft, section, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     head = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     templates.ensure_defaults(c, actor)
     match(condition, "draft", draft, head["revision"])
     if head["revision"] != body["base_draft_revision"]:
@@ -506,7 +515,10 @@ def directory_preview(c, bid, draft, actor, body, condition):
 
 
 def style_preview(c, bid, draft, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     head = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     templates.ensure_defaults(c, actor)
     match(condition, "draft", draft, head["revision"])
     if body["base_draft_revision"] != head["revision"]:
@@ -527,7 +539,10 @@ def style_preview(c, bid, draft, actor, body, condition):
 
 
 def restore_preview(c, bid, draft, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     current, contents = load(c, bid, draft)
     saved = fetch(
         c,

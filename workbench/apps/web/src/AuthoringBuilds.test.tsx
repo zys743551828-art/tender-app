@@ -97,6 +97,46 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+it("does not replace an explicitly selected exact adoption revision with a newer draft during build preparation", async () => {
+  const writes: RequestInit[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") writes.push(options);
+      if (url.endsWith("/structure"))
+        return response({
+          draft_id: "draft",
+          draft_revision: 7,
+          snapshot_id: "snapshot-7",
+          structure_version_id: null,
+        });
+      return response({ items: [], next_cursor: null, has_more: false });
+    }),
+  );
+  render(
+    <AuthoringBuilds
+      bidId="bid"
+      memberId="member"
+      draftId="draft"
+      capabilities={capabilities}
+      disabled={false}
+      prepare={async () => head}
+      setBusy={vi.fn()}
+      fixedRevision={{
+        draft_id: "draft",
+        draft_revision: 7,
+        snapshot_id: "snapshot-7",
+        snapshot_digest: "d".repeat(64),
+      }}
+    />,
+  );
+  await userEvent.click(
+    await screen.findByRole("button", { name: "保存确认后生成文件" }),
+  );
+  await screen.findByText(/固定整包正文修订已变化/);
+  expect(writes).toEqual([]);
+});
+
 it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改写为整体就绪", async () => {
   let ack: ((value: ApiResult<DraftView>) => void) | undefined;
   const prepare = vi.fn(

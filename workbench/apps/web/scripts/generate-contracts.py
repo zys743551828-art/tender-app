@@ -23,6 +23,13 @@ else:
 schemas = contract["components"]["schemas"]
 wanted = [
     "AuthoringHistoricalSectionView",
+    "AuthoringExactRevisionCapabilities",
+    "AuthoringExactDraftStatus",
+    "AuthoringExactRevisionView",
+    "AuthoringExactSectionBinding",
+    "PackageAuthoringNodeCatalog",
+    "PackageAuthoringFactSetPage",
+    "PackageAuthoringFactCatalog",
     "PackageAuthoringSelection",
     "ExactPackageAuthoringSelection",
     "TaskPackageAuthoringResult",

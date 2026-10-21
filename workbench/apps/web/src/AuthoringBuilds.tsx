@@ -10,6 +10,7 @@ import type {
   BuildRequest,
   BuildView,
   DraftView,
+  DraftSaved,
 } from "./contracts";
 import { AuthoringBuildResult } from "./AuthoringBuildResult";
 import { Badge, ErrorNotice } from "./components";
@@ -35,6 +36,7 @@ export function AuthoringBuilds({
   prepare,
   setBusy,
   onPackages,
+  fixedRevision,
 }: {
   bidId: string;
   memberId: string;
@@ -46,6 +48,7 @@ export function AuthoringBuilds({
   prepare: () => Promise<ApiResult<DraftView> | null>;
   setBusy: (busy: boolean) => void;
   onPackages?: () => void;
+  fixedRevision?: DraftSaved;
 }) {
   const cacheKey = `tender:authoring:${memberId}:${bidId}:${draftId}:builds`;
   const scope = `authoring-build:${memberId}:${bidId}:${draftId}`;
@@ -73,6 +76,25 @@ export function AuthoringBuilds({
     };
   }, []);
   const [error, setError] = useState<unknown>(null);
+  const structurePath = `/bids/${bidId}/drafts/${draftId}/structure`;
+  const exactStructureRead = useResource<AuthoringTreeView>(
+    fixedRevision ? structurePath : null,
+  );
+  const exactStructure =
+    fixedRevision &&
+    exactStructureRead.data?.draft_id === draftId &&
+    exactStructureRead.data.draft_revision === fixedRevision.draft_revision &&
+    exactStructureRead.data.snapshot_id === fixedRevision.snapshot_id
+      ? exactStructureRead.data
+      : null;
+  const exactStructureBlocked =
+    !!fixedRevision &&
+    (!exactStructure ||
+      exactStructureRead.loading ||
+      !!exactStructureRead.error ||
+      exactStructureRead.unavailable);
+  const plainExact =
+    !!exactStructure && exactStructure.structure_version_id === null;
   const historyPath = `/bids/${bidId}/builds?draft_id=${encodeURIComponent(draftId)}`;
   const history = useResource<BuildPage>(historyPath);
   const [more, setMore] = useState<BuildPage[]>([]);
@@ -109,7 +131,8 @@ export function AuthoringBuilds({
     if (
       working.current ||
       recovery.blocked ||
-      (!cacheRef.current.pending && (disabled || !formats.length))
+      (!cacheRef.current.pending &&
+        (disabled || exactStructureBlocked || !formats.length))
     )
       return;
     working.current = true;
@@ -132,29 +155,53 @@ export function AuthoringBuilds({
           head.data.revision < 1
         )
           throw new Error("当前草稿尚无可核对的保存确认，请先完成章节保存。");
-        const structure = await api<AuthoringTreeView>(
-          `/bids/${bidId}/drafts/${draftId}/structure`,
-        );
+        if (
+          fixedRevision &&
+          (fixedRevision.draft_id !== draftId ||
+            head.data.revision !== fixedRevision.draft_revision ||
+            head.data.snapshot_id !== fixedRevision.snapshot_id)
+        )
+          throw new Error(
+            "固定整包正文修订已变化，未改用新版本生成文件；请重新核对采纳结果与确切快照。",
+          );
+        const structure = await api<AuthoringTreeView>(structurePath);
         if (!active.current) return;
         if (
           structure.data.draft_id !== draftId ||
           structure.data.draft_revision !== head.data.revision ||
+          (fixedRevision &&
+            structure.data.snapshot_id !== head.data.snapshot_id) ||
           !structure.data.directory_template_version_id ||
           !structure.data.style_template_version_id
         )
           throw new Error(
             "目录与已保存正文修订不一致，请读取最新目录后重试生成。",
           );
-        const body: BuildRequest = {
+        const common = {
           draft_id: draftId,
           draft_revision: head.data.revision,
-          directory_template_version_id:
-            structure.data.directory_template_version_id,
-          style_template_version_id: structure.data.style_template_version_id,
           formats: [...formats],
-          follow_up: "none",
-          ...(richCapabilities ? { pagination_mode: pagination } : {}),
+          follow_up: "none" as const,
         };
+        const isPlain =
+          !!fixedRevision && structure.data.structure_version_id === null;
+        if (fixedRevision && isPlain !== plainExact)
+          throw new Error(
+            "本稿的冻结目录结构已变化，请重新核对版式选择后生成文件。",
+          );
+        const body: BuildRequest = isPlain
+          ? {
+              ...common,
+              template_version_id: capabilities.default_template_version_id,
+            }
+          : {
+              ...common,
+              directory_template_version_id:
+                structure.data.directory_template_version_id,
+              style_template_version_id:
+                structure.data.style_template_version_id,
+              ...(richCapabilities ? { pagination_mode: pagination } : {}),
+            };
         pending = {
           body,
           key: crypto.randomUUID(),
@@ -262,8 +309,26 @@ export function AuthoringBuilds({
             先等待所有章节保存确认，再冻结该草稿修订。后续编辑不会改变本次输出。
           </p>
         </div>
-        <Badge>目录与版式分别固定</Badge>
+        <Badge>{plainExact ? "内置正文版式" : "目录与版式分别固定"}</Badge>
       </div>
+      {fixedRevision && (
+        <ResourceState
+          {...exactStructureRead}
+          hasData={!!exactStructure}
+          onRetry={() => void exactStructureRead.reload()}
+          loadingLabel="正在核对本次固定正文的目录与版式…"
+        />
+      )}
+      {fixedRevision && exactStructureRead.data && !exactStructure && (
+        <p className="notice error">
+          目录结构与所选固定正文修订不一致，未改用其他版本生成。
+        </p>
+      )}
+      {plainExact && (
+        <p className="small-note">
+          本次固定正文未附加目录或自定义版式，将使用内置正文模板生成；尚不提供章页排版选择。
+        </p>
+      )}
       <div className="review-shortcuts">
         {(["docx", "pdf"] as const)
           .filter((format) => capabilities.formats.includes(format))
@@ -284,7 +349,7 @@ export function AuthoringBuilds({
               {format === "docx" ? "Word" : "PDF"}
             </label>
           ))}
-        {richCapabilities && (
+        {richCapabilities && !plainExact && !exactStructureBlocked && (
           <label>
             章页排版
             <select
@@ -308,7 +373,8 @@ export function AuthoringBuilds({
           disabled={
             busy ||
             recovery.blocked ||
-            (!cache.pending && (disabled || !formats.length))
+            (!cache.pending &&
+              (disabled || exactStructureBlocked || !formats.length))
           }
           onClick={() => void build()}
         >
@@ -319,15 +385,23 @@ export function AuthoringBuilds({
               : "保存确认后生成文件"}
         </button>
       </div>
+      {fixedRevision && (
+        <p className="small-note">
+          本次选择草稿修订 {fixedRevision.draft_revision}{" "}
+          的固定采纳快照；重新读取时若已变更，会停止本次新构建并保留原选择。
+        </p>
+      )}
       <p className="small-note">
         本次仅生成文件，不自动切换受检正文或开始评审。Word与PDF独立显示结果，生成成功不表示内容通过。
       </p>
-      {richCapabilities && !richCapabilities.renderer_configured && (
-        <p className="notice warning">
-          表图转换器尚未配置；可生成
-          Word，PDF、真实目录页码与章页范围可能不可用。构建会如实保留各格式结果。
-        </p>
-      )}
+      {richCapabilities &&
+        !plainExact &&
+        !richCapabilities.renderer_configured && (
+          <p className="notice warning">
+            表图转换器尚未配置；可生成
+            Word，PDF、真实目录页码与章页范围可能不可用。构建会如实保留各格式结果。
+          </p>
+        )}
       {cache.pending && (
         <div className="notice warning">
           上次生成受理尚未确认。重试会核对原草稿修订{" "}

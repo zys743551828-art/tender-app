@@ -640,8 +640,8 @@ export function readPackageAuthoringProposal(
     !uuid(p.authoring_input_id) ||
     !sha(p.authoring_input_digest) ||
     p.source_scope !== "exact_package_context" ||
-    p.apply_available !== false ||
-    p.build_available !== false ||
+    typeof p.apply_available !== "boolean" ||
+    typeof p.build_available !== "boolean" ||
     !text(p.effect, 8000) ||
     !object(p.before) ||
     !object(p.after)

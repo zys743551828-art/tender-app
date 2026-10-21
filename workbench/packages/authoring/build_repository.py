@@ -77,10 +77,22 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
     ensure_template(c)
     snap = fetch(
         c,
-        "SELECT id FROM draft_snapshots WHERE draft_id=%s AND revision=%s",
+        "SELECT id,manifest FROM draft_snapshots WHERE draft_id=%s AND revision=%s",
         (draft["id"], draft["revision"]),
     )
+    from packages.authoring import exact_builds
+
+    if "authoring_exact_sections" in snap["manifest"]:
+        exact_builds.require_available(c)
     snapshot = snapshot_content(c, bid, snap["id"])
+    exact_packet = exact_builds.capture(c, bid, snapshot, current=True)
+    if exact_packet is not None and body["follow_up"] != "none":
+        raise DomainError(
+            "AUTHORING_EXACT_BUILD_FOLLOW_UP_UNSUPPORTED",
+            "固定整包正文请先生成并明确采用到投标包，再选择整包核查",
+            422,
+        )
+    ordinary_sections = exact_builds.ordinary_sections(snapshot, exact_packet)
     from packages.authoring.content import has_rich
 
     if any(has_rich(section) for section in snapshot["sections"]) and not rich:
@@ -97,7 +109,7 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
         rich_snapshots.assert_current(
             c, bid, snapshot.get("authoring_images"), snapshot["sections"]
         )
-    for section in snapshot["sections"]:
+    for section in ordinary_sections:
         assert_sources(c, bid, section)
     from packages.authoring import generated_docx, snapshot_structure
 
@@ -117,7 +129,7 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
             raise DomainError(
                 "BUILD_TEMPLATE_SNAPSHOT_MISMATCH", "所选双模板与该草稿修订快照不一致", 409
             )
-        authority = snapshot_structure.frozen_authority(c, bid, extension, snapshot["sections"])
+        authority = snapshot_structure.frozen_authority(c, bid, extension, ordinary_sections)
     heads = fetch(
         c,
         """SELECT b.revision AS bid_revision,b.material_revision,b.settings_revision,
@@ -171,6 +183,8 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
             authoring_images_digest=(snapshot.get("authoring_images") or {}).get("digest"),
             pagination_mode=body["pagination_mode"],
         )
+    if exact_packet is not None:
+        manifest["authoring_exact"] = exact_packet["proof"]
     identity_id = uid()
     c.execute(
         "INSERT INTO build_inputs(id,bid_id,draft_snapshot_id,template_digest,render_digest,manifest) VALUES(%s,%s,%s,%s,%s,%s)",
@@ -205,23 +219,38 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
 
 def prepare_build(c, bid, input_id):
     """Read-only preparation; close this transaction before rendering/object I/O."""
+    from packages.authoring import exact_builds
+
     info = fetch(c, "SELECT * FROM build_inputs WHERE bid_id=%s AND id=%s", (bid, input_id))
+    if "authoring_exact" in info["manifest"]:
+        exact_builds.require_available(c)
     snapshot = snapshot_content(c, bid, info["draft_snapshot_id"])
     if info["manifest"]["snapshot_digest"] != snapshot["snapshot_digest"]:
         raise DomainError("BUILD_INPUT_CORRUPT", "生成输入校验失败", 409)
-    return {"input_id": str(input_id), "info": clean(info), "snapshot": snapshot}
+    packet = exact_builds.checked(c, bid, snapshot, info["manifest"])
+    result = {"input_id": str(input_id), "info": clean(info), "snapshot": snapshot}
+    if packet is not None:
+        result["authoring_exact"] = packet
+    return result
 
 
 def compute_prepared_build(prepared):
     """No DB connection, row lock or API credential is needed by this computation."""
     input_id, info, snapshot = prepared["input_id"], prepared["info"], prepared["snapshot"]
-    from packages.authoring import generated_docx, generated_verification, structured_docx
+    from packages.authoring import (
+        exact_builds,
+        generated_docx,
+        generated_verification,
+        structured_docx,
+    )
+
+    exact_proof = exact_builds.prepared_proof(prepared)
 
     kind = info["manifest"].get("writer_kind", "strict_text/1")
     if kind == "generated_rich/3":
         from packages.authoring.rich_build import compute
 
-        return compute(prepared)
+        return exact_builds.verified_result(compute(prepared), exact_proof)
     if kind not in {"strict_text/1", "structured_text/1", "generated_text/2"}:
         raise DomainError("BUILD_WRITER_UNSUPPORTED", "正文生产器协议不受支持", 409)
     generated = kind == "generated_text/2"
@@ -357,11 +386,12 @@ def compute_prepared_build(prepared):
                 "media_type": media,
             }
         )
-    return result
+    return exact_builds.verified_result(result, exact_proof)
 
 
 def publish_build(c, bid, build_id, computed, actor=None):
     """Call inside engine.finish fencing transaction; never move current body/review heads."""
+    from packages.authoring import exact_builds
     from packages.domain.runtime import require_read_committed
     from packages.lifecycle.service import assert_work_writable
 
@@ -379,13 +409,18 @@ def publish_build(c, bid, build_id, computed, actor=None):
     if actor is not None and UUID(str(actor)) != frozen_actor:
         raise DomainError("BUILD_ACTOR_IDENTITY_MISMATCH", "生成发起人身份不匹配", 409)
     actor = frozen_actor
+    if "authoring_exact" in info["manifest"]:
+        exact_builds.require_available(c)
     snapshot = snapshot_content(c, bid, info["draft_snapshot_id"])
     if (
         computed["snapshot_id"] != str(info["draft_snapshot_id"])
         or computed["snapshot_digest"] != snapshot["snapshot_digest"]
     ):
         raise DomainError("BUILD_RESULT_IDENTITY_MISMATCH", "生成结果快照身份不匹配", 409)
-    for section in snapshot["sections"]:
+    exact_packet = exact_builds.checked(c, bid, snapshot, info["manifest"], current=True)
+    exact_builds.assert_result(computed, exact_packet)
+    ordinary_sections = exact_builds.ordinary_sections(snapshot, exact_packet)
+    for section in ordinary_sections:
         assert_sources(c, bid, section)
     if info["manifest"].get("writer_kind") in {
         "structured_text/1",
@@ -395,7 +430,7 @@ def publish_build(c, bid, build_id, computed, actor=None):
         from packages.authoring.snapshot_structure import frozen_authority
 
         if (
-            frozen_authority(c, bid, snapshot["authoring_structure"], snapshot["sections"])
+            frozen_authority(c, bid, snapshot["authoring_structure"], ordinary_sections)
             != info["manifest"]["authoring_authority"]
         ):
             raise DomainError(

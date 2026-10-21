@@ -28,10 +28,8 @@ import {
 } from "./taskPackageProtocol";
 import { historicalSame } from "./historicalImportProtocol";
 import { jsonDigest } from "./editorSchema";
-import {
-  PackageAuthoringInputDetails,
-  PackageAuthoringInputPicker,
-} from "./PackageAuthoringInput";
+import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
+import { PackageAuthoringInputChooser } from "./PackageAuthoringInputChooser";
 import type { VerifiedAuthoringInput } from "./packageAuthoringInputProtocol";
 import {
   isExactPackageAuthoring,
@@ -232,9 +230,10 @@ export function TaskDraftPanel({
             </label>
             {sourceMode === "package-authoring" && (
               <>
-                <PackageAuthoringInputPicker
+                <PackageAuthoringInputChooser
                   key={`${memberId}:${bidId}`}
                   bidId={bidId}
+                  memberId={memberId}
                   disabled={command.busy || !!command.pending}
                   onSelect={(input) => {
                     setVerifiedInput(null);

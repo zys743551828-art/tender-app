@@ -104,7 +104,15 @@ def snapshot(c, bid, snapshot_id):
     policy.check(
         isinstance(manifest, dict)
         and set(manifest)
-        <= {"draft_id", "revision", "title", "sections", "authoring_structure", "authoring_images"}
+        <= {
+            "draft_id",
+            "revision",
+            "title",
+            "sections",
+            "authoring_structure",
+            "authoring_images",
+            "authoring_exact_sections",
+        }
         and {"draft_id", "revision", "title", "sections"} <= set(manifest)
         and manifest["draft_id"] == row["draft_id"]
         and manifest["revision"] == row["revision"]
@@ -124,6 +132,9 @@ def snapshot(c, bid, snapshot_id):
         ),
         "快照清单与每条原生章节、版本、顺序或项目绑定不一致",
     )
+    # Keep the complete immutable manifest and digest, including exact-section
+    # bindings. The native reader verifies those bindings through its protected
+    # historical proof before projecting read-only document content below.
     native = snapshot_content(c, bid, snapshot_id)
     sections = []
     for index, (item, content) in enumerate(zip(members, native["sections"], strict=True)):
@@ -233,7 +244,9 @@ def build(c, bid, build_id):
             )
         )
         if state == "succeeded":
-            packet = package_outputs.capture(c, bid, build_id, output["document_version_id"])
+            packet = package_outputs.capture(
+                c, bid, build_id, output["document_version_id"], historical=True
+            )
             proof = packet["proof"]
             policy.check(
                 proof["format"] == fmt

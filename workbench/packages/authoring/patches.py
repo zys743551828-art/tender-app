@@ -45,6 +45,9 @@ def create_proposal(
     """Called only after a budgeted model result or explicit manual preview; no model I/O."""
     s = fetch(c, "SELECT * FROM sections WHERE id=%s AND bid_id=%s", (section, bid))
     draft = lock_draft(c, bid, s["draft_id"])
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, s["draft_id"])
     from packages.authoring.snapshot_structure import assert_active
 
     extension = assert_active(c, bid, s["draft_id"], section)

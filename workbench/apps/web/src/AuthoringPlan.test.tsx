@@ -121,3 +121,44 @@ it("412不清人工目标；异步最新计划不会静默重写用户输入", a
     screen.queryByText("计划已保存；页数仍为预算。"),
   ).not.toBeInTheDocument();
 });
+
+it("只读状态仍可恢复原计划请求，不以新草稿头重建body、key或ETag", async () => {
+  const writes: RequestInit[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "PUT") {
+        writes.push(init);
+        if (writes.length === 1) throw new TypeError("lost ACK");
+        return json({
+          draft_id: "draft",
+          draft_revision: 12,
+          plan: { section_id: "section", revision: 1 },
+        });
+      }
+      return json(url.endsWith("/rules") ? { rules: [] } : { documents: [] });
+    }),
+  );
+  const props = {
+    bidId: "bid",
+    memberId: "member",
+    draftId: "draft",
+    node,
+    draftRevision: 10,
+    disabled: false,
+    prepare,
+    onSaved: vi.fn().mockResolvedValue(undefined),
+  };
+  const view = render(<AuthoringPlan {...props} />);
+  await userEvent.click(screen.getByText("本章编写计划 · 施工"));
+  await userEvent.type(screen.getByLabelText("本章目标"), "保留原计划");
+  await userEvent.click(screen.getByRole("button", { name: "保存编写计划" }));
+  await screen.findByRole("button", { name: "恢复原计划保存结果" });
+  view.rerender(<AuthoringPlan {...props} draftRevision={99} disabled />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "恢复原计划保存结果" }),
+  );
+  await screen.findByText("计划已保存；页数仍为预算。");
+  expect(writes[1]).toEqual(writes[0]);
+  expect(prepare).toHaveBeenCalledTimes(1);
+});

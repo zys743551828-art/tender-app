@@ -11,6 +11,8 @@ import type { ReceivedBuild } from "./authoringBuildRecovery";
 import { AuthoringOutputAdoption } from "./AuthoringOutputAdoption";
 
 const explanations: Record<string, string> = {
+  RENDERER_UNAVAILABLE:
+    "PDF 转换器尚未配置或不可用，本次 PDF 未生成；已生成的 Word 仍可单独核对与采用。",
   RENDER_SANDBOX_NOT_ATTESTED:
     "文件已生成，正式提交前请核对字体、分页与版面；当前转换环境尚未完成正式交付验收。",
   TOC_PAGE_NUMBERS_UNKNOWN: "目录页码尚未实测，当前目录不能作为准确页码依据。",

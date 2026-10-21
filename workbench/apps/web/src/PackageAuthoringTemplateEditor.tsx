@@ -6,10 +6,8 @@ import {
   knowledgeStorageKey,
   useKnowledgeInput,
 } from "./knowledgeStorage";
-import {
-  PackageAuthoringInputDetails,
-  PackageAuthoringInputPicker,
-} from "./PackageAuthoringInput";
+import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
+import { PackageAuthoringInputChooser } from "./PackageAuthoringInputChooser";
 import {
   packageAuthoringScope,
   type VerifiedAuthoringInput,
@@ -217,9 +215,10 @@ export function PackageAuthoringTemplateEditor({
         保存只记录模板；明确手动运行才可能调用模型并产生费用。
       </p>
       {!fixed && (
-        <PackageAuthoringInputPicker
+        <PackageAuthoringInputChooser
           key={`${memberId}:${bidId}`}
           bidId={bidId}
+          memberId={memberId}
           disabled={locked}
           onSelect={select}
         />

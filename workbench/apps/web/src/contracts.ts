@@ -25,6 +25,202 @@ export type AuthoringHistoricalSectionView = {
   restoration_authorized: false;
 };
 
+export type AuthoringExactRevisionCapabilities = {
+  protocol: "authoring-exact-revision-capabilities/1";
+  apply_available: boolean;
+  build_available: boolean;
+  ordinary_edit_available: false;
+  supported_content: "plain_text_stable_node";
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactDraftStatus = {
+  protocol: "authoring-exact-draft-status/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  exact_sections: AuthoringExactSectionBinding[];
+  ordinary_edit_available: boolean;
+  build_available: boolean;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactRevisionView = {
+  manifest: AuthoringExactRevisionManifest;
+  digest: string;
+};
+
+export type AuthoringExactSectionBinding = {
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  qualification_id: string;
+  qualification_digest: string;
+  authoring_input_id: string;
+  authoring_input_digest: string;
+  source_scope: "exact_package_context";
+};
+
+export type PackageAuthoringNodeCatalog = {
+  protocol: "package-authoring-node-catalog/1";
+  bid_id: string;
+  target: {
+    draft_id: string;
+    snapshot_id: string;
+    snapshot_digest: string;
+    base_draft_revision: number;
+    section_id: string;
+    section_revision_id: string;
+    base_section_revision: number;
+    section_digest: string;
+    schema_digest: string;
+  };
+  section_title: string;
+  section_content: AuthoringHistoryAuthoringRichDocument;
+  nodes: {
+    node_id: string;
+    before_node_digest: string;
+    node_type: "paragraph" | "heading";
+    text: string;
+  }[];
+  unsupported_stable_node_count: number;
+  current_draft_revision: number;
+  section_heads: {
+    section_id: string;
+    selected_revision: number;
+    head_revision: number;
+  }[];
+  whole_snapshot_plain: boolean;
+  structure_supported: boolean;
+  blocking_reasons: string[];
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
+export type PackageAuthoringFactSetPage = {
+  protocol: "package-authoring-fact-set-page/1";
+  bid_id: string;
+  items: {
+    fact_set_id: string;
+    fact_set_digest: string;
+    fact_count: number;
+    is_current: boolean;
+  }[];
+  current_head: {
+    fact_set_id: string;
+    revision: number;
+    fact_set_digest: string;
+  } | null;
+  blocking_reasons: string[];
+  next_cursor: string | null;
+  has_more: boolean;
+  total_items: number;
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
+export type PackageAuthoringFactCatalog = {
+  protocol: "package-authoring-fact-catalog/1";
+  bid_id: string;
+  selection: {
+    fact_set_id: string;
+    fact_set_digest: string;
+    fact_head_revision: number;
+    target: {
+      package_id: string;
+      revision_id: string;
+      manifest_digest: string;
+    };
+    authority: {
+      package_id: string;
+      revision_id: string;
+      manifest_digest: string;
+    };
+  };
+  current_head: {
+    fact_set_id: string;
+    revision: number;
+    fact_set_digest: string;
+  } | null;
+  head_matches: boolean;
+  package_identity_matches: boolean;
+  subject_choices: {
+    kind: "engineering_project" | "lot" | "round" | "bidder";
+    id: string;
+  }[];
+  identity_names: [
+    "procurement_issuer_identifier",
+    "procurement_project_identifier",
+    "procurement_lot_identifier",
+    "procurement_round_identifier",
+    "bidder_identity_identifier",
+  ];
+  items: {
+    fact_id: string;
+    fact_item_digest: string;
+    proof_digest: string;
+    name: string;
+    subject_text: string;
+    scope_text: string;
+    value_jsonb_text: string;
+    unit: string | null;
+    identity_name:
+      | "procurement_issuer_identifier"
+      | "procurement_project_identifier"
+      | "procurement_lot_identifier"
+      | "procurement_round_identifier"
+      | "bidder_identity_identifier"
+      | null;
+    identity_value_usable: boolean;
+    decision: {
+      id: string;
+      decision: "confirmed" | "rejected";
+      decision_revision: number;
+      object_id: string;
+      actor_id: string;
+      created_at: string;
+      binding_verified: boolean;
+      basis_verified: boolean;
+      carryover_steps: number;
+    } | null;
+    evidence: {
+      id: string;
+      parse_id: string;
+      document_version_id: string;
+      physical_page: number;
+      digest: string;
+    }[];
+    provenance_status: "verified" | "unproven";
+    scope_binding: "selected_frozen_parse" | "unproven";
+    facts_qualified: false;
+    blocking_reasons: string[];
+  }[];
+  blocking_reasons: string[];
+  next_cursor: string | null;
+  has_more: boolean;
+  total_items: number;
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
 export type PackageAuthoringSelection = {
   authoring_input_id: string;
   authoring_input_digest: string;
@@ -5405,7 +5601,7 @@ export type AssistantAction = {
         authoring_input_id: string;
         authoring_input_digest: string;
         source_scope: "exact_package_context";
-        apply_available: false;
+        apply_available: boolean;
         build_available: false;
         effect: string;
       };
@@ -7359,6 +7555,7 @@ export type AuthoringSnapshot = {
   snapshot_digest: string;
   title: string;
   sections: (AuthoringDocument | AuthoringRichDocument)[];
+  authoring_exact_sections?: AuthoringExactSnapshotExtension;
   authoring_structure?: AuthoringStructureExtension;
   authoring_images?: AuthoringJsonValue;
 };
@@ -7910,6 +8107,31 @@ export type AuthoringHistoryAuthoringRichDocument = {
     | AuthoringHistoryAuthoringRichTable
     | AuthoringHistoryAuthoringRichImage
   )[];
+};
+
+export type AuthoringExactRevisionManifest = {
+  protocol: "authoring-exact-revision/1";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactRevisionOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactRevisionMethod;
+  method_digest: string;
+  candidate_adopted: true;
+  content_correctness_certified: false;
 };
 
 export type PackageContext = {
@@ -9384,6 +9606,12 @@ export type AuthoringListItem = {
   content: (AuthoringParagraph | AuthoringBulletList | AuthoringOrderedList)[];
 };
 
+export type AuthoringExactSnapshotExtension = {
+  protocol: "authoring-exact-snapshot/1";
+  sections: AuthoringExactSectionBinding[];
+  digest: string;
+};
+
 export type AuthoringStructureExtension = {
   id: string;
   schema_digest: string;
@@ -9720,6 +9948,30 @@ export type AuthoringHistoryAuthoringRichImage = {
     alt: string;
     caption: string;
   };
+};
+
+export type AuthoringExactInputIdentity = {
+  id: string;
+  digest: string;
+  context_digest: string;
+};
+
+export type AuthoringExactRevisionOrigin = {
+  kind: "model_candidate_adoption";
+  job_id: string;
+  job_input_digest: string;
+  action_id: string;
+  action_digest: string;
+  candidate_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+};
+
+export type AuthoringExactRevisionMethod = {
+  protocol: "authoring-exact-adoption-policy/1";
+  supported_content: "plain_text_stable_node";
+  source_sha256: { [key: string]: string };
 };
 
 export type PackageReference = {
@@ -10920,7 +11172,13 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/authoring-actions/{action_id}/apply",
   "GET /api/v1/sections/{section_id}/revisions",
   "POST /api/v1/bids/{bid_id}/sections/{section_id}/restore",
+  "GET /api/v1/authoring/exact-revision-capabilities",
+  "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
+  "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/draft-snapshots/{snapshot_id}/sections/{section_id}/nodes",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets/{fact_set_id}/facts",
   "POST /api/v1/bids/{bid_id}/builds/{build_id}/package-adoptions",
   "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-context",
   "POST /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",

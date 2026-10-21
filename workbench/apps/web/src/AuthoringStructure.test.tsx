@@ -197,7 +197,7 @@ it("预览失响应后刷新只恢复相同body/key/tag，不按新head重建身
   );
   await screen.findByRole("button", { name: "恢复原目录预览结果" });
   first.unmount();
-  render(<AuthoringStructure {...props} draftRevision={99} />);
+  render(<AuthoringStructure {...props} draftRevision={99} readOnly />);
   await userEvent.click(
     await screen.findByRole("button", { name: "恢复原目录预览结果" }),
   );
@@ -209,6 +209,7 @@ it("预览失响应后刷新只恢复相同body/key/tag，不按新head重建身
   expect(new Headers(requests[1].headers).get("If-Match")).toBe(
     '"actual-draft-4"',
   );
+  expect(screen.getByRole("button", { name: "应用这次变更" })).toBeDisabled();
 });
 it("412保留差异和删除影响，不能显示应用成功", async () => {
   vi.stubGlobal(

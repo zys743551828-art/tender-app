@@ -28,6 +28,9 @@ def freeze_generation_plan(c, bid, body, *, generation_mode=None, generation_sco
         c, "SELECT * FROM sections WHERE id=%s AND bid_id=%s", (section_id, bid)
     )
     draft = lock_draft(c, bid, original_section["draft_id"])
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, original_section["draft_id"])
     from packages.authoring.snapshot_structure import assert_active
 
     extension = assert_active(c, bid, original_section["draft_id"], section_id)

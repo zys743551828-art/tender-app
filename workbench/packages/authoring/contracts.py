@@ -157,6 +157,16 @@ def extend_openapi(actual):
             "sections": array(ref("AuthoringDocument")),
         }
     )
+    from packages.authoring.exact_revision_contracts import AuthoringExactSnapshotExtension
+
+    exact_snapshot = AuthoringExactSnapshotExtension.model_json_schema(
+        ref_template="#/components/schemas/{model}"
+    )
+    schemas.update(exact_snapshot.pop("$defs", {}))
+    schemas["AuthoringExactSnapshotExtension"] = exact_snapshot
+    schemas["AuthoringSnapshot"]["properties"]["authoring_exact_sections"] = ref(
+        "AuthoringExactSnapshotExtension"
+    )
     schemas["AuthoringPreviewRequest"] = obj(
         {
             "base_section_revision": INTEGER,

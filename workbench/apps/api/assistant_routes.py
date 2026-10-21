@@ -432,6 +432,20 @@ def resolve_assistant_action(action_id: UUID, r: Request, body: dict = Body(...)
 
     actor = auth(r, True)
     validate_assistant("AssistantActionResolveRequest", body)
+    if body["decision"] == "confirm":
+        from packages.authoring import exact_sources, package_proposals
+
+        with connection() as c:
+            exact = exact_sources.bound_action(c, action_id)
+        if exact:
+            result, replayed = package_proposals.resolve(
+                actor["member_id"],
+                action_id,
+                r.headers.get("idempotency-key"),
+                r.headers.get("if-match"),
+                final_auth=lambda: auth(r, True),
+            )
+            return saved(result, replayed)
     with connection() as c:
         actions.lock(c, action_id)
         cmd = command(c, r, actor, "assistant-action-resolve", action_id, body, True)

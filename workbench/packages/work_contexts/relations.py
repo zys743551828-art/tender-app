@@ -57,7 +57,7 @@ def build(c, bid, build_id):
         document = str(output["document_version_id"])
         # capture is SELECT-only. Source authority may differ from an adoption's
         # historical digest; this is a current observation, not lost history.
-        packet = package_outputs.capture(c, bid, build_id, document)
+        packet = package_outputs.capture(c, bid, build_id, document, historical=True)
         proofs[document] = packet["proof"]
     return seed, proofs, {"state": row["operation_state"], "outputs": clean(raw_outputs)}
 

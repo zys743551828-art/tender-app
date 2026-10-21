@@ -17,7 +17,9 @@ from psycopg.types.json import Jsonb
 from apps.api.assistant_routes import router as assistant_router
 from apps.api.auth import COOKIE, auth, auth_view, csrf, origin, password_ok
 from apps.api.authoring import router as authoring_router
+from apps.api.authoring_exact_revisions import router as authoring_exact_revisions_router
 from apps.api.authoring_history_routes import router as authoring_history_router
+from apps.api.authoring_input_catalog_routes import router as authoring_input_catalog_router
 from apps.api.authoring_package_inputs import router as authoring_package_input_router
 from apps.api.authoring_package_routes import router as authoring_package_router
 from apps.api.bid_package_requirement_routes import router as bid_package_requirement_router
@@ -134,7 +136,9 @@ app.include_router(settings_router)
 app.include_router(assistant_router)
 app.include_router(comparison_router)
 app.include_router(authoring_router)
+app.include_router(authoring_exact_revisions_router)
 app.include_router(authoring_history_router)
+app.include_router(authoring_input_catalog_router)
 app.include_router(authoring_package_router)
 app.include_router(document_parse_router)
 app.include_router(research_router)

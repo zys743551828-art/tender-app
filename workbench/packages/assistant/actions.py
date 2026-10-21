@@ -175,7 +175,7 @@ def view(c, identity):
         state = consumption["result"].get("assistant_resolution", {}).get("state", "executed")
     payload = proposed["payload"]
     if payload.get("kind") == "package_authoring_patch":
-        from packages.authoring.package_publication import preview as package_preview
+        from packages.authoring.package_proposals import preview as package_preview
 
         preview = package_preview(c, identity)
     elif payload.get("kind") == "authoring_patch_set":

@@ -1,6 +1,8 @@
 /* global process, console, window, document, innerWidth, URL, sessionStorage */
 // Real product components and Chromium; captured native API responses with
 // synthetic originals, never a production database or a paid model request.
+// B3 action proof responses are unchanged captures. The draft guard scenarios
+// and ancillary reads are explicitly synthetic UI state, not backend evidence.
 import fs from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
@@ -25,19 +27,67 @@ import {PackageAuthoringRunControl} from "./src/PackageAuthoringRunControl";
 import {TaskRunCard} from "./src/TaskRunCard";
 import {AssistantActionCard} from "./src/AssistantActionCard";
 import {TaskDraftPanel} from "./src/TaskDraftPanel";
+import {AuthoringPanel} from "./src/AuthoringPanel";
+import {AuthoringBuilds} from "./src/AuthoringBuilds";
 import {packageAuthoringFixture} from "./src/packageAuthoringFixtures.test-support";
+import exact from "./src/test-fixtures/authoring-exact-adoption-http.json";
+import built from "./src/test-fixtures/authoring-exact-build-http.json";
+import {exactDraftLayoutFixture} from "./src/authoringExactDraftFixtures.test-support";
+import {layoutScope} from "./src/authoringLayoutFixtures.test-support";
 import {historicalSame} from "./src/historicalImportProtocol";
 import "./src/styles.css";
-const f = packageAuthoringFixture(), d = f.draft, params = new URLSearchParams(location.search), mode = params.get("mode") || "editor", bid = mode === "draft" ? d.bid.id : f.template.bid_id, member = mode === "draft" ? d.member_id : f.member_id;
+const f = packageAuthoringFixture(), d = f.draft, params = new URLSearchParams(location.search), mode = params.get("mode") || "editor", exactAction = ["exact-action","exact-lost","exact-conflict"].includes(mode), exactBuild = ["exact-build","exact-build-lost","exact-package","exact-package-lost"].includes(mode), exactDraft = mode === "exact-draft" ? await exactDraftLayoutFixture() : null, bid = exactBuild ? built.bid_id : exactDraft ? layoutScope.bidId : exactAction ? exact.bid_id : mode === "draft" ? d.bid.id : f.template.bid_id, member = exactBuild ? built.member_id : exactDraft ? layoutScope.memberId : exactAction ? exact.member_id : mode === "draft" ? d.member_id : f.member_id;
 if (params.get("theme") === "dark") document.documentElement.dataset.theme = "dark";
 const calls = [], unexpected = [], accepted = [];
-window.__authoringQA = {calls, unexpected, accepted, template: f.template, run: f.runs.published, draft: d};
+window.__authoringQA = {calls, unexpected, accepted, template: f.template, run: f.runs.published, draft: d, exact, exactDraft, built};
 let currentDraft = null;
 setAuth({member: {id: member, display_name: "合成固定整包编写验收", active: true}, csrf_token: "synthetic-only", expires_at: "2099-01-01T00:00:00Z"});
 const json = (value, etag = null, status = 200) => new Response(JSON.stringify(value), {status, headers: {"Content-Type": "application/json", ...(etag ? {ETag: etag} : {})}});
 window.fetch = async (input, options = {}) => {
   const url = new URL(input, location.origin), route = url.pathname.replace(/^\\/api\\/v1/, ""), method = options.method || "GET";
   calls.push({route: url.pathname+url.search, method, body: options.body || null, headers: options.headers || {}});
+  if (exactDraft) return exactDraft.fetcher(input,options);
+  if (exactBuild) {
+    if (method === "GET") {
+      if (route === "/builds/"+built.build.id) return json(built.build);
+      if (route === "/bids/"+bid+"/builds" && !sessionStorage.getItem("qa-exact-built")) return json({items:[],next_cursor:null,has_more:false});
+      const read = built.reads[url.pathname+url.search];
+      if (read) return json(read.body,read.etag,read.status);
+    }
+    if (method === "POST" && route === "/bids/"+bid+"/builds") {
+      if (!historicalSame(JSON.parse(options.body),built.build_request)) throw new Error("Exact build changed the native frozen request");
+      sessionStorage.setItem("qa-exact-built","true");
+      if (mode === "exact-build-lost" && !sessionStorage.getItem("qa-exact-build-lost")) {sessionStorage.setItem("qa-exact-build-lost",JSON.stringify(calls.at(-1)));throw new TypeError("Synthetic lost native B4 build ACK");}
+      accepted.push("build");
+      return json(built.build_ack,null,202);
+    }
+    if (method === "POST" && route === "/bids/"+bid+"/builds/"+built.build.id+"/package-adoptions") {
+      if (!historicalSame(JSON.parse(options.body),built.adoption_request) || new Headers(options.headers).get("If-Match") !== null) throw new Error("Exact output adoption changed the native explicit request");
+      if (mode === "exact-package-lost" && !sessionStorage.getItem("qa-exact-package-lost")) {sessionStorage.setItem("qa-exact-package-lost",JSON.stringify(calls.at(-1)));throw new TypeError("Synthetic lost native B4 package ACK");}
+      accepted.push("package");
+      return json(built.adoption_ack,built.adoption_etag,201);
+    }
+    unexpected.push({route,method});throw new Error("Unexpected exact build fixture request");
+  }
+  if (exactAction) {
+    if (method === "GET") {
+      if (route === "/bids/"+bid) return json(exact.bid,exact.bid_etag);
+      if (route === "/authoring/exact-revision-capabilities") return json(exact.capabilities);
+      if (route === "/bids/"+bid+"/authoring/package-inputs/"+exact.input.manifest.id) return json(exact.input);
+      if (route === "/bids/"+bid+"/authoring/package-inputs/"+exact.input.manifest.id+"/context") return json(exact.context);
+      if (route === "/assistant/actions/"+exact.before_action.action_id) return sessionStorage.getItem("qa-exact-consumed") ? json(exact.resolve_ack,exact.resolve_etag) : json(exact.before_action,exact.before_etag);
+      if (route === "/bids/"+bid+"/draft-snapshots/"+exact.snapshot.snapshot_id) return json(exact.snapshot);
+      if (route === "/bids/"+bid+"/authoring/section-revisions/"+exact.qualification.manifest.section_revision_id+"/exact-qualification") return json(exact.qualification);
+    }
+    if (method === "POST" && route === "/assistant/actions/"+exact.before_action.action_id+"/resolve") {
+      if (!historicalSame(JSON.parse(options.body),exact.resolve_request) || new Headers(options.headers).get("If-Match") !== exact.before_etag) throw new Error("Exact adoption changed original decision or ETag");
+      if (mode === "exact-conflict") return json({code:"REVISION_CONFLICT",message:"合成并发冲突，原稿与候选均保留",details:null,request_id:"synthetic-conflict",retryable:false},null,412);
+      sessionStorage.setItem("qa-exact-consumed","true");
+      if (mode === "exact-lost" && !sessionStorage.getItem("qa-exact-lost")) {sessionStorage.setItem("qa-exact-lost",JSON.stringify(calls.at(-1)));throw new TypeError("Synthetic lost native B3 ACK");}
+      return json(exact.resolve_ack,exact.resolve_etag);
+    }
+    unexpected.push({route,method}); throw new Error("Unexpected exact adoption fixture request");
+  }
   if (mode === "draft") {
     const prefix = "/bids/"+bid, flow = d.task_draft_flow, draftPath = prefix+"/task-definition-drafts/"+flow.created.body.id;
     if (method === "GET") {
@@ -84,7 +134,7 @@ window.fetch = async (input, options = {}) => {
   unexpected.push({route, method}); throw new Error("Unexpected authoring fixture request");
 };
 createRoot(document.getElementById("root")).render(<main id="main-content" style={{maxWidth:1120, margin:"0 auto", padding:16}}><h1>固定整包章节编写</h1><p className="small-note">合成原件与原生响应浏览器验收。</p>
-  {mode === "draft" ? <TaskDraftPanel bidId={bid} memberId={member} bidEtag={d.bid_etag} onSaved={() => accepted.push(d.template.id)}/> : mode === "editor" || mode === "lost-ack" ? <PackageAuthoringTemplateEditor bidId={bid} memberId={member} template={null} etag={f.bid_etag} onSaved={value => accepted.push(value)} onClose={() => {}}/> : mode === "run" ? <PackageAuthoringRunControl bidId={bid} memberId={member} id={f.template.id} template={f.template} etag={f.template_etag} kinds={f.kinds} disabled={false} onRun={id => accepted.push(id)} onChanged={() => {}}/> : mode === "action" ? <AssistantActionCard id={f.proposal.action_id} memberId={member}/> : <TaskRunCard bidId={bid} memberId={member} id={f.runs.published.id}/>}</main>);
+  {exactBuild ? <AuthoringBuilds bidId={bid} memberId={member} draftId={built.saved.draft_id} projectTitle="合成固定整包正文" capabilities={built.reads["/api/v1/authoring/capabilities"].body} richCapabilities={built.reads["/api/v1/authoring/rich-capabilities"].body} fixedRevision={built.saved} disabled={false} setBusy={() => {}} prepare={async()=>{const r=built.reads["/api/v1/bids/"+bid+"/drafts/"+built.saved.draft_id]; return {data:r.body,etag:r.etag};}}/> : exactDraft ? <AuthoringPanel {...layoutScope} projectTitle="合成固定整包正文" onOpenDraft={() => {}}/> : exactAction ? <AssistantActionCard id={exact.before_action.action_id} memberId={member}/> : mode === "draft" ? <TaskDraftPanel bidId={bid} memberId={member} bidEtag={d.bid_etag} onSaved={() => accepted.push(d.template.id)}/> : mode === "editor" || mode === "lost-ack" ? <PackageAuthoringTemplateEditor bidId={bid} memberId={member} template={null} etag={f.bid_etag} onSaved={value => accepted.push(value)} onClose={() => {}}/> : mode === "run" ? <PackageAuthoringRunControl bidId={bid} memberId={member} id={f.template.id} template={f.template} etag={f.template_etag} kinds={f.kinds} disabled={false} onRun={id => accepted.push(id)} onChanged={() => {}}/> : mode === "action" ? <AssistantActionCard id={f.proposal.action_id} memberId={member}/> : <TaskRunCard bidId={bid} memberId={member} id={f.runs.published.id}/>}</main>);
 `;
 const built = await build({
   stdin: { contents: entry, loader: "tsx", resolveDir: root },
@@ -171,7 +221,7 @@ const receipt = {
   real_model_calls: 0,
   real_database_in_browser: false,
   transport:
-    "Captured native API responses with synthetic originals; real product components and Chromium",
+    "Unchanged native B2/B3/B4 API proof captures with synthetic originals; exact draft guard, lost ACK/conflict injection and initial empty build history are explicitly synthetic; real product components and Chromium",
   source_sha256: await identities(),
   checks: [],
   screenshots: [],
@@ -187,13 +237,21 @@ try {
   receipt.chromium = browser.version();
   for (const width of [390, 1280])
     for (const theme of ["light", "dark"])
-      for (const mode of [
+      for (const mode of process.env.PACKAGE_AUTHORING_MODES?.split(",") ?? [
         "editor",
         "lost-ack",
         "run",
         "result",
         "action",
         "draft",
+        "exact-action",
+        "exact-lost",
+        "exact-conflict",
+        "exact-draft",
+        "exact-build",
+        "exact-build-lost",
+        "exact-package",
+        "exact-package-lost",
       ]) {
         const context = await browser.newContext({
             viewport: { width, height: 960 },
@@ -320,6 +378,229 @@ try {
           await page.waitForFunction(
             () => window.__authoringQA.accepted.length === 1,
           );
+        } else if (mode.startsWith("exact-")) {
+          if (
+            [
+              "exact-build",
+              "exact-build-lost",
+              "exact-package",
+              "exact-package-lost",
+            ].includes(mode)
+          ) {
+            await page.getByText("内置正文版式", { exact: true }).waitFor();
+            if (await page.getByLabel("章页排版", { exact: true }).count())
+              throw new Error("plain exact build invented pagination controls");
+            if (
+              await page.evaluate(() =>
+                window.__authoringQA.calls.some((c) => c.method !== "GET"),
+              )
+            )
+              throw new Error("exact build started automatically");
+            await page
+              .getByRole("button", { name: "保存确认后生成文件", exact: true })
+              .click();
+            if (mode === "exact-build-lost") {
+              await page
+                .getByRole("button", { name: /重试受理草稿修订/ })
+                .waitFor();
+              await page.reload();
+              await page
+                .getByRole("button", { name: /重试受理草稿修订/ })
+                .click();
+              const same = await page.evaluate(
+                () =>
+                  JSON.stringify(
+                    JSON.parse(sessionStorage.getItem("qa-exact-build-lost")),
+                  ) ===
+                  JSON.stringify(
+                    window.__authoringQA.calls.find((c) => c.method === "POST"),
+                  ),
+              );
+              if (!same)
+                throw new Error(
+                  "exact build recovery changed its original request",
+                );
+            }
+            await page.getByText("此格式生成成功", { exact: true }).waitFor();
+            await page.getByText("此格式生成失败", { exact: true }).waitFor();
+            await page.getByText(/PDF 转换器尚未配置或不可用/).waitFor();
+            if (mode.startsWith("exact-package")) {
+              await page
+                .getByRole("button", {
+                  name: "选择投标包并采用此文件",
+                  exact: true,
+                })
+                .click();
+              const request = await page.evaluate(
+                () => window.__authoringQA.built.adoption_request,
+              );
+              await page
+                .getByLabel("采用文件用途", { exact: true })
+                .fill(request.member.purposes.join("，"));
+              await page
+                .getByLabel("生成文件采用原因", { exact: true })
+                .fill(request.reason);
+              await page
+                .getByRole("button", {
+                  name: "采用文件并新建投标包",
+                  exact: true,
+                })
+                .click();
+              if (mode === "exact-package-lost") {
+                await page
+                  .getByRole("button", {
+                    name: "恢复原文件采用请求",
+                    exact: true,
+                  })
+                  .waitFor();
+                await page.reload();
+                await page
+                  .getByRole("button", {
+                    name: "恢复原文件采用请求",
+                    exact: true,
+                  })
+                  .click();
+                const same = await page.evaluate(
+                  () =>
+                    JSON.stringify(
+                      JSON.parse(
+                        sessionStorage.getItem("qa-exact-package-lost"),
+                      ),
+                    ) ===
+                    JSON.stringify(
+                      window.__authoringQA.calls.find(
+                        (c) => c.method === "POST",
+                      ),
+                    ),
+                );
+                if (!same)
+                  throw new Error(
+                    "exact package recovery changed its original request",
+                  );
+              }
+              await page.getByText(/生成文件已采用到投标包/).waitFor();
+              await page
+                .getByText("资料包保存结果不代表评审完成或内容通过。", {
+                  exact: true,
+                })
+                .waitFor();
+            }
+          } else if (mode === "exact-draft") {
+            await page
+              .getByText(/这份草稿含固定整包候选采纳后的正文修订/)
+              .waitFor();
+            await page.waitForFunction(
+              () => !document.body.textContent.includes("正在核对保存快照"),
+            );
+            if (
+              (await page
+                .getByLabel("章节正文", { exact: true })
+                .getAttribute("contenteditable")) !== "false"
+            )
+              throw new Error("exact draft remained editable");
+            await page
+              .getByRole("button", { name: "章节目录与计划", exact: true })
+              .click();
+            await page.getByRole("button", { name: /质量保障措施/ }).click();
+            const title = page
+              .getByRole("region", { name: "正文编写" })
+              .getByLabel("章节名称", { exact: true });
+            await title.waitFor();
+            if (
+              (await title.inputValue()) !== "质量保障措施" ||
+              (await title.isEnabled())
+            )
+              throw new Error(
+                "exact draft could not navigate read-only chapters",
+              );
+          } else {
+            const apply = page.getByRole("button", {
+              name: "采纳这份固定整包候选并保存新修订",
+              exact: true,
+            });
+            await apply.waitFor();
+            if (await apply.isEnabled())
+              throw new Error(
+                "exact adoption missing explicit acknowledgement",
+              );
+            await page.getByText("查看具体文字增删", { exact: true }).click();
+            await page.getByLabel("拟修改后全文", { exact: true }).waitFor();
+            await page.getByText("查看完整拟稿与格式", { exact: true }).click();
+            await page
+              .getByLabel("提议保存的完整拟稿", { exact: true })
+              .waitFor();
+            await page
+              .getByRole("checkbox", {
+                name: "我已核对完整原稿与拟稿，确认采用这份修改",
+                exact: true,
+              })
+              .check();
+            await apply.click();
+            if (mode === "exact-conflict") {
+              await page
+                .getByRole("button", {
+                  name: "读取最新操作卡并重新核对",
+                  exact: true,
+                })
+                .waitFor();
+              if (
+                await page
+                  .getByRole("button", { name: "拒绝此提议", exact: true })
+                  .isEnabled()
+              )
+                throw new Error("conflict allowed a second decision");
+              await page
+                .getByRole("button", {
+                  name: "读取最新操作卡并重新核对",
+                  exact: true,
+                })
+                .click();
+              await page.waitForFunction(
+                () => !document.body.textContent.includes("原操作遇到修订冲突"),
+              );
+              if (await apply.isEnabled())
+                throw new Error(
+                  "conflict reread skipped fresh full-content acknowledgement",
+                );
+            } else {
+              if (mode === "exact-lost") {
+                await page
+                  .getByRole("button", {
+                    name: "恢复原固定整包候选处理结果",
+                    exact: true,
+                  })
+                  .waitFor();
+                await page.reload();
+                await page
+                  .getByRole("button", {
+                    name: "恢复原固定整包候选处理结果",
+                    exact: true,
+                  })
+                  .click();
+                const same = await page.evaluate(
+                  () =>
+                    JSON.stringify(
+                      JSON.parse(sessionStorage.getItem("qa-exact-lost")),
+                    ) ===
+                    JSON.stringify(
+                      window.__authoringQA.calls.find(
+                        (c) => c.method === "POST",
+                      ),
+                    ),
+                );
+                if (!same)
+                  throw new Error(
+                    "exact adoption recovery changed original body, ETag or key",
+                  );
+              }
+              await page
+                .getByRole("link", {
+                  name: "打开这份正文草稿，核对修订并生成文件",
+                  exact: true,
+                })
+                .waitFor();
+            }
+          }
         } else {
           if (mode === "result")
             await page
@@ -361,7 +642,10 @@ try {
               text: el.textContent?.slice(0, 180),
             })),
           writes: window.__authoringQA.calls.filter((c) => c.method !== "GET"),
-          unexpected: window.__authoringQA.unexpected,
+          unexpected: [
+            ...window.__authoringQA.unexpected,
+            ...(window.__authoringQA.exactDraft?.state.unexpected ?? []),
+          ],
           accepted: window.__authoringQA.accepted.length,
         }));
         if (
@@ -369,7 +653,8 @@ try {
           result.unexpected.length ||
           errors.length ||
           external.length ||
-          (["result", "action"].includes(mode) && result.writes.length)
+          (["result", "action", "exact-draft"].includes(mode) &&
+            result.writes.length)
         ) {
           await page.screenshot({
             path: path.join(out, `failure-${mode}-${theme}-${width}.png`),

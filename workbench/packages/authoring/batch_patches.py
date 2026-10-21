@@ -276,6 +276,9 @@ def preview(c, bid, draft, batch, action):
 
 
 def changes_for_apply(c, bid, draft, batch, selections):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, draft)
     changes = []
     for selected in selections:
         value, job, content = checked_candidate(c, bid, draft, batch, UUID(selected["action_id"]))

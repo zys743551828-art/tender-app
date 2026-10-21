@@ -12,6 +12,7 @@ import type {
 import { ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
+import { useAuthoringExactDraft } from "./useAuthoringExactDraft";
 import { useCommand } from "./useCommand";
 import { SectionEditor } from "./SectionEditor";
 import { AuthoringBuilds } from "./AuthoringBuilds";
@@ -278,6 +279,7 @@ function DraftEditor({
       ? fresh
       : { data: draft.data, etag: draft.etag };
   const view = current.data;
+  const exact = useAuthoringExactDraft(bidId, draftId, view);
   async function reloadHead() {
     const result = await api<DraftView>(`/bids/${bidId}/drafts/${draftId}`);
     if (
@@ -379,6 +381,29 @@ function DraftEditor({
         onRetry={() => void draft.reload()}
       />
       {!directoryOpen && <ErrorNotice error={error} />}
+      <ErrorNotice error={exact.error} onRetry={() => void exact.refresh()} />
+      {exact.unavailable && (
+        <p className="notice warning" role="status">
+          当前服务尚不能核对本稿的保存来源资格，原稿保留，暂不进行新编辑或构建。
+        </p>
+      )}
+      {exact.checking && (
+        <p role="status" className="small-note">
+          正在核对保存快照及本稿的来源资格…
+        </p>
+      )}
+      {exact.hasExact && (
+        <div className="notice neutral" role="status">
+          <p>
+            这份草稿含固定整包候选采纳后的正文修订。普通编辑、目录修改和导入暂不可用，原稿与来源关系保持完整。
+          </p>
+          <p>
+            {exact.status?.build_available && !exact.buildBlocked
+              ? `已核验草稿修订 ${view?.revision} 的构建能力；可在下方明确生成文件，再选择输出入包。`
+              : "本稿的构建资格尚未就绪，原采纳结果和历史仍可核对。"}
+          </p>
+        </div>
+      )}
       {view && current.etag && (
         <>
           <div className="authoring-task-toolbar">
@@ -438,6 +463,7 @@ function DraftEditor({
                 disabled={
                   disabled || switching || building || importing || generating
                 }
+                readOnly={exact.ordinaryEditBlocked}
                 onChoose={choose}
                 onContinue={continueWriting}
                 onBusy={setStructureBusy}
@@ -475,6 +501,7 @@ function DraftEditor({
                     importing ||
                     generating
                   }
+                  readOnly={exact.ordinaryEditBlocked}
                   onSaved={() => void reloadHead().catch(setError)}
                 />
               ) : (
@@ -494,7 +521,12 @@ function DraftEditor({
             memberId={memberId}
             draft={view}
             disabled={
-              disabled || switching || building || structureBusy || importing
+              disabled ||
+              exact.ordinaryEditBlocked ||
+              switching ||
+              building ||
+              structureBusy ||
+              importing
             }
             onChanged={reloadHead}
             onBusy={setGenerating}
@@ -517,7 +549,12 @@ function DraftEditor({
             draftId={draftId}
             draftRevision={view.revision}
             disabled={
-              disabled || switching || building || structureBusy || generating
+              disabled ||
+              exact.ordinaryEditBlocked ||
+              switching ||
+              building ||
+              structureBusy ||
+              generating
             }
             onChanged={reloadHead}
             onBusy={setImporting}
@@ -541,10 +578,25 @@ function DraftEditor({
           richCapabilities={richCapabilities}
           projectTitle={projectTitle}
           disabled={
-            disabled || switching || structureBusy || importing || generating
+            disabled ||
+            exact.buildBlocked ||
+            switching ||
+            structureBusy ||
+            importing ||
+            generating
           }
           onPackages={onPackages}
           setBusy={setBuilding}
+          fixedRevision={
+            exact.status?.exact_sections.length
+              ? {
+                  draft_id: draftId,
+                  draft_revision: exact.status.draft_revision,
+                  snapshot_id: exact.status.snapshot_id,
+                  snapshot_digest: exact.status.snapshot_digest,
+                }
+              : undefined
+          }
           prepare={async () => {
             if (
               sectionId &&

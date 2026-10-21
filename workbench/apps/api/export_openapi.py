@@ -23,6 +23,9 @@ from packages.authoring.package_adoption_contracts import (
     extend_openapi as extend_authoring_packages,
 )
 from packages.contracts.authoring_history_api import extend_openapi as extend_authoring_history
+from packages.contracts.authoring_input_catalog_api import (
+    extend_openapi as extend_authoring_input_catalog,
+)
 from packages.contracts.bid_package_api import extend_openapi as extend_bid_packages
 from packages.contracts.bid_package_requirements_api import (
     BASE as REQUIREMENTS_BASE,
@@ -155,6 +158,7 @@ def implemented_openapi(app):
     extend_comparisons(actual)
     extend_authoring(actual)
     extend_authoring_history(actual)
+    extend_authoring_input_catalog(actual)
     extend_research(actual)
     extend_human(actual)
     extend_uploads(actual)

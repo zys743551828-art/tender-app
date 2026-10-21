@@ -731,9 +731,17 @@ def test_plan_freezing_keeps_current_word_source_authority_and_old_mode_compatib
     persisted = []
 
     class Port:
-        def execute(self, query, arguments):
+        def execute(self, query, arguments=None):
+            if (
+                query
+                == "SELECT to_regclass('design.authoring_exact_revisions') IS NOT NULL AS present"
+            ):
+                return self
             assert str(query).startswith("INSERT INTO writing_plans")
             persisted.append(arguments[-1].obj)
+
+        def fetchone(self):
+            return {"present": False}
 
     monkeypatch.setattr(
         authoring_generation,

@@ -214,7 +214,7 @@ def schemas():
             "authoring_input_id": ID,
             "authoring_input_digest": HASH,
             "source_scope": {"const": "exact_package_context"},
-            "apply_available": {"const": False},
+            "apply_available": {"type": "boolean"},
             "build_available": {"const": False},
             "effect": STRING,
         }

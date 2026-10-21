@@ -40,3 +40,8 @@ qa-previews/assistant-continuation-11/
 
 # Candidate12 raw contract/runtime evidence and immutable archive.
 qa-previews/word-authoring-12/
+
+# Native HTTP capture retains its exact recorded response bytes.
+src/test-fixtures/authoring-input-catalog-http.json
+src/test-fixtures/authoring-exact-adoption-http.json
+src/test-fixtures/authoring-exact-build-http.json

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from packages.authoring import build_views, rich_snapshots, snapshot_structure
+from packages.authoring import build_views, exact_builds, rich_snapshots, snapshot_structure
 from packages.authoring.repository import (
     assert_sources,
     snapshot_content,
@@ -70,8 +70,8 @@ def _import_source_ids(snapshot):
     return sorted(identities)
 
 
-def capture(c, bid_id, build_id, document_id):
-    """Read-only packet; no source registration or I/O, safe in a repeatable read."""
+def capture(c, bid_id, build_id, document_id, *, historical=False):
+    """Read-only packet, safe in RR; historical reads never authorize a new use."""
     row = c.execute(
         """SELECT b.*,i.draft_snapshot_id,i.manifest,s.draft_id,
         s.revision AS draft_revision,s.digest AS snapshot_digest,
@@ -96,9 +96,12 @@ def capture(c, bid_id, build_id, document_id):
         or manifest.get("artifact_kind") != "bid_body"
     ):
         rejected()
+    if "authoring_exact" in manifest:
+        exact_builds.require_available(c)
     snapshot = snapshot_content(c, bid_id, row["draft_snapshot_id"])
     if snapshot["snapshot_digest"] != identity["snapshot_digest"]:
         rejected()
+    exact_packet = exact_builds.checked(c, bid_id, snapshot, manifest, historical=historical)
     outputs = c.execute(
         """SELECT o.format,o.state,o.document_version_id,d.bid_id,d.artifact_kind,d.obtained_at,
         f.id AS file_id,f.role,v.revision AS file_revision,b.digest,b.byte_size,b.media_type,b.object_key
@@ -174,7 +177,9 @@ def capture(c, bid_id, build_id, document_id):
             rejected("该 PDF 缺少与本次 Word 输出匹配的完整受控转换关系；原文件仍可下载")
     refs = _references(snapshot)
     direct_source_ids = sorted(
-        {ref["source_id"] for ref in refs} | set(_import_source_ids(snapshot))
+        {ref["source_id"] for ref in refs}
+        | set(_import_source_ids(snapshot))
+        | set(exact_packet["proof"]["direct_source_ids"] if exact_packet else [])
     )
     authority = source_authority_manifest(
         c, [{"source_id": identity} for identity in direct_source_ids]
@@ -199,26 +204,32 @@ def capture(c, bid_id, build_id, document_id):
         "source_authority_digest": sha(authority),
         "direct_source_ids": direct_source_ids,
     }
-    return clean(
-        {"proof": proof, "documents": documents, "snapshot": snapshot, "manifest": manifest}
-    )
+    packet = {"proof": proof, "documents": documents, "snapshot": snapshot, "manifest": manifest}
+    if exact_packet is not None:
+        packet["authoring_exact"] = exact_packet
+    return clean(packet)
 
 
 def verify_bytes(packet):
     """Call after closing the input transaction; bounded exact SHA256/size checks."""
     for document in packet["documents"]:
         original_verification.verify(document)
+    exact_builds.verify_originals(packet.get("authoring_exact"))
 
 
 def assert_current(c, packet, *, worker=False):
     proof, snapshot, manifest = packet["proof"], packet["snapshot"], packet["manifest"]
     sources.lock_graph(c)
-    for section in snapshot["sections"]:
+    exact_packet = exact_builds.checked(c, proof["bid_id"], snapshot, manifest, current=True)
+    if exact_packet != packet.get("authoring_exact"):
+        rejected("核验期间固定整包修订依据变化，尚未采用文件")
+    ordinary_sections = exact_builds.ordinary_sections(snapshot, exact_packet)
+    for section in ordinary_sections:
         assert_sources(c, UUID(proof["bid_id"]), section)
     if manifest.get("writer_kind") in {"structured_text/1", "generated_text/2", "generated_rich/3"}:
         if (
             snapshot_structure.frozen_authority(
-                c, UUID(proof["bid_id"]), snapshot["authoring_structure"], snapshot["sections"]
+                c, UUID(proof["bid_id"]), snapshot["authoring_structure"], ordinary_sections
             )
             != manifest["authoring_authority"]
         ):
@@ -364,7 +375,7 @@ def observe_admission(c, bid_id, document_id):
         if receipt.get("proof") != proof or receipt.get("proof_digest") != sha(proof):
             rejected()
         snapshot = packet["snapshot"]
-        contents = list(snapshot["sections"])
+        contents = list(exact_builds.ordinary_sections(snapshot, packet.get("authoring_exact")))
         extension = snapshot.get("authoring_structure")
         if packet["manifest"].get("writer_kind") in {
             "structured_text/1",
@@ -372,7 +383,7 @@ def observe_admission(c, bid_id, document_id):
             "generated_rich/3",
         }:
             current = snapshot_structure.frozen_authority(
-                c, UUID(str(bid_id)), extension, snapshot["sections"], lock_sources=False
+                c, UUID(str(bid_id)), extension, contents, lock_sources=False
             )
             if current != packet["manifest"]["authoring_authority"]:
                 rejected("冻结正文、计划或格式确认依据已变化")

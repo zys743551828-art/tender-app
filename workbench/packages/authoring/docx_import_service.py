@@ -136,7 +136,10 @@ def command_binding(command, actor, key, body, condition, bid, draft):
 
 
 def target_context(c, bid, draft, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     head = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     match(condition, "draft", draft, head["revision"])
     if head["revision"] != body["base_draft_revision"]:
         raise DomainError("DRAFT_REVISION_CONFLICT", "正文草稿已变化，请重新保存并预览导入", 412)
@@ -626,6 +629,9 @@ def verify_staged(manifest):
 
 
 def append_candidate(c, bid, draft, candidate, actor, manifest, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, draft)
     target = manifest["target"]
     head = lock_draft(c, bid, draft)
     match(condition, "draft", draft, head["revision"])

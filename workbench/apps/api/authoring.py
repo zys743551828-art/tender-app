@@ -214,6 +214,8 @@ def snapshot(bid_id: UUID, snapshot_id: UUID, r: Request):
 
 @router.post("/bids/{bid_id}/builds")
 def build(bid_id: UUID, r: Request, body: dict = Body(...)):
+    from packages.authoring.exact_sources import errors as exact_errors
+
     a = auth(r, True)
     if "pagination_mode" in body:
         from packages.authoring.rich_schema import validate_build
@@ -230,7 +232,7 @@ def build(bid_id: UUID, r: Request, body: dict = Body(...)):
         generated="style_template_version_id" in body,
         rich="pagination_mode" in body,
     )
-    with connection() as c:
+    with exact_errors(), connection() as c:
         cmd = command(c, r, a, "create-build", bid_id, body, bid=bid_id)
         if cmd.replay:
             return response(cmd.replay, True)

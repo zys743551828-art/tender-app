@@ -247,6 +247,13 @@ export function authoringLayoutFixture() {
       });
     if (route === `/bids/${scope.bidId}/drafts/${scope.draftId}`)
       return response(draft);
+    if (route === `/bids/${scope.bidId}/draft-snapshots/${draft.snapshot_id}`)
+      return response({
+        snapshot_id: draft.snapshot_id,
+        snapshot_digest: digest,
+        title: "投标正文合成草稿",
+        sections: sections.map((section) => section.content),
+      });
     if (route === `/bids/${scope.bidId}/drafts/${scope.draftId}/structure`) {
       const tree: AuthoringTreeView = {
         draft_id: draft.id,
