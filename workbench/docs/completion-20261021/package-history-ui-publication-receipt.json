@@ -1,0 +1,72 @@
+{
+  "schema": "package-history-ui-publication/1",
+  "checkpoint": 16,
+  "date": "2026-10-22",
+  "repository": "zys743551828-art/tender-app",
+  "branch": "work/bid-workbench-completion-20261021",
+  "pr_number": 1,
+  "authorization": "用户在检查点16的具体发布确认后回复“继续”；仅发布该已验收候选和更新原PR，保持draft，不合并、部署或付费。",
+  "validated_local_commit": "03f604c279e8495cf02301e8adf3742e7e13c67c",
+  "published_code_commit": "7e3b32746ad0156910ba6255e04ecc6114a7118f",
+  "parent": "25954a22225713785106dff775287d913c0fc39c",
+  "git_tree": "8e42538b3b9561231d1e5205627b472d562b0ba4",
+  "tree_identity_verified": true,
+  "files": 112,
+  "file_scope": {
+    "source_tests_contracts_native_fixtures": 41,
+    "documentation": 6,
+    "evidence": 65
+  },
+  "publication_transport": "GitHub connector Git data API; 6 binary blobs and 106 exact UTF-8 tree entries; expected prior head lease, force=false.",
+  "verification": {
+    "remote_branch_commit": "7e3b32746ad0156910ba6255e04ecc6114a7118f",
+    "pr_head_commit": "7e3b32746ad0156910ba6255e04ecc6114a7118f",
+    "pr_base": "fusion/bid-workbench",
+    "pr_state": "open",
+    "pr_draft": true,
+    "pr_merged": false,
+    "fetch_verified": true,
+    "git_tree_rechecked_after_fetch": true
+  },
+  "local_alignment": "Preserved validated local candidate under local/checkpoint16-validated; moved local work branch to byte-identical published code commit without changing working files.",
+  "attempts": [
+    {
+      "operation": "git ls-remote sandbox",
+      "result": "failed: browser-proxy port 8889 unreachable"
+    },
+    {
+      "operation": "git ls-remote escalated",
+      "result": "passed: checkpoint15 remote head confirmed"
+    },
+    {
+      "operation": "git push exact local candidate",
+      "result": "failed before remote update: HTTPS command-line credentials unavailable"
+    },
+    {
+      "operation": "read one binary blob for connector",
+      "result": "initial output exceeded transport limit; no upload performed; read exact chunks and verified length"
+    },
+    {
+      "operation": "GitHub create_tree",
+      "result": "returned exact validated tree SHA"
+    },
+    {
+      "operation": "GitHub create_commit and update_ref",
+      "result": "normal fast-forward with expected_sha; published code commit confirmed"
+    },
+    {
+      "operation": "PR metadata update and re-read",
+      "result": "updated title, implementation, tests, limitations, evidence links; expected head/open/draft confirmed"
+    }
+  ],
+  "regression_receipt": "package-history-ui-regression-receipt.json",
+  "regression_receipt_policy": "Original local_verified_unpublished receipt remains immutable as the pre-publication verification record. This separate receipt records the later publication.",
+  "source_changed_for_publication": false,
+  "merged": false,
+  "deployed": false,
+  "paid_model_calls": 0,
+  "limitations": [
+    "No new regression execution during publication; exact validated tree is unchanged.",
+    "Formal model efficacy, production qualification, automatic research dispatch and full F00–F14 acceptance remain outside this publication."
+  ]
+}
