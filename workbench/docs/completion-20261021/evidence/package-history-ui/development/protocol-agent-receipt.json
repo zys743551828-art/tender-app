@@ -1,0 +1,144 @@
+{
+  "kind": "historical-research-frontend-protocol-agent-handoff/1",
+  "created_at": "2026-10-22T01:27:29.633272+00:00",
+  "published": false,
+  "scope": "Actual API-derived frontend contracts, strict decoding, member/workspace-scoped exact-command recovery, native and counterexample validation",
+  "files": [
+    {
+      "path": "apps/web/scripts/generate-contracts.py",
+      "sha256": "044e56e7c6ac54013e700127f80126ac4a1fda8f1d408c101269c36da4169f2a",
+      "bytes": 16386
+    },
+    {
+      "path": "apps/web/src/contracts.ts",
+      "sha256": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+      "bytes": 340933
+    },
+    {
+      "path": "apps/web/src/recordedCommandStorage.ts",
+      "sha256": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+      "bytes": 2093
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchProtocol.ts",
+      "sha256": "5b3aa83599afba69a6aefb32d7f96da23f0816944e1bd80b68e5924eb7bb375a",
+      "bytes": 28776
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchProtocol.test.ts",
+      "sha256": "f828ca297ca7405d2e5d7e5cf07939eb3271c17f8da77dec8e6beb3041960468",
+      "bytes": 9123
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchNative.test.ts",
+      "sha256": "4fb0fa734a5e3788c83a85ffc01161e45c4b526d34b325b77bda7fd50faf7338",
+      "bytes": 21420
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchRecovery.ts",
+      "sha256": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+      "bytes": 3431
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchRecovery.test.ts",
+      "sha256": "1a14f0bdc28b48e9163a8258f0f8a9e8397adbd53cfb3c68eaee074664063927",
+      "bytes": 7900
+    },
+    {
+      "path": "apps/web/src/packageHistoricalResearchSchemas.ts",
+      "sha256": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+      "bytes": 124091
+    }
+  ],
+  "validation": [
+    {
+      "cwd": "apps/web",
+      "command": "node_modules/.bin/vitest run src/packageHistoricalResearchProtocol.test.ts src/packageHistoricalResearchRecovery.test.ts src/packageHistoricalResearchNative.test.ts src/recordedCommandCleanup.test.ts",
+      "result": "153 passed, 0 skipped, 0 failed; 4 files (Native 98, Protocol 27, Recovery 21, Cleanup 7)",
+      "log": ".local/checkpoint16/protocol-context-null-fixed-tests.log"
+    },
+    {
+      "cwd": "apps/web",
+      "command": "node_modules/.bin/tsc -b --pretty false",
+      "result": "exit 0",
+      "log": ".local/checkpoint16/protocol-context-null-fixed-typescript.log"
+    },
+    {
+      "cwd": "apps/web",
+      "command": "node_modules/.bin/eslint src/packageHistoricalResearchProtocol.ts src/packageHistoricalResearchProtocol.test.ts src/packageHistoricalResearchNative.test.ts src/packageHistoricalResearchRecovery.ts src/packageHistoricalResearchRecovery.test.ts src/packageHistoricalResearchSchemas.ts src/recordedCommandStorage.ts",
+      "result": "exit 0",
+      "subsequent_check": "After the final P2 change, ESLint was rerun for the two changed files and exited 0: .local/checkpoint16/protocol-context-null-fixed-eslint.log"
+    },
+    {
+      "cwd": ".",
+      "command": ".venv/bin/python -m ruff check apps/web/scripts/generate-contracts.py && .venv/bin/python -m ruff format --check apps/web/scripts/generate-contracts.py",
+      "result": "exit 0; all checks passed; 1 file already formatted"
+    },
+    {
+      "cwd": ".",
+      "command": ".venv/bin/python apps/web/scripts/generate-contracts.py --output <temp>/contracts.ts; apps/web/node_modules/.bin/prettier --write <temp>/contracts.ts <temp>/packageHistoricalResearchSchemas.ts; compare bytes with src counterparts",
+      "result": "both generated files byte-identical"
+    }
+  ],
+  "failures_and_fixes": [
+    {
+      "stage": "contract generation",
+      "failure": "KeyError items on actual unavailable-directory array schema with maxItems 0 and no items",
+      "fix": "Render maxItems 0 as empty tuple and unspecified items as unknown; generator succeeded after fix",
+      "evidence": "tool transcript"
+    },
+    {
+      "stage": "first native tests",
+      "failure": "71 passed / 2 failed of 73: expected zero text 0.0 rather than exact raw 0; resealed wrong evaluation timing was accepted",
+      "fix": "Expect exact raw 0; bind evaluation timing to fixed cohort timing",
+      "log": "/tmp/package-history-native-first-failure.log"
+    },
+    {
+      "stage": "native test typecheck",
+      "failure": "Four test type errors around optional header properties and optional mean/median baseline entries",
+      "fix": "Declare optional header record and narrow baseline presence; final tsc exit 0",
+      "evidence": "tool transcript"
+    },
+    {
+      "stage": "complete native fixture swap",
+      "failure": "146 passed / 1 failed of 147: test assumed a specific random UUID order for group root",
+      "fix": "Remove actual declared group root in corruption fixture; test no longer assumes UUID ordering; production fixture unchanged",
+      "log": "/tmp/package-history-native-complete-fixture-first-failure.log"
+    },
+    {
+      "stage": "generation reproducibility command",
+      "failure": "Explicit guessed .prettierrc.json path unavailable",
+      "fix": "Confirmed no repository Prettier configuration; reran with default formatting used by repository; exact bytes matched",
+      "evidence": "tool transcript"
+    },
+    {
+      "stage": "read-only integration review, context completeness P2",
+      "failure": "Native-based resealed responses with context_digest present and one of historical_as_of/scope_frozen_at/label_known_at/official_technical_value/official_maximum null were accepted. First reproduction: 93 passed / 5 failed of 98.",
+      "fix": "Require all five fields when context_digest is nonnull; retain native synthetic proofs with the external-adapter advisory; do not alter raw fixtures.",
+      "log": ".local/checkpoint16/protocol-context-null-first-failure.log",
+      "fixed_log": ".local/checkpoint16/protocol-context-null-fixed-tests.log"
+    }
+  ],
+  "limits": [
+    "All native business records and scores are explicitly synthetic; infrastructure mechanism evidence does not certify real model quality or formal eligibility.",
+    "Metadata directories do not recheck currentness; current GETs and original ACKs remain distinct.",
+    "Backend/SQL permissions and execution boundaries remain authoritative; validators do not grant a capability.",
+    "No commit, push, merge, production deployment, paid provider request or model call performed by this agent."
+  ],
+  "integration_review": {
+    "changed_source": false,
+    "scope": [
+      "Research.tsx",
+      "App.tsx",
+      "PackageTechnicalScope.tsx",
+      "PackageTechnicalEligibility.tsx",
+      "PackageHistoricalAdmission.tsx",
+      "PackageHistoricalResearch*.tsx",
+      "usePackageHistoryDirectory.ts"
+    ],
+    "findings": [
+      "P2 native context completeness corrected in owned protocol/test files with explicit parent authorization.",
+      "No identified regression in member isolation, exact body/key/ETag recovery, original ACK versus current read separation, generation binding or current-source action guards."
+    ]
+  }
+}

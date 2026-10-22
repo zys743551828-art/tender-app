@@ -1,0 +1,10 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ✓ src/PackageHistoricalAdmission.integration.test.tsx (3 tests) 445ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  19:28:28
+   Duration  1.50s (transform 333ms, setup 107ms, collect 414ms, tests 445ms, environment 288ms, prepare 68ms)
+

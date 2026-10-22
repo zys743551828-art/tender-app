@@ -11,6 +11,7 @@ const memberCommandKinds = [
   "package-rule-correction",
   "package-technical-scope",
   "historical-import",
+  "package-historical-research",
   "package-submission",
   "package-official-outcome",
   "package-retrospective",

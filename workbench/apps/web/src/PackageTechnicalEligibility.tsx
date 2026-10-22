@@ -19,6 +19,7 @@ import {
   type TechnicalEligibilitySelection,
 } from "./packageTechnicalEligibilityProtocol";
 import { TechnicalPager } from "./PackageTechnicalScopeSnapshot";
+import { PackageHistoricalAdmission } from "./PackageHistoricalAdmission";
 
 const time = (value: string | null) =>
   value === null
@@ -41,13 +42,27 @@ const normalizedDecimal = (value: string | null) =>
 
 export function PackageTechnicalEligibility({
   saved,
+  memberId = "",
 }: {
   saved: PackageTechnicalScopeView;
+  memberId?: string;
 }) {
-  return <EligibilityWorkspace key={saved.digest} saved={saved} />;
+  return (
+    <EligibilityWorkspace
+      key={`${memberId}:${saved.digest}`}
+      saved={saved}
+      memberId={memberId}
+    />
+  );
 }
 
-function EligibilityWorkspace({ saved }: { saved: PackageTechnicalScopeView }) {
+function EligibilityWorkspace({
+  saved,
+  memberId,
+}: {
+  saved: PackageTechnicalScopeView;
+  memberId: string;
+}) {
   const scope = saved.manifest.preview.manifest.scope;
   const base = `/bids/${scope.bid_id}/packages/${scope.package_id}/revisions/${scope.revision_id}/technical-scopes/${saved.manifest.id}`;
   const [purpose, setPurpose] =
@@ -93,13 +108,8 @@ function EligibilityWorkspace({ saved }: { saved: PackageTechnicalScopeView }) {
     if (running.current) return;
     setPurpose(value);
     setScaleId("");
-    setSubmissionId("");
-    setOutcomeId("");
-    setSubmissions([]);
-    setSubmissionsRead(false);
-    setNextCursor(null);
-    setOutcomes([]);
-    setOutcomesRead(false);
+    // Keep explicitly chosen historical metadata and its unsent admission form.
+    // Purpose-specific scale and condition results are still invalidated below.
     setScales([]);
     setScaleStatus("");
     clearResult();
@@ -358,6 +368,15 @@ function EligibilityWorkspace({ saved }: { saved: PackageTechnicalScopeView }) {
             </select>
           </label>
         </fieldset>
+      )}
+      {memberId && (
+        <PackageHistoricalAdmission
+          memberId={memberId}
+          saved={saved}
+          activePurpose={purpose === "historical_backtest"}
+          submission={chosenSubmission ?? null}
+          outcome={chosenOutcome ?? null}
+        />
       )}
       <fieldset>
         <legend>有据技术满分</legend>

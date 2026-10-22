@@ -1,0 +1,13 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ✓ src/packageHistoricalResearchRecovery.test.ts (21 tests) 24ms
+ ✓ src/packageHistoricalResearchProtocol.test.ts (27 tests) 49ms
+ ✓ src/recordedCommandCleanup.test.ts (7 tests) 17ms
+ ✓ src/packageHistoricalResearchNative.test.ts (98 tests) 132ms
+
+ Test Files  4 passed (4)
+      Tests  153 passed (153)
+   Start at  19:26:53
+   Duration  1.14s (transform 489ms, setup 479ms, collect 1.09s, tests 222ms, environment 1.37s, prepare 284ms)
+

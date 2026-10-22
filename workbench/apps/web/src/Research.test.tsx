@@ -145,7 +145,15 @@ it("研究来源分组412保留输入，明确比较后才能按新令牌保存�
     throw new Error(`Unexpected ${url}`);
   });
   vi.stubGlobal("fetch", transport);
-  render(<Research onOpen={vi.fn()} />);
+  render(
+    <Research
+      memberId="10000000-0000-4000-8000-000000000001"
+      onOpen={vi.fn()}
+    />,
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "既有单稿研究记录" }),
+  );
   await userEvent.click(
     await screen.findByRole("button", { name: "核对样本依据与归组" }),
   );

@@ -529,7 +529,10 @@ function TechnicalScopeWorkspace({
             value={command.result.manifest.preview}
             title="本次已保存范围"
           />
-          <PackageTechnicalEligibility saved={command.result} />
+          <PackageTechnicalEligibility
+            saved={command.result}
+            memberId={scope.memberId}
+          />
           <PackageTechnicalExecution saved={command.result} />
         </div>
       )}
@@ -579,7 +582,10 @@ function TechnicalScopeWorkspace({
                 value={historical.manifest.preview}
                 title="历史技术范围"
               />
-              <PackageTechnicalEligibility saved={historical} />
+              <PackageTechnicalEligibility
+                saved={historical}
+                memberId={scope.memberId}
+              />
               <PackageTechnicalExecution saved={historical} />
             </>
           )}

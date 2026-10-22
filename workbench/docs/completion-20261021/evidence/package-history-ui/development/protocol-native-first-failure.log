@@ -1,0 +1,314 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ❯ src/packageHistoricalResearchNative.test.ts (73 tests | 2 failed) 84ms
+   ✓ keeps actual infrastructure verification separate from real business qualification 4ms
+   ✓ unchanged native responses > validates context 'primary_missing_proof' with its original tag and selected identities 3ms
+   ✓ unchanged native responses > validates context 'admission_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'fit_second_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'fit_second_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'development_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'development_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_known_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'final_known_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_crossing_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_crossing_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'fit_second_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'development_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'unselected_bridge_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_known_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_crossing_admitted' 0ms
+   ✓ unchanged native responses > validates original command ACK 'final_unknown_admitted' 0ms
+   ✓ unchanged native responses > validates original command ACK 'protocol_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'cohort_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'train_created' 0ms
+   ✓ unchanged native responses > validates original command ACK 'pause_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'pause_replayed' 3ms
+   ✓ unchanged native responses > validates original command ACK 'resume_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'evaluate_created' 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_replayed_after_revocation' 1ms
+   ✓ unchanged native responses > validates the CPU template and exact method fingerprint 1ms
+   ✓ unchanged native responses > accepts the native admission history view admission_current without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the native admission history view admission_stale without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_current including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_after_train including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_stale including transitive excluded closure 1ms
+   ✓ unchanged native responses > validates native job 'train_queued' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_paused' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_resumed' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluate_queued' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'evaluate_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluation_stale' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_directory 1ms
+   ✓ unchanged native responses > validates metadata directory protocols_directory 1ms
+   ✓ unchanged native responses > validates metadata directory cohorts_directory 0ms
+   ✓ unchanged native responses > validates metadata directory jobs_directory 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_one 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_two 0ms
+   ✓ preserves the original admission and pause ACKs when later observations change 3ms
+   ✓ preserves zero baseline gain, null intervals and all independent evaluation denominators 1ms
+   × preserves real zero in the synthetic admission and unavailable calibration in training 6ms
+     → expected '0' to be '0.0' // Object.is equality
+   ✓ rejects a resealed native admission with corrupted binding 1ms
+   ✓ rejects a resealed native admission with corrupted proof_origin 1ms
+   ✓ rejects a resealed native admission with corrupted future_label 1ms
+   ✓ rejects a resealed native admission with corrupted qualification 1ms
+   ✓ rejects a resealed native evaluation with corrupted selected_denominator 1ms
+   ✓ rejects a resealed native evaluation with corrupted report_denominator 1ms
+   ✓ rejects a resealed native evaluation with corrupted silently_dropped_unlabeled 2ms
+   ✓ rejects a resealed native evaluation with corrupted zero_to_null 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_cohort 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_membership 2ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_protocol 1ms
+   ✓ rejects a resealed native evaluation with corrupted fake_origin 1ms
+   ✓ rejects a resealed native evaluation with corrupted paid_call 1ms
+   ✓ rejects a resealed native evaluation with corrupted qualification 1ms
+   ✓ rejects a resealed native evaluation with corrupted false_coverage 1ms
+   × rejects a resealed native evaluation with corrupted cohort_timing 8ms
+     → promise resolved "{ kind: 'evaluate', …(9) }" instead of rejecting
+   ✓ rejects a resealed native training result with corrupted family 5ms
+   ✓ rejects a resealed native training result with corrupted model_export 1ms
+   ✓ rejects a resealed native training result with corrupted loss_selection 1ms
+   ✓ rejects a resealed native training result with corrupted false_interval 1ms
+   ✓ rejects a resealed cohort that removes the unselected transitive bridge from a member closure 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/packageHistoricalResearchNative.test.ts > preserves real zero in the synthetic admission and unavailable calibration in training
+AssertionError: expected '0' to be '0.0' // Object.is equality
+
+Expected: "0.0"
+Received: "0"
+
+ ❯ src/packageHistoricalResearchNative.test.ts:297:74
+    295|     admission.etag,
+    296|   );
+    297|   expect((value as PackageHistoricalAdmission).official_technical_valu…
+       |                                                                          ^
+    298|     "0.0",
+    299|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed native evaluation with corrupted cohort_timing
+AssertionError: promise resolved "{ kind: 'evaluate', …(9) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "cohort_id": "64e521f1-96e2-44eb-b667-bf82d4da01a7",
++   "current": true,
++   "formal_eligibility": "unavailable",
++   "generation": 1,
++   "job_id": "e4265f71-ca8e-48e5-a45a-bc6896b62d13",
++   "kind": "evaluate",
++   "research_only": true,
++   "result": {
++     "acceptance_decision": "unavailable",
++     "cohort_id": "64e521f1-96e2-44eb-b667-bf82d4da01a7",
++     "formal_eligibility": "unavailable",
++     "labels_digest": "51dbbf2333db97a30d362a2d9368df310abefbf24b1d3d157319f15229fd9d44",
++     "membership_digest": "b332f8446b52e9bb4ec2537cb935c6b993bd46d6f3f2c142c77d531ef71423a8",
++     "missing_acceptance": [
++       "real_independent_quality_validation",
++       "complete_package_three_judgment_features",
++       "preexposure_business_certification",
++       "independent_repeat_stability",
++       "observation_and_release_authority",
++     ],
++     "model_digest": "250126fe937bb62975dc5fae7f017e8dd6041bc8dcfc3fd91238e8ecb221c059",
++     "official_source_subset": {
++       "origin": "synthetic",
++       "report": {
++         "counts": {
++           "failed": 0,
++           "rejected": 1,
++           "succeeded": 1,
++           "unlabeled": 1,
++         },
++         "denominator": 3,
++         "group_bootstrap_project_mae_95": null,
++         "independent_groups": 1,
++         "intervals": {
++           "0.8": {
++             "coverage": null,
++             "reason": "interval_or_labeled_predictions_unavailable",
++             "width": null,
++           },
++           "0.9": {
++             "coverage": null,
++             "reason": "interval_or_labeled_predictions_unavailable",
++             "width": null,
++           },
++         },
++         "original_scale_project_mae": "2.0",
++         "p90_absolute_error": "10.0",
++         "paired_baselines": {
++           "mean": {
++             "gain": "0.0",
++             "group_bootstrap_gain_95": null,
++             "paired_count": 1,
++           },
++           "median": {
++             "gain": "0.0",
++             "group_bootstrap_gain_95": null,
++             "paired_count": 1,
++           },
++         },
++         "project_bias": "-10.0",
++         "project_mae": "10.0",
++         "project_within_three": "0.0",
++         "projects": 1,
++         "sample_mae": "10.0",
++         "stability_range_p90": null,
++         "strata": {
++           "engineering_type": {
++             "None": {
++               "count": 1,
++               "project_mae": "10.0",
++             },
++           },
++           "maximum": {
++             "20.0": {
++               "count": 1,
++               "project_mae": "10.0",
++             },
++           },
++           "method": {
++             "package-history-project-baselines/1": {
++               "count": 1,
++               "project_mae": "10.0",
++             },
++           },
++         },
++         "success_coverage": "0.3333333333333333",
++         "unavailable_statistics": [
++           "ranking_without_ranking_labels",
++           "shortlist_probability_without_labels",
++           "judge_disagreement_without_judge_labels",
++           "whole_round_stability_without_independent_repeat_predictions",
++         ],
++       },
++       "scope": "verified_official_associations_with_evidence_backed_admission",
++     },
++     "origin": "synthetic",
++     "paid_calls": 0,
++     "predictions_digest": "cce726237040fa8f88566ba7b99769a126b0e5aedeb5edd7459a8e825cfa589d",
++     "protocol_digest": "43cc73676e1f82d9f2c0af8920c344d604fea27e86f96b668c20e72b91f61de6",
++     "provider_requests": 0,
++     "report": {
++       "counts": {
++         "failed": 0,
++         "rejected": 1,
++         "succeeded": 1,
++         "unlabeled": 1,
++       },
++       "denominator": 3,
++       "group_bootstrap_project_mae_95": null,
++       "independent_groups": 1,
++       "intervals": {
++         "0.8": {
++           "coverage": null,
++           "reason": "interval_or_labeled_predictions_unavailable",
++           "width": null,
++         },
++         "0.9": {
++           "coverage": null,
++           "reason": "interval_or_labeled_predictions_unavailable",
++           "width": null,
++         },
++       },
++       "original_scale_project_mae": "2.0",
++       "p90_absolute_error": "10.0",
++       "paired_baselines": {
++         "mean": {
++           "gain": "0.0",
++           "group_bootstrap_gain_95": null,
++           "paired_count": 1,
++         },
++         "median": {
++           "gain": "0.0",
++           "group_bootstrap_gain_95": null,
++           "paired_count": 1,
++         },
++       },
++       "project_bias": "-10.0",
++       "project_mae": "10.0",
++       "project_within_three": "0.0",
++       "projects": 1,
++       "sample_mae": "10.0",
++       "stability_range_p90": null,
++       "strata": {
++         "engineering_type": {
++           "None": {
++             "count": 1,
++             "project_mae": "10.0",
++           },
++         },
++         "maximum": {
++           "20.0": {
++             "count": 1,
++             "project_mae": "10.0",
++           },
++         },
++         "method": {
++           "package-history-project-baselines/1": {
++             "count": 1,
++             "project_mae": "10.0",
++           },
++         },
++       },
++       "success_coverage": "0.3333333333333333",
++       "unavailable_statistics": [
++         "ranking_without_ranking_labels",
++         "shortlist_probability_without_labels",
++         "judge_disagreement_without_judge_labels",
++         "whole_round_stability_without_independent_repeat_predictions",
++       ],
++     },
++     "research_only": true,
++     "schema": "package-history-independent-evaluation/1",
++     "selection_denominator": {
++       "excluded_submissions": 2,
++       "final_side_candidates": 3,
++       "selected_submissions": 6,
++     },
++     "timing": {
++       "group_spanning_policy": "exclude",
++       "historical_as_of": "per_exact_actual_submission",
++       "label_available_as_of": "2026-10-21T18:14:54.260573-07:00",
++       "mode": "retrospective_submission_time_holdout",
++       "prediction_timing": "retrospective",
++       "submission_split_at": "2020-01-01T00:00:00Z",
++       "training_frozen_at": "2026-10-21T18:15:02.870258-07:00",
++     },
++   },
++   "result_digest": "c85aca86e41f43a8f3f6b0a564c76c5b05f94e5cbcfe640db25eb4e77d3542ab",
++   "state": "succeeded",
+  }
+
+ ❯ src/packageHistoricalResearchNative.test.ts:391:5
+    389|         cohort,
+    390|       ),
+    391|     ).rejects.toThrow();
+       |     ^
+    392|   },
+    393| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 71 passed (73)
+   Start at  19:19:16
+   Duration  991ms (transform 204ms, setup 109ms, collect 259ms, tests 84ms, environment 286ms, prepare 54ms)
+

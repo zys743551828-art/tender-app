@@ -1,0 +1,887 @@
+[tester]	WARNING	nosec encountered (B603), but no failed test on line 71
+Run started:2026-10-22 01:29:24.752914
+
+Test results:
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:50:4
+49	    response = routes.create_protocol(request(), REQUEST)
+50	    assert response.status_code == 201
+51	    assert json.loads(response.body) == RECEIPT["body"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:51:4
+50	    assert response.status_code == 201
+51	    assert json.loads(response.body) == RECEIPT["body"]
+52	    assert response.headers["etag"] == RECEIPT["headers"]["ETag"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:52:4
+51	    assert json.loads(response.body) == RECEIPT["body"]
+52	    assert response.headers["etag"] == RECEIPT["headers"]["ETag"]
+53	    assert response.headers["idempotency-replayed"] == "true"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:53:4
+52	    assert response.headers["etag"] == RECEIPT["headers"]["ETag"]
+53	    assert response.headers["idempotency-replayed"] == "true"
+54	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:62:4
+61	    response = routes.create_protocol(request(), REQUEST)
+62	    assert json.loads(response.body) == RECEIPT["body"]
+63	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:70:4
+69	        routes.create_protocol(request(), REQUEST)
+70	    assert caught.value.code == "PACKAGE_HISTORY_METHOD_CHANGED"
+71	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:80:4
+79	        routes.create_protocol(request(), REQUEST)
+80	    assert caught.value.code == "SESSION_REQUIRED"
+81	
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_protocol_recovery.py:90:4
+89	        routes.create_protocol(request(), REQUEST)
+90	    assert caught.value.code == "PACKAGE_HISTORY_NOT_CONFIGURED"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:88:8
+87	        target = Path(location) / name
+88	        assert target.parent.is_dir() and not target.exists()
+89	        fixture = {
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:109:4
+108	def directory(response, kind):
+109	    assert response.status_code == 200, response.json()
+110	    assert response.headers["cache-control"].replace(" ", "") == "private,no-store"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:110:4
+109	    assert response.status_code == 200, response.json()
+110	    assert response.headers["cache-control"].replace(" ", "") == "private,no-store"
+111	    assert response.headers["vary"] == "Cookie"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:111:4
+110	    assert response.headers["cache-control"].replace(" ", "") == "private,no-store"
+111	    assert response.headers["vary"] == "Cookie"
+112	    return directory_contract.validate(kind, response.json())
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:146:8
+145	        saved = capture.request("saved_scope", "GET", w["scope_path"])
+146	        assert saved.status_code == 200 and saved.json() == w["saved"]
+147	        submissions = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:153:8
+152	        )
+153	        assert submissions.status_code == 200
+154	        assert any(row["id"] == w["submission"]["id"] for row in submissions.json()["items"])
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:154:8
+153	        assert submissions.status_code == 200
+154	        assert any(row["id"] == w["submission"]["id"] for row in submissions.json()["items"])
+155	        outcomes = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:158:8
+157	        )
+158	        assert outcomes.status_code == 200
+159	        assert any(row["id"] == w["result"]["id"] for row in outcomes.json()["items"])
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:159:8
+158	        assert outcomes.status_code == 200
+159	        assert any(row["id"] == w["result"]["id"] for row in outcomes.json()["items"])
+160	    params = {"submission_id": w["submission"]["id"], "outcome_id": w["result"]["id"]}
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:168:4
+167	    missing_value = check(missing, "PackageHistoricalAdmissionContext")
+168	    assert missing_value["proofs"] == []
+169	    adapter_id, key = native.adapter(w)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:175:4
+174	    process, receipt = native.ingest(w, envelope, adapter_id, tmp_path)
+175	    assert process.returncode == 0, (process.stdout, process.stderr)
+176	    assert receipt["result"]["proof_id"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:176:4
+175	    assert process.returncode == 0, (process.stdout, process.stderr)
+176	    assert receipt["result"]["proof_id"]
+177	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:177:4
+176	    assert receipt["result"]["proof_id"]
+177	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+178	    context_response = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:185:4
+184	    context = check(context_response, "PackageHistoricalAdmissionContext")
+185	    assert context["official_technical_value"] == value
+186	    assert "PACKAGE_HISTORY_EXTERNAL_PROOF_ADAPTER_NOT_CONFIGURED" in {
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:186:4
+185	    assert context["official_technical_value"] == value
+186	    assert "PACKAGE_HISTORY_EXTERNAL_PROOF_ADAPTER_NOT_CONFIGURED" in {
+187	        blocker["code"] for blocker in context["blockers"]
+188	    }
+189	    request = params | {
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:203:4
+202	    w["admission"] = check(accepted, "PackageHistoricalAdmission", 201)
+203	    assert w["admission"]["origin"] == "synthetic"
+204	    assert w["admission"]["state"] == "mechanism_candidate"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:204:4
+203	    assert w["admission"]["origin"] == "synthetic"
+204	    assert w["admission"]["state"] == "mechanism_candidate"
+205	    assert not w["admission"]["formal_sample_created"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:205:4
+204	    assert w["admission"]["state"] == "mechanism_candidate"
+205	    assert not w["admission"]["formal_sample_created"]
+206	    if name != "primary":
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:211:8
+210	        )
+211	        assert current["current"] and current["admission"] == w["admission"]
+212	    w.update(adapter_id=adapter_id, admission_request=request, admission_headers=headers)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:220:4
+219	    closed = capture.request("public_guard_unavailable", "GET", BASE + "/cpu-protocol-template")
+220	    assert closed.status_code == 503
+221	    assert closed.json()["code"] == "PACKAGE_HISTORY_PUBLIC_GUARD_UNAVAILABLE"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:221:4
+220	    assert closed.status_code == 503
+221	    assert closed.json()["code"] == "PACKAGE_HISTORY_PUBLIC_GUARD_UNAVAILABLE"
+222	    for kind in ("admissions", "protocols", "cohorts"):
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:224:8
+223	        observed = directory(capture.request(kind + "_unavailable", "GET", BASE + "/" + kind), kind)
+224	        assert observed["status"] == "unavailable" and observed["total"] is None
+225	        assert observed["observation_digest"] is None and observed["has_more"] is None
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:225:8
+224	        assert observed["status"] == "unavailable" and observed["total"] is None
+225	        assert observed["observation_digest"] is None and observed["has_more"] is None
+226	    assert counts(public_api) == before
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:226:4
+225	        assert observed["observation_digest"] is None and observed["has_more"] is None
+226	    assert counts(public_api) == before
+227	    bridge.install(public_api["database"])
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:231:8
+230	        observed = directory(capture.request(kind + "_empty", "GET", BASE + "/" + kind), kind)
+231	        assert observed["status"] == "observed" and observed["total"] == 0
+232	        assert observed["complete_observation"] and observed["has_more"] is False
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:232:8
+231	        assert observed["status"] == "observed" and observed["total"] == 0
+232	        assert observed["complete_observation"] and observed["has_more"] is False
+233	    assert counts(public_api) == before
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:233:4
+232	        assert observed["complete_observation"] and observed["has_more"] is False
+233	    assert counts(public_api) == before
+234	    capture.save("package-history-ui-unavailable-http.json")
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:261:4
+260	    )
+261	    assert admission["current"] and admission["admission"] == w["admission"]
+262	    template_response = capture.request("protocol_template", "GET", BASE + "/cpu-protocol-template")
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:302:4
+301	    crossing = members[cases[-2]["admission"]["id"]]
+302	    assert (
+303	        crossing["purpose"] == "excluded"
+304	        and crossing["exclusion_reason"] == "group_spans_submission_split"
+305	    )
+306	    assert unselected_bridge["admission"]["id"] in crossing["closure_ids"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:306:4
+305	    )
+306	    assert unselected_bridge["admission"]["id"] in crossing["closure_ids"]
+307	    assert (
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:307:4
+306	    assert unselected_bridge["admission"]["id"] in crossing["closure_ids"]
+307	    assert (
+308	        members[cases[-1]["admission"]["id"]]["exclusion_reason"] == "label_after_available_cutoff"
+309	    )
+310	    cohort_path = BASE + "/cohorts/" + cohort["id"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:312:4
+311	    observed = capture.request("cohort_current", "GET", cohort_path)
+312	    assert check(observed, "PackageHistoricalCohortView")["current"]
+313	    task = check(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:329:4
+328	    queued = capture.request("train_queued", "GET", task_path)
+329	    assert check(queued, "PackageHistoricalJobView")["state"] == "queued"
+330	    pause_body = {
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:343:4
+342	    )
+343	    assert paused["generation"] == task["generation"] + 1
+344	    repeated = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:347:4
+346	    )
+347	    assert repeated.json() == paused and repeated.headers["idempotency-replayed"] == "true"
+348	    stale = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:355:4
+354	    )
+355	    assert stale.status_code == 412
+356	    paused_response = capture.request("train_paused", "GET", task_path)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:357:4
+356	    paused_response = capture.request("train_paused", "GET", task_path)
+357	    assert check(paused_response, "PackageHistoricalJobView")["state"] == "paused"
+358	    resumed = check(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:374:4
+373	    resumed_response = capture.request("train_resumed", "GET", task_path)
+374	    assert (
+375	        check(resumed_response, "PackageHistoricalJobView")["generation"] == resumed["generation"]
+376	    )
+377	    process, receipt = native.cpu_child(w, resumed, tmp_path)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:378:4
+377	    process, receipt = native.cpu_child(w, resumed, tmp_path)
+378	    assert process.returncode == 0, (process.stdout, process.stderr)
+379	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:379:4
+378	    assert process.returncode == 0, (process.stdout, process.stderr)
+379	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+380	    training = check(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:383:4
+382	    )
+383	    assert training["state"] == "succeeded" and training["current"]
+384	    current = capture.request("cohort_after_train", "GET", cohort_path)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:402:4
+401	    process, receipt = native.cpu_child(w, evaluation, tmp_path)
+402	    assert process.returncode == 0, (process.stdout, process.stderr)
+403	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:403:4
+402	    assert process.returncode == 0, (process.stdout, process.stderr)
+403	    assert receipt["result"]["paid_calls"] == 0 and receipt["result"]["provider_requests"] == 0
+404	    final = check(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:407:4
+406	    )
+407	    assert final["state"] == "succeeded" and final["current"]
+408	    report = final["result"]["report"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:409:4
+408	    report = final["result"]["report"]
+409	    assert report["denominator"] == 3
+410	    assert report["counts"] == {"succeeded": 1, "failed": 0, "rejected": 1, "unlabeled": 1}
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:410:4
+409	    assert report["denominator"] == 3
+410	    assert report["counts"] == {"succeeded": 1, "failed": 0, "rejected": 1, "unlabeled": 1}
+411	    assert report["group_bootstrap_project_mae_95"] is None
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:411:4
+410	    assert report["counts"] == {"succeeded": 1, "failed": 0, "rejected": 1, "unlabeled": 1}
+411	    assert report["group_bootstrap_project_mae_95"] is None
+412	    assert all(interval["coverage"] is None for interval in report["intervals"].values())
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:412:4
+411	    assert report["group_bootstrap_project_mae_95"] is None
+412	    assert all(interval["coverage"] is None for interval in report["intervals"].values())
+413	    before = counts(api)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:421:8
+420	        result = directory(capture.request(kind + "_directory", "GET", path), kind)
+421	        assert result["status"] == "observed" and not result["qualification_granted"]
+422	        assert all(row["current_status"] == "not_rechecked" for row in result["items"])
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:422:8
+421	        assert result["status"] == "observed" and not result["qualification_granted"]
+422	        assert all(row["current_status"] == "not_rechecked" for row in result["items"])
+423	    first = directory(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:436:4
+435	    )
+436	    assert first["has_more"] and first["observation_digest"] == second["observation_digest"]
+437	    assert not {r["id"] for r in first["items"]} & {r["id"] for r in second["items"]}
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:437:4
+436	    assert first["has_more"] and first["observation_digest"] == second["observation_digest"]
+437	    assert not {r["id"] for r in first["items"]} & {r["id"] for r in second["items"]}
+438	    assert counts(api) == before
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:438:4
+437	    assert not {r["id"] for r in first["items"]} & {r["id"] for r in second["items"]}
+438	    assert counts(api) == before
+439	    # Revoke current use, without changing any frozen ACK, report or source truth.
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:450:4
+449	    )
+450	    assert not stale_cohort["current"] and not stale_result["current"]
+451	    assert stale_result["result"] == final["result"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:451:4
+450	    assert not stale_cohort["current"] and not stale_result["current"]
+451	    assert stale_result["result"] == final["result"]
+452	    stale_admission = check(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:456:4
+455	    )
+456	    assert not stale_admission["current"] and stale_admission["admission"] == w["admission"]
+457	    restored = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:464:4
+463	    )
+464	    assert restored.status_code == 201 and restored.json() == w["admission"]
+465	    assert restored.headers["idempotency-replayed"] == "true"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:465:4
+464	    assert restored.status_code == 201 and restored.json() == w["admission"]
+465	    assert restored.headers["idempotency-replayed"] == "true"
+466	    assert (
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:466:4
+465	    assert restored.headers["idempotency-replayed"] == "true"
+466	    assert (
+467	        api["database"]["owner"].execute("SELECT count(*) AS n FROM design.samples").fetchone()["n"]
+468	        == 0
+469	    )
+470	    capture.save(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:505:4
+504	    )
+505	    assert restored.status_code == 201 and restored.json() == protocol
+506	    assert restored.headers["etag"] == saved.headers["etag"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:506:4
+505	    assert restored.status_code == 201 and restored.json() == protocol
+506	    assert restored.headers["etag"] == saved.headers["etag"]
+507	    assert restored.headers["idempotency-replayed"] == "true"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:507:4
+506	    assert restored.headers["etag"] == saved.headers["etag"]
+507	    assert restored.headers["idempotency-replayed"] == "true"
+508	    refused = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:515:4
+514	    )
+515	    assert refused.status_code == 409 and refused.json()["code"] == "PACKAGE_HISTORY_METHOD_CHANGED"
+516	    assert counts(api) == before
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:516:4
+515	    assert refused.status_code == 409 and refused.json()["code"] == "PACKAGE_HISTORY_METHOD_CHANGED"
+516	    assert counts(api) == before
+517	    capture.save("package-history-ui-method-recovery-http.json")
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:551:4
+550	    )
+551	    assert first["has_more"] and first["next_cursor"]
+552	    second = directory(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:561:4
+560	    )
+561	    assert first["observation_digest"] == second["observation_digest"]
+562	    assert first["items"][0]["id"] != second["items"][0]["id"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:562:4
+561	    assert first["observation_digest"] == second["observation_digest"]
+562	    assert first["items"][0]["id"] != second["items"][0]["id"]
+563	    create(1703)
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:571:4
+570	    )
+571	    assert changed.status_code == 409
+572	    assert changed.json()["code"] == "PACKAGE_HISTORY_DIRECTORY_OBSERVATION_CHANGED"
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:572:4
+571	    assert changed.status_code == 409
+572	    assert changed.json()["code"] == "PACKAGE_HISTORY_DIRECTORY_OBSERVATION_CHANGED"
+573	    wrong_scope = capture.request(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:579:4
+578	    )
+579	    assert wrong_scope.status_code == 422
+580	    refreshed = directory(
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:584:4
+583	    )
+584	    assert refreshed["total"] == 3
+585	    assert refreshed["observation_digest"] != first["observation_digest"]
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:585:4
+584	    assert refreshed["total"] == 3
+585	    assert refreshed["observation_digest"] != first["observation_digest"]
+586	    assert counts(api) == before
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:586:4
+585	    assert refreshed["observation_digest"] != first["observation_digest"]
+586	    assert counts(api) == before
+587	    capture.save("package-history-ui-directory-change-http.json")
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:605:8
+604	        )
+605	        assert (
+606	            rejected.status_code == 403
+607	            and rejected.json()["code"] == "PACKAGE_HISTORY_SYNTHETIC_ENVIRONMENT_DENIED"
+608	        )
+609	    for purpose in ("api", "worker", "verify", "train", "evaluate"):
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:614:12
+613	            ).fetchone()
+614	            assert not any(
+615	                identity[key]
+616	                for key in (
+617	                    "rolsuper",
+618	                    "rolcreaterole",
+619	                    "rolcreatedb",
+620	                    "rolreplication",
+621	                    "rolbypassrls",
+622	                )
+623	            )
+624	            if purpose == "api":
+
+--------------------------------------------------
+>> Issue: [B101:assert_used] Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.5/plugins/b101_assert_used.html
+   Location: ./tests/test_package_history_ui_pg.py:628:4
+627	                c.execute("SELECT package_historical_research.list_protocols(20,NULL,NULL)")
+628	    assert counts(api) == before
+629	    capture.save("package-history-ui-role-boundaries-http.json", scope_path=w["scope_path"])
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 915
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 6
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 84
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 84
+Files skipped (2):
+	./workbench/apps/api/package_historical_research.py (No such file or directory)
+	./workbench/apps/web/scripts/generate-contracts.py (No such file or directory)

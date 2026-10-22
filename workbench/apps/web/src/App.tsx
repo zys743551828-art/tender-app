@@ -424,7 +424,9 @@ export function App() {
             ) : area === "research" ? (
               <Research
                 key={auth.member.id}
+                memberId={auth.member.id}
                 onOpen={(id) => void navigate(id, "outcomes")}
+                onOpenPackage={(id) => void navigate(id, "packages")}
               />
             ) : area === "metrics" ? (
               <Suspense fallback={<Loading text="正在打开业务指标…" />}>

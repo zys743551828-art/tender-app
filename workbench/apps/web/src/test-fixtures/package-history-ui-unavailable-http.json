@@ -1,0 +1,260 @@
+{
+  "protocol": "package-history-ui-http/1",
+  "synthetic": true,
+  "real_qualification": false,
+  "paid_calls": 0,
+  "provider_requests": 0,
+  "transport": "actual public FastAPI main with complete exposure bridge and independent PostgreSQL 17 LOGINs",
+  "object_transport": "explicit synthetic in-memory original bytes; no real object-store transport claim",
+  "actor_id": "45d3bfb1-79de-47bb-8751-49c2dd99be0f",
+  "responses": [
+    {
+      "name": "public_guard_unavailable",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cpu-protocol-template",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 503,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "code": "PACKAGE_HISTORY_PUBLIC_GUARD_UNAVAILABLE",
+        "message": "整包历史研究的共同暴露守卫尚未完整装配或已发生变化，核心入口暂不可用。",
+        "request_id": "c6357784-1b55-448d-9942-6b9a2813ba4e",
+        "retryable": false,
+        "details": {
+          "configured": false,
+          "reason": "installation_missing",
+          "required_guard": "package-history-public-guard/1",
+          "qualification_granted": false,
+          "command_started": false
+        }
+      }
+    },
+    {
+      "name": "admissions_unavailable",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/admissions",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "version": "package-history-directory/1",
+        "kind": "admissions",
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "protocol_id": null,
+          "cohort_id": null
+        },
+        "status": "unavailable",
+        "schema_configured": false,
+        "items": [],
+        "total": null,
+        "observation_digest": null,
+        "observed_at": "2026-10-22T01:18:33.629053+00:00",
+        "complete_observation": false,
+        "has_more": null,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "protocols_unavailable",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "version": "package-history-directory/1",
+        "kind": "protocols",
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "protocol_id": null,
+          "cohort_id": null
+        },
+        "status": "unavailable",
+        "schema_configured": false,
+        "items": [],
+        "total": null,
+        "observation_digest": null,
+        "observed_at": "2026-10-22T01:18:33.647798+00:00",
+        "complete_observation": false,
+        "has_more": null,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "cohorts_unavailable",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cohorts",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "version": "package-history-directory/1",
+        "kind": "cohorts",
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "protocol_id": null,
+          "cohort_id": null
+        },
+        "status": "unavailable",
+        "schema_configured": false,
+        "items": [],
+        "total": null,
+        "observation_digest": null,
+        "observed_at": "2026-10-22T01:18:33.667740+00:00",
+        "complete_observation": false,
+        "has_more": null,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "admissions_empty",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/admissions",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "admissions",
+        "items": [],
+        "total": 0,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": false,
+        "observed_at": "2026-10-22T01:18:33.711149+00:00",
+        "observation_digest": "a3e08dd040b3edfe7a1cc1bd64a2154e363f152b8b0d69ef68e8ea544250ebcd",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "protocols_empty",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "protocols",
+        "items": [],
+        "total": 0,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": false,
+        "observed_at": "2026-10-22T01:18:33.731949+00:00",
+        "observation_digest": "e226b2587801c2b967783f4257b06c1fac367b5384dc23eeb25f1b5f6e1add52",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "cohorts_empty",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cohorts",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "cohorts",
+        "items": [],
+        "total": 0,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": false,
+        "observed_at": "2026-10-22T01:18:33.752553+00:00",
+        "observation_digest": "68c01e75fc27f4459c8e930e136bff49b0c74491874d4915ab5a6c4d71f6ff2d",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,2471 @@
+{
+  "protocol": "package-history-ui-http/1",
+  "synthetic": true,
+  "real_qualification": false,
+  "paid_calls": 0,
+  "provider_requests": 0,
+  "transport": "actual public FastAPI main with complete exposure bridge and independent PostgreSQL 17 LOGINs",
+  "object_transport": "explicit synthetic in-memory original bytes; no real object-store transport claim",
+  "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+  "scope_path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+  "responses": [
+    {
+      "name": "saved_scope",
+      "method": "GET",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": "\"package-technical-scope:8b0626c7-1092-45a7-847b-f5f5357c3ac7:3ca9caf5826e2c31ef81d8231ae4829540fdb74432afbdc09b38f89831c46bc9\"",
+      "headers": {
+        "cache-control": "private,no-store",
+        "etag": "\"package-technical-scope:8b0626c7-1092-45a7-847b-f5f5357c3ac7:3ca9caf5826e2c31ef81d8231ae4829540fdb74432afbdc09b38f89831c46bc9\""
+      },
+      "body": {
+        "manifest": {
+          "id": "8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+          "preview": {
+            "digest": "2ab384743a3e1261007b2075de87441406b638b7ce8e2ded3500d1074702f7c5",
+            "manifest": {
+              "basis": {
+                "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                "rule_set_digest": "b656c1b67fcd93e9fda9b37805f3dff514435c153a587cbbc485027d9db8ad8b",
+                "authority_digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                "inventory_digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7",
+                "authority_revision_id": "d82032ba-df7a-467d-a504-851391e55c68"
+              },
+              "parts": [
+                {
+                  "part": {
+                    "part_id": "tech",
+                    "category": "technical",
+                    "last_page": 1,
+                    "first_page": 1,
+                    "heading_path": [
+                      1,
+                      2,
+                      3,
+                      4,
+                      5,
+                      6,
+                      7,
+                      8,
+                      9,
+                      10,
+                      11
+                    ],
+                    "shared_attachment": false
+                  },
+                  "selected": true,
+                  "block_ids": [
+                    "44574695-4865-416a-b287-02ddeba95125",
+                    "f112b55b-e0fe-4b57-bd90-84cdc8be3560",
+                    "e7ad4a3d-9a25-4b43-af2f-6dbe2345a115"
+                  ],
+                  "member_id": "original",
+                  "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "visual_coverage": "unproven",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b",
+                  "read_physical_pages": [
+                    1
+                  ],
+                  "text_evidence_present": true
+                },
+                {
+                  "part": {
+                    "part_id": "appendix/table",
+                    "category": "technical",
+                    "last_page": 2,
+                    "first_page": 2,
+                    "heading_path": [
+                      12
+                    ],
+                    "shared_attachment": false
+                  },
+                  "selected": true,
+                  "block_ids": [
+                    "0775bd88-a1bb-47ca-875d-b8e91b374e9b",
+                    "12a90b48-db6a-4c13-aef7-06ac90132a12"
+                  ],
+                  "member_id": "original",
+                  "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "visual_coverage": "unproven",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b",
+                  "read_physical_pages": [
+                    2
+                  ],
+                  "text_evidence_present": true
+                }
+              ],
+              "rules": [
+                {
+                  "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                  "rule_id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                  "part_ids": [
+                    "tech",
+                    "appendix/table"
+                  ],
+                  "selection": "include",
+                  "rule_digest": "60c45b43b6d1b709396337779b72a3278ec1fcab90495ec4311c3e6417453807",
+                  "rule_snapshot": {
+                    "id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                    "kind": "scoring",
+                    "bands": [
+                      {
+                        "label": "full",
+                        "points": "10",
+                        "description": "entire required range"
+                      }
+                    ],
+                    "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                    "statement": "Synthetic scoring clause 0",
+                    "conditions": [
+                      "when the technical range applies"
+                    ],
+                    "exceptions": [
+                      "explicitly excepted alternative"
+                    ],
+                    "max_points": "10",
+                    "origin_kind": "model_extracted",
+                    "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                    "evidence_ids": [
+                      "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                    ],
+                    "provenance_status": "effective",
+                    "applicability_scope": {},
+                    "manual_origin_rule_id": null
+                  },
+                  "source_evidence": [
+                    {
+                      "part_ids": [
+                        "tech"
+                      ],
+                      "member_id": "authority",
+                      "evidence_id": "cb8a613a-dbc0-437d-94c5-b6fa7a144340",
+                      "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                      "text_content": "synthetic page 1",
+                      "physical_page": 1,
+                      "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    }
+                  ],
+                  "requirement_digest": "3ab71be2cda060ed865808c46efba029ef659176cc63995f15b9a7fb4b0d35e4",
+                  "declared_target_part_ids": [
+                    "tech",
+                    "appendix/table"
+                  ]
+                },
+                {
+                  "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                  "rule_id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                  "part_ids": [
+                    "tech",
+                    "appendix/table"
+                  ],
+                  "selection": "include",
+                  "rule_digest": "5dc8d770cb006b95a9dc05719dfd0e3a06edc394dcaea2bd9e04b909e98ab8a0",
+                  "rule_snapshot": {
+                    "id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                    "kind": "scoring",
+                    "bands": [
+                      {
+                        "label": "full",
+                        "points": "10",
+                        "description": "entire required range"
+                      }
+                    ],
+                    "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                    "statement": "Synthetic scoring clause 1",
+                    "conditions": [
+                      "when the technical range applies"
+                    ],
+                    "exceptions": [
+                      "explicitly excepted alternative"
+                    ],
+                    "max_points": "10",
+                    "origin_kind": "model_extracted",
+                    "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                    "evidence_ids": [
+                      "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                    ],
+                    "provenance_status": "effective",
+                    "applicability_scope": {},
+                    "manual_origin_rule_id": null
+                  },
+                  "source_evidence": [
+                    {
+                      "part_ids": [
+                        "tech"
+                      ],
+                      "member_id": "authority",
+                      "evidence_id": "cb8a613a-dbc0-437d-94c5-b6fa7a144340",
+                      "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                      "text_content": "synthetic page 1",
+                      "physical_page": 1,
+                      "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    }
+                  ],
+                  "requirement_digest": "81a07296f1aea8ffc611d2d310cf8722e40e5d919585ed0fe7eb1288016db976",
+                  "declared_target_part_ids": [
+                    "tech",
+                    "appendix/table"
+                  ]
+                },
+                {
+                  "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                  "rule_id": "5f138157-4a10-4908-81b9-af95099c999a",
+                  "part_ids": [],
+                  "selection": "exclude",
+                  "rule_digest": "6222a0becde6d7769bffbc922a4a7f86ca6924576fff8cadf5e1814f7efaa501",
+                  "rule_snapshot": {
+                    "id": "5f138157-4a10-4908-81b9-af95099c999a",
+                    "kind": "scoring",
+                    "bands": [
+                      {
+                        "label": "full",
+                        "points": "10",
+                        "description": "entire required range"
+                      }
+                    ],
+                    "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                    "statement": "Synthetic scoring clause 2",
+                    "conditions": [
+                      "when the technical range applies"
+                    ],
+                    "exceptions": [
+                      "explicitly excepted alternative"
+                    ],
+                    "max_points": "10",
+                    "origin_kind": "model_extracted",
+                    "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                    "evidence_ids": [
+                      "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                    ],
+                    "provenance_status": "effective",
+                    "applicability_scope": {},
+                    "manual_origin_rule_id": null
+                  },
+                  "source_evidence": [
+                    {
+                      "part_ids": [
+                        "tech"
+                      ],
+                      "member_id": "authority",
+                      "evidence_id": "cb8a613a-dbc0-437d-94c5-b6fa7a144340",
+                      "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                      "text_content": "synthetic page 1",
+                      "physical_page": 1,
+                      "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    }
+                  ],
+                  "requirement_digest": "10c35fa3c2d0c52b26f6c57938df8d83a0bd12a79fb16c1fcad233f5d407fee2",
+                  "declared_target_part_ids": [
+                    "tech",
+                    "appendix/table"
+                  ]
+                }
+              ],
+              "scope": {
+                "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                "inventory_id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a"
+              },
+              "method": {
+                "digest": "e61b3b80780d5d5ad928a74c1ffe9ee66f57454c4e24e95319def660545e63ba",
+                "limits": {
+                  "pages": 100000,
+                  "parts": 2000,
+                  "rules": 1000,
+                  "blocks": 100000,
+                  "members": 500,
+                  "source_rows": 20000,
+                  "request_bytes": 1048576,
+                  "original_bytes": 1073741824,
+                  "snapshot_bytes": 33554432
+                },
+                "sources": {
+                  "packages/rag/indexing.py": "362451119c67f935ac2b0a530278a53fb75daa2ad95ceaf8b8e52601701c56ad",
+                  "packages/domain/bid_package_repository.py": "f28d5ddc2377f60bba9dd72b8ee0486effe1363d2ce57ac1fc01dd31eed443a7",
+                  "packages/domain/package_technical_scope.py": "19af3c58413fac89457b5af123a4a85244a5ea8156eb42016d7439f977702beb",
+                  "packages/domain/bid_package_review_documents.py": "277b80143ad5fb33d28593ba560f96b5728598484d25b464f5613265662728d4",
+                  "packages/contracts/package_technical_scope_api.py": "8a286d8c225a9ae6e6fa42a6e8515e9d87751c2f4e0d5159a0e4e6fdf2ed587c",
+                  "packages/domain/bid_package_technical_scope_service.py": "ee6cdd2a6c7db5b195a07ae1038cf61c88c444f3cbe8c7b209424e6ed7ef5843",
+                  "packages/contracts/sql/bid-package-technical-scopes.sql": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+                  "packages/domain/bid_package_technical_scope_repository.py": "2c809deffbad350a22220f5401c5e2761d1e83f1393b4687351b4e7ee5b823a5"
+                },
+                "version": "package-technical-scope-policy/1"
+              },
+              "timing": {
+                "purpose": "current_prebid",
+                "submitted_at": null,
+                "label_known_at": null,
+                "historical_as_of": null,
+                "training_frozen_at": null,
+                "submission_split_at": null,
+                "label_available_as_of": null,
+                "historical_qualification": "not_established"
+              },
+              "request": {
+                "reason": "Synthetic explicit current technical scope; completeness is not proven.",
+                "purpose": "current_prebid",
+                "rule_scopes": [
+                  {
+                    "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                    "rule_id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                    "part_ids": [
+                      "tech",
+                      "appendix/table"
+                    ],
+                    "selection": "include",
+                    "rule_digest": "60c45b43b6d1b709396337779b72a3278ec1fcab90495ec4311c3e6417453807"
+                  },
+                  {
+                    "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                    "rule_id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                    "part_ids": [
+                      "tech",
+                      "appendix/table"
+                    ],
+                    "selection": "include",
+                    "rule_digest": "5dc8d770cb006b95a9dc05719dfd0e3a06edc394dcaea2bd9e04b909e98ab8a0"
+                  },
+                  {
+                    "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+                    "rule_id": "5f138157-4a10-4908-81b9-af95099c999a",
+                    "part_ids": [],
+                    "selection": "exclude",
+                    "rule_digest": "6222a0becde6d7769bffbc922a4a7f86ca6924576fff8cadf5e1814f7efaa501"
+                  }
+                ],
+                "inventory_id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                "authority_digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                "inventory_digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7",
+                "technical_part_ids": [
+                  "tech",
+                  "appendix/table"
+                ],
+                "authority_revision_id": "d82032ba-df7a-467d-a504-851391e55c68"
+              },
+              "version": "package-technical-scope-preview/1",
+              "coverage": {
+                "gaps": [
+                  {
+                    "id": "7076bd4768a50c9e6908f0f8e3f7eaa6e03a281d3ecb97ecab93c1ab78e1664d",
+                    "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+                    "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+                    "subject": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a"
+                  },
+                  {
+                    "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+                    "code": "VISUAL_COMPLETENESS_UNPROVEN",
+                    "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+                    "subject": null
+                  },
+                  {
+                    "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+                    "code": "REQUIRED_RANGE_UNPROVEN",
+                    "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+                    "subject": null
+                  },
+                  {
+                    "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+                    "code": "MODEL_EXECUTION_NOT_OPEN",
+                    "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+                    "subject": null
+                  },
+                  {
+                    "id": "91f6c5434dca41658762eb7de5ac00b8847986e76275edec7ee11daef8daec76",
+                    "code": "RULE_EXCLUDED_BY_DECLARATION",
+                    "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+                    "subject": "5f138157-4a10-4908-81b9-af95099c999a"
+                  }
+                ],
+                "state": "partial",
+                "all_part_count": 2,
+                "visual_coverage": "unproven",
+                "included_rule_count": 2,
+                "selected_part_count": 2,
+                "all_scoring_rule_count": 3,
+                "frozen_parse_member_count": 1,
+                "required_range_completeness": "unproven"
+              },
+              "documents": [
+                {
+                  "pages": [
+                    {
+                      "gaps": [],
+                      "quality": "usable",
+                      "physical_page": 1
+                    },
+                    {
+                      "gaps": [],
+                      "quality": "usable",
+                      "physical_page": 2
+                    }
+                  ],
+                  "parse": {
+                    "reason": null,
+                    "status": "frozen",
+                    "parse_run_id": "674be2b3-5d76-4880-9113-aec34b8f5582",
+                    "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                    "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    "evidence_digest": "0b5b569bcfafed7def9f0164e9e2e559cc040f0fe71ff797c0bc2575dd8878e5"
+                  },
+                  "blocks": [
+                    {
+                      "id": "44574695-4865-416a-b287-02ddeba95125",
+                      "kind": "text",
+                      "digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                      "ordinal": 0,
+                      "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                      "text_content": "synthetic page 1",
+                      "physical_page": 1,
+                      "structure_json": "{\"cell_width\": 1.25}"
+                    },
+                    {
+                      "id": "f112b55b-e0fe-4b57-bd90-84cdc8be3560",
+                      "kind": "text",
+                      "digest": "4c68150338c86ee671f4b5aa8f7f00ec3773dcff0ea74c3637855252972166c8",
+                      "ordinal": 79,
+                      "bbox_json": null,
+                      "text_content": "技术总分满分为20分，量尺为未加权原始分；聚合口径为官方公布的最终技术总分。",
+                      "physical_page": 1,
+                      "structure_json": null
+                    },
+                    {
+                      "id": "e7ad4a3d-9a25-4b43-af2f-6dbe2345a115",
+                      "kind": "text",
+                      "digest": "4b63009c633952a41e3d3e360aa3318c1a164328aa120cb4b0bf9585ab520719",
+                      "ordinal": 80,
+                      "bbox_json": null,
+                      "text_content": "Synthetic independent case content a3fef7aa-8933-4a92-b51c-dfeaf7b3bdae",
+                      "physical_page": 1,
+                      "structure_json": null
+                    },
+                    {
+                      "id": "0775bd88-a1bb-47ca-875d-b8e91b374e9b",
+                      "kind": "text",
+                      "digest": "42e729fbdfef7b9b61acc919addf0826279527cb1a88739447307023d05713e3",
+                      "ordinal": 0,
+                      "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                      "text_content": "synthetic page 2",
+                      "physical_page": 2,
+                      "structure_json": "{\"cell_width\": 1.25}"
+                    },
+                    {
+                      "id": "12a90b48-db6a-4c13-aef7-06ac90132a12",
+                      "kind": "table",
+                      "digest": "f1a293858e3a9c1a3ac37e55fb922eab401c45e79cb325d7e445732789d58959",
+                      "ordinal": 1,
+                      "bbox_json": "[0, 1.25, 100, 200]",
+                      "text_content": "Synthetic table: term 30 days; alternative 45 days.",
+                      "physical_page": 2,
+                      "structure_json": "{\"rows\": [[\"term\", \"30 days\", \"45 days\"]]}"
+                    }
+                  ],
+                  "byte_size": 82,
+                  "member_id": "original",
+                  "page_count": 2,
+                  "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "package_role": "target",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                },
+                {
+                  "pages": [
+                    {
+                      "gaps": [],
+                      "quality": "usable",
+                      "physical_page": 1
+                    },
+                    {
+                      "gaps": [],
+                      "quality": "usable",
+                      "physical_page": 2
+                    }
+                  ],
+                  "parse": {
+                    "reason": null,
+                    "status": "frozen",
+                    "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                    "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                    "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    "evidence_digest": "ba184bd262c03875cd98b4b89100aedcf998d084a180e27e2feeb2e0d1d18de2"
+                  },
+                  "blocks": [
+                    {
+                      "id": "cb8a613a-dbc0-437d-94c5-b6fa7a144340",
+                      "kind": "text",
+                      "digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                      "ordinal": 0,
+                      "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                      "text_content": "synthetic page 1",
+                      "physical_page": 1,
+                      "structure_json": "{\"cell_width\": 1.25}"
+                    },
+                    {
+                      "id": "083a8e29-62c7-421d-b2dd-1200d9ecb7d0",
+                      "kind": "text",
+                      "digest": "4c68150338c86ee671f4b5aa8f7f00ec3773dcff0ea74c3637855252972166c8",
+                      "ordinal": 79,
+                      "bbox_json": null,
+                      "text_content": "技术总分满分为20分，量尺为未加权原始分；聚合口径为官方公布的最终技术总分。",
+                      "physical_page": 1,
+                      "structure_json": null
+                    },
+                    {
+                      "id": "79bf7fb1-d84a-4c4f-91f7-823071523c37",
+                      "kind": "text",
+                      "digest": "4b63009c633952a41e3d3e360aa3318c1a164328aa120cb4b0bf9585ab520719",
+                      "ordinal": 80,
+                      "bbox_json": null,
+                      "text_content": "Synthetic independent case content a3fef7aa-8933-4a92-b51c-dfeaf7b3bdae",
+                      "physical_page": 1,
+                      "structure_json": null
+                    },
+                    {
+                      "id": "6f52aa79-b292-409e-8519-6c54013bf347",
+                      "kind": "text",
+                      "digest": "42e729fbdfef7b9b61acc919addf0826279527cb1a88739447307023d05713e3",
+                      "ordinal": 0,
+                      "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                      "text_content": "synthetic page 2",
+                      "physical_page": 2,
+                      "structure_json": "{\"cell_width\": 1.25}"
+                    },
+                    {
+                      "id": "967be261-3770-4d30-b7db-6257b2f9c105",
+                      "kind": "table",
+                      "digest": "f1a293858e3a9c1a3ac37e55fb922eab401c45e79cb325d7e445732789d58959",
+                      "ordinal": 1,
+                      "bbox_json": "[0, 1.25, 100, 200]",
+                      "text_content": "Synthetic table: term 30 days; alternative 45 days.",
+                      "physical_page": 2,
+                      "structure_json": "{\"rows\": [[\"term\", \"30 days\", \"45 days\"]]}"
+                    }
+                  ],
+                  "byte_size": 82,
+                  "member_id": "authority",
+                  "page_count": 2,
+                  "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "package_role": "authority",
+                  "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                }
+              ],
+              "scoring_ready": false,
+              "context_digest": "20c17ea1206e24c3b70ef089d0c54ed2b49a2941a19f4d0c087931bfea3cc3c0",
+              "request_digest": "2b763a1226f7443170673ad421b6786fc29357f0de2e7875c7f9118394866317",
+              "source_snapshot": [
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.440398-07:00",
+                  "revision": 2,
+                  "source_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                  "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                  "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                },
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.454808-07:00",
+                  "revision": 2,
+                  "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                  "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                  "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                },
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.454808-07:00",
+                  "revision": 2,
+                  "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                  "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                  "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                },
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.454808-07:00",
+                  "revision": 2,
+                  "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                  "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                  "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                },
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.440398-07:00",
+                  "revision": 2,
+                  "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                  "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                  "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                },
+                {
+                  "kind": "document",
+                  "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "status": "published",
+                  "known_at": "2026-10-21T18:19:22.440398-07:00",
+                  "revision": 2,
+                  "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                  "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                  "ancestor_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                  "valid_until": null,
+                  "document_bid": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "policy_class": "prebid_content",
+                  "original_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                  "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                }
+              ],
+              "training_eligible": false,
+              "inventory_complete": false,
+              "formal_scoring_eligible": false,
+              "model_execution_enabled": false,
+              "original_bytes_verified": false
+            }
+          },
+          "version": "package-technical-scope/1",
+          "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+          "frozen_at": "2026-10-22T01:19:22.832865Z",
+          "command_id": "d0b58a90-cfdc-4b03-9edd-25d038eb3597",
+          "scoring_ready": false,
+          "training_eligible": false,
+          "inventory_complete": false,
+          "original_verification": {
+            "files": [
+              {
+                "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                "byte_size": 82,
+                "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+              },
+              {
+                "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                "byte_size": 82,
+                "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+              }
+            ],
+            "state": "verified_at_recording",
+            "verified_at": "2026-10-22T01:19:22.773896Z"
+          },
+          "formal_scoring_eligible": false,
+          "model_execution_enabled": false
+        },
+        "digest": "3ca9caf5826e2c31ef81d8231ae4829540fdb74432afbdc09b38f89831c46bc9"
+      }
+    },
+    {
+      "name": "scope_submissions",
+      "method": "GET",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/submissions",
+      "query": {
+        "limit": 20
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "items": [
+          {
+            "id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+            "subject_kind": "bid_package",
+            "body_version_id": null,
+            "review_id": null,
+            "kind": "offline_fact",
+            "submitted_at": "2026-10-22T01:19:22.968856Z",
+            "recorded_at": "2026-10-22T01:19:23.091068Z",
+            "recorded_by": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+            "gate_checked": false,
+            "evidence_ref": "fa6d4497-2096-468a-a473-1890ec4a06e0",
+            "current": true,
+            "supersedes_id": null,
+            "identity": {
+              "lot": "same visible lot",
+              "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+              "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+              "region": null,
+              "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+              "round_no": 1,
+              "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+              "bidder_name": "synthetic bidder",
+              "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+              "binding_status": "confirmed",
+              "engineering_type": null,
+              "identity_version": "bid-identity/2",
+              "engineering_title": "synthetic project",
+              "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+            },
+            "original_name": null,
+            "artifact_kind": null,
+            "checks_label": "未经过系统完整检查；已记录完整投标包实际提交事实",
+            "open_risk_snapshot": {
+              "codes": [],
+              "risks": [],
+              "scope": "whole_bid_known_history",
+              "state": "pass",
+              "runs_read": 0,
+              "blocked_count": 0,
+              "unknown_count": 0,
+              "history_digest": "3501e8c7fd265901852f109ff966b38364ec0f0149eeaa9057878b0344335648",
+              "unknown_run_ids": [],
+              "history_complete": true,
+              "result_rows_read": 0
+            },
+            "platform_submission_verified": false,
+            "explanation": "Synthetic actual package was submitted outside this system; receipt is a user declaration.",
+            "correction_reason": null,
+            "package_binding": {
+              "manifest": {
+                "gate": {
+                  "digest": "fa32efc4f619bef995ab04d9937afc9439a19beb3c2ec10726ddc230bd31f73c",
+                  "manifest": {
+                    "kind": "current_package_submission_observation",
+                    "gates": {
+                      "core_coverage": {
+                        "codes": [
+                          "INVENTORY_EXTRACTION_PROOF_NOT_OBSERVED",
+                          "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED",
+                          "KNOWN_CORE_JUDGMENTS_INCOMPLETE",
+                          "PACKAGE_REVIEW_NOT_SELECTED",
+                          "PACKAGE_REVIEW_QUALITY_NOT_MEASURED"
+                        ],
+                        "scope": "known_inventory_core_rules",
+                        "state": "unknown",
+                        "run_id": null,
+                        "quality_status": "not_measured",
+                        "overall_coverage": "unknown",
+                        "active_core_count": 1,
+                        "judged_core_count": 0,
+                        "inventory_complete": false,
+                        "unknown_core_count": 1,
+                        "human_declared_count": 0,
+                        "inventory_proof_digest": null,
+                        "unfavorable_core_count": 0,
+                        "extraction_range_proven": false
+                      },
+                      "current_input": {
+                        "codes": [
+                          "ORIGINAL_BYTES_NOT_CHECKED"
+                        ],
+                        "scope": "current_metadata_observation",
+                        "state": "unknown",
+                        "member_count": 2,
+                        "physical_page_gaps": [],
+                        "observations_digest": "1fb499629f47e36f6b41f97d7b80f839ed01207e91d1b926df4456a28a4ef5a8",
+                        "original_verification": "not_performed",
+                        "current_identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c"
+                      },
+                      "known_blocking_risks": {
+                        "codes": [],
+                        "risks": [],
+                        "scope": "whole_bid_known_history",
+                        "state": "pass",
+                        "runs_read": 0,
+                        "blocked_count": 0,
+                        "unknown_count": 0,
+                        "history_digest": "3501e8c7fd265901852f109ff966b38364ec0f0149eeaa9057878b0344335648",
+                        "unknown_run_ids": [],
+                        "history_complete": true,
+                        "result_rows_read": 0
+                      },
+                      "mandatory_confirmation": {
+                        "codes": [],
+                        "scope": "known_inventory_core_rules",
+                        "state": "pass",
+                        "decisions": [
+                          {
+                            "rule_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                            "decision": "confirmed",
+                            "decision_id": "34876926-85f8-4d3c-b4af-49c736a99332",
+                            "rule_digest": "66b69dc8ca32cac7b1172a5c9941bd0371a1d2a256d7ef495faf60dc71f68144",
+                            "decision_digest": "108d8fdcc80d0eadb298304725a6c39d5b0e707dbd751626f0df8865d7778e4e"
+                          }
+                        ],
+                        "confirmed_count": 1,
+                        "core_rule_count": 1,
+                        "pending_rule_ids": [],
+                        "inactive_rule_ids": [],
+                        "needs_revalidation_rule_ids": []
+                      }
+                    },
+                    "state": "unknown",
+                    "allowed": false,
+                    "subject": {
+                      "kind": "bid_package",
+                      "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                      "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                      "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                      "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                      "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c"
+                    },
+                    "version": "package-submission-gate/1",
+                    "selection": {
+                      "digest": "8277d46db9c86667e4bf762acd9db5689cd31bfb368246be72f0e49bba440b70",
+                      "run_id": null,
+                      "inventory_id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                      "result_digest": null,
+                      "coverage_digest": null,
+                      "authority_digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                      "inventory_digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7",
+                      "coverage_attempt_id": null,
+                      "authority_revision_id": "d82032ba-df7a-467d-a504-851391e55c68"
+                    },
+                    "checked_at": "2026-10-22T01:19:23.078551Z",
+                    "limitations": [
+                      "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED",
+                      "PACKAGE_REVIEW_QUALITY_NOT_MEASURED",
+                      "HUMAN_OPINION_IS_NOT_RECHECK_RESOLUTION",
+                      "METADATA_OBSERVATION_IS_NOT_ORIGINAL_BYTE_VERIFICATION",
+                      "REGISTRATION_IS_NOT_PLATFORM_SUBMISSION"
+                    ],
+                    "policy_digest": "92edc47dbe3ab839182a729f264a7d433f260d3af2efdf1ac306bcfdbea28bf1",
+                    "quality_status": "not_measured",
+                    "inventory_complete": false,
+                    "submission_eligible": false,
+                    "publication_authorized": false,
+                    "formal_scoring_eligible": false,
+                    "platform_submission_verified": false
+                  }
+                },
+                "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                "context": {
+                  "current": {
+                    "current": {
+                      "phase": "preparation",
+                      "identity": {
+                        "lot": "same visible lot",
+                        "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                        "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                        "region": null,
+                        "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                        "round_no": 1,
+                        "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                        "bidder_name": "synthetic bidder",
+                        "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                        "binding_status": "confirmed",
+                        "engineering_type": null,
+                        "identity_version": "bid-identity/2",
+                        "engineering_title": "synthetic project",
+                        "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                      },
+                      "archived_at": null,
+                      "current_rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c"
+                    },
+                    "sources": [
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.440398-07:00",
+                        "revision": 2,
+                        "source_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                        "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                        "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:18:22.540082-07:00",
+                        "revision": 1,
+                        "source_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                        "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                        "ancestor_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.454808-07:00",
+                        "revision": 2,
+                        "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                        "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                        "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.454808-07:00",
+                        "revision": 2,
+                        "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                        "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                        "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.454808-07:00",
+                        "revision": 2,
+                        "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                        "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                        "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:18:22.540082-07:00",
+                        "revision": 1,
+                        "source_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                        "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                        "ancestor_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.440398-07:00",
+                        "revision": 2,
+                        "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                        "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                        "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                      },
+                      {
+                        "status": "published",
+                        "known_at": "2026-10-21T18:19:22.440398-07:00",
+                        "revision": 2,
+                        "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                        "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                        "ancestor_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                        "valid_until": null,
+                        "policy_class": "prebid_content",
+                        "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                      }
+                    ],
+                    "lifecycle": {
+                      "phase": "preparation",
+                      "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                      "revision": 1,
+                      "archived_at": null
+                    },
+                    "package_heads": {
+                      "5a72fcf8-b034-4b0a-8e12-80dfc56449ba": "d82032ba-df7a-467d-a504-851391e55c68",
+                      "dcabeaca-63d4-4a2c-b4af-049085d5eca0": "4de58416-a282-40bf-b658-f20d558dd8eb"
+                    },
+                    "inventory_head": {
+                      "id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                      "digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7",
+                      "revision": 1
+                    },
+                    "generated_outputs": []
+                  },
+                  "originals": [
+                    {
+                      "roles": [
+                        "source_ancestor",
+                        "target"
+                      ],
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "byte_size": 82,
+                      "media_type": "application/pdf",
+                      "artifact_kind": "bid_body",
+                      "original_name": "synthetic.pdf",
+                      "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                    },
+                    {
+                      "roles": [
+                        "authority",
+                        "source_ancestor"
+                      ],
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "byte_size": 82,
+                      "media_type": "application/pdf",
+                      "artifact_kind": "source_original",
+                      "original_name": "synthetic-authority.pdf",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    }
+                  ],
+                  "risk_history": {
+                    "complete": true,
+                    "package_runs": [],
+                    "human_decisions": [],
+                    "legacy_findings": []
+                  },
+                  "method_digest": "92edc47dbe3ab839182a729f264a7d433f260d3af2efdf1ac306bcfdbea28bf1",
+                  "rule_decisions": [
+                    {
+                      "rule_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                      "decision": {
+                        "id": "34876926-85f8-4d3c-b4af-49c736a99332",
+                        "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                        "reason": "Synthetic confirmation",
+                        "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+                        "decision": "confirmed",
+                        "object_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                        "created_at": "2026-10-21T18:19:22.540082-07:00",
+                        "object_kind": "rule",
+                        "evidence_ids": [
+                          "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                        ],
+                        "object_revision": 1
+                      },
+                      "rule_digest": "66b69dc8ca32cac7b1172a5c9941bd0371a1d2a256d7ef495faf60dc71f68144"
+                    },
+                    {
+                      "rule_id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                      "decision": null,
+                      "rule_digest": "60c45b43b6d1b709396337779b72a3278ec1fcab90495ec4311c3e6417453807"
+                    },
+                    {
+                      "rule_id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                      "decision": null,
+                      "rule_digest": "5dc8d770cb006b95a9dc05719dfd0e3a06edc394dcaea2bd9e04b909e98ab8a0"
+                    },
+                    {
+                      "rule_id": "5f138157-4a10-4908-81b9-af95099c999a",
+                      "decision": null,
+                      "rule_digest": "6222a0becde6d7769bffbc922a4a7f86ca6924576fff8cadf5e1814f7efaa501"
+                    }
+                  ],
+                  "original_sources": [
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.440398-07:00",
+                      "revision": 2,
+                      "source_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                      "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                      "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:18:22.540082-07:00",
+                      "revision": 1,
+                      "source_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                      "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                      "ancestor_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:18:22.540082-07:00",
+                      "revision": 1,
+                      "source_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                      "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                      "ancestor_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.440398-07:00",
+                      "revision": 2,
+                      "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                      "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                      "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                    },
+                    {
+                      "status": "published",
+                      "known_at": "2026-10-21T18:19:22.440398-07:00",
+                      "revision": 2,
+                      "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                      "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                      "ancestor_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                      "valid_until": null,
+                      "policy_class": "prebid_content",
+                      "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                    }
+                  ],
+                  "current_submission_head": null
+                },
+                "request": {
+                  "kind": "offline_fact",
+                  "evidence": {
+                    "digest": "0d7f6361a7cfee0e5aa4cb4fd1df8a0aec2e488020cc082b53ad39c3e781ec6a",
+                    "byte_size": 61,
+                    "document_version_id": "fa6d4497-2096-468a-a473-1890ec4a06e0"
+                  },
+                  "selection": {
+                    "coverage": null,
+                    "inventory": {
+                      "id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                      "digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7"
+                    },
+                    "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                    "review_run": null,
+                    "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                    "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9"
+                  },
+                  "explanation": "Synthetic actual package was submitted outside this system; receipt is a user declaration.",
+                  "input_digest": "88fb33e33d0b870b1be02be206200929c02bb03d3447e55b8ba597f9bd8f97d1",
+                  "submitted_at": "2026-10-22T01:19:22.968856+00:00",
+                  "expected_head": null,
+                  "correction_reason": null
+                },
+                "subject": {
+                  "kind": "bid_package",
+                  "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                  "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                  "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                  "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9"
+                },
+                "version": "package-submission-binding/1",
+                "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+                "evidence": {
+                  "roles": [
+                    "submission_attachment"
+                  ],
+                  "digest": "0d7f6361a7cfee0e5aa4cb4fd1df8a0aec2e488020cc082b53ad39c3e781ec6a",
+                  "byte_size": 61,
+                  "media_type": "text/plain",
+                  "artifact_kind": "source_original",
+                  "original_name": "synthetic-receipt.txt",
+                  "document_version_id": "fa6d4497-2096-468a-a473-1890ec4a06e0"
+                },
+                "if_match": "\"bid:32fd8a58-8044-431b-aa1c-fcff38ebb48e:64a8933793bde23dfc232ff974f4545a77909afdd001c75d51dd6f29cad4015b\"",
+                "originals": [
+                  {
+                    "roles": [
+                      "source_ancestor",
+                      "target"
+                    ],
+                    "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                    "byte_size": 82,
+                    "media_type": "application/pdf",
+                    "artifact_kind": "bid_body",
+                    "original_name": "synthetic.pdf",
+                    "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                  },
+                  {
+                    "roles": [
+                      "authority",
+                      "source_ancestor"
+                    ],
+                    "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                    "byte_size": 82,
+                    "media_type": "application/pdf",
+                    "artifact_kind": "source_original",
+                    "original_name": "synthetic-authority.pdf",
+                    "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                  },
+                  {
+                    "roles": [
+                      "submission_attachment"
+                    ],
+                    "digest": "0d7f6361a7cfee0e5aa4cb4fd1df8a0aec2e488020cc082b53ad39c3e781ec6a",
+                    "byte_size": 61,
+                    "media_type": "text/plain",
+                    "artifact_kind": "source_original",
+                    "original_name": "synthetic-receipt.txt",
+                    "document_version_id": "fa6d4497-2096-468a-a473-1890ec4a06e0"
+                  }
+                ],
+                "selection": {
+                  "target": {
+                    "digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                    "identity": {
+                      "lot": "same visible lot",
+                      "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                      "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                      "region": null,
+                      "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                      "round_no": 1,
+                      "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                      "bidder_name": "synthetic bidder",
+                      "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                      "binding_status": "confirmed",
+                      "engineering_type": null,
+                      "identity_version": "bid-identity/2",
+                      "engineering_title": "synthetic project",
+                      "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                    },
+                    "manifest": {
+                      "kind": "bid",
+                      "scope": {
+                        "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                        "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                        "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                        "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                        "bidder_status": "confirmed",
+                        "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                      },
+                      "members": [
+                        {
+                          "parse": {
+                            "reason": null,
+                            "status": "frozen",
+                            "parse_run_id": "674be2b3-5d76-4880-9113-aec34b8f5582",
+                            "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                            "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                            "evidence_digest": "0b5b569bcfafed7def9f0164e9e2e559cc040f0fe71ff797c0bc2575dd8878e5"
+                          },
+                          "parts": [
+                            {
+                              "part_id": "tech",
+                              "category": "technical",
+                              "last_page": 1,
+                              "first_page": 1,
+                              "heading_path": [
+                                1,
+                                2,
+                                3,
+                                4,
+                                5,
+                                6,
+                                7,
+                                8,
+                                9,
+                                10,
+                                11
+                              ],
+                              "shared_attachment": false
+                            },
+                            {
+                              "part_id": "appendix/table",
+                              "category": "technical",
+                              "last_page": 2,
+                              "first_page": 2,
+                              "heading_path": [
+                                12
+                              ],
+                              "shared_attachment": false
+                            }
+                          ],
+                          "scope": {
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                            "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                            "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                            "bidder_status": "confirmed",
+                            "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                          },
+                          "purposes": [
+                            "technical"
+                          ],
+                          "member_id": "original",
+                          "page_count": 2,
+                          "source_ref": "document-file:f6f37ede-c6fa-4757-8cf9-59caa837e0c1:revision:1",
+                          "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                          "source_kind": "own",
+                          "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                        }
+                      ],
+                      "revision": 1,
+                      "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                      "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                      "identity_version": "bid-package/1",
+                      "predecessor_digest": null
+                    },
+                    "review_ready": false,
+                    "storage_eligible": true
+                  },
+                  "coverage": null,
+                  "authority": {
+                    "digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                    "identity": {
+                      "lot": "same visible lot",
+                      "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                      "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                      "region": null,
+                      "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                      "round_no": 1,
+                      "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                      "bidder_name": "synthetic bidder",
+                      "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                      "binding_status": "confirmed",
+                      "engineering_type": null,
+                      "identity_version": "bid-identity/2",
+                      "engineering_title": "synthetic project",
+                      "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                    },
+                    "manifest": {
+                      "kind": "authority",
+                      "scope": {
+                        "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                        "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                        "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                        "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                        "bidder_status": "confirmed",
+                        "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                      },
+                      "members": [
+                        {
+                          "parse": {
+                            "reason": null,
+                            "status": "frozen",
+                            "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                            "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                            "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                            "evidence_digest": "ba184bd262c03875cd98b4b89100aedcf998d084a180e27e2feeb2e0d1d18de2"
+                          },
+                          "parts": [
+                            {
+                              "part_id": "tech",
+                              "category": "technical",
+                              "last_page": 1,
+                              "first_page": 1,
+                              "heading_path": [
+                                1,
+                                2,
+                                3,
+                                4,
+                                5,
+                                6,
+                                7,
+                                8,
+                                9,
+                                10,
+                                11
+                              ],
+                              "shared_attachment": false
+                            },
+                            {
+                              "part_id": "appendix/table",
+                              "category": "technical",
+                              "last_page": 2,
+                              "first_page": 2,
+                              "heading_path": [
+                                12
+                              ],
+                              "shared_attachment": false
+                            }
+                          ],
+                          "scope": {
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                            "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                            "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                            "bidder_status": "confirmed",
+                            "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                          },
+                          "purposes": [
+                            "technical"
+                          ],
+                          "member_id": "authority",
+                          "page_count": 2,
+                          "source_ref": "document-file:1a778c09-8504-48de-8271-f28453450840:revision:1",
+                          "file_digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                          "source_kind": "authority",
+                          "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                        }
+                      ],
+                      "revision": 1,
+                      "package_id": "5a72fcf8-b034-4b0a-8e12-80dfc56449ba",
+                      "revision_id": "d82032ba-df7a-467d-a504-851391e55c68",
+                      "identity_version": "bid-package/1",
+                      "predecessor_digest": null
+                    },
+                    "review_ready": false,
+                    "storage_eligible": true
+                  },
+                  "inventory": {
+                    "digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7",
+                    "manifest": {
+                      "id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                      "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                      "version": "bid-package-requirements/1",
+                      "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+                      "revision": 1,
+                      "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                      "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                      "requirements": [
+                        {
+                          "rule_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                          "annotation": {
+                            "kind": "human_check_plan_declaration",
+                            "mapped": true,
+                            "reason": "人工检查计划",
+                            "basis_evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ]
+                          },
+                          "decision_id": "34876926-85f8-4d3c-b4af-49c736a99332",
+                          "requirement": {
+                            "scope": {
+                              "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                              "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                              "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                              "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                              "bidder_status": "confirmed",
+                              "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                            },
+                            "checks": [],
+                            "origin": "authority",
+                            "valid_at": null,
+                            "categories": [
+                              "technical"
+                            ],
+                            "conditions": [],
+                            "source_refs": [
+                              "rule:b5ecdce5-fc35-4558-96bc-5976161dada7:66b69dc8ca32cac7b1172a5c9941bd0371a1d2a256d7ef495faf60dc71f68144",
+                              "evidence:cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "applicability": "applicable",
+                            "minimum_count": null,
+                            "requirement_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                            "target_part_ids": [
+                              "tech"
+                            ],
+                            "identity_version": "bid-requirement/1",
+                            "applicability_evidence": []
+                          },
+                          "rule_digest": "66b69dc8ca32cac7b1172a5c9941bd0371a1d2a256d7ef495faf60dc71f68144",
+                          "source_bound": true,
+                          "rule_snapshot": {
+                            "id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                            "kind": "mandatory",
+                            "bands": [],
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "statement": "Synthetic original obligation",
+                            "conditions": [],
+                            "exceptions": [],
+                            "max_points": null,
+                            "origin_kind": "model_extracted",
+                            "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                            "evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "provenance_status": "effective",
+                            "applicability_scope": {},
+                            "manual_origin_rule_id": null
+                          },
+                          "decision_snapshot": {
+                            "id": "34876926-85f8-4d3c-b4af-49c736a99332",
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "reason": "Synthetic confirmation",
+                            "actor_id": "43a22c9d-b4b3-4ffb-9164-b006770e10ea",
+                            "decision": "confirmed",
+                            "object_id": "b5ecdce5-fc35-4558-96bc-5976161dada7",
+                            "created_at": "2026-10-21T18:19:22.540082-07:00",
+                            "object_kind": "rule",
+                            "evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "object_revision": 1
+                          },
+                          "requirement_digest": "2d2e85aa3f53919d550ab4682e7e6277651b043d8feed5824711e0c7265be969"
+                        },
+                        {
+                          "rule_id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                          "annotation": {
+                            "kind": "human_check_plan_declaration",
+                            "mapped": true,
+                            "reason": "Synthetic full declared technical range",
+                            "basis_evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ]
+                          },
+                          "decision_id": null,
+                          "requirement": {
+                            "scope": {
+                              "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                              "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                              "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                              "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                              "bidder_status": "confirmed",
+                              "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                            },
+                            "checks": [],
+                            "origin": "authority",
+                            "valid_at": null,
+                            "categories": [
+                              "technical"
+                            ],
+                            "conditions": [
+                              "conditions:0:d004993b7b588dd1c31dede0450bab860e1ee42223f5c92d7036b42003024e3b",
+                              "exceptions:0:9de9bc880ea4d123c88b2976fa3e4ff93a8231c2f2bdb07c2e3bc715c81f7588"
+                            ],
+                            "source_refs": [
+                              "rule:0c2f6160-1edd-442e-84f0-eefb9f79701d:60c45b43b6d1b709396337779b72a3278ec1fcab90495ec4311c3e6417453807",
+                              "evidence:cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "applicability": "applicable",
+                            "minimum_count": null,
+                            "requirement_id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                            "target_part_ids": [
+                              "tech",
+                              "appendix/table"
+                            ],
+                            "identity_version": "bid-requirement/1",
+                            "applicability_evidence": []
+                          },
+                          "rule_digest": "60c45b43b6d1b709396337779b72a3278ec1fcab90495ec4311c3e6417453807",
+                          "source_bound": true,
+                          "rule_snapshot": {
+                            "id": "0c2f6160-1edd-442e-84f0-eefb9f79701d",
+                            "kind": "scoring",
+                            "bands": [
+                              {
+                                "label": "full",
+                                "points": "10",
+                                "description": "entire required range"
+                              }
+                            ],
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "statement": "Synthetic scoring clause 0",
+                            "conditions": [
+                              "when the technical range applies"
+                            ],
+                            "exceptions": [
+                              "explicitly excepted alternative"
+                            ],
+                            "max_points": "10",
+                            "origin_kind": "model_extracted",
+                            "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                            "evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "provenance_status": "effective",
+                            "applicability_scope": {},
+                            "manual_origin_rule_id": null
+                          },
+                          "decision_snapshot": null,
+                          "requirement_digest": "3ab71be2cda060ed865808c46efba029ef659176cc63995f15b9a7fb4b0d35e4"
+                        },
+                        {
+                          "rule_id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                          "annotation": {
+                            "kind": "human_check_plan_declaration",
+                            "mapped": true,
+                            "reason": "Synthetic full declared technical range",
+                            "basis_evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ]
+                          },
+                          "decision_id": null,
+                          "requirement": {
+                            "scope": {
+                              "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                              "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                              "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                              "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                              "bidder_status": "confirmed",
+                              "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                            },
+                            "checks": [],
+                            "origin": "authority",
+                            "valid_at": null,
+                            "categories": [
+                              "technical"
+                            ],
+                            "conditions": [
+                              "conditions:0:d004993b7b588dd1c31dede0450bab860e1ee42223f5c92d7036b42003024e3b",
+                              "exceptions:0:9de9bc880ea4d123c88b2976fa3e4ff93a8231c2f2bdb07c2e3bc715c81f7588"
+                            ],
+                            "source_refs": [
+                              "rule:5206c891-e12d-4f66-8e47-bb64a2b09e99:5dc8d770cb006b95a9dc05719dfd0e3a06edc394dcaea2bd9e04b909e98ab8a0",
+                              "evidence:cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "applicability": "applicable",
+                            "minimum_count": null,
+                            "requirement_id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                            "target_part_ids": [
+                              "tech",
+                              "appendix/table"
+                            ],
+                            "identity_version": "bid-requirement/1",
+                            "applicability_evidence": []
+                          },
+                          "rule_digest": "5dc8d770cb006b95a9dc05719dfd0e3a06edc394dcaea2bd9e04b909e98ab8a0",
+                          "source_bound": true,
+                          "rule_snapshot": {
+                            "id": "5206c891-e12d-4f66-8e47-bb64a2b09e99",
+                            "kind": "scoring",
+                            "bands": [
+                              {
+                                "label": "full",
+                                "points": "10",
+                                "description": "entire required range"
+                              }
+                            ],
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "statement": "Synthetic scoring clause 1",
+                            "conditions": [
+                              "when the technical range applies"
+                            ],
+                            "exceptions": [
+                              "explicitly excepted alternative"
+                            ],
+                            "max_points": "10",
+                            "origin_kind": "model_extracted",
+                            "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                            "evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "provenance_status": "effective",
+                            "applicability_scope": {},
+                            "manual_origin_rule_id": null
+                          },
+                          "decision_snapshot": null,
+                          "requirement_digest": "81a07296f1aea8ffc611d2d310cf8722e40e5d919585ed0fe7eb1288016db976"
+                        },
+                        {
+                          "rule_id": "5f138157-4a10-4908-81b9-af95099c999a",
+                          "annotation": {
+                            "kind": "human_check_plan_declaration",
+                            "mapped": true,
+                            "reason": "Synthetic full declared technical range",
+                            "basis_evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ]
+                          },
+                          "decision_id": null,
+                          "requirement": {
+                            "scope": {
+                              "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                              "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                              "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                              "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                              "bidder_status": "confirmed",
+                              "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                            },
+                            "checks": [],
+                            "origin": "authority",
+                            "valid_at": null,
+                            "categories": [
+                              "technical"
+                            ],
+                            "conditions": [
+                              "conditions:0:d004993b7b588dd1c31dede0450bab860e1ee42223f5c92d7036b42003024e3b",
+                              "exceptions:0:9de9bc880ea4d123c88b2976fa3e4ff93a8231c2f2bdb07c2e3bc715c81f7588"
+                            ],
+                            "source_refs": [
+                              "rule:5f138157-4a10-4908-81b9-af95099c999a:6222a0becde6d7769bffbc922a4a7f86ca6924576fff8cadf5e1814f7efaa501",
+                              "evidence:cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "applicability": "applicable",
+                            "minimum_count": null,
+                            "requirement_id": "5f138157-4a10-4908-81b9-af95099c999a",
+                            "target_part_ids": [
+                              "tech",
+                              "appendix/table"
+                            ],
+                            "identity_version": "bid-requirement/1",
+                            "applicability_evidence": []
+                          },
+                          "rule_digest": "6222a0becde6d7769bffbc922a4a7f86ca6924576fff8cadf5e1814f7efaa501",
+                          "source_bound": true,
+                          "rule_snapshot": {
+                            "id": "5f138157-4a10-4908-81b9-af95099c999a",
+                            "kind": "scoring",
+                            "bands": [
+                              {
+                                "label": "full",
+                                "points": "10",
+                                "description": "entire required range"
+                              }
+                            ],
+                            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+                            "statement": "Synthetic scoring clause 2",
+                            "conditions": [
+                              "when the technical range applies"
+                            ],
+                            "exceptions": [
+                              "explicitly excepted alternative"
+                            ],
+                            "max_points": "10",
+                            "origin_kind": "model_extracted",
+                            "rule_set_id": "7b045248-daf0-415c-afd4-5b3fe059a58c",
+                            "evidence_ids": [
+                              "cb8a613a-dbc0-437d-94c5-b6fa7a144340"
+                            ],
+                            "provenance_status": "effective",
+                            "applicability_scope": {},
+                            "manual_origin_rule_id": null
+                          },
+                          "decision_snapshot": null,
+                          "requirement_digest": "10c35fa3c2d0c52b26f6c57938df8d83a0bd12a79fb16c1fcad233f5d407fee2"
+                        }
+                      ],
+                      "review_ready": false,
+                      "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                      "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                      "rule_set_digest": "b656c1b67fcd93e9fda9b37805f3dff514435c153a587cbbc485027d9db8ad8b",
+                      "source_snapshot": [
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.440398-07:00",
+                          "revision": 2,
+                          "source_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                          "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                          "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:18:22.540082-07:00",
+                          "revision": 1,
+                          "source_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                          "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                          "ancestor_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.454808-07:00",
+                          "revision": 2,
+                          "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                          "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                          "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.454808-07:00",
+                          "revision": 2,
+                          "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                          "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                          "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.454808-07:00",
+                          "revision": 2,
+                          "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                          "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                          "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:18:22.540082-07:00",
+                          "revision": 1,
+                          "source_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                          "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                          "ancestor_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.440398-07:00",
+                          "revision": 2,
+                          "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                          "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                          "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                        },
+                        {
+                          "status": "published",
+                          "known_at": "2026-10-21T18:19:22.440398-07:00",
+                          "revision": 2,
+                          "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                          "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                          "ancestor_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                          "valid_until": null,
+                          "policy_class": "prebid_content",
+                          "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                        }
+                      ],
+                      "authority_digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                      "extraction_binding": "unproven_legacy_rule_set",
+                      "inventory_complete": false,
+                      "predecessor_digest": null,
+                      "target_revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                      "authority_revision_id": "d82032ba-df7a-467d-a504-851391e55c68"
+                    }
+                  }
+                },
+                "command_id": "5e7b4891-c930-4809-a4d2-64d65856ed7d",
+                "review_run": null,
+                "assessed_at": "2026-10-22T01:19:23.078551Z",
+                "recorded_at": "2026-10-22T01:19:23.091068Z",
+                "input_digest": "88fb33e33d0b870b1be02be206200929c02bb03d3447e55b8ba597f9bd8f97d1",
+                "submitted_at": "2026-10-22T01:19:22.968856Z",
+                "head_revision": 1,
+                "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+                "supersedes_id": null,
+                "request_digest": "bc00941be8f683959745ebc7df5b21303ef1c159eb02f485caefcdb3ee012d5d",
+                "inventory_proof": null,
+                "package_identity": {
+                  "lot": "same visible lot",
+                  "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                  "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                  "region": null,
+                  "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                  "round_no": 1,
+                  "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                  "bidder_name": "synthetic bidder",
+                  "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                  "binding_status": "confirmed",
+                  "engineering_type": null,
+                  "identity_version": "bid-identity/2",
+                  "engineering_title": "synthetic project",
+                  "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                },
+                "recorded_identity": {
+                  "lot": "same visible lot",
+                  "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                  "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                  "region": null,
+                  "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                  "round_no": 1,
+                  "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                  "bidder_name": "synthetic bidder",
+                  "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                  "binding_status": "confirmed",
+                  "engineering_type": null,
+                  "identity_version": "bid-identity/2",
+                  "engineering_title": "synthetic project",
+                  "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+                },
+                "selection_request": {
+                  "coverage": null,
+                  "inventory": {
+                    "id": "4af1ed1c-039d-4df9-91bc-9bcccc53e77a",
+                    "digest": "f9f9b567ffbcb94df5e7eeea168de677ca746f9a1b5174e8f7522736c60d27f7"
+                  },
+                  "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                  "review_run": null,
+                  "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                  "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9"
+                },
+                "attachment_sources": [
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.440398-07:00",
+                    "revision": 2,
+                    "source_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                    "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                    "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:18:22.540082-07:00",
+                    "revision": 1,
+                    "source_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                    "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                    "ancestor_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.454808-07:00",
+                    "revision": 2,
+                    "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                    "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                    "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.454808-07:00",
+                    "revision": 2,
+                    "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                    "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                    "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.454808-07:00",
+                    "revision": 2,
+                    "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                    "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                    "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:18:22.540082-07:00",
+                    "revision": 1,
+                    "source_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                    "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                    "ancestor_id": "f69c2a42-d76e-4f5f-915f-da5fb54187e3",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.440398-07:00",
+                    "revision": 2,
+                    "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                    "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                    "ancestor_id": "c4a3703a-a1e7-5bf7-9396-e4f781fe47c2",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                  },
+                  {
+                    "status": "published",
+                    "known_at": "2026-10-21T18:19:22.440398-07:00",
+                    "revision": 2,
+                    "source_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                    "valid_from": "2026-10-21T18:19:22.440398-07:00",
+                    "ancestor_id": "feb7e892-91a4-55d4-b34f-a49e1ff0c98f",
+                    "valid_until": null,
+                    "policy_class": "prebid_content",
+                    "document_version_id": "16e61628-cfa4-4ef3-b240-6f15e28f465b"
+                  }
+                ],
+                "original_bytes_verified": true,
+                "platform_submission_verified": false,
+                "pre_submission_system_check_verified": false
+              },
+              "digest": "0faf8e247b78e828d4b629d58bbbea58ee8ef81c7435b9ab62957ac6ac817b11"
+            }
+          }
+        ],
+        "has_more": false,
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "scope_outcomes",
+      "method": "GET",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/outcomes",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "items": [
+          {
+            "id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+            "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+            "score_kind": "technical_total",
+            "value": "0",
+            "maximum": "20",
+            "source_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+            "known_at": "2026-10-21T18:19:23.222673-07:00",
+            "verification": "verified",
+            "verification_revision": 1,
+            "supersedes_id": "e24d2560-05c0-4d93-bbf2-7a1f676235b8",
+            "verification_details": {
+              "version": "package-outcome-verification-record/1",
+              "subject_kind": "bid_package",
+              "request": {
+                "version": "package-outcome-verification/1",
+                "subject_kind": "bid_package",
+                "state": "verified",
+                "reason": "Synthetic exact package and official original checked",
+                "identity": {
+                  "project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59",
+                  "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                  "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                  "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                  "package_id": "dcabeaca-63d4-4a2c-b4af-049085d5eca0",
+                  "revision_id": "4de58416-a282-40bf-b658-f20d558dd8eb",
+                  "package_digest": "e0f3bcd005ecd2c96c4b70185d5982c1458823c8abf6a1962e8ce2196e7ebba9",
+                  "binding_digest": "0faf8e247b78e828d4b629d58bbbea58ee8ef81c7435b9ab62957ac6ac817b11",
+                  "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c"
+                },
+                "authority": {
+                  "package_id": "5a72fcf8-b034-4b0a-8e12-80dfc56449ba",
+                  "revision_id": "d82032ba-df7a-467d-a504-851391e55c68",
+                  "digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                  "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c"
+                },
+                "aggregation": "Technical total stated on original page",
+                "published_at": "2026-10-21T18:19:23.222673-07:00",
+                "evidence_refs": [
+                  {
+                    "document_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+                    "evidence_id": "d0859884-57fb-4a0c-987a-aa8ee104bf1b",
+                    "physical_page": 1,
+                    "quote": "Synthetic official final technical total: 0 points out of 20."
+                  }
+                ]
+              },
+              "package_identity": {
+                "lot": "same visible lot",
+                "digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c",
+                "lot_id": "08b348f2-a13e-43b7-b1ec-ccd42e5793b0",
+                "region": null,
+                "round_id": "057086d2-6dfa-4ca3-837d-b6486b267984",
+                "round_no": 1,
+                "bidder_id": "8e82b77b-3c5f-4402-b312-138ebe6a7c7d",
+                "bidder_name": "synthetic bidder",
+                "authority_id": "31b9a35f-1068-4489-9a7a-e0db2fd3d816",
+                "binding_status": "confirmed",
+                "engineering_type": null,
+                "identity_version": "bid-identity/2",
+                "engineering_title": "synthetic project",
+                "engineering_project_id": "15ba4db5-3d17-4aa2-a475-738475b39e59"
+              },
+              "binding_digest": "0faf8e247b78e828d4b629d58bbbea58ee8ef81c7435b9ab62957ac6ac817b11",
+              "checked_at": "2026-10-21T18:19:23.428834-07:00",
+              "authority_proof": {
+                "digest": "891b873792e76f0db4eae8ddd6af0aab5ba1aaad7e165fbc9a7f57c9c59911b7",
+                "snapshot": {
+                  "version": "package-outcome-authority/1",
+                  "authority": {
+                    "package_id": "5a72fcf8-b034-4b0a-8e12-80dfc56449ba",
+                    "revision_id": "d82032ba-df7a-467d-a504-851391e55c68",
+                    "digest": "e84c071eaa231a53f19997d48ac6e01d3a7b0b6a63376e89d1bc340f803b8e13",
+                    "identity_digest": "2c2f56740ef85f2fc7b1f783cc76bcdab979a0a7126e47d15937e8da9789e29c"
+                  },
+                  "binding_digest": "0faf8e247b78e828d4b629d58bbbea58ee8ef81c7435b9ab62957ac6ac817b11",
+                  "documents": [
+                    {
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "byte_size": 82
+                    }
+                  ],
+                  "parses": [
+                    {
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "reason": null,
+                      "status": "frozen",
+                      "parse_run_id": "434ea24e-df3b-4074-b0f5-d6458e6cb9fb",
+                      "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                      "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                      "evidence_digest": "ba184bd262c03875cd98b4b89100aedcf998d084a180e27e2feeb2e0d1d18de2"
+                    }
+                  ],
+                  "sources": [
+                    {
+                      "source_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                      "ancestor_id": "d411846a-34c7-4f1d-be88-9e0eee64e833",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "kind": "document",
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "policy_class": "prebid_content",
+                      "known_at": "2026-10-21T18:18:22.540082-07:00",
+                      "revision": 1,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:18:22.540082-07:00",
+                      "valid_until": null
+                    },
+                    {
+                      "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "ancestor_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "kind": "document",
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "policy_class": "prebid_content",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "valid_until": null
+                    },
+                    {
+                      "source_id": "eca63aa5-660b-5e20-b76e-e357a8be0731",
+                      "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "kind": "document",
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "policy_class": "prebid_content",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "valid_until": null
+                    },
+                    {
+                      "source_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "ancestor_id": "f5ecb705-413e-5fb1-a084-c8e8d76f6605",
+                      "document_version_id": "8f67b186-0650-45b6-bcc0-3db409f16ed2",
+                      "kind": "document",
+                      "digest": "4f72cce28fa1f9ab4cf990989938915a355ee91a449227e580e04e4b6fdb31ec",
+                      "policy_class": "prebid_content",
+                      "known_at": "2026-10-21T18:19:22.454808-07:00",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:22.454808-07:00",
+                      "valid_until": null
+                    }
+                  ]
+                }
+              },
+              "official_source_proof": {
+                "digest": "acdff63e8d578184d6fdce18e304a874aa1cc9d35ffa9ab05a03449de8ff73f0",
+                "snapshot": {
+                  "schema": "official-source-authority/v2",
+                  "root_id": "9dfaf469-b553-58dd-b448-12fc3b0d7fab",
+                  "heads": [
+                    {
+                      "source_id": "709e4ac5-2aa6-51d3-a3f2-d9bcf936abc1",
+                      "id": "709e4ac5-2aa6-51d3-a3f2-d9bcf936abc1",
+                      "document_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+                      "kind": "document",
+                      "policy_class": "official_label",
+                      "known_at": "2026-10-21T18:19:23.200033-07:00",
+                      "digest": "e183e416c9e9caf8c682c39f580718eb0d5f97e6605fe6bfbde321a5fe37275f",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:23.200033-07:00",
+                      "valid_until": null
+                    },
+                    {
+                      "source_id": "709e4ac5-2aa6-51d3-a3f2-d9bcf936abc1",
+                      "id": "9dfaf469-b553-58dd-b448-12fc3b0d7fab",
+                      "document_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+                      "kind": "document",
+                      "policy_class": "official_label",
+                      "known_at": "2026-10-21T18:19:23.200033-07:00",
+                      "digest": "e183e416c9e9caf8c682c39f580718eb0d5f97e6605fe6bfbde321a5fe37275f",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:23.200033-07:00",
+                      "valid_until": null
+                    },
+                    {
+                      "source_id": "9dfaf469-b553-58dd-b448-12fc3b0d7fab",
+                      "id": "9dfaf469-b553-58dd-b448-12fc3b0d7fab",
+                      "document_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+                      "kind": "document",
+                      "policy_class": "official_label",
+                      "known_at": "2026-10-21T18:19:23.200033-07:00",
+                      "digest": "e183e416c9e9caf8c682c39f580718eb0d5f97e6605fe6bfbde321a5fe37275f",
+                      "revision": 2,
+                      "status": "published",
+                      "valid_from": "2026-10-21T18:19:23.200033-07:00",
+                      "valid_until": null
+                    }
+                  ],
+                  "edges": [
+                    {
+                      "child_id": "709e4ac5-2aa6-51d3-a3f2-d9bcf936abc1",
+                      "parent_id": "9dfaf469-b553-58dd-b448-12fc3b0d7fab"
+                    }
+                  ],
+                  "evidence": [
+                    {
+                      "id": "d0859884-57fb-4a0c-987a-aa8ee104bf1b",
+                      "parse_id": "b8adb55f-9265-4bd6-be1a-3ffe880bbeb1",
+                      "digest": "2a732366290249b5b37e3fcd80d13a40ea2c637da4e0f150b5905430bd9eac90",
+                      "physical_page": 1,
+                      "quote_digest": "2a732366290249b5b37e3fcd80d13a40ea2c637da4e0f150b5905430bd9eac90"
+                    }
+                  ]
+                }
+              },
+              "verification_scope": "official_outcome_association",
+              "formal_sample_eligible": false,
+              "formal_sample_blockers": [
+                "package_formal_sample_not_supported"
+              ]
+            }
+          },
+          {
+            "id": "e24d2560-05c0-4d93-bbf2-7a1f676235b8",
+            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+            "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+            "score_kind": "technical_total",
+            "value": "0",
+            "maximum": "60",
+            "source_version_id": "cdbd03dd-46c6-4c29-bd17-2c9a30277cb6",
+            "known_at": "2026-10-21T18:19:23.222673-07:00",
+            "verification": "pending",
+            "verification_revision": 0,
+            "supersedes_id": null,
+            "verification_details": null
+          }
+        ],
+        "heads": [
+          {
+            "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+            "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+            "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+            "revision": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "primary_missing_proof",
+      "method": "GET",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7/historical-admission-context",
+      "query": {
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69"
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:32fc33b2e0e9442a9c7f61f6831930bfa1b76b518d686fc3bbdbe3ab219df287\"",
+      "headers": {
+        "etag": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:32fc33b2e0e9442a9c7f61f6831930bfa1b76b518d686fc3bbdbe3ab219df287\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "proofs": [],
+        "schema": "package-historical-admission-context/1",
+        "blockers": [
+          {
+            "code": "PACKAGE_HISTORY_ORIGINAL_TIME_PROOF_MISSING",
+            "message": "缺少逐原始字节在实交前存在、本方取得及依据生效的来源证明。"
+          },
+          {
+            "code": "PACKAGE_HISTORY_COMPLETE_VISUAL_RANGE_PROOF_MISSING",
+            "message": "范围声明不能证明完整图文和必要条款齐备，需独立有据核验。"
+          },
+          {
+            "code": "PACKAGE_HISTORY_MAXIMUM_AGGREGATION_PROOF_MISSING",
+            "message": "需同权威原页明示技术满分和聚合口径，未知不能推测。"
+          },
+          {
+            "code": "PACKAGE_HISTORY_EXTERNAL_PROOF_ADAPTER_NOT_CONFIGURED",
+            "message": "真实证明接入来源尚未配置；签名本身不证明事实真实。"
+          }
+        ],
+        "scope_id": "8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+        "observed_at": "2026-10-21T18:19:23.664756-07:00",
+        "research_only": true,
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879",
+        "label_known_at": "2026-10-21T18:19:23.222673-07:00",
+        "scope_frozen_at": "2026-10-22T01:19:22.832865Z",
+        "historical_as_of": "2026-10-21T18:19:22.968856-07:00",
+        "official_maximum": "20",
+        "formal_eligibility": "unavailable",
+        "formal_sample_created": false,
+        "strict_prebid_eligible": false,
+        "online_metrics_eligible": false,
+        "official_technical_value": "0",
+        "schema_configured": true
+      }
+    },
+    {
+      "name": "admission_context",
+      "method": "GET",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7/historical-admission-context",
+      "query": {
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69"
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:988417c7f78068dba9b97337c68fb3cefbcfdf64ec615a1df667004d7baa42b0\"",
+      "headers": {
+        "etag": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:988417c7f78068dba9b97337c68fb3cefbcfdf64ec615a1df667004d7baa42b0\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "proofs": [
+          {
+            "id": "4f8082b4-bcdb-4a6a-924a-35bcfe39031e",
+            "origin": "synthetic",
+            "adapter_id": "583edb29-90ce-4429-b52e-d84d2eae2f6e",
+            "verified_at": "2026-10-21T18:19:24.0834-07:00",
+            "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879"
+          }
+        ],
+        "schema": "package-historical-admission-context/1",
+        "blockers": [
+          {
+            "code": "PACKAGE_HISTORY_EXTERNAL_PROOF_ADAPTER_NOT_CONFIGURED",
+            "message": "真实证明接入来源尚未配置；签名本身不证明事实真实。"
+          }
+        ],
+        "scope_id": "8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+        "observed_at": "2026-10-21T18:19:24.250225-07:00",
+        "research_only": true,
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879",
+        "label_known_at": "2026-10-21T18:19:23.222673-07:00",
+        "scope_frozen_at": "2026-10-22T01:19:22.832865Z",
+        "historical_as_of": "2026-10-21T18:19:22.968856-07:00",
+        "official_maximum": "20",
+        "formal_eligibility": "unavailable",
+        "formal_sample_created": false,
+        "strict_prebid_eligible": false,
+        "online_metrics_eligible": false,
+        "official_technical_value": "0",
+        "schema_configured": true
+      }
+    },
+    {
+      "name": "admission_created",
+      "method": "POST",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7/historical-admissions",
+      "query": {},
+      "request_body": {
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+        "proof_id": "4f8082b4-bcdb-4a6a-924a-35bcfe39031e",
+        "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879",
+        "reason": "Explicit synthetic research admission through the guarded public API"
+      },
+      "request_headers": {
+        "idempotency-key": "0c4a181f-48d0-4f11-931e-896d2561a6bf",
+        "if-match": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:988417c7f78068dba9b97337c68fb3cefbcfdf64ec615a1df667004d7baa42b0\""
+      },
+      "status": 201,
+      "etag": "\"package-history-admission:792d9733-ea24-4a78-ae80-30fd2de1a6e5:c322833e1625d5eca91a87f12dfed3c8ce86689e2f576a8ba0bd310100ef8224\"",
+      "headers": {
+        "etag": "\"package-history-admission:792d9733-ea24-4a78-ae80-30fd2de1a6e5:c322833e1625d5eca91a87f12dfed3c8ce86689e2f576a8ba0bd310100ef8224\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "id": "792d9733-ea24-4a78-ae80-30fd2de1a6e5",
+        "state": "mechanism_candidate",
+        "bid_id": "32fd8a58-8044-431b-aa1c-fcff38ebb48e",
+        "digest": "4f9f8f5a388a5e9c8929d06a78d289df4ddba5703160f5e5277643a3890f247f",
+        "origin": "synthetic",
+        "schema": "package-historical-research-admission/1",
+        "proof_id": "4f8082b4-bcdb-4a6a-924a-35bcfe39031e",
+        "scope_id": "8b0626c7-1092-45a7-847b-f5f5357c3ac7",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+        "admitted_at": "2026-10-21T18:19:24.400008-07:00",
+        "aggregation": "published_final_technical_total",
+        "proof_digest": "fce0a7891c14108c70163ed919d0ef21c75812fc710e06b89907bc9a94a3c9cb",
+        "scope_digest": "3ca9caf5826e2c31ef81d8231ae4829540fdb74432afbdc09b38f89831c46bc9",
+        "research_only": true,
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879",
+        "label_known_at": "2026-10-21T18:19:23.222673-07:00",
+        "scope_frozen_at": "2026-10-22T01:19:22.832865Z",
+        "historical_as_of": "2026-10-21T18:19:22.968856-07:00",
+        "technical_maximum": "20",
+        "training_selected": false,
+        "formal_eligibility": "unavailable",
+        "evidence_verified_at": "2026-10-21T18:19:24.0834-07:00",
+        "formal_sample_created": false,
+        "strict_prebid_eligible": false,
+        "online_metrics_eligible": false,
+        "official_technical_value": "0",
+        "submission_binding_digest": "0faf8e247b78e828d4b629d58bbbea58ee8ef81c7435b9ab62957ac6ac817b11"
+      }
+    },
+    {
+      "name": "ordinary_api_synthetic_rejected",
+      "method": "POST",
+      "path": "/api/v1/bids/32fd8a58-8044-431b-aa1c-fcff38ebb48e/packages/dcabeaca-63d4-4a2c-b4af-049085d5eca0/revisions/4de58416-a282-40bf-b658-f20d558dd8eb/technical-scopes/8b0626c7-1092-45a7-847b-f5f5357c3ac7/historical-admissions",
+      "query": {},
+      "request_body": {
+        "submission_id": "91891ddb-ed27-4d67-b79d-496693d4334b",
+        "outcome_id": "20981f84-b4f8-4f5e-b35e-22e59c3e0b69",
+        "proof_id": "4f8082b4-bcdb-4a6a-924a-35bcfe39031e",
+        "context_digest": "fd16f77143db29cc74c3f9a57b5e68f19440dec2e722dd1d925b9b8894231879",
+        "reason": "Explicit synthetic research admission through the guarded public API"
+      },
+      "request_headers": {
+        "idempotency-key": "c92ab47f-94db-430b-8baa-ddb17dcde725",
+        "if-match": "\"package-history-context:8b0626c7-1092-45a7-847b-f5f5357c3ac7:988417c7f78068dba9b97337c68fb3cefbcfdf64ec615a1df667004d7baa42b0\""
+      },
+      "status": 403,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "code": "PACKAGE_HISTORY_SYNTHETIC_ENVIRONMENT_DENIED",
+        "message": "整包历史证据、用途、时间或当前版本不满足本次操作条件",
+        "request_id": "1169bb93-e453-47aa-ad43-807f9fe79bd7",
+        "retryable": false,
+        "details": {}
+      }
+    }
+  ]
+}

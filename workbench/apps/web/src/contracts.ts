@@ -1,5 +1,841 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type PackageHistoricalAdmissionContext = {
+  schema: "package-historical-admission-context/1";
+  schema_configured: boolean;
+  scope_id: string;
+  submission_id: string;
+  outcome_id: string;
+  context_digest: string | null;
+  official_technical_value: string | null;
+  official_maximum: string | null;
+  historical_as_of: string | null;
+  scope_frozen_at: string | null;
+  label_known_at: string | null;
+  proofs: {
+    id: string;
+    origin: "synthetic" | "external_evidence";
+    adapter_id: string;
+    verified_at: string;
+    context_digest: string;
+  }[];
+  blockers: {
+    code: string;
+    message: string;
+  }[];
+  observed_at: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalAdmission = {
+  schema: "package-historical-research-admission/1";
+  id: string;
+  proof_id: string;
+  bid_id: string;
+  scope_id: string;
+  submission_id: string;
+  outcome_id: string;
+  scope_digest: string;
+  submission_binding_digest: string;
+  context_digest: string;
+  proof_digest: string;
+  digest: string;
+  origin: "synthetic" | "external_evidence";
+  state: "mechanism_candidate" | "retrospective_candidate";
+  historical_as_of: string;
+  scope_frozen_at: string;
+  label_known_at: string;
+  evidence_verified_at: string;
+  admitted_at: string;
+  official_technical_value: string;
+  technical_maximum: string;
+  aggregation: "published_final_technical_total";
+  training_selected: false;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalAdmissionView = {
+  admission: {
+    schema: "package-historical-research-admission/1";
+    id: string;
+    proof_id: string;
+    bid_id: string;
+    scope_id: string;
+    submission_id: string;
+    outcome_id: string;
+    scope_digest: string;
+    submission_binding_digest: string;
+    context_digest: string;
+    proof_digest: string;
+    digest: string;
+    origin: "synthetic" | "external_evidence";
+    state: "mechanism_candidate" | "retrospective_candidate";
+    historical_as_of: string;
+    scope_frozen_at: string;
+    label_known_at: string;
+    evidence_verified_at: string;
+    admitted_at: string;
+    official_technical_value: string;
+    technical_maximum: string;
+    aggregation: "published_final_technical_total";
+    training_selected: false;
+    research_only: true;
+    formal_eligibility: "unavailable";
+    strict_prebid_eligible: false;
+    online_metrics_eligible: false;
+    formal_sample_created: false;
+  };
+  current: boolean;
+};
+
+export type PackageHistoricalProtocol = {
+  id: string;
+  document: {
+    schema: "package-history-cpu-protocol/1";
+    method: {
+      version: "package-history-project-baselines/1";
+      purpose: "retrospective_research";
+      features: "not_required_by_constant_baselines";
+      provider_requests: 0;
+      digest: string;
+      sources: {
+        "packages/model_governance/package_history_cpu.py": string;
+        "packages/model_governance/common.py": string;
+        "packages/model_governance/evaluation.py": string;
+        "packages/model_governance/statistics.py": string;
+      };
+    };
+    families: ["mean", "median"];
+    selection_metric: "project_mae";
+    tie_order: ["mean", "median"];
+    refit_with_development: false;
+    interval_levels: [0.8, 0.9];
+    group_spanning_policy: "exclude";
+    seed: number;
+    bootstrap_iterations: number;
+  };
+  digest: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalProtocolTemplate = {
+  schema_configured: boolean;
+  document: {
+    schema: "package-history-cpu-protocol/1";
+    method: {
+      version: "package-history-project-baselines/1";
+      purpose: "retrospective_research";
+      features: "not_required_by_constant_baselines";
+      provider_requests: 0;
+      digest: string;
+      sources: {
+        "packages/model_governance/package_history_cpu.py": string;
+        "packages/model_governance/common.py": string;
+        "packages/model_governance/evaluation.py": string;
+        "packages/model_governance/statistics.py": string;
+      };
+    };
+    families: ["mean", "median"];
+    selection_metric: "project_mae";
+    tie_order: ["mean", "median"];
+    refit_with_development: false;
+    interval_levels: [0.8, 0.9];
+    group_spanning_policy: "exclude";
+    seed: number;
+    bootstrap_iterations: number;
+  };
+  method_digest: string;
+  signed_proof_public_upload: false;
+  feature_calibration_available: false;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalCohort = {
+  schema: "package-history-cohort/1";
+  id: string;
+  protocol_id: string;
+  protocol_digest: string;
+  origin: "synthetic" | "external_evidence";
+  timing: {
+    mode: "retrospective_submission_time_holdout";
+    historical_as_of: "per_exact_actual_submission";
+    submission_split_at: string;
+    label_available_as_of: string;
+    training_frozen_at: string;
+    group_spanning_policy: "exclude";
+    prediction_timing: "retrospective";
+  };
+  members: {
+    admission_id: string;
+    proof_id: string;
+    submission_id: string;
+    group_id: string;
+    closure_ids: string[];
+    requested_purpose: "fit" | "development" | "calibration" | "final";
+    purpose: "fit" | "development" | "calibration" | "final" | "excluded";
+    exclusion_reason:
+      | "group_spans_submission_split"
+      | "label_after_available_cutoff"
+      | null;
+    submitted_at: string;
+    label_known_at: string;
+  }[];
+  membership_digest: string;
+  digest: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalCohortView = {
+  cohort: {
+    schema: "package-history-cohort/1";
+    id: string;
+    protocol_id: string;
+    protocol_digest: string;
+    origin: "synthetic" | "external_evidence";
+    timing: {
+      mode: "retrospective_submission_time_holdout";
+      historical_as_of: "per_exact_actual_submission";
+      submission_split_at: string;
+      label_available_as_of: string;
+      training_frozen_at: string;
+      group_spanning_policy: "exclude";
+      prediction_timing: "retrospective";
+    };
+    members: {
+      admission_id: string;
+      proof_id: string;
+      submission_id: string;
+      group_id: string;
+      closure_ids: string[];
+      requested_purpose: "fit" | "development" | "calibration" | "final";
+      purpose: "fit" | "development" | "calibration" | "final" | "excluded";
+      exclusion_reason:
+        | "group_spans_submission_split"
+        | "label_after_available_cutoff"
+        | null;
+      submitted_at: string;
+      label_known_at: string;
+    }[];
+    membership_digest: string;
+    digest: string;
+    research_only: true;
+    formal_eligibility: "unavailable";
+    strict_prebid_eligible: false;
+    online_metrics_eligible: false;
+    formal_sample_created: false;
+  };
+  current: boolean;
+};
+
+export type PackageHistoricalJob = {
+  job_id: string;
+  cohort_id: string;
+  kind: "train" | "evaluate";
+  state: "queued" | "running" | "paused" | "succeeded" | "failed" | "cancelled";
+  generation: number;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalJobView = {
+  job_id: string;
+  cohort_id: string;
+  kind: "train" | "evaluate";
+  state: "queued" | "running" | "paused" | "succeeded" | "failed" | "cancelled";
+  generation: number;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  current: boolean;
+  result:
+    | (
+        | {
+            schema: "package-history-training-result/1";
+            origin: "synthetic" | "external_evidence";
+            cohort_id: string;
+            protocol_digest: string;
+            training_export_digest: string;
+            membership_digest: string;
+            model_digest: string;
+            model: {
+              schema: "package-history-constant-model/1";
+              method_digest: string;
+              family: "mean" | "median";
+              constant: string;
+              training_export_digest: string;
+            };
+            baselines: {
+              mean: string;
+              median: string;
+            };
+            selection: {
+              development_project_mae: {
+                mean: string;
+                median: string;
+              };
+              selected: "mean" | "median";
+              refit_with_development: false;
+            };
+            intervals: {
+              "0.8": {
+                radius: string | null;
+                groups: number;
+                rank: number;
+                unavailable_reason:
+                  | "insufficient_independent_calibration_groups"
+                  | null;
+              };
+              "0.9": {
+                radius: string | null;
+                groups: number;
+                rank: number;
+                unavailable_reason:
+                  | "insufficient_independent_calibration_groups"
+                  | null;
+              };
+            };
+            research_only: true;
+            formal_eligibility: "unavailable";
+            provider_requests: 0;
+            paid_calls: 0;
+          }
+        | {
+            schema: "package-history-independent-evaluation/1";
+            origin: "synthetic" | "external_evidence";
+            cohort_id: string;
+            protocol_digest: string;
+            model_digest: string;
+            membership_digest: string;
+            predictions_digest: string;
+            labels_digest: string;
+            timing: {
+              mode: "retrospective_submission_time_holdout";
+              historical_as_of: "per_exact_actual_submission";
+              submission_split_at: string;
+              label_available_as_of: string;
+              training_frozen_at: string;
+              group_spanning_policy: "exclude";
+              prediction_timing: "retrospective";
+            };
+            selection_denominator: {
+              selected_submissions: number;
+              excluded_submissions: number;
+              final_side_candidates: number;
+            };
+            report: {
+              denominator: number;
+              independent_groups: number;
+              projects: number;
+              counts: {
+                succeeded: number;
+                failed: number;
+                rejected: number;
+                unlabeled: number;
+              };
+              success_coverage: string | null;
+              sample_mae: string | null;
+              project_mae: string | null;
+              original_scale_project_mae: string | null;
+              p90_absolute_error: string | null;
+              project_within_three: string | null;
+              project_bias: string | null;
+              intervals: {
+                "0.8":
+                  | {
+                      coverage: string;
+                      width: string;
+                    }
+                  | {
+                      coverage: null;
+                      width: null;
+                      reason: "interval_or_labeled_predictions_unavailable";
+                    };
+                "0.9":
+                  | {
+                      coverage: string;
+                      width: string;
+                    }
+                  | {
+                      coverage: null;
+                      width: null;
+                      reason: "interval_or_labeled_predictions_unavailable";
+                    };
+              };
+              paired_baselines: {
+                mean?:
+                  | {
+                      gain: string;
+                      paired_count: number;
+                      group_bootstrap_gain_95: string[] | null;
+                    }
+                  | {
+                      gain: null;
+                      reason: "paired_baseline_missing";
+                    };
+                median?:
+                  | {
+                      gain: string;
+                      paired_count: number;
+                      group_bootstrap_gain_95: string[] | null;
+                    }
+                  | {
+                      gain: null;
+                      reason: "paired_baseline_missing";
+                    };
+              };
+              group_bootstrap_project_mae_95: string[] | null;
+              stability_range_p90: null;
+              strata: {
+                method: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+                maximum: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+                engineering_type: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+              };
+              unavailable_statistics: [
+                "ranking_without_ranking_labels",
+                "shortlist_probability_without_labels",
+                "judge_disagreement_without_judge_labels",
+                "whole_round_stability_without_independent_repeat_predictions",
+              ];
+            };
+            official_source_subset: {
+              scope: "verified_official_associations_with_evidence_backed_admission";
+              origin: "synthetic" | "external_evidence";
+              report: {
+                denominator: number;
+                independent_groups: number;
+                projects: number;
+                counts: {
+                  succeeded: number;
+                  failed: number;
+                  rejected: number;
+                  unlabeled: number;
+                };
+                success_coverage: string | null;
+                sample_mae: string | null;
+                project_mae: string | null;
+                original_scale_project_mae: string | null;
+                p90_absolute_error: string | null;
+                project_within_three: string | null;
+                project_bias: string | null;
+                intervals: {
+                  "0.8":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                  "0.9":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                };
+                paired_baselines: {
+                  mean?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                  median?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                };
+                group_bootstrap_project_mae_95: string[] | null;
+                stability_range_p90: null;
+                strata: {
+                  method: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  maximum: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  engineering_type: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                };
+                unavailable_statistics: [
+                  "ranking_without_ranking_labels",
+                  "shortlist_probability_without_labels",
+                  "judge_disagreement_without_judge_labels",
+                  "whole_round_stability_without_independent_repeat_predictions",
+                ];
+              };
+            };
+            research_only: true;
+            formal_eligibility: "unavailable";
+            acceptance_decision: "unavailable";
+            missing_acceptance: [
+              "real_independent_quality_validation",
+              "complete_package_three_judgment_features",
+              "preexposure_business_certification",
+              "independent_repeat_stability",
+              "observation_and_release_authority",
+            ];
+            provider_requests: 0;
+            paid_calls: 0;
+          }
+      )
+    | null;
+  result_digest: string | null;
+};
+
+export type PackageHistoryAdmissionRequest = {
+  submission_id: string;
+  outcome_id: string;
+  proof_id: string;
+  context_digest: string;
+  reason: string;
+};
+
+export type PackageHistoryProtocolRequest = {
+  method_digest: string;
+  seed: number;
+  bootstrap_iterations: number;
+  reason: string;
+};
+
+export type PackageHistoryCohortRequest = {
+  protocol_id: string;
+  submission_split_at: string;
+  label_available_as_of: string;
+  selections: PackageHistorySelection[];
+  reason: string;
+};
+
+export type PackageHistoryJobRequest = {
+  kind: "train" | "evaluate";
+  reason: string;
+};
+
+export type PackageHistoryJobControl = {
+  action: "pause" | "resume" | "cancel";
+  generation: number;
+  reason: string;
+};
+
+export type PackageHistoryAdmissionDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "admissions";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "admission";
+        bid_id: string;
+        scope_id: string;
+        submission_id: string;
+        outcome_id: string;
+        digest: string;
+        origin: "synthetic" | "external_evidence";
+        state: "mechanism_candidate" | "retrospective_candidate";
+        historical_as_of: string;
+        label_known_at: string;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "admissions";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryProtocolDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "protocols";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "protocol";
+        digest: string;
+        document: {
+          schema: "package-history-cpu-protocol/1";
+          method: {
+            version: "package-history-project-baselines/1";
+            purpose: "retrospective_research";
+            features: "not_required_by_constant_baselines";
+            provider_requests: 0;
+            digest: string;
+            sources: {
+              "packages/model_governance/package_history_cpu.py": string;
+              "packages/model_governance/common.py": string;
+              "packages/model_governance/evaluation.py": string;
+              "packages/model_governance/statistics.py": string;
+            };
+          };
+          families: ["mean", "median"];
+          selection_metric: "project_mae";
+          tie_order: ["mean", "median"];
+          refit_with_development: false;
+          interval_levels: [0.8, 0.9];
+          group_spanning_policy: "exclude";
+          seed: number;
+          bootstrap_iterations: number;
+        };
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "protocols";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryCohortDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "cohorts";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "cohort";
+        protocol_id: string;
+        digest: string;
+        membership_digest: string;
+        origin: "synthetic" | "external_evidence";
+        submission_split_at: string;
+        label_available_as_of: string;
+        member_count: number;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "cohorts";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryJobDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "jobs";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "job";
+        cohort_id: string;
+        job_kind: "train" | "evaluate";
+        state:
+          | "queued"
+          | "running"
+          | "paused"
+          | "succeeded"
+          | "failed"
+          | "cancelled";
+        generation: number;
+        result_available: boolean;
+        result_digest: string | null;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "jobs";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
 export type AuthoringHistoricalSectionView = {
   version: "authoring-historical-section/1";
   bid_id: string;
@@ -8093,6 +8929,11 @@ export type UploadTarget =
       file_id: string;
       expected_file_revision: number;
     };
+
+export type PackageHistorySelection = {
+  admission_id: string;
+  purpose: "fit" | "development" | "calibration" | "final";
+};
 
 export type AuthoringHistoryAuthoringRichDocument = {
   type: "doc";

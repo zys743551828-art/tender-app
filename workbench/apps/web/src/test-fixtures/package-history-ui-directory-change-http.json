@@ -1,0 +1,534 @@
+{
+  "protocol": "package-history-ui-http/1",
+  "synthetic": true,
+  "real_qualification": false,
+  "paid_calls": 0,
+  "provider_requests": 0,
+  "transport": "actual public FastAPI main with complete exposure bridge and independent PostgreSQL 17 LOGINs",
+  "object_transport": "explicit synthetic in-memory original bytes; no real object-store transport claim",
+  "actor_id": "1f07d747-fdcb-4bea-8ba1-ff5aded8b7ab",
+  "responses": [
+    {
+      "name": "protocol_template",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cpu-protocol-template",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": "\"package-history-protocol-template:00000000-0000-0000-0000-000000000000:30fd27e0ca0b8080b66278ab0fc6c881e99d31080757d3db481df2856393cbd8\"",
+      "headers": {
+        "etag": "\"package-history-protocol-template:00000000-0000-0000-0000-000000000000:30fd27e0ca0b8080b66278ab0fc6c881e99d31080757d3db481df2856393cbd8\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "schema_configured": true,
+        "document": {
+          "schema": "package-history-cpu-protocol/1",
+          "method": {
+            "version": "package-history-project-baselines/1",
+            "purpose": "retrospective_research",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0,
+            "sources": {
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8",
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604"
+            },
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6"
+          },
+          "families": [
+            "mean",
+            "median"
+          ],
+          "selection_metric": "project_mae",
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "refit_with_development": false,
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "bootstrap_iterations": 1000,
+          "seed": 17,
+          "group_spanning_policy": "exclude"
+        },
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "signed_proof_public_upload": false,
+        "feature_calibration_available": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocol_created_1701",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 1701,
+        "bootstrap_iterations": 100,
+        "reason": "Synthetic real HTTP directory observation-change fixture"
+      },
+      "request_headers": {
+        "idempotency-key": "7c08779c-82c1-4bd7-a9f7-ee4c449f34ca"
+      },
+      "status": 201,
+      "etag": "\"package-history-protocol:e1a54651-a0ce-4516-9a1e-b8f09e17f921:186969222cc88723bcc1d68d5ada96a7bcaee229f4adf9958fefad76ad95ab7d\"",
+      "headers": {
+        "etag": "\"package-history-protocol:e1a54651-a0ce-4516-9a1e-b8f09e17f921:186969222cc88723bcc1d68d5ada96a7bcaee229f4adf9958fefad76ad95ab7d\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "id": "e1a54651-a0ce-4516-9a1e-b8f09e17f921",
+        "digest": "ff28b1d85d343e62cc22b327d4fd94081814c75d797cf6460e9f6315f971046f",
+        "document": {
+          "seed": 1701,
+          "method": {
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "purpose": "retrospective_research",
+            "sources": {
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+            },
+            "version": "package-history-project-baselines/1",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0
+          },
+          "schema": "package-history-cpu-protocol/1",
+          "families": [
+            "mean",
+            "median"
+          ],
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "selection_metric": "project_mae",
+          "bootstrap_iterations": 100,
+          "group_spanning_policy": "exclude",
+          "refit_with_development": false
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocol_created_1702",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 1702,
+        "bootstrap_iterations": 100,
+        "reason": "Synthetic real HTTP directory observation-change fixture"
+      },
+      "request_headers": {
+        "idempotency-key": "d9049b05-001e-4e06-9e70-33eecb96a9cc"
+      },
+      "status": 201,
+      "etag": "\"package-history-protocol:09a5fc42-b73c-48ae-acfc-4949cee343b4:02f8511b43ca7cd7fca499533ac9697c6cc268604fc046c8dffbb832d9bc9dcc\"",
+      "headers": {
+        "etag": "\"package-history-protocol:09a5fc42-b73c-48ae-acfc-4949cee343b4:02f8511b43ca7cd7fca499533ac9697c6cc268604fc046c8dffbb832d9bc9dcc\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "id": "09a5fc42-b73c-48ae-acfc-4949cee343b4",
+        "digest": "935fb31f79dac4cae5cb8aaea795f4e185c04c4f04dcffba141ffc11fd17b581",
+        "document": {
+          "seed": 1702,
+          "method": {
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "purpose": "retrospective_research",
+            "sources": {
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+            },
+            "version": "package-history-project-baselines/1",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0
+          },
+          "schema": "package-history-cpu-protocol/1",
+          "families": [
+            "mean",
+            "median"
+          ],
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "selection_metric": "project_mae",
+          "bootstrap_iterations": 100,
+          "group_spanning_policy": "exclude",
+          "refit_with_development": false
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocols_page_one",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {
+        "limit": 1
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "protocols",
+        "items": [
+          {
+            "id": "09a5fc42-b73c-48ae-acfc-4949cee343b4",
+            "kind": "protocol",
+            "digest": "935fb31f79dac4cae5cb8aaea795f4e185c04c4f04dcffba141ffc11fd17b581",
+            "document": {
+              "seed": 1702,
+              "method": {
+                "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+                "purpose": "retrospective_research",
+                "sources": {
+                  "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+                  "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+                  "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+                  "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+                },
+                "version": "package-history-project-baselines/1",
+                "features": "not_required_by_constant_baselines",
+                "provider_requests": 0
+              },
+              "schema": "package-history-cpu-protocol/1",
+              "families": [
+                "mean",
+                "median"
+              ],
+              "tie_order": [
+                "mean",
+                "median"
+              ],
+              "interval_levels": [
+                0.8,
+                0.9
+              ],
+              "selection_metric": "project_mae",
+              "bootstrap_iterations": 100,
+              "group_spanning_policy": "exclude",
+              "refit_with_development": false
+            },
+            "created_at": "2026-10-22T01:19:19.576685+00:00",
+            "current_status": "not_rechecked"
+          }
+        ],
+        "total": 2,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": true,
+        "observed_at": "2026-10-22T01:19:19.594681+00:00",
+        "observation_digest": "f87f651e2d83c3ae4d9781c411df964a67cc5aa99a10275a608f914780d13d5d",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": "eyJ2ZXJzaW9uIjoxLCJzY29wZSI6IjY1NmVhNjQ0MDlkYzUyYjFhMWZlYTI0ZWI0MDhhYTEwZDMzMmE2ODcxZDRiZDY1OGVhMGQ4YWMwMmU1YWMzNDEiLCJvYnNlcnZhdGlvbiI6ImY4N2Y2NTFlMmQ4M2MzYWU0ZDk3ODFjNDExZGY5NjRhNjdjYzVhYTk5YTEwMjc1YTYwOGY5MTQ3ODBkMTNkNWQiLCJhZnRlciI6IjA5YTVmYzQyLWI3M2MtNDhhZS1hY2ZjLTQ5NDljZWUzNDNiNCJ9.9178f8bed7ec83edb3024179e1d5d2e67857068b373113885b463ed284334141",
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "protocols_page_two",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {
+        "limit": 1,
+        "cursor": "eyJ2ZXJzaW9uIjoxLCJzY29wZSI6IjY1NmVhNjQ0MDlkYzUyYjFhMWZlYTI0ZWI0MDhhYTEwZDMzMmE2ODcxZDRiZDY1OGVhMGQ4YWMwMmU1YWMzNDEiLCJvYnNlcnZhdGlvbiI6ImY4N2Y2NTFlMmQ4M2MzYWU0ZDk3ODFjNDExZGY5NjRhNjdjYzVhYTk5YTEwMjc1YTYwOGY5MTQ3ODBkMTNkNWQiLCJhZnRlciI6IjA5YTVmYzQyLWI3M2MtNDhhZS1hY2ZjLTQ5NDljZWUzNDNiNCJ9.9178f8bed7ec83edb3024179e1d5d2e67857068b373113885b463ed284334141"
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "protocols",
+        "items": [
+          {
+            "id": "e1a54651-a0ce-4516-9a1e-b8f09e17f921",
+            "kind": "protocol",
+            "digest": "ff28b1d85d343e62cc22b327d4fd94081814c75d797cf6460e9f6315f971046f",
+            "document": {
+              "seed": 1701,
+              "method": {
+                "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+                "purpose": "retrospective_research",
+                "sources": {
+                  "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+                  "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+                  "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+                  "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+                },
+                "version": "package-history-project-baselines/1",
+                "features": "not_required_by_constant_baselines",
+                "provider_requests": 0
+              },
+              "schema": "package-history-cpu-protocol/1",
+              "families": [
+                "mean",
+                "median"
+              ],
+              "tie_order": [
+                "mean",
+                "median"
+              ],
+              "interval_levels": [
+                0.8,
+                0.9
+              ],
+              "selection_metric": "project_mae",
+              "bootstrap_iterations": 100,
+              "group_spanning_policy": "exclude",
+              "refit_with_development": false
+            },
+            "created_at": "2026-10-22T01:19:19.535386+00:00",
+            "current_status": "not_rechecked"
+          }
+        ],
+        "total": 2,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": false,
+        "observed_at": "2026-10-22T01:19:19.615554+00:00",
+        "observation_digest": "f87f651e2d83c3ae4d9781c411df964a67cc5aa99a10275a608f914780d13d5d",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": null,
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    },
+    {
+      "name": "protocol_created_1703",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 1703,
+        "bootstrap_iterations": 100,
+        "reason": "Synthetic real HTTP directory observation-change fixture"
+      },
+      "request_headers": {
+        "idempotency-key": "74f994eb-1986-4b11-b33a-a886b02dcc80"
+      },
+      "status": 201,
+      "etag": "\"package-history-protocol:12c6ef7f-6a5d-49f7-850f-4cae726d1f87:e791ee491d428a1ce06051625ca9f8605e255de8c651b3bd7a8f26d1deae7c42\"",
+      "headers": {
+        "etag": "\"package-history-protocol:12c6ef7f-6a5d-49f7-850f-4cae726d1f87:e791ee491d428a1ce06051625ca9f8605e255de8c651b3bd7a8f26d1deae7c42\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "id": "12c6ef7f-6a5d-49f7-850f-4cae726d1f87",
+        "digest": "1bc0ed43af58298ed735be3683c1878f849f9723e6227c46db9e9bcf72d47bca",
+        "document": {
+          "seed": 1703,
+          "method": {
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "purpose": "retrospective_research",
+            "sources": {
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+            },
+            "version": "package-history-project-baselines/1",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0
+          },
+          "schema": "package-history-cpu-protocol/1",
+          "families": [
+            "mean",
+            "median"
+          ],
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "selection_metric": "project_mae",
+          "bootstrap_iterations": 100,
+          "group_spanning_policy": "exclude",
+          "refit_with_development": false
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocols_observation_changed",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {
+        "limit": 1,
+        "cursor": "eyJ2ZXJzaW9uIjoxLCJzY29wZSI6IjY1NmVhNjQ0MDlkYzUyYjFhMWZlYTI0ZWI0MDhhYTEwZDMzMmE2ODcxZDRiZDY1OGVhMGQ4YWMwMmU1YWMzNDEiLCJvYnNlcnZhdGlvbiI6ImY4N2Y2NTFlMmQ4M2MzYWU0ZDk3ODFjNDExZGY5NjRhNjdjYzVhYTk5YTEwMjc1YTYwOGY5MTQ3ODBkMTNkNWQiLCJhZnRlciI6IjA5YTVmYzQyLWI3M2MtNDhhZS1hY2ZjLTQ5NDljZWUzNDNiNCJ9.9178f8bed7ec83edb3024179e1d5d2e67857068b373113885b463ed284334141"
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 409,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "code": "PACKAGE_HISTORY_DIRECTORY_OBSERVATION_CHANGED",
+        "message": "目录在分页期间已变化，请保留原选择并从首页重新读取",
+        "request_id": "266c0802-118d-4ce0-88f3-e194097e1dc2",
+        "retryable": false,
+        "details": {}
+      }
+    },
+    {
+      "name": "cohorts_wrong_cursor_scope",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cohorts",
+      "query": {
+        "limit": 1,
+        "cursor": "eyJ2ZXJzaW9uIjoxLCJzY29wZSI6IjY1NmVhNjQ0MDlkYzUyYjFhMWZlYTI0ZWI0MDhhYTEwZDMzMmE2ODcxZDRiZDY1OGVhMGQ4YWMwMmU1YWMzNDEiLCJvYnNlcnZhdGlvbiI6ImY4N2Y2NTFlMmQ4M2MzYWU0ZDk3ODFjNDExZGY5NjRhNjdjYzVhYTk5YTEwMjc1YTYwOGY5MTQ3ODBkMTNkNWQiLCJhZnRlciI6IjA5YTVmYzQyLWI3M2MtNDhhZS1hY2ZjLTQ5NDljZWUzNDNiNCJ9.9178f8bed7ec83edb3024179e1d5d2e67857068b373113885b463ed284334141"
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 422,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "code": "PACKAGE_HISTORY_DIRECTORY_CURSOR_INVALID",
+        "message": "目录游标与所选筛选不符，请从首页重新读取",
+        "request_id": "d2d00593-7be4-4c15-b55c-2f745587d494",
+        "retryable": false,
+        "details": {}
+      }
+    },
+    {
+      "name": "protocols_refreshed",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {
+        "limit": 1
+      },
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store",
+        "vary": "Cookie"
+      },
+      "body": {
+        "kind": "protocols",
+        "items": [
+          {
+            "id": "12c6ef7f-6a5d-49f7-850f-4cae726d1f87",
+            "kind": "protocol",
+            "digest": "1bc0ed43af58298ed735be3683c1878f849f9723e6227c46db9e9bcf72d47bca",
+            "document": {
+              "seed": 1703,
+              "method": {
+                "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+                "purpose": "retrospective_research",
+                "sources": {
+                  "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+                  "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+                  "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+                  "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+                },
+                "version": "package-history-project-baselines/1",
+                "features": "not_required_by_constant_baselines",
+                "provider_requests": 0
+              },
+              "schema": "package-history-cpu-protocol/1",
+              "families": [
+                "mean",
+                "median"
+              ],
+              "tie_order": [
+                "mean",
+                "median"
+              ],
+              "interval_levels": [
+                0.8,
+                0.9
+              ],
+              "selection_metric": "project_mae",
+              "bootstrap_iterations": 100,
+              "group_spanning_policy": "exclude",
+              "refit_with_development": false
+            },
+            "created_at": "2026-10-22T01:19:19.672818+00:00",
+            "current_status": "not_rechecked"
+          }
+        ],
+        "total": 3,
+        "filters": {
+          "bid_id": null,
+          "scope_id": null,
+          "cohort_id": null,
+          "protocol_id": null
+        },
+        "has_more": true,
+        "observed_at": "2026-10-22T01:19:19.719843+00:00",
+        "observation_digest": "01e05dd454a01237bfd6110eae897875d956abf0d50ace760313379509e32a5a",
+        "version": "package-history-directory/1",
+        "status": "observed",
+        "schema_configured": true,
+        "complete_observation": true,
+        "next_cursor": "eyJ2ZXJzaW9uIjoxLCJzY29wZSI6IjY1NmVhNjQ0MDlkYzUyYjFhMWZlYTI0ZWI0MDhhYTEwZDMzMmE2ODcxZDRiZDY1OGVhMGQ4YWMwMmU1YWMzNDEiLCJvYnNlcnZhdGlvbiI6IjAxZTA1ZGQ0NTRhMDEyMzdiZmQ2MTEwZWFlODk3ODc1ZDk1NmFiZjBkNTBhY2U3NjAzMTMzNzk1MDllMzJhNWEiLCJhZnRlciI6IjEyYzZlZjdmLTZhNWQtNDlmNy04NTBmLTRjYWU3MjZkMWY4NyJ9.5ba92918ac351fdcd80ee5e463a9128faf864d51b57e81d823d3bb8de3d4fa37",
+        "currentness_rechecked": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "qualification_granted": false
+      }
+    }
+  ]
+}

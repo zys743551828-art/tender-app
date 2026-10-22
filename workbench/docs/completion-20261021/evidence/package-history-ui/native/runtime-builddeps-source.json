@@ -1,0 +1,27 @@
+{
+  "index": "https://archive.ubuntu.com/ubuntu/dists/noble/main/binary-amd64/Packages.xz",
+  "index_sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451",
+  "packages": [
+    {
+      "name": "bison",
+      "version": "2:3.8.2+dfsg-1build2",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/b/bison/bison_3.8.2+dfsg-1build2_amd64.deb",
+      "bytes": 748688,
+      "sha256": "18f487c400da3e968a44ecb3783a443641bcd14e2b080ed9ed1167f4aa2c1612"
+    },
+    {
+      "name": "flex",
+      "version": "2.6.4-8.2build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/flex/flex_2.6.4-8.2build1_amd64.deb",
+      "bytes": 300754,
+      "sha256": "c5604f55827b50e3f568b4731b7799f86b147454c867be02bc141d9d8ce561ff"
+    },
+    {
+      "name": "m4",
+      "version": "1.4.19-4build1",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/m/m4/m4_1.4.19-4build1_amd64.deb",
+      "bytes": 243640,
+      "sha256": "30ea715845a1863abd55d11e47ab91513130bf347852d4cdeae69e9d98fa795c"
+    }
+  ]
+}

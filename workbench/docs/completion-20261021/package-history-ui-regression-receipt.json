@@ -1,0 +1,528 @@
+{
+  "schema": "package-history-ui-checkpoint/1",
+  "checkpoint": 16,
+  "date": "2026-10-22",
+  "status": "local_verified_unpublished",
+  "repository": "zys743551828-art/tender-app",
+  "branch": "work/bid-workbench-completion-20261021",
+  "pr_number": 1,
+  "published_baseline": {
+    "commit": "25954a22225713785106dff775287d913c0fc39c",
+    "tree": "e038ee7a3a13f78e2f9de6f0d86b1a7ee89ede87",
+    "parent": "e54c86cae104acb3b5edb0cfddfd15afeabdf6cb"
+  },
+  "frozen_product_plan": "tender-docs@13bfcf194f997c68216179bec72ab657d517d734:00-项目管理/标书工作台融合实施计划.md",
+  "publication": {
+    "remote_writes": 0,
+    "merged": false,
+    "deployed": false,
+    "paid_model_calls": 0,
+    "authorization_scope": "Local development, checks, fixes and documentation. Prior 113-file publication is already complete and is not a new publication grant."
+  },
+  "validation": {
+    "backend_targeted": {
+      "passed": 57,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "pytest_seconds": 5.84,
+      "full_backend_suite_run": false
+    },
+    "frontend_full": {
+      "test_files": 176,
+      "passed": 1731,
+      "failed": 0,
+      "skipped": 0,
+      "unhandled_errors": 0,
+      "vitest_seconds": 120.07
+    },
+    "native_pg": {
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 53.293,
+      "python_input_count": 888,
+      "sql_count": 42,
+      "source_unchanged": true,
+      "receipt": "evidence/package-history-ui/native/run-03-receipt.json",
+      "receipt_sha256": "c672830faf6c1862defe63fde3aae106da3cdfece9011bfa9a3ac6717ebeb4d9"
+    },
+    "browser": {
+      "native-final": {
+        "passed": true,
+        "scenarios": 24,
+        "screenshots": 36,
+        "receipt": "evidence/package-history-ui/browser/native-final/receipt.json",
+        "receipt_sha256": "c07d3aecc14983c05cee39348d29ac9783d4079bc4a3d79971484bcd99cb6e17",
+        "source_unchanged": true,
+        "database_in_browser": false,
+        "paid_calls": 0,
+        "page_errors": 0,
+        "external_requests": 0,
+        "horizontal_overflow": false
+      },
+      "admission-final": {
+        "passed": true,
+        "scenarios": 16,
+        "screenshots": 16,
+        "receipt": "evidence/package-history-ui/browser/admission-final/receipt.json",
+        "receipt_sha256": "29d9e74df472c6142b7794f88c46e7c0b1fb1fe6b7424f760a859ca7b1ba81d2",
+        "source_unchanged": true,
+        "database_in_browser": false,
+        "paid_calls": 0,
+        "page_errors": 0,
+        "external_requests": 0,
+        "horizontal_overflow": false
+      }
+    },
+    "python_static": {
+      "ruff_files": 5,
+      "format_files": 5,
+      "mypy_implementation_files": 2,
+      "bandit_implementation_files": 3
+    },
+    "frontend_static": {
+      "format": "passed",
+      "eslint": "passed",
+      "typescript": "passed",
+      "production_build": "passed"
+    },
+    "actual_openapi": {
+      "unchanged": true,
+      "sha256": "a3d514495d28a2aecb4fd53b2a9022e3c8650d1673394bb13308603a33624350",
+      "actual_export_byte_identical": true
+    },
+    "generated_frontend_contracts": {
+      "typescript_sha256": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+      "runtime_schemas_sha256": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+      "regeneration_byte_identical": true
+    }
+  },
+  "source_freeze": {
+    "selected_file_count": 1654,
+    "before_after_unchanged": true,
+    "current_files_rechecked": true,
+    "source_scope": "All current tracked/unignored API, Worker, frontend source/scripts, packages, tests, deploy and listed build/tool configurations; docs, generated tsbuildinfo, node_modules, dist and ignored runtime outputs excluded.",
+    "manifest_reference": "evidence/package-history-ui/regression/corrected/receipt.json",
+    "changed_source_count": 41,
+    "changed_source_sha256": {
+      "apps/api/package_historical_research.py": "ad0e146da6b5e6555ca266672d7923f91886e0fa85261ac0771a5d0d107897bf",
+      "apps/web/.prettierignore": "fd6a6a1329d6fe9f94cfa4e05c397d1f4e99716f9866f7a50bb143d1648ebefe",
+      "apps/web/scripts/check-package-history-admission-browser.mjs": "e18f072bad3ac56e82fbdf91a3ca7a16aab5c5f868b1a86825f9dc724108ac62",
+      "apps/web/scripts/check-package-history-native-browser.mjs": "5b2a223d3aec38ecc544bfa6eab4fba8326b35e84124d56902a80fd3774867cf",
+      "apps/web/scripts/generate-contracts.py": "044e56e7c6ac54013e700127f80126ac4a1fda8f1d408c101269c36da4169f2a",
+      "apps/web/src/App.tsx": "58a4ddcdaf3b17c54b4ff78cc11e36e43d6c30e20073bb1ae1cb9d534a893429",
+      "apps/web/src/PackageHistoricalAdmission.css": "764a239d455df1eaa6c432cd73fd8e61be46c444e17adbf2e9cfb414697bc90f",
+      "apps/web/src/PackageHistoricalAdmission.integration.test.tsx": "f2bc2f0cfe72a9030013fcae13be88ef389526c390ce1458c16a99aa982d8513",
+      "apps/web/src/PackageHistoricalAdmission.test.tsx": "093b1a93b9b4d38588a1c3de4a9f5be981f8a64dba62ea07519554404c77742e",
+      "apps/web/src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+      "apps/web/src/PackageHistoricalResearch.css": "004fe30584e59601cd5bdfebe67cd3678943f1b035676c19dc713d617a40bd49",
+      "apps/web/src/PackageHistoricalResearch.native.test.tsx": "1c2f01ec97b3977c8985f55e3f30a31accc97b929e7efdb71f83084a731e4a05",
+      "apps/web/src/PackageHistoricalResearch.test.tsx": "cee7c8e8038d5dcc7676f13100fd2450a26ae668702e5d37f0c874e79fa04844",
+      "apps/web/src/PackageHistoricalResearch.tsx": "5474421fd73845e762c8bbe05c70998abad3752fd6e4273bb5744cea90c8e37b",
+      "apps/web/src/PackageHistoricalResearchCommon.tsx": "b86ea5899b222fa78500ba3563308d9779d1a7cd4170dd62d53c0162c7719685",
+      "apps/web/src/PackageHistoricalResearchDetails.tsx": "44de980656f4e2bd90632e97760d3f1c20138d8ab28b932f2e8074848aec3518",
+      "apps/web/src/PackageHistoricalResearchForms.tsx": "79f34c7a6d7aa98d99443e6d984b95f3a70d3d3685fa27cf6f66acc642ed53f7",
+      "apps/web/src/PackageHistoricalResearchJobs.tsx": "7d0204f85e44caa47d152c54236c817b6f907591e8b53639039ad76e6717f3cc",
+      "apps/web/src/PackageTechnicalEligibility.tsx": "3b500cfa85cd69fda2987f3ea3afaf02b7ad76184cff2cdb708ef075753c921a",
+      "apps/web/src/PackageTechnicalScope.tsx": "9cab253d1706bcf2f2ffdd67a7c86cc88e1afea82b1fa788dedebf88f2c6955c",
+      "apps/web/src/Research.test.tsx": "d3a057d63b47ace7b2491ad745dd002dd436ffe4e9da468fd546b5700653463b",
+      "apps/web/src/Research.tsx": "da231ecdfc6ca823a2763b7d210402f97aac00d5f910870be1bf425403d300c8",
+      "apps/web/src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+      "apps/web/src/packageHistoricalAdmissionFixtures.test-support.ts": "bbf0350081359a8dfa75be4dc98a6b0e9ee646a70b0af7f47d4ae1fabbd12c32",
+      "apps/web/src/packageHistoricalResearchNative.test.ts": "4fb0fa734a5e3788c83a85ffc01161e45c4b526d34b325b77bda7fd50faf7338",
+      "apps/web/src/packageHistoricalResearchProtocol.test.ts": "f828ca297ca7405d2e5d7e5cf07939eb3271c17f8da77dec8e6beb3041960468",
+      "apps/web/src/packageHistoricalResearchProtocol.ts": "5b3aa83599afba69a6aefb32d7f96da23f0816944e1bd80b68e5924eb7bb375a",
+      "apps/web/src/packageHistoricalResearchRecovery.test.ts": "1a14f0bdc28b48e9163a8258f0f8a9e8397adbd53cfb3c68eaee074664063927",
+      "apps/web/src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+      "apps/web/src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+      "apps/web/src/packageHistoryPresentation.ts": "acb1624bdfa58f53c9c311dd2a9b5c713fd85477a06ed95d9c7f352166766ade",
+      "apps/web/src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+      "apps/web/src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+      "apps/web/src/test-fixtures/package-history-ui-directory-change-http.json": "e2d7425f8eca919e9136fc1840d0dd0b3bc9980f87ca22798a96895900d068e6",
+      "apps/web/src/test-fixtures/package-history-ui-method-recovery-http.json": "0d282dd471a65a67f52651c757e6c6e641dadbb2338326b69bd0f973f323d1aa",
+      "apps/web/src/test-fixtures/package-history-ui-role-boundaries-http.json": "75e4faf6aa8a2e0b35b130fd0c81a5cd89f9c93b8565eaf903f43edba0583ef7",
+      "apps/web/src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74",
+      "apps/web/src/usePackageHistoryDirectory.ts": "afd59b55734a4f958444317125f11bbdc98ac23b1436a650a400f738a03a0520",
+      "deploy/package_history_ui_acceptance.py": "957379e6e7d238b19fbeaaf58bb66b3f392c9320e4ecaa3776403b6073ce3ee2",
+      "tests/test_package_history_protocol_recovery.py": "37afdda99724f4933d73997a2d8d3930a5aa1a209e3352fd3ba2207f6d6eaacd",
+      "tests/test_package_history_ui_pg.py": "6cd5b1ee1bc4a00f8df803fa80a391c730b3e26ecc36c9137635877e45696ffb"
+    },
+    "not_self_referential": "This receipt records the precommit verified source candidate. Exact local commit/tree are reported after committing; documentation and this receipt are excluded from the source freeze."
+  },
+  "commands": [
+    {
+      "label": "backend-targeted",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_package_history.py",
+        "tests/test_package_history_directory.py",
+        "tests/test_package_history_protocol_recovery.py",
+        "tests/test_openapi_snapshot.py"
+      ],
+      "started_at": "2026-10-22T01:29:17.216822+00:00",
+      "duration_seconds": 7.089,
+      "exit_code": 0,
+      "log": "backend-targeted.log",
+      "log_sha256": "20de75e5e817ff9084f9543a72e49b89d84010f7e3856036443d3109fce5c6af",
+      "log_bytes": 99,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "python-mypy",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "mypy",
+        "apps/api/package_historical_research.py",
+        "deploy/package_history_ui_acceptance.py"
+      ],
+      "started_at": "2026-10-22T01:29:24.359438+00:00",
+      "duration_seconds": 0.218,
+      "exit_code": 0,
+      "log": "python-mypy.log",
+      "log_sha256": "f9b031e5c45aa702cd4fef028d465551cb20a2c4698e0913c7b00766b20ac4d8",
+      "log_bytes": 43,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "frontend-format",
+      "cwd": "apps/web",
+      "argv": [
+        "node_modules/.bin/prettier",
+        "--check",
+        "scripts/check-package-history-admission-browser.mjs",
+        "scripts/check-package-history-native-browser.mjs",
+        "src/App.tsx",
+        "src/PackageHistoricalAdmission.css",
+        "src/PackageHistoricalAdmission.integration.test.tsx",
+        "src/PackageHistoricalAdmission.test.tsx",
+        "src/PackageHistoricalAdmission.tsx",
+        "src/PackageHistoricalResearch.css",
+        "src/PackageHistoricalResearch.native.test.tsx",
+        "src/PackageHistoricalResearch.test.tsx",
+        "src/PackageHistoricalResearch.tsx",
+        "src/PackageHistoricalResearchCommon.tsx",
+        "src/PackageHistoricalResearchDetails.tsx",
+        "src/PackageHistoricalResearchForms.tsx",
+        "src/PackageHistoricalResearchJobs.tsx",
+        "src/PackageTechnicalEligibility.tsx",
+        "src/PackageTechnicalScope.tsx",
+        "src/Research.test.tsx",
+        "src/Research.tsx",
+        "src/contracts.ts",
+        "src/packageHistoricalAdmissionFixtures.test-support.ts",
+        "src/packageHistoricalResearchNative.test.ts",
+        "src/packageHistoricalResearchProtocol.test.ts",
+        "src/packageHistoricalResearchProtocol.ts",
+        "src/packageHistoricalResearchRecovery.test.ts",
+        "src/packageHistoricalResearchRecovery.ts",
+        "src/packageHistoricalResearchSchemas.ts",
+        "src/packageHistoryPresentation.ts",
+        "src/recordedCommandStorage.ts",
+        "src/usePackageHistoryDirectory.ts"
+      ],
+      "started_at": "2026-10-22T01:30:36.456408+00:00",
+      "duration_seconds": 1.692,
+      "exit_code": 0,
+      "log": "frontend-format.log",
+      "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "log_bytes": 66,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    },
+    {
+      "label": "frontend-eslint",
+      "cwd": "apps/web",
+      "argv": [
+        "node_modules/.bin/eslint",
+        "scripts/check-package-history-admission-browser.mjs",
+        "scripts/check-package-history-native-browser.mjs",
+        "src/App.tsx",
+        "src/PackageHistoricalAdmission.integration.test.tsx",
+        "src/PackageHistoricalAdmission.test.tsx",
+        "src/PackageHistoricalAdmission.tsx",
+        "src/PackageHistoricalResearch.native.test.tsx",
+        "src/PackageHistoricalResearch.test.tsx",
+        "src/PackageHistoricalResearch.tsx",
+        "src/PackageHistoricalResearchCommon.tsx",
+        "src/PackageHistoricalResearchDetails.tsx",
+        "src/PackageHistoricalResearchForms.tsx",
+        "src/PackageHistoricalResearchJobs.tsx",
+        "src/PackageTechnicalEligibility.tsx",
+        "src/PackageTechnicalScope.tsx",
+        "src/Research.test.tsx",
+        "src/Research.tsx",
+        "src/contracts.ts",
+        "src/packageHistoricalAdmissionFixtures.test-support.ts",
+        "src/packageHistoricalResearchNative.test.ts",
+        "src/packageHistoricalResearchProtocol.test.ts",
+        "src/packageHistoricalResearchProtocol.ts",
+        "src/packageHistoricalResearchRecovery.test.ts",
+        "src/packageHistoricalResearchRecovery.ts",
+        "src/packageHistoricalResearchSchemas.ts",
+        "src/packageHistoryPresentation.ts",
+        "src/recordedCommandStorage.ts",
+        "src/usePackageHistoryDirectory.ts"
+      ],
+      "started_at": "2026-10-22T01:30:38.149507+00:00",
+      "duration_seconds": 2.0,
+      "exit_code": 0,
+      "log": "frontend-eslint.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    },
+    {
+      "label": "frontend-typescript",
+      "cwd": "apps/web",
+      "argv": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "started_at": "2026-10-22T01:29:27.278236+00:00",
+      "duration_seconds": 14.587,
+      "exit_code": 0,
+      "log": "frontend-typescript.log",
+      "log_sha256": "8adcd6418239d42a07e80f9c6bd8ff5215a80fb48444ed3654dda71250fef6a4",
+      "log_bytes": 165,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "frontend-build",
+      "cwd": "apps/web",
+      "argv": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "started_at": "2026-10-22T01:29:42.327123+00:00",
+      "duration_seconds": 20.193,
+      "exit_code": 0,
+      "log": "frontend-build.log",
+      "log_sha256": "691206b3021222492257d47b6f715ba4e7dd9dd354dcfa244a2fe1e7d83a0c24",
+      "log_bytes": 7188,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "openapi-export",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "apps.api.export_openapi",
+        "--output",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/fusion-implemented.openapi.json.gz"
+      ],
+      "started_at": "2026-10-22T01:30:02.521208+00:00",
+      "duration_seconds": 2.55,
+      "exit_code": 0,
+      "log": "openapi-export.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "openapi-byte-match",
+      "cwd": ".",
+      "argv": [
+        "cmp",
+        "packages/contracts/fusion-implemented.openapi.json.gz",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/fusion-implemented.openapi.json.gz"
+      ],
+      "started_at": "2026-10-22T01:30:05.073182+00:00",
+      "duration_seconds": 0.003,
+      "exit_code": 0,
+      "log": "openapi-byte-match.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "contracts-regenerate",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "apps/web/scripts/generate-contracts.py",
+        "--output",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/generated-contracts/contracts.ts"
+      ],
+      "started_at": "2026-10-22T01:30:05.077189+00:00",
+      "duration_seconds": 0.097,
+      "exit_code": 0,
+      "log": "contracts-regenerate.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "contracts-format",
+      "cwd": "apps/web",
+      "argv": [
+        "node_modules/.bin/prettier",
+        "--write",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/generated-contracts/contracts.ts",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/generated-contracts/packageHistoricalResearchSchemas.ts"
+      ],
+      "started_at": "2026-10-22T01:30:05.176006+00:00",
+      "duration_seconds": 0.766,
+      "exit_code": 0,
+      "log": "contracts-format.log",
+      "log_sha256": "08abe68af84f336d7192ebecbecf6524e726ef7725b300d831b425426e82fe8e",
+      "log_bytes": 165,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "contracts-byte-match",
+      "cwd": ".",
+      "argv": [
+        "cmp",
+        "apps/web/src/contracts.ts",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/generated-contracts/contracts.ts"
+      ],
+      "started_at": "2026-10-22T01:30:05.943391+00:00",
+      "duration_seconds": 0.002,
+      "exit_code": 0,
+      "log": "contracts-byte-match.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "runtime-schemas-byte-match",
+      "cwd": ".",
+      "argv": [
+        "cmp",
+        "apps/web/src/packageHistoricalResearchSchemas.ts",
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/generated-contracts/packageHistoricalResearchSchemas.ts"
+      ],
+      "started_at": "2026-10-22T01:30:05.946967+00:00",
+      "duration_seconds": 0.001,
+      "exit_code": 0,
+      "log": "runtime-schemas-byte-match.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "archive_dir": "evidence/package-history-ui/regression/initial"
+    },
+    {
+      "label": "python-ruff",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "apps/api/package_historical_research.py",
+        "apps/web/scripts/generate-contracts.py",
+        "deploy/package_history_ui_acceptance.py",
+        "tests/test_package_history_protocol_recovery.py",
+        "tests/test_package_history_ui_pg.py"
+      ],
+      "started_at": "2026-10-22T01:30:36.200601+00:00",
+      "duration_seconds": 0.024,
+      "exit_code": 0,
+      "log": "python-ruff.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "log_bytes": 19,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    },
+    {
+      "label": "python-format",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "apps/api/package_historical_research.py",
+        "apps/web/scripts/generate-contracts.py",
+        "deploy/package_history_ui_acceptance.py",
+        "tests/test_package_history_protocol_recovery.py",
+        "tests/test_package_history_ui_pg.py"
+      ],
+      "started_at": "2026-10-22T01:30:36.226103+00:00",
+      "duration_seconds": 0.025,
+      "exit_code": 0,
+      "log": "python-format.log",
+      "log_sha256": "f114d83b30c5c657ee43a847a45bafccaea255d82673feb87c26d252c61e29c1",
+      "log_bytes": 26,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    },
+    {
+      "label": "python-bandit-production",
+      "cwd": ".",
+      "argv": [
+        "/workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/bin/python",
+        "-m",
+        "bandit",
+        "-q",
+        "apps/api/package_historical_research.py",
+        "apps/web/scripts/generate-contracts.py",
+        "deploy/package_history_ui_acceptance.py"
+      ],
+      "started_at": "2026-10-22T01:30:36.252748+00:00",
+      "duration_seconds": 0.202,
+      "exit_code": 0,
+      "log": "python-bandit-production.log",
+      "log_sha256": "38cae1dc3e7af83f5fc985df10f5805c1e25a88c760936616ab29d59d423ba9d",
+      "log_bytes": 73,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    },
+    {
+      "label": "frontend-full",
+      "cwd": "apps/web",
+      "argv": [
+        "npm",
+        "test",
+        "--",
+        "--minWorkers=1",
+        "--maxWorkers=2"
+      ],
+      "started_at": "2026-10-22T01:30:40.150951+00:00",
+      "duration_seconds": 120.76,
+      "exit_code": 0,
+      "log": "frontend-full.log",
+      "log_sha256": "aaeff60390ddc0841103fe2eb29d89508cad13ba57a1f1667256a29d6d7138e5",
+      "log_bytes": 18942,
+      "archive_dir": "evidence/package-history-ui/regression/corrected"
+    }
+  ],
+  "original_runs": {
+    "initial": "evidence/package-history-ui/regression/initial/receipt.json",
+    "corrected": "evidence/package-history-ui/regression/corrected/receipt.json",
+    "initial_passed": false,
+    "corrected_passed": true,
+    "explanation": "Original orchestration mixed repo-relative git diff paths and cwd-relative untracked paths; Bandit mistakenly included pytest assertion code; maxWorkers was lower than the installed default minWorkers. Product source is unchanged. Correct the static scope and run the previously unstarted full frontend suite with explicit min/max workers.",
+    "native_and_development_failures": "See package-history-ui-acceptance.md and native/archive-manifest.json. Original raw records are retained."
+  },
+  "qualifications": {
+    "synthetic_business_material": true,
+    "model": "Existing feature-free CPU mean/median baseline",
+    "provider_requests": 0,
+    "paid_calls": 0,
+    "cpu_jobs": "Independent credentials and subprocesses in native tests; no automatic dispatch added",
+    "browser_transport": "Real Chromium and components with unmodified same-run native HTTP replay and separately declared synthetic fault responses",
+    "real_accuracy_passed": false,
+    "formal_prediction_eligibility_granted": false,
+    "full_F00_F14_complete": false
+  },
+  "known_limits": [
+    "Automatic research dispatch not implemented",
+    "Formal complete visual proof/provider/method and controlled model release still pending",
+    "Project whole-package summary and full user-task acceptance pending",
+    "Fixed-source ordinary/rich editing inheritance still pending",
+    "Controlled PDF renderer unavailable; no host soffice substitution",
+    "No new S3/Kafka/Compose/production capacity/recovery proof in this stage",
+    "Optional historical SQL remains outside BASE/default v14 and restoration list",
+    "Historical reads require current read authority and complete original dependencies",
+    "Full backend not rerun; checkpoint-15 full-suite results not reused",
+    "Existing Vite main-bundle/mixed-import and npm proxy warnings retained"
+  ]
+}

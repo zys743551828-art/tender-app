@@ -156,11 +156,6 @@ def template(request: Request):
 @router.post(BASE + "/protocols")
 def create_protocol(request: Request, body: PackageHistoryProtocolRequest):
     actor = auth(request, True)
-    document = cpu.protocol(seed=body.seed, bootstrap_iterations=body.bootstrap_iterations)
-    if document["method"]["digest"] != body.method_digest:
-        raise DomainError(
-            "PACKAGE_HISTORY_METHOD_CHANGED", "CPU 方法已变化，请读取当前方法再冻结", 409
-        )
     with repository.errors(), connection() as c:
         repository.require(c, research=True)
         cmd = command(
@@ -174,6 +169,14 @@ def create_protocol(request: Request, body: PackageHistoryProtocolRequest):
         old = replay(cmd)
         if old is not None:
             return old
+        # A stored acknowledgement belongs to the original immutable request.
+        # Only a new use must match today's CPU method; never recompute the
+        # method before replaying a receipt whose response may have been lost.
+        document = cpu.protocol(seed=body.seed, bootstrap_iterations=body.bootstrap_iterations)
+        if document["method"]["digest"] != body.method_digest:
+            raise DomainError(
+                "PACKAGE_HISTORY_METHOD_CHANGED", "CPU 方法已变化，请读取当前方法再冻结", 409
+            )
         result = c.execute(
             "SELECT package_historical_research.register_protocol(%s,%s,%s) AS value",
             (Jsonb(document), actor["member_id"], cmd.id),
