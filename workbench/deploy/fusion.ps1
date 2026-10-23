@@ -1,7 +1,7 @@
 param(
     [ValidateSet('up', 'stop', 'status', 'logs', 'checks', 'config')]
     [string] $Action = 'status',
-    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'package-next-actions', 'technical-features-pure', 'technical-assets-pure', 'technical-input-pure', 'technical-vision-pure', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
+    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'package-next-actions', 'technical-features-pure', 'technical-assets-pure', 'technical-input-pure', 'technical-vision-pure', 'asset-runtime-pure', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
     [string] $Suite = 'pure'
 )
 $ErrorActionPreference = 'Stop'
@@ -53,10 +53,10 @@ try {
     $env:FUSION_CHECK_SUITE = $Suite
     switch ($Action) {
         'up' { & docker @composeArguments up --detach --wait }
-        'stop' { & docker @composeArguments --profile checks stop }
-        'status' { & docker @composeArguments --profile checks ps --all }
-        'logs' { & docker @composeArguments --profile checks logs --tail 100 }
-        'config' { & docker @composeArguments --profile checks config --quiet }
+        'stop' { & docker @composeArguments --profile checks --profile assets stop }
+        'status' { & docker @composeArguments --profile checks --profile assets ps --all }
+        'logs' { & docker @composeArguments --profile checks --profile assets logs --tail 100 }
+        'config' { & docker @composeArguments --profile checks --profile assets config --quiet }
         'checks' {
             & docker @composeArguments --profile checks up --detach checks
             if ($LASTEXITCODE -ne 0) { throw 'Fusion checks startup failed' }

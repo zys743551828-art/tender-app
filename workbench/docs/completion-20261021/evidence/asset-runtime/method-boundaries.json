@@ -1,0 +1,101 @@
+{
+  "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+  "source_descriptor": {
+    "files": {
+      "deploy/compose.fusion.yaml": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "deploy/fusion.defaults.env": "44a408b0b2c7352dd38a0f15f0fa5e51d50663f7f68f63c26c4703078f023ae2",
+      "deploy/fusion_asset_worker.py": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "deploy/fusion_asset_runtime.py": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "packages/parsing/page_asset_wire.py": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "packages/model_governance/package_technical_assets.py": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "packages/model_governance/technical_png.py": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "packages/contracts/package_technical_assets.py": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "packages/parsing/pdfium_guard.py": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "packages/domain/review_identity.py": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917"
+    },
+    "host_platform": "win32",
+    "host_python": [
+      3,
+      12,
+      14
+    ],
+    "schema_validator": "4.24.0",
+    "maximum_timeout_ms": 40000
+  },
+  "source_git_comparison": [
+    {
+      "path": "deploy/compose.fusion.yaml",
+      "executed_raw_sha256": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "git_raw_sha256": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion.defaults.env",
+      "executed_raw_sha256": "44a408b0b2c7352dd38a0f15f0fa5e51d50663f7f68f63c26c4703078f023ae2",
+      "git_raw_sha256": "44a408b0b2c7352dd38a0f15f0fa5e51d50663f7f68f63c26c4703078f023ae2",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_worker.py",
+      "executed_raw_sha256": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "git_raw_sha256": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_runtime.py",
+      "executed_raw_sha256": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "git_raw_sha256": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/parsing/page_asset_wire.py",
+      "executed_raw_sha256": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "git_raw_sha256": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_assets.py",
+      "executed_raw_sha256": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "git_raw_sha256": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/model_governance/technical_png.py",
+      "executed_raw_sha256": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "git_raw_sha256": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_assets.py",
+      "executed_raw_sha256": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "git_raw_sha256": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/parsing/pdfium_guard.py",
+      "executed_raw_sha256": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "git_raw_sha256": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/domain/review_identity.py",
+      "executed_raw_sha256": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+      "git_raw_sha256": "d6f03e98fd5fee7a7699dfe7c9092d88b871b4b980cff0fb00e025aad90d1358",
+      "raw_git_bytes_equal": false,
+      "execution_text_equal": true,
+      "executed_snapshot": "executed-sources/packages/domain/review_identity.py"
+    }
+  ],
+  "asset_input_serializer_judgment_and_feature_methods_unchanged": true,
+  "old_records_rewritten": false,
+  "native_observation_not_immutable_deployment": true
+}

@@ -127,6 +127,12 @@ SUITES["technical-vision-pure"] = [
     "tests/test_package_scoring_recovery.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["asset-runtime-pure"] = [
+    "tests/test_fusion_asset_runtime.py",
+    "tests/test_package_technical_assets.py",
+    "tests/test_document_parses.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():

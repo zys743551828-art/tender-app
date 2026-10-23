@@ -1,0 +1,109 @@
+{
+  "profile_receipt": {
+    "container_id": "93e1a68bafacff693017361c89958de7683a564fd375f822e4dcfb9881078642",
+    "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+    "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "compose_project": "tender-fusion",
+    "compose_service": "asset-renderer",
+    "hard_timeout_ms": 40000,
+    "container_started_at": "2026-10-23T17:11:47.9130469Z",
+    "observed_kernel_limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "32",
+      "cpu.max": "100000 100000",
+      "no_new_privileges": true,
+      "seccomp_filter_active": true,
+      "effective_permitted_bounding_ambient_capabilities_zero": true,
+      "network_interfaces": [
+        "lo"
+      ],
+      "read_only_source_files": 7
+    },
+    "stopped_verified": true,
+    "container_pid": 0,
+    "oom_killed": false,
+    "container_finished_at": "2026-10-23T17:11:49.283789762Z",
+    "container_exit_code": 0,
+    "was_running_before_stop": true,
+    "source_fingerprint_checked_before_and_after": true
+  },
+  "baseline_receipt": {
+    "container_id": "754a97e697aa62bac391ad2ec63b117f510978bee243c167ef66e293c90c5d88",
+    "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+    "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "compose_project": "tender-fusion",
+    "compose_service": "asset-renderer",
+    "hard_timeout_ms": 40000,
+    "container_started_at": "2026-10-23T17:11:50.786722431Z",
+    "observed_kernel_limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "32",
+      "cpu.max": "100000 100000",
+      "no_new_privileges": true,
+      "seccomp_filter_active": true,
+      "effective_permitted_bounding_ambient_capabilities_zero": true,
+      "network_interfaces": [
+        "lo"
+      ],
+      "read_only_source_files": 7
+    },
+    "stopped_verified": true,
+    "container_pid": 0,
+    "oom_killed": false,
+    "container_finished_at": "2026-10-23T17:11:52.540106167Z",
+    "container_exit_code": 0,
+    "was_running_before_stop": true,
+    "source_fingerprint_checked_before_and_after": true,
+    "version": "package-page-render-execution/1",
+    "original_digest": "41d5711914cdd88a27c96525123a1396549b380333e63fdb359c55a40c06f95e",
+    "result_manifest_digest": "4b5b8f477f892d659859e074d41b0e5d965231ddc871301679ae85f895b96c37",
+    "wire_result_digest": "f6e3cdb5c390ec7ab23767dc9617b75835864e537015ee1cc678100dc8841f4d",
+    "container_boundary_observed": true,
+    "input_authority_granted": false,
+    "visual_readability_verified": false,
+    "formal_execution_authorized": false
+  },
+  "crop_receipt": {
+    "container_id": "a55f3df8001b70e71b893e83bb4edf66b38d87c1a72dd84758ae18208066768c",
+    "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+    "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "compose_project": "tender-fusion",
+    "compose_service": "asset-renderer",
+    "hard_timeout_ms": 40000,
+    "container_started_at": "2026-10-23T17:11:54.023795761Z",
+    "observed_kernel_limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "32",
+      "cpu.max": "100000 100000",
+      "no_new_privileges": true,
+      "seccomp_filter_active": true,
+      "effective_permitted_bounding_ambient_capabilities_zero": true,
+      "network_interfaces": [
+        "lo"
+      ],
+      "read_only_source_files": 7
+    },
+    "stopped_verified": true,
+    "container_pid": 0,
+    "oom_killed": false,
+    "container_finished_at": "2026-10-23T17:11:55.786505907Z",
+    "container_exit_code": 0,
+    "was_running_before_stop": true,
+    "source_fingerprint_checked_before_and_after": true,
+    "version": "package-page-render-execution/1",
+    "original_digest": "41d5711914cdd88a27c96525123a1396549b380333e63fdb359c55a40c06f95e",
+    "result_manifest_digest": "3f410951f3796e24b5b3bd2a3aa27ece37361490a850647a03dbe74d3754780e",
+    "wire_result_digest": "206ec488f7da1aa3d7613651eba8a96878818046d377771e51a55f68efc1f9b0",
+    "container_boundary_observed": true,
+    "input_authority_granted": false,
+    "visual_readability_verified": false,
+    "formal_execution_authorized": false
+  },
+  "full_pages_retained_and_byte_equal_across_fresh_containers": true,
+  "physical_pages": 2,
+  "details": 1,
+  "image_readability_or_input_authority_granted": false
+}

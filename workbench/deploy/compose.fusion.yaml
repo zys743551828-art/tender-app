@@ -102,6 +102,36 @@ services:
       retries: 3
       start_period: 10s
 
+  asset-renderer:
+    image: tender-fusion-checks:py312
+    pull_policy: never
+    profiles: [assets]
+    user: "65532:65532"
+    working_dir: /tmp
+    entrypoint: [python, -I, /workspace/deploy/fusion_asset_worker.py]
+    command: [--idle]
+    read_only: true
+    restart: "no"
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+    pids_limit: 32
+    network_mode: none
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      LANG: C.UTF-8
+      WORKBENCH_ENV_FILE: explicit-fusion-asset-no-business-profile
+    tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=64m,uid=65532,gid=65532,mode=0700"]
+    volumes:
+      - ../packages/model_governance/package_technical_assets.py:/workspace/packages/model_governance/package_technical_assets.py:ro
+      - ../packages/model_governance/technical_png.py:/workspace/packages/model_governance/technical_png.py:ro
+      - ../packages/contracts/package_technical_assets.py:/workspace/packages/contracts/package_technical_assets.py:ro
+      - ../packages/parsing/pdfium_guard.py:/workspace/packages/parsing/pdfium_guard.py:ro
+      - ../packages/parsing/page_asset_wire.py:/workspace/packages/parsing/page_asset_wire.py:ro
+      - ../packages/domain/review_identity.py:/workspace/packages/domain/review_identity.py:ro
+      - ./fusion_asset_worker.py:/workspace/deploy/fusion_asset_worker.py:ro
+
   checks-postgres:
     <<: *postgres
     profiles: [checks]

@@ -58,8 +58,16 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
     assert services["web"]["networks"] == ["core", "preview"]
     for name, service in services.items():
         if name != "web":
-            assert "preview" not in service["networks"]
-    assert set(services) == {"postgres", "init", "api", "web", "checks", "checks-postgres"}
+            assert "preview" not in service.get("networks", [])
+    assert set(services) == {
+        "postgres",
+        "init",
+        "api",
+        "web",
+        "checks",
+        "checks-postgres",
+        "asset-renderer",
+    }
     assert services["checks"]["profiles"] == services["checks-postgres"]["profiles"] == ["checks"]
     assert set(services["checks"]["depends_on"]) == {"checks-postgres"}
     assert "fusion-nonowner-postgres" in services["checks-postgres"]["networks"]["core"]["aliases"]

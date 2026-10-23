@@ -1,0 +1,19 @@
+{
+  "actual_native_output_equals_inspected_files": true,
+  "inspected_files": {
+    "synthetic-source.pdf": "41d5711914cdd88a27c96525123a1396549b380333e63fdb359c55a40c06f95e",
+    "page-1.png": "5a94bf98fa87229962e886586d6b5318cc86209b63aeffe51631f7a32fcc8ecb",
+    "page-2.png": "3b86c754d6b2a6be0612c5ecee89b53d3f14a4df87eff3e17c9ea170c57056f2",
+    "detail.png": "36844fda4f74135956172f2e4c5384bc89f7316a2ef07f4e32119650d2725232"
+  },
+  "review": "Two full PDFium pages and one same-raster detail actually viewed; source rotation and red rectangle preserved",
+  "synthetic_asset_visual_reviewed": true,
+  "frontend_browser_visual_verified": false,
+  "business_readability_qualified": false,
+  "independent_poppler_files": {
+    "page-1.png": "712a0ab1fa4c1341d30d4a53e1b566c46f0bd399ca297c192a1f985e807ccc28",
+    "page-2.png": "b110180638bcd79c87fc27c49fd16e3dff963077f939989b0e6d994411c579e1"
+  },
+  "poppler_two_pages_actually_viewed": true,
+  "poppler_font_map_warnings_retained": true
+}

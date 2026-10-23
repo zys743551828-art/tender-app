@@ -42,6 +42,9 @@
 /packages/contracts/package-technical-page-assets.md text eol=lf
 /packages/parsing/physical_pdf.py text eol=lf
 /packages/parsing/pdfium_guard.py text eol=lf
+/packages/parsing/page_asset_wire.py text eol=lf
+/packages/contracts/package-page-asset-runtime.md text eol=lf
+/tests/test_fusion_asset_runtime.py text eol=lf
 /tests/test_package_technical_assets.py text eol=lf
 /packages/contracts/package_technical_features.py text eol=lf
 /packages/contracts/package-technical-features.md text eol=lf
@@ -77,4 +80,5 @@
 /docs/completion-20261021/evidence/technical-input/** -text
 /docs/completion-20261021/evidence/technical-vision/** -text
 /docs/completion-20261021/evidence/technical-context/** -text
+/docs/completion-20261021/evidence/asset-runtime/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text
