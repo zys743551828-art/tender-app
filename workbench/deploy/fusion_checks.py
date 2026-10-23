@@ -106,6 +106,11 @@ SUITES["technical-features-pure"] = [
     "tests/test_package_scoring_recovery.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["technical-assets-pure"] = [
+    "tests/test_package_technical_assets.py",
+    "tests/test_document_parses.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
@@ -139,6 +144,8 @@ def main():
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         "WORKBENCH_ENV_FILE": "explicit-fusion-checks-no-business-profile",
     }
+    if suite == "technical-assets-pure":
+        environment["FUSION_PAGE_ASSET_EVIDENCE"] = "1"
     if suite in {
         "budget",
         "requirements-api",

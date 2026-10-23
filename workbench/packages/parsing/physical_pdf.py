@@ -1,13 +1,12 @@
 """Shared conservative PDFium lane. It never declares complete visual coverage."""
 
-import threading
 from contextlib import closing
 
 import pypdfium2 as pdfium
 
 from packages.domain.runtime import DomainError, sha
+from packages.parsing.pdfium_guard import LOCK
 
-LOCK = threading.Lock()
 PARSER_DIGEST = sha(
     {"parser": "pypdfium2", "version": "4.30.1", "purpose": "physical_page_text_only"}
 )

@@ -1,0 +1,139 @@
+{
+  "scope": "static PDF complete viewports and lossless crops only; no hard isolation, authority, API or Worker",
+  "tests": {
+    "linux_passed": 80,
+    "linux_seconds": 1.029,
+    "linux_skipped": 0,
+    "by_module": {
+      "tests.test_package_technical_assets": 50,
+      "tests.test_document_parses": 18,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 50,
+    "host_reported_seconds": 1.14,
+    "counts_overlap": true,
+    "frontend_rerun": false
+  },
+  "legacy_parser_ast_equal": true,
+  "previous_feature_method_unchanged": true,
+  "synthetic_asset_visual_reviewed": true,
+  "final_exports_equal_inspected": true,
+  "frontend_visual_verified": false,
+  "hard_isolation_verified": false,
+  "real_document_readability_verified": false,
+  "authority_grants": false,
+  "runtime_inputs": 1170,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "business_writes": 0,
+  "paid_calls": 0,
+  "source_identity_scope": "modified inputs equal staged Git raw bytes, not immutable whole deployment",
+  "inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "86243408a700df2badbf93f1b00e20890d280928735c1d8f682da4fb904a4b5c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "d8e08295b8a8f3bc2bb83d465a00f2515eaa80c428c31cfec38f14e573a4fbd4",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-page-assets.md",
+      "sha256": "26094a9436f409756645f9413ceb1280b0065a1af53448c4fbb0812a0791c63c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_assets.py",
+      "sha256": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_assets.py",
+      "sha256": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/technical_png.py",
+      "sha256": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/parsing/pdfium_guard.py",
+      "sha256": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/parsing/physical_pdf.py",
+      "sha256": "982e50ae71d3a9867374d84da23cb913bfb88496c6cf9735e55d7ff4cc654708",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_assets.py",
+      "sha256": "58df29a6e0a008088c9c624b1cb453734f5e87be7913651e28d8a4f0bde29772",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-initial.log": "6db69a3d17eea1b6e91dfca90957fdbfba50eee0f260d161634d547e68097215",
+    "host-final.log": "86679c419831eead064832bbf36db7e612a8345d3af5ac8ade6d98e318f8c15d",
+    "host-final.xml": "396ac7497c38d5e2a4da759f0155e1996e1fdedb31b933d6a6c3f93971469375",
+    "linux-initial.log": "d988c5712afbd98edfae67db5b615b8140a77158ba64a23a610a5325b63d2bb0",
+    "linux-final.log": "8e10d378297850af42de1d383a8b48802232635648244bb8900f502ee565f181",
+    "linux-final.xml": "d327cb371c189eaf5775c56e7a1ad2422d4276710fb700156f8063b35eaa370a",
+    "python-quality.log": "5e90faf0029a93e7d2f5aa90e8ae4be2e5f3a512714e80dad44d7aec17885902",
+    "visual-and-boundaries.json": "c3dea2b282c9a9aa8f723d9e0a1b02ab489ff9694c7d1461e3b6c0adacf61f64",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614",
+    "http-runtime.json": "7647cfad383edb0dfa263af078274c728f25610a5eef21a186bfb094833f8299",
+    "pdfinfo.log": "fa287b513e081cf8c8f5d686a4a07acb347c2c2cbaab7d8717cee0cf684e4d1e",
+    "poppler-render.log": "74095b267fcd746d2f088f0aea89f337e472614c4726d4626eb919cbb3107ff8",
+    "final-qa/synthetic-source.pdf": "fc64bb9ec602e441bdc51b591f392cb917d94a551e0c0cd280b8f4cf40d33573",
+    "final-qa/page-1.png": "99fdb04c10a97bdfa367d335f9552a95aca2ae0f40bbe699150ba2936f01cd1d",
+    "final-qa/page-2.png": "026eb5e3df9f22b0f1eac5e35bb47e0f8cd5761576688814dcfc58295d7af7bb",
+    "final-qa/detail-1.png": "70dbad55aef7d135606e2e6b2501c89b4d3d5d30ca50f48ac235544fb6fb75ed",
+    "final-qa/manifest.json": "e6f15920f02558af1b96633ae3b932bae612cbf47dc791cef15eec085bea8144",
+    "poppler/page-1.png": "2314a3f60ecd7355751c2dddd9bf082a6f012f92bae8334fd2d7be52ae475222",
+    "poppler/page-2.png": "84203974d56bc2149cb8d5ca169e82a064f79fc4335d0c0b74e35405b57dfce9"
+  }
+}

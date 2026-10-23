@@ -26,6 +26,13 @@
 /deploy/package_history_dispatcher.py text eol=lf
 /packages/model_governance/package_history_dispatch.py text eol=lf
 /packages/model_governance/package_technical_features.py text eol=lf
+/packages/model_governance/package_technical_assets.py text eol=lf
+/packages/model_governance/technical_png.py text eol=lf
+/packages/contracts/package_technical_assets.py text eol=lf
+/packages/contracts/package-technical-page-assets.md text eol=lf
+/packages/parsing/physical_pdf.py text eol=lf
+/packages/parsing/pdfium_guard.py text eol=lf
+/tests/test_package_technical_assets.py text eol=lf
 /packages/contracts/package_technical_features.py text eol=lf
 /packages/contracts/package-technical-features.md text eol=lf
 /tests/test_package_technical_features.py text eol=lf
@@ -56,4 +63,5 @@
 /docs/completion-20261021/evidence/submission-next-actions/** -text
 /docs/completion-20261021/evidence/registration-next-actions/** -text
 /docs/completion-20261021/evidence/technical-features/** -text
+/docs/completion-20261021/evidence/technical-assets/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text
