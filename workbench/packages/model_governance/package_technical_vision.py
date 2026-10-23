@@ -80,7 +80,8 @@ def judgment_descriptor():
         codec_source = (
             Path(__file__).parents[1] / "domain/providers/json_protocol.py"
         ).read_bytes()
-        error_source = (Path(__file__).parents[1] / "domain/providers/deepseek.py").read_bytes()
+        error_source = (Path(__file__).parents[1] / "domain/providers/errors.py").read_bytes()
+        domain_error_source = (Path(__file__).parents[1] / "domain/errors.py").read_bytes()
     except OSError:
         fail("VISION_METHOD_UNAVAILABLE")
     return {
@@ -91,7 +92,8 @@ def judgment_descriptor():
         "source_digest": png.digest_bytes(Path(__file__).read_bytes()),
         "provider_source_digest": png.digest_bytes(provider_source),
         "json_codec_source_digest": png.digest_bytes(codec_source),
-        "text_port_error_source_digest": png.digest_bytes(error_source),
+        "provider_error_source_digest": png.digest_bytes(error_source),
+        "domain_error_source_digest": png.digest_bytes(domain_error_source),
         "httpx_version": version("httpx"),
         "previous_answers_in_input": False,
         "required_valid_calls": 3,

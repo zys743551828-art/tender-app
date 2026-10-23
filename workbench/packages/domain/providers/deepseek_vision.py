@@ -8,10 +8,10 @@ import httpx
 from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.contracts.package_technical_features import JUDGMENT
-from packages.domain.providers.deepseek import ProviderError
+from packages.domain.errors import DomainError
+from packages.domain.providers.errors import ProviderError
 from packages.domain.providers.json_protocol import decode, identifier
 from packages.domain.review_identity import canonical
-from packages.domain.runtime import DomainError
 from packages.model_governance import package_technical_vision as vision
 from packages.model_governance.technical_png import digest_bytes
 

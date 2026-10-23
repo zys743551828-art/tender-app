@@ -6,7 +6,7 @@ import re
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
-from packages.domain.runtime import DomainError
+from packages.domain.errors import DomainError
 
 
 def identifier(value):

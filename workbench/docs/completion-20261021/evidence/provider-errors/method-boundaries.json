@@ -1,0 +1,15 @@
+{
+  "domain_error_body_unchanged": true,
+  "provider_error_body_unchanged": true,
+  "legacy_runtime_and_text_port_body_unchanged": true,
+  "vision_and_json_body_unchanged": true,
+  "input_method_unchanged": true,
+  "features_method_unchanged": true,
+  "native_renderer_source_unchanged": true,
+  "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+  "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+  "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+  "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+  "old_records_rewritten": false,
+  "new_methods_bind_both_pure_error_sources": true
+}

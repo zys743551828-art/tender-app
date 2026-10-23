@@ -133,6 +133,13 @@ SUITES["asset-runtime-pure"] = [
     "tests/test_document_parses.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["provider-errors-pure"] = [
+    "tests/test_provider_error_isolation.py",
+    *SUITES["technical-vision-pure"],
+    "tests/test_bid_package_openapi.py",
+    "tests/test_openapi_snapshot.py::test_committed_gzip_contains_the_complete_current_actual_contract",
+    "tests/test_openapi_snapshot.py::test_export_stdout_plain_file_and_path_independent_gzip_are_equivalent",
+]
 
 
 def main():

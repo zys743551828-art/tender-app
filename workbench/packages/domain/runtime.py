@@ -17,6 +17,8 @@ from jsonschema import Draft202012Validator, FormatChecker
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
+from packages.domain.errors import DomainError
+
 ROOT = Path(__file__).resolve().parents[2]
 FORMAT_CHECKER = FormatChecker()
 if not {"uri", "date-time", "uuid"} <= set(FORMAT_CHECKER.checkers):
@@ -30,12 +32,6 @@ for _line in (
         _key, _, _value = _line.partition("=")
         _parts = shlex.split(_value, comments=True)
         os.environ.setdefault(_key.strip(), _parts[0] if _parts else "")
-
-
-class DomainError(Exception):
-    def __init__(self, code, message, status=409, details=None, retryable=False):
-        self.code, self.message, self.status = code, message, status
-        self.details, self.retryable = details or {}, retryable
 
 
 def required(name):
