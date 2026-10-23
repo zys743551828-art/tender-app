@@ -4,6 +4,7 @@ import {
   type PackageNavigationTarget,
 } from "./packageNavigation";
 import "./PackageNavigation.css";
+import { PackageReviewActionNavigation } from "./packageReviewActionNavigation";
 
 export function PackageNavigationWorkspace({
   bidId,
@@ -12,6 +13,7 @@ export function PackageNavigationWorkspace({
   disabled,
   onLocation,
   onReset,
+  onOpenRules,
 }: {
   bidId: string;
   memberId: string;
@@ -22,6 +24,7 @@ export function PackageNavigationWorkspace({
     replace?: boolean,
   ) => void;
   onReset: () => void;
+  onOpenRules?: () => void;
 }) {
   const location = parsePackageLocation(route);
   return (
@@ -45,12 +48,16 @@ export function PackageNavigationWorkspace({
           </button>
         </section>
       ) : (
-        <BidPackages
-          bidId={bidId}
-          memberId={memberId}
-          disabled={disabled}
-          navigation={{ target: location.target, onLocation }}
-        />
+        <PackageReviewActionNavigation.Provider
+          value={{ bidId, onOpenPackage: onLocation, onOpenRules }}
+        >
+          <BidPackages
+            bidId={bidId}
+            memberId={memberId}
+            disabled={disabled}
+            navigation={{ target: location.target, onLocation }}
+          />
+        </PackageReviewActionNavigation.Provider>
       )}
     </div>
   );

@@ -2,43 +2,50 @@ import { useRef, useState } from "react";
 import type {
   PackageNextActions as NextActions,
   PackageWorkContext,
+  PackageReviewRunView,
 } from "./contracts";
 import { ErrorNotice } from "./components";
 import type { PackageNavigationTarget } from "./packageNavigation";
-import { checkedPackageNextActions } from "./packageNextActionsProtocol";
+import {
+  checkedPackageNextActions,
+  nextActionSelection,
+} from "./packageNextActionsProtocol";
 import { useResource } from "./useResource";
 import "./PackageNextActions.css";
 
 export function PackageNextActions({
   context,
+  run,
   onOpenOriginal,
   onOpenPackage,
   onOpenRules,
 }: {
-  context: PackageWorkContext;
   onOpenOriginal: () => void;
   onOpenPackage: (target: PackageNavigationTarget) => void;
   onOpenRules?: () => void;
-}) {
-  const selected = context.selection;
-  const path =
-    selected.kind === "package_review_run"
-      ? `/bids/${selected.bid_id}/package-next-actions/${selected.run_id}?expected_input_digest=${selected.input_digest}`
-      : null;
+} & (
+  | { context: PackageWorkContext; run?: never }
+  | { run: PackageReviewRunView; context?: never }
+)) {
+  const source = context ?? run;
+  const selected = nextActionSelection(source);
+  const path = selected
+    ? `/bids/${selected.bid_id}/package-next-actions/${selected.run_id}?expected_input_digest=${selected.input_digest}`
+    : null;
   const resource = useResource<unknown>(path);
   const [basisOpen, setBasisOpen] = useState(false);
   const basis = useRef<HTMLDetailsElement>(null);
-  if (selected.kind !== "package_review_run") return null;
+  if (!selected) return null;
   let value: NextActions | undefined, invalid: unknown;
   if (!resource.error && !resource.loading && resource.data !== undefined) {
     try {
-      value = checkedPackageNextActions(resource.data, context);
+      value = checkedPackageNextActions(resource.data, source);
     } catch (error) {
       invalid = error;
     }
   }
   function open(key: string) {
-    if (selected.kind !== "package_review_run") return;
+    if (!selected) return;
     if (key === "inspect_changed_basis" || key === "inspect_unknown_basis") {
       setBasisOpen(true);
       queueMicrotask(() => basis.current?.querySelector("summary")?.focus());

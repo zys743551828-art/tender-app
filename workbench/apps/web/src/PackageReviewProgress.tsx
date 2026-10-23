@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useContext,
 } from "react";
 import { api } from "./api";
 import type { PackageReviewRunView } from "./contracts";
@@ -18,6 +19,8 @@ import {
 import PackageReviewCancel from "./PackageReviewCancel";
 import PackageReviewHumanDecisions from "./PackageReviewHumanDecisions";
 import PackageReviewInputDetails from "./PackageReviewInputDetails";
+import { PackageNextActions } from "./PackageNextActions";
+import { PackageReviewActionNavigation } from "./packageReviewActionNavigation";
 
 const PackageReviewComparisonWorkspace = lazy(
   () => import("./PackageReviewComparisonWorkspace"),
@@ -72,6 +75,9 @@ export default function PackageReviewProgress({
   showComparison = true,
   focusRequirementId,
 }: Props) {
+  const navigation = useContext(PackageReviewActionNavigation);
+  const original = useRef<HTMLDivElement>(null);
+  const status = useRef<HTMLHeadingElement>(null);
   const [reading, setReading] = useState(false),
     [error, setError] = useState<unknown>(null);
   const [checkedAt, setCheckedAt] = useState<string | null>(null);
@@ -139,9 +145,24 @@ export default function PackageReviewProgress({
   }, [read]);
   return (
     <section className="package-review__progress" aria-label="本次整包范围核查">
+      {navigation?.bidId === run.scope.bid_id && (
+        <PackageNextActions
+          key={`${run.id}:${run.input_digest}:${run.result?.digest ?? "pending"}`}
+          run={run}
+          onOpenOriginal={() => {
+            const target = original.current ?? status.current;
+            target?.focus();
+            target?.scrollIntoView?.({ block: "nearest" });
+          }}
+          onOpenPackage={navigation.onOpenPackage}
+          onOpenRules={navigation.onOpenRules}
+        />
+      )}
       <div className="package-review__heading">
         <div>
-          <h4>本次整包范围核查</h4>
+          <h4 ref={status} tabIndex={-1}>
+            本次整包范围核查
+          </h4>
           <p role="status">{states[run.operation.state]}</p>
         </div>
         <button
@@ -224,13 +245,15 @@ export default function PackageReviewProgress({
         onReload={reload}
       />
       {run.result && (
-        <PackageReviewHumanDecisions
-          scope={scope}
-          frozen={frozen}
-          prepared={prepared}
-          run={run}
-          focusRequirementId={focusRequirementId}
-        />
+        <div ref={original} tabIndex={-1} aria-label="本轮逐条原报告">
+          <PackageReviewHumanDecisions
+            scope={scope}
+            frozen={frozen}
+            prepared={prepared}
+            run={run}
+            focusRequirementId={focusRequirementId}
+          />
+        </div>
       )}
       {run.result && showComparison && (
         <Suspense fallback={<p role="status">正在打开两轮对比入口…</p>}>

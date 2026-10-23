@@ -356,6 +356,7 @@ export function ProjectWorkspace({
               }
               onLocation={onPackageLocation ?? (() => onNavigate("packages"))}
               onReset={() => onNavigate("packages")}
+              onOpenRules={() => onNavigate("rules")}
             />
           )}
           {page === "work-context" && (

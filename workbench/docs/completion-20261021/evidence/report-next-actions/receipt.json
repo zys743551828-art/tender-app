@@ -1,0 +1,124 @@
+{
+  "scope": "direct package report uses the same selected-native-run next-action endpoint; no backend protocol changes",
+  "tests": {
+    "frontend_files": 178,
+    "frontend_passed": 1772,
+    "frontend_seconds": 56.94,
+    "targeted_passed_before_final_case": 43,
+    "new_cases_in_full_suite": 18,
+    "overlapping_counts_not_added": true,
+    "python_or_contract_suites_rerun": false
+  },
+  "quality": [
+    "Prettier",
+    "ESLint",
+    "TypeScript",
+    "production Vite build",
+    "Compose config"
+  ],
+  "build_seconds": 3.25,
+  "existing_chunk_warning": true,
+  "runtime_inputs": 1160,
+  "production_js_css_assets": 66,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "business_projects": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "browser_blocker": "missing browser/26.1016.62342/scripts/browser-service.mjs before bootstrap",
+  "source_identity_scope": "modified inputs equal staged Git raw bytes; development source mounts are not an immutable release",
+  "preserved_failure": {
+    "targeted_passed": 40,
+    "targeted_failed": 3,
+    "cause": "used kind instead of native matrix rule_kind; corrected without weakening validation"
+  },
+  "inputs": [
+    {
+      "path": "apps/web/src/PackageNavigationWorkspace.tsx",
+      "sha256": "bd224dc4cfec2eb9108c4775257ca0003cac6e8fb64977dc7b75c2aae0fb47ad",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageNextActions.test.tsx",
+      "sha256": "ede573a9528b3affc864ada34c72864f94c5d1d241024b42c4f1264969c9372c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageNextActions.tsx",
+      "sha256": "314e8f9156b4660da2320fd49d3c2a347fd9adbe5204e1ca38e0a822ef996811",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageReviewProgress.tsx",
+      "sha256": "59d281d00e87a4fd73015f8225a7add5b8ed847223c8531e7ebdb1986f73a857",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkspace.tsx",
+      "sha256": "7ef67e764ed0516db46b4226d13e403a7f454a89d0875cd91e3eb1a0a2e1e230",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/packageNextActionsProtocol.ts",
+      "sha256": "1af07c660be86de49a5e5b688ad51faa37b3f8ed6527670e3b161b566f4c236a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/packageReviewActionNavigation.ts",
+      "sha256": "70a70d55a2ccb6b8346862d50ff39e3ba792531e9372ed2b1d9a0b38c21db35a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-next-actions.md",
+      "sha256": "af2a897fa228ec5aa396a89ae785a96d32179c094f0d30a3dcf5d995d028601b",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "frontend-full.log": "f3dfd23187a51dba5d673cfef64dde7075d5fe796a77214fb9afa1b3bc512fce",
+    "frontend-targeted.log": "8c437b2f700ca06b595ce4ea449b64f94af288bd06bb903418f1abb889ba31ab",
+    "frontend-initial-failure.log": "8db9484eed18ff9b1016fa1c9f37835d2087332d5fea3ee60fd9955ca4034eaa",
+    "format.log": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283",
+    "lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build.log": "a6dfc255140bd319d6afad9d7150a5f598af0c2610ce09130b0e0acb179c7803",
+    "compose-config.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "http-runtime.json": "bed93af1e99dfad6c42454197a9f95bda09429ff7ae5eba2d642dac2fb15a8ed"
+  }
+}

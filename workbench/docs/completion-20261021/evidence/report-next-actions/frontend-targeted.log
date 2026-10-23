@@ -1,0 +1,13 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/PackageNextActions.test.tsx (29 tests) 522ms
+ ✓ src/PackageReviewProgress.test.tsx (4 tests) 537ms
+   ✓ a forced read after cancellation supersedes a pending poll, whose late reply cannot revive the old state  311ms
+ ✓ src/PackageNavigationWorkspace.test.tsx (10 tests) 583ms
+
+ Test Files  3 passed (3)
+      Tests  43 passed (43)
+   Start at  20:34:07
+   Duration  3.01s (transform 1.13s, setup 1.02s, collect 1.85s, tests 1.64s, environment 2.42s, prepare 476ms)
+

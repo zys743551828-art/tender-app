@@ -1,14 +1,38 @@
-import type { PackageNextActions, PackageWorkContext } from "./contracts";
+import type {
+  PackageNextActions,
+  PackageWorkContext,
+  PackageReviewRunView,
+} from "./contracts";
 import {
   exactKeys,
   executionId,
   executionSha,
   recordObject,
 } from "./executionInputValidation";
-import {
-  contextTime,
-  type WorkContextRunSelection,
-} from "./workContextProtocol";
+import { contextTime } from "./workContextProtocol";
+
+export type NextActionSource = PackageWorkContext | PackageReviewRunView;
+
+/** Both inputs have already passed their native, exact-identity validator. */
+export function nextActionSelection(source: NextActionSource) {
+  if ("selection" in source)
+    return source.selection.kind === "package_review_run"
+      ? source.selection
+      : null;
+  return {
+    ...source.scope,
+    run_id: source.id,
+    input_digest: source.input_digest,
+    result_digest: source.result?.digest ?? null,
+    frozen_input_id: source.frozen_input_id,
+    frozen_input_digest: source.frozen_input_digest,
+    execution_input_id: source.execution_input_id,
+    execution_input_digest: source.execution_input_digest,
+    dependency_plan_id: source.dependency_plan_id,
+    dependency_plan_digest: source.dependency_plan_digest,
+    method_digest: source.method_digest,
+  };
+}
 
 const count = (value: unknown): value is number =>
   Number.isSafeInteger(value) && Number(value) >= 0 && Number(value) <= 400;
@@ -28,12 +52,12 @@ const levels: Record<string, number> = {
 
 export function checkedPackageNextActions(
   raw: unknown,
-  context: PackageWorkContext,
+  source: NextActionSource,
 ): PackageNextActions {
   const invalid = () =>
     new Error("下一步与明确选择的核查身份、计数或依据不一致，请重读同一记录。");
-  const selected = context.selection;
-  if (selected.kind !== "package_review_run") throw invalid();
+  const selected = nextActionSelection(source);
+  if (!selected) throw invalid();
   const expected = {
     run_id: selected.run_id,
     input_digest: selected.input_digest,
@@ -64,7 +88,9 @@ export function checkedPackageNextActions(
     !["bid_id", "package_id", "revision_id", "inventory_id"].every(
       (key) =>
         (raw.binding as { scope: Record<string, unknown> }).scope[key] ===
-        selected[key as keyof WorkContextRunSelection],
+        selected[
+          key as "bid_id" | "package_id" | "revision_id" | "inventory_id"
+        ],
     ) ||
     !executionSha(raw.method_digest) ||
     !executionSha(raw.confirmation_digest) ||
@@ -112,7 +138,24 @@ export function checkedPackageNextActions(
     previous = action.level;
   }
   const historical = raw.historical_scope_counts;
-  const original = context.summary.review;
+  const original =
+    "selection" in source
+      ? source.summary.review
+      : source.result && {
+          requirement_count: source.result.manifest.requirement_count,
+          machine_counts: source.result.manifest.counts,
+        };
+  if (
+    !("selection" in source) &&
+    source.result &&
+    [...seen].some(
+      (id) =>
+        !source.result!.manifest.matrix.some(
+          (row) => row.requirement_id === id,
+        ),
+    )
+  )
+    throw invalid();
   if (!recordObject(raw.primary)) throw invalid();
   const basisAction = {
     changed: "inspect_changed_basis",
@@ -134,6 +177,20 @@ export function checkedPackageNextActions(
         !count(historical.suggestions)
   )
     throw invalid();
+  if (!("selection" in source) && source.result) {
+    const negative = source.result.manifest.matrix.filter((row) =>
+      ["violated", "not_found", "unable_to_judge"].includes(row.verdict),
+    );
+    const critical = negative.filter((row) =>
+      ["disqualification", "mandatory"].includes(row.rule_kind),
+    ).length;
+    if (
+      !recordObject(historical) ||
+      historical.critical !== critical ||
+      historical.suggestions !== negative.length - critical
+    )
+      throw invalid();
+  }
   if (
     selected.result_digest !== null &&
     (!original ||

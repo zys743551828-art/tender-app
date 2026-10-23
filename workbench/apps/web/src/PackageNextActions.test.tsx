@@ -14,6 +14,15 @@ import type {
 } from "./contracts";
 import { PackageNextActions } from "./PackageNextActions";
 import { checkedPackageNextActions } from "./packageNextActionsProtocol";
+import Progress from "./PackageReviewProgress";
+import { PackageReviewActionNavigation } from "./packageReviewActionNavigation";
+
+vi.mock("./PackageReviewInputDetails", () => ({ default: () => null }));
+vi.mock("./PackageReviewCancel", () => ({ default: () => null }));
+vi.mock("./PackageReviewHumanDecisions", () => ({
+  default: () => <p>所选逐条原报告</p>,
+}));
+vi.mock("./PackageReviewReportExports", () => ({ default: () => null }));
 
 vi.mock("./api", async (original) => ({
   ...(await original<typeof import("./api")>()),
@@ -94,6 +103,206 @@ function callbacks() {
 }
 
 describe("所选运行的六级下一步", () => {
+  it("直接报告的关键规则按钮使用宿主项目导航，保留同轮原报告", async () => {
+    const value = response();
+    value.current_scope_counts!.pending_critical_rules = 1;
+    value.other_actions = [
+      {
+        level: 4,
+        key: "confirm_critical_rules",
+        title: "确认本次关键规则",
+        item_count: 1,
+        requirement_ids: [
+          fixture.completed.result!.manifest.matrix[0].requirement_id,
+        ],
+      },
+    ];
+    vi.mocked(api).mockImplementation((path) =>
+      Promise.resolve(
+        answer(
+          path.includes("/package-next-actions/") ? value : fixture.completed,
+        ),
+      ),
+    );
+    const events = callbacks();
+    render(
+      <PackageReviewActionNavigation.Provider
+        value={{ bidId: fixture.completed.scope.bid_id, ...events }}
+      >
+        <Progress
+          {...fixture.props}
+          run={fixture.completed}
+          onChange={vi.fn()}
+          showComparison={false}
+        />
+      </PackageReviewActionNavigation.Provider>,
+    );
+    await screen.findByRole("button", { name: /核对所选范围的关键问题/ });
+    fireEvent.click(screen.getByText(/剩余关键问题/));
+    fireEvent.click(
+      screen.getByRole("button", { name: "确认本次关键规则（1项）" }),
+    );
+    expect(events.onOpenRules).toHaveBeenCalledOnce();
+    expect(screen.getByText("所选逐条原报告")).toBeInTheDocument();
+  });
+
+  it("直接报告拒绝将同等数量的关键问题移入建议计数", () => {
+    const value = response();
+    value.historical_scope_counts = { critical: 0, suggestions: 1 };
+    value.current_scope_counts = {
+      critical: 0,
+      suggestions: 1,
+      pending_critical_rules: 0,
+    };
+    expect(() => checkedPackageNextActions(value, fixture.completed)).toThrow();
+  });
+
+  it("未完成的明确运行只显示处理动作，不借其他报告填数量", async () => {
+    const value = response();
+    value.binding.result_digest = null;
+    value.primary = {
+      level: 2,
+      key: "observe_run",
+      title: "查看所选运行的处理状态",
+      requirement_ids: [],
+      item_count: null,
+    };
+    value.current_scope_counts = value.historical_scope_counts = null;
+    value.remaining_critical_count = value.remaining_suggestion_count = null;
+    vi.mocked(api).mockResolvedValue(answer(value));
+    const events = callbacks();
+    render(<PackageNextActions run={fixture.run} {...events} />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "查看所选运行的处理状态" }),
+    );
+    expect(events.onOpenOriginal).toHaveBeenCalledOnce();
+    expect(screen.getByText(/剩余关键问题 未知/)).toBeInTheDocument();
+    expect(screen.queryByText(/所选原报告的历史计数/)).not.toBeInTheDocument();
+  });
+
+  it("直接报告无需构造工作上下文，读取相同确切运行并定位本轮原报告", async () => {
+    vi.mocked(api).mockImplementation((path) =>
+      Promise.resolve(
+        answer(
+          path.includes("/package-next-actions/")
+            ? response()
+            : fixture.completed,
+        ),
+      ),
+    );
+    const events = callbacks();
+    render(
+      <PackageReviewActionNavigation.Provider
+        value={{ bidId: fixture.completed.scope.bid_id, ...events }}
+      >
+        <Progress
+          {...fixture.props}
+          run={fixture.completed}
+          onChange={vi.fn()}
+          showComparison={false}
+        />
+      </PackageReviewActionNavigation.Provider>,
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: /核对所选范围的关键问题/ }),
+    );
+    expect(screen.getByLabelText("本轮逐条原报告")).toHaveFocus();
+    const paths = vi.mocked(api).mock.calls.map(([path]) => path);
+    expect(paths).toContain(
+      `/bids/${fixture.completed.scope.bid_id}/package-next-actions/${fixture.completed.id}?expected_input_digest=${fixture.completed.input_digest}`,
+    );
+    expect(paths.some((path) => path.includes("work-context"))).toBe(false);
+    expect(events.onOpenPackage).not.toHaveBeenCalled();
+  });
+
+  it("其他项目的导航不提供本报告动作，也不读其他运行", async () => {
+    vi.mocked(api).mockResolvedValue(answer(fixture.completed));
+    render(
+      <PackageReviewActionNavigation.Provider
+        value={{
+          bidId: "00000000-0000-4000-8000-000000000099",
+          ...callbacks(),
+        }}
+      >
+        <Progress
+          {...fixture.props}
+          run={fixture.completed}
+          onChange={vi.fn()}
+          showComparison={false}
+        />
+      </PackageReviewActionNavigation.Provider>,
+    );
+    await screen.findByText(/最近成功读取/);
+    expect(
+      screen.queryByRole("region", { name: "本轮主要下一步" }),
+    ).not.toBeInTheDocument();
+    expect(
+      vi
+        .mocked(api)
+        .mock.calls.some(([path]) => path.includes("/package-next-actions/")),
+    ).toBe(false);
+  });
+
+  it.each([
+    "run_id",
+    "input_digest",
+    "result_digest",
+    "frozen_input_digest",
+    "execution_input_digest",
+    "dependency_plan_digest",
+    "method_digest",
+    "package_id",
+    "revision_id",
+    "inventory_id",
+    "bid_id",
+  ] as const)("直接报告拒绝%s绑定不一致", (field) => {
+    const value = response();
+    if (field in value.binding.scope)
+      value.binding.scope[field as keyof typeof value.binding.scope] =
+        "00000000-0000-4000-8000-000000000099";
+    else
+      value.binding[
+        field as Exclude<typeof field, keyof typeof value.binding.scope>
+      ] = field.endsWith("_id")
+        ? "00000000-0000-4000-8000-000000000099"
+        : "f".repeat(64);
+    expect(() => checkedPackageNextActions(value, fixture.completed)).toThrow();
+  });
+
+  it("直接报告拒绝数量相同但不属于所选原矩阵的要求", () => {
+    const value = response();
+    value.primary.requirement_ids = ["00000000-0000-4000-8000-000000000099"];
+    expect(() => checkedPackageNextActions(value, fixture.completed)).toThrow();
+  });
+
+  it("直接报告重读失败隐藏之前数量，原报告保留", async () => {
+    let reads = 0;
+    vi.mocked(api).mockImplementation((path) =>
+      path.includes("/package-next-actions/")
+        ? ++reads === 1
+          ? Promise.resolve(answer(response()))
+          : Promise.reject(new Error("下一步观察失败"))
+        : Promise.resolve(answer(fixture.completed)),
+    );
+    render(
+      <PackageReviewActionNavigation.Provider
+        value={{ bidId: fixture.completed.scope.bid_id, ...callbacks() }}
+      >
+        <Progress
+          {...fixture.props}
+          run={fixture.completed}
+          onChange={vi.fn()}
+          showComparison={false}
+        />
+      </PackageReviewActionNavigation.Provider>,
+    );
+    await screen.findByRole("button", { name: /核对所选范围的关键问题/ });
+    fireEvent.click(screen.getByRole("button", { name: "重新核对下一步" }));
+    await screen.findByText("下一步观察失败");
+    expect(screen.queryByText(/剩余关键问题 0项/)).not.toBeInTheDocument();
+    expect(screen.getByText("所选逐条原报告")).toBeInTheDocument();
+  });
+
   it("仅定位同一原报告，不自动启动或确认", async () => {
     vi.mocked(api).mockResolvedValue(answer(response()));
     const events = callbacks();
