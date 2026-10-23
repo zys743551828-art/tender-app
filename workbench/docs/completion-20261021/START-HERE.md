@@ -1,6 +1,6 @@
 # 从这里开始：启动与操作验收
 
-本页对应 `work/bid-workbench-completion-20261021` 的当前代码与本地增量。最新已发布基线为检查点 15（`25954a22225713785106dff775287d913c0fc39c`），原 113 个文件已提交；检查点 16 的严格历史研究界面为随后完成的本地实现，尚未发布或部署。先选运行环境，再按对应功能路径操作；每一步以页面实际状态和回执为准。代码发布状态、验证结果和剩余工作统一见 [PROGRESS](PROGRESS.md)。
+本页对应fusion/bid-workbench主线。检查点1—16已合入，默认v14预览已在本机固定Compose验证；完整运行组及可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，本机运行证据见[Compose验收](windows-compose-acceptance.md)。
 
 ## 1. 先选运行环境
 
@@ -220,7 +220,7 @@ QA 的基础设施、初始化方式、API 端口 `8801` 和 Web 端口 `5174` �
 
 ### 本批可选服务的边界
 
-历史研究核心、共同暴露守卫及元数据目录已有原生服务，安装顺序与实际权限见 [历史守卫验收](package-history-exposure-bridge-acceptance.md) 和 [目录验收](package-history-directory-acceptance.md)。检查点 16 已接通研究操作界面，见第 10 节；自动 Worker 派发仍未接通，当前 CPU 工作继续由独立凭据与指定 job 的入口执行。缺少完整共同守卫时公开核心入口明确不可用，不能将元数据可见当作可训练或可评估。
+历史研究核心、共同暴露守卫及元数据目录已有原生服务，安装顺序与实际权限见[历史守卫验收](package-history-exposure-bridge-acceptance.md)和[目录验收](package-history-directory-acceptance.md)。研究界面见第10节；独立CPU派发的额外SQL、单用途进程及边界见[派发验收](package-history-dispatch-acceptance.md)。未装配默认不可用，元数据可见不授训练或评估资格。
 
 固定整包编写已在 [输入捕获与核对](authoring-package-input-acceptance.md) 和 [B2 手动生成与候选发布](package-authoring-frontend-acceptance.md) 后接通输入采集界面、明确采纳正文、精确构建及明确入包，操作见下节。上述 SQL 均未进入默认 BASE 或 v14 恢复清单，不能只启用默认预览就宣称整套研究／固定编写功能已经装配。当前范围和环境限制见 [检查点 15 验收](authoring-capture-adoption-build-acceptance.md)。
 
@@ -264,7 +264,7 @@ QA 的基础设施、初始化方式、API 端口 `8801` 和 Web 端口 `5174` �
 
 ## 10. 严格整包历史研究：明确准入、冻结方案、核对独立结果
 
-本节对应检查点 16 的本地新增工作面。研究使用已冻结的确切范围、实交和已核对官方标签；当前 CPU mean／median 常数基线用于验证回溯研究机制，尚未接通正式图文三评、正式模型发布或自动派发。没有真实配对资料时不形成真实预测精度结论。
+研究使用已冻结的确切范围、实交和已核对官方标签；CPU mean／median常数基线用于验证回溯机制，正式图文三评和模型发布仍另行实现。任务派发有独立可选入口，不随本界面或默认预览启动。缺少真实配对资料时不形成真实预测精度结论。
 
 ### 从项目内保存一份明确准入
 
@@ -294,7 +294,7 @@ QA 的基础设施、初始化方式、API 端口 `8801` 和 Web 端口 `5174` �
 
 选择“训练 CPU 常数基线”或“独立最终评估”，填写原因并确认后，点击“明确创建研究任务”。独立最终评估需要同一研究组的已冻结训练结果，最终集曝光按服务端协议持久记录。同组同类任务复用原任务，不形成第二份研究结果。
 
-**“任务已登记／等待独立执行”不表示训练或评估完成。** 本工作面没有自动派发进程。独立执行沿用 [`deploy/package_history_worker.py`](../../deploy/package_history_worker.py) 的单用途私有 profile、确切 job 与代次；核验、训练、评估保持独立非 owner 权限，API 不借用这些凭据执行研究。当前完整运行配置也不自动启动研究消费者，见 [完整运行说明](full-runtime-runbook.md)。
+**“任务已登记／等待独立执行”不表示训练或评估完成。** 默认运行配置不启动研究消费者。单份明确执行使用[`package_history_worker.py`](../../deploy/package_history_worker.py)；有界派发使用[`package_history_dispatcher.py`](../../deploy/package_history_dispatcher.py)，须先安装额外SQL并分别提供train／evaluate私有profile。核验、训练、评估保持独立非owner权限，API不借用这些凭据；启动方法及实际边界见[派发验收](package-history-dispatch-acceptance.md)。
 
 ### 查看、控制与恢复
 

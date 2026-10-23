@@ -36,6 +36,8 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
     plan = yaml.safe_load((ROOT / "deploy/compose.fusion.yaml").read_text(encoding="utf-8"))
     assert plan["name"] == "tender-fusion"
     services = plan["services"]
+    assert services["postgres"]["command"] == ["postgres", "-c", "jit=off"]
+    assert services["checks-postgres"]["command"] == ["postgres", "-c", "jit=off"]
     assert {name for name, service in services.items() if not service.get("profiles")} == {
         "postgres",
         "init",

@@ -31,7 +31,9 @@
 5. `packages/assistant/sql/intent-budget.sql`
 6. `packages/assistant/sql/generation-batches.sql`
 
-当前完整主应用计划为 **40 个 SQL**：34 个基础 SQL，加上上列 6 个扩展，覆盖 F04 更正链、F05 整包提交绑定和精确整包任务绑定。先前主链原生验收实际执行的是当时的 **39 个 SQL / 170 个表**；其收据保持原样，不把后来新增的任务 SQL 算作已在旧测试中安装。可选研究环境的 47 SQL 备份恢复验收是另外一份证据；它不表示本组已启动研究消费者。
+当前完整主应用配置为**43个SQL**：37个BASE，加上上述6个扩展，数量按实际schema_plan核对。默认v14预览只安装37个BASE，不能当作本完整组。先前主链原生验收的39个SQL／170张表以及可选研究恢复收据保持各自当时范围，不把后来增加的SQL算作旧运行中已安装，也不表示本组启动了研究消费者。
+
+PostgreSQL的Compose执行配置明确为`postgres -c jit=off`，结构校验拒绝覆盖。指定训练导出在本机已比较开／关JIT的同一内容摘要与耗时，见[派发及执行配置验收](package-history-dispatch-acceptance.md)；该结果不代表整体吞吐或生产容量通过。
 
 Word 原件接收显式启用。Word→Rich 导入继续使用真实 OOXML 解析与损失确认。Word→PDF、Rich 导出所需的隔离渲染配置、OCR 服务、语义检索模型资产不会被伪造或自动下载。缺少这些配置时，应用继续返回准确的不可用/部分覆盖状态。默认 PDFium 物理页文字读取不等同于表格、图纸和视觉完整理解。
 

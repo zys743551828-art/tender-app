@@ -163,6 +163,8 @@ def structure(document, *, plan, directory):
     ):
         raise spec.ConfigurationError("FULL_INITIALIZER_CAPABILITIES_CHANGED")
     web = services["web"]
+    if services["postgres"].get("command") != ["postgres", "-c", "jit=off"]:
+        raise spec.ConfigurationError("FULL_POSTGRES_EXECUTION_PROFILE_CHANGED")
     if (
         web.get("user") != "65532:65532"
         or web.get("cap_drop") != ["ALL"]

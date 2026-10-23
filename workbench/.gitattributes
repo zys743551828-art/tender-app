@@ -18,5 +18,13 @@
 /packages/identity/sql/*.sql text eol=lf
 /packages/knowledge/sql/*.sql text eol=lf
 /deploy/sql/*.sql text eol=lf
+/deploy/fusion*.py text eol=lf
+/deploy/fusion.ps1 text eol=lf
+/deploy/compose.fusion*.yaml text eol=lf
+/deploy/package_history_dispatcher.py text eol=lf
+/packages/model_governance/package_history_dispatch.py text eol=lf
+/packages/contracts/package-history-dispatch.md text eol=lf
+/tests/test_fusion*.py text eol=lf
+/tests/test_package_history_dispatch*.py text eol=lf
 /docs/completion-20261021/evidence/windows-compose/** -text
 /docs/completion-20261021/evidence/history-dispatch/** -text

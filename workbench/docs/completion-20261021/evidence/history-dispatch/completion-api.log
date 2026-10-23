@@ -1,0 +1,19 @@
+..................................................................       [100%]
+=============================== warnings summary ===============================
+tests/test_package_review_runs_api.py::TestPackageReviewRuns::test_launch_records_one_atomic_job_ack_and_does_not_change_preparation[synthetic-original-v1]
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_document_parses_pg.py::test_nonowner_standalone_parse_exact_pages_and_reused_request_without_head_changes
+tests/test_document_parses_pg.py::test_cancellation_or_closed_project_blocks_late_publication[cancel]
+tests/test_document_parses_pg.py::test_cancellation_or_closed_project_blocks_late_publication[close]
+tests/test_document_parses_pg.py::test_withdrawal_during_original_io_prevents_postcheck_and_publication
+tests/test_document_parses_pg.py::test_successful_parse_closes_page_and_evidence_appends_before_any_package_freeze
+tests/test_document_parses_pg.py::test_old_repeatable_read_snapshot_cannot_append_after_another_transaction_publishes
+  /usr/local/lib/python3.12/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+    warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------- generated xml file: /evidence/completion-api.xml ---------------
+66 passed, 7 warnings in 151.22s (0:02:31)
+{"suite": "completion-api", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

@@ -1,0 +1,10 @@
+{
+  "on": {
+    "seconds": 32.814,
+    "digest": "d9deb969bf91e6fb09db5797022c2c1e8cef1a5aa5ddba4dc149069591fab040"
+  },
+  "off": {
+    "seconds": 0.226,
+    "digest": "d9deb969bf91e6fb09db5797022c2c1e8cef1a5aa5ddba4dc149069591fab040"
+  }
+}

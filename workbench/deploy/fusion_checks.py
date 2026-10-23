@@ -82,6 +82,10 @@ SUITES["delivery-pure"] = [
     "tests/test_package_history_directory.py",
     "tests/test_package_history_protocol_recovery.py",
 ]
+SUITES["history-dispatch"] = [
+    "tests/test_package_history_dispatch.py",
+    "tests/test_package_history_dispatch_pg.py",
+]
 
 
 def main():
@@ -121,6 +125,7 @@ def main():
         "scope-review-api",
         "completion-api",
         "technical-scope-api",
+        "history-dispatch",
     }:
         password = (
             Path("/run/secrets/fusion_checks_owner_password")
@@ -151,6 +156,9 @@ def main():
             environment["FUSION_REQUIREMENTS_ADMIN_DSN"] = check_dsn
             if suite == "technical-scope-api":
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
+            if suite == "history-dispatch":
+                environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
+                environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"
     # The executable and suite paths are trusted constants; shell remains disabled.
     result = subprocess.run(  # nosec B603
         [

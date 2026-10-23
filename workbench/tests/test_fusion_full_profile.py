@@ -345,6 +345,7 @@ def test_native_launcher_accepts_only_two_fixed_suites():
         "model_default",
         "model_egress",
         "scheduler_default",
+        "postgres_jit",
         "foreign_env",
     ],
 )
@@ -371,6 +372,8 @@ def test_compose_capability_injection_is_rejected(configured, case):
         service["worker-document"]["networks"] = ["core", "model_egress"]
     elif case == "scheduler_default":
         del service["task-runner"]["profiles"]
+    elif case == "postgres_jit":
+        service["postgres"]["command"] = ["postgres", "-c", "jit=on"]
     else:
         service["api"]["environment"] = dict(
             service["api"]["environment"], OWNER_DATABASE_DSN="forbidden"
