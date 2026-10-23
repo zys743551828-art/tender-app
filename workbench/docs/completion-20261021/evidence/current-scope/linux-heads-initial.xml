@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="20" time="40.791" timestamp="2026-10-23T18:18:12.774947+00:00" hostname="d91015ca8010"><testcase classname="tests.test_package_current_scope_pg" name="test_native_current_packages_identity_inventory_and_exclusions" time="2.899" /><testcase classname="tests.test_package_current_scope_pg" name="test_closed_or_submitted_project_rejects_and_old_scope_is_unchanged[submitted]" time="2.079" /><testcase classname="tests.test_package_current_scope_pg" name="test_closed_or_submitted_project_rejects_and_old_scope_is_unchanged[closed]" time="1.922" /><testcase classname="tests.test_package_current_scope_pg" name="test_closed_or_submitted_project_rejects_and_old_scope_is_unchanged[terminated]" time="1.888" /><testcase classname="tests.test_package_current_scope_pg" name="test_current_identity_changed_rejects" time="1.879" /><testcase classname="tests.test_package_current_scope_pg" name="test_current_rule_set_changed_rejects" time="1.983" /><testcase classname="tests.test_package_current_scope_pg" name="test_wrong_frozen_identity_or_method_rejects[scope_id]" time="2.042" /><testcase classname="tests.test_package_current_scope_pg" name="test_wrong_frozen_identity_or_method_rejects[bid_id]" time="1.946" /><testcase classname="tests.test_package_current_scope_pg" name="test_wrong_frozen_identity_or_method_rejects[expected_scope_digest]" time="1.924" /><testcase classname="tests.test_package_current_scope_pg" name="test_wrong_frozen_identity_or_method_rejects[expected_method_digest]" time="1.948" /><testcase classname="tests.test_package_current_scope_pg" name="test_owner_api_and_borrowed_transaction_reject" time="1.914" /><testcase classname="tests.test_package_current_scope_pg" name="test_effective_excess_permissions_reject[table]" time="2.085" /><testcase classname="tests.test_package_current_scope_pg" name="test_effective_excess_permissions_reject[label]" time="1.885" /><testcase classname="tests.test_package_current_scope_pg" name="test_effective_excess_permissions_reject[extra_role]" time="1.981" /><testcase classname="tests.test_package_current_scope_pg" name="test_effective_excess_permissions_reject[public_definer]" time="1.841" /><testcase classname="tests.test_package_current_scope_pg" name="test_native_rpc_body_replacement_rejects_without_executing_it" time="1.868" /><testcase classname="tests.test_package_current_scope_pg" name="test_real_new_package_revision_rejects_old_scope_without_changing_receipt[target]" time="2.060" /><testcase classname="tests.test_package_current_scope_pg" name="test_real_new_package_revision_rejects_old_scope_without_changing_receipt[authority]" time="1.913" /><testcase classname="tests.test_package_current_scope_pg" name="test_real_new_inventory_rejects_old_scope" time="2.000" /><testcase classname="tests.test_package_current_scope_pg" name="test_default_rpc_call_without_owned_readonly_transaction_is_rejected" time="1.941"><failure message="psycopg.errors.ActiveSqlTransaction: CURRENT_SCOPE_OWNED_READ_ONLY_TRANSACTION_REQUIRED&#10;CONTEXT:  PL/pgSQL function current_technical_scope.observe(uuid,uuid,text) line 7 at RAISE">saved = {'actor': '4c2d0b13-7423-4ed5-a703-dafa0ce2bf3e', 'app': &lt;apps.api.main.WorkbenchAPI object at 0x722a9dcb7aa0&gt;, 'base'...i/v1/bids/5d8d4c68-8980-4d67-9814-63f00fc25710/packages', 'body_evidence': 'e2fd744c-eb69-4bc6-b9d3-9d532a51bb37', ...}
+
+    def test_default_rpc_call_without_owned_readonly_transaction_is_rejected(saved):
+        w = saved
+        with pytest.raises(psycopg.errors.InvalidTransactionState):
+&gt;           w["database"]["scope_verifier"].execute(
+                "SELECT current_technical_scope.observe(%s,%s,%s)",
+                (
+                    w["technical_scope"][0],
+                    w["saved_scope"]["manifest"]["id"],
+                    w["saved_scope"]["digest"],
+                ),
+            )
+
+tests/test_package_current_scope_pg.py:272: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=fusion_current_scope_verify database=fusion_package_requirements_api) at 0x722a9f88fce0&gt;
+query = 'SELECT current_technical_scope.observe(%s,%s,%s)'
+params = ('5d8d4c68-8980-4d67-9814-63f00fc25710', 'c878f347-2ce9-4fcf-8237-8fbd88cb0bfe', '76b0a8bf61cd42bcefca7ad857d47d986c2a5ab6b0594e9498b1b011654e278f')
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -&gt; Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+&gt;           raise ex.with_traceback(None)
+E           psycopg.errors.ActiveSqlTransaction: CURRENT_SCOPE_OWNED_READ_ONLY_TRANSACTION_REQUIRED
+E           CONTEXT:  PL/pgSQL function current_technical_scope.observe(uuid,uuid,text) line 7 at RAISE
+
+/usr/local/lib/python3.12/site-packages/psycopg/connection.py:257: ActiveSqlTransaction</failure></testcase></testsuite></testsuites>

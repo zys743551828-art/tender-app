@@ -1,0 +1,143 @@
+{
+  "scope": "native current package, identity, rules and saved-scope facts via narrow independent RPC; no necessary-range, byte or execution authority",
+  "tests": {
+    "linux_passed": 37,
+    "linux_junit_seconds": 43.136,
+    "linux_by_module": {
+      "tests.test_package_current_scope_pg": 20,
+      "tests.test_provider_error_isolation": 5,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 5,
+    "host_junit_seconds": 2.106,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "52d6281a917befdc24eb3830b7eb91bc8390e8ef518619193108df076825b03a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "3b54b9305a81825244cfbd95dfff86c345a8d4c553193f352f6ff9959abe5028",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-current-scope-runtime.sql",
+      "sha256": "6174fcf929005c166db65602da6ad309adad7c708a6e7055884ce5946397b1ce",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-scope.md",
+      "sha256": "a43478bc0e522faae2f7049cbc6625427d46b82ad5aabb36d30b7945cfcd7c4a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_scope.py",
+      "sha256": "fce0a4a04761c8a1780c69af554838c52171fefa8793109f8273d1279e8399eb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_scope_pg.py",
+      "sha256": "d06dfec8e1a06d25e6d2ffbd0beed085f846dfe33de3e4a2c67e2f9957688093",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "2111304ae5eefb08965817a699d7ce6191ae708bd3ba2721f1036264489dd665",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "457a90f0b6feff6a773037b09800beb7cf82e2bcd1693bee12522e3cfe6ec636",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "e475bfead0872489beafdc8430cdc50d9b26814103e46a2035de3cfc7ee4848a",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true
+  },
+  "actual_native_login": "fusion_current_scope_verify",
+  "actual_denied_direct_queries": 5,
+  "real_target_authority_revision_and_inventory_append_rejection_verified": true,
+  "no_direct_business_table_reads_for_login": true,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "default_schema_or_http_changed": false,
+  "runtime_inputs": 1190,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "current_scope_capability_roles": 0
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "58ecfc8a535807bd556edb7040bccb15f3c02a4eaad14f28ce8adfff8f1aa88d",
+    "linux-initial.xml": "c9f777647bb2b23a97fd7b62b6f903c5fb97c46a94abf6aeabf00037dbe0e7f1",
+    "linux-heads-initial.log": "d3381dd489bb8885a5580f25e15cdff331991e9c072a73641694bbad4b26ff1d",
+    "linux-heads-initial.xml": "49d0b46beb93077c09eb3c386e8bdff329e21ba6016aad08339e2f9e2100857a",
+    "linux-final.log": "d252b0bcaa54c855dd8515107ae242c925efc0ac83435a0696370824555f71ae",
+    "linux-final.xml": "33b17468cd13563074e2e3c337dd37df34cae5b4d2f8e14e098a609f2459bd63",
+    "host-final.log": "84cd21fbed6a4a3d8571704dbc04c1e0f79059d8eb8be44b37dd4f06f58be3b6",
+    "host-final.xml": "fb3d56af0339bb34c55e5b9956ce4227b2874ba5c577c266afbc9d2b35cb4e10",
+    "python-quality-initial.log": "47cd3b65647675e21f2b9c2c08f77efca5599120a06cfa57f065b5bd34a944e2",
+    "python-final.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "native-observation.json": "9e286ae945c2f23d8b59998423d6731d6c7895e88e8318fabf18e7b04bde6ee3",
+    "method-boundaries.json": "1b45fa811738696930041f58a2b48efaa50f9dce8a9cf4c78ee19a192c1b5281",
+    "http-runtime.json": "81f213d6fb7d2c9841d2e1843807f541e5874d80ae3199fe8dcadd8c273d96e3",
+    "checks-cleanup.json": "8723a8391ae0c724e423b56a59cf57aeff441c51732f631e416d3d8bd55c3900"
+  }
+}

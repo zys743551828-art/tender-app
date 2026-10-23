@@ -1,0 +1,58 @@
+...................F
+=================================== FAILURES ===================================
+_____ test_default_rpc_call_without_owned_readonly_transaction_is_rejected _____
+
+saved = {'actor': '4c2d0b13-7423-4ed5-a703-dafa0ce2bf3e', 'app': <apps.api.main.WorkbenchAPI object at 0x722a9dcb7aa0>, 'base'...i/v1/bids/5d8d4c68-8980-4d67-9814-63f00fc25710/packages', 'body_evidence': 'e2fd744c-eb69-4bc6-b9d3-9d532a51bb37', ...}
+
+    def test_default_rpc_call_without_owned_readonly_transaction_is_rejected(saved):
+        w = saved
+        with pytest.raises(psycopg.errors.InvalidTransactionState):
+>           w["database"]["scope_verifier"].execute(
+                "SELECT current_technical_scope.observe(%s,%s,%s)",
+                (
+                    w["technical_scope"][0],
+                    w["saved_scope"]["manifest"]["id"],
+                    w["saved_scope"]["digest"],
+                ),
+            )
+
+tests/test_package_current_scope_pg.py:272: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=fusion_current_scope_verify database=fusion_package_requirements_api) at 0x722a9f88fce0>
+query = 'SELECT current_technical_scope.observe(%s,%s,%s)'
+params = ('5d8d4c68-8980-4d67-9814-63f00fc25710', 'c878f347-2ce9-4fcf-8237-8fbd88cb0bfe', '76b0a8bf61cd42bcefca7ad857d47d986c2a5ab6b0594e9498b1b011654e278f')
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -> Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.ActiveSqlTransaction: CURRENT_SCOPE_OWNED_READ_ONLY_TRANSACTION_REQUIRED
+E           CONTEXT:  PL/pgSQL function current_technical_scope.observe(uuid,uuid,text) line 7 at RAISE
+
+/usr/local/lib/python3.12/site-packages/psycopg/connection.py:257: ActiveSqlTransaction
+=============================== warnings summary ===============================
+tests/test_package_current_scope_pg.py::test_native_current_packages_identity_inventory_and_exclusions
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------ generated xml file: /evidence/current-scope-native.xml ------------
+=========================== short test summary info ============================
+FAILED tests/test_package_current_scope_pg.py::test_default_rpc_call_without_owned_readonly_transaction_is_rejected
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 19 passed, 1 warning in 40.79s
+{"suite": "current-scope-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}
