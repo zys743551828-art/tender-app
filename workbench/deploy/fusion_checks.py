@@ -86,6 +86,11 @@ SUITES["history-dispatch"] = [
     "tests/test_package_history_dispatch.py",
     "tests/test_package_history_dispatch_pg.py",
 ]
+SUITES["desktop-pure"] = [
+    *SUITES["delivery-pure"],
+    "tests/test_fusion_desktop_compose.py",
+    "tests/test_fusion_desktop_private.py",
+]
 
 
 def main():
@@ -109,7 +114,7 @@ def main():
     for name in ("packages", "deploy", "tests", "apps/api", "apps/worker"):
         shutil.copytree(Path("/workspace") / name, root / name, ignore=ignore)
     shutil.copyfile("/workspace/pyproject.toml", root / "pyproject.toml")
-    if suite == "delivery-pure":
+    if suite in {"delivery-pure", "desktop-pure"}:
         shutil.copyfile("/workspace/requirements.lock.txt", root / "requirements.lock.txt")
         shutil.copytree("/workspace/apps/web/dist", root / "apps/web/dist")
     environment = {

@@ -2,6 +2,8 @@
 
 本配置把 API、对象存储、消息传输、Worker 和协调器放在一个**显式选择的新环境**中。入口为 `deploy/compose.fusion-full.yaml`，运行配置协议为 `fusion-full-local/1`。它不修改或接管现有 `tender-fusion / fusion_v12`，不复用其数据库、卷、账号或初始化凭据，也不是旧数据库升级工具。
 
+Windows Docker Desktop 使用[桌面命名卷入口](desktop-runtime-runbook.md)，保留本配置的严格私有文件和角色校验；本机容器及实际文件链结果见[桌面验收](desktop-runtime-acceptance.md)。当前普通预览为5188／v14，独立完整组默认5189；不要用Windows宿主目录的权限表现冒充Linux 600／700。
+
 ## 服务与启用边界
 
 | 服务 | 默认启动 | 运行职责与边界 |

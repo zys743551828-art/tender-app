@@ -1,0 +1,333 @@
+ Container tender-fusion-object-image-info-1 Recreate 
+ Container tender-fusion-object-image-info-1 Recreated 
+Attaching to object-image-info-1
+ Container tender-fusion-object-image-info-1 Starting 
+ Container tender-fusion-object-image-info-1 Started 
+object-image-info-1  | Example: weed server -dir=/tmp -volume.max=5 -ip=server_name
+object-image-info-1  | Default Usage:
+object-image-info-1  |   -cpuprofile string
+object-image-info-1  |     	cpu profile output file
+object-image-info-1  |   -dataCenter string
+object-image-info-1  |     	current volume server's data center name
+object-image-info-1  |   -debug
+object-image-info-1  |     	serves runtime profiling data, e.g., http://localhost:6060/debug/pprof/goroutine?debug=2
+object-image-info-1  |   -debug.port int
+object-image-info-1  |     	http port for debugging (default 6060)
+object-image-info-1  |   -dir string
+object-image-info-1  |     	directories to store data files. dir[,dir]... (default "/tmp")
+object-image-info-1  |   -disableHttp
+object-image-info-1  |     	disable http requests, only gRPC operations are allowed.
+object-image-info-1  |   -filer
+object-image-info-1  |     	whether to start filer
+object-image-info-1  |   -filer.allowUntrustedRemoteEndpoints
+object-image-info-1  |     	if true, a read of a remote-only entry accepts arbitrary remote S3 endpoints including loopback / link-local hosts. Default rejects internal / metadata endpoints.
+object-image-info-1  |   -filer.allowedOrigins string
+object-image-info-1  |     	comma separated list of allowed origins (default "*")
+object-image-info-1  |   -filer.collection string
+object-image-info-1  |     	all data will be stored in this collection
+object-image-info-1  |   -filer.concurrentFileUploadLimit int
+object-image-info-1  |     	limit number of concurrent file uploads, 0 means unlimited
+object-image-info-1  |   -filer.concurrentUploadLimitMB int
+object-image-info-1  |     	limit total concurrent upload size, 0 means unlimited
+object-image-info-1  |   -filer.defaultReplicaPlacement string
+object-image-info-1  |     	default replication type. If not specified, use master setting.
+object-image-info-1  |   -filer.dirListLimit int
+object-image-info-1  |     	limit sub dir listing size (default 1000)
+object-image-info-1  |   -filer.disableDirListing
+object-image-info-1  |     	turn off directory listing
+object-image-info-1  |   -filer.disableHttp
+object-image-info-1  |     	disable filer HTTP requests, only gRPC operations are allowed
+object-image-info-1  |   -filer.disk string
+object-image-info-1  |     	[hdd|ssd|<tag>] hard drive or solid state drive or any tag
+object-image-info-1  |   -filer.downloadMaxMBps int
+object-image-info-1  |     	download max speed for each download request, in MB per second
+object-image-info-1  |   -filer.encryptVolumeData
+object-image-info-1  |     	encrypt data on volume servers
+object-image-info-1  |   -filer.exposeDirectoryData
+object-image-info-1  |     	expose directory data via filer. If false, filer UI will be inaccessible. (default true)
+object-image-info-1  |   -filer.filerGroup string
+object-image-info-1  |     	share metadata with other filers in the same filerGroup
+object-image-info-1  |   -filer.localSocket string
+object-image-info-1  |     	default to /tmp/seaweedfs-filer-<port>.sock
+object-image-info-1  |   -filer.maxMB int
+object-image-info-1  |     	split files larger than the limit (default 4)
+object-image-info-1  |   -filer.port int
+object-image-info-1  |     	filer server http listen port (default 8888)
+object-image-info-1  |   -filer.port.grpc int
+object-image-info-1  |     	filer server grpc listen port
+object-image-info-1  |   -filer.port.public int
+object-image-info-1  |     	filer server public http listen port
+object-image-info-1  |   -filer.saveToFilerLimit int
+object-image-info-1  |     	Small files smaller than this limit can be cached in filer store.
+object-image-info-1  |   -filer.tusBasePath string
+object-image-info-1  |     	TUS resumable upload endpoint base path (e.g., /.tus) (default "/.tus")
+object-image-info-1  |   -filer.tusMaxSizeMB int
+object-image-info-1  |     	maximum TUS upload size in MB (default 5120)
+object-image-info-1  |   -filer.tusSessionExpiry duration
+object-image-info-1  |     	incomplete TUS upload sessions are cleaned up after this duration, e.g. "48h", "7h30m" (default 24h0m0s)
+object-image-info-1  |   -filer.ui.deleteDir
+object-image-info-1  |     	enable filer UI show delete directory button (default true)
+object-image-info-1  |   -iam
+object-image-info-1  |     	whether to start IAM service
+object-image-info-1  |   -iam.config string
+object-image-info-1  |     	path to the advanced IAM config file for S3. An alias for -s3.iam.config, but with lower priority.
+object-image-info-1  |   -iam.port int
+object-image-info-1  |     	iam server http listen port (default 8111)
+object-image-info-1  |   -idleTimeout int
+object-image-info-1  |     	connection idle seconds (default 30)
+object-image-info-1  |   -ip string
+object-image-info-1  |     	ip or server name, also used as identifier (default "localhost")
+object-image-info-1  |   -ip.bind string
+object-image-info-1  |     	ip address to bind to. If empty, default to same as -ip option.
+object-image-info-1  |   -master
+object-image-info-1  |     	whether to start master server (default true)
+object-image-info-1  |   -master.defaultReplication string
+object-image-info-1  |     	Default replication type if not specified.
+object-image-info-1  |   -master.dir string
+object-image-info-1  |     	data directory to store meta data, default to same as -dir specified
+object-image-info-1  |   -master.electionTimeout duration
+object-image-info-1  |     	election timeout of master servers (default 10s)
+object-image-info-1  |   -master.garbageThreshold float
+object-image-info-1  |     	threshold to vacuum and reclaim spaces (default 0.3)
+object-image-info-1  |   -master.heartbeatInterval duration
+object-image-info-1  |     	heartbeat interval of master servers, and will be randomly multiplied by [1, 1.25) (default 300ms)
+object-image-info-1  |   -master.maxParallelVacuumPerServer int
+object-image-info-1  |     	maximum number of volumes to vacuum in parallel on one volume server (default 1)
+object-image-info-1  |   -master.metrics.address string
+object-image-info-1  |     	Prometheus gateway address
+object-image-info-1  |   -master.metrics.intervalSeconds int
+object-image-info-1  |     	Prometheus push interval in seconds (default 15)
+object-image-info-1  |   -master.peers string
+object-image-info-1  |     	all master nodes in comma separated ip:masterPort list
+object-image-info-1  |   -master.port int
+object-image-info-1  |     	master server http listen port (default 9333)
+object-image-info-1  |   -master.port.grpc int
+object-image-info-1  |     	master server grpc listen port
+object-image-info-1  |   -master.raftBootstrap
+object-image-info-1  |     	Whether to bootstrap the Raft cluster
+object-image-info-1  |   -master.raftHashicorp
+object-image-info-1  |     	use hashicorp raft
+object-image-info-1  |   -master.resumeState
+object-image-info-1  |     	resume previous state on start master server (default true)
+object-image-info-1  |   -master.telemetry
+object-image-info-1  |     	report anonymous cluster statistics to master.telemetry.url, use -master.telemetry=false to opt out (default true)
+object-image-info-1  |   -master.telemetry.url string
+object-image-info-1  |     	telemetry server URL to send usage statistics (default "https://telemetry.seaweedfs.com/api/collect")
+object-image-info-1  |   -master.vacuumDeleteEmptyAfterSeconds int
+object-image-info-1  |     	automatic sweep deletes volume copies that stay empty this many seconds; 0 disables
+object-image-info-1  |   -master.vacuumIntervalSeconds int
+object-image-info-1  |     	seconds between automatic vacuum sweeps (default 840)
+object-image-info-1  |   -master.volumePreallocate
+object-image-info-1  |     	Preallocate disk space for volumes.
+object-image-info-1  |   -master.volumeSizeLimitMB uint
+object-image-info-1  |     	Master stops directing writes to oversized volumes. (default 30720)
+object-image-info-1  |   -memprofile string
+object-image-info-1  |     	memory profile output file
+object-image-info-1  |   -metricsIp string
+object-image-info-1  |     	metrics listen ip. If empty, default to same as -ip.bind option.
+object-image-info-1  |   -metricsPort int
+object-image-info-1  |     	Prometheus metrics listen port
+object-image-info-1  |   -mq.agent
+object-image-info-1  |     	whether to start message queue agent
+object-image-info-1  |   -mq.agent.brokers string
+object-image-info-1  |     	comma-separated message queue brokers (default "localhost:17777")
+object-image-info-1  |   -mq.agent.port int
+object-image-info-1  |     	message queue agent gRPC listen port (default 16777)
+object-image-info-1  |   -mq.broker
+object-image-info-1  |     	whether to start message queue broker
+object-image-info-1  |   -mq.broker.logFlushInterval int
+object-image-info-1  |     	log buffer flush interval in seconds (default 5)
+object-image-info-1  |   -mq.broker.port int
+object-image-info-1  |     	message queue broker gRPC listen port (default 17777)
+object-image-info-1  |   -options string
+object-image-info-1  |     	a file of command line options, each line in optionName=optionValue format
+object-image-info-1  |   -rack string
+object-image-info-1  |     	current volume server's rack name
+object-image-info-1  |   -s3
+object-image-info-1  |     	whether to start S3 gateway
+object-image-info-1  |   -s3.allowDeleteBucketNotEmpty
+object-image-info-1  |     	allow recursive deleting all entries along with bucket (default true)
+object-image-info-1  |   -s3.allowEmptyFolder
+object-image-info-1  |     	deprecated, ignored. Empty folder cleanup is now automatic. (default true)
+object-image-info-1  |   -s3.allowUntrustedRemoteEndpoints
+object-image-info-1  |     	if true, a read of a remote-only entry accepts arbitrary remote S3 endpoints including loopback / link-local hosts. Default rejects internal / metadata endpoints.
+object-image-info-1  |   -s3.allowedOrigins string
+object-image-info-1  |     	comma separated list of allowed origins (default "*")
+object-image-info-1  |   -s3.auditLogConfig string
+object-image-info-1  |     	path to the audit log config file
+object-image-info-1  |   -s3.autoCreateBucket
+object-image-info-1  |     	create the bucket on upload if it does not exist, for admin identities only (default true)
+object-image-info-1  |   -s3.cacert.file string
+object-image-info-1  |     	path to the TLS CA certificate file
+object-image-info-1  |   -s3.cacheCapacityMB int
+object-image-info-1  |     	in-memory chunk cache capacity in MB for S3 GETs shared across requests (0 disables)
+object-image-info-1  |   -s3.cert.file string
+object-image-info-1  |     	path to the TLS certificate file
+object-image-info-1  |   -s3.concurrentFileUploadLimit int
+object-image-info-1  |     	limit number of concurrent file uploads for S3, 0 means unlimited
+object-image-info-1  |   -s3.concurrentUploadLimitMB int
+object-image-info-1  |     	limit total concurrent upload size for S3, 0 means unlimited
+object-image-info-1  |   -s3.config string
+object-image-info-1  |     	path to the config file
+object-image-info-1  |   -s3.defaultFileMode string
+object-image-info-1  |     	default file mode for S3 uploaded objects, e.g. 0660, 0644, 0666
+object-image-info-1  |   -s3.domainName string
+object-image-info-1  |     	suffix of the host name in comma separated list, {bucket}.{domainName}
+object-image-info-1  |   -s3.encryptVolumeData
+object-image-info-1  |     	encrypt data on volume servers for S3 uploads
+object-image-info-1  |   -s3.externalUrl string
+object-image-info-1  |     	the external URL clients use to connect (e.g. https://api.example.com:9000). Advertised to Iceberg and Lance clients, and tried first when verifying S3 signatures behind a reverse proxy. Falls back to S3_EXTERNAL_URL env var.
+object-image-info-1  |   -s3.iam
+object-image-info-1  |     	enable embedded IAM API on the same S3 port (default true)
+object-image-info-1  |   -s3.iam.config string
+object-image-info-1  |     	path to the advanced IAM config file for S3. Overrides -iam.config if both are provided.
+object-image-info-1  |   -s3.iam.readOnly
+object-image-info-1  |     	disable IAM write operations on this server (default true)
+object-image-info-1  |   -s3.iceberg.credentialDurationSeconds int
+object-image-info-1  |     	lifetime of credentials vended by the Iceberg catalog (default 3600)
+object-image-info-1  |   -s3.iceberg.credentialRole string
+object-image-info-1  |     	IAM role ARN the Iceberg catalog assumes to vend table-scoped credentials (empty disables vending)
+object-image-info-1  |   -s3.idleTimeout int
+object-image-info-1  |     	connection idle seconds (default 120)
+object-image-info-1  |   -s3.ip.bind string
+object-image-info-1  |     	ip address to bind to. If empty, default to same as -ip.bind option.
+object-image-info-1  |   -s3.key.file string
+object-image-info-1  |     	path to the TLS private key file
+object-image-info-1  |   -s3.localSocket string
+object-image-info-1  |     	default to /tmp/seaweedfs-s3-<port>.sock
+object-image-info-1  |   -s3.port int
+object-image-info-1  |     	s3 server http listen port (default 8333)
+object-image-info-1  |   -s3.port.grpc int
+object-image-info-1  |     	s3 server grpc listen port
+object-image-info-1  |   -s3.port.https int
+object-image-info-1  |     	s3 server https listen port
+object-image-info-1  |   -s3.port.iceberg int
+object-image-info-1  |     	Iceberg REST Catalog server listen port (0 to disable) (default 8181)
+object-image-info-1  |   -s3.port.lance int
+object-image-info-1  |     	Lance Namespace server listen port (0 to disable) (default 9101)
+object-image-info-1  |   -s3.readerCacheSizeMB int
+object-image-info-1  |     	memory budget in MiB for downloaded and in-flight reader buffers across all S3 GETs (0 means unlimited)
+object-image-info-1  |   -s3.tlsVerifyClientCert
+object-image-info-1  |     	whether to verify the client's certificate
+object-image-info-1  |   -sftp
+object-image-info-1  |     	whether to start Sftp server
+object-image-info-1  |   -sftp.authMethods string
+object-image-info-1  |     	comma-separated list of allowed auth methods: password, publickey, certificate (default "password,publickey")
+object-image-info-1  |   -sftp.bannerMessage string
+object-image-info-1  |     	message displayed before authentication (default "SeaweedFS SFTP Server - Unauthorized access is prohibited")
+object-image-info-1  |   -sftp.clientAliveCountMax int
+object-image-info-1  |     	maximum number of missed keep-alive messages before disconnecting (default 3)
+object-image-info-1  |   -sftp.clientAliveInterval duration
+object-image-info-1  |     	interval for sending keep-alive messages (default 5s)
+object-image-info-1  |   -sftp.hostKeysFolder string
+object-image-info-1  |     	path to folder containing SSH private key files for host authentication
+object-image-info-1  |   -sftp.localSocket string
+object-image-info-1  |     	default to /tmp/seaweedfs-sftp-<port>.sock
+object-image-info-1  |   -sftp.loginGraceTime duration
+object-image-info-1  |     	timeout for authentication (default 2m0s)
+object-image-info-1  |   -sftp.maxAuthTries int
+object-image-info-1  |     	maximum number of authentication attempts per connection (default 6)
+object-image-info-1  |   -sftp.port int
+object-image-info-1  |     	SFTP server listen port (default 2022)
+object-image-info-1  |   -sftp.sshPrivateKey string
+object-image-info-1  |     	path to the SSH private key file for host authentication
+object-image-info-1  |   -sftp.trustedUserCAKeysFile string
+object-image-info-1  |     	path to a file with trusted user CA public keys (OpenSSH authorized_keys format); required when 'certificate' is in -sftp.authMethods
+object-image-info-1  |   -sftp.userStoreFile string
+object-image-info-1  |     	path to JSON file containing user credentials and permissions
+object-image-info-1  |   -volume
+object-image-info-1  |     	whether to start volume server (default true)
+object-image-info-1  |   -volume.allowUntrustedRemoteEndpoints
+object-image-info-1  |     	if true, FetchAndWriteNeedle accepts arbitrary remote S3 endpoints including loopback / link-local hosts. Default rejects internal / metadata endpoints.
+object-image-info-1  |   -volume.compactionMBps int
+object-image-info-1  |     	limit compaction speed in mega bytes per second
+object-image-info-1  |   -volume.concurrentDownloadLimitMB int
+object-image-info-1  |     	limit total concurrent download size, 0 means unlimited
+object-image-info-1  |   -volume.concurrentUploadLimitMB int
+object-image-info-1  |     	limit total concurrent upload size, 0 means unlimited
+object-image-info-1  |   -volume.dir.idx string
+object-image-info-1  |     	directory to store .idx files
+object-image-info-1  |   -volume.disk string
+object-image-info-1  |     	[hdd|ssd|<tag>] hard drive or solid state drive or any tag
+object-image-info-1  |   -volume.fileSizeLimitMB int
+object-image-info-1  |     	limit file size to avoid out of memory (default 256)
+object-image-info-1  |   -volume.hasSlowRead
+object-image-info-1  |     	<experimental> if true, this prevents slow reads from blocking other requests, but large file read P99 latency will increase. (default true)
+object-image-info-1  |   -volume.id string
+object-image-info-1  |     	volume server id. If empty, default to ip:port
+object-image-info-1  |   -volume.images.fix.orientation
+object-image-info-1  |     	Adjust jpg orientation when uploading.
+object-image-info-1  |   -volume.index string
+object-image-info-1  |     	Choose [memory|leveldb|leveldbMedium|leveldbLarge] mode for memory~performance balance. (default "memory")
+object-image-info-1  |   -volume.index.leveldbTimeout int
+object-image-info-1  |     	alive time for leveldb (default to 0). If leveldb of volume is not accessed in ldbTimeout hours, it will be off loaded to reduce opened files and memory consumption.
+object-image-info-1  |   -volume.inflightDownloadDataTimeout duration
+object-image-info-1  |     	inflight download data wait timeout of volume servers (default 1m0s)
+object-image-info-1  |   -volume.inflightUploadDataTimeout duration
+object-image-info-1  |     	inflight upload data wait timeout of volume servers (default 1m0s)
+object-image-info-1  |   -volume.maintenanceMBps int
+object-image-info-1  |     	limit maintenance (replication / balance) IO rate in MB/s. Unset is 0, no limitation.
+object-image-info-1  |   -volume.max string
+object-image-info-1  |     	maximum numbers of volumes, count[,count]... If set to zero, the limit will be auto configured as free disk space divided by volume size. (default "8")
+object-image-info-1  |   -volume.minFreeSpace string
+object-image-info-1  |     	min free disk space (value<=100 as percentage like 1, other as human readable bytes, like 10GiB). Low disk space will mark all volumes as ReadOnly.
+object-image-info-1  |   -volume.minFreeSpacePercent string
+object-image-info-1  |     	minimum free disk space (default to 1%). Low disk space will mark all volumes as ReadOnly (deprecated, use minFreeSpace instead). (default "1")
+object-image-info-1  |   -volume.port int
+object-image-info-1  |     	volume server http listen port (default 8080)
+object-image-info-1  |   -volume.port.grpc int
+object-image-info-1  |     	volume server grpc listen port
+object-image-info-1  |   -volume.port.public int
+object-image-info-1  |     	volume server public port
+object-image-info-1  |   -volume.pprof
+object-image-info-1  |     	enable pprof http handlers. precludes -memprofile and -cpuprofile
+object-image-info-1  |   -volume.preStopSeconds int
+object-image-info-1  |     	number of seconds between stop send heartbeats and stop volume server (default 10)
+object-image-info-1  |   -volume.publicUrl string
+object-image-info-1  |     	publicly accessible address
+object-image-info-1  |   -volume.readBufferSizeMB int
+object-image-info-1  |     	<experimental> larger values can optimize query performance but will increase some memory usage,Use with hasSlowRead normally (default 4)
+object-image-info-1  |   -volume.readMode string
+object-image-info-1  |     	[local|proxy|redirect] how to deal with non-local volume: 'not found|read in remote node|redirect volume location'. (default "proxy")
+object-image-info-1  |   -volume.tags string
+object-image-info-1  |     	comma-separated tag groups per data dir; each group uses ':' (e.g. fast:ssd,archive)
+object-image-info-1  |   -webdav
+object-image-info-1  |     	whether to start WebDAV gateway
+object-image-info-1  |   -webdav.cacheCapacityMB int
+object-image-info-1  |     	local cache capacity in MB
+object-image-info-1  |   -webdav.cacheDir string
+object-image-info-1  |     	local cache directory for file chunks (default "/tmp")
+object-image-info-1  |   -webdav.cert.file string
+object-image-info-1  |     	path to the TLS certificate file
+object-image-info-1  |   -webdav.collection string
+object-image-info-1  |     	collection to create the files
+object-image-info-1  |   -webdav.disk string
+object-image-info-1  |     	[hdd|ssd|<tag>] hard drive or solid state drive or any tag
+object-image-info-1  |   -webdav.filer.path string
+object-image-info-1  |     	use this remote path from filer server (default "/")
+object-image-info-1  |   -webdav.key.file string
+object-image-info-1  |     	path to the TLS private key file
+object-image-info-1  |   -webdav.maxMB int
+object-image-info-1  |     	split files larger than the limit (default 4)
+object-image-info-1  |   -webdav.port int
+object-image-info-1  |     	webdav server http listen port (default 7333)
+object-image-info-1  |   -webdav.replication string
+object-image-info-1  |     	replication to create the files
+object-image-info-1  |   -whiteList string
+object-image-info-1  |     	comma separated Ip addresses having write permission. No limit if empty.
+object-image-info-1  | Description:
+object-image-info-1  |   start both a volume server to provide storage spaces
+object-image-info-1  |   and a master server to provide volume=>location mapping service and sequence number of file ids
+object-image-info-1  | 
+object-image-info-1  |   This is provided as a convenient way to start both volume server and master server.
+object-image-info-1  |   The servers acts exactly the same as starting them separately.
+object-image-info-1  |   So other volume servers can connect to this master server also.
+object-image-info-1  | 
+object-image-info-1  |   Optionally, a filer server can be started.
+object-image-info-1  |   Also optionally, a S3 gateway can be started.
+
+[Kobject-image-info-1 exited with code 2
+ Compose Stopping Aborting on container exit...
+ Container tender-fusion-object-image-info-1 Stopping 
+ Container tender-fusion-object-image-info-1 Stopped 
+

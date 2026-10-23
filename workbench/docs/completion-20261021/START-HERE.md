@@ -1,6 +1,6 @@
 # 从这里开始：启动与操作验收
 
-本页对应fusion/bid-workbench主线。检查点1—16已合入，默认v14预览已在本机固定Compose验证；完整运行组及可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，本机运行证据见[Compose验收](windows-compose-acceptance.md)。
+本页对应fusion/bid-workbench主线。检查点1—16已合入，默认v14预览与独立完整运行组均已有本机Compose实测；可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，完整文件链证据见[桌面Compose验收](desktop-runtime-acceptance.md)。
 
 ## 1. 先选运行环境
 
@@ -30,9 +30,9 @@ pwsh -File deploy/fusion.ps1 -Action status
 
 ### 要实际处理文件：配置完整运行环境
 
-优先使用新增的 [独立完整运行说明](full-runtime-runbook.md)。配置器为新的环境冻结源码、SQL、前端、依赖和镜像身份，初始化全新库、9 个 Kafka 主题及私有 bucket，再按角色启动进程。API 与 Worker 使用不同的非 owner 登录和对象凭据；浏览器通过同源授权端点上传下载。默认不启动收费模型通道或定时任务运行器。
+Windows Docker Desktop 使用[完整Compose操作](desktop-runtime-runbook.md)，Linux私有目录方式见[独立完整运行说明](full-runtime-runbook.md)。配置器为新的环境冻结源码、SQL、前端、依赖和镜像身份，初始化全新库、9 个 Kafka 主题及私有 bucket，再按角色启动进程。API 与 Worker 使用不同的非 owner 登录和对象凭据；浏览器通过同源授权端点上传下载。默认不启动收费模型通道或定时任务运行器。
 
-本轮已通过真实本机 PG/Kafka/S3 文件主链、真实 nginx 与 Linux 权限测试，以及 relay、Worker、S3 三类进程故障后的自然恢复，详见 [完整运行验收](full-runtime-acceptance.md) 和 [故障恢复验收](real-transport-fault-recovery-acceptance.md)。本机没有 Docker，因此容器镜像、卷挂载和容器网络仍须在目标新环境核验；这里不把原生测试称为 Compose 已运行。
+实际 Docker Desktop 已通过完整组、Linux私有卷、五角色权限与真实 nginx／Kafka／Worker 合成文件链，详见[桌面验收](desktop-runtime-acceptance.md)；验收组已停止，卷保留。此前原生主链与三类进程故障自然恢复见[原生验收](full-runtime-acceptance.md)和[故障恢复](real-transport-fault-recovery-acceptance.md)。这些分项不替代生产主机、转换隔离、容量或浏览器视觉验收。
 
 以下为已有 QA 的手工启动方式；新完整配置的实际命令、固定组件及能力开关以其运行说明为准。
 

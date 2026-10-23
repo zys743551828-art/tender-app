@@ -118,7 +118,7 @@ services:
       retries: 30
 
   object-store:
-    image: chrislusf/seaweedfs@sha256:bb05d66d2963b1cc48073190781c3dd29e2c4c88a2ae2986bf58e38c86d89c6e
+    image: chrislusf/seaweedfs@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
     pull_policy: never
     restart: "no"
     mem_limit: 768m
@@ -134,7 +134,7 @@ services:
       - -s3
       - -s3.port=8333
       - -s3.config=/run/secrets/s3-identities.json
-      - -s3.iam=false
+      - -iam=false
       - -s3.port.iceberg=0
       - -s3.port.lance=0
       - -s3.autoCreateBucket=false

@@ -40,6 +40,23 @@ SOURCE_MOUNTS = [
     "../pyproject.toml:/workspace/pyproject.toml:ro",
 ]
 _VARIABLE = re.compile(r"\$\{([A-Z_]+):\?[^}]+\}")
+STORE_COMMAND = [
+    "server",
+    "-dir=/data",
+    "-ip=object-store",
+    "-ip.bind=0.0.0.0",
+    "-master.telemetry=false",
+    "-master.volumeSizeLimitMB=32",
+    "-volume.max=32",
+    "-s3",
+    "-s3.port=8333",
+    "-s3.config=/run/secrets/s3-identities.json",
+    "-iam=false",
+    "-s3.port.iceberg=0",
+    "-s3.port.lance=0",
+    "-s3.autoCreateBucket=false",
+    "-s3.allowDeleteBucketNotEmpty=false",
+]
 
 
 def _values(directory, plan):
@@ -165,6 +182,8 @@ def structure(document, *, plan, directory):
     web = services["web"]
     if services["postgres"].get("command") != ["postgres", "-c", "jit=off"]:
         raise spec.ConfigurationError("FULL_POSTGRES_EXECUTION_PROFILE_CHANGED")
+    if services["object-store"].get("command") != STORE_COMMAND:
+        raise spec.ConfigurationError("FULL_STORE_EXECUTION_PROFILE_CHANGED")
     if (
         web.get("user") != "65532:65532"
         or web.get("cap_drop") != ["ALL"]
