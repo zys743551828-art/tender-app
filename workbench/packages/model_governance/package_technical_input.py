@@ -46,6 +46,12 @@ class TechnicalInputBundle:
     blobs: dict[str, bytes]
 
 
+@dataclass(frozen=True, repr=False)
+class TechnicalVerificationContext:
+    metadata: dict
+    bundles: dict[str, assets.PageAssetBundle]
+
+
 def _source(module):
     filename = getattr(module, "__file__", None)
     if not isinstance(filename, str):
@@ -87,6 +93,20 @@ def descriptor():
 
 def method_digest():
     return digest(descriptor())
+
+
+def context_method_digest():
+    return digest(
+        {
+            "version": "package-technical-verification-context-method/2",
+            "input_method_digest": method_digest(),
+            "projection_schema_digest": digest(contract.context_schema()),
+            "output_schema_digest": digest(contract.context_output_schema()),
+            "binding_schema_digest": digest(contract.verification_binding_schema()),
+            "verification_digest_in_context": False,
+            "authority_grants": False,
+        }
+    )
 
 
 def _unique(rows, key, code):
@@ -221,26 +241,20 @@ def _evidence(projection, documents, parts, pages):
     return catalog
 
 
-def build_input(projection, bundles, *, expected_projection_digest, expected_method_digest):
-    """Return all supplied frozen material; expected digests come from owned state.
-
-    Mechanical completeness here is relative to that external projection. This
-    function cannot prove semantic scope, original bytes, readability or rights.
-    """
-    if expected_method_digest != method_digest():
-        fail("TECHNICAL_INPUT_METHOD_MISMATCH")
+def _check_projection(projection, expected_digest, schema, prefix):
     try:
         raw = canonical(projection)
     except (TypeError, ValueError, UnicodeError, OverflowError, RecursionError):
-        fail("TECHNICAL_INPUT_PROJECTION_INVALID")
+        fail(prefix + "_PROJECTION_INVALID")
     if len(raw) > MAX_PROJECTION_BYTES:
-        fail("TECHNICAL_INPUT_PROJECTION_LIMIT")
-    if hashlib.sha256(raw).hexdigest() != expected_projection_digest:
-        fail("TECHNICAL_INPUT_PROJECTION_MISMATCH")
-    if not Draft202012Validator(contract.schema(), format_checker=FormatChecker()).is_valid(
-        projection
-    ):
-        fail("TECHNICAL_INPUT_PROJECTION_INVALID")
+        fail(prefix + "_PROJECTION_LIMIT")
+    if hashlib.sha256(raw).hexdigest() != expected_digest:
+        fail(prefix + "_PROJECTION_MISMATCH")
+    if not Draft202012Validator(schema, format_checker=FormatChecker()).is_valid(projection):
+        fail(prefix + "_PROJECTION_INVALID")
+
+
+def _prepare_material(projection, bundles):
     documents = _unique(
         projection["documents"], "document_version_id", "TECHNICAL_INPUT_DOCUMENT_REUSED"
     )
@@ -259,8 +273,7 @@ def build_input(projection, bundles, *, expected_projection_digest, expected_met
         "details": details,
         "evidence_catalog": deepcopy(projection["evidence_catalog"]),
     }
-    material_digest = digest(material)
-    packets = []
+    scopes = []
     for rule in rules.values():
         source = catalog.get(rule["source_evidence_id"])
         quote = rule["source_quote"]
@@ -278,20 +291,29 @@ def build_input(projection, bundles, *, expected_projection_digest, expected_met
             for key in rule["required_part_ids"]
         ):
             fail("TECHNICAL_INPUT_RULE_TARGET_MISMATCH")
-        # Every packet binds every page/detail/block. No top-k or rule-local
-        # filtering can silently discard context from the owned projection.
+        scopes.append({"rule": deepcopy(rule), "required_part_ids": closure})
+    return material, scopes, blobs
+
+
+def build_input(projection, bundles, *, expected_projection_digest, expected_method_digest):
+    """Bind every projected material; no source or execution qualification."""
+    if expected_method_digest != method_digest():
+        fail("TECHNICAL_INPUT_METHOD_MISMATCH")
+    _check_projection(projection, expected_projection_digest, contract.schema(), "TECHNICAL_INPUT")
+    material, scopes, blobs = _prepare_material(projection, bundles)
+    material_digest = digest(material)
+    packets = []
+    for scope in scopes:
         semantic = {
             "version": "package-technical-rule-input/2",
             "material_digest": material_digest,
             "input_method_digest": expected_method_digest,
             "source_projection_digest": expected_projection_digest,
-            "rule": deepcopy(rule),
-            "required_part_ids": closure,
+            **scope,
         }
         packets.append(
             {
-                "rule": deepcopy(rule),
-                "required_part_ids": closure,
+                **deepcopy(scope),
                 "semantic_input_digest": digest(semantic),
             }
         )
@@ -302,13 +324,16 @@ def build_input(projection, bundles, *, expected_projection_digest, expected_met
         "material": material,
         "material_digest": material_digest,
         "rule_packets": packets,
-        "physical_page_count": len(pages),
-        "image_count": len(pages) + len(details),
+        "physical_page_count": len(material["pages"]),
+        "image_count": len(material["pages"]) + len(material["details"]),
         "asset_byte_count": sum(len(raw) for raw in blobs.values()),
         "pixel_count": sum(
-            row["asset"]["width"] * row["asset"]["height"] for row in pages + details
+            row["asset"]["width"] * row["asset"]["height"]
+            for row in material["pages"] + material["details"]
         ),
-        "text_byte_count": sum(len(row["text"].encode("utf-8")) for row in catalog.values()),
+        "text_byte_count": sum(
+            len(row["text"].encode("utf-8")) for row in material["evidence_catalog"]
+        ),
         "all_projected_material_retained": True,
         **{
             key: False
@@ -332,3 +357,106 @@ def build_input(projection, bundles, *, expected_projection_digest, expected_met
     ):
         fail("TECHNICAL_INPUT_OUTPUT_INVALID")
     return TechnicalInputBundle(metadata, dict(blobs))
+
+
+def build_verification_context(
+    projection, bundles, *, expected_projection_digest, expected_method_digest
+):
+    """Freeze material before a verification exists; no sentinel receipt digest."""
+    if expected_method_digest != context_method_digest():
+        fail("TECHNICAL_CONTEXT_METHOD_MISMATCH")
+    _check_projection(
+        projection, expected_projection_digest, contract.context_schema(), "TECHNICAL_CONTEXT"
+    )
+    material, scopes, _ = _prepare_material(projection, bundles)
+    metadata = {
+        "version": "package-technical-verification-context/2",
+        "source_projection_digest": expected_projection_digest,
+        "context_method_digest": expected_method_digest,
+        "material": material,
+        "material_digest": digest(material),
+        "rule_scopes": scopes,
+        "input_authority_granted": False,
+        "execution_authorized": False,
+    }
+    metadata["digest"] = digest(metadata)
+    if len(canonical(metadata)) > MAX_METADATA_BYTES:
+        fail("TECHNICAL_CONTEXT_METADATA_LIMIT")
+    if not Draft202012Validator(
+        contract.context_output_schema(), format_checker=FormatChecker()
+    ).is_valid(metadata):
+        fail("TECHNICAL_CONTEXT_OUTPUT_INVALID")
+    frozen = {
+        key: assets.PageAssetBundle(deepcopy(bundle.manifest), dict(bundle.blobs))
+        for key, bundle in bundles.items()
+    }
+    return TechnicalVerificationContext(metadata, frozen)
+
+
+def bind_input(
+    context,
+    verification_binding,
+    *,
+    expected_context_digest,
+    expected_binding_digest,
+    expected_method_digest,
+):
+    """Bind an independently returned native reference; no proof verification here."""
+    if expected_method_digest != method_digest():
+        fail("TECHNICAL_INPUT_METHOD_MISMATCH")
+    if not isinstance(context, TechnicalVerificationContext):
+        fail("TECHNICAL_CONTEXT_INVALID")
+    try:
+        raw = canonical(context.metadata)
+        binding_raw = canonical(verification_binding)
+    except (TypeError, ValueError, UnicodeError, OverflowError, RecursionError):
+        fail("TECHNICAL_CONTEXT_BINDING_INVALID")
+    if len(raw) > MAX_METADATA_BYTES or len(binding_raw) > 2048:
+        fail("TECHNICAL_CONTEXT_BINDING_LIMIT")
+    metadata = deepcopy(context.metadata)
+    if not Draft202012Validator(
+        contract.context_output_schema(), format_checker=FormatChecker()
+    ).is_valid(metadata):
+        fail("TECHNICAL_CONTEXT_INVALID")
+    if (
+        metadata["digest"] != expected_context_digest
+        or digest({key: value for key, value in metadata.items() if key != "digest"})
+        != expected_context_digest
+    ):
+        fail("TECHNICAL_CONTEXT_DIGEST_MISMATCH")
+    if (
+        not Draft202012Validator(
+            contract.verification_binding_schema(), format_checker=FormatChecker()
+        ).is_valid(verification_binding)
+        or digest(verification_binding) != expected_binding_digest
+        or verification_binding["context_digest"] != expected_context_digest
+        or verification_binding["context_method_digest"] != metadata["context_method_digest"]
+    ):
+        fail("TECHNICAL_CONTEXT_BINDING_MISMATCH")
+    material = metadata["material"]
+    projection = {
+        "version": "package-technical-context-projection/2",
+        "binding": deepcopy(material["binding"]),
+        "documents": deepcopy(material["documents"]),
+        "parts": deepcopy(material["parts"]),
+        "rules": [deepcopy(scope["rule"]) for scope in metadata["rule_scopes"]],
+        "evidence_catalog": deepcopy(material["evidence_catalog"]),
+    }
+    rebuilt = build_verification_context(
+        projection,
+        context.bundles,
+        expected_projection_digest=metadata["source_projection_digest"],
+        expected_method_digest=metadata["context_method_digest"],
+    )
+    if rebuilt.metadata["digest"] != expected_context_digest:
+        fail("TECHNICAL_CONTEXT_REBUILD_MISMATCH")
+    projection["version"] = "package-technical-input-projection/2"
+    projection["binding"]["input_verification_digest"] = verification_binding[
+        "verification_receipt_digest"
+    ]
+    return build_input(
+        projection,
+        context.bundles,
+        expected_projection_digest=digest(projection),
+        expected_method_digest=expected_method_digest,
+    )

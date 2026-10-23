@@ -18,6 +18,8 @@ F06-02的[完整图文材料绑定](technical-input-acceptance.md)通过167项Li
 
 F06-02的[实际图文请求与单次端口](technical-vision-acceptance.md)通过272项Linux／63项Windows：全量图片实际内嵌、精确大小／15图边界、真实HTTPX显式MockTransport与响应／三槽特征链。没有外部付费调用或真实效果、token／费用上界、原生账本／租约／Worker和受限执行证明；F06正式执行仍须独立接线。
 
+F06-02的[无循环核验上下文与回执绑定](technical-context-acceptance.md)通过284项Linux／126项Windows：context不含回执、外部原生引用与两份独立预期摘要、重建及资产重核、context拒绝直接发送。当前输入／依赖序列化方法身份变化，旧记录不回填；独立原生核验器及来源／内容权威仍未安装，不授真实输入或执行资格。
+
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 
 Windows完整运行组已通过191项检查和真实同源文件链／五角色私有卷核验，见[桌面Compose验收](desktop-runtime-acceptance.md)。这是F02、F03和F14中的本机装配证据，不整体关闭工作包；目标主机、转换隔离、真实业务及完整视觉仍须分别验收。

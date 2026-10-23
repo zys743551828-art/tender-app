@@ -31,6 +31,8 @@
 
 ## 3. 当前用途输入权威
 
+先冻结不含核验回执字段的`package-technical-verification-context/2`，独立权威记录指向该context及方法，再将真实回执摘要绑定最终输入，避免摘要循环。当前[单向绑定实现](technical-context-acceptance.md)只核外部原生引用与材料一致性，独立核验注册表／LOGIN及来源和内容权威仍须装配；不使用占位摘要，不把合成引用当已配置权威。
+
 新 schema 建议 `package_judgment_execution`，独立于旧 `package_score_execution`。新接口接受 saved scope ID、显式满分 authority ID（若需要数值输出）、方法/profile ID、期望 context digest 和预算；不接受任意正文、引用列表、执行模式布尔或官方成绩。
 
 服务端构建不可变 `package-technical-judgment-input/2`，至少绑定：

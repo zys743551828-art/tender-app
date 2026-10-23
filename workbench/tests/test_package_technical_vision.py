@@ -26,7 +26,7 @@ def uid(number):
     return str(UUID(int=number))
 
 
-def material(*, target_pages=1, size=(100, 150), crop=True):
+def frozen_material(*, target_pages=1, size=(100, 150), crop=True):
     documents, bundles, evidence, parts = [], {}, [], []
     for index, role, count in ((1, "target", target_pages), (2, "authority", 1)):
         text = f"Synthetic exact source {index}"
@@ -119,6 +119,11 @@ def material(*, target_pages=1, size=(100, 150), crop=True):
         ],
         "evidence_catalog": evidence,
     }
+    return projection, bundles
+
+
+def material(**kwargs):
+    projection, bundles = frozen_material(**kwargs)
     return inputs.build_input(
         projection,
         bundles,
@@ -558,3 +563,39 @@ def test_actual_wire_responses_feed_features_but_invalid_citations_cannot_pass(
         assert (
             result["feature_coverage"] == "complete" and result["items"][0]["valid_slot_count"] == 3
         )
+
+
+def test_preverification_context_cannot_be_sent_and_reference_binding_has_no_cycle():
+    projection, bundles = frozen_material()
+    projection["version"] = "package-technical-context-projection/2"
+    projection["binding"].pop("input_verification_digest")
+    context = inputs.build_verification_context(
+        projection,
+        bundles,
+        expected_projection_digest=digest(projection),
+        expected_method_digest=inputs.context_method_digest(),
+    )
+    with pytest.raises(vision.VisionRequestError, match="VISION_INPUT_INVALID"):
+        prepare(context)
+    record = {
+        "version": "package-technical-verification-binding/2",
+        "verification_id": uid(800),
+        "verification_receipt_digest": png.digest_bytes(b"synthetic independent receipt"),
+        "context_digest": context.metadata["digest"],
+        "context_method_digest": context.metadata["context_method_digest"],
+    }
+    bound = inputs.bind_input(
+        context,
+        record,
+        expected_context_digest=context.metadata["digest"],
+        expected_binding_digest=digest(record),
+        expected_method_digest=inputs.method_digest(),
+    )
+    request = prepare(bound)
+    result = send(client(lambda request: httpx.Response(200, json=envelope())), request)
+    assert result.request_digest == request.receipt["request_digest"]
+    assert not result.formal_scoring_eligible and not bound.metadata["input_authority_granted"]
+    assert (
+        bound.metadata["material"]["binding"]["input_verification_digest"]
+        == record["verification_receipt_digest"]
+    )

@@ -129,6 +129,37 @@ OUTPUT_SCHEMA = obj(
     }
 )
 
+CONTEXT_BINDING = deepcopy(BINDING)
+CONTEXT_BINDING["properties"].pop("input_verification_digest")
+CONTEXT_BINDING["required"].remove("input_verification_digest")
+CONTEXT_SCHEMA = deepcopy(SCHEMA)
+CONTEXT_SCHEMA["properties"]["version"] = {"const": "package-technical-context-projection/2"}
+CONTEXT_SCHEMA["properties"]["binding"] = CONTEXT_BINDING
+CONTEXT_MATERIAL = deepcopy(MATERIAL)
+CONTEXT_MATERIAL["properties"]["binding"] = CONTEXT_BINDING
+CONTEXT_OUTPUT_SCHEMA = obj(
+    {
+        "version": {"const": "package-technical-verification-context/2"},
+        "source_projection_digest": SHA,
+        "context_method_digest": SHA,
+        "material": CONTEXT_MATERIAL,
+        "material_digest": SHA,
+        "rule_scopes": array(obj({"rule": RULE, "required_part_ids": PARTS}), 400, 1),
+        "input_authority_granted": {"const": False, "type": "boolean"},
+        "execution_authorized": {"const": False, "type": "boolean"},
+        "digest": SHA,
+    }
+)
+VERIFICATION_BINDING_SCHEMA = obj(
+    {
+        "version": {"const": "package-technical-verification-binding/2"},
+        "verification_id": ID,
+        "verification_receipt_digest": {"type": "string", "pattern": "^(?!0{64}$)[0-9a-f]{64}$"},
+        "context_digest": SHA,
+        "context_method_digest": SHA,
+    }
+)
+
 
 def schema():
     return deepcopy(SCHEMA)
@@ -136,3 +167,15 @@ def schema():
 
 def output_schema():
     return deepcopy(OUTPUT_SCHEMA)
+
+
+def context_schema():
+    return deepcopy(CONTEXT_SCHEMA)
+
+
+def context_output_schema():
+    return deepcopy(CONTEXT_OUTPUT_SCHEMA)
+
+
+def verification_binding_schema():
+    return deepcopy(VERIFICATION_BINDING_SCHEMA)

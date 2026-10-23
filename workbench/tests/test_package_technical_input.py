@@ -475,3 +475,154 @@ def test_build_has_no_network_or_private_environment_port(frozen, monkeypatch):
     monkeypatch.setattr(socket, "socket", no_network)
     monkeypatch.setenv("WORKBENCH_ENV_FILE", "nonexistent-explicit-forbidden-profile")
     assert build(projection, bundles).metadata == expected
+
+
+def context_projection(projection):
+    value = deepcopy(projection)
+    value["version"] = "package-technical-context-projection/2"
+    value["binding"].pop("input_verification_digest")
+    return value
+
+
+def make_context(frozen):
+    projection, bundles = frozen
+    projection = context_projection(projection)
+    return inputs.build_verification_context(
+        projection,
+        bundles,
+        expected_projection_digest=digest(projection),
+        expected_method_digest=inputs.context_method_digest(),
+    )
+
+
+def reference(context, receipt="synthetic receipt one"):
+    return {
+        "version": "package-technical-verification-binding/2",
+        "verification_id": uid(999),
+        "verification_receipt_digest": png.digest_bytes(receipt.encode()),
+        "context_digest": context.metadata["digest"],
+        "context_method_digest": context.metadata["context_method_digest"],
+    }
+
+
+def bind(context, record):
+    return inputs.bind_input(
+        context,
+        record,
+        expected_context_digest=context.metadata["digest"],
+        expected_binding_digest=digest(record),
+        expected_method_digest=inputs.method_digest(),
+    )
+
+
+def test_verification_context_has_no_receipt_and_binding_is_acyclic(frozen):
+    context = make_context(frozen)
+    before = digest(context.metadata)
+    assert "input_verification_digest" not in context.metadata["material"]["binding"]
+    one, two = reference(context), reference(context, "synthetic receipt two")
+    first, second = bind(context, one), bind(context, two)
+    assert digest(context.metadata) == before
+    assert first.metadata["digest"] != second.metadata["digest"]
+    assert (
+        first.metadata["material"]["binding"]["input_verification_digest"]
+        == one["verification_receipt_digest"]
+    )
+    assert (
+        second.metadata["material"]["binding"]["input_verification_digest"]
+        == two["verification_receipt_digest"]
+    )
+    assert first.blobs == second.blobs
+    assert (
+        not first.metadata["input_authority_granted"] and not first.metadata["execution_authorized"]
+    )
+    assert "Synthetic" not in repr(context)
+
+
+def test_context_rejects_receipt_placeholder_field_and_final_input_protocol(frozen):
+    projection, bundles = frozen
+    for changed in (deepcopy(projection), context_projection(projection)):
+        changed["binding"]["input_verification_digest"] = "0" * 64
+        with pytest.raises(inputs.TechnicalInputError, match="CONTEXT_PROJECTION_INVALID"):
+            inputs.build_verification_context(
+                changed,
+                bundles,
+                expected_projection_digest=digest(changed),
+                expected_method_digest=inputs.context_method_digest(),
+            )
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("context_digest", "0" * 64),
+        ("context_method_digest", "0" * 64),
+        ("verification_receipt_digest", "0" * 64),
+    ],
+)
+def test_reference_must_belong_to_exact_context_and_have_nonplaceholder_receipt(
+    frozen, field, value
+):
+    context = make_context(frozen)
+    record = reference(context)
+    record[field] = value
+    with pytest.raises(inputs.TechnicalInputError, match="BINDING_MISMATCH"):
+        bind(context, record)
+
+
+@pytest.mark.parametrize("owned", ["context", "binding", "method"])
+def test_context_and_native_binding_each_need_independent_owned_digest(frozen, owned):
+    context = make_context(frozen)
+    record = reference(context)
+    with pytest.raises(inputs.TechnicalInputError, match="MISMATCH"):
+        inputs.bind_input(
+            context,
+            record,
+            expected_context_digest="0" * 64 if owned == "context" else context.metadata["digest"],
+            expected_binding_digest="0" * 64 if owned == "binding" else digest(record),
+            expected_method_digest="0" * 64 if owned == "method" else inputs.method_digest(),
+        )
+
+
+def test_context_rebuild_rejects_scope_forgery_even_with_new_outer_hash(frozen):
+    context = make_context(frozen)
+    context.metadata["rule_scopes"][0]["required_part_ids"].remove("child")
+    context.metadata["digest"] = digest(
+        {key: value for key, value in context.metadata.items() if key != "digest"}
+    )
+    with pytest.raises(inputs.TechnicalInputError, match="REBUILD_MISMATCH"):
+        bind(context, reference(context))
+
+
+def test_final_binding_reverifies_frozen_assets_and_keeps_context_immutable(frozen):
+    context = make_context(frozen)
+    projection, original_bundles = frozen
+    original_hashes = {key: bundle.manifest["digest"] for key, bundle in original_bundles.items()}
+    first = next(iter(context.bundles[uid(1)].blobs))
+    context.bundles[uid(1)].blobs[first] = b"changed private context blob"
+    with pytest.raises(png.PageAssetError, match="BLOB_MISMATCH"):
+        bind(context, reference(context))
+    assert {
+        key: bundle.manifest["digest"] for key, bundle in original_bundles.items()
+    } == original_hashes
+    assert build(projection, original_bundles).metadata["physical_page_count"] == 4
+
+
+def test_contexts_change_with_any_material_binding_and_method_mismatch_is_rejected(frozen):
+    projection, bundles = frozen
+    old = make_context(frozen)
+    changed = context_projection(projection)
+    changed["binding"]["input_as_of"] = "2026-10-24T00:00:00Z"
+    current = inputs.build_verification_context(
+        changed,
+        bundles,
+        expected_projection_digest=digest(changed),
+        expected_method_digest=inputs.context_method_digest(),
+    )
+    assert current.metadata["digest"] != old.metadata["digest"]
+    with pytest.raises(inputs.TechnicalInputError, match="CONTEXT_METHOD_MISMATCH"):
+        inputs.build_verification_context(
+            changed,
+            bundles,
+            expected_projection_digest=digest(changed),
+            expected_method_digest="0" * 64,
+        )
