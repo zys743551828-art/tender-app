@@ -9,6 +9,9 @@ import {
 import type { FormEvent } from "react";
 import { api, setAuth, supportsApi } from "./api";
 import type { AuthView, Bid, BidPage } from "./contracts";
+import { ProjectPackageCounts } from "./ProjectWorkSummary";
+import { useProjectSummaries } from "./useProjectSummaries";
+import { summaryPage } from "./projectSummaries";
 import {
   Badge,
   Brand,
@@ -608,6 +611,9 @@ function Projects({
   const [error, setError] = useState<unknown>(null);
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState("");
+  const summaries = useProjectSummaries(
+    (projects ?? []).map((project) => project.id),
+  );
   const load = useCallback(async (next?: string) => {
     setError(null);
     try {
@@ -711,8 +717,8 @@ function Projects({
                 <tr>
                   <th>项目名称</th>
                   <th>工作阶段</th>
-                  <th>当前资料</th>
-                  <th>单稿历史提示</th>
+                  <th>整包资料</th>
+                  <th>工作下一步</th>
                   <th>
                     <span className="sr-only">打开</span>
                   </th>
@@ -756,15 +762,26 @@ function Projects({
                         }
                       </Badge>
                     </td>
-                    <td>资料包 {project.material_revision}</td>
+                    <td>
+                      <ProjectPackageCounts
+                        summary={summaries.items.get(project.id)}
+                      />
+                    </td>
                     <td className="next-action-cell">
-                      {project.next_action.reason || "上传并核对资料"}
+                      {summaries.items.get(project.id)?.next_action.reason ??
+                        "摘要尚未完整核对，风险与预测保持未知。"}
                     </td>
                     <td>
                       <button
                         className="icon-button"
                         aria-label={`打开${project.title}`}
-                        onClick={() => onOpen(project.id)}
+                        onClick={() => {
+                          const summary = summaries.items.get(project.id);
+                          onOpen(
+                            project.id,
+                            summary ? summaryPage(summary) : "overview",
+                          );
+                        }}
                       >
                         <Icon name="arrow" />
                       </button>
@@ -786,8 +803,14 @@ function Projects({
           </div>
         )}
       </section>
+      <ErrorNotice error={summaries.error} />
+      {!!summaries.error && (
+        <button className="text-button" onClick={() => void summaries.reload()}>
+          重新读取整包摘要
+        </button>
+      )}
       <p className="footnote">
-        当前切片提供资料入库与PDF解析。评审、评分及提交能力以项目中的实际可用状态为准。
+        摘要只统计已登记资料包，不代表清单齐全或风险为零。核查、预测及实交资格以确切输入中的实际状态为准。
       </p>
     </div>
   );

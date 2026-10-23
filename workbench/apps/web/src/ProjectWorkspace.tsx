@@ -51,6 +51,7 @@ import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { parseWorkspacePage } from "./workspaceTypes";
 import type { WorkspacePage } from "./workspaceTypes";
 import { PackageOverviewNextStep } from "./PackageOverviewNextStep";
+import { ProjectWorkSummary } from "./ProjectWorkSummary";
 import { PackageNavigationWorkspace } from "./PackageNavigationWorkspace";
 import type { PackageNavigationTarget } from "./packageNavigation";
 import type { WorkContextPosition } from "./workContextNavigation";
@@ -494,6 +495,7 @@ function Overview({
   const next = bid.next_action;
   return (
     <div>
+      <ProjectWorkSummary bidId={bid.id} onNavigate={onNavigate} />
       <PackageOverviewNextStep
         bidId={bid.id}
         onOpen={onOpenPackage}

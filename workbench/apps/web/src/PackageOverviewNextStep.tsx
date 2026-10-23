@@ -121,7 +121,7 @@ export function PackageOverviewNextStep({
       <div className="review-shortcuts">
         <button
           type="button"
-          className="button primary"
+          className="button secondary"
           onClick={() => onOpen(null)}
         >
           打开整包核查工作面

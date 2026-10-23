@@ -62,6 +62,7 @@ from packages.contracts.package_technical_execution_api import (
 from packages.contracts.package_technical_scope_api import (
     extend_openapi as extend_package_technical_scopes,
 )
+from packages.contracts.project_summary_api import extend_openapi as extend_project_summaries
 from packages.contracts.work_context_api import extend_openapi as extend_work_contexts
 from packages.contracts.work_context_catalog_api import (
     extend_openapi as extend_work_context_catalog,
@@ -199,6 +200,7 @@ def implemented_openapi(app):
     extend_package_technical_execution(actual)
     extend_authoring_packages(actual)
     extend_document_parses(actual)
+    extend_project_summaries(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)

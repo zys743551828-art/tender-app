@@ -91,6 +91,10 @@ SUITES["desktop-pure"] = [
     "tests/test_fusion_desktop_compose.py",
     "tests/test_fusion_desktop_private.py",
 ]
+SUITES["project-summaries"] = [
+    "tests/test_project_summary.py",
+    "tests/test_project_summary_api.py",
+]
 
 
 def main():
@@ -131,6 +135,7 @@ def main():
         "completion-api",
         "technical-scope-api",
         "history-dispatch",
+        "project-summaries",
     }:
         password = (
             Path("/run/secrets/fusion_checks_owner_password")

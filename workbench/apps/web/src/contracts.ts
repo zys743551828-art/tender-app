@@ -1,5 +1,44 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type ProjectWorkSummary = {
+  bid_id: string;
+  phase: "preparation" | "working" | "submitted" | "closed" | "terminated";
+  archived_at: string | null;
+  package_counts: {
+    authority: number;
+    bid: number;
+  };
+  head_members: {
+    total: number;
+    parse_not_frozen: number;
+  };
+  next_action: {
+    action:
+      | "view_history"
+      | "assemble_packages"
+      | "inspect_package_parses"
+      | "choose_package_revision";
+    reason: string;
+    target_url: string;
+    blocked: boolean;
+  };
+  action_scope: "package_directory";
+  risk_status: "not_evaluated";
+  critical_risk_count: null;
+  other_risk_count: null;
+  prediction_status: "not_evaluated";
+  predicted_score: null;
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type ProjectWorkSummaryBatch = {
+  version: "project-work-summary/1";
+  observed_at: string;
+  items: ProjectWorkSummary[];
+};
+
 export type PackageHistoricalAdmissionContext = {
   schema: "package-historical-admission-context/1";
   schema_configured: boolean;
@@ -11953,6 +11992,7 @@ export type PackageDependencyPlan_Assessment_DerivedRequirementAssessment = {
 export type PackageDependencyPlan_Usage_Id = string;
 
 export const implementedOperations: readonly string[] = [
+  "GET /api/v1/project-work-summaries",
   "PUT /api/v1/object-transfers/uploads/{upload_id}",
   "GET /api/v1/object-transfers/versions/{version_id}",
   "POST /api/v1/retrievals",

@@ -1,0 +1,10 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/ProjectWorkSummary.test.tsx (11 tests) 167ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  19:18:52
+   Duration  1.70s (transform 84ms, setup 319ms, collect 125ms, tests 167ms, environment 816ms, prepare 106ms)
+

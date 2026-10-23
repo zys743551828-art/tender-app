@@ -42,6 +42,8 @@ history_schemas = [
     "PackageHistoryJobDirectory",
 ]
 wanted = [
+    "ProjectWorkSummary",
+    "ProjectWorkSummaryBatch",
     *history_schemas,
     "AuthoringHistoricalSectionView",
     "AuthoringExactRevisionCapabilities",

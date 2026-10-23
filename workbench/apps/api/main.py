@@ -51,6 +51,7 @@ from apps.api.package_technical_eligibility import router as package_technical_e
 from apps.api.package_technical_execution import router as package_technical_execution_router
 from apps.api.package_technical_scope import router as package_technical_scope_router
 from apps.api.pricing_routes import router as pricing_router
+from apps.api.project_summary_routes import router as project_summary_router
 from apps.api.rag_routes import router as rag_router
 from apps.api.report_routes import router as report_router
 from apps.api.research_routes import router as research_router
@@ -129,6 +130,7 @@ class WorkbenchAPI(FastAPI):
 
 
 app = WorkbenchAPI(title="AI投标工作台·PDF资料切片", lifespan=lifespan)
+app.include_router(project_summary_router)
 app.include_router(transfer_router)
 app.include_router(rag_router)
 app.include_router(review_router)
