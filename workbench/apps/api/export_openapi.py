@@ -40,6 +40,7 @@ from packages.contracts.package_historical_research_api import (
 from packages.contracts.package_history_directory_api import (
     extend_openapi as extend_package_history_directory,
 )
+from packages.contracts.package_next_actions import extend_openapi as extend_package_next_actions
 from packages.contracts.package_retrospectives_api import (
     extend_openapi as extend_package_retrospectives,
 )
@@ -201,6 +202,7 @@ def implemented_openapi(app):
     extend_authoring_packages(actual)
     extend_document_parses(actual)
     extend_project_summaries(actual)
+    extend_package_next_actions(actual)
     extend_pricing(actual)
     extend_submissions(actual)
     extend_reports(actual)

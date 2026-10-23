@@ -369,6 +369,7 @@ export function ProjectWorkspace({
                   onWorkContextLocation ?? (() => onNavigate("work-context"))
                 }
                 onOpenDraft={onOpenDraft ?? (() => onNavigate("authoring"))}
+                onOpenRules={() => onNavigate("rules")}
                 onOpenPackage={onOpenPackage ?? (() => onNavigate("packages"))}
               />
             </Suspense>

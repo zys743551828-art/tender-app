@@ -13,6 +13,7 @@ import { WorkContextChoices } from "./WorkContextChoices";
 import { WorkContextReviewDetails } from "./WorkContextReviewDetails";
 import { WorkContextSubmissionDetails } from "./WorkContextSubmissionDetails";
 import { WorkContextSummary } from "./WorkContextSummary";
+import { PackageNextActions } from "./PackageNextActions";
 import { validateAuthoringWorkContext } from "./workContextAuthoringProtocol";
 import { validatePackageWorkContext } from "./workContextProtocol";
 import {
@@ -31,6 +32,7 @@ type Props = {
   onLocation: (position: WorkContextPosition, replace?: boolean) => void;
   onOpenDraft: (id: string) => void;
   onOpenPackage: (target: PackageNavigationTarget) => void;
+  onOpenRules?: () => void;
 };
 export function WorkContextWorkspace(p: Props) {
   const parsed = useMemo(
@@ -220,11 +222,19 @@ function SelectedWorkContext(p: Props & { target: WorkContextTarget }) {
       )}
       {context?.version === "package-work-context/1" && (
         <>
+          <PackageNextActions
+            key={`next:${context.selection_digest}:${context.observation_digest}`}
+            context={context}
+            onOpenOriginal={() => setOriginal(true)}
+            onOpenPackage={p.onOpenPackage}
+            onOpenRules={p.onOpenRules}
+          />
           <WorkContextSummary
             key={`${context.selection_digest}:${context.observation_digest}`}
             context={context}
             onOpenOriginal={() => setOriginal(true)}
             onOpenPackage={p.onOpenPackage}
+            emphasizeOriginal={context.selection.kind !== "package_review_run"}
           />
           {original && context.selection.kind === "package_review_run" && (
             <WorkContextReviewDetails

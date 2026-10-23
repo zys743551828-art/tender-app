@@ -102,6 +102,10 @@ def database():
 
 @pytest.fixture
 def requirements(world):
+    return prepare_requirements(world)
+
+
+def prepare_requirements(world, *, native_rule_scope=None):
     c = world["database"]["owner"]
     scope = world["scope"]
     with c.transaction():
@@ -167,8 +171,8 @@ def requirements(world):
             (rule_set, scope.bid_id, material, digest(rule_set)),
         )
         c.execute(
-            "INSERT INTO design.rule_items(id,bid_id,rule_set_id,kind,statement,conditions,exceptions,evidence_ids,bands) VALUES(%s,%s,%s,'mandatory','Synthetic original obligation','[]','[]',%s,'[]')",
-            (rule, scope.bid_id, rule_set, [evidence]),
+            "INSERT INTO design.rule_items(id,bid_id,rule_set_id,kind,statement,conditions,exceptions,evidence_ids,bands,applicability_scope) VALUES(%s,%s,%s,'mandatory','Synthetic original obligation','[]','[]',%s,'[]',%s)",
+            (rule, scope.bid_id, rule_set, [evidence], Jsonb(native_rule_scope or {})),
         )
         c.execute(
             "UPDATE design.bid_profiles SET current_rule_set_id=%s WHERE bid_id=%s",

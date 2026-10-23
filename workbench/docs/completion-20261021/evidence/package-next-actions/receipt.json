@@ -1,0 +1,186 @@
+{
+  "scope": "selected declared package review run only; direct report and unselected project/submission entrances remain separate",
+  "tests": {
+    "selected_actions_passed": 62,
+    "selected_actions_seconds": 21.97,
+    "selected_actions_skipped": 0,
+    "requirements_regression_passed": 215,
+    "requirements_regression_seconds": 445.79,
+    "frontend_files": 178,
+    "frontend_passed": 1754,
+    "frontend_seconds": 239.98,
+    "targeted_frontend_passed": 20,
+    "targeted_frontend_seconds": 4.33,
+    "contract_passed": 12,
+    "contract_seconds": 6.01,
+    "overlapping_counts_not_added": true
+  },
+  "fixture_provider": "explicit synthetic HTTP replies; setup ledger records are not real provider quality or paid calls",
+  "external_paid_calls": 0,
+  "read_side_effects": "full business/command/audit/model ledger counters unchanged across reads",
+  "deployed_url": "http://127.0.0.1:5188",
+  "runtime_inputs_verified": 1159,
+  "assets_verified": 65,
+  "business_projects": 0,
+  "checks_cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "browser_visual_verified": false,
+  "browser_blocker": "missing browser/26.1016.62342/scripts/browser-service.mjs before bootstrap",
+  "css_scope": "local wrapping and max-width constraints; no browser geometry assertion; final CSS-only heading adjustment rebuilt after full behavior suite",
+  "source_identity_scope": "modified inputs match staged Git raw bytes; does not attest the entire repository or rewrite older source identities",
+  "inputs": [
+    {
+      "path": "apps/api/export_openapi.py",
+      "sha256": "5e4a52fb46b97442efb6ef31756d3c013f0d3387573164fa497832e8fc97dc3f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/api/main.py",
+      "sha256": "e8cb2a4c8a9e193a1dcf46e05fc5de068b052987c9cb933e04bc03a9582afd31",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/api/package_next_action_routes.py",
+      "sha256": "be7468a6d05d9884301e9a351db8e003aa15851d247621b4dc89c1c2baba72f6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/scripts/generate-contracts.py",
+      "sha256": "e8d65464e58eb19b3df53cb32f17810fc60bf552b0181a1c583427da36589a62",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageNextActions.css",
+      "sha256": "74aa4a099ba9211bd003f74a32cd4a6fd55af20284d4b29214d02f9d987ddadb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageNextActions.test.tsx",
+      "sha256": "566653e46559f6c0b8d29a724bc7e883716f21390720e57c3ee7205ef9366718",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageNextActions.tsx",
+      "sha256": "5c15ca5d225cd9582230107013def6bea8984af997f4f2934bc3dffc01ecb051",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkspace.tsx",
+      "sha256": "dfa76e7ca8bc1fd1d1898906a72e3445f57a19149b846faba4000e466fc62819",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/WorkContextSummary.tsx",
+      "sha256": "c57650cb2061409712ecc4d6fc621da7eaadc309521043ab0a00012ca24f30ec",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/WorkContextWorkspace.tsx",
+      "sha256": "81d457b81b022b5d89931c90181cc724daab81a266313fcb149b2baa1aaf651a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/contracts.ts",
+      "sha256": "52c79ecc3e18d51a2b82f2755a6f1d65659f89870025591e9c90407f67185433",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/packageNextActionsProtocol.ts",
+      "sha256": "bfd99aa612d727125191322b1665352fad7af6810c597dae1c0251658052360f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "4e6189acae52391045e98aa87723c56ff9a338510e7711322b178897e469a4ac",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "7aa60d0713efa6cd8aa6d378778f156ec55f70d93f1e02327bcdaf1646cacc99",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/fusion-implemented.openapi.json.gz",
+      "sha256": "a6c75cfe978eb5fe4f34a0c1794a5e0c626f76a4f87e9c51d5bcf01d4ea8a85a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-next-actions.md",
+      "sha256": "2abdd908592f3b4b22d0ab2fcd1a7123cc861b903f4be9d8db790deee6bb1c49",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_next_actions.py",
+      "sha256": "d345411bb5995668a8b353056d14437c49ada05cf8d7461fd3ab0746443939f0",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/package_next_actions.py",
+      "sha256": "39ddbab8883149452213bb3bdb7fa6e37c7ebaeb49117634e2fdb26711afb4f5",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/work_contexts/next_actions.py",
+      "sha256": "ca7e36dc24b637012dc8df2c07f010f4b102f582436c4602ca5b11e2bfddea69",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_bid_package_requirements_api.py",
+      "sha256": "7ce39ed69e5a0f1a3722d0ed98fc0378e54a52e22e74b885c8693599310c3921",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_next_actions.py",
+      "sha256": "5ebb63c54321b317199236734cbbe073e4b54fec0825c40215bf25df40f1a753",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_next_actions_api.py",
+      "sha256": "fb56f086db5f22566e6f0ca1bb881e805cc667934d42eae904b0c4477740ef23",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "checks-final.xml": "82f8a2a83b3d2fef3536a2f4f157286f8a6361557ae9e6f1fb05d9ef8d8a1fb5",
+    "checks-final-output.log": "89878447920b8d4973f1c21aabf2d022587f11056b4bf5a1efceb74c3d062703",
+    "requirements-final.xml": "27d65edb0cfbcb131f690d7cd003ccdc6144907296ce42d3d2d71431e0f7bfd2",
+    "requirements-output.log": "3d774d9037dcd0df9a995c9c18a159d1ebf9e1bf849f1d1263b2d3d4c26e0140",
+    "frontend-full.log": "909ae7a975c1508f04886a2fa5974bf4cf01aabd6abb7364a755cada5470da19",
+    "frontend-initial.log": "be5937cbcd9c198f48f139ac61b7b2f4832c35cf562d1b0017d0f447f81b2a27",
+    "contracts-final.log": "a18df7024da03c3b6258c137db82eb4f281d3d4c18e078f73b354ea7c6210640",
+    "format-final.log": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283",
+    "lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "python-quality.log": "3ff70aaa078788e1736d0a77d8671a5314a264ca8eba35b9d2727c7054f6075a",
+    "build-release.log": "16528adf0e089c186e2ed259a3d2dbd82dd05b273ce85877333ca590ee717afc",
+    "http-runtime.json": "267fa2b0f09f2f762165168b193035a89373f9c84d574420d1f7af5c913098f9",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614"
+  },
+  "preserved_failures": [
+    {
+      "passed": 53,
+      "setup_errors": 1,
+      "cause": "new test class omitted fixed original fixture parameter"
+    },
+    {
+      "passed": 56,
+      "failed": 1,
+      "cause": "legacy rule fixture lacked ordinary RuleScope fields"
+    },
+    {
+      "passed": 53,
+      "setup_errors": 1,
+      "cause": "append-only guard rejected UPDATE; retained guard, used an initial constructor parameter instead"
+    },
+    {
+      "passed": 56,
+      "failed": 1,
+      "cause": "synthetic ordinary decision omitted required evidence_ids; supplied existing contract field"
+    },
+    {
+      "cause": "Windows .ts/.tsx basename casing collision and nested callback narrowing; renamed protocol module and explicitly narrowed selection"
+    }
+  ]
+}

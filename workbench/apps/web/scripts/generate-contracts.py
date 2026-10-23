@@ -42,6 +42,7 @@ history_schemas = [
     "PackageHistoryJobDirectory",
 ]
 wanted = [
+    "PackageNextActions",
     "ProjectWorkSummary",
     "ProjectWorkSummaryBatch",
     *history_schemas,

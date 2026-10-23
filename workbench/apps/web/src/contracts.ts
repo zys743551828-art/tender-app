@@ -1,5 +1,91 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type PackageNextActions = {
+  version: "package-next-actions/1";
+  binding: {
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    run_id: string;
+    input_digest: string;
+    result_digest: string | null;
+    frozen_input_id: string;
+    execution_input_id: string;
+    dependency_plan_id: string;
+    frozen_input_digest: string;
+    execution_input_digest: string;
+    dependency_plan_digest: string;
+    method_digest: string;
+  };
+  method_digest: string;
+  confirmation_digest: string;
+  basis_digest: string;
+  basis_status: "matched" | "changed" | "unknown" | "archived";
+  basis_issues: {
+    dimension: string;
+    status: "changed" | "unknown";
+    message: string;
+  }[];
+  observation_digest: string;
+  observed_at: string;
+  current_scope_counts: {
+    critical: number;
+    suggestions: number;
+    pending_critical_rules: number;
+  } | null;
+  historical_scope_counts: {
+    critical: number;
+    suggestions: number;
+  } | null;
+  primary: {
+    level: number;
+    key:
+      | "inspect_changed_basis"
+      | "inspect_unknown_basis"
+      | "view_archived_run"
+      | "inspect_failed_run"
+      | "observe_run"
+      | "inspect_coverage_gaps"
+      | "inspect_critical_risks"
+      | "confirm_critical_rules"
+      | "inspect_scoring_scope"
+      | "inspect_advisories"
+      | "inspect_package_limitations";
+    title: string;
+    requirement_ids: string[];
+    item_count: number | null;
+  };
+  other_actions: {
+    level: number;
+    key:
+      | "inspect_changed_basis"
+      | "inspect_unknown_basis"
+      | "view_archived_run"
+      | "inspect_failed_run"
+      | "observe_run"
+      | "inspect_coverage_gaps"
+      | "inspect_critical_risks"
+      | "confirm_critical_rules"
+      | "inspect_scoring_scope"
+      | "inspect_advisories"
+      | "inspect_package_limitations";
+    title: string;
+    requirement_ids: string[];
+    item_count: number | null;
+  }[];
+  remaining_critical_count: number | null;
+  remaining_suggestion_count: number | null;
+  action_mode: "navigation_only";
+  perspective: "selected_declared_scope";
+  original_bytes_reverified: false;
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
 export type ProjectWorkSummary = {
   bid_id: string;
   phase: "preparation" | "working" | "submitted" | "closed" | "terminated";
@@ -11993,6 +12079,7 @@ export type PackageDependencyPlan_Usage_Id = string;
 
 export const implementedOperations: readonly string[] = [
   "GET /api/v1/project-work-summaries",
+  "GET /api/v1/bids/{bid_id}/package-next-actions/{run_id}",
   "PUT /api/v1/object-transfers/uploads/{upload_id}",
   "GET /api/v1/object-transfers/versions/{version_id}",
   "POST /api/v1/retrievals",

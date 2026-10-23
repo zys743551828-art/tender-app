@@ -1,0 +1,282 @@
+{
+  "url": "http://127.0.0.1:5188",
+  "runtime_inputs_verified": 1159,
+  "assets": [
+    {
+      "path": "api-capabilities-pQhUcjoj.js",
+      "sha256": "c3b115c95592a6d723b1d60a29933efcc0a68dd98764d97a7fe86c033a33b9bc"
+    },
+    {
+      "path": "AuthoringPanel-ChYVbqjp.css",
+      "sha256": "3c37f281371bb5fc078e9c9c683bcdacda1b34d05bc68f76bb82103c0c8402f7"
+    },
+    {
+      "path": "AuthoringPanel-nsgiqyWn.js",
+      "sha256": "8a25ebee4ca4f0f585a3a41e81f53bfc98db1914006b1f7ad6e5758e9b745abd"
+    },
+    {
+      "path": "businessNames-D2PcdCRi.js",
+      "sha256": "a961daac6bca3f5d1d7b10ce8543a5b00d297d8c75c402ae3de90ec51f571f44"
+    },
+    {
+      "path": "ExactPackageTaskRunDetails-KziE2Oqu.js",
+      "sha256": "559dcba201e47d26fbb40ef22be3d6b8fd459f7c0a9cc5a9e9a2bfd00471388f"
+    },
+    {
+      "path": "factScopeValidation-DEzF35c7.js",
+      "sha256": "1f5e9bf20eec888ac1326cc107797765d53c5941eba479a8012c0326de55d9ac"
+    },
+    {
+      "path": "HistoricalImports-BCz0XcNw.css",
+      "sha256": "c8c20a184140ed79950571cd65924de6fee8a4d1da73ec621d3ce38f1f5bdd34"
+    },
+    {
+      "path": "HistoricalImports-BJBqHOBM.js",
+      "sha256": "1f9aed6e043df713a7216f72cfd6552cb53c3652cf123d246e9535d6a5030bcb"
+    },
+    {
+      "path": "index-BVhE25K8.js",
+      "sha256": "fc946c184959283a10d70192e75ea6afd690bf8679eb450202b3ae187eeac289"
+    },
+    {
+      "path": "index-eQNcdAO5.css",
+      "sha256": "d7226bc4f2d4afc39647c9dc07a39afc4f440664e0fbbcff05f8600b571ab639"
+    },
+    {
+      "path": "inputDependencyProtocol-BVTPk1ea.js",
+      "sha256": "38d0757078f3f7cae96efae3b674cae34f44bfe94bfe68d197fcacb9edbec19a"
+    },
+    {
+      "path": "Knowledge-BnKjjVr_.css",
+      "sha256": "fb9b3a2046d982070a92b8fac377b8e7591c61b7c5d76c4d8ccb498338cbd6f3"
+    },
+    {
+      "path": "Knowledge-BvF4vNlP.js",
+      "sha256": "23aa859352c5b7919438920f7b616a9a8f72242ca3cf25c0736603fc3ad9d818"
+    },
+    {
+      "path": "Metrics-Doa9dFss.js",
+      "sha256": "15aa21a6163d916b16cb18b89f05f74e3c487f25466ac5d08a750bd036206864"
+    },
+    {
+      "path": "PackageAuthoringTaskResult-IJyNSr7z.js",
+      "sha256": "e26324ed29494621f09353395ea34dd918c23e1b8c8d4d0818a8381026aa278a"
+    },
+    {
+      "path": "PackageCoverageWorkspace-79rQLnt0.js",
+      "sha256": "c1fa9eb71b0003428ea32bad3c8a25a3a93f92dd7d467038ab3b3e80595db874"
+    },
+    {
+      "path": "PackageCoverageWorkspace-ByH6HDrk.css",
+      "sha256": "f733ec2902912e884747a2ac2db0fbee400cf8bb15343465bf5a1c7c65d59a60"
+    },
+    {
+      "path": "PackageDependencyPlanWorkspace-BVZtru1-.css",
+      "sha256": "0cc5434e2a9c38cb90e42547774db2241c73d9a284da4876d6b8172520e78dc3"
+    },
+    {
+      "path": "PackageDependencyPlanWorkspace-CVpBa8y5.js",
+      "sha256": "ff692847198d88e1089e89b774a0f28584ff4132d9a2eb92ee3478ca36da4de8"
+    },
+    {
+      "path": "PackageEvidencePicker-C3z6oAW8.css",
+      "sha256": "2b55d54b8ff6489adb29a2a6f5e28453818def1924c3304e720dc52d3fb74012"
+    },
+    {
+      "path": "PackageEvidencePicker-CZF5jaVP.js",
+      "sha256": "0c2eb6cb8ed1d88b088120665be37912b70a521ce9c462afb7d48c63e5e9bc0b"
+    },
+    {
+      "path": "PackageFactChangeWorkspace-6RjeVJSe.js",
+      "sha256": "e560a37e2ec52a4932159424392d36b2d7458fbf06d00e50bc5a1176ed65432e"
+    },
+    {
+      "path": "PackageFactChangeWorkspace-IDFYhqSq.css",
+      "sha256": "14a96cd0d188774d669bb60196b093798669b4f9207f61eb674104572a151d42"
+    },
+    {
+      "path": "PackageFrozenInputWorkspace-B2h0yiUF.js",
+      "sha256": "7a71d8055209c7d7b75c47f586a43d1d5a5a7ba65a0e72af4b44c06872125c15"
+    },
+    {
+      "path": "PackageFrozenInputWorkspace-C44VfPis.css",
+      "sha256": "70bb74e25287a50e4784b75fa4649d66b26c44241415c928be5b632a8d11b170"
+    },
+    {
+      "path": "PackageHistoricalResearch-C-GDsdF2.js",
+      "sha256": "b8b19905c750395bc382156571a2cb47ea50273bb7234c1259faae76a6cc1985"
+    },
+    {
+      "path": "PackageHistoricalResearch-UGo4lI9l.css",
+      "sha256": "91df624c6e6da7af6d85097f7c291509f61f4aabc1ea89e0c30ec2a8b29d7099"
+    },
+    {
+      "path": "packageHistoricalResearchRecovery-EJ_m49z-.js",
+      "sha256": "541504e96ff57b2ef9631b6a854b01cf71426125329b2df4870a880da292fc7a"
+    },
+    {
+      "path": "PackageOriginalVerification-DzMXfJph.js",
+      "sha256": "5c59748fde72d6b58db3f7cbe47726efbc47cb5d550ab54bd563370fbf8bc50a"
+    },
+    {
+      "path": "packageOutcomeProtocol-CGHI1px7.js",
+      "sha256": "ea425107a78bc405b50043c79d57483f749fc4be4e03cca3ad1c8b67882acca2"
+    },
+    {
+      "path": "PackageRetrospectives-DpZf7wlu.js",
+      "sha256": "fe377475c8f1915c12297b46ab5844aef1f99533ba1134d99933063d72546669"
+    },
+    {
+      "path": "PackageRetrospectives-wF0CraaE.css",
+      "sha256": "af401e57847c48a28b6231793724706b6c57f506096ffc6fa2ec480f40f4eaf1"
+    },
+    {
+      "path": "packageReview-DehTHCS7.css",
+      "sha256": "44c45de0dfb0041e3381a8fd79fd4044532e1708e6964d8c68c4aca0bc02b3b1"
+    },
+    {
+      "path": "packageReviewComparisonProtocol-DzNllq_x.js",
+      "sha256": "d485c0aad261c860b86d19073e054b2706b5724097f94238fda46565f31e1ff5"
+    },
+    {
+      "path": "PackageReviewComparisonWorkspace-C_WWQvUo.css",
+      "sha256": "2bb06f860330550cb316326f1808445e07197f1a0acfe2437262cdcc94fa0532"
+    },
+    {
+      "path": "PackageReviewComparisonWorkspace-zjUgfFqy.js",
+      "sha256": "9155d47484daa69f60cac48e8712be9598e3fcd3c3970e3d5ca627418c77ea8d"
+    },
+    {
+      "path": "PackageReviewEvidence-2qChxIO1.js",
+      "sha256": "64d2e9395bfc26880c27b89073a83818cdc27c4fbcc87fe44c6cb1de4428a028"
+    },
+    {
+      "path": "packageReviewHistoricalRun-DJQmzmAg.js",
+      "sha256": "1ea8709a1984356e4a1e6e289fbdb9f2332d6b2a6768939e5f7767356b05d5ad"
+    },
+    {
+      "path": "PackageReviewInputDetails-CYIavqI-.js",
+      "sha256": "a9cbb2d051b895c4c5b295de0cce04267a1ccdae60a61d0fc19ac53541d7ae91"
+    },
+    {
+      "path": "PackageReviewOriginalRunDetails-DL88LslQ.js",
+      "sha256": "01ba6497204cabc62ff483c957cfdf4cd576c9e161c8e009c0f7347f487688c1"
+    },
+    {
+      "path": "PackageReviewProgress-BuNqFH2P.js",
+      "sha256": "e05cf0feed793218e41ba8f3805fc347f4c7d37e8064b3d426ee48faa7a5a06f"
+    },
+    {
+      "path": "packageReviewProtocol-CMwaJrIA.js",
+      "sha256": "76f2ba7550edfecb4eddc6f23201d990f6f31c25931534405de0db57977f59e0"
+    },
+    {
+      "path": "PackageReviewReportExports-BZZkP_af.js",
+      "sha256": "7bafccb3779c43f071599ff1690628e59784af85450dfd38abb58dca3bdf929e"
+    },
+    {
+      "path": "PackageReviewWorkspace-BQp4TxbX.css",
+      "sha256": "6dc187823366f8de91ec1f59b21834032f60493884b98396e039e87b6d2d2682"
+    },
+    {
+      "path": "PackageReviewWorkspace-BwvKld7n.js",
+      "sha256": "3c9aa3519c37d1e456b3d34c739d8e7c581e731c6fac6685d07192dbdea622cc"
+    },
+    {
+      "path": "PackageRuleCorrections-CyQBuaYP.css",
+      "sha256": "a01cbaf0ea30cfc5311457034bffd682708a9b993cd07d96075056d2656c4faa"
+    },
+    {
+      "path": "PackageRuleCorrections-DOzJlUbR.js",
+      "sha256": "0b7d24db785d80ee21e046475c25177a4fdbdd344b3d8433c2e2a0282eb424bf"
+    },
+    {
+      "path": "PackageSubmission-B7AOsr-_.css",
+      "sha256": "5012dd90214bb32845150a698a1f25246f7bdc32465a2b80eca3b92d4a0aaa05"
+    },
+    {
+      "path": "PackageSubmission-DIablzQO.js",
+      "sha256": "669139a4697e4b02651b5cf24f64fae46a87383322248d1d99710ea0eb034414"
+    },
+    {
+      "path": "packageSubmissionProtocol-C2XpEZeY.js",
+      "sha256": "b226c25a4f797c5f25f0a86af4f17bb62a81e6660c1c2f24a52785dbc84f7dcd"
+    },
+    {
+      "path": "PackageTechnicalScope-BkKO_TIk.js",
+      "sha256": "2ff2cd20343aa1b0cb628e8e72457d161a2c38bce72735c243b58f9490e88f18"
+    },
+    {
+      "path": "PackageTechnicalScope-DIxjFiOa.css",
+      "sha256": "ac1ab1d8f1ca316f8e886409fe76760eb60d2c2b7af363eae2b945b601d507a6"
+    },
+    {
+      "path": "pdf-BtCWNl9F.js",
+      "sha256": "6f42c39bcea7e76d2907c20ff4dbd5d86f2a7bac5c578362966a0d3346867666"
+    },
+    {
+      "path": "PricingPanel-CWyXEQ4h.js",
+      "sha256": "06491f0b3d9ec381d2e09b542622ef0c2ab93492b30f76385b8fa559aa507865"
+    },
+    {
+      "path": "ReportPanel-DEXAU0Tn.js",
+      "sha256": "dba3423029f842441581bd5bb1ef502c757103a4f6befb90a5f1481ec674f3ea"
+    },
+    {
+      "path": "SubmissionPanel-C1faBvRk.css",
+      "sha256": "9005ec32ef380842de98c172a6c5331267b059e2c9a3b0a68a7e8bd2aad4fb2e"
+    },
+    {
+      "path": "SubmissionPanel-DfsqoeVF.js",
+      "sha256": "f502f6801120e1277d8f28ee4c3cbccd63538fc731050ff7b53b99e3fbbbb751"
+    },
+    {
+      "path": "TaskAuthoringResultPanel-CXKydylG.js",
+      "sha256": "076f7f769db17835595f1a4db1f93581d74b658bd2219b76ddac633421ea8750"
+    },
+    {
+      "path": "TaskPanel-CXNET1L4.js",
+      "sha256": "46f5e0f4268f8e34d1b2ba1f1e36b145011bdd67a25051a16be3b4ae2221d754"
+    },
+    {
+      "path": "TaskTemplateEditor-BRqfVy55.js",
+      "sha256": "8666415025192e5d9f9a4d8ad22ec801450380b813c5baa5d8c64116e62b0fa8"
+    },
+    {
+      "path": "TaskTemplateEditor-D43RvBA3.css",
+      "sha256": "9a909da7ab634300eca2dba2958e63866fdabeaef97c4eeff5e6325830855156"
+    },
+    {
+      "path": "workContextDirectoryProtocol-DbPjmkf6.js",
+      "sha256": "646d89274e4dc2960eff22b872c12f21d50856faa365ed1dd790afe147cf3b3e"
+    },
+    {
+      "path": "workContextProtocol-BFRaNqLJ.js",
+      "sha256": "d533d355fe1bd52cdbc6fd4979d48a803b868f07feb3b24662359f2f1a62af42"
+    },
+    {
+      "path": "WorkContextWorkspace-Bo0CDYRX.css",
+      "sha256": "11ffd7c3d12189540cdaa06abb72cb969fa250e527dccb1a347f055eb10216b6"
+    },
+    {
+      "path": "WorkContextWorkspace-lZkosTy0.js",
+      "sha256": "3143b34b32507cf61dd4988cd8193d66d1d6e522b00526caab62c4cb80f2e142"
+    }
+  ],
+  "qa_assets_present": false,
+  "login_session_logout": true,
+  "business_projects": 0,
+  "research_optional_extension_status": 503,
+  "research_optional_extension_code": "PACKAGE_HISTORY_PUBLIC_GUARD_UNAVAILABLE",
+  "business_writes": 0,
+  "paid_calls": 0,
+  "mode": "development read-only source mounts; startup observation, not immutable deployment",
+  "browser_visual_verified": false,
+  "project_summary_registered": true,
+  "project_summary_missing_project": 404,
+  "project_summary_empty_batch": 422,
+  "package_next_actions_registered": true,
+  "package_next_actions_anonymous": 401,
+  "package_next_actions_missing_run": 404,
+  "package_next_actions_unknown_query": 422
+}

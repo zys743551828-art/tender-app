@@ -1,7 +1,7 @@
 param(
     [ValidateSet('up', 'stop', 'status', 'logs', 'checks', 'config')]
     [string] $Action = 'status',
-    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
+    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'package-next-actions', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
     [string] $Suite = 'pure'
 )
 $ErrorActionPreference = 'Stop'

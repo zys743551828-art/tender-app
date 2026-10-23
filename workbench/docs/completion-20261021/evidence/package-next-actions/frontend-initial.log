@@ -1,0 +1,12 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/PackageNextActions.test.tsx (12 tests) 307ms
+ ✓ src/WorkContextWorkspace.test.tsx (6 tests) 803ms
+ ✓ src/WorkContextSummary.test.tsx (2 tests) 235ms
+
+ Test Files  3 passed (3)
+      Tests  20 passed (20)
+   Start at  20:02:57
+   Duration  4.33s (transform 424ms, setup 934ms, collect 1.03s, tests 1.35s, environment 2.23s, prepare 301ms)
+

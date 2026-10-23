@@ -95,6 +95,11 @@ SUITES["project-summaries"] = [
     "tests/test_project_summary.py",
     "tests/test_project_summary_api.py",
 ]
+SUITES["package-next-actions"] = [
+    "tests/test_package_next_actions.py",
+    "tests/test_work_contexts.py",
+    "tests/test_package_next_actions_api.py",
+]
 
 
 def main():
@@ -136,6 +141,7 @@ def main():
         "technical-scope-api",
         "history-dispatch",
         "project-summaries",
+        "package-next-actions",
     }:
         password = (
             Path("/run/secrets/fusion_checks_owner_password")

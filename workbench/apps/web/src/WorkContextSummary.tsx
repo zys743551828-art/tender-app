@@ -55,10 +55,12 @@ export function WorkContextSummary({
   context,
   onOpenOriginal,
   onOpenPackage,
+  emphasizeOriginal = true,
 }: {
   context: PackageWorkContext;
   onOpenOriginal: () => void;
   onOpenPackage: (target: PackageNavigationTarget) => void;
+  emphasizeOriginal?: boolean;
 }) {
   const [basisOpen, setBasisOpen] = useState(false);
   const basis = useRef<HTMLDetailsElement>(null);
@@ -171,7 +173,11 @@ export function WorkContextSummary({
         </p>
       )}
       <div className="work-context-summary__actions">
-        <button type="button" className="button primary" onClick={primary}>
+        <button
+          type="button"
+          className={emphasizeOriginal ? "button primary" : "button secondary"}
+          onClick={primary}
+        >
           {label}
         </button>
         {action === "inspect_changed_basis" && (

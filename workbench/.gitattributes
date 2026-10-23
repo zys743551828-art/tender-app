@@ -31,10 +31,18 @@
 /packages/domain/project_summary*.py text eol=lf
 /packages/contracts/project_summary_api.py text eol=lf
 /tests/test_project_summary*.py text eol=lf
+/apps/api/package_next_action_routes.py text eol=lf
+/packages/domain/package_next_actions.py text eol=lf
+/packages/contracts/package_next_actions.py text eol=lf
+/packages/work_contexts/next_actions.py text eol=lf
+/tests/test_package_next_actions*.py text eol=lf
+/tests/test_bid_package_requirements_api.py text eol=lf
 /packages/contracts/project-work-summary.md text eol=lf
+/packages/contracts/package-next-actions.md text eol=lf
 /tests/test_fusion*.py text eol=lf
 /tests/test_package_history_dispatch*.py text eol=lf
 /docs/completion-20261021/evidence/windows-compose/** -text
 /docs/completion-20261021/evidence/history-dispatch/** -text
 /docs/completion-20261021/evidence/desktop-runtime/** -text
 /docs/completion-20261021/evidence/project-summary/** -text
+/docs/completion-20261021/evidence/package-next-actions/** -text

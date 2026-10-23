@@ -45,6 +45,7 @@ from apps.api.package_history_exposure_errors import (
     install as install_package_history_exposure_errors,
 )
 from apps.api.package_history_public_gate import require_history_public_guard
+from apps.api.package_next_action_routes import router as package_next_action_router
 from apps.api.package_pricing_routes import router as package_pricing_router
 from apps.api.package_retrospective_routes import router as package_retrospective_router
 from apps.api.package_technical_eligibility import router as package_technical_eligibility_router
@@ -131,6 +132,7 @@ class WorkbenchAPI(FastAPI):
 
 app = WorkbenchAPI(title="AI投标工作台·PDF资料切片", lifespan=lifespan)
 app.include_router(project_summary_router)
+app.include_router(package_next_action_router)
 app.include_router(transfer_router)
 app.include_router(rag_router)
 app.include_router(review_router)
