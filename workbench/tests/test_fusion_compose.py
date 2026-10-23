@@ -14,21 +14,25 @@ def test_image_proxy_budget_is_limited_to_exact_image_registration():
     config = (ROOT / "deploy/nginx-fusion.conf").read_text(encoding="utf-8")
     before, routes = config.split("location = /nginx-health", 1)
     assert "client_max_body_size 5m;" in before
-    pattern, body = re.search(r'location ~ "([^"\n]+)" \{([^}]+)\}', routes).groups()
+    matched = re.search(r'location ~ "([^"\n]+)" \{([^}]+)\}', routes)
+    assert matched is not None
+    pattern, body = matched.groups()
     bid = "00000000-0000-4000-8000-000000000001"
     assert re.fullmatch(pattern, f"/api/v1/bids/{bid}/authoring-images")
     assert not re.fullmatch(pattern, f"/api/v1/bids/{bid}/authoring-images/asset")
     assert not re.fullmatch(pattern, f"/api/v1/bids/{bid}/packages")
     assert "client_max_body_size 12m;" in body
-    assert "proxy_pass http://api:8000;" in body
+    assert "proxy_pass http://fusion_api;" in body
     assert config.count("client_max_body_size 12m;") == 1
 
 
 def test_import_manifest_budget_is_limited_to_exact_preview_route():
     config = (ROOT / "deploy/nginx-fusion.conf").read_text(encoding="utf-8")
-    body = re.search(r"location = /api/v1/research/import-previews \{([^}]+)\}", config).group(1)
+    matched = re.search(r"location = /api/v1/research/import-previews \{([^}]+)\}", config)
+    assert matched is not None
+    body = matched.group(1)
     assert "client_max_body_size 9m;" in body
-    assert "proxy_pass http://api:8000;" in body
+    assert "proxy_pass http://fusion_api;" in body
     assert config.count("client_max_body_size 9m;") == 1
 
 
@@ -45,6 +49,8 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
         "web",
     }
     assert services["web"]["ports"] == ["127.0.0.1:5188:8080"]
+    assert services["web"]["healthcheck"]["retries"] == 3
+    assert services["web"]["healthcheck"]["start_period"] == "10s"
     assert services["postgres"].get("ports", []) == []
     assert services["checks-postgres"].get("ports", []) == []
     assert plan["networks"]["core"]["internal"]
@@ -65,6 +71,22 @@ def test_minimal_group_has_no_paid_consumers_or_nonlocal_database_ports():
         assert "DEEPSEEK_API_KEY" not in service.get("environment", {})
         assert "POSTGRES_PASSWORD" not in service.get("environment", {})
         assert all(mount.startswith("/") for mount in service.get("tmpfs", []))
+
+
+@pytest.mark.parametrize("name", ["nginx-fusion.conf", "nginx-fusion-full.conf"])
+def test_service_dns_changes_are_observed_and_web_health_uses_the_same_upstream(name):
+    config = (ROOT / "deploy" / name).read_text(encoding="utf-8")
+    assert "resolver 127.0.0.11 valid=5s ipv6=off;" in config
+    assert re.search(
+        r"upstream fusion_api\s*\{\s*zone fusion_api 64k;\s*server api:8000 resolve;\s*\}", config
+    )
+    matched = re.search(r"location = /nginx-health\s*\{([^}]+)\}", config)
+    assert matched is not None
+    health = matched.group(1)
+    assert "proxy_pass http://fusion_api/health/ready;" in health
+    assert "return 200" not in health
+    assert "proxy_pass http://api:8000" not in config
+    assert "proxy_set_header Host $http_host;" in health
 
 
 def test_api_cannot_mount_owner_state_and_group_checks_are_not_disposable():

@@ -21,6 +21,8 @@
 /deploy/fusion*.py text eol=lf
 /deploy/fusion.ps1 text eol=lf
 /deploy/compose.fusion*.yaml text eol=lf
+/deploy/nginx-fusion.conf text eol=lf
+/deploy/nginx-fusion-full.conf text eol=lf
 /deploy/package_history_dispatcher.py text eol=lf
 /packages/model_governance/package_history_dispatch.py text eol=lf
 /packages/model_governance/package_technical_features.py text eol=lf
@@ -54,3 +56,4 @@
 /docs/completion-20261021/evidence/submission-next-actions/** -text
 /docs/completion-20261021/evidence/registration-next-actions/** -text
 /docs/completion-20261021/evidence/technical-features/** -text
+/docs/completion-20261021/evidence/proxy-dns/** -text

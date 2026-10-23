@@ -4,6 +4,8 @@
 
 检查点1—16已通过PR #1合入fusion/bid-workbench，合并基线784c038；当前主线、默认预览和独立研究派发的范围以[PROGRESS](PROGRESS.md)、[Compose预览验收](windows-compose-acceptance.md)及[CPU派发验收](package-history-dispatch-acceptance.md)为准。下文保留各检查点当时的证据与边界，发布前措辞不代表当前Git状态；完整F00—F14任务仍须分别验收。
 
+F13默认与完整同源代理已通过[动态DNS与健康检查](proxy-dns-acceptance.md)专项：Web不重启，API换址／重启可恢复，断开不假报健康；164项Linux与两份配置语法通过。单节点代理证据不关闭生产容量、跨节点或完整目标环境验收。
+
 ## 口径
 
 F05-05已接[明确运行](package-next-actions-acceptance.md)、[直接报告](report-next-actions-acceptance.md)、[实交关联](submission-next-actions-acceptance.md)及[登记前明确选择](registration-next-actions-acceptance.md)：同快照原生证明、当前确认、原矩阵要求与去重计数。登记前原报告只读、外部跳转先收起表单、取消关联立即收起待办；该切片完整前端1786项及本机部署通过。62项及215 API回归和12契约为前一证据，不记当前纯CPU增量重跑。明确项目与完整视觉继续，已声明范围数字不充整包风险或提交资格；无完整关联保持未知。

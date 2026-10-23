@@ -99,7 +99,8 @@ services:
       test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/nginx-health"]
       interval: 5s
       timeout: 3s
-      retries: 20
+      retries: 3
+      start_period: 10s
 
   checks-postgres:
     <<: *postgres
