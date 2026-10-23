@@ -156,6 +156,11 @@ SUITES["read-purpose-native"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["original-get-pure"] = [
+    "tests/test_original_bytes.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():

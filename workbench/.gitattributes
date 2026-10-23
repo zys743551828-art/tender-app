@@ -42,6 +42,9 @@
 /packages/domain/providers/errors.py text eol=lf
 /tests/test_provider_error_isolation.py text eol=lf
 /packages/domain/providers/deepseek_vision.py text eol=lf
+/packages/domain/providers/original_bytes.py text eol=lf
+/packages/contracts/package-original-get.md text eol=lf
+/tests/test_original_bytes.py text eol=lf
 /packages/domain/providers/json_protocol.py text eol=lf
 /packages/contracts/package-technical-vision.md text eol=lf
 /tests/test_package_technical_vision.py text eol=lf
@@ -96,4 +99,5 @@
 /docs/completion-20261021/evidence/current-source/** -text
 /docs/completion-20261021/evidence/current-scope/** -text
 /docs/completion-20261021/evidence/read-purpose/** -text
+/docs/completion-20261021/evidence/original-get/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

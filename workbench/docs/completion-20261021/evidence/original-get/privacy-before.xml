@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.332" timestamp="2026-10-24T02:55:26.895791+08:00" hostname="zhangyansong"><testcase classname="tests.test_original_bytes" name="test_invalid_url_error_has_no_private_sdk_exception_context" time="0.001"><failure message="assert InvalidURL(&quot;Invalid port: 'synthetic-private-token'&quot;) is None&#10; +  where InvalidURL(&quot;Invalid port: 'synthetic-private-token'&quot;) = OriginalReadError('ORIGINAL_READ_INVALID_URL').__context__&#10; +    where OriginalReadError('ORIGINAL_READ_INVALID_URL') = &lt;ExceptionInfo OriginalReadError('ORIGINAL_READ_INVALID_URL') tblen=5&gt;.value">def test_invalid_url_error_has_no_private_sdk_exception_context():
+        with pytest.raises(port.OriginalReadError) as error:
+            prepared(url="http://127.0.0.1:synthetic-private-token/original")
+&gt;       assert error.value.__context__ is None
+E       assert InvalidURL("Invalid port: 'synthetic-private-token'") is None
+E        +  where InvalidURL("Invalid port: 'synthetic-private-token'") = OriginalReadError('ORIGINAL_READ_INVALID_URL').__context__
+E        +    where OriginalReadError('ORIGINAL_READ_INVALID_URL') = &lt;ExceptionInfo OriginalReadError('ORIGINAL_READ_INVALID_URL') tblen=5&gt;.value
+
+tests\test_original_bytes.py:131: AssertionError</failure></testcase></testsuite></testsuites>

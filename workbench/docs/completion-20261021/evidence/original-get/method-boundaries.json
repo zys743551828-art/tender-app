@@ -1,0 +1,23 @@
+{
+  "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+  "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+  "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+  "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+  "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+  "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+  "existing_methods_unchanged": true,
+  "old_records_rewritten": false,
+  "native_observation_is_not_verification_binding": true,
+  "default_base_sql_changed": false,
+  "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+  "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+  "all_previous_methods_unchanged": true,
+  "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+  "source_and_scope_observation_bodies_unchanged": true,
+  "scope_native_sql_unchanged": true,
+  "source_and_scope_observation_methods_changed": true,
+  "previous_asset_input_vision_and_feature_methods_unchanged": true,
+  "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+  "all_existing_methods_unchanged": true,
+  "native_permission_granted": false
+}

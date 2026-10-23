@@ -1,0 +1,52 @@
+{
+  "scope": "actual local loopback HTTP only; synthetic bytes; not OSS/S3 deployment or permission authority",
+  "request": {
+    "version": "package-original-get-request/1",
+    "method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "bid_id": "00000000-0000-0000-0000-000000000001",
+    "scope_id": "00000000-0000-0000-0000-000000000002",
+    "scope_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "document_version_id": "00000000-0000-0000-0000-000000000003",
+    "source_digest": "0f78fdc8837961b6854d956ba12bc014d16cc9960c5466ec949ae6c037699a55",
+    "source_byte_size": 43,
+    "profile": "development_s3",
+    "url_digest": "09efddbeb503e5c21a0664ea214d2c899afaff9da20ce2d9c71624f88f222ee8",
+    "http_method": "GET",
+    "response_decoding": "raw_identity",
+    "automatic_retry": false,
+    "native_permission_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "e4fb1c067dce72c0c67cf6db928d4078932b97caa4e35642fb4e317e93d42046"
+  },
+  "receipt": {
+    "version": "package-original-get-receipt/1",
+    "request_digest": "e4fb1c067dce72c0c67cf6db928d4078932b97caa4e35642fb4e317e93d42046",
+    "method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "bid_id": "00000000-0000-0000-0000-000000000001",
+    "scope_id": "00000000-0000-0000-0000-000000000002",
+    "scope_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "document_version_id": "00000000-0000-0000-0000-000000000003",
+    "source_digest": "0f78fdc8837961b6854d956ba12bc014d16cc9960c5466ec949ae6c037699a55",
+    "source_byte_size": 43,
+    "actual_http_attempts": 1,
+    "complete_requested_bytes_verified": true,
+    "native_permission_verified": false,
+    "necessary_scope_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "3a5ff7cd3f14f39a6ec9c6da0e3861b42bacf7a7c32aadfa85ec850531a487ca"
+  },
+  "wire": {
+    "attempts": 1,
+    "method": "GET",
+    "accept_encoding": "identity"
+  },
+  "actual_bytes_sha256": "0f78fdc8837961b6854d956ba12bc014d16cc9960c5466ec949ae6c037699a55",
+  "external_object_reads": 0,
+  "paid_calls": 0,
+  "private_url_or_body_exported": false,
+  "blocked_locator_sql_exists": false
+}
