@@ -75,6 +75,13 @@ SUITES["completion-api"] = [
     "tests/test_package_generated_output_admission_pg.py",
     "tests/test_document_parses_pg.py",
 ]
+SUITES["delivery-pure"] = [
+    *SUITES["pure"],
+    "tests/test_fusion_full_profile.py",
+    "tests/test_package_history.py",
+    "tests/test_package_history_directory.py",
+    "tests/test_package_history_protocol_recovery.py",
+]
 
 
 def main():
@@ -98,6 +105,9 @@ def main():
     for name in ("packages", "deploy", "tests", "apps/api", "apps/worker"):
         shutil.copytree(Path("/workspace") / name, root / name, ignore=ignore)
     shutil.copyfile("/workspace/pyproject.toml", root / "pyproject.toml")
+    if suite == "delivery-pure":
+        shutil.copyfile("/workspace/requirements.lock.txt", root / "requirements.lock.txt")
+        shutil.copytree("/workspace/apps/web/dist", root / "apps/web/dist")
     environment = {
         "PATH": os.environ.get("PATH", ""),
         "PYTHONPATH": str(root),

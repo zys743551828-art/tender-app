@@ -7,6 +7,7 @@
 /apps/web/*.mjs text eol=lf
 /apps/web/*.md text eol=lf
 /apps/web/scripts/** text eol=lf
+/apps/web/public/theme.js text eol=lf
 /apps/web/.prettierignore text eol=lf
 /packages/word_intake/renderer.py text eol=lf
 /packages/word_intake/inspection.py text eol=lf

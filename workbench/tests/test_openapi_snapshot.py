@@ -2,6 +2,7 @@
 
 import gzip
 import json
+import shutil
 import subprocess  # nosec B404 -- fixed local generator and formatter in development checks
 import sys
 from pathlib import Path
@@ -60,13 +61,14 @@ def test_generator_default_gzip_and_explicit_plain_preserve_all_types_and_capabi
 
 
 def test_checked_in_types_equal_formatted_generation_from_complete_snapshot(tmp_path):
-    formatter = ROOT / "apps/web/node_modules/.bin/prettier"
-    if not formatter.is_file():
-        pytest.skip("Install the locked frontend dependencies for the exact TypeScript byte check")
+    formatter = ROOT / "apps/web/node_modules/prettier/bin/prettier.cjs"
+    node = shutil.which("node")
+    if not formatter.is_file() or node is None:
+        pytest.skip("Locked frontend dependencies and Node are required for the exact byte check")
     generated = tmp_path / "contracts.ts"
     _generate(generated)
     formatted = subprocess.run(  # nosec B603 -- fixed local locked formatter, no shell
-        [str(formatter), str(generated)],
+        [node, str(formatter), str(generated)],
         cwd=ROOT / "apps/web",
         check=True,
         capture_output=True,

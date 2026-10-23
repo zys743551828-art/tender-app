@@ -1,0 +1,6 @@
+........................................................................ [ 44%]
+........................................................................ [ 89%]
+.................                                                        [100%]
+--------------- generated xml file: /evidence/delivery-pure.xml ----------------
+161 passed in 11.98s
+{"suite": "delivery-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

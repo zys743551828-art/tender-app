@@ -130,6 +130,8 @@ services:
       - ../deploy:/workspace/deploy:ro
       - ../tests:/workspace/tests:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../apps/web/dist:/workspace/apps/web/dist:ro
       - checks_evidence:/evidence
 
 networks:
