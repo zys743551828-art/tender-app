@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { api } from "./api";
 import type {
-  AuthoringDocument,
   AuthoringNode,
   AuthoringPreview,
   AuthoringPreviewRequest,
@@ -10,13 +9,17 @@ import type {
 } from "./contracts";
 import type { AuthoringHead } from "./SectionEditor";
 import { ErrorNotice } from "./components";
-import { editorSchema, editorText, jsonDigest } from "./editorSchema";
+import { jsonDigest } from "./editorSchema";
+import {
+  authoringText as editorText,
+  richEditorSchema as editorSchema,
+  serializeAuthoringNode,
+} from "./richEditorSchema";
+import type { EditorDocument } from "./richEditorSchema";
 import { useCommand } from "./useCommand";
+import { TextChangePreview } from "./TextChangePreview";
 
-function findNode(
-  document: AuthoringDocument,
-  id: string,
-): AuthoringNode | null {
+function findNode(document: EditorDocument, id: string): AuthoringNode | null {
   function visit(nodes: AuthoringNode[]): AuthoringNode | null {
     for (const node of nodes) {
       if ("attrs" in node && node.attrs.id === id) return node;
@@ -27,7 +30,15 @@ function findNode(
     }
     return null;
   }
-  return visit(document.content);
+  const nodes: AuthoringNode[] = [];
+  editorSchema.nodeFromJSON(document).descendants((node) => {
+    if (
+      (node.type.name === "paragraph" || node.type.name === "heading") &&
+      node.attrs.id === id
+    )
+      nodes.push(serializeAuthoringNode(node) as AuthoringNode);
+  });
+  return visit(nodes);
 }
 export function AuthoringPatchPreview({
   bidId,
@@ -42,7 +53,7 @@ export function AuthoringPatchPreview({
 }: {
   bidId: string;
   sectionId: string;
-  content: AuthoringDocument;
+  content: EditorDocument;
   target: AuthoringNode | null;
   disabled: boolean;
   flush: () => Promise<boolean>;
@@ -181,18 +192,11 @@ export function AuthoringPatchPreview({
         )}
         {preview && (
           <>
-            <div className="editor-comparison">
-              <div>
-                <strong>
-                  修改前 · 草稿修订 {preview.value.base_draft_revision}
-                </strong>
-                <pre>{editorText(preview.value.before)}</pre>
-              </div>
-              <div>
-                <strong>拟修改后 · 尚未应用</strong>
-                <pre>{editorText(preview.value.after)}</pre>
-              </div>
-            </div>
+            <TextChangePreview
+              before={editorText(preview.value.before)}
+              after={editorText(preview.value.after)}
+              beforeLabel={`修改前 · 草稿修订 ${preview.value.base_draft_revision}`}
+            />
             <p className="small-note">
               仅改变这次段落及明确关联的来源；规则、事实、来源效力仍由服务端在应用时再次核验。
             </p>

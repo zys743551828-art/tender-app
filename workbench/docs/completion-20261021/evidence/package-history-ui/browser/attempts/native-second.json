@@ -1,0 +1,99 @@
+{
+  "schema": "package-history-native-browser/1",
+  "passed": false,
+  "paid_calls": 0,
+  "real_database_in_browser": false,
+  "transport": "Actual Chromium and product UI. Unmodified successful/failed HTTP bodies and ETags from native PG captures are replayed locally. The recovery scenario alone injects browser-only transport loss. No model or database is contacted by the browser.",
+  "fixtures": {
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+    "src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74"
+  },
+  "source_before": {
+    "scripts/check-package-history-native-browser.mjs": "7798e72ae586c45850c8060686a4be31da021dc6f26114b61c0ca686adcacaa2",
+    "src/PackageHistoricalAdmission.css": "b63dfcdbbb1d5fb98465e3ddcc24c9b904917f62b79dad84e7e996e485bfd00c",
+    "src/PackageHistoricalAdmission.tsx": "55df8dcceff4631f26460ae38913a011dac3613ee182b0f8e94720c979155aff",
+    "src/PackageHistoricalResearch.css": "05caa3c2a2ea6d1ff3836db553d39b0b83e8e4b6bf3e62f2f4dc72fe90ab54eb",
+    "src/PackageHistoricalResearch.tsx": "5474421fd73845e762c8bbe05c70998abad3752fd6e4273bb5744cea90c8e37b",
+    "src/PackageHistoricalResearchCommon.tsx": "b86ea5899b222fa78500ba3563308d9779d1a7cd4170dd62d53c0162c7719685",
+    "src/PackageHistoricalResearchDetails.tsx": "44de980656f4e2bd90632e97760d3f1c20138d8ab28b932f2e8074848aec3518",
+    "src/PackageHistoricalResearchForms.tsx": "79f34c7a6d7aa98d99443e6d984b95f3a70d3d3685fa27cf6f66acc642ed53f7",
+    "src/PackageHistoricalResearchJobs.tsx": "8bb0cf163062adeedaae66a393e54fbe11155c860c81567ff7a0d73d8553cfb7",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/navigationGuard.ts": "b58d04fef23cb3d7a39945fa449beb563098bf3b23e31c2f7ef3dd5692e3a4d9",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageHistoricalResearchProtocol.ts": "25ecf9437a1b00f96b0d25753cde0287e16ffd6ecf3dde3104d0d4226315abf9",
+    "src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+    "src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+    "src/packageHistoryPresentation.ts": "acb1624bdfa58f53c9c311dd2a9b5c713fd85477a06ed95d9c7f352166766ade",
+    "src/packageOutcomeProtocol.ts": "435d24c328ee8157df6da8fe8c7df6c15d7d88f764f9771d160d524a33f95271",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+    "src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/usePackageHistoryDirectory.ts": "afd59b55734a4f958444317125f11bbdc98ac23b1436a650a400f738a03a0520",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+  },
+  "checks": [
+    {
+      "mode": "admission",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admission-context",
+          "query": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admissions",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
+            "proof_id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
+            "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
+            "reason": "Explicit synthetic research admission through the guarded public API"
+          },
+          "etag": "\"package-history-context:bf3558df-07a6-422f-8e52-4290c4f0e94e:a97dcf1e1440876f2565b17543f5d6d02956459798f11ecbae5f30d98ea32a41\"",
+          "key": "d5d60b68-f05b-4485-9683-02397d34dd48"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admission_context",
+        "admission_created"
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "native-admission-complete-390-light.png",
+      "sha256": "510d0a52a7ac8126413c1767be3101d63c4e89b49912c09906b3c865479c6515"
+    }
+  ],
+  "chromium": "151.0.7922.34",
+  "error": "TimeoutError: locator.selectOption: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('资料 1 的请求用途', { exact: true }).filter({ visible: true })\u001b[22m\n",
+  "failure_text": "整包历史研究验收\n\n真实组件 · 同次原生响应重放 · 合成业务资料\n\n整包历史研究\n\n明确选择已经核验的整包资料，冻结回溯研究方案，再查看独立任务与结果。\n\nCPU 基线 · 不调用外部模型\n\n研究结果与正式施组预测分别管理。当前提供 mean/median 常数基线机制，尚未接通完整图文三评特征和正式模型发布；没有真实配对资料时不形成真实精度结论。\n\n1. 选择已准入资料\n2. 冻结研究方案\n3. 任务与结果\n1. 选择已经独立核验的整包资料\n\n新准入从项目内的确切技术范围、实交和官方成绩发起。本页只发现已保存的准入记录，不补造配对资料或历史时点。\n\n读取准入资料目录\n已读取 7 / 7 条\n\n目录只提供既有记录；当前来源和执行资格尚未重新核对，打开详情后再作决定。\n\n整包资料 1 · 2026/10/22 09:18:59\n合成机制资料\n\n标签知悉：2026/10/22 09:18:59\n准入登记：2026/10/22 09:19:00\n\n记录 84b1b312-c0a3-4658-ba98-5cbcacb788c6\n核对资料 1 的准入详情\n整包资料 2 · 2026/10/22 09:18:55\n合成机制资料\n\n标签知悉：2026/10/22 09:18:55\n准入登记：2026/10/22 09:18:56\n\n记录 02696389-2633-4439-b5df-8e40f051aa25\n核对资料 2 的准入详情\n整包资料 3 · 2026/10/22 09:18:52\n合成机制资料\n\n标签知悉：2026/10/22 09:18:52\n准入登记：2026/10/22 09:18:53\n\n记录 a0a93faa-7ca7-42ad-af90-2ce5fc506cc4\n核对资料 3 的准入详情\n整包资料 4 · 2026/10/22 09:18:48\n合成机制资料\n\n标签知悉：2026/10/22 09:18:48\n准入登记：2026/10/22 09:18:49\n\n记录 119e3c6d-1d42-4055-932a-54d94fcb0baf\n核对资料 4 的准入详情\n整包资料 5 · 2026/10/22 09:18:44\n合成机制资料\n\n标签知悉：2026/10/22 09:18:45\n准入登记：2026/10/22 09:18:45\n\n记录 8ac7c09a-1669-42c8-8c5e-5bdd32897852\n核对资料 5 的准入详情\n整包资料 6 · 2026/10/22 09:18:41\n合成机制资料\n\n标签知悉：2026/10/22 09:18:41\n准入登记：2026/10/22 09:18:42\n\n记录 d9ed96ad-113f-4503-a457-cc8c6feb8f2f\n核对资料 6 的准入详情\n整包资料 7 · 2026/10/22 09:18:37\n合成机制资料\n\n标签知悉：2026/10/22 09:18:37\n准入登记：2026/10/22 09:18:38\n\n记录 bf750dba-070d-4323-abf9-f2e1649196e9\n核对资料 7 的准入详情\n已读取的准入依据\n合成机制资料\n本次读取时依据有效\n已核对的官方技术分\n0 / 20\n分数口径\n公布的最终技术总分\n确切实交时点\n2026/10/22 09:18:37\n技术范围冻结\n2026/10/22 09:18:37\n标签知悉\n2026/10/22 09:18:37\n证据核验\n2026/10/22 09:18:38\n准入登记\n2026/10/22 09:18:38\n\n准入仅供回溯研究，不授予事前预测、在线指标或正式模型资格。\n\n查看确切版本与来源标识\n该实交已在本次选择中\n本次选择 1 份资料\n已选资料 1\n2026/10/22 09:18:37 · 合成机制资料\nbf750dba-070d-4323-abf9-f2e1649196e9\n资料 1 的请求用途\n明确选择用途\n拟合\n开发选择\n区间校准\n最终评估\n移除资料 1\n\n保存时服务端会重新核对完整来源与关联组。至少需要两个独立拟合组、开发选择组和最终评估组；同组不能跨用途。区间校准组可另选，缺少时区间保持未取得。\n\n继续核对研究协议与分组"
+}

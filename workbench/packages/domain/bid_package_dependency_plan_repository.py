@@ -32,7 +32,7 @@ def load(c, scope, frozen_id, input_id, plan_id):
         raise _not_found()
     value = {"manifest": m, "digest": row["digest"]}
     command = c.execute(
-        "SELECT actor_id,command_kind,target_id,request_digest,response FROM design.commands WHERE id=%s",
+        "SELECT actor_id,command_kind,target_id,request_digest,response FROM design.bid_package_dependency_plan_command_receipts WHERE id=%s",
         (row["command_id"],),
     ).fetchone()
     audits = c.execute(

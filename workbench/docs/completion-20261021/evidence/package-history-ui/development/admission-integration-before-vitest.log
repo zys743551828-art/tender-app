@@ -1,0 +1,36 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ❯ src/PackageHistoricalAdmission.integration.test.tsx (3 tests | 1 failed) 436ms
+   ✓ retains the actual selected pair and unsent proof/reason across purpose changes without new requests 260ms
+   ✓ recovers the original pending request while another purpose is active and releases its shared guard only after the exact ACK 121ms
+   × registers busy and unsent draft state with the shared scope guard and releases it only on explicit clearing 54ms
+     → expected false to be true // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/PackageHistoricalAdmission.integration.test.tsx > registers busy and unsent draft state with the shared scope guard and releases it only on explicit clearing
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/PackageHistoricalAdmission.integration.test.tsx:263:43
+    261|   fireEvent.click(readButton());
+    262|   await waitFor(() => expect(mounted.state().busy).toBe(true));
+    263|   expect(beforeUnload().defaultPrevented).toBe(true);
+       |                                           ^
+    264|   await act(async () => finish(nativeReply("admission_context")));
+    265|   await screen.findByLabelText("严格历史准入依据");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  19:27:44
+   Duration  1.47s (transform 347ms, setup 102ms, collect 440ms, tests 436ms, environment 274ms, prepare 52ms)
+

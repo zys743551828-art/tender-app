@@ -18,6 +18,7 @@ from packages.research.chapters import PACKAGE_MEDIA
 from packages.research.core import judge_three
 from packages.research.ledger import lock_run_scope, research_connection
 from packages.research.model_port import ControlledJudgmentPort
+from packages.research.package_history_exposure_fence import source_read_fence
 from packages.research.profile import digest
 
 STOP = threading.Event()
@@ -33,6 +34,7 @@ def enabled():
 def heartbeat(message, lease, stop):
     while not stop.wait(15):
         with research_connection() as c:
+            lock_run_scope(c, lease["run_id"])
             changed = c.execute(
                 "UPDATE step_receipts s SET heartbeat_at=clock_timestamp(),lease_until=clock_timestamp()+interval '120 seconds' WHERE operation_id=%s AND step_key=%s AND input_digest=%s AND fence=%s AND owner_token=%s AND state='running' AND lease_until>clock_timestamp() AND EXISTS(SELECT 1 FROM operations o WHERE o.id=s.operation_id AND o.state='running' AND o.cancel_requested_at IS NULL)",
                 (
@@ -48,7 +50,7 @@ def heartbeat(message, lease, stop):
 
 
 def packages_for_item(message, lease):
-    with research_connection() as c:
+    with source_read_fence(message, lease) as c:
         run = fetch(
             c,
             "SELECT r.*,p.request,p.price_config_digest FROM research_runs r JOIN experiment_previews p ON p.id=r.preview_id WHERE r.id=%s",
@@ -66,39 +68,40 @@ def packages_for_item(message, lease):
         dataset_metadata = batches.manifest_metadata(
             c, run["request"]["dataset_manifest_blob_id"], batches.DATASET_MEDIA
         )
-    dataset = batches.read_manifest(dataset_metadata)
-    selected = next(
-        (item for item in dataset["samples"] if item["id"] == str(lease["sample_id"])), None
-    )
-    if (
-        selected is None
-        or str(sample["outcome_id"]) != selected["outcome_id"]
-        or str(sample["submission_id"]) != selected["submission_id"]
-    ):
-        raise DomainError("RESEARCH_SAMPLE_CHANGED", "执行样本不属于冻结清单", 409)
-    refs = selected.get("chapter_packages", [])
-    if not refs:
-        raise DomainError(
-            "RESEARCH_FULL_CHAPTERS_MISSING", "没有完整相关章节清单，不发送模型请求", 409
+        c.commit()
+        dataset = batches.read_manifest(dataset_metadata)
+        selected = next(
+            (item for item in dataset["samples"] if item["id"] == str(lease["sample_id"])), None
         )
-    with research_connection() as c:
+        if (
+            selected is None
+            or str(sample["outcome_id"]) != selected["outcome_id"]
+            or str(sample["submission_id"]) != selected["submission_id"]
+        ):
+            raise DomainError("RESEARCH_SAMPLE_CHANGED", "执行样本不属于冻结清单", 409)
+        refs = selected.get("chapter_packages", [])
+        if not refs:
+            raise DomainError(
+                "RESEARCH_FULL_CHAPTERS_MISSING", "没有完整相关章节清单，不发送模型请求", 409
+            )
         metadata = [
             batches.manifest_metadata(c, ref["manifest_blob_id"], PACKAGE_MEDIA) for ref in refs
         ]
-    result = []
-    for ref, blob in zip(refs, metadata, strict=True):
-        package = batches.read_manifest(blob)
-        if (
-            package["digest"] != ref["digest"]
-            or package["body_version_id"] != selected["body_version_id"]
-            or package["rule"]["id"] != ref["rule_id"]
-        ):
-            raise DomainError("RESEARCH_PACKAGE_CHANGED", "章节包的正文、规则或摘要不一致", 409)
-        result.append(package)
-    with research_connection() as c:
+        c.commit()
+        result = []
+        for ref, blob in zip(refs, metadata, strict=True):
+            package = batches.read_manifest(blob)
+            if (
+                package["digest"] != ref["digest"]
+                or package["body_version_id"] != selected["body_version_id"]
+                or package["rule"]["id"] != ref["rule_id"]
+            ):
+                raise DomainError("RESEARCH_PACKAGE_CHANGED", "章节包的正文、规则或摘要不一致", 409)
+            result.append(package)
         lock_run_scope(c, lease["run_id"])
         qualify(c, message, lease)
-    return result
+        c.commit()
+        return result
 
 
 def process(message, transport):

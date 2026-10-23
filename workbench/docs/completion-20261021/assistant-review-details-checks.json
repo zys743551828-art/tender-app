@@ -1,0 +1,348 @@
+{
+  "protocol": "assistant-review-details-acceptance/1",
+  "date": "2026-10-21",
+  "base_checkpoint": "95d46dd2a61c39059493bb93742265f4d97807dd",
+  "owned_source_sha256": {
+    "apps/web/src/AssistantActionCard.tsx": "cada9dc1640dae31070227d5bfd36b1dd126067b90761baba0c1f5d6286996db",
+    "apps/web/src/AssistantSourcePicker.tsx": "3f4acf62edb162271d70c263e3dd1ffa95831116f2cd4e2d05e88a2a028694d8",
+    "apps/web/src/AssistantPatchComparison.tsx": "7447a9a9cb01254d78d4f17dcd784cfbbf371318080232a0ac2b6bbba3aa1b5b",
+    "apps/web/src/AssistantSourceDetails.tsx": "a2b11b41a6f70ce61e1eccea09322a42b3acacb494f0524f47fe1aa1c6ad0e87",
+    "apps/web/src/AssistantReviewDetails.css": "658c8193f6f148bcb5da2fa571e773c5c702ff51f2e7c83a580f4a9fdaf20c6a",
+    "apps/web/src/AssistantReviewDetails.test.tsx": "65323c2c56dc97e46fc12c59c8449820fbe0d4e31caa467a89469388b9840ca8",
+    "apps/web/src/assistantReviewFixtures.test-support.ts": "a6704d33538e4b82778e444277f79a73d917db79da65e961552d7544dea55be1",
+    "apps/web/scripts/check-assistant-review-browser.mjs": "8f0b3dd2af389351e3a86a803e5002d0cf5234c7fe29e323dc60760fe2043103"
+  },
+  "checks": {
+    "vitest": {
+      "status": "passed",
+      "files": 4,
+      "tests": 39,
+      "new_tests": 12,
+      "command": "./node_modules/.bin/vitest run src/AssistantReviewDetails.test.tsx src/AssistantWorkspace.test.tsx src/TextChangePreview.test.tsx src/AssistantIntentRecovery.test.tsx"
+    },
+    "eslint": {
+      "status": "passed",
+      "scope": "Owned TS/TSX files and browser script"
+    },
+    "prettier": {
+      "status": "passed",
+      "scope": "8 owned source files"
+    },
+    "whole_app_typecheck": {
+      "status": "passed",
+      "command": "./node_modules/.bin/tsc -b --pretty false",
+      "qualification": "Passed before concurrently added SourceSurface fixtures; later full build result below is separate."
+    },
+    "whole_app_build": {
+      "status": "blocked_by_parallel_source_types",
+      "command": "npm run build",
+      "details": [
+        "SourceSurface.test.tsx:183,190 getByRole options rejects exact",
+        "sourceSurfaceFixtures.test-support.ts:31 EvidenceView lacks parse_run_id,bbox,page_width,page_height,rotation"
+      ],
+      "vite_reached": false,
+      "owner_notified": true
+    },
+    "visual_inspection": {
+      "status": "performed",
+      "files": [
+        "comparison-dark-390.png",
+        "sources-light-390.png",
+        "comparison-light-1280.png",
+        "long-tail-dark-390.png"
+      ],
+      "qualification": "Synthetic immutable bundle; combined emoji data preserved but local headless font shows missing glyph boxes."
+    }
+  },
+  "browser": {
+    "recorded_at": "2026-10-21T10:58:20.455Z",
+    "scope": "Actual AssistantActionCard, AssistantSourcePicker, AssistantPatchComparison, AssistantSourceDetails, TextChangePreview, AuthoringRichSnapshot and useRecordedCommand. Immutable local bundle with explicit synthetic HTTP. No live backend, model, business result or mobile soft-keyboard acceptance.",
+    "source_inputs": {
+      "src/ArtifactActions.tsx": "b20b41920d83dc0943cf4988329c97f4745a9d33f82e8c1525eecf650892447b",
+      "src/AssistantActionCard.tsx": "cada9dc1640dae31070227d5bfd36b1dd126067b90761baba0c1f5d6286996db",
+      "src/AssistantDrawer.css": "7e3a45f33d7929afba06fd1e6780664199c82eb02c93cbf9b508d27b0a945d4d",
+      "src/AssistantPatchComparison.tsx": "7447a9a9cb01254d78d4f17dcd784cfbbf371318080232a0ac2b6bbba3aa1b5b",
+      "src/AssistantReviewDetails.css": "658c8193f6f148bcb5da2fa571e773c5c702ff51f2e7c83a580f4a9fdaf20c6a",
+      "src/AssistantSourceDetails.tsx": "a2b11b41a6f70ce61e1eccea09322a42b3acacb494f0524f47fe1aa1c6ad0e87",
+      "src/AssistantSourcePicker.tsx": "3f4acf62edb162271d70c263e3dd1ffa95831116f2cd4e2d05e88a2a028694d8",
+      "src/AuthoringRichSnapshot.css": "cbdb03134d25aee4c1a1bdc17012d39a4a1da19faf56135d000fb0c572b05e99",
+      "src/AuthoringRichSnapshot.tsx": "a26c596dbe7c29369d440e22e7f091764ad1fe8d434705f80ebd8f03eea13592",
+      "src/DocumentRelationNotice.tsx": "df02434496e0e0b08450698f6592a718a954aa3ded67a0dd91c6cb3d685bdb6a",
+      "src/Evidence.tsx": "e2a8dedf3d19f7b5163b8e2997d97d47cc3a289d387d100f42e4240416091cf7",
+      "src/PdfPreview.tsx": "7e7648e1775b86c2eab23d4ae06c0a75583aed539b637ca9113907a78a8b7da5",
+      "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+      "src/ResourceState.tsx": "a269f3ff0bc41a6c82afad59a8860b25bedddc7fe11a45b65a79d18906149508",
+      "src/SourceSurface.css": "2589a12fbd6af0d9044383ac372e6b452cbaacd600f9d7db92d30de3e2453984",
+      "src/SourceSurface.tsx": "3803f82962780da12e9589ace2de85d7c380206377d098aad501a63c754980b0",
+      "src/TextChangePreview.css": "15c5018ee520a659c14de50543d0f8965a98e0eebcbb341f9aee9d061526ad8b",
+      "src/TextChangePreview.tsx": "aaa86fbd1cb68e8efdd678c8cd7e042d271f12de66936333a268f175728d4edf",
+      "src/ThemePicker.tsx": "dc59a7a6e1564c91848b63fc138aac1f13602a7c3eca95eb2b70eb60ec6c0a2f",
+      "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+      "src/assistantDock.ts": "af8b4011faf0ca6e9ee18285bbb4c5b1405eb00bf6339821b2854a20e48b7fa3",
+      "src/assistantReviewFixtures.test-support.ts": "a6704d33538e4b82778e444277f79a73d917db79da65e961552d7544dea55be1",
+      "src/assistantState.ts": "01eba8c0b43e3840fe08a79edce5b2403da6d9dbb7a27f6cebd95b87dde8e93b",
+      "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+      "src/contracts.ts": "b5929d019a34b994998448d25364fcbd4669deea805869cfa6411668f9c09647",
+      "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+      "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+      "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+      "src/knowledgeStorage.ts": "ff26e5ce8414150e34c850c85fd00f96e96282206ce6d4f1f2fab555d433290c",
+      "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+      "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+      "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+      "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+      "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+      "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+      "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+      "src/textDifference.ts": "296a08eda16776af86853f6ffc4998c1cb1c3b01ef6771ee9aabbbd8fccb8d66",
+      "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+      "src/theme.ts": "49e457350c87066c0d45d8c5cefd96f150671516e7d15425bb475bc8cd19affc",
+      "src/useAssistantDock.ts": "5794b62752da0f19acf434afc31b65e2336ce2ba7a8f00403351af3b99ed8c7a",
+      "src/useAssistantFeed.ts": "e2fb89d8e321355011753e358e55c0aeece67bf94f8851bb2dc4ab8deb3a018e",
+      "src/useAuxiliaryFocus.ts": "e358569970e73d56acb3a3c7fa254463399239f027e2296ac2c9ae2d48902aed",
+      "src/useBidChoices.ts": "16d6230a7df41a28aed67ab1f4f3664c075aa49356f55d01580504cef1412b41",
+      "src/useDirectory.ts": "f7531554b60c0ac75e461ec3a568258b86be8e718f00eb871bfaf2b198247c37",
+      "src/useRecordedCommand.ts": "42d68051c4d88b3c215aef4bc4b808ff8d780f6a8dcf013d33d96f8eae32019e",
+      "src/useResource.ts": "4e7fb2749ec79db360f4c365fcc886e0e5cd010c431c86d4cab3b2daabcf704b",
+      "src/workspaceAuxiliary.ts": "e12542181c9c4bac5838211b1884b9ea2fc1f02558c8b66fa69dc2eadc14bdd8",
+      "src/workspaceDockReservation.ts": "64457bc4aa96e830082e1a15dbb47e660dd5ce407093f75d987b77ae9f3c9205"
+    },
+    "bundle_sha256": {
+      "app.js": "a3a3e57b944c8583921c0f7633cb8933c7c7bda367a6f21fc46d9fb0c92e79c2",
+      "app.css": "7f43905194697a4589b2a622ea72df81d9a5a4240fe5207874d9194ad993b280",
+      "theme.js": "397336507c738d1440d48f49550fb3d38701370301c103adbd0c2a47163f0d85",
+      "fixture.css": "e1af5fab31c069746912e338e0258378d2196ed6577c8933fba5906e972bd99f"
+    },
+    "cases": [
+      {
+        "name": "light-1280",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "dark-1280",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "light-768",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "dark-768",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "light-390",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "dark-390",
+        "assertions": [
+          "complete_text",
+          "marks_breaks_list",
+          "keyboard_expansion",
+          "responsive_diff",
+          "original_source_version",
+          "no_apply_on_inspection",
+          "withdrawn_source_disabled",
+          "explicit_selection_only",
+          "explicit_confirm_once",
+          "layout"
+        ],
+        "expected_text_length": 301
+      },
+      {
+        "name": "desktop-narrow-card",
+        "assertions": [
+          "container_query_single_pane",
+          "keyboard_switch",
+          "complete_text",
+          "no_apply",
+          "layout"
+        ]
+      },
+      {
+        "name": "long-390",
+        "expected_text_length": 120061,
+        "assertions": [
+          "full_exact_original_and_proposal",
+          "bounded_display_not_truncation",
+          "formatted_tail_reachable",
+          "no_apply",
+          "layout"
+        ]
+      },
+      {
+        "name": "withdrawn-at-confirm",
+        "assertions": [
+          "read_only_preview",
+          "server_revalidation",
+          "stale_no_business_effect",
+          "no_second_confirm",
+          "layout"
+        ]
+      },
+      {
+        "name": "lost-ack-remount-recovery",
+        "assertions": [
+          "no_replay_on_preview_or_remount",
+          "original_key_body_if_match",
+          "pending_survives_remount",
+          "one_effect",
+          "layout"
+        ]
+      },
+      {
+        "name": "source-directory-error",
+        "assertions": [
+          "original_selection_kept",
+          "availability_unverified",
+          "stale_choices_disabled",
+          "no_write",
+          "layout"
+        ]
+      }
+    ],
+    "screenshots": [
+      {
+        "file": "comparison-light-1280.png",
+        "sha256": "4b5b1cb871d5594a7c2ebe80f0d5e172ad0f21a3980b0df0e0dcf7ab97ed2b35"
+      },
+      {
+        "file": "sources-light-1280.png",
+        "sha256": "36b385a17006241c62c4f4ec7df8b680a64265980c8255ea0487c0fd1ec9aa6d"
+      },
+      {
+        "file": "comparison-dark-1280.png",
+        "sha256": "497ec57451c36eae568b2f838a5b57b5b8713c7a298a29225b6cb03429dabaeb"
+      },
+      {
+        "file": "sources-dark-1280.png",
+        "sha256": "b8d4f177424ebf80508b7fad4a85e6bc78f42ea6fe8642f42ba786f3b0ac8bae"
+      },
+      {
+        "file": "comparison-light-768.png",
+        "sha256": "ab8c2b6398ef4b0fadbb06c3e594b052ce4662455d476bea0832288dc9696875"
+      },
+      {
+        "file": "sources-light-768.png",
+        "sha256": "477f78eef9eeb04b61faa9ba9946c2c72c80acbfb58ddfbc1ecd0ebf8a4a045d"
+      },
+      {
+        "file": "comparison-dark-768.png",
+        "sha256": "6496060196ec53616a097958e3041b9b9e2bdd1b8db47bd1a6b9a3ae35264072"
+      },
+      {
+        "file": "sources-dark-768.png",
+        "sha256": "ceaf7681a799002f675f460b879bc44006885c603480d554b5adef59ffaf4260"
+      },
+      {
+        "file": "comparison-light-390.png",
+        "sha256": "a481a2d4d571d94e29cb047a3eaf344bf87d70521f88718bceee9e3f74b2b9f3"
+      },
+      {
+        "file": "sources-light-390.png",
+        "sha256": "e68587ea6b483c56d60acab72291006f9369387cdad4a2f017c1c126dd740260"
+      },
+      {
+        "file": "comparison-dark-390.png",
+        "sha256": "cef283842b855c3e6e84479642ac73abff92292a560d2da885927b1375d3965a"
+      },
+      {
+        "file": "sources-dark-390.png",
+        "sha256": "e81c02efc137c92883d89539d4c50997bd67f20071e6e14b102d86497e087f34"
+      },
+      {
+        "file": "comparison-dark-1280-narrow.png",
+        "sha256": "96e53ebe4fde09fa77fdb82d552b1947c4aa6de03323d07ee0cde03e909a483b"
+      },
+      {
+        "file": "long-tail-dark-390.png",
+        "sha256": "bdb2b56185fd9243f85fbd083afa962c26d5573577de184322d55dba22b903f6"
+      },
+      {
+        "file": "withdrawn-at-confirm-light-390.png",
+        "sha256": "77cce8de4f08fe90b2e5b1e3ca8cd0dc65ebcffb7bf2f3bc8f88394c5bbc4247"
+      },
+      {
+        "file": "recovered-dark-390.png",
+        "sha256": "d27bf2ec204c029bc42c2331ac63fcf262f38e2652e1cb2cd995cafd5048b254"
+      },
+      {
+        "file": "source-unverified-light-390.png",
+        "sha256": "9b580477b54d417b8fb47de8d80297aa08a4a69dfbf56e3ebe4f83165734c906"
+      }
+    ],
+    "page_errors": [],
+    "external_requests": [],
+    "browser": "156.0.8078.47",
+    "status": "passed"
+  },
+  "not_run": [
+    "Real backend/browser end-to-end",
+    "Real model/provider/paid generation",
+    "Live documents or real business effect",
+    "Screen reader and real mobile soft keyboard",
+    "System theme dynamic switching in this batch",
+    "Whole F12 acceptance"
+  ]
+}

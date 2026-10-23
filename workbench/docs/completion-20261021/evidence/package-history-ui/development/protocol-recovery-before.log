@@ -1,0 +1,83 @@
+FF..F                                                                    [100%]
+=================================== FAILURES ===================================
+_______ test_original_ack_is_replayed_when_current_method_digest_changed _______
+
+route_store = namespace(replay={'body': {'id': '20000000-0000-4000-8000-000000000001', 'digest': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}, 'status': 201, 'headers': {'ETag': '"original-protocol-receipt"'}})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd0244125a0>
+
+    def test_original_ack_is_replayed_when_current_method_digest_changed(route_store, monkeypatch):
+        monkeypatch.setattr(routes.cpu, "protocol", lambda **_: {"method": {"digest": "c" * 64}})
+>       response = routes.create_protocol(request(), REQUEST)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_package_history_protocol_recovery.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = <starlette.requests.Request object at 0x7fd020a47680>
+body = PackageHistoryProtocolRequest(method_digest='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', seed=17, bootstrap_iterations=100, reason='Explicit synthetic protocol recovery verification')
+
+    @router.post(BASE + "/protocols")
+    def create_protocol(request: Request, body: PackageHistoryProtocolRequest):
+        actor = auth(request, True)
+        document = cpu.protocol(seed=body.seed, bootstrap_iterations=body.bootstrap_iterations)
+        if document["method"]["digest"] != body.method_digest:
+>           raise DomainError(
+                "PACKAGE_HISTORY_METHOD_CHANGED", "CPU 方法已变化，请读取当前方法再冻结", 409
+            )
+E           packages.domain.runtime.DomainError: ('PACKAGE_HISTORY_METHOD_CHANGED', 'CPU 方法已变化，请读取当前方法再冻结', 409)
+
+apps/api/package_historical_research.py:161: DomainError
+__________ test_original_ack_does_not_execute_the_current_cpu_method ___________
+
+route_store = namespace(replay={'body': {'id': '20000000-0000-4000-8000-000000000001', 'digest': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}, 'status': 201, 'headers': {'ETag': '"original-protocol-receipt"'}})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd0206610d0>
+
+    def test_original_ack_does_not_execute_the_current_cpu_method(route_store, monkeypatch):
+        def unavailable(**_):
+            raise AssertionError("A historical ACK must not run the current method factory")
+    
+        monkeypatch.setattr(routes.cpu, "protocol", unavailable)
+>       response = routes.create_protocol(request(), REQUEST)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_package_history_protocol_recovery.py:61: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+apps/api/package_historical_research.py:159: in create_protocol
+    document = cpu.protocol(seed=body.seed, bootstrap_iterations=body.bootstrap_iterations)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_ = {'bootstrap_iterations': 100, 'seed': 17}
+
+    def unavailable(**_):
+>       raise AssertionError("A historical ACK must not run the current method factory")
+E       AssertionError: A historical ACK must not run the current method factory
+
+tests/test_package_history_protocol_recovery.py:58: AssertionError
+____________ test_replay_still_requires_installed_read_dependencies ____________
+
+route_store = namespace(replay={'body': {'id': '20000000-0000-4000-8000-000000000001', 'digest': 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}, 'status': 201, 'headers': {'ETag': '"original-protocol-receipt"'}})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd020675580>
+
+    def test_replay_still_requires_installed_read_dependencies(route_store, monkeypatch):
+        def missing(*_, **__):
+            raise DomainError("PACKAGE_HISTORY_NOT_CONFIGURED", "Synthetic missing schema", 503)
+    
+        monkeypatch.setattr(routes.repository, "require", missing)
+        with pytest.raises(DomainError) as caught:
+            routes.create_protocol(request(), REQUEST)
+>       assert caught.value.code == "PACKAGE_HISTORY_NOT_CONFIGURED"
+E       AssertionError: assert 'PACKAGE_HIST...ETHOD_CHANGED' == 'PACKAGE_HIST...OT_CONFIGURED'
+E         
+E         - PACKAGE_HISTORY_NOT_CONFIGURED
+E         ?                 ^ ^  ^ -- --
+E         + PACKAGE_HISTORY_METHOD_CHANGED
+E         ?                 ^^^^ ^  ^^
+
+tests/test_package_history_protocol_recovery.py:90: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_package_history_protocol_recovery.py::test_original_ack_is_replayed_when_current_method_digest_changed
+FAILED tests/test_package_history_protocol_recovery.py::test_original_ack_does_not_execute_the_current_cpu_method
+FAILED tests/test_package_history_protocol_recovery.py::test_replay_still_requires_installed_read_dependencies
+3 failed, 2 passed in 1.13s
+

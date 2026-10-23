@@ -9,7 +9,14 @@ import {
 import type { FormEvent } from "react";
 import { api, setAuth, supportsApi } from "./api";
 import type { AuthView, Bid, BidPage } from "./contracts";
-import { Badge, Brand, ErrorNotice, Icon, Loading } from "./components";
+import {
+  Badge,
+  Brand,
+  ErrorNotice,
+  Icon,
+  Loading,
+  LoadingSkeleton,
+} from "./components";
 import { NavigationGuardContext } from "./navigationGuard";
 import type { NavigationGuard } from "./navigationGuard";
 import { clearAuthoringStorage } from "./editorStorage";
@@ -18,6 +25,8 @@ import { clearRecordedCommands } from "./useRecordedCommand";
 import { ProjectWorkspace } from "./ProjectWorkspace";
 import { Archives } from "./Archives";
 import { Research } from "./Research";
+import { ThemePicker } from "./ThemePicker";
+import { useTheme } from "./theme";
 const AssistantHub = lazy(() =>
   import("./AssistantWorkspace").then((module) => ({
     default: module.AssistantHub,
@@ -31,12 +40,21 @@ const Knowledge = lazy(() =>
 );
 import { CreateIdentityForm } from "./Identity";
 import type { WorkspacePage } from "./workspaceTypes";
+import {
+  packageLocation,
+  type PackageNavigationTarget,
+} from "./packageNavigation";
+import {
+  workContextLocation,
+  type WorkContextPosition,
+} from "./workContextNavigation";
 
 function projectFromPath(pathname: string) {
   return pathname.match(/^\/bids\/([^/]+)/)?.[1] ?? null;
 }
 
 export function App() {
+  const theme = useTheme();
   const [auth, updateAuth] = useState<AuthView | null>(null);
   const [restoring, setRestoring] = useState(true);
   const [expired, setExpired] = useState(false);
@@ -87,6 +105,8 @@ export function App() {
       page?: WorkspacePage,
       reviewId?: string,
       draftId?: string,
+      packageTarget?: PackageNavigationTarget | null,
+      workContext?: WorkContextPosition,
     ) => {
       if (navigating.current) return;
       navigating.current = true;
@@ -96,14 +116,51 @@ export function App() {
         const query = new URLSearchParams();
         if (reviewId) query.set("review", reviewId);
         if (draftId) query.set("draft", draftId);
-        const path = id
-          ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
-          : "/projects";
+        const path =
+          id && page === "work-context"
+            ? workContextLocation(
+                id,
+                workContext ?? { stage: "draft_snapshot", selected: null },
+              )
+            : id && page === "packages"
+              ? packageLocation(id, packageTarget ?? null)
+              : id
+                ? `/bids/${id}${page ? `/${page}` : ""}${query.size ? `?${query}` : ""}`
+                : "/projects";
         window.history.pushState({}, "", path);
         setRoute(path);
       } finally {
         navigating.current = false;
       }
+    },
+    [],
+  );
+  // Business panels call this after their local scope guard or a verified ACK.
+  // It records the already selected mounted view; external navigation still uses navigate().
+  const locatePackage = useCallback(
+    (
+      bidId: string,
+      target: PackageNavigationTarget | null,
+      replace = false,
+    ) => {
+      if (routeRef.current.split("?")[0] !== `/bids/${bidId}/packages`) return;
+      const path = packageLocation(bidId, target);
+      if (path === routeRef.current) return;
+      if (replace) window.history.replaceState({}, "", path);
+      else window.history.pushState({}, "", path);
+      setRoute(path);
+    },
+    [],
+  );
+  const locateWorkContext = useCallback(
+    (bidId: string, position: WorkContextPosition, replace = false) => {
+      if (routeRef.current.split("?")[0] !== `/bids/${bidId}/work-context`)
+        return;
+      const path = workContextLocation(bidId, position);
+      if (path === routeRef.current) return;
+      if (replace) window.history.replaceState({}, "", path);
+      else window.history.pushState({}, "", path);
+      setRoute(path);
     },
     [],
   );
@@ -158,7 +215,7 @@ export function App() {
         <Loading text="正在恢复工作区…" />
       </div>
     );
-  if (!auth) return <Login onLogin={loggedIn} />;
+  if (!auth) return <Login onLogin={loggedIn} theme={theme} />;
   return (
     <NavigationGuardContext.Provider value={registerGuard}>
       <div className="app-shell">
@@ -300,7 +357,10 @@ export function App() {
                 <option value="knowledge">企业知识</option>
               )}
             </select>
-            <span className="environment-label">资料工作区</span>
+            <div className="topbar-actions">
+              <span className="environment-label">资料工作区</span>
+              <ThemePicker {...theme} />
+            </div>
           </header>
           <main id="main-content">
             {projectId ? (
@@ -312,9 +372,37 @@ export function App() {
                 onOpenDraft={(draftId) =>
                   void navigate(projectId, "authoring", undefined, draftId)
                 }
+                onOpenPackage={(target) =>
+                  void navigate(
+                    projectId,
+                    "packages",
+                    undefined,
+                    undefined,
+                    target,
+                  )
+                }
+                onPackageLocation={(target, replace) =>
+                  locatePackage(projectId, target, replace)
+                }
+                onOpenWorkContext={(position) =>
+                  void navigate(
+                    projectId,
+                    "work-context",
+                    undefined,
+                    undefined,
+                    undefined,
+                    position,
+                  )
+                }
+                onWorkContextLocation={(position, replace) =>
+                  locateWorkContext(projectId, position, replace)
+                }
                 onBack={() => navigate(null)}
                 onNavigate={(page, reviewId) =>
                   navigate(projectId, page, reviewId)
+                }
+                onOpenKnowledge={(knowledgeId) =>
+                  void openArea("knowledge", knowledgeId)
                 }
               />
             ) : area === "assistant" ? (
@@ -330,12 +418,15 @@ export function App() {
             ) : area === "history" ? (
               <Archives
                 key={auth.member.id}
+                memberId={auth.member.id}
                 onOpen={(id) => void navigate(id, "outcomes")}
               />
             ) : area === "research" ? (
               <Research
                 key={auth.member.id}
+                memberId={auth.member.id}
                 onOpen={(id) => void navigate(id, "outcomes")}
+                onOpenPackage={(id) => void navigate(id, "packages")}
               />
             ) : area === "metrics" ? (
               <Suspense fallback={<Loading text="正在打开业务指标…" />}>
@@ -364,7 +455,7 @@ export function App() {
             aria-modal="true"
             aria-label="重新登录工作区"
           >
-            <Login onLogin={loggedIn} expired />
+            <Login onLogin={loggedIn} expired theme={theme} />
           </div>
         )}
       </div>
@@ -375,9 +466,11 @@ export function App() {
 function Login({
   onLogin,
   expired = false,
+  theme,
 }: {
   onLogin: (auth: AuthView) => void;
   expired?: boolean;
+  theme: ReturnType<typeof useTheme>;
 }) {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -422,6 +515,9 @@ function Login({
         <small>AI 投标标书工作台</small>
       </div>
       <section className="login-panel">
+        <div className="login-theme">
+          <ThemePicker {...theme} />
+        </div>
         <form onSubmit={(event) => void submit(event)} className="login-form">
           <div className="mobile-brand">
             <Brand />
@@ -576,7 +672,9 @@ function Projects({
             />
           </label>
         </div>
-        {!projects && !error && <Loading />}
+        {!projects && !error && (
+          <LoadingSkeleton text="正在读取投标项目…" rows={4} />
+        )}
         {visible?.length === 0 && (
           <div className="empty-state">
             <div className="empty-icon">
@@ -588,7 +686,14 @@ function Projects({
                 ? "试试其他项目名称。"
                 : "只需项目名称。上传PDF后，查看已保存的原件和真实解析范围。"}
             </p>
-            {!search && (
+            {search ? (
+              <button
+                className="button secondary"
+                onClick={() => setSearch("")}
+              >
+                清除搜索，查看已加载项目
+              </button>
+            ) : (
               <button
                 className="button secondary"
                 onClick={() => setCreating(true)}
@@ -607,7 +712,7 @@ function Projects({
                   <th>项目名称</th>
                   <th>工作阶段</th>
                   <th>当前资料</th>
-                  <th>下一步</th>
+                  <th>单稿历史提示</th>
                   <th>
                     <span className="sr-only">打开</span>
                   </th>

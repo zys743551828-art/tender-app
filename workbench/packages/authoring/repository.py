@@ -34,8 +34,10 @@ def lock_draft(c, bid, draft):
     return fetch(c, "SELECT * FROM drafts WHERE bid_id=%s AND id=%s FOR UPDATE", (bid, draft))
 
 
-def assert_sources(c, bid, content, target=None):
+def assert_sources(c, bid, content, target=None, *, lock_sources=True):
     """Final-use check; indexed publication flags never grant authority."""
+    if target is not None and not lock_sources:
+        raise ValueError("Citation writes require locked source authority")
     validate_content(content)
     attrs = content["attrs"]
     rule_ids = list(dict.fromkeys(attrs["rule_ids"]))
@@ -50,7 +52,7 @@ def assert_sources(c, bid, content, target=None):
     refs = attrs["source_refs"]
     source_ids = sorted({UUID(ref["source_id"]) for ref in refs}, key=str)
     # Same graph mutex as lineage and source mutation; then deterministic ancestor locks.
-    if source_ids:
+    if source_ids and lock_sources:
         c.execute("SELECT pg_advisory_xact_lock(90127,1)")
         c.execute(
             """SELECT h.source_id FROM retrieval.source_heads h
@@ -182,6 +184,11 @@ def freeze(c, bid, draft, revision, title=None, *, actor=None, structure_state=N
         ).fetchone()
         title = previous["manifest"].get("title", "投标正文") if previous else "投标正文"
     manifest["title"] = title
+    from packages.authoring.exact_sources import prepare_snapshot as exact_snapshot
+
+    exact_extension = exact_snapshot(c, bid, draft, sections)
+    if exact_extension is not None:
+        manifest["authoring_exact_sections"] = exact_extension
     if extension is not None:
         manifest["authoring_structure"] = extension
     if any(has_rich(s["content"]) or s["schema_digest"] != SCHEMA_DIGEST for s in sections):
@@ -226,15 +233,27 @@ def freeze(c, bid, draft, revision, title=None, *, actor=None, structure_state=N
     }
 
 
-def append_section(c, bid, draft, section, revision, content, actor, *, schema_digest=None):
+def append_section(
+    c, bid, draft, section, revision, content, actor, *, schema_digest=None, exact_admission=None
+):
+    from packages.authoring import exact_sources
+
+    if exact_admission is None:
+        exact_sources.assert_ordinary_edit(c, bid, draft)
     schema_digest = schema_digest or schema_digest_for(content)
     validate_for_schema(content, schema_digest)
     if schema_digest != SCHEMA_DIGEST:
         from packages.authoring.rich_assets import require_available
 
         require_available(c)
-    assert_sources(c, bid, content)
-    identity = uid()
+    if exact_admission is None:
+        assert_sources(c, bid, content)
+        identity = uid()
+    else:
+        actual, job = exact_sources.append_adoption(
+            c, exact_admission, bid, draft, section, revision, content, actor, schema_digest
+        )
+        identity = exact_admission.section_revision_id
     c.execute(
         """INSERT INTO section_revisions(id,bid_id,draft_id,section_id,revision,schema_digest,content,digest,created_by)
        VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)""",
@@ -250,8 +269,11 @@ def append_section(c, bid, draft, section, revision, content, actor, *, schema_d
             actor,
         ),
     )
+    if exact_admission is not None:
+        exact_sources.bind_adoption(c, exact_admission, actual, job, content, schema_digest)
     c.execute("UPDATE sections SET head_revision=%s WHERE id=%s", (revision, section))
-    assert_sources(c, bid, content, identity)
+    if exact_admission is None:
+        assert_sources(c, bid, content, identity)
 
 
 def create_draft(c, bid, actor, title, outline=None):
@@ -292,10 +314,15 @@ def create_draft(c, bid, actor, title, outline=None):
     return draft, saved
 
 
-def save_draft(c, bid, draft, actor, body, condition):
+def save_draft(c, bid, draft, actor, body, condition, *, exact_admission=None):
+    from packages.authoring import exact_sources
     from packages.authoring.snapshot_structure import assert_active, latest
 
     row = lock_draft(c, bid, draft)
+    if exact_admission is None:
+        exact_sources.assert_ordinary_edit(c, bid, draft)
+    else:
+        exact_sources.check_adoption(c, exact_admission, bid, draft, actor, body)
     match(condition, "draft", draft, row["revision"])
     if body["base_draft_revision"] != row["revision"]:
         raise DomainError("DRAFT_REVISION_CONFLICT", "草稿已被更新，请保留本地改动并核对", 412)
@@ -332,6 +359,7 @@ def save_draft(c, bid, draft, actor, body, condition):
             change["content"],
             actor,
             schema_digest=change["schema_digest"],
+            exact_admission=exact_admission,
         )
     revision = row["revision"] + 1
     c.execute("UPDATE drafts SET revision=%s WHERE id=%s", (revision, draft))
@@ -390,6 +418,11 @@ def snapshot_content(c, bid, snapshot):
     }
     if extension is not None:
         result["authoring_structure"] = extension
+    from packages.authoring.exact_sources import snapshot as exact_snapshot
+
+    exact_extension = exact_snapshot(c, row, sections)
+    if exact_extension is not None:
+        result["authoring_exact_sections"] = exact_extension
     from packages.authoring.rich_snapshots import checked as checked_images
 
     images = checked_images(row["manifest"].get("authoring_images"), result["sections"])

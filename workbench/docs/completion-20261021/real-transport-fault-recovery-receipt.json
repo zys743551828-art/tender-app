@@ -1,0 +1,308 @@
+{
+  "checks": {
+    "object_store_process_outage": {
+      "actual_private_process_killed": true,
+      "bounded_attempt_count": 2,
+      "original_sha256_preserved_after_restart": true,
+      "persisted_error_code": "OBJECT_STORE_UNAVAILABLE",
+      "real_connection_failure": true,
+      "result_count_during_outage": 0,
+      "result_counts": {
+        "document_parse_results": 1,
+        "effect_receipts": 1,
+        "model_calls": 0,
+        "step_receipts": 1
+      }
+    },
+    "relay_crash_after_broker_ack": {
+      "actual_duplicate_offset_committed": true,
+      "broker_ack_observed_before_crash": true,
+      "database_ack_missing_after_crash": true,
+      "natural_claim_wait_seconds": 26.145,
+      "process_exit_signal": "SIGKILL",
+      "publish_attempts": 2,
+      "result_counts": {
+        "document_parse_results": 1,
+        "effect_receipts": 1,
+        "model_calls": 0,
+        "step_receipts": 1
+      }
+    },
+    "worker_crash_after_compute": {
+      "attempt_count": 2,
+      "dispatch_generation": 2,
+      "natural_lease_wait_seconds": 119.801,
+      "old_fence_rejected_before_and_after_recovery": true,
+      "ordinary_reconcile_and_new_kafka_delivery": true,
+      "original_s3_and_pdf_computation_finished_before_crash": true,
+      "process_exit_signal": "SIGKILL",
+      "result_counts": {
+        "document_parse_results": 1,
+        "effect_receipts": 1,
+        "model_calls": 0,
+        "step_receipts": 1
+      },
+      "unpublished_result_count_after_crash": 0
+    }
+  },
+  "docker_execution_verified": false,
+  "fixture_provenance": "synthetic source records through nonowner API role; real S3 bytes, Kafka and ordinary worker",
+  "lease_or_database_clock_modified": false,
+  "observed_at": "2026-10-21T04:23:23.381224+00:00",
+  "only_synthetic_originals": true,
+  "ordered_sql": [
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd"
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96"
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319"
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738"
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876"
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-requirements.sql",
+      "sha256": "d08c29c6b56a46674ab78f37dd5cb38fe074963c68d334b595fbf87fb0197bf9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-inputs.sql",
+      "sha256": "d066c92234ba5b3cba3990e51cab3316dc5b72ec6a6c563a5a776c9c13067da6"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-execution-inputs.sql",
+      "sha256": "f5f473c2b92f652b016e1eb0170eb2b22952160cf0432d831b5ba021390d8706"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-fact-scopes.sql",
+      "sha256": "4a86390f08d9ed4e16277220fe655d28f2d9f8df0310ed1671b44d87c2623a10"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-dependency-plans.sql",
+      "sha256": "443a3f1a82ef60120ffadfbd073623c2e98308792f2f6bdc5cf47715a5e41260"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-runs.sql",
+      "sha256": "5ef4cf1160b17abe4cf106cb1acd9676277f9b31f982c06f96bf0ea8a3de3281"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-decisions.sql",
+      "sha256": "a53f0210e68844fc339dcf0fe0cc10b685bcf049b0f0b20a6022deb5a68358e9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-report-exports.sql",
+      "sha256": "48adf4288f4e2ac4e0b94d2b59edde19229cc83b91bf773a48a1b653275e7184"
+    },
+    {
+      "path": "packages/contracts/sql/document-parses.sql",
+      "sha256": "b965bc6826d783e368517ffb505631196f051d8ddcb561eb3843f98c45011681"
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1"
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d"
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd"
+    },
+    {
+      "path": "packages/authoring/sql/docx_import.sql",
+      "sha256": "2a832ccf1b9a549105a9923705de0f720f64aeef30c8607ac12944ba305a92b0"
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e"
+    },
+    {
+      "path": "deploy/sql/bid-package-requirement-runtime-grants.sql",
+      "sha256": "4d510b265e9e98355d2794839ab204a9501a9cbcad1b9b82f4ad53c924d9498e"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-input-runtime-grants.sql",
+      "sha256": "eb4f56ecfa2ad25bf86468ab35d657cd7859ae1880ed3bffeb0a46a5def14d55"
+    },
+    {
+      "path": "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+      "sha256": "53bc424cfbcd1b8207875f3882c5738813ff6a1a9e5d8c6ad91988af7cb10373"
+    },
+    {
+      "path": "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+      "sha256": "12c23369c1e9a5abbc5beea52b82cdbad0d198e619b2f5d3655cf4db1aa791a7"
+    },
+    {
+      "path": "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
+      "sha256": "2c7170ac325fa3027aa137ad0934456c0b4a0a4298980caaaa672dc128da9a1c"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-run-runtime-grants.sql",
+      "sha256": "eb82e88cd04b60b10f5ff026596c20029a164ab64144075b48cd2433cf5fb624"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-rule-corrections.sql",
+      "sha256": "a87cc9ea616d2e7a9c151322450bb80f4cc4d0ee4b1e99ea26d6af8c1b889e87"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-decision-runtime-grants.sql",
+      "sha256": "e48a7d76ed72bc360854be02d63eb96d68d67b77d58fda43a89958dcc29c2911"
+    },
+    {
+      "path": "deploy/sql/bid-package-report-runtime-grants.sql",
+      "sha256": "8630b580795663dbd6d6a32bd242697e6dd4858294fe37aaa817cc7777bbfa24"
+    },
+    {
+      "path": "deploy/sql/document-parse-runtime-grants.sql",
+      "sha256": "155737233a97e71d40ade0a342ef33c819c2775172aa08bbb1ec8dbccbbc97c1"
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619"
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-submissions.sql",
+      "sha256": "d6fea7f77da4378e23fae217737ac7cffc38f30255d1bd39885852bc0aaf2b0c"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-reviews.sql",
+      "sha256": "f40b53242cbe73d7425ce0b07c1428c041f2dd79735701b3829aafbb17dee3be"
+    },
+    {
+      "path": "packages/word_intake/schema.sql",
+      "sha256": "380a58eef00224a6094652c076d0d3ff0cb268a30a9868544671f4d37eb1dbfe"
+    },
+    {
+      "path": "packages/knowledge/sql/rag.sql",
+      "sha256": "51c98cf1aea5364b418747161e86bb374b9b3d44222d67891ec18e27bc200003"
+    },
+    {
+      "path": "packages/assistant/sql/assistant.sql",
+      "sha256": "4030b5e6a749aa060956c4039aa0cdd34e057508ea6a4ce9c58100f5a6ca81b0"
+    },
+    {
+      "path": "packages/assistant/sql/live-facts.sql",
+      "sha256": "42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2"
+    },
+    {
+      "path": "packages/assistant/sql/intent-budget.sql",
+      "sha256": "173078b95a5cd58db9f8f8aa09ff2728bae2c4a1e1b3817a4b593e719b04a6b0"
+    },
+    {
+      "path": "packages/assistant/sql/generation-batches.sql",
+      "sha256": "1042f97f6fa25411a1eabb28444fa3ca8f4389b7137990ebf67d6f97992a72e0"
+    }
+  ],
+  "paid_failure_semantics_verified": false,
+  "plan_digest": "12c9369959af127e4ef4ccb59613725ed00839f29024dd4a7939b12c603ef2d9",
+  "production_qualification": false,
+  "production_rpo_rto_verified": false,
+  "provider_calls": 0,
+  "runtime": {
+    "implementation": "CPython",
+    "libpq": 170005,
+    "librdkafka": "2.16.0",
+    "machine": "x86_64",
+    "packages": {
+      "PyYAML": "6.0.3",
+      "Pygments": "2.21.0",
+      "aliyun-python-sdk-core": "2.16.1",
+      "aliyun-python-sdk-kms": "2.16.5",
+      "annotated-types": "0.8.0",
+      "anyio": "4.15.1",
+      "attrs": "26.1.0",
+      "bandit": "1.8.5",
+      "boto3": "1.38.46",
+      "botocore": "1.38.46",
+      "certifi": "2026.7.22",
+      "cffi": "2.1.1",
+      "charset-normalizer": "3.5.2",
+      "click": "8.5.0",
+      "confluent-kafka": "2.16.0",
+      "crcmod": "1.7",
+      "cryptography": "50.0.2",
+      "fastapi": "0.115.14",
+      "h11": "0.16.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.20",
+      "iniconfig": "2.3.1",
+      "jmespath": "1.1.0",
+      "jsonschema": "4.24.0",
+      "jsonschema-specifications": "2025.9.1",
+      "markdown-it-py": "4.2.0",
+      "mdurl": "0.1.2",
+      "mypy": "1.16.1",
+      "mypy_extensions": "1.1.0",
+      "oss2": "2.19.1",
+      "packaging": "26.3",
+      "pathspec": "1.1.1",
+      "pillow": "12.3.0",
+      "pluggy": "1.7.0",
+      "psycopg": "3.2.9",
+      "psycopg-binary": "3.2.9",
+      "pycparser": "3.11",
+      "pycryptodome": "4.0.0",
+      "pydantic": "2.14.1",
+      "pydantic_core": "2.50.1",
+      "pypdfium2": "4.30.1",
+      "pytest": "8.4.1",
+      "python-dateutil": "2.9.0.post0",
+      "referencing": "0.37.0",
+      "requests": "2.34.2",
+      "rfc3339-validator": "0.1.4",
+      "rfc3986-validator": "0.1.1",
+      "rich": "15.0.0",
+      "rpds-py": "2026.9.1",
+      "ruff": "0.12.1",
+      "s3transfer": "0.13.1",
+      "six": "1.17.0",
+      "starlette": "0.46.2",
+      "stevedore": "5.9.1",
+      "typing-inspection": "0.4.4",
+      "typing_extensions": "4.16.0",
+      "urllib3": "2.8.0",
+      "uvicorn": "0.34.3"
+    },
+    "pdfium": "133.0.6899.0",
+    "pillow_codecs": {
+      "jpg": "6.2",
+      "jpg_2000": "2.5.4",
+      "webp": "1.6.0",
+      "zlib": "1.3"
+    },
+    "python": "3.12.14"
+  },
+  "shared_pg55441_used": false,
+  "source_sha256": {
+    "apps/worker/document_parse_handlers.py": "d334f6a4e65a5aa9c5e6e996e461e6b80d0a5303eb7d224750da5a4f32e495cf",
+    "apps/worker/engine.py": "337701f6d0526ecab44b4d055baf3ceba783a1b2b3b4c0e03555882596078d96",
+    "packages/contracts/sql/worker-functions.sql": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b",
+    "packages/domain/document_parse_policy.py": "a754a5a4981d1acad464f3b4774210e378e9b991a4bb49a0069a22805cf1fc3f",
+    "packages/domain/document_parses.py": "8816bf6cc8f75011f9637e7bf9d0abf4de296ef6d147a1105642cd67d8d68add",
+    "packages/domain/runtime.py": "c333121a288ce2c4ea97d9a1904a17e1759ea7070898f5dce36244c1837afb1d",
+    "packages/domain/storage.py": "302ee87f93c90f9ca914ea4fd578b79db70aab8f69efd174ff5c4723ad39c265",
+    "tests/test_real_transport_fault_recovery.py": "97f639e12ebec97f149e5a9e73386c422540a12c7200fb74349954e0bea28fbc",
+    "tests/transport_fault_child.py": "bc0cdac8fffddf3416566be3880542229614b5fa565884a1465f29c2ad95d180"
+  },
+  "version": "fusion-real-transport-fault-recovery/1"
+}

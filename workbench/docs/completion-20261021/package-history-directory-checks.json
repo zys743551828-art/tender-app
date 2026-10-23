@@ -1,0 +1,57 @@
+{
+  "schema": "package-history-directory-checks/1",
+  "date": "2026-10-21",
+  "base_commit": "ebe7e80b05cec1699eb0ce449cbda1406f4dc5d2",
+  "owned_source_sha256": {
+    "apps/api/package_historical_directory.py": "a952cab2cad8a3683a8669992d745e7152290a6c53c58088f24fd7e551b1f8b3",
+    "packages/contracts/package_history_directory_api.py": "d3921abd53b1514b79631b4c7a3e5b9c7c6af018d7c98245bac433385852baab",
+    "packages/model_governance/package_history_directory.py": "b64a2587aeec7e025c4071bee3309dd7f7786e094146b9f0fa4ecda6d39052e6",
+    "deploy/sql/package-history-directory.sql": "8501e84cf833a84fa4eca62ada6db4d4edfdfc0716e322f7877fb79994066727",
+    "tests/test_package_history_directory.py": "3fef78fea0cfe46ebff020f35fd4b5a5eccb7cae492b763c8d7145e5593123c9",
+    "tests/test_package_history_directory_pg.py": "791b5250f7cc1831f1c97c9ca7802a7331103c020869430ca9082f2096df3465"
+  },
+  "native": {
+    "passed": 5,
+    "failed": 0,
+    "errors": 0,
+    "seconds": 27.46,
+    "receipt": {
+      "case": "all",
+      "directory_sql_sha256": "8501e84cf833a84fa4eca62ada6db4d4edfdfc0716e322f7877fb79994066727",
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 56657,
+      "postgres": "17.11",
+      "provider_invoked": false,
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_directory_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    }
+  },
+  "unit": {
+    "passed": 20,
+    "failed": 0,
+    "seconds": 0.26
+  },
+  "static": {
+    "ruff_files": 5,
+    "format_files": 5,
+    "mypy_product_files": 3,
+    "bandit_product_files": 3,
+    "passed": true
+  },
+  "limitations": [
+    "Synthetic source assertions and originals; no business accuracy acceptance.",
+    "The directory does not expose official label values, qualify records, or create operations.",
+    "Public core availability independently requires the complete exposure bridge.",
+    "Standalone optional extension; no change to BASE/default recovery or Fusion v14."
+  ],
+  "corrected_failures": [
+    "Initial native assertion compared whitespace in a canonicalized cache header; assertion normalized, no product change.",
+    "Initial unit fixture lacked a synthetic SESSION_SECRET; explicit test-only fixture added, production still requires configuration."
+  ]
+}

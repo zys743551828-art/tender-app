@@ -6,6 +6,7 @@ import {
 } from "./executionInputValidation";
 import { validScopeChange } from "./factScopeValidation";
 import type { FreezeScope } from "./packageFrozenInput";
+import { recordedCommandStorageKey } from "./recordedCommandStorage";
 export type FactScopeKey = FreezeScope & {
   frozenId: string;
   preparedId: string;
@@ -20,7 +21,16 @@ export type FactScopeRecord = {
   lastFactId: string | null;
 };
 export const factScopeStorageKey = (s: FactScopeKey) =>
-  `tender:command-record:fact-scope:${s.memberId}:${s.bidId}:${s.packageId}:${s.revisionId}:${s.inventoryId}:${s.frozenId}:${s.preparedId}`;
+  recordedCommandStorageKey(
+    "fact-scope",
+    s.memberId,
+    s.bidId,
+    s.packageId,
+    s.revisionId,
+    s.inventoryId,
+    s.frozenId,
+    s.preparedId,
+  );
 export function loadFactScopeRecord(scope: FactScopeKey): FactScopeRecord {
   const raw = sessionStorage.getItem(factScopeStorageKey(scope));
   if (raw === null)

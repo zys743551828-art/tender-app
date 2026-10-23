@@ -1,0 +1,173 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ❯ src/packageHistoricalResearchNative.test.ts (98 tests | 5 failed) 91ms
+   ✓ keeps actual infrastructure verification separate from real business qualification 4ms
+   ✓ unchanged native responses > validates context 'primary_missing_proof' with its original tag and selected identities 3ms
+   ✓ unchanged native responses > validates context 'admission_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'fit_second_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'fit_second_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'development_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'development_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_known_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'final_known_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_crossing_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_crossing_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'fit_second_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'development_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'unselected_bridge_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_known_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_crossing_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_unknown_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'protocol_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'cohort_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'train_created' 0ms
+   ✓ unchanged native responses > validates original command ACK 'pause_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'pause_replayed' 0ms
+   ✓ unchanged native responses > validates original command ACK 'resume_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'evaluate_created' 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_replayed_after_revocation' 0ms
+   ✓ unchanged native responses > validates the CPU template and exact method fingerprint 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'fit_second_current' without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the native admission history view 'development_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'unselected_bridge_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_known_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_crossing_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_unknown_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'admission_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'admission_stale' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_current including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_after_train including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_stale including transitive excluded closure 1ms
+   ✓ unchanged native responses > validates native job 'train_queued' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_paused' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_resumed' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluate_queued' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'evaluate_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluation_stale' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_directory 1ms
+   ✓ unchanged native responses > validates metadata directory protocols_directory 0ms
+   ✓ unchanged native responses > validates metadata directory cohorts_directory 0ms
+   ✓ unchanged native responses > validates metadata directory jobs_directory 0ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_one 0ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_two 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'admissions_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'protocols_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'cohorts_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'admissions_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'protocols_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'cohorts_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_page_one' 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_page_two' 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_observation_changed' 1ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'cohorts_wrong_cursor_scope' 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_refreshed' 0ms
+   ✓ native unavailable and recovery boundaries > restores the exact protocol ACK after the installed method changes while rejecting a new-key response 1ms
+   ✓ native unavailable and recovery boundaries > retains a command after the ordinary API denies synthetic role access; that denial is not an ACK 1ms
+   ✓ preserves the original admission and pause ACKs when later observations change 2ms
+   × rejects a resealed proved admission context with missing historical_as_of 9ms
+     → promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+   × rejects a resealed proved admission context with missing scope_frozen_at 2ms
+     → promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+   × rejects a resealed proved admission context with missing label_known_at 1ms
+     → promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+   × rejects a resealed proved admission context with missing official_technical_value 1ms
+     → promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+   × rejects a resealed proved admission context with missing official_maximum 1ms
+     → promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+   ✓ accepts complete native synthetic proof with the external-adapter advisory still visible 0ms
+   ✓ preserves zero baseline gain, null intervals and all independent evaluation denominators 1ms
+   ✓ preserves real zero in the synthetic admission and unavailable calibration in training 1ms
+   ✓ rejects a resealed native admission with corrupted binding 1ms
+   ✓ rejects a resealed native admission with corrupted proof_origin 1ms
+   ✓ rejects a resealed native admission with corrupted future_label 1ms
+   ✓ rejects a resealed native admission with corrupted qualification 1ms
+   ✓ rejects a resealed native evaluation with corrupted selected_denominator 7ms
+   ✓ rejects a resealed native evaluation with corrupted report_denominator 3ms
+   ✓ rejects a resealed native evaluation with corrupted silently_dropped_unlabeled 1ms
+   ✓ rejects a resealed native evaluation with corrupted zero_to_null 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_cohort 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_membership 2ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_protocol 2ms
+   ✓ rejects a resealed native evaluation with corrupted fake_origin 1ms
+   ✓ rejects a resealed native evaluation with corrupted paid_call 1ms
+   ✓ rejects a resealed native evaluation with corrupted qualification 1ms
+   ✓ rejects a resealed native evaluation with corrupted false_coverage 1ms
+   ✓ rejects a resealed native evaluation with corrupted cohort_timing 1ms
+   ✓ rejects a resealed native training result with corrupted family 1ms
+   ✓ rejects a resealed native training result with corrupted model_export 1ms
+   ✓ rejects a resealed native training result with corrupted loss_selection 1ms
+   ✓ rejects a resealed native training result with corrupted false_interval 3ms
+   ✓ rejects a resealed cohort that removes the declared group root from a transitive member closure 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed proved admission context with missing historical_as_of
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed proved admission context with missing scope_frozen_at
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed proved admission context with missing label_known_at
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed proved admission context with missing official_technical_value
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed proved admission context with missing official_maximum
+AssertionError: promise resolved "{ proofs: [ { …(5) } ], …(18) }" instead of rejecting
+
+- Expected
++ Received
+
+- Error {
+-   "message": "rejected promise",
++ {
++   "blockers": [
++     {
++       "code": "PACKAGE_HISTORY_EXTERNAL_PROOF_ADAPTER_NOT_CONFIGURED",
++       "message": "真实证明接入来源尚未配置；签名本身不证明事实真实。",
++     },
++   ],
++   "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
++   "formal_eligibility": "unavailable",
++   "formal_sample_created": false,
++   "historical_as_of": null,
++   "label_known_at": "2026-10-21T18:18:37.435923-07:00",
++   "observed_at": "2026-10-21T18:18:38.313972-07:00",
++   "official_maximum": "20",
++   "official_technical_value": "0",
++   "online_metrics_eligible": false,
++   "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
++   "proofs": [
++     {
++       "adapter_id": "1ed803af-d931-4ba3-a626-b5354dfe87a2",
++       "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
++       "id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
++       "origin": "synthetic",
++       "verified_at": "2026-10-21T18:18:38.178944-07:00",
++     },
++   ],
++   "research_only": true,
++   "schema": "package-historical-admission-context/1",
++   "schema_configured": true,
++   "scope_frozen_at": "2026-10-22T01:18:37.075358Z",
++   "scope_id": "bf3558df-07a6-422f-8e52-4290c4f0e94e",
++   "strict_prebid_eligible": false,
++   "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+  }
+
+ ❯ src/packageHistoricalResearchNative.test.ts:395:5
+    393|         await historyEtag("context", value.scope_id, value),
+    394|       ),
+    395|     ).rejects.toThrow();
+       |     ^
+    396|   },
+    397| );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 93 passed (98)
+   Start at  19:26:42
+   Duration  1.03s (transform 221ms, setup 121ms, collect 268ms, tests 91ms, environment 300ms, prepare 74ms)
+

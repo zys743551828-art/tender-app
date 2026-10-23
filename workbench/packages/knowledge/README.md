@@ -76,6 +76,8 @@ Worker 引擎注册 handler `knowledge-index/1`、step `index-knowledge`、logic
 
 真实模型适配器共用受控本地 RAG runtime：BGE-M3 1024 cosine 归一化向量、固定四字段 embedding 身份与词典摘要；向量精确 Top50 + simple FTS Top50 → RRF(k60) → 前20实际 rerank → 最多8。重排不可用时明确 route=reranker_unavailable，并保留真实 RRF 顺序，不补造分数或模型身份；Embedding 不可用503，不返回假命中。每次检索最多500个有资格版本、5000个单元，过大422要求缩小知识条目。当前为精确向量搜索，未宣称大规模 ANN 性能已验收。
 
+本轮在向量／FTS之外增加独立编号数字 Top50（仅在查询含编号时执行），仍从同一已冻结且逐单元核验的允许集合检索，三路一起RRF。原文定位及最终引用守卫保持不变，方法进入版本2策略摘要；旧检索历史保留当时内容，策略变化后新用须重查。数字不是推导的单位或事实，`C30`、`C300`及不同标准年份按字面区分。普通文档1k／10k／50k的本机容量测量没有扩大这里的5000单元业务上限；真实企业知识链路及边界见[本轮独立验收](../../docs/completion-20261021/local-retrieval-acceptance.md)。
+
 检索五阶段：API 短 RC 事务锁项目/来源图并冻结 D03 identity.snapshot confirmed+authority、事实决定/证据基准、有效范围/期限、完整 source heads、ready index 与实际 unit manifest；关连接做 query embedding/lexical；短只读事务取严格 allowlist 候选；关连接实际重排；最终短事务完整重核后才写 Command/trace。网络和模型不跨项目/图锁。模型失败没有未完成 Command 锁住重试。所有新用与重放统一 `assert_trace_scope_current`：检索首次提交、检索同键重放、引用首次提交、引用同键重放都比较完整 frozen scope/index/unit/context/fact basis/source heads，而不是仅问当前还 applicable。旧索引 ready 被新代替、事实依据改后值恢复、同 UUID 重新确认新 authority、来源 head 改后恢复都要求重新查证。保留原 evaluated_at，同时按当前 DB clock 另查期限；unit 自己的状态/有效窗/策略/已知时间/直接祖先关系也参与，不借 parent ready 继承资格。
 
 引用只登记 reference，始终 reference_only=true、project_fact_created=false；不新建事实/规则/评分输入。目标必须在 trace 的实际项目，正文/operation/review 还需真实归属；已提交、归档或非可写项目拒新引用。源撤回后历史 GET 与原件 grant 仍可查，当前提醒不替换当时内容。正式评分、模型训练资格与历史成绩隔离均不由这条普通知识路径授予。

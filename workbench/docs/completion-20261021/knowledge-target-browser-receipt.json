@@ -1,0 +1,53 @@
+{
+  "source_receipt_sha256": "fdf287a570dd3932f4a65923cd52fa9ceaa9514af3212ba7540c7e594a752677",
+  "cases": [
+    {
+      "width": 1200,
+      "bounds": {
+        "viewport": 1200,
+        "scrollWidth": 1200,
+        "overflows": []
+      },
+      "errors": [],
+      "boundary": "Actual component with synthetic local directory; no server reference write",
+      "screenshots": [
+        {
+          "name": "knowledge-1200.png",
+          "sha256": "b6e6a25386a30d8ac0ea094338c23028507f7ea69873d3f4166d747c407ad4bf"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "bounds": {
+        "viewport": 768,
+        "scrollWidth": 768,
+        "overflows": []
+      },
+      "errors": [],
+      "boundary": "Actual component with synthetic local directory; no server reference write",
+      "screenshots": [
+        {
+          "name": "knowledge-768.png",
+          "sha256": "acba9eaecf3d834e75acf9ba927420c269f2b2e3b427efe2ea9b12e4b0f7f110"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "bounds": {
+        "viewport": 390,
+        "scrollWidth": 390,
+        "overflows": []
+      },
+      "errors": [],
+      "boundary": "Actual component with synthetic local directory; no server reference write",
+      "screenshots": [
+        {
+          "name": "knowledge-390.png",
+          "sha256": "ebb9d595cf0243396c996c26372ca557883a4e4b99afdb00e9482676a801a3a6"
+        }
+      ]
+    }
+  ]
+}

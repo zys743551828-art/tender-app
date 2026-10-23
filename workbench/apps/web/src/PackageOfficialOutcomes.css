@@ -1,0 +1,99 @@
+.package-outcome-workspace {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #dce3e7);
+  border-radius: 0.75rem;
+  background: var(--surface, #fff);
+  min-width: 0;
+}
+.package-outcome-workspace p,
+.package-outcome-workspace dd,
+.package-outcome-workspace small,
+.package-outcome-history span {
+  overflow-wrap: anywhere;
+}
+.package-outcome-workspace dd {
+  margin: 0.25rem 0 0.75rem;
+}
+.package-outcome-workspace dt {
+  font-weight: 600;
+}
+.package-outcome-workspace details {
+  margin: 0.75rem 0;
+}
+.package-outcome-current {
+  padding: 1rem 0;
+}
+.package-outcome-form {
+  margin-top: 1rem;
+}
+.package-outcome-form fieldset {
+  min-width: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+.package-outcome-form label {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.package-outcome-form input:not([type="checkbox"]),
+.package-outcome-form select,
+.package-outcome-form textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.package-outcome-form .evidence-select-item,
+.package-outcome-form .checkbox-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+.package-outcome-form input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  box-sizing: border-box;
+  flex: 0 0 1rem;
+  margin-top: 0.3rem;
+}
+.package-outcome-form .evidence-select-item span {
+  overflow-wrap: anywhere;
+}
+.package-outcome-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.package-outcome-evidence {
+  max-height: 28rem;
+  overflow: auto;
+  border-block: 1px solid var(--line, #dce3e7);
+  padding: 0.75rem 0;
+}
+.package-outcome-history ul {
+  padding-left: 1.15rem;
+}
+.package-outcome-history li {
+  margin: 0.5rem 0;
+}
+.package-outcome-history small {
+  display: block;
+}
+@media (max-width: 520px) {
+  .package-outcome-workspace {
+    padding: 0.75rem;
+  }
+  .package-outcome-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .package-outcome-workspace .review-shortcuts {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .package-outcome-workspace .section-heading {
+    align-items: flex-start;
+  }
+}

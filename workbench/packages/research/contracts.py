@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 
+from packages.contracts.openapi_dependencies import schema_closure
 from packages.research.profile import descriptor, digest
 
 
@@ -23,14 +24,18 @@ def arr(item):
 
 
 def extend_openapi(actual):
+    if not actual.get("paths"):
+        return
     from apps.api.research_routes import (
         DatasetRequest,
         GroupingRequest,
-        HistoricalImportRequest,
         OutcomeVerification,
     )
+    from packages.research.import_contracts import HistoricalImportRequest
 
-    schemas = actual["components"]["schemas"]
+    # These catalogs include dependencies for other features. Build locally so
+    # an empty or partial research router does not advertise those operations.
+    schemas = deepcopy(actual["components"]["schemas"])
     uuid = {"type": "string", "format": "uuid"}
     integer = {"type": "integer", "minimum": 0}
     string = {"type": "string"}
@@ -38,7 +43,16 @@ def extend_openapi(actual):
     digest_schema = {"type": "string", "pattern": "^[0-9a-f]{64}$"}
     boolean = {"type": "boolean"}
     empty = obj({})
-    schemas["ResearchOutcomeVerification"] = OutcomeVerification.model_json_schema()
+    from packages.contracts.package_outcomes_api import schemas as package_outcome_schemas
+
+    schemas.update(deepcopy(package_outcome_schemas()))
+    schemas["SingleBodyOutcomeVerification"] = OutcomeVerification.model_json_schema()
+    schemas["ResearchOutcomeVerification"] = {
+        "oneOf": [
+            ref("SingleBodyOutcomeVerification"),
+            ref("PackageOutcomeVerificationRequest"),
+        ]
+    }
     schemas["ResearchDatasetRequest"] = DatasetRequest.model_json_schema()
     schemas["ResearchOutcomeContext"] = obj(
         {
@@ -88,6 +102,11 @@ def extend_openapi(actual):
             "identity_reason": {"type": ["string", "null"]},
         }
     )
+    schemas["SingleBodyOutcomeContext"] = deepcopy(schemas["ResearchOutcomeContext"])
+    schemas["SingleBodyOutcomeContext"]["properties"]["subject_kind"] = {"const": "single_body"}
+    schemas["ResearchOutcomeContext"] = {
+        "oneOf": [ref("SingleBodyOutcomeContext"), ref("PackageOutcomeContext")]
+    }
     import_schema = HistoricalImportRequest.model_json_schema(
         ref_template="#/components/schemas/{model}"
     )
@@ -119,6 +138,48 @@ def extend_openapi(actual):
             "standard_submission_gate_checked": {"const": False},
         }
     )
+    import_receipt = deepcopy(schemas["HistoricalImportBatch"])
+    import_receipt["properties"]["command"] = obj(
+        {
+            "command_id": uuid,
+            "actor_id": uuid,
+            "command_kind": {"enum": ["preview-historical-import", "confirm-historical-import"]},
+            "target_id": uuid,
+            "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 128},
+            "request_digest": digest_schema,
+            "if_match": {"type": ["string", "null"]},
+        }
+    )
+    import_receipt["required"].append("command")
+    schemas["HistoricalImportReceipt"] = import_receipt
+    schemas["HistoricalImportPage"] = obj(
+        {
+            "items": arr(
+                obj(
+                    {
+                        "id": uuid,
+                        "mode": {"enum": ["dry_run", "confirmed_import"]},
+                        "revision": {"type": "integer", "minimum": 1},
+                        "created_by": uuid,
+                        "created_at": {"type": ["string", "null"], "format": "date-time"},
+                        "counts": deepcopy(
+                            schemas["HistoricalImportBatch"]["properties"]["counts"]
+                        ),
+                    }
+                )
+            ),
+            "next_offset": {"type": ["integer", "null"], "minimum": 0},
+        }
+    )
+    schemas["HistoricalImportSource"] = obj(
+        {
+            "batch_id": uuid,
+            "manifest_blob_id": uuid,
+            "manifest_digest": digest_schema,
+            "request": ref("HistoricalImportRequest"),
+            "source_matches_saved_manifest": {"const": True},
+        }
+    )
     schemas["ResearchGroupingRequest"] = GroupingRequest.model_json_schema()
     schemas["ResearchGroupingView"] = obj(
         {
@@ -143,7 +204,11 @@ def extend_openapi(actual):
             "verification_revision": integer,
             "supersedes_id": nullable_uuid,
             "verification_details": {
-                "anyOf": [ref("ResearchOutcomeVerification"), {"type": "null"}]
+                "anyOf": [
+                    ref("SingleBodyOutcomeVerification"),
+                    ref("PackageOutcomeVerificationDetails"),
+                    {"type": "null"},
+                ]
             },
         }
     )
@@ -151,6 +216,15 @@ def extend_openapi(actual):
     schemas["ResearchOutcomeView"] = outcome
     detail = deepcopy(outcome)
     detail["properties"]["current"] = boolean
+    detail["properties"]["package_association"] = obj(
+        {
+            "available": boolean,
+            "reasons": arr(string),
+            "checked_at": {"type": "string", "format": "date-time"},
+            "scope": {"const": "official_outcome_association"},
+            "formal_sample_eligible": {"const": False},
+        }
+    )
     detail["required"].append("current")
     schemas["ResearchOutcomeDetail"] = detail
     schemas["ResearchOutcomePage"] = obj(
@@ -280,8 +354,17 @@ def extend_openapi(actual):
             "post",
             "previewHistoricalImport",
             "HistoricalImportRequest",
-            "HistoricalImportBatch",
+            "HistoricalImportReceipt",
             201,
+            False,
+        ),
+        (
+            "/research/imports",
+            "get",
+            "listHistoricalImports",
+            None,
+            "HistoricalImportPage",
+            200,
             False,
         ),
         (
@@ -298,9 +381,18 @@ def extend_openapi(actual):
             "post",
             "confirmHistoricalImport",
             "ResearchEmptyRequest",
-            "HistoricalImportBatch",
+            "HistoricalImportReceipt",
             200,
             True,
+        ),
+        (
+            "/research/imports/{batch_id}/source",
+            "get",
+            "getHistoricalImportSource",
+            None,
+            "HistoricalImportSource",
+            200,
+            False,
         ),
         (
             "/research/samples/{sample_id}/grouping",
@@ -451,6 +543,7 @@ def extend_openapi(actual):
         ),
     ]
     schemas["ResearchEmptyRequest"] = empty
+    roots = set()
     for (
         path,
         method,
@@ -463,6 +556,9 @@ def extend_openapi(actual):
         operation = actual["paths"].get("/api/v1" + path, {}).get(method)
         if operation is None:
             continue
+        roots.add(response_schema)
+        if request_schema:
+            roots.add(request_schema)
         operation["operationId"] = operation_id
         operation["security"] = [{"SessionCookie": []}]
         operation["parameters"] = [
@@ -471,7 +567,7 @@ def extend_openapi(actual):
         if method == "post":
             operation["parameters"] += [
                 {"name": name, "in": "header", "required": True, "schema": string}
-                for name in ["X-CSRF-Token", "Idempotency-Key"]
+                for name in ["Origin", "X-CSRF-Token", "Idempotency-Key"]
                 + (["If-Match"] if conditional else [])
             ]
         if request_schema:
@@ -491,6 +587,9 @@ def extend_openapi(actual):
             },
             "default": {"$ref": "#/components/responses/DomainError"},
         }
+    if not roots:
+        return
+    actual["components"]["schemas"].update(schema_closure(schemas, roots))
     actual.setdefault("x-research-runtime", {}).update(
         {"profile": descriptor(), "profile_digest": digest(), "formal_scoring_eligible": False}
     )

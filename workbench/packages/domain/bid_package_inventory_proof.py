@@ -9,12 +9,13 @@ from packages.domain.runtime import DomainError, clean, connection
 def _receipt(c, scope, inventory):
     if inventory["version"] == "bid-package-requirements/1":
         return None
+    basis = inventory.get("extraction_basis", inventory)
     run = c.execute(
         """SELECT id,bid_id,authority_revision_id,authority_digest,input_blob_id,input_digest,
         input_manifest,operation_id,operation_input_digest,rule_set_id,result_digest,result
         FROM design.bid_package_requirement_extraction_runs
         WHERE bid_id=%s AND id=%s""",
-        (scope[0], inventory["extraction_result_id"]),
+        (scope[0], basis["extraction_result_id"]),
     ).fetchone()
     if run is None:
         return None
@@ -26,9 +27,12 @@ def _receipt(c, scope, inventory):
         "SELECT result FROM design.effect_receipts WHERE operation_id=%s AND effect_key='extract-rules'",
         (run["operation_id"],),
     ).fetchone()
-    return clean(
-        {"run": run, "operation": operation, "effect": effect["result"] if effect else None}
-    )
+    value = {"run": run, "operation": operation, "effect": effect["result"] if effect else None}
+    if inventory["version"] == "bid-package-requirements/3":
+        from packages.domain.bid_package_rule_correction_repository import read_derivation
+
+        value["derivation"] = read_derivation(c, scope[0], inventory)
+    return clean(value)
 
 
 def observe(scope, frozen_id, input_id, prepared_digest):

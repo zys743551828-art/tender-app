@@ -1,0 +1,912 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-scope-review:1",
+  "$ref": "#/$defs/Input",
+  "$defs": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "identity_digest",
+        "frozen_input_id",
+        "frozen_digest",
+        "input_digest",
+        "evidence_digest",
+        "context_digest",
+        "method_digest",
+        "policy_digest",
+        "purpose"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "evidence_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "context_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "method_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        }
+      }
+    },
+    "RerunIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonce",
+        "reason"
+      ],
+      "properties": {
+        "nonce": {
+          "$ref": "#/$defs/Id"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?(?![\\s\\S])"
+        }
+      }
+    },
+    "Identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "binding",
+        "rerun",
+        "content_digest",
+        "execution_digest"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-review-execution/1"
+        },
+        "kind": {
+          "const": "identity"
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "rerun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RerunIntent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "content_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "execution_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        }
+      }
+    },
+    "Part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "part_id",
+        "category",
+        "first_page",
+        "last_page",
+        "shared_attachment",
+        "heading_path"
+      ],
+      "properties": {
+        "part_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "first_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "last_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "shared_attachment": {
+          "type": "boolean"
+        },
+        "heading_path": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    },
+    "InspectedRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member_id",
+        "document_version_id",
+        "parse_run_id",
+        "part_id",
+        "category",
+        "first_page",
+        "last_page",
+        "shared_attachment",
+        "heading_path"
+      ],
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "document_version_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "parse_run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "part_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "first_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "last_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "shared_attachment": {
+          "type": "boolean"
+        },
+        "heading_path": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        }
+      }
+    },
+    "SubmittedDocument": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_role",
+        "member_id",
+        "document_version_id",
+        "parse_run_id",
+        "file_digest",
+        "page_count",
+        "parts",
+        "evidence_count"
+      ],
+      "properties": {
+        "package_role": {
+          "enum": [
+            "target",
+            "authority"
+          ]
+        },
+        "member_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "document_version_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "parse_run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "file_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Part"
+          },
+          "minItems": 1
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    },
+    "Quote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "member_id",
+        "evidence_id",
+        "quote",
+        "package_role",
+        "document_version_id",
+        "parse_run_id",
+        "physical_page",
+        "part_ids",
+        "evidence_digest"
+      ],
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 200
+        },
+        "evidence_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "quote": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 2000
+        },
+        "package_role": {
+          "enum": [
+            "target",
+            "authority"
+          ]
+        },
+        "document_version_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "parse_run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "physical_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "part_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "evidence_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "MatrixRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_id",
+        "requirement_digest",
+        "rule_digest",
+        "rule_kind",
+        "requirement_statement",
+        "applicability",
+        "target_part_ids",
+        "inspected_ranges",
+        "verdict",
+        "statement",
+        "target_quotes",
+        "authority_quotes",
+        "used_fact_ids",
+        "limitations",
+        "human_review_state"
+      ],
+      "properties": {
+        "requirement_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "requirement_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "rule_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "rule_kind": {
+          "enum": [
+            "disqualification",
+            "mandatory",
+            "scoring",
+            "advisory"
+          ]
+        },
+        "requirement_statement": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "applicability": {
+          "enum": [
+            "applicable",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "target_part_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "maxLength": 200
+          },
+          "uniqueItems": true
+        },
+        "inspected_ranges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InspectedRange"
+          }
+        },
+        "verdict": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "not_found",
+            "unable_to_judge",
+            "not_applicable"
+          ]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "maxLength": 4000
+        },
+        "target_quotes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Quote"
+          },
+          "maxItems": 20
+        },
+        "authority_quotes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Quote"
+          },
+          "maxItems": 20
+        },
+        "used_fact_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Id"
+          },
+          "uniqueItems": true
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "maxLength": 200
+          },
+          "uniqueItems": true
+        },
+        "human_review_state": {
+          "const": "unreviewed"
+        }
+      }
+    },
+    "MethodProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "purpose",
+        "assessment",
+        "input_scope",
+        "model_json_encoding",
+        "model",
+        "endpoint",
+        "source_digest",
+        "batch_rule_limit",
+        "batch_limit",
+        "output_tokens_per_batch",
+        "input_character_limit",
+        "semantic_quality",
+        "formal_scoring_eligible",
+        "submission_eligible"
+      ],
+      "properties": {
+        "engine": {
+          "const": "package-review/1"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "assessment": {
+          "const": "declared_requirement_response"
+        },
+        "input_scope": {
+          "const": "all_frozen_target_and_authority_members"
+        },
+        "model_json_encoding": {
+          "const": "finite-json-numbers/1"
+        },
+        "model": {
+          "enum": [
+            "deepseek-flash",
+            "deepseek-v4-pro"
+          ]
+        },
+        "endpoint": {
+          "enum": [
+            "https://api.deepseek.com",
+            "https://api.deepseek.com/v1"
+          ]
+        },
+        "source_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "batch_rule_limit": {
+          "const": 100
+        },
+        "batch_limit": {
+          "const": 4
+        },
+        "output_tokens_per_batch": {
+          "const": 8192
+        },
+        "input_character_limit": {
+          "const": 240000
+        },
+        "semantic_quality": {
+          "const": "not_measured"
+        },
+        "formal_scoring_eligible": {
+          "const": false
+        },
+        "submission_eligible": {
+          "const": false
+        }
+      }
+    },
+    "Input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "purpose",
+        "scope",
+        "frozen_input",
+        "execution_input",
+        "dependency_plan",
+        "usage_digest",
+        "selected_facts_digest",
+        "fact_admission",
+        "inventory_proof_digest",
+        "executor_method",
+        "model_input_digest",
+        "limitations"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-scope-review-input/1"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "frozen_input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "digest",
+            "input_digest",
+            "evidence_digest"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "input_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "evidence_digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          }
+        },
+        "execution_input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "digest",
+            "identity"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "identity": {
+              "$ref": "#/$defs/Identity"
+            }
+          }
+        },
+        "dependency_plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "digest"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Id"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          }
+        },
+        "usage_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "selected_facts_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "fact_admission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "content_digest",
+            "proofs_digest",
+            "policy_digest",
+            "fact_declarations"
+          ],
+          "properties": {
+            "content_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "proofs_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "policy_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "fact_declarations": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fact_id",
+                  "declaration_id",
+                  "declaration_digest"
+                ],
+                "properties": {
+                  "fact_id": {
+                    "$ref": "#/$defs/Id"
+                  },
+                  "declaration_id": {
+                    "$ref": "#/$defs/Id"
+                  },
+                  "declaration_digest": {
+                    "$ref": "#/$defs/Digest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "inventory_proof_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "executor_method": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profile",
+            "digest"
+          ],
+          "properties": {
+            "profile": {
+              "$ref": "#/$defs/MethodProfile"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          }
+        },
+        "model_input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "const": "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      }
+    },
+    "Result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "purpose",
+        "run_id",
+        "bid_id",
+        "input_digest",
+        "execution_input_id",
+        "execution_input_digest",
+        "execution_digest",
+        "dependency_plan_id",
+        "dependency_plan_digest",
+        "method_digest",
+        "scope",
+        "submitted_documents",
+        "requirement_count",
+        "matrix_coverage",
+        "overall_coverage",
+        "quality_status",
+        "inventory_complete",
+        "formal_scoring_eligible",
+        "submission_eligible",
+        "limitations",
+        "counts",
+        "matrix"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-scope-review-result/1"
+        },
+        "kind": {
+          "const": "declared_package_scope_review"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        },
+        "run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "execution_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "execution_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "dependency_plan_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "dependency_plan_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "method_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "submitted_documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SubmittedDocument"
+          },
+          "minItems": 2,
+          "maxItems": 1000
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 400
+        },
+        "matrix_coverage": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "overall_coverage": {
+          "const": "partial"
+        },
+        "quality_status": {
+          "const": "not_measured"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "formal_scoring_eligible": {
+          "const": false
+        },
+        "submission_eligible": {
+          "const": false
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "satisfied",
+            "violated",
+            "not_found",
+            "unable_to_judge",
+            "not_applicable"
+          ],
+          "properties": {
+            "satisfied": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "violated": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "not_found": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "unable_to_judge": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "not_applicable": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "matrix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MatrixRow"
+          },
+          "minItems": 1,
+          "maxItems": 400
+        }
+      }
+    }
+  }
+}

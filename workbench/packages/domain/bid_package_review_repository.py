@@ -4,6 +4,7 @@ from typing import Any
 
 from packages.domain import bid_package_repository as packages
 from packages.domain import bid_package_requirement_repository as requirements
+from packages.domain.bid_package_review_documents import generated_observations
 from packages.domain.bid_package_service import historical, view
 from packages.domain.bid_packages import require
 from packages.domain.runtime import fetch
@@ -83,5 +84,6 @@ def observations(c: Any, manifest: dict[str, Any]):
         "package_heads": heads_by_package,
         "inventory_head": inventory_head,
         "sources": snapshot,
+        "generated_outputs": generated_observations(c, manifest),
         "at": at,
     }

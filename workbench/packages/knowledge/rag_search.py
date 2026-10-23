@@ -22,12 +22,14 @@ from packages.knowledge.rag_repository import (
 from packages.knowledge.rag_types import assert_unit_envelope, text_digest
 from packages.knowledge.sources import authority_manifest, lock_graph, lock_heads
 from packages.rag.core import fuse_rankings, normalized_vector
+from packages.rag.numeric import NUMERIC_POLICY, numeric_patterns
 
 POLICY = {
-    "version": 1,
+    "version": 2,
     "name": "knowledge_units_exact_hybrid",
     "dense": 50,
     "lexical": 50,
+    "numeric": NUMERIC_POLICY,
     "rrf_k": 60,
     "rerank": 20,
     "limit": 8,
@@ -231,7 +233,7 @@ def assert_trace_scope_current(c, stored, bid, purpose):
     return current
 
 
-def read_candidates(c, scope, vector, lexemes):
+def read_candidates(c, scope, vector, lexemes, *, query=""):
     """Short readonly exact SQL. Query model computation has already finished."""
     allowed = [UUID(u["unit_id"]) for u in scope["units"]]
     if not allowed:
@@ -249,14 +251,28 @@ def read_candidates(c, scope, vector, lexemes):
         ORDER BY ts_rank_cd(lex_tsv,plainto_tsquery('simple',%s)) DESC,id LIMIT 50""",
         (allowed, lexemes, lexemes),
     ).fetchall()
-    fused = fuse_rankings([[r["id"] for r in dense], [r["id"] for r in lexical]], 20)
+    rankings = [[r["id"] for r in dense], [r["id"] for r in lexical]]
+    patterns = numeric_patterns(query)
+    if patterns:
+        numeric = c.execute(
+            """SELECT u.id FROM retrieval.knowledge_units u
+            WHERE u.id=ANY(%s) AND normalize(u.text_content,NFKC) ~* ANY(%s::text[])
+            ORDER BY (SELECT count(*) FROM unnest(%s::text[]) AS p(pattern)
+            WHERE normalize(u.text_content,NFKC) ~* p.pattern) DESC,u.id LIMIT 50""",
+            (allowed, list(patterns), list(patterns)),
+        ).fetchall()
+        rankings.append([r["id"] for r in numeric])
+    fused = fuse_rankings(rankings, 20)
     by_id = {u["unit_id"]: u for u in scope["units"]}
     return [by_id[str(unit_id)] for unit_id, _ in fused]
 
 
 def rerank_candidates(query, candidates, reranker):
     """No DB argument/connection. Explicitly mark actual RRF fallback on failure."""
-    route = ["dense_exact", "simple_fts", "rrf"]
+    route = ["dense_exact", "simple_fts"]
+    if numeric_patterns(query):
+        route.append("numeric_exact")
+    route.append("rrf")
     if not candidates:
         return [], route, None
     from packages.rag.http_port import RuntimeUnavailable

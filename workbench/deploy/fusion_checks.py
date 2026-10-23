@@ -21,6 +21,17 @@ SUITES = {
     ],
     "budget": ["tests/test_assistant_budget_nonowner.py"],
     "requirements-pure": ["tests/test_bid_package_requirements.py"],
+    "technical-scope-pure": [
+        "tests/test_package_technical_scope.py",
+        "tests/test_package_technical_eligibility.py",
+        "tests/test_scale_authority.py",
+    ],
+    "technical-scope-api": [
+        "tests/test_package_technical_scope_pg.py",
+        "tests/test_package_technical_eligibility_pg.py",
+        "tests/test_package_technical_eligibility_catalog_pg.py",
+        "tests/test_package_technical_scale_pg.py",
+    ],
     "requirements-api": [
         "tests/test_bid_package_requirements_api.py",
         "tests/test_bid_package_evidence_api.py",
@@ -28,7 +39,42 @@ SUITES = {
         "tests/test_bid_package_original_verification_api.py",
         "tests/test_bid_package_review_freezing_api.py",
     ],
+    "scope-review-pure": [
+        "tests/test_package_scope_review.py",
+        "tests/test_package_scope_review_identity.py",
+        "tests/test_package_review_comparison.py",
+        "tests/test_bid_package_review_comparisons.py",
+        "tests/test_bid_package_scope_review.py",
+        "tests/test_package_review_handlers.py",
+        "tests/test_package_review_decisions.py",
+        "tests/test_bid_package_review_decisions.py",
+        "tests/test_dependency_capacity.py",
+        "tests/test_evidence_status_projection.py",
+        "tests/test_reconciliation_fairness.py",
+        "tests/test_task_guard_entrypoints.py",
+    ],
+    "scope-review-api": [
+        "tests/test_package_review_runs_api.py",
+        "tests/test_package_review_decisions_api.py",
+        "tests/test_package_scope_identity_facts_api.py",
+        "tests/test_package_review_comparisons_api.py",
+    ],
 }
+SUITES["completion-pure"] = [
+    *SUITES["scope-review-pure"],
+    "tests/test_package_review_reports.py",
+    "tests/test_authoring_package_outputs.py",
+    "tests/test_bid_package_generated_output_admission.py",
+    "tests/test_document_parses.py",
+    "tests/test_authoring_m1_composition.py",
+]
+SUITES["completion-api"] = [
+    *SUITES["scope-review-api"],
+    "tests/test_package_review_reports_api.py",
+    "tests/test_authoring_package_adoptions_pg.py",
+    "tests/test_package_generated_output_admission_pg.py",
+    "tests/test_document_parses_pg.py",
+]
 
 
 def main():
@@ -59,7 +105,13 @@ def main():
         "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         "WORKBENCH_ENV_FILE": "explicit-fusion-checks-no-business-profile",
     }
-    if suite in {"budget", "requirements-api"}:
+    if suite in {
+        "budget",
+        "requirements-api",
+        "scope-review-api",
+        "completion-api",
+        "technical-scope-api",
+    }:
         password = (
             Path("/run/secrets/fusion_checks_owner_password")
             .read_text(encoding="utf-8")
@@ -87,6 +139,8 @@ def main():
             environment["FUSION_NONOWNER_RECEIPT"] = "/evidence/budget-receipt.jsonl"
         else:
             environment["FUSION_REQUIREMENTS_ADMIN_DSN"] = check_dsn
+            if suite == "technical-scope-api":
+                environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
     # The executable and suite paths are trusted constants; shell remains disabled.
     result = subprocess.run(  # nosec B603
         [

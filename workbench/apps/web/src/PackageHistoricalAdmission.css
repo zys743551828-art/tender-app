@@ -1,0 +1,91 @@
+.package-history-admission {
+  min-width: 0;
+  padding: 20px;
+  margin-block: 16px;
+}
+.package-history-admission h4,
+.package-history-admission h5 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.package-history-admission p {
+  line-height: 1.7;
+  margin: 8px 0 14px;
+}
+.package-history-admission .notice {
+  display: block;
+  margin-block: 16px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.package-history-admission .notice p:last-child {
+  margin-bottom: 0;
+}
+.package-history-admission ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+.package-history-admission label {
+  display: grid;
+  gap: 8px;
+  margin-block: 16px;
+}
+.package-history-admission dl {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: 8px 16px;
+  margin-block: 16px;
+  line-height: 1.7;
+}
+.package-history-admission dt,
+.package-history-admission dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.package-history-admission dt {
+  color: var(--muted-foreground);
+}
+.package-history-admission select,
+.package-history-admission textarea {
+  min-width: 0;
+  width: 100%;
+}
+.package-history-admission textarea {
+  min-height: 88px;
+}
+.package-history-admission .package-history-admission__confirm {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+}
+.package-history-admission__confirm input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 3px 0 0;
+  padding: 0;
+}
+.package-history-admission .button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .package-history-admission {
+    padding: 16px;
+  }
+  .package-history-admission dl {
+    grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+  .package-history-admission .notice {
+    padding: 12px;
+  }
+}

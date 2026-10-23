@@ -138,6 +138,9 @@ it("retains unknown POST and restores exact body and key after reload only on ex
     screen.getByRole("button", { name: "明确保存本轮计划" }),
   );
   await screen.findByRole("button", { name: "恢复原计划保存回执" });
+  // The pending button appears before the asynchronous provider fixture finishes.
+  // Wait for the actual lost ACK before unmounting or reusing its saved response.
+  await screen.findByText("NETWORK_ERROR");
   expect(storage().pending).not.toBeNull();
   const original = fetchMock.mock.calls[0][1] as RequestInit;
   first.unmount();
@@ -312,6 +315,52 @@ it("discovers and reads original history explicitly without replacing the curren
     ),
   ).toBe(true);
   expect(sessionStorage.length).toBe(0);
+});
+it("uses a validated historical plan only after explicit selection without launching a review", async () => {
+  const value = await historyValue(),
+    select = vi.fn();
+  fetchMock.mockImplementation(async (url) =>
+    url.includes("?limit=")
+      ? json(dependencyPlanPage(fixture, [value]))
+      : json(value),
+  );
+  const view = render(
+    <StrictMode>
+      <Workspace
+        {...fixture.props}
+        candidate={null}
+        onRecheck={recheck}
+        onSelectPlan={select}
+      />
+    </StrictMode>,
+  );
+  await userEvent.click(
+    screen.getByText("保存与查阅依赖计划", { selector: "summary" }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: "查看已保存计划" }));
+  await userEvent.click(
+    await screen.findByRole("button", { name: "查看这份原计划" }),
+  );
+  const choose = await screen.findByRole("button", {
+    name: "选择这份计划继续核查",
+  });
+  expect(select).not.toHaveBeenCalled();
+  await userEvent.click(choose);
+  expect(select).toHaveBeenCalledExactlyOnceWith(value);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(sessionStorage.length).toBe(0);
+  view.rerender(
+    <StrictMode>
+      <Workspace
+        {...fixture.props}
+        candidate={null}
+        onRecheck={recheck}
+        onSelectPlan={select}
+        selectedPlanId={value.manifest.id}
+      />
+    </StrictMode>,
+  );
+  expect(screen.getByRole("button", { name: "已选用这份计划" })).toBeDisabled();
 });
 it("rejects forged history directory qualification", async () => {
   const page = dependencyPlanPage(fixture, [await historyValue()]);

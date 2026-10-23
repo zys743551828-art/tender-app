@@ -13,6 +13,7 @@ from packages.knowledge.rag_search import (
 )
 from packages.rag.http_port import DenseHttp, LexicalHttp, RerankHttp, RuntimeUnavailable
 from packages.rag.indexing import ensure_profile
+from packages.rag.numeric import numeric_patterns
 
 
 def require_key(key):
@@ -28,6 +29,12 @@ def revalidated_response(c, response, bid, purpose):
 
 def retrieve(bid, actor, key, body):
     require_key(key)
+    try:
+        numeric_patterns(body["query"])
+    except ValueError:
+        raise DomainError(
+            "KNOWLEDGE_QUERY_TOO_LONG", "请将检索中的编号和数字缩减到32项以内", 422
+        ) from None
     # Read-only preflight: no incomplete Command row or row lock crosses model work.
     with connection() as c:
         old = c.execute(
@@ -64,7 +71,9 @@ def retrieve(bid, actor, key, body):
             query_lexemes = lexical.lexemes(body["query"])
             with connection() as c:
                 c.execute("SET TRANSACTION READ ONLY")
-                candidates = read_candidates(c, scope, vectors[0], query_lexemes)
+                candidates = read_candidates(
+                    c, scope, vectors[0], query_lexemes, query=body["query"]
+                )
             selected, route, reranker_identity = rerank_candidates(
                 body["query"], candidates, RerankHttp(dense)
             )

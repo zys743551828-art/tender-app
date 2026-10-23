@@ -16,7 +16,10 @@ from apps.api.bid_package_dependency_plan_routes import router as dependency_pla
 from apps.api.bid_package_dependency_routes import router as dependency_router
 from apps.api.bid_package_fact_change_routes import router as fact_change_router
 from apps.api.bid_package_fact_scope_routes import router as fact_scope_router
+from apps.api.bid_package_report_routes import router as package_report_router
+from apps.api.bid_package_review_decision_routes import router as review_decision_router
 from apps.api.bid_package_review_input_routes import router as input_router
+from apps.api.bid_package_review_run_routes import router as review_run_router
 from apps.api.identity_routes import saved
 from packages.contracts.bid_package_requirements_api import validate
 from packages.domain import bid_package_requirement_repository as repository
@@ -33,6 +36,9 @@ router.include_router(fact_scope_router)
 router.include_router(fact_change_router)
 router.include_router(dependency_router)
 router.include_router(dependency_plan_router)
+router.include_router(review_run_router)
+router.include_router(review_decision_router)
+router.include_router(package_report_router)
 
 
 @contextmanager

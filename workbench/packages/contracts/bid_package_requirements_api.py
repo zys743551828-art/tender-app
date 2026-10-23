@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.contracts.bid_package_api import IDENTIFIER, UUID, object_schema
 from packages.contracts.bid_package_api import SCHEMAS as PACKAGE_SCHEMAS
+from packages.contracts.package_rule_corrections_api import DERIVATION_HEAD, EXTRACTION_BASIS
 from packages.domain.runtime import DomainError
 
 SHA = {"type": "string", "pattern": "^[a-f0-9]{64}$"}
@@ -129,7 +130,16 @@ INVENTORY_V2["required"].extend(
         "extraction_quality_status",
     ]
 )
-INVENTORY = {"oneOf": [INVENTORY_V1, INVENTORY_V2]}
+INVENTORY_V3 = deepcopy(INVENTORY_V1)
+INVENTORY_V3["properties"]["version"] = {"const": "bid-package-requirements/3"}
+INVENTORY_V3["properties"]["extraction_binding"] = {
+    "const": "frozen_extraction_plus_human_derivation"
+}
+INVENTORY_V3["properties"].update(
+    {"extraction_basis": deepcopy(EXTRACTION_BASIS), "human_derivation": deepcopy(DERIVATION_HEAD)}
+)
+INVENTORY_V3["required"].extend(["extraction_basis", "human_derivation"])
+INVENTORY = {"oneOf": [INVENTORY_V1, INVENTORY_V2, INVENTORY_V3]}
 ASSESSMENT = object_schema(
     {
         "package_digest": SHA,
@@ -247,6 +257,7 @@ SCHEMAS["PackageReviewInputPreview"] = object_schema(
                     "PACKAGE_REVIEW_PACKAGE_STALE",
                     "PACKAGE_REVIEW_INVENTORY_STALE",
                     "PACKAGE_REVIEW_RULE_SET_STALE",
+                    "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN",
                     "PACKAGE_REVIEW_SOURCE_UNPROVEN",
                     "PACKAGE_REVIEW_SOURCE_CHANGED",
                     "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE",
@@ -578,7 +589,7 @@ SCHEMAS["CheckPackageInputDependencies"] = object_schema(
         "fact_ids": IDS,
         "dependencies": {
             "type": "array",
-            "maxItems": 500,
+            "maxItems": 10000,
             "items": {"$ref": "#/components/schemas/PackageInputDependencies_Dependency"},
         },
     }
@@ -1088,3 +1099,11 @@ def extend_openapi(actual):
             },
             "default": {"$ref": "#/components/responses/DomainError"},
         }
+        if operation_id in {"checkPackageInputDependencies", "savePackageDependencyPlan"}:
+            operation["requestBody"]["description"] = (
+                "One complete annotation snapshot, up to 10,000 dependencies. "
+                "New checks/saves require compact UTF-8 JSON <= 4 MiB; the exact HTTP "
+                "body is limited to 5 MiB. An existing exact command ACK is replayed "
+                "before the new-save budget. Oversize returns 413 without a new write."
+            )
+            operation["responses"]["413"] = {"$ref": "#/components/responses/DomainError"}

@@ -78,7 +78,7 @@ def metrics(
         current = results.get(c, head["result_id"], as_of=at) if head["result_id"] else None
         ledger_rows.append({"result": current})
         frozen.append(snapshots.for_submission(c, row, at))
-        qualification.append(snapshots.current_risks(c, row["bid_id"]))
+        qualification.append(snapshots.for_current_submission(c, row))
         digest_heads.append(
             {
                 "bid_id": str(row["bid_id"]),

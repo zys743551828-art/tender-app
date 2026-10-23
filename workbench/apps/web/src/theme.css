@@ -1,0 +1,141 @@
+/* Shared semantic palette, based on the approved existing product colors. */
+:root {
+  --background: #fafafa;
+  --foreground: #0a0a0b;
+  --card: #ffffff;
+  --surface-muted: #f4f4f5;
+  --subtle: #f7f7f8;
+  --muted-foreground: #63636b;
+  --border: #e6e6e9;
+  --border-strong: #d4d4d8;
+  --input: #dcdce0;
+  --ring: #0d5c55;
+  --sidebar: #f7f7f8;
+  --primary: #0d5c55;
+  --primary-hover: #0a4a44;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e8f2f0;
+  --primary-soft-foreground: #0a4a44;
+  --danger: #d92d20;
+  --danger-soft: #fef3f2;
+  --danger-foreground: #b42318;
+  --danger-border: #fecdca;
+  --warning: #dc6803;
+  --warning-soft: #fffaeb;
+  --warning-foreground: #93370d;
+  --warning-border: #fedf89;
+  --success: #079455;
+  --success-soft: #ecfdf3;
+  --success-foreground: #067647;
+  --success-border: #abefc6;
+  --ai: #4e5ba6;
+  --ai-soft: #f3f4fb;
+  --ai-foreground: #3e4784;
+  --ai-border: #d5d9eb;
+  --highlight: rgb(250 204 21 / 35%);
+  --highlight-border: #eab308;
+  --overlay: rgb(10 10 11 / 40%);
+  --shadow-color: 0 0 0;
+
+  /* Preserve the meanings used by existing modules, not separate palettes. */
+  --green: var(--primary);
+  --green-dark: var(--primary-soft-foreground);
+  --muted: var(--muted-foreground);
+  --line: var(--border);
+  --soft: var(--primary-soft);
+  --ink: var(--foreground);
+  --text: var(--foreground);
+  --surface: var(--card);
+  --surface-alt: var(--subtle);
+  --surface-secondary: var(--surface-muted);
+  --surface-soft: var(--subtle);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #0b0b0c;
+  --foreground: #ededef;
+  --card: #131315;
+  --surface-muted: #1c1c1f;
+  --subtle: #161618;
+  --muted-foreground: #a0a0a8;
+  --border: #26262a;
+  --border-strong: #34343a;
+  --input: #34343a;
+  --ring: #4fb3a6;
+  --sidebar: #0f0f11;
+  --primary: #2f9e90;
+  --primary-hover: #3cb3a4;
+  --primary-foreground: #04120f;
+  --primary-soft: #0f2a27;
+  --primary-soft-foreground: #7fd3c7;
+  --danger: #f97066;
+  --danger-soft: #2a1412;
+  --danger-foreground: #fda29b;
+  --danger-border: #55201b;
+  --warning: #fdb022;
+  --warning-soft: #2a1f0b;
+  --warning-foreground: #fec84b;
+  --warning-border: #4e3a12;
+  --success: #47cd89;
+  --success-soft: #0d2419;
+  --success-foreground: #75e0a7;
+  --success-border: #164330;
+  --ai: #9aa4e0;
+  --ai-soft: #181b2e;
+  --ai-foreground: #b3bbec;
+  --ai-border: #2c3256;
+  --highlight: rgb(250 204 21 / 28%);
+  --highlight-border: #ca8a04;
+  --overlay: rgb(0 0 0 / 60%);
+  color-scheme: dark;
+}
+
+.theme-picker {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+}
+.theme-picker select {
+  width: 112px;
+  min-height: 36px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.login-panel {
+  position: relative;
+}
+.login-theme {
+  position: absolute;
+  right: 28px;
+  top: 20px;
+}
+@media (max-width: 760px) {
+  .topbar-actions .environment-label,
+  .theme-picker > span {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 4px;
+  }
+  .topbar-actions .theme-picker select {
+    width: 104px;
+  }
+  .login-theme {
+    right: 20px;
+    top: 18px;
+  }
+  .login-page .login-panel {
+    padding-top: 88px;
+  }
+}

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 from psycopg.types.json import Jsonb
 
 from packages.domain.runtime import DomainError, audit, clean, etag, fetch, match, now, uid
+from packages.research import package_outcomes
 from packages.research.core import connected_groups, validate_score
 from packages.research.identities import require_submission_identity, submission_identity
 
@@ -31,6 +33,11 @@ def outcome_view(c, outcome):
             "known_at",
         )
     }
+    # PostgreSQL numeric is exact, but str(Decimal('0.0000000')) is '0E-7'.
+    # Scores use plain decimal strings in the public contract and command ACK.
+    for key in ("value", "maximum"):
+        if isinstance(value[key], Decimal):
+            value[key] = format(value[key], "f")
     value.update(
         verification=state["decision"] if state else "pending",
         verification_revision=state["revision"] if state else 0,
@@ -52,9 +59,11 @@ def list_outcomes(c, bid):
 def context(c, bid, submission_id):
     submission = fetch(
         c,
-        "SELECT s.*,d.original_name FROM submission_records s JOIN document_versions d ON d.id=s.body_version_id WHERE s.bid_id=%s AND s.id=%s",
+        "SELECT s.*,d.original_name FROM submission_records s LEFT JOIN document_versions d ON d.id=s.body_version_id AND d.bid_id=s.bid_id WHERE s.bid_id=%s AND s.id=%s",
         (bid, submission_id),
     )
+    if submission.get("subject_kind") == "bid_package":
+        return package_outcomes.context(c, bid, submission_id)
     identity_proof = submission_identity(c, submission)
     saved_identity = identity_proof["snapshot"]
     sources = c.execute(
@@ -112,6 +121,8 @@ def register(c, *, actor, bid, body, command, previous=None, condition=None):
         "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
         (bid, body["submission_id"]),
     )
+    if submission.get("subject_kind") == "bid_package":
+        package_outcomes.require_registration(c, submission)
     validate_score(body["score_kind"], body["value"], body["maximum"])
     known = datetime.fromisoformat(body["known_at"].replace("Z", "+00:00"))
     if known > now() or known < submission["submitted_at"]:
@@ -191,12 +202,18 @@ def verify(c, *, actor, outcome_id, body, condition, command):
     ).fetchone()
     revision = head["revision"] if head else 0
     match(condition, "outcome-verification", outcome_id, revision)
-    if body["state"] == "verified":
-        submission = fetch(
-            c,
-            "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
-            (bid, row["submission_id"]),
-        )
+    submission = fetch(
+        c,
+        "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
+        (bid, row["submission_id"]),
+    )
+    details, evidence_ids = body, body.get("evidence_ids", [])
+    if submission.get("subject_kind") == "bid_package":
+        verified = package_outcomes.verification(c, submission, row, body)
+        details, evidence_ids = verified["details"], verified["evidence_ids"]
+    elif "subject_kind" in body:
+        raise DomainError("OUTCOME_SUBJECT_MISMATCH", "单正文成绩不能使用整包核验协议", 422)
+    elif body["state"] == "verified":
         identity = require_submission_identity(c, submission)["snapshot"]
         expected = {
             "project_id": identity["engineering_project_id"],
@@ -243,8 +260,8 @@ def verify(c, *, actor, outcome_id, body, condition, command):
             outcome_id,
             current["revision"],
             body["state"],
-            json.dumps(body, ensure_ascii=False),
-            body["evidence_ids"],
+            json.dumps(details, ensure_ascii=False),
+            evidence_ids,
             actor,
         ),
     )
@@ -421,6 +438,7 @@ def synchronize_groups(c, *, force_ids=()):
 
 def admissibility(c, bid, submission):
     sub = fetch(c, "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s", (bid, submission))
+    package_outcomes.reject_formal_sample(sub)
     head = fetch(
         c, "SELECT * FROM outcome_heads WHERE bid_id=%s AND submission_id=%s", (bid, submission)
     )

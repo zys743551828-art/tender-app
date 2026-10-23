@@ -35,10 +35,30 @@ const operation: Operation = {
   kind: "build",
   state: "succeeded",
   input_digest: "a".repeat(64),
-  handler_version: "test",
+  handler_version: "export/1",
   result_ref: null,
 };
 const result: BuildView = {
+  identity: {
+    protocol: "authoring-build-identity/1",
+    bid_id: "bid",
+    draft_id: "draft",
+    draft_revision: 8,
+    snapshot_id: "snapshot-8",
+    snapshot_digest: "b".repeat(64),
+    build_input_id: "input",
+    input_digest: operation.input_digest,
+    manifest_digest: "c".repeat(64),
+    writer_kind: "generated_text/2",
+    request: {
+      draft_id: "draft",
+      draft_revision: 8,
+      directory_template_version_id: "outline-v2",
+      style_template_version_id: "layout-v3",
+      formats: ["docx", "pdf"],
+      follow_up: "none",
+    },
+  },
   follow_up: {
     requested: false,
     state: "not_requested",
@@ -77,6 +97,46 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+it("does not replace an explicitly selected exact adoption revision with a newer draft during build preparation", async () => {
+  const writes: RequestInit[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") writes.push(options);
+      if (url.endsWith("/structure"))
+        return response({
+          draft_id: "draft",
+          draft_revision: 7,
+          snapshot_id: "snapshot-7",
+          structure_version_id: null,
+        });
+      return response({ items: [], next_cursor: null, has_more: false });
+    }),
+  );
+  render(
+    <AuthoringBuilds
+      bidId="bid"
+      memberId="member"
+      draftId="draft"
+      capabilities={capabilities}
+      disabled={false}
+      prepare={async () => head}
+      setBusy={vi.fn()}
+      fixedRevision={{
+        draft_id: "draft",
+        draft_revision: 7,
+        snapshot_id: "snapshot-7",
+        snapshot_digest: "d".repeat(64),
+      }}
+    />,
+  );
+  await userEvent.click(
+    await screen.findByRole("button", { name: "保存确认后生成文件" }),
+  );
+  await screen.findByText(/固定整包正文修订已变化/);
+  expect(writes).toEqual([]);
+});
+
 it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改写为整体就绪", async () => {
   let ack: ((value: ApiResult<DraftView>) => void) | undefined;
   const prepare = vi.fn(
@@ -96,7 +156,10 @@ it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改
           directory_template_version_id: "outline-v2",
           style_template_version_id: "layout-v3",
         });
-      if (url === "/api/v1/bids/bid/builds" && options?.method !== "POST")
+      if (
+        url.startsWith("/api/v1/bids/bid/builds") &&
+        options?.method !== "POST"
+      )
         return response({ items: [], next_cursor: null, has_more: false });
       if (url === "/api/v1/bids/bid/builds") {
         writes.push(options!);
@@ -155,7 +218,10 @@ it("失响应恢复重试原修订和幂等键，刷新后也不悄悄改用新�
           directory_template_version_id: "outline-v2",
           style_template_version_id: "layout-v3",
         });
-      if (url === "/api/v1/bids/bid/builds" && options?.method !== "POST")
+      if (
+        url.startsWith("/api/v1/bids/bid/builds") &&
+        options?.method !== "POST"
+      )
         return response({ items: [], next_cursor: null, has_more: false });
       if (url === "/api/v1/bids/bid/builds") {
         writes.push(options!);
@@ -232,3 +298,134 @@ it("保存没有确认时不发送构建请求", async () => {
     ),
   ).toBe(true);
 });
+
+it("历史生成目录不并发轮询全部任务，只读取明确展开的精确版本", async () => {
+  const items = Array.from({ length: 20 }, (_, index) => ({
+    ...structuredClone(result),
+    id: `build-${index}`,
+    operation_id: `operation-${index}`,
+  }));
+  const reads: string[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      reads.push(url);
+      if (url.startsWith("/api/v1/bids/bid/builds"))
+        return response({ items, next_cursor: null, has_more: false });
+      const selected = items.find(
+        (item) => url === `/api/v1/builds/${item.id}`,
+      );
+      if (selected) return response(selected);
+      const selectedOperation = items.find(
+        (item) => url === `/api/v1/operations/${item.operation_id}`,
+      );
+      if (selectedOperation)
+        return response({ ...operation, id: selectedOperation.operation_id });
+      throw new Error(`Unexpected ${url}`);
+    }),
+  );
+  render(
+    <AuthoringBuilds
+      bidId="bid"
+      memberId="member"
+      draftId="draft"
+      capabilities={capabilities}
+      disabled={false}
+      prepare={async () => null}
+      setBusy={vi.fn()}
+    />,
+  );
+  await screen.findByText("本草稿生成版本");
+  expect(reads.filter((url) => url.startsWith("/api/v1/builds/"))).toEqual([]);
+  await userEvent.click(
+    screen.getByRole("button", { name: "查看生成记录 · 修订 8 · build-5" }),
+  );
+  await screen.findByText("转换器未就绪，Word仍可取件");
+  expect(reads.filter((url) => url.startsWith("/api/v1/builds/"))).toEqual([
+    "/api/v1/builds/build-5",
+  ]);
+  expect(reads.filter((url) => url.startsWith("/api/v1/operations/"))).toEqual([
+    "/api/v1/operations/operation-5",
+  ]);
+  await userEvent.click(
+    screen.getByRole("button", { name: "收起生成记录 · 修订 8 · build-5" }),
+  );
+  expect(
+    screen.queryByText("转换器未就绪，Word仍可取件"),
+  ).not.toBeInTheDocument();
+});
+
+it.each(["IDEMPOTENCY_CONFLICT", "accepted_detail_unavailable"])(
+  "%s 保留原构建命令；重试不准备新稿或更换 key",
+  async (failure) => {
+    const writes: RequestInit[] = [];
+    const prepare = vi.fn().mockResolvedValue(head);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, options?: RequestInit) => {
+        if (url === "/api/v1/bids/bid/drafts/draft/structure")
+          return response({
+            draft_id: "draft",
+            draft_revision: 8,
+            directory_template_version_id: "outline-v2",
+            style_template_version_id: "layout-v3",
+          });
+        if (
+          url.startsWith("/api/v1/bids/bid/builds") &&
+          options?.method !== "POST"
+        )
+          return response({ items: [], next_cursor: null, has_more: false });
+        if (url === "/api/v1/bids/bid/builds") {
+          writes.push(options!);
+          if (failure === "IDEMPOTENCY_CONFLICT")
+            return new Response(
+              JSON.stringify({ code: failure, message: "原 key 需要核对" }),
+              { status: 409 },
+            );
+          return response({
+            resource_kind: "build",
+            resource_id: "build",
+            operation,
+          });
+        }
+        if (url === "/api/v1/builds/build")
+          return new Response(
+            JSON.stringify({
+              code: "BUILD_INPUT_CORRUPT",
+              message: "构建详情待核对",
+            }),
+            { status: 409 },
+          );
+        throw new Error(`Unexpected ${url}`);
+      }),
+    );
+    render(
+      <AuthoringBuilds
+        bidId="bid"
+        memberId="member"
+        draftId="draft"
+        capabilities={capabilities}
+        disabled={false}
+        prepare={prepare}
+        setBusy={vi.fn()}
+      />,
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "保存确认后生成文件" }),
+    );
+    const retry = await screen.findByRole("button", {
+      name: "重试受理草稿修订 8",
+    });
+    await userEvent.click(retry);
+    await waitFor(() => expect(writes).toHaveLength(2));
+    expect(prepare).toHaveBeenCalledTimes(1);
+    expect(writes[1].body).toBe(writes[0].body);
+    expect(new Headers(writes[1].headers).get("Idempotency-Key")).toBe(
+      new Headers(writes[0].headers).get("Idempotency-Key"),
+    );
+    const stored = JSON.parse(
+      sessionStorage.getItem("tender:authoring:member:bid:draft:builds")!,
+    );
+    expect(stored.pending.body.draft_revision).toBe(8);
+  },
+);

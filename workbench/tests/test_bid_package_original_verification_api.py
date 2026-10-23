@@ -49,13 +49,15 @@ class TestOriginalVerification:
 
         class Client:
             def get_object(self, *, Bucket, Key):
-                # Real PG verifies there is no service transaction during provider IO.
-                assert not state.get("assert_zero_connections", True) or (
-                    owner.execute(
-                        "SELECT count(*) AS n FROM pg_stat_activity WHERE datname=current_database() AND usename='fusion_package_requirements_service'"
-                    ).fetchone()["n"]
-                    == 0
-                )
+                # A closed client can briefly remain visible as an idle backend.
+                # Test the resource boundary itself: no active transaction or held
+                # lock may survive into external IO, even if pg_stat_activity lags.
+                sessions = owner.execute(
+                    "SELECT a.pid,a.state,a.xact_start,(SELECT count(*) FROM pg_locks l WHERE l.pid=a.pid AND l.granted) AS held_locks FROM pg_stat_activity a WHERE datname=current_database() AND usename='fusion_package_requirements_service'"
+                ).fetchall()
+                assert not state.get("assert_zero_connections", True) or all(
+                    row["xact_start"] is None and row["held_locks"] == 0 for row in sessions
+                ), sessions
                 assert Key in keys
                 calls.append(Key)
                 if state["during_read"]:
@@ -75,6 +77,16 @@ class TestOriginalVerification:
             json=body if body is not None else request,
             headers={k: v for k, v in headers(w).items() if k.lower() != "idempotency-key"},
         )
+
+    def test_external_io_guard_rejects_a_real_open_service_transaction(self, original_case):
+        from packages.domain import storage
+        from packages.domain.runtime import connection
+
+        _, _, _, _, _, _ = original_case
+        with connection() as c:
+            c.execute("SELECT 1")
+            with pytest.raises(AssertionError, match="xact_start"):
+                storage.client().get_object(Bucket=storage.bucket(), Key="not-read")
 
     def test_success_is_unpersisted_observation_with_no_locator_or_new_job(self, original_case):
         import json

@@ -57,8 +57,8 @@ services:
       - ../packages:/workspace/packages:ro
       - ../apps/api:/workspace/apps/api:ro
       - ../deploy:/workspace/deploy:ro
-      - init_state_v8:/workspace/.local
-      - api_profile_v8:/runtime
+      - init_state_v14:/workspace/.local
+      - api_profile_v14:/runtime
 
   api:
     <<: *python
@@ -70,7 +70,7 @@ services:
       - ../apps/api:/workspace/apps/api:ro
       - ../apps/worker:/workspace/apps/worker:ro
       - ../deploy:/workspace/deploy:ro
-      - api_profile_v8:/runtime:ro
+      - api_profile_v14:/runtime:ro
     healthcheck:
       test: [CMD, python, -c, "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=3)"]
       interval: 5s
@@ -156,6 +156,18 @@ volumes:
   api_profile_v7:
   init_state_v8:
   api_profile_v8:
+  init_state_v9:
+  api_profile_v9:
+  init_state_v10:
+  api_profile_v10:
+  init_state_v11:
+  api_profile_v11:
+  init_state_v12:
+  api_profile_v12:
+  init_state_v13:
+  api_profile_v13:
+  init_state_v14:
+  api_profile_v14:
   checks_postgres_data:
   checks_evidence:
 

@@ -7,6 +7,7 @@ from packages.domain import package_dependency_plan as plans
 from packages.domain import package_fact_usage as facts
 from packages.domain import package_input_dependencies as dependencies
 from packages.domain.bid_package_service import lock_bid
+from packages.domain.package_dependency_limits import require_dependency_body
 from packages.domain.review_identity import utc
 from packages.domain.runtime import Command, DomainError, audit, connection, sha, uid
 from packages.lifecycle.service import assert_work_writable
@@ -44,6 +45,9 @@ def save(actor, scope, frozen_id, input_id, key, body):
             if old["request_digest"] != sha({"body": body, "if_match": None}):
                 raise DomainError("IDEMPOTENCY_CONFLICT", "同一幂等键对应不同输入", 409)
             return _replay(c, scope, frozen_id, input_id, old["response"])
+    # An already accepted immutable command keeps its original ACK even when
+    # its body exceeds today's new-write budget. No new write has begun here.
+    require_dependency_body(body)
     with connection() as c:
         lock_bid(c, scope[0])
         cmd = Command(c, actor, repository.KIND, input_id, key, body)

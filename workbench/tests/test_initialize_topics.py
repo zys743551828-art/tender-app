@@ -72,6 +72,12 @@ def test_default_policy_covers_actual_worker_research_and_independent_global_rou
     }
     assert actual <= topics and len(topics) == 9
     assert GLOBAL_TOPIC not in {engine.task_topic(handler) for handler in engine.ORDINARY_HANDLERS}
+    assert policy["ordinary_handler_bindings"] == {
+        handler: engine.task_topic(handler) for handler in engine.ORDINARY_HANDLERS
+    }
+    assert {name: set(lane["handlers"]) for name, lane in policy["consumer_lanes"].items()} == {
+        name: set(handlers) for name, handlers in engine.LANE_HANDLERS.items()
+    }
     old = set(
         topic_specifications(load(ROOT / "packages/contracts/policies/execution-policy.json"))
     )

@@ -25,6 +25,12 @@ import { PackageReviewInputPreview } from "./PackageReviewInputPreview";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import {
+  emptyPackageNavigationState,
+  validatePackageNavigationInventory,
+  type PackageNavigationState,
+} from "./packageNavigation";
+import { usePackageScopeState } from "./packageScopeGuard";
+import {
   RequirementCheckPlan,
   type CheckPlanValue,
 } from "./RequirementCheckPlan";
@@ -33,12 +39,25 @@ const PackageCoverageWorkspace = lazy(async () => {
   const module = await import("./PackageCoverageWorkspace");
   return { default: module.PackageCoverageWorkspace };
 });
+const PackageRuleCorrections = lazy(async () => {
+  const module = await import("./PackageRuleCorrections");
+  return { default: module.PackageRuleCorrections };
+});
+const PackageTechnicalScope = lazy(async () => {
+  const module = await import("./PackageTechnicalScope");
+  return { default: module.PackageTechnicalScope };
+});
 
 type Props = {
   bidId: string;
   memberId: string;
   packageView: BidPackageStoredView;
   disabled?: boolean;
+  navigation?: {
+    inventoryId: string | null;
+    onInventory: (inventoryId: string, replace?: boolean) => void;
+    onState: (state: PackageNavigationState) => void;
+  };
 };
 type Scope = {
   bidId: string;
@@ -273,7 +292,18 @@ const names: Record<string, string> = {
 };
 
 export function PackageRequirements(props: Props) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(!!props.navigation);
+  const [childState, setChildState] = useState<PackageNavigationState>(
+    emptyPackageNavigationState,
+  );
+  const reportState = props.navigation?.onState;
+  const onState = useCallback(
+    (state: PackageNavigationState) => {
+      setChildState(state);
+      reportState?.(state);
+    },
+    [reportState],
+  );
   const m = props.packageView.manifest;
   if (
     m.kind !== "bid" ||
@@ -289,6 +319,10 @@ export function PackageRequirements(props: Props) {
         type="button"
         className="button secondary requirements-toggle"
         aria-expanded={expanded}
+        disabled={
+          !!props.navigation &&
+          (childState.busy || childState.dirty || childState.pending)
+        }
         onClick={() => setExpanded((value) => !value)}
       >
         要求清单与覆盖
@@ -297,13 +331,25 @@ export function PackageRequirements(props: Props) {
         <Workspace
           key={`${props.bidId}:${props.memberId}:${m.package_id}:${m.revision_id}:${props.packageView.digest}`}
           {...props}
+          navigation={
+            props.navigation ? { ...props.navigation, onState } : undefined
+          }
         />
       )}
     </>
   );
 }
 
-function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
+function Workspace({
+  bidId,
+  memberId,
+  packageView,
+  disabled = false,
+  navigation,
+}: Props) {
+  const deepState = usePackageScopeState();
+  const deepLocked =
+    !!navigation && (deepState.busy || deepState.pending || deepState.dirty);
   const m = packageView.manifest;
   const scope: Scope = {
     bidId,
@@ -346,7 +392,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
   const [authorityRevision, setAuthorityRevision] = useState(
     recovery.pending?.context?.authority.manifest.revision_id ?? "",
   );
-  const [inventoryId, setInventoryId] = useState("");
+  const [inventoryId, setInventoryId] = useState(navigation?.inventoryId ?? "");
   const [attemptId, setAttemptId] = useState("");
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<unknown>(null);
@@ -354,6 +400,84 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
   const [coverageWriteLocked, setCoverageWriteLocked] = useState(false);
   const onCoveragePending = useCallback(
     (value: boolean) => setCoverageWriteLocked(value),
+    [],
+  );
+  const [ruleCorrectionWriteLocked, setRuleCorrectionWriteLocked] =
+    useState(false);
+  const [coverageDirty, setCoverageDirty] = useState(false);
+  const [ruleCorrectionDirty, setRuleCorrectionDirty] = useState(false);
+  const onCoverageDirty = useCallback(
+    (value: boolean) => setCoverageDirty(value),
+    [],
+  );
+  const onRuleCorrectionDirty = useCallback(
+    (value: boolean) => setRuleCorrectionDirty(value),
+    [],
+  );
+  const [checkedInventory, setCheckedInventory] =
+    useState<PackageRequirementInventoryView | null>(null);
+  const [inventoryIdentityError, setInventoryIdentityError] =
+    useState<unknown>(null);
+  const [checkingInventory, setCheckingInventory] = useState(false);
+  const navigationEnabled = !!navigation;
+  const localScopeLocked =
+    busy ||
+    !!pending ||
+    recovery.blocked ||
+    !!draft ||
+    coverageDirty ||
+    ruleCorrectionDirty ||
+    coverageWriteLocked ||
+    ruleCorrectionWriteLocked ||
+    deepLocked;
+  const requestedInventory = navigation?.inventoryId ?? "";
+  const routeChanging = !!navigation && requestedInventory !== inventoryId;
+  const reportState = navigation?.onState;
+  const hasDraft = !!draft;
+  const hasPending = !!pending;
+  useEffect(() => {
+    reportState?.({
+      busy: busy || deepState.busy,
+      dirty:
+        hasDraft || coverageDirty || ruleCorrectionDirty || deepState.dirty,
+      pending:
+        hasPending ||
+        recovery.blocked ||
+        coverageWriteLocked ||
+        ruleCorrectionWriteLocked ||
+        deepState.pending,
+    });
+    return () => reportState?.(emptyPackageNavigationState);
+  }, [
+    reportState,
+    busy,
+    hasDraft,
+    coverageDirty,
+    ruleCorrectionDirty,
+    hasPending,
+    recovery.blocked,
+    coverageWriteLocked,
+    ruleCorrectionWriteLocked,
+    deepState.busy,
+    deepState.dirty,
+    deepState.pending,
+  ]);
+  useEffect(() => {
+    if (
+      navigationEnabled &&
+      requestedInventory !== inventoryId &&
+      !localScopeLocked
+    ) {
+      setInventoryId(requestedInventory);
+      setAttemptId("");
+    }
+  }, [navigationEnabled, requestedInventory, inventoryId, localScopeLocked]);
+  function selectInventory(id: string, replace = false) {
+    setInventoryId(id);
+    navigation?.onInventory(id, replace);
+  }
+  const onRuleCorrectionPending = useCallback(
+    (value: boolean) => setRuleCorrectionWriteLocked(value),
     [],
   );
   const active = useRef(true);
@@ -383,6 +507,34 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
   const inventory = useResource<PackageRequirementInventoryView>(
     inventoryId ? `${base}/${inventoryId}` : null,
   );
+  useEffect(() => {
+    let current = true;
+    setInventoryIdentityError(null);
+    setCheckingInventory(
+      !!(navigationEnabled && inventory.data && inventoryId),
+    );
+    if (navigationEnabled && inventory.data && inventoryId)
+      void validatePackageNavigationInventory(
+        inventory.data,
+        packageView,
+        inventoryId,
+      )
+        .then((value) => {
+          if (current)
+            setCheckedInventory((old) =>
+              old?.digest === value.digest ? old : value,
+            );
+        })
+        .catch((failure) => {
+          if (current) setInventoryIdentityError(failure);
+        })
+        .finally(() => {
+          if (current) setCheckingInventory(false);
+        });
+    return () => {
+      current = false;
+    };
+  }, [navigationEnabled, inventory.data, inventoryId, packageView]);
   const attempts = useDirectory<PackageRequirementHistoryPage>(
     inventoryId ? `${base}/${inventoryId}/coverage-attempts?limit=20` : null,
   );
@@ -411,14 +563,20 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     rules.data.rules.every(
       (r) => r.rule_set_id === rules.data?.id && r.scope.bid_id === bidId,
     );
-  const frozen = inventory.data?.manifest;
+  const displayedInventory = navigation
+    ? checkedInventory?.manifest.id === inventoryId
+      ? checkedInventory
+      : undefined
+    : inventory.data;
+  const frozen = displayedInventory?.manifest;
   const inventoryValid =
     !!frozen &&
     frozen.bid_id === bidId &&
     frozen.package_id === m.package_id &&
     frozen.target_revision_id === m.revision_id &&
     frozen.package_digest === packageView.digest &&
-    frozen.id === inventoryId;
+    frozen.id === inventoryId &&
+    (!navigation || !routeChanging);
   const checked = attempt.data?.manifest;
   const attemptValid =
     inventoryValid &&
@@ -426,10 +584,25 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
     checked.bid_id === bidId &&
     checked.inventory_id === inventoryId &&
     checked.id === attemptId &&
-    checked.inventory_digest === inventory.data?.digest &&
+    checked.inventory_digest === displayedInventory?.digest &&
     checked.package_digest === packageView.digest;
   const locked =
-    disabled || busy || !!pending || recovery.blocked || coverageWriteLocked;
+    disabled ||
+    busy ||
+    !!pending ||
+    recovery.blocked ||
+    coverageWriteLocked ||
+    ruleCorrectionWriteLocked ||
+    coverageDirty ||
+    ruleCorrectionDirty ||
+    deepLocked;
+  const selectedReadUnverified =
+    navigationEnabled &&
+    (checkingInventory ||
+      !!inventoryIdentityError ||
+      inventory.loading ||
+      !!inventory.error ||
+      routeChanging);
   const canCreate =
     supportsApi("POST", base) &&
     !locked &&
@@ -611,7 +784,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
       setNeedsRebase(false);
       setRebase(null);
       setEmptyBaseline(null);
-      setInventoryId(saved.id);
+      selectInventory(saved.id, true);
       setAttemptId("");
       setNotice(
         `已保存要求清单修订 ${saved.revision}，${operation.body.mappings.length ? "已冻结人工检查计划；清单完整性仍未知" : "所有条款保持未映射"}；未形成完整覆盖结论。`,
@@ -675,8 +848,14 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
         份文件。本工作面固定到当前明确修订，切换包或修订分别读取。
       </p>
       <p role="note">
-        历史规则集未冻结完整抽取解析身份。清单完整性未知，尚不可正式审查。人工范围声明不等于系统独立验收或合规结论。
+        历史规则集与新清单的抽取身份应按原版本核对。清单完整性未知，仍须单独验收。人工范围声明不等于系统独立验收或合规结论。
       </p>
+      {routeChanging && localScopeLocked && (
+        <p role="alert">
+          当前清单仍有未保存或待核操作，未切换到链接中的另一清单。原输入与原请求仍保留。
+        </p>
+      )}
+      <ErrorNotice error={inventoryIdentityError} />
       <details>
         <summary>本方冻结身份</summary>
         <p>
@@ -1000,16 +1179,27 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
       <button type="button" onClick={() => void inventories.reload()}>
         刷新清单历史
       </button>
-      {inventories.data && !inventories.items.length && (
-        <p>此包修订尚无冻结要求清单；不能据此认定无要求。</p>
-      )}
+      {inventories.data &&
+        !inventories.loading &&
+        !inventories.error &&
+        !inventories.moreError &&
+        !inventories.hasMore &&
+        !inventories.items.length && (
+          <p>此包修订尚无冻结要求清单；不能据此认定无要求。</p>
+        )}
       {inventories.items.map((item, i) => (
         <button
           type="button"
           key={item.id}
           aria-pressed={inventoryId === item.id}
+          disabled={
+            navigation
+              ? localScopeLocked || !!inventories.error || inventories.loading
+              : ruleCorrectionWriteLocked
+          }
           onClick={() => {
-            setInventoryId(item.id);
+            if (navigation && localScopeLocked) return;
+            selectInventory(item.id);
             setAttemptId("");
           }}
         >
@@ -1041,7 +1231,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           onRetry={() => void inventory.reload()}
         />
       )}
-      {inventory.data && !inventoryValid && (
+      {inventory.data && !inventoryValid && !checkingInventory && (
         <p role="alert">清单冻结范围不一致，未展示其他包的条款。</p>
       )}
       {inventoryValid && frozen && (
@@ -1052,7 +1242,7 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           <details>
             <summary>清单冻结依据及摘要</summary>
             <p>
-              清单 {frozen.id} · SHA256 {inventory.data!.digest}
+              清单 {frozen.id} · SHA256 {displayedInventory!.digest}
             </p>
             <p>
               依据修订 {frozen.authority_revision_id} · SHA256{" "}
@@ -1330,34 +1520,123 @@ function Workspace({ bidId, memberId, packageView, disabled = false }: Props) {
           )}
         </>
       )}
+      <Suspense fallback={<p role="status">正在加载有据规则修订…</p>}>
+        <PackageRuleCorrections
+          bidId={bidId}
+          memberId={memberId}
+          packageView={packageView}
+          inventory={inventoryValid ? displayedInventory! : null}
+          inventoryEtag={inventoryValid ? inventory.etag : null}
+          currentInventoryId={inventories.data?.current_inventory_id ?? null}
+          currentKnown={
+            !!inventories.data && !inventories.loading && !inventories.error
+          }
+          disabled={
+            disabled ||
+            busy ||
+            !!pending ||
+            recovery.blocked ||
+            coverageWriteLocked ||
+            coverageDirty ||
+            !!draft ||
+            deepLocked ||
+            selectedReadUnverified
+          }
+          onPendingChange={onRuleCorrectionPending}
+          onDirtyChange={onRuleCorrectionDirty}
+          onRefresh={() => {
+            void inventories.reload();
+            void inventory.reload();
+          }}
+          onApplied={(newInventoryId) => {
+            if (deepLocked || coverageWriteLocked || coverageDirty) {
+              setNotice(
+                `新清单 ${newInventoryId} 已保存；原清单仍有其他未决操作或未保存输入，保留当前位置。请先处理原输入，再从历史明确选择新清单。`,
+              );
+            } else selectInventory(newInventoryId, true);
+            setAttemptId("");
+            setDraft(null);
+            setPlan({ mappings: [], valid: false, dirty: false });
+            setPlanStale(false);
+            setNeedsRebase(false);
+            setRebase(null);
+            setEmptyBaseline(null);
+            void inventories.reload();
+            void rules.reload();
+          }}
+        />
+      </Suspense>
       <Suspense fallback={<p role="status">正在加载人工范围填写…</p>}>
         <PackageCoverageWorkspace
           bidId={bidId}
           memberId={memberId}
           packageView={packageView}
           authorityView={authorityValid ? a! : null}
-          inventory={inventoryValid ? inventory.data! : null}
+          inventory={inventoryValid ? displayedInventory! : null}
           currentInventoryId={inventories.data?.current_inventory_id ?? null}
           currentKnown={
             !!inventories.data && !inventories.loading && !inventories.error
           }
           onPendingChange={onCoveragePending}
-          disabled={disabled || !!pending || recovery.blocked || busy}
+          onDirtyChange={onCoverageDirty}
+          disabled={
+            disabled ||
+            !!pending ||
+            recovery.blocked ||
+            busy ||
+            ruleCorrectionWriteLocked ||
+            ruleCorrectionDirty ||
+            !!draft ||
+            deepLocked ||
+            selectedReadUnverified
+          }
           onSaved={(savedInventoryId, savedAttemptId) => {
-            setInventoryId(savedInventoryId);
+            selectInventory(savedInventoryId, true);
             setAttemptId(savedAttemptId);
             if (inventoryId === savedInventoryId) void attempts.reload();
           }}
         />
       </Suspense>
+      {inventoryValid && (
+        <Suspense fallback={<p role="status">正在加载施组评分范围…</p>}>
+          <PackageTechnicalScope
+            bidId={bidId}
+            memberId={memberId}
+            packageView={packageView}
+            inventory={inventoryValid ? displayedInventory! : null}
+            disabled={
+              disabled ||
+              busy ||
+              !!pending ||
+              recovery.blocked ||
+              coverageWriteLocked ||
+              coverageDirty ||
+              ruleCorrectionWriteLocked ||
+              ruleCorrectionDirty ||
+              !!draft ||
+              selectedReadUnverified
+            }
+          />
+        </Suspense>
+      )}
       <PackageReviewInputPreview
         memberId={memberId}
         bidId={bidId}
         packageView={packageView}
-        inventory={inventoryValid ? inventory.data! : null}
+        inventory={inventoryValid ? displayedInventory! : null}
         coverage={attemptValid ? attempt.data! : null}
         coveragePending={!!attemptId && !attemptValid}
-        disabled={busy || !!pending || recovery.blocked || coverageWriteLocked}
+        disabled={
+          busy ||
+          !!pending ||
+          recovery.blocked ||
+          coverageWriteLocked ||
+          ruleCorrectionWriteLocked ||
+          coverageDirty ||
+          ruleCorrectionDirty ||
+          !!draft ||
+          selectedReadUnverified
+        }
       />
       {!supportsApi("POST", base) && (
         <p>当前服务尚未提供清单创建接口，保留只读历史。</p>

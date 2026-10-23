@@ -1,0 +1,13 @@
+....                                                                     [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/starlette/testclient.py:37
+  /workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_package_history_ui_pg.py::test_missing_public_installation_and_unknown_directory_are_not_empty
+  /workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/lib/python3.12/site-packages/oss2/api.py:703: SyntaxWarning: invalid escape sequence '\&'
+    r'http://your-bucket.oss-cn-hangzhou.aliyuncs.com/logo.jpg?OSSAccessKeyId=YourAccessKeyId\&Expires=1447178011&Signature=UJfeJgvcypWq6Q%2Bm3IJcSHbvSak%3D'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-- generated xml file: /tmp/package-history-ui-acceptance-_7can3fo/pytest.xml --
+4 passed, 2 warnings in 55.49s

@@ -10,6 +10,23 @@ from packages.metrics.results import timestamp
 OBSERVATION = records.OBSERVATION
 
 
+def for_current_submission(c, submission):
+    """An old single-body review cannot describe a different package submission."""
+    if submission.get("subject_kind", "single_body") == "bid_package":
+        return {
+            "available": False,
+            "review_id": None,
+            "identified": None,
+            "resolved": None,
+            "dismissed": None,
+            "open": None,
+            "scope_issue_ids": [],
+            "roots": [],
+            "scope_note": "整包登记观察与单正文评审口径不同；缺少完整整包风险统计依据，保留未知",
+        }
+    return current_risks(c, submission["bid_id"])
+
+
 def current_risks(c, bid, review_id=None):
     profile = fetch(c, "SELECT * FROM bid_profiles WHERE bid_id=%s", (bid,))
     chosen = review_id or profile["current_review_id"]
@@ -128,6 +145,12 @@ def observe_review_risks(c, *, bid, actor, command, review_id=None):
 
 
 def freeze_submission_risks(c, *, submission, actor, command):
+    if submission.get("subject_kind", "single_body") == "bid_package":
+        raise DomainError(
+            "PACKAGE_RISK_OBSERVATION_REQUIRED",
+            "整包登记观察须绑定完整包，不能使用单正文事前风险快照",
+            409,
+        )
     bid = submission["bid_id"]
     records.lock_bid(c, bid)
     old = [
@@ -186,6 +209,10 @@ def freeze_submission_risks(c, *, submission, actor, command):
 
 
 def for_submission(c, submission, as_of=None):
+    if submission.get("subject_kind", "single_body") == "bid_package":
+        # Its immutable registration gate is an assessed_at observation, not proof
+        # of the risks known at the user-declared historical submitted_at.
+        return None
     rows = [
         r
         for r in records.rows(c, submission["bid_id"], (records.RISK,), as_of=as_of)

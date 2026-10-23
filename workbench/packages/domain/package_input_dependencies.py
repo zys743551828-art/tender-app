@@ -25,6 +25,9 @@ POLICY_FILES = (
     "packages/contracts/schemas/package-input-dependencies.schema.json",
     "packages/domain/package_fact_usage.py",
     "packages/domain/review_identity.py",
+    "packages/domain/package_rule_corrections.py",
+    "packages/contracts/package_rule_corrections_api.py",
+    "packages/contracts/bid_package_requirements_api.py",
 )
 
 
@@ -61,6 +64,11 @@ def assess(frozen, prepared, usage, request):
     selection = root["selection"]
     inventory = selection["inventory"]
     inv = inventory["manifest"]
+    derived = inv.get("version") == "bid-package-requirements/3"
+    if derived:
+        from packages.domain import package_rule_corrections as corrections
+
+        corrections.verify_inventory_header(inventory)
     binding = prepared.view()["manifest"]["identity"]["binding"]
     _require(
         prepared.frozen_id == fm["id"] == um["prepared"]["frozen_input_id"]
@@ -148,6 +156,8 @@ def assess(frozen, prepared, usage, request):
                 "applicability": row["requirement"]["applicability"],
             }
         )
+        if derived:
+            output[-1]["rule_status"] = corrections.rule_state(row["rule_snapshot"])
     statuses = {row["fact_status"] for row in output}
     overall = (
         next(
@@ -196,6 +206,12 @@ def assess(frozen, prepared, usage, request):
         "launch_available": False,
         "publication_authorized": False,
     }
+    if derived:
+        manifest.update(
+            version="package-input-dependencies/2",
+            inventory_status="human_derivation_range_quality_unmeasured",
+            rule_state_counts=corrections.rule_counts([row["rule_snapshot"] for row in rows]),
+        )
     _validate("Manifest", manifest)
     return InputDependencyAssessment(digest(manifest), canonical(manifest).decode("utf-8"))
 

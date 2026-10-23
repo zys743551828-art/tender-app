@@ -83,6 +83,18 @@ def _submit(
             return saved(cmd.replay, True)
         if not r.headers.get("if-match"):
             raise DomainError("PRECONDITION_REQUIRED", "请先读取当前项目并核对实际稿件后登记", 428)
+        if supersedes:
+            previous = fetch(
+                c,
+                "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
+                (bid, supersedes),
+            )
+            if previous.get("subject_kind", "single_body") == "bid_package":
+                raise DomainError(
+                    "PACKAGE_SUBMISSION_CORRECTION_REQUIRED",
+                    "请使用整包更正入口核对完整实际提交包",
+                    409,
+                )
         version = (
             body["body_version_id"] if kind == "standard" else body["actual_document_version_id"]
         )

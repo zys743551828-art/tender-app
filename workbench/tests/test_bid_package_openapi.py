@@ -12,6 +12,7 @@ def test_app_without_package_router_does_not_publish_package_operations():
     assert actual["paths"] == {}
     assert "CreateBidPackage" not in actual["components"]["schemas"]
     assert "CreatePackageRequirementInventory" not in actual["components"]["schemas"]
+    assert "DocumentParseContext" not in actual["components"]["schemas"]
 
 
 def test_requirements_only_app_does_not_require_unregistered_package_routes():
@@ -52,7 +53,36 @@ def test_requirements_only_app_does_not_require_unregistered_package_routes():
         "getPackageFactChange",
         "listPackageCurrentFacts",
         "getPackageCurrentFact",
+        "startPackageReviewRun",
+        "listPackageReviewRuns",
+        "getPackageReviewRun",
+        "getPackageReviewRunInput",
+        "getPackageReviewHumanDecisions",
+        "savePackageReviewHumanDecision",
+        "listPackageReviewHumanDecisions",
+        "getPackageReviewReportContext",
+        "startPackageReviewReport",
+        "listPackageReviewReports",
+        "getPackageReviewReport",
     }
+    assert "DocumentParseContext" not in actual["components"]["schemas"]
+
+
+def test_one_parse_route_does_not_publish_unregistered_sibling_operations():
+    from apps.api.document_parse_routes import router as parse_router
+    from packages.contracts.document_parses_api import BASE
+
+    app = FastAPI()
+    app.router.routes.extend(
+        route for route in parse_router.routes if route.path == BASE + "/parse-context"
+    )
+    actual = implemented_openapi(app)
+    assert set(actual["paths"]) == {BASE + "/parse-context"}
+    assert set(actual["paths"][BASE + "/parse-context"]) == {"get"}
+    assert (
+        actual["paths"][BASE + "/parse-context"]["get"]["operationId"] == "getDocumentParseContext"
+    )
+    assert "DocumentParseContext" in actual["components"]["schemas"]
 
 
 def test_package_only_app_exports_all_registered_operations_and_schemas():

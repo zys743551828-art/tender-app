@@ -1,4 +1,4705 @@
-// Generated from packages/contracts/fusion-implemented.openapi.json. Run python scripts/generate-contracts.py.
+// Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
+
+export type PackageHistoricalAdmissionContext = {
+  schema: "package-historical-admission-context/1";
+  schema_configured: boolean;
+  scope_id: string;
+  submission_id: string;
+  outcome_id: string;
+  context_digest: string | null;
+  official_technical_value: string | null;
+  official_maximum: string | null;
+  historical_as_of: string | null;
+  scope_frozen_at: string | null;
+  label_known_at: string | null;
+  proofs: {
+    id: string;
+    origin: "synthetic" | "external_evidence";
+    adapter_id: string;
+    verified_at: string;
+    context_digest: string;
+  }[];
+  blockers: {
+    code: string;
+    message: string;
+  }[];
+  observed_at: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalAdmission = {
+  schema: "package-historical-research-admission/1";
+  id: string;
+  proof_id: string;
+  bid_id: string;
+  scope_id: string;
+  submission_id: string;
+  outcome_id: string;
+  scope_digest: string;
+  submission_binding_digest: string;
+  context_digest: string;
+  proof_digest: string;
+  digest: string;
+  origin: "synthetic" | "external_evidence";
+  state: "mechanism_candidate" | "retrospective_candidate";
+  historical_as_of: string;
+  scope_frozen_at: string;
+  label_known_at: string;
+  evidence_verified_at: string;
+  admitted_at: string;
+  official_technical_value: string;
+  technical_maximum: string;
+  aggregation: "published_final_technical_total";
+  training_selected: false;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalAdmissionView = {
+  admission: {
+    schema: "package-historical-research-admission/1";
+    id: string;
+    proof_id: string;
+    bid_id: string;
+    scope_id: string;
+    submission_id: string;
+    outcome_id: string;
+    scope_digest: string;
+    submission_binding_digest: string;
+    context_digest: string;
+    proof_digest: string;
+    digest: string;
+    origin: "synthetic" | "external_evidence";
+    state: "mechanism_candidate" | "retrospective_candidate";
+    historical_as_of: string;
+    scope_frozen_at: string;
+    label_known_at: string;
+    evidence_verified_at: string;
+    admitted_at: string;
+    official_technical_value: string;
+    technical_maximum: string;
+    aggregation: "published_final_technical_total";
+    training_selected: false;
+    research_only: true;
+    formal_eligibility: "unavailable";
+    strict_prebid_eligible: false;
+    online_metrics_eligible: false;
+    formal_sample_created: false;
+  };
+  current: boolean;
+};
+
+export type PackageHistoricalProtocol = {
+  id: string;
+  document: {
+    schema: "package-history-cpu-protocol/1";
+    method: {
+      version: "package-history-project-baselines/1";
+      purpose: "retrospective_research";
+      features: "not_required_by_constant_baselines";
+      provider_requests: 0;
+      digest: string;
+      sources: {
+        "packages/model_governance/package_history_cpu.py": string;
+        "packages/model_governance/common.py": string;
+        "packages/model_governance/evaluation.py": string;
+        "packages/model_governance/statistics.py": string;
+      };
+    };
+    families: ["mean", "median"];
+    selection_metric: "project_mae";
+    tie_order: ["mean", "median"];
+    refit_with_development: false;
+    interval_levels: [0.8, 0.9];
+    group_spanning_policy: "exclude";
+    seed: number;
+    bootstrap_iterations: number;
+  };
+  digest: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalProtocolTemplate = {
+  schema_configured: boolean;
+  document: {
+    schema: "package-history-cpu-protocol/1";
+    method: {
+      version: "package-history-project-baselines/1";
+      purpose: "retrospective_research";
+      features: "not_required_by_constant_baselines";
+      provider_requests: 0;
+      digest: string;
+      sources: {
+        "packages/model_governance/package_history_cpu.py": string;
+        "packages/model_governance/common.py": string;
+        "packages/model_governance/evaluation.py": string;
+        "packages/model_governance/statistics.py": string;
+      };
+    };
+    families: ["mean", "median"];
+    selection_metric: "project_mae";
+    tie_order: ["mean", "median"];
+    refit_with_development: false;
+    interval_levels: [0.8, 0.9];
+    group_spanning_policy: "exclude";
+    seed: number;
+    bootstrap_iterations: number;
+  };
+  method_digest: string;
+  signed_proof_public_upload: false;
+  feature_calibration_available: false;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalCohort = {
+  schema: "package-history-cohort/1";
+  id: string;
+  protocol_id: string;
+  protocol_digest: string;
+  origin: "synthetic" | "external_evidence";
+  timing: {
+    mode: "retrospective_submission_time_holdout";
+    historical_as_of: "per_exact_actual_submission";
+    submission_split_at: string;
+    label_available_as_of: string;
+    training_frozen_at: string;
+    group_spanning_policy: "exclude";
+    prediction_timing: "retrospective";
+  };
+  members: {
+    admission_id: string;
+    proof_id: string;
+    submission_id: string;
+    group_id: string;
+    closure_ids: string[];
+    requested_purpose: "fit" | "development" | "calibration" | "final";
+    purpose: "fit" | "development" | "calibration" | "final" | "excluded";
+    exclusion_reason:
+      | "group_spans_submission_split"
+      | "label_after_available_cutoff"
+      | null;
+    submitted_at: string;
+    label_known_at: string;
+  }[];
+  membership_digest: string;
+  digest: string;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  strict_prebid_eligible: false;
+  online_metrics_eligible: false;
+  formal_sample_created: false;
+};
+
+export type PackageHistoricalCohortView = {
+  cohort: {
+    schema: "package-history-cohort/1";
+    id: string;
+    protocol_id: string;
+    protocol_digest: string;
+    origin: "synthetic" | "external_evidence";
+    timing: {
+      mode: "retrospective_submission_time_holdout";
+      historical_as_of: "per_exact_actual_submission";
+      submission_split_at: string;
+      label_available_as_of: string;
+      training_frozen_at: string;
+      group_spanning_policy: "exclude";
+      prediction_timing: "retrospective";
+    };
+    members: {
+      admission_id: string;
+      proof_id: string;
+      submission_id: string;
+      group_id: string;
+      closure_ids: string[];
+      requested_purpose: "fit" | "development" | "calibration" | "final";
+      purpose: "fit" | "development" | "calibration" | "final" | "excluded";
+      exclusion_reason:
+        | "group_spans_submission_split"
+        | "label_after_available_cutoff"
+        | null;
+      submitted_at: string;
+      label_known_at: string;
+    }[];
+    membership_digest: string;
+    digest: string;
+    research_only: true;
+    formal_eligibility: "unavailable";
+    strict_prebid_eligible: false;
+    online_metrics_eligible: false;
+    formal_sample_created: false;
+  };
+  current: boolean;
+};
+
+export type PackageHistoricalJob = {
+  job_id: string;
+  cohort_id: string;
+  kind: "train" | "evaluate";
+  state: "queued" | "running" | "paused" | "succeeded" | "failed" | "cancelled";
+  generation: number;
+  research_only: true;
+  formal_eligibility: "unavailable";
+};
+
+export type PackageHistoricalJobView = {
+  job_id: string;
+  cohort_id: string;
+  kind: "train" | "evaluate";
+  state: "queued" | "running" | "paused" | "succeeded" | "failed" | "cancelled";
+  generation: number;
+  research_only: true;
+  formal_eligibility: "unavailable";
+  current: boolean;
+  result:
+    | (
+        | {
+            schema: "package-history-training-result/1";
+            origin: "synthetic" | "external_evidence";
+            cohort_id: string;
+            protocol_digest: string;
+            training_export_digest: string;
+            membership_digest: string;
+            model_digest: string;
+            model: {
+              schema: "package-history-constant-model/1";
+              method_digest: string;
+              family: "mean" | "median";
+              constant: string;
+              training_export_digest: string;
+            };
+            baselines: {
+              mean: string;
+              median: string;
+            };
+            selection: {
+              development_project_mae: {
+                mean: string;
+                median: string;
+              };
+              selected: "mean" | "median";
+              refit_with_development: false;
+            };
+            intervals: {
+              "0.8": {
+                radius: string | null;
+                groups: number;
+                rank: number;
+                unavailable_reason:
+                  | "insufficient_independent_calibration_groups"
+                  | null;
+              };
+              "0.9": {
+                radius: string | null;
+                groups: number;
+                rank: number;
+                unavailable_reason:
+                  | "insufficient_independent_calibration_groups"
+                  | null;
+              };
+            };
+            research_only: true;
+            formal_eligibility: "unavailable";
+            provider_requests: 0;
+            paid_calls: 0;
+          }
+        | {
+            schema: "package-history-independent-evaluation/1";
+            origin: "synthetic" | "external_evidence";
+            cohort_id: string;
+            protocol_digest: string;
+            model_digest: string;
+            membership_digest: string;
+            predictions_digest: string;
+            labels_digest: string;
+            timing: {
+              mode: "retrospective_submission_time_holdout";
+              historical_as_of: "per_exact_actual_submission";
+              submission_split_at: string;
+              label_available_as_of: string;
+              training_frozen_at: string;
+              group_spanning_policy: "exclude";
+              prediction_timing: "retrospective";
+            };
+            selection_denominator: {
+              selected_submissions: number;
+              excluded_submissions: number;
+              final_side_candidates: number;
+            };
+            report: {
+              denominator: number;
+              independent_groups: number;
+              projects: number;
+              counts: {
+                succeeded: number;
+                failed: number;
+                rejected: number;
+                unlabeled: number;
+              };
+              success_coverage: string | null;
+              sample_mae: string | null;
+              project_mae: string | null;
+              original_scale_project_mae: string | null;
+              p90_absolute_error: string | null;
+              project_within_three: string | null;
+              project_bias: string | null;
+              intervals: {
+                "0.8":
+                  | {
+                      coverage: string;
+                      width: string;
+                    }
+                  | {
+                      coverage: null;
+                      width: null;
+                      reason: "interval_or_labeled_predictions_unavailable";
+                    };
+                "0.9":
+                  | {
+                      coverage: string;
+                      width: string;
+                    }
+                  | {
+                      coverage: null;
+                      width: null;
+                      reason: "interval_or_labeled_predictions_unavailable";
+                    };
+              };
+              paired_baselines: {
+                mean?:
+                  | {
+                      gain: string;
+                      paired_count: number;
+                      group_bootstrap_gain_95: string[] | null;
+                    }
+                  | {
+                      gain: null;
+                      reason: "paired_baseline_missing";
+                    };
+                median?:
+                  | {
+                      gain: string;
+                      paired_count: number;
+                      group_bootstrap_gain_95: string[] | null;
+                    }
+                  | {
+                      gain: null;
+                      reason: "paired_baseline_missing";
+                    };
+              };
+              group_bootstrap_project_mae_95: string[] | null;
+              stability_range_p90: null;
+              strata: {
+                method: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+                maximum: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+                engineering_type: {
+                  [key: string]: {
+                    count: number;
+                    project_mae: string | null;
+                  };
+                };
+              };
+              unavailable_statistics: [
+                "ranking_without_ranking_labels",
+                "shortlist_probability_without_labels",
+                "judge_disagreement_without_judge_labels",
+                "whole_round_stability_without_independent_repeat_predictions",
+              ];
+            };
+            official_source_subset: {
+              scope: "verified_official_associations_with_evidence_backed_admission";
+              origin: "synthetic" | "external_evidence";
+              report: {
+                denominator: number;
+                independent_groups: number;
+                projects: number;
+                counts: {
+                  succeeded: number;
+                  failed: number;
+                  rejected: number;
+                  unlabeled: number;
+                };
+                success_coverage: string | null;
+                sample_mae: string | null;
+                project_mae: string | null;
+                original_scale_project_mae: string | null;
+                p90_absolute_error: string | null;
+                project_within_three: string | null;
+                project_bias: string | null;
+                intervals: {
+                  "0.8":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                  "0.9":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                };
+                paired_baselines: {
+                  mean?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                  median?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                };
+                group_bootstrap_project_mae_95: string[] | null;
+                stability_range_p90: null;
+                strata: {
+                  method: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  maximum: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  engineering_type: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                };
+                unavailable_statistics: [
+                  "ranking_without_ranking_labels",
+                  "shortlist_probability_without_labels",
+                  "judge_disagreement_without_judge_labels",
+                  "whole_round_stability_without_independent_repeat_predictions",
+                ];
+              };
+            };
+            research_only: true;
+            formal_eligibility: "unavailable";
+            acceptance_decision: "unavailable";
+            missing_acceptance: [
+              "real_independent_quality_validation",
+              "complete_package_three_judgment_features",
+              "preexposure_business_certification",
+              "independent_repeat_stability",
+              "observation_and_release_authority",
+            ];
+            provider_requests: 0;
+            paid_calls: 0;
+          }
+      )
+    | null;
+  result_digest: string | null;
+};
+
+export type PackageHistoryAdmissionRequest = {
+  submission_id: string;
+  outcome_id: string;
+  proof_id: string;
+  context_digest: string;
+  reason: string;
+};
+
+export type PackageHistoryProtocolRequest = {
+  method_digest: string;
+  seed: number;
+  bootstrap_iterations: number;
+  reason: string;
+};
+
+export type PackageHistoryCohortRequest = {
+  protocol_id: string;
+  submission_split_at: string;
+  label_available_as_of: string;
+  selections: PackageHistorySelection[];
+  reason: string;
+};
+
+export type PackageHistoryJobRequest = {
+  kind: "train" | "evaluate";
+  reason: string;
+};
+
+export type PackageHistoryJobControl = {
+  action: "pause" | "resume" | "cancel";
+  generation: number;
+  reason: string;
+};
+
+export type PackageHistoryAdmissionDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "admissions";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "admission";
+        bid_id: string;
+        scope_id: string;
+        submission_id: string;
+        outcome_id: string;
+        digest: string;
+        origin: "synthetic" | "external_evidence";
+        state: "mechanism_candidate" | "retrospective_candidate";
+        historical_as_of: string;
+        label_known_at: string;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "admissions";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryProtocolDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "protocols";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "protocol";
+        digest: string;
+        document: {
+          schema: "package-history-cpu-protocol/1";
+          method: {
+            version: "package-history-project-baselines/1";
+            purpose: "retrospective_research";
+            features: "not_required_by_constant_baselines";
+            provider_requests: 0;
+            digest: string;
+            sources: {
+              "packages/model_governance/package_history_cpu.py": string;
+              "packages/model_governance/common.py": string;
+              "packages/model_governance/evaluation.py": string;
+              "packages/model_governance/statistics.py": string;
+            };
+          };
+          families: ["mean", "median"];
+          selection_metric: "project_mae";
+          tie_order: ["mean", "median"];
+          refit_with_development: false;
+          interval_levels: [0.8, 0.9];
+          group_spanning_policy: "exclude";
+          seed: number;
+          bootstrap_iterations: number;
+        };
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "protocols";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryCohortDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "cohorts";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "cohort";
+        protocol_id: string;
+        digest: string;
+        membership_digest: string;
+        origin: "synthetic" | "external_evidence";
+        submission_split_at: string;
+        label_available_as_of: string;
+        member_count: number;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "cohorts";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type PackageHistoryJobDirectory =
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "jobs";
+      status: "observed";
+      schema_configured: true;
+      items: {
+        id: string;
+        created_at: string;
+        current_status: "not_rechecked";
+        kind: "job";
+        cohort_id: string;
+        job_kind: "train" | "evaluate";
+        state:
+          | "queued"
+          | "running"
+          | "paused"
+          | "succeeded"
+          | "failed"
+          | "cancelled";
+        generation: number;
+        result_available: boolean;
+        result_digest: string | null;
+      }[];
+      total: number;
+      observation_digest: string;
+      complete_observation: true;
+      has_more: boolean;
+      next_cursor: string | null;
+    }
+  | {
+      version: "package-history-directory/1";
+      filters: {
+        bid_id: string | null;
+        scope_id: string | null;
+        protocol_id: string | null;
+        cohort_id: string | null;
+      };
+      observed_at: string;
+      currentness_rechecked: false;
+      research_only: true;
+      formal_eligibility: "unavailable";
+      qualification_granted: false;
+      kind: "jobs";
+      status: "unavailable";
+      schema_configured: false;
+      items: [];
+      total: null;
+      observation_digest: null;
+      complete_observation: false;
+      has_more: null;
+      next_cursor: null;
+    };
+
+export type AuthoringHistoricalSectionView = {
+  version: "authoring-historical-section/1";
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  section_revision_id: string;
+  revision: number;
+  schema_digest: string;
+  digest: string;
+  content: AuthoringHistoryAuthoringRichDocument;
+  created_by: string;
+  created_at: string;
+  images: {
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    version_digest: string;
+    normalized_sha256: string;
+    media_type: "image/png";
+  }[];
+  read_only: true;
+  source_qualification_assessed: false;
+  restoration_authorized: false;
+};
+
+export type AuthoringExactRevisionCapabilities = {
+  protocol: "authoring-exact-revision-capabilities/1";
+  apply_available: boolean;
+  build_available: boolean;
+  ordinary_edit_available: false;
+  supported_content: "plain_text_stable_node";
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactDraftStatus = {
+  protocol: "authoring-exact-draft-status/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  exact_sections: AuthoringExactSectionBinding[];
+  ordinary_edit_available: boolean;
+  build_available: boolean;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactRevisionView = {
+  manifest: AuthoringExactRevisionManifest;
+  digest: string;
+};
+
+export type AuthoringExactSectionBinding = {
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  qualification_id: string;
+  qualification_digest: string;
+  authoring_input_id: string;
+  authoring_input_digest: string;
+  source_scope: "exact_package_context";
+};
+
+export type PackageAuthoringNodeCatalog = {
+  protocol: "package-authoring-node-catalog/1";
+  bid_id: string;
+  target: {
+    draft_id: string;
+    snapshot_id: string;
+    snapshot_digest: string;
+    base_draft_revision: number;
+    section_id: string;
+    section_revision_id: string;
+    base_section_revision: number;
+    section_digest: string;
+    schema_digest: string;
+  };
+  section_title: string;
+  section_content: AuthoringHistoryAuthoringRichDocument;
+  nodes: {
+    node_id: string;
+    before_node_digest: string;
+    node_type: "paragraph" | "heading";
+    text: string;
+  }[];
+  unsupported_stable_node_count: number;
+  current_draft_revision: number;
+  section_heads: {
+    section_id: string;
+    selected_revision: number;
+    head_revision: number;
+  }[];
+  whole_snapshot_plain: boolean;
+  structure_supported: boolean;
+  blocking_reasons: string[];
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
+export type PackageAuthoringFactSetPage = {
+  protocol: "package-authoring-fact-set-page/1";
+  bid_id: string;
+  items: {
+    fact_set_id: string;
+    fact_set_digest: string;
+    fact_count: number;
+    is_current: boolean;
+  }[];
+  current_head: {
+    fact_set_id: string;
+    revision: number;
+    fact_set_digest: string;
+  } | null;
+  blocking_reasons: string[];
+  next_cursor: string | null;
+  has_more: boolean;
+  total_items: number;
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
+export type PackageAuthoringFactCatalog = {
+  protocol: "package-authoring-fact-catalog/1";
+  bid_id: string;
+  selection: {
+    fact_set_id: string;
+    fact_set_digest: string;
+    fact_head_revision: number;
+    target: {
+      package_id: string;
+      revision_id: string;
+      manifest_digest: string;
+    };
+    authority: {
+      package_id: string;
+      revision_id: string;
+      manifest_digest: string;
+    };
+  };
+  current_head: {
+    fact_set_id: string;
+    revision: number;
+    fact_set_digest: string;
+  } | null;
+  head_matches: boolean;
+  package_identity_matches: boolean;
+  subject_choices: {
+    kind: "engineering_project" | "lot" | "round" | "bidder";
+    id: string;
+  }[];
+  identity_names: [
+    "procurement_issuer_identifier",
+    "procurement_project_identifier",
+    "procurement_lot_identifier",
+    "procurement_round_identifier",
+    "bidder_identity_identifier",
+  ];
+  items: {
+    fact_id: string;
+    fact_item_digest: string;
+    proof_digest: string;
+    name: string;
+    subject_text: string;
+    scope_text: string;
+    value_jsonb_text: string;
+    unit: string | null;
+    identity_name:
+      | "procurement_issuer_identifier"
+      | "procurement_project_identifier"
+      | "procurement_lot_identifier"
+      | "procurement_round_identifier"
+      | "bidder_identity_identifier"
+      | null;
+    identity_value_usable: boolean;
+    decision: {
+      id: string;
+      decision: "confirmed" | "rejected";
+      decision_revision: number;
+      object_id: string;
+      actor_id: string;
+      created_at: string;
+      binding_verified: boolean;
+      basis_verified: boolean;
+      carryover_steps: number;
+    } | null;
+    evidence: {
+      id: string;
+      parse_id: string;
+      document_version_id: string;
+      physical_page: number;
+      digest: string;
+    }[];
+    provenance_status: "verified" | "unproven";
+    scope_binding: "selected_frozen_parse" | "unproven";
+    facts_qualified: false;
+    blocking_reasons: string[];
+  }[];
+  blocking_reasons: string[];
+  next_cursor: string | null;
+  has_more: boolean;
+  total_items: number;
+  observed_at: string;
+  observation_digest: string;
+  observation_only: true;
+  admission_granted: false;
+  original_bytes_reverified: false;
+  save_recheck_required: true;
+  formal_decisions_allowed: false;
+};
+
+export type PackageAuthoringSelection = {
+  authoring_input_id: string;
+  authoring_input_digest: string;
+};
+
+export type ExactPackageAuthoringSelection = {
+  mode: "exact_package_authoring";
+  input: PackageAuthoringSelection;
+};
+
+export type TaskPackageAuthoringResult = {
+  schema: "task-package-authoring-result/1";
+  job_id: string;
+  job_input_digest: string;
+  writing_plan_id: string;
+  operation_id: string;
+  job_ref: string;
+  section_id: string;
+  base_section_revision: number;
+  authoring_input_id: string;
+  authoring_input_digest: string;
+  context_digest: string;
+  publication_state: "pending" | "published" | "stale" | "failed";
+  candidate_digest: string | null;
+  action_id: string | null;
+  action_ref: string | null;
+  source_scope: "exact_package_context";
+  automatic_apply: false;
+  apply_available: false;
+  build_available: false;
+};
+
+export type PackageTaskAuthoringCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_authoring";
+  trigger: "manual";
+  source_scope: "exact_package_context";
+  automatic_input_selection: false;
+  rerun_supported: false;
+  apply_available: false;
+  build_available: false;
+};
+
+export type PackageAuthoringInputRequest = {
+  protocol: "package-authoring-input-request/1";
+  purpose: "authoring";
+  target_relation: "draft_using_package_context";
+  package_context: PackageContext;
+  target_section: SectionSelection;
+  facts: FactSelection;
+};
+
+export type PackageAuthoringInputCapabilities = {
+  protocol: "package-authoring-input-capabilities/1";
+  capture_available: boolean;
+  generation_available: false;
+  publication_available: false;
+  apply_available: false;
+  build_available: false;
+  automatic_input_selection: false;
+  supported_target: "plain_text_stable_node";
+  target_relation: "draft_using_package_context";
+  context_limit_bytes: number;
+  blocking_reasons: string[];
+};
+
+export type PackageAuthoringInputView = {
+  manifest: { [key: string]: unknown };
+  digest: string;
+};
+
+export type PackageAuthoringInputPage = {
+  items: PackageAuthoringInputView[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type PackageAuthoringInputContext = {
+  input_id: string;
+  input_digest: string;
+  stored_context_digest: string;
+  context: { [key: string]: unknown };
+  redacted_fields: "documents[*].object_key"[];
+  original_bytes_reverified: false;
+};
+
+export type PackageAuthoringInputCheck = {
+  input_digest: string;
+};
+
+export type PackageAuthoringInputStatus = {
+  protocol: "package-authoring-input-status/1";
+  input_id: string;
+  input_digest: string;
+  current_input_matches: boolean;
+  original_bytes_reverified: false;
+  checked_at: string;
+  generation_available: false;
+  publication_available: false;
+  apply_available: false;
+  build_available: false;
+  blocking_reasons: string[];
+};
+
+export type PackageAuthoringFactWithdrawal = {
+  input_digest: string;
+  fact_id: string;
+  declaration_digest: string;
+  reason: string;
+};
+
+export type PackageAuthoringFactScopeView = {
+  manifest: { [key: string]: unknown };
+  digest: string;
+};
+
+export type AuthoringWorkContext = {
+  version: "authoring-work-context/1";
+  selection:
+    | {
+        kind: "draft_snapshot";
+        bid_id: string;
+        draft_id: string;
+        draft_revision: number;
+        snapshot_id: string;
+        snapshot_digest: string;
+      }
+    | {
+        kind: "build";
+        bid_id: string;
+        build_id: string;
+        draft_id: string;
+        draft_revision: number;
+        snapshot_id: string;
+        snapshot_digest: string;
+        build_input_id: string;
+        input_digest: string;
+        manifest_digest: string;
+        writer_kind: string;
+      };
+  selection_digest: string;
+  observed_at: string;
+  observation_digest: string;
+  snapshot: {
+    bid_id: string;
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    title: string;
+    created_at: string;
+    section_count: number;
+  };
+  document: {
+    sections: {
+      section_id: string;
+      section_revision_id: string;
+      section_revision: number;
+      schema_digest: string;
+      digest: string;
+      ordinal: number;
+      title: string;
+      content: WorkContextReadOnlyAuthoringRichDocument;
+    }[];
+    outline:
+      | {
+          section_id: string;
+          parent_id: string | null;
+          ordinal: number;
+          node_type: "chapter" | "appendix";
+        }[]
+      | null;
+    images: {
+      asset_id: string;
+      asset_revision: number;
+      asset_version_id: string;
+      version_digest: string;
+      normalized_sha256: string;
+      media_type: "image/png";
+    }[];
+    editable: false;
+  } | null;
+  build: {
+    operation_id: string;
+    operation_state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    created_at: string;
+    outputs: {
+      format: "docx" | "pdf";
+      requested: boolean;
+      state: "pending" | "succeeded" | "failed" | "not_published";
+      document: {
+        document_version_id: string;
+        sha256: string;
+        byte_size: number;
+        media_type:
+          | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          | "application/pdf";
+        publication_proof_digest: string;
+      } | null;
+      gaps: string[];
+    }[];
+  } | null;
+  current_observation: {
+    draft_head: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+    sources: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+    assets: {
+      status: "matched" | "changed" | "unknown" | "not_applicable";
+      selected_digest: string | null;
+      observed_digest: string | null;
+      reason: string;
+    };
+  };
+  summary: {
+    perspective: "saved_authoring_history";
+    whole_package_blocking_risk_count: null;
+    whole_package_passed: null;
+    formal_scoring: {
+      status: "scope_not_selected";
+      scope_id: null;
+      numeric_prediction: null;
+    };
+    official_labels_read: false;
+    primary_action: "open_selected_snapshot" | "view_selected_build";
+    action_mode: "navigation_only";
+  };
+  native_targets: {
+    draft_snapshot: {
+      kind: "draft_snapshot";
+      bid_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+    };
+    current_draft: {
+      kind: "draft";
+      bid_id: string;
+      draft_id: string;
+    };
+    build: {
+      kind: "build";
+      bid_id: string;
+      build_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+      build_input_id: string;
+      input_digest: string;
+      manifest_digest: string;
+      writer_kind: string;
+    } | null;
+    build_relations: {
+      kind: "build_package_relations";
+      bid_id: string;
+      build_id: string;
+    } | null;
+  };
+  original_bytes_reverified: false;
+  qualification_assessed: false;
+  limitations: string[];
+};
+
+export type WorkContextChoicePage = {
+  version: "work-context-choice-page/1";
+  bid_id: string;
+  kind:
+    | "draft_snapshot"
+    | "build"
+    | "package_review_run"
+    | "package_submission";
+  filters: {
+    draft_id: string | null;
+    package_id: string | null;
+    revision_id: string | null;
+  };
+  observed_at: string;
+  observation_digest: string;
+  items: {
+    kind:
+      | "draft_snapshot"
+      | "build"
+      | "package_review_run"
+      | "package_submission";
+    id: string;
+    label: string;
+    created_at: string;
+    status:
+      | "saved"
+      | "standard"
+      | "offline_fact"
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    selection:
+      | {
+          kind: "draft_snapshot";
+          bid_id: string;
+          draft_id: string;
+          draft_revision: number;
+          snapshot_id: string;
+          snapshot_digest: string;
+        }
+      | {
+          kind: "build";
+          bid_id: string;
+          build_id: string;
+          draft_id: string;
+          draft_revision: number;
+          snapshot_id: string;
+          snapshot_digest: string;
+          build_input_id: string;
+          input_digest: string;
+          manifest_digest: string;
+          writer_kind: string;
+        }
+      | {
+          kind: "package_review_run";
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          package_digest: string;
+          inventory_id: string;
+          inventory_digest: string;
+          frozen_input_id: string;
+          frozen_input_digest: string;
+          execution_input_id: string;
+          execution_input_digest: string;
+          dependency_plan_id: string;
+          dependency_plan_digest: string;
+          run_id: string;
+          input_digest: string;
+          method_digest: string;
+          result_digest: string | null;
+        }
+      | {
+          kind: "package_submission";
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          package_digest: string;
+          submission_id: string;
+          package_binding_digest: string;
+          inventory: {
+            id: string;
+            digest: string;
+          } | null;
+          review_run: {
+            kind: "package_review_run";
+            bid_id: string;
+            package_id: string;
+            revision_id: string;
+            package_digest: string;
+            inventory_id: string;
+            inventory_digest: string;
+            frozen_input_id: string;
+            frozen_input_digest: string;
+            execution_input_id: string;
+            execution_input_digest: string;
+            dependency_plan_id: string;
+            dependency_plan_digest: string;
+            run_id: string;
+            input_digest: string;
+            method_digest: string;
+            result_digest: string | null;
+          } | null;
+        };
+    selection_digest: string;
+  }[];
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  complete_observation: true;
+  directory_basis: "native_record_identity_and_state";
+  selection_requires_resolution: true;
+  qualification_assessed: false;
+};
+
+export type WorkContextAnySelection =
+  | {
+      kind: "draft_snapshot";
+      bid_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+    }
+  | {
+      kind: "build";
+      bid_id: string;
+      build_id: string;
+      draft_id: string;
+      draft_revision: number;
+      snapshot_id: string;
+      snapshot_digest: string;
+      build_input_id: string;
+      input_digest: string;
+      manifest_digest: string;
+      writer_kind: string;
+    }
+  | {
+      kind: "package_review_run";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      frozen_input_id: string;
+      frozen_input_digest: string;
+      execution_input_id: string;
+      execution_input_digest: string;
+      dependency_plan_id: string;
+      dependency_plan_digest: string;
+      run_id: string;
+      input_digest: string;
+      method_digest: string;
+      result_digest: string | null;
+    }
+  | {
+      kind: "package_submission";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      submission_id: string;
+      package_binding_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        kind: "package_review_run";
+        bid_id: string;
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        frozen_input_id: string;
+        frozen_input_digest: string;
+        execution_input_id: string;
+        execution_input_digest: string;
+        dependency_plan_id: string;
+        dependency_plan_digest: string;
+        run_id: string;
+        input_digest: string;
+        method_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+
+export type WorkContextDraftSelection = {
+  kind: "draft_snapshot";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+};
+
+export type WorkContextBuildSelection = {
+  kind: "build";
+  bid_id: string;
+  build_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  build_input_id: string;
+  input_digest: string;
+  manifest_digest: string;
+  writer_kind: string;
+};
+
+export type PackageWorkContext = {
+  version: "package-work-context/1";
+  selection: WorkContextSelection;
+  selection_digest: string;
+  observed_at: string;
+  observation_digest: string;
+  identity:
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version?: "bid-identity/1";
+      }
+    | {
+        bidder_id: string;
+        bidder_name: string;
+        round_id: string;
+        engineering_project_id: string;
+        engineering_title: string;
+        region: string | null;
+        engineering_type: string | null;
+        lot: string | null;
+        lot_id: string | null;
+        round_no: number;
+        binding_status: "confirmed" | "pending";
+        authority_id: string | null;
+        digest: string;
+        identity_version: "bid-identity/2";
+      };
+  state:
+    | {
+        kind: "package_review_run";
+        operation_id: string;
+        operation_state:
+          | "queued"
+          | "running"
+          | "cancel_requested"
+          | "succeeded"
+          | "failed"
+          | "cancelled";
+        result_available: boolean;
+      }
+    | {
+        kind: "package_submission";
+        registration_kind: "standard" | "offline_fact";
+        submitted_at: string;
+        recorded_at: string;
+        supersedes_id: string | null;
+        gate_checked_at_registration: boolean;
+        platform_submission_verified: false;
+        pre_submission_system_check_verified: false;
+      };
+  current_observation: {
+    identity: WorkContextDimensionObservation;
+    package_head: WorkContextDimensionObservation;
+    authority_head: WorkContextDimensionObservation;
+    inventory_head: WorkContextDimensionObservation;
+    rule_set_head: WorkContextDimensionObservation;
+    sources: WorkContextDimensionObservation;
+    selected_facts: WorkContextDimensionObservation;
+    executor_method: WorkContextDimensionObservation;
+    submission_head: WorkContextDimensionObservation;
+    review_run_head: WorkContextDimensionObservation;
+    bound_run_state: WorkContextDimensionObservation;
+  };
+  summary: WorkContextSummary;
+  native_targets: WorkContextNativeTargets;
+  original_bytes_reverified: false;
+  limitations: string[];
+};
+
+export type WorkContextRelationPage = {
+  version: "package-work-context-relations/1";
+  seed: {
+    bid_id: string;
+    build_id: string;
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    build_input_id: string;
+    input_digest: string;
+    manifest_digest: string;
+    writer_kind: string;
+  };
+  target: "package_revision";
+  observed_at: string;
+  observation_digest: string;
+  items: {
+    id: string;
+    kind: "adopted_into" | "contains_output";
+    output: {
+      document_version_id: string;
+      format: "docx" | "pdf";
+      sha256: string;
+    };
+    package_revision: {
+      kind: "package_revision";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+    };
+    package_revision_number: number;
+    proof_digest: string;
+    adoption_command_id: string | null;
+    adopted_at: string | null;
+    current_package_head: WorkContextDimensionObservation;
+    current_source_basis: WorkContextDimensionObservation;
+    qualification_assessed: false;
+  }[];
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  complete_observation: true;
+  original_bytes_reverified: false;
+  qualification_assessed: false;
+};
+
+export type PricingRegisterPackageFormula = {
+  title: string;
+  formula: PricingFormulaParameters;
+  amount_unit: "元" | "万元";
+  currency: "CNY" | null;
+  rounding_policy: "half_up_2dp" | "half_even_2dp";
+  interpretation: PricingInterpretation;
+  terms_complete_confirmed: true;
+  matches_source_confirmed: true;
+  evidence_quotes: PricingEvidenceQuote[];
+  reason: string;
+  package_binding: PricingPackagePricingBinding;
+};
+
+export type PricingPackagePricingBinding = {
+  package_id: string;
+  revision_id: string;
+  authority_package_id: string;
+  authority_revision_id: string;
+};
+
+export type PricingPackageSnapshot = {
+  version: "package-pricing-authority/1";
+  binding: PricingPackagePricingBinding;
+  package_digest: string;
+  authority_digest: string;
+  identity_digest: string;
+  source_heads_digest: string;
+  rule_set_id: string | null;
+  inventory_id: string | null;
+  inventory_digest: string | null;
+};
+
+export type PricingPackageContext = {
+  bid_id: string;
+  material_snapshot_id: string | null;
+  material_revision: number;
+  scope: {
+    bid_id: string;
+    round_id: string;
+    effective_documents: {
+      role: "tender" | "supplement";
+      document_version_id: string;
+      digest: string;
+    }[];
+  };
+  parses: {
+    id: string;
+    document_version_id: string;
+  }[];
+  source_heads: {
+    id: string;
+    digest: string;
+    revision: number | null;
+    status: string | null;
+    valid_from: string | null;
+    valid_until: string | null;
+  }[];
+  package_binding: PricingPackagePricingBinding;
+  package_snapshot: {
+    version: "package-pricing-authority/1";
+    binding: PricingPackagePricingBinding;
+    package_digest: string;
+    authority_digest: string;
+    identity_digest: string;
+    source_heads_digest: string;
+    rule_set_id: string | null;
+    inventory_id: string | null;
+    inventory_digest: string | null;
+  };
+};
+
+export type PackageTechnicalScopeRequest = {
+  purpose: "current_prebid";
+  package_digest: string;
+  authority_revision_id: string;
+  authority_digest: string;
+  inventory_id: string;
+  inventory_digest: string;
+  technical_part_ids: string[];
+  rule_scopes: {
+    rule_id: string;
+    rule_digest: string;
+    selection: "include" | "exclude" | "unclassified";
+    part_ids: string[];
+    reason: string;
+  }[];
+  reason: string;
+};
+
+export type FreezePackageTechnicalScope = {
+  request: {
+    purpose: "current_prebid";
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_id: string;
+    inventory_digest: string;
+    technical_part_ids: string[];
+    rule_scopes: {
+      rule_id: string;
+      rule_digest: string;
+      selection: "include" | "exclude" | "unclassified";
+      part_ids: string[];
+      reason: string;
+    }[];
+    reason: string;
+  };
+  preview_digest: string;
+};
+
+export type PackageTechnicalScopePreview = {
+  manifest: {
+    version: "package-technical-scope-preview/1";
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    basis: {
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      identity_digest: string;
+    };
+    method: {
+      version: "package-technical-scope-policy/1";
+      digest: string;
+      sources: {
+        "packages/domain/package_technical_scope.py": string;
+        "packages/domain/bid_package_technical_scope_repository.py": string;
+        "packages/domain/bid_package_technical_scope_service.py": string;
+        "packages/contracts/package_technical_scope_api.py": string;
+        "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+        "packages/domain/bid_package_review_documents.py": string;
+        "packages/domain/bid_package_repository.py": string;
+        "packages/rag/indexing.py": string;
+      };
+      limits: {
+        members: 500;
+        parts: 2000;
+        rules: 1000;
+        source_rows: 20000;
+        blocks: 100000;
+        pages: 100000;
+        request_bytes: 1048576;
+        snapshot_bytes: 33554432;
+        original_bytes: 1073741824;
+      };
+    };
+    request: {
+      purpose: "current_prebid";
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      technical_part_ids: string[];
+      rule_scopes: {
+        rule_id: string;
+        rule_digest: string;
+        selection: "include" | "exclude" | "unclassified";
+        part_ids: string[];
+        reason: string;
+      }[];
+      reason: string;
+    };
+    request_digest: string;
+    context_digest: string;
+    parts: {
+      member_id: string;
+      document_version_id: string;
+      file_digest: string;
+      part: {
+        part_id: string;
+        category: string;
+        first_page: number;
+        last_page: number;
+        shared_attachment: boolean;
+        heading_path: number[];
+      };
+      selected: boolean;
+      read_physical_pages: number[];
+      block_ids: string[];
+      text_evidence_present: boolean;
+      visual_coverage: "unproven";
+    }[];
+    rules: {
+      rule_id: string;
+      rule_digest: string;
+      selection: "include" | "exclude" | "unclassified";
+      part_ids: string[];
+      reason: string;
+      rule_snapshot: { [key: string]: unknown };
+      requirement_digest: string;
+      declared_target_part_ids: string[];
+      source_evidence: {
+        member_id: string;
+        document_version_id: string;
+        file_digest: string;
+        parse_run_id: string;
+        physical_page: number;
+        evidence_id: string;
+        evidence_digest: string;
+        text_content: string;
+        part_ids: string[];
+      }[];
+    }[];
+    documents: {
+      package_role: "target" | "authority";
+      member_id: string;
+      document_version_id: string;
+      file_digest: string;
+      byte_size: number;
+      parse: {
+        status: "frozen" | "not_frozen";
+        parse_run_id: string | null;
+        parser_digest: string | null;
+        config_digest: string | null;
+        evidence_digest: string | null;
+        reason: string | null;
+      };
+      page_count: number | null;
+      pages: {
+        physical_page: number;
+        quality: "usable" | "partial" | "failed";
+        gaps: string[];
+      }[];
+      blocks: {
+        id: string;
+        physical_page: number;
+        ordinal: number;
+        kind: "text" | "table" | "visual_observation";
+        text_content: string;
+        digest: string;
+        bbox_json: string | null;
+        structure_json: string | null;
+      }[];
+    }[];
+    source_snapshot: { [key: string]: unknown }[];
+    coverage: {
+      state: "partial" | "unknown";
+      all_part_count: number;
+      selected_part_count: number;
+      all_scoring_rule_count: number;
+      included_rule_count: number;
+      frozen_parse_member_count: number;
+      gaps: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+      visual_coverage: "unproven";
+      required_range_completeness: "unproven";
+    };
+    timing: {
+      purpose: "current_prebid";
+      historical_as_of: null;
+      submitted_at: null;
+      label_known_at: null;
+      training_frozen_at: null;
+      submission_split_at: null;
+      label_available_as_of: null;
+      historical_qualification: "not_established";
+    };
+    original_bytes_verified: false;
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+  };
+  digest: string;
+};
+
+export type PackageTechnicalScopeView = {
+  manifest: {
+    version: "package-technical-scope/1";
+    id: string;
+    actor_id: string;
+    command_id: string;
+    frozen_at: string;
+    preview: {
+      manifest: {
+        version: "package-technical-scope-preview/1";
+        scope: {
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          inventory_id: string;
+        };
+        basis: {
+          package_digest: string;
+          authority_revision_id: string;
+          authority_digest: string;
+          inventory_digest: string;
+          rule_set_id: string;
+          rule_set_digest: string;
+          identity_digest: string;
+        };
+        method: {
+          version: "package-technical-scope-policy/1";
+          digest: string;
+          sources: {
+            "packages/domain/package_technical_scope.py": string;
+            "packages/domain/bid_package_technical_scope_repository.py": string;
+            "packages/domain/bid_package_technical_scope_service.py": string;
+            "packages/contracts/package_technical_scope_api.py": string;
+            "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+            "packages/domain/bid_package_review_documents.py": string;
+            "packages/domain/bid_package_repository.py": string;
+            "packages/rag/indexing.py": string;
+          };
+          limits: {
+            members: 500;
+            parts: 2000;
+            rules: 1000;
+            source_rows: 20000;
+            blocks: 100000;
+            pages: 100000;
+            request_bytes: 1048576;
+            snapshot_bytes: 33554432;
+            original_bytes: 1073741824;
+          };
+        };
+        request: {
+          purpose: "current_prebid";
+          package_digest: string;
+          authority_revision_id: string;
+          authority_digest: string;
+          inventory_id: string;
+          inventory_digest: string;
+          technical_part_ids: string[];
+          rule_scopes: {
+            rule_id: string;
+            rule_digest: string;
+            selection: "include" | "exclude" | "unclassified";
+            part_ids: string[];
+            reason: string;
+          }[];
+          reason: string;
+        };
+        request_digest: string;
+        context_digest: string;
+        parts: {
+          member_id: string;
+          document_version_id: string;
+          file_digest: string;
+          part: {
+            part_id: string;
+            category: string;
+            first_page: number;
+            last_page: number;
+            shared_attachment: boolean;
+            heading_path: number[];
+          };
+          selected: boolean;
+          read_physical_pages: number[];
+          block_ids: string[];
+          text_evidence_present: boolean;
+          visual_coverage: "unproven";
+        }[];
+        rules: {
+          rule_id: string;
+          rule_digest: string;
+          selection: "include" | "exclude" | "unclassified";
+          part_ids: string[];
+          reason: string;
+          rule_snapshot: { [key: string]: unknown };
+          requirement_digest: string;
+          declared_target_part_ids: string[];
+          source_evidence: {
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            parse_run_id: string;
+            physical_page: number;
+            evidence_id: string;
+            evidence_digest: string;
+            text_content: string;
+            part_ids: string[];
+          }[];
+        }[];
+        documents: {
+          package_role: "target" | "authority";
+          member_id: string;
+          document_version_id: string;
+          file_digest: string;
+          byte_size: number;
+          parse: {
+            status: "frozen" | "not_frozen";
+            parse_run_id: string | null;
+            parser_digest: string | null;
+            config_digest: string | null;
+            evidence_digest: string | null;
+            reason: string | null;
+          };
+          page_count: number | null;
+          pages: {
+            physical_page: number;
+            quality: "usable" | "partial" | "failed";
+            gaps: string[];
+          }[];
+          blocks: {
+            id: string;
+            physical_page: number;
+            ordinal: number;
+            kind: "text" | "table" | "visual_observation";
+            text_content: string;
+            digest: string;
+            bbox_json: string | null;
+            structure_json: string | null;
+          }[];
+        }[];
+        source_snapshot: { [key: string]: unknown }[];
+        coverage: {
+          state: "partial" | "unknown";
+          all_part_count: number;
+          selected_part_count: number;
+          all_scoring_rule_count: number;
+          included_rule_count: number;
+          frozen_parse_member_count: number;
+          gaps: {
+            id: string;
+            code: string;
+            subject: string | null;
+            message: string;
+          }[];
+          visual_coverage: "unproven";
+          required_range_completeness: "unproven";
+        };
+        timing: {
+          purpose: "current_prebid";
+          historical_as_of: null;
+          submitted_at: null;
+          label_known_at: null;
+          training_frozen_at: null;
+          submission_split_at: null;
+          label_available_as_of: null;
+          historical_qualification: "not_established";
+        };
+        original_bytes_verified: false;
+        inventory_complete: false;
+        scoring_ready: false;
+        formal_scoring_eligible: false;
+        model_execution_enabled: false;
+        training_eligible: false;
+      };
+      digest: string;
+    };
+    original_verification: {
+      state: "verified_at_recording";
+      verified_at: string;
+      files: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      }[];
+    };
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+  };
+  digest: string;
+};
+
+export type PackageTechnicalScopeApplied = {
+  scope: {
+    manifest: {
+      version: "package-technical-scope/1";
+      id: string;
+      actor_id: string;
+      command_id: string;
+      frozen_at: string;
+      preview: {
+        manifest: {
+          version: "package-technical-scope-preview/1";
+          scope: {
+            bid_id: string;
+            package_id: string;
+            revision_id: string;
+            inventory_id: string;
+          };
+          basis: {
+            package_digest: string;
+            authority_revision_id: string;
+            authority_digest: string;
+            inventory_digest: string;
+            rule_set_id: string;
+            rule_set_digest: string;
+            identity_digest: string;
+          };
+          method: {
+            version: "package-technical-scope-policy/1";
+            digest: string;
+            sources: {
+              "packages/domain/package_technical_scope.py": string;
+              "packages/domain/bid_package_technical_scope_repository.py": string;
+              "packages/domain/bid_package_technical_scope_service.py": string;
+              "packages/contracts/package_technical_scope_api.py": string;
+              "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+              "packages/domain/bid_package_review_documents.py": string;
+              "packages/domain/bid_package_repository.py": string;
+              "packages/rag/indexing.py": string;
+            };
+            limits: {
+              members: 500;
+              parts: 2000;
+              rules: 1000;
+              source_rows: 20000;
+              blocks: 100000;
+              pages: 100000;
+              request_bytes: 1048576;
+              snapshot_bytes: 33554432;
+              original_bytes: 1073741824;
+            };
+          };
+          request: {
+            purpose: "current_prebid";
+            package_digest: string;
+            authority_revision_id: string;
+            authority_digest: string;
+            inventory_id: string;
+            inventory_digest: string;
+            technical_part_ids: string[];
+            rule_scopes: {
+              rule_id: string;
+              rule_digest: string;
+              selection: "include" | "exclude" | "unclassified";
+              part_ids: string[];
+              reason: string;
+            }[];
+            reason: string;
+          };
+          request_digest: string;
+          context_digest: string;
+          parts: {
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            part: {
+              part_id: string;
+              category: string;
+              first_page: number;
+              last_page: number;
+              shared_attachment: boolean;
+              heading_path: number[];
+            };
+            selected: boolean;
+            read_physical_pages: number[];
+            block_ids: string[];
+            text_evidence_present: boolean;
+            visual_coverage: "unproven";
+          }[];
+          rules: {
+            rule_id: string;
+            rule_digest: string;
+            selection: "include" | "exclude" | "unclassified";
+            part_ids: string[];
+            reason: string;
+            rule_snapshot: { [key: string]: unknown };
+            requirement_digest: string;
+            declared_target_part_ids: string[];
+            source_evidence: {
+              member_id: string;
+              document_version_id: string;
+              file_digest: string;
+              parse_run_id: string;
+              physical_page: number;
+              evidence_id: string;
+              evidence_digest: string;
+              text_content: string;
+              part_ids: string[];
+            }[];
+          }[];
+          documents: {
+            package_role: "target" | "authority";
+            member_id: string;
+            document_version_id: string;
+            file_digest: string;
+            byte_size: number;
+            parse: {
+              status: "frozen" | "not_frozen";
+              parse_run_id: string | null;
+              parser_digest: string | null;
+              config_digest: string | null;
+              evidence_digest: string | null;
+              reason: string | null;
+            };
+            page_count: number | null;
+            pages: {
+              physical_page: number;
+              quality: "usable" | "partial" | "failed";
+              gaps: string[];
+            }[];
+            blocks: {
+              id: string;
+              physical_page: number;
+              ordinal: number;
+              kind: "text" | "table" | "visual_observation";
+              text_content: string;
+              digest: string;
+              bbox_json: string | null;
+              structure_json: string | null;
+            }[];
+          }[];
+          source_snapshot: { [key: string]: unknown }[];
+          coverage: {
+            state: "partial" | "unknown";
+            all_part_count: number;
+            selected_part_count: number;
+            all_scoring_rule_count: number;
+            included_rule_count: number;
+            frozen_parse_member_count: number;
+            gaps: {
+              id: string;
+              code: string;
+              subject: string | null;
+              message: string;
+            }[];
+            visual_coverage: "unproven";
+            required_range_completeness: "unproven";
+          };
+          timing: {
+            purpose: "current_prebid";
+            historical_as_of: null;
+            submitted_at: null;
+            label_known_at: null;
+            training_frozen_at: null;
+            submission_split_at: null;
+            label_available_as_of: null;
+            historical_qualification: "not_established";
+          };
+          original_bytes_verified: false;
+          inventory_complete: false;
+          scoring_ready: false;
+          formal_scoring_eligible: false;
+          model_execution_enabled: false;
+          training_eligible: false;
+        };
+        digest: string;
+      };
+      original_verification: {
+        state: "verified_at_recording";
+        verified_at: string;
+        files: {
+          document_version_id: string;
+          digest: string;
+          byte_size: number;
+        }[];
+      };
+      inventory_complete: false;
+      scoring_ready: false;
+      formal_scoring_eligible: false;
+      model_execution_enabled: false;
+      training_eligible: false;
+    };
+    digest: string;
+  };
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      request: {
+        purpose: "current_prebid";
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        technical_part_ids: string[];
+        rule_scopes: {
+          rule_id: string;
+          rule_digest: string;
+          selection: "include" | "exclude" | "unclassified";
+          part_ids: string[];
+          reason: string;
+        }[];
+        reason: string;
+      };
+      preview_digest: string;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageTechnicalScopeContext = {
+  target: BidPackageStoredView;
+  authority: BidPackageStoredView;
+  inventory: PackageRequirementInventoryView;
+  method: {
+    version: "package-technical-scope-policy/1";
+    digest: string;
+    sources: {
+      "packages/domain/package_technical_scope.py": string;
+      "packages/domain/bid_package_technical_scope_repository.py": string;
+      "packages/domain/bid_package_technical_scope_service.py": string;
+      "packages/contracts/package_technical_scope_api.py": string;
+      "packages/contracts/sql/bid-package-technical-scopes.sql": string;
+      "packages/domain/bid_package_review_documents.py": string;
+      "packages/domain/bid_package_repository.py": string;
+      "packages/rag/indexing.py": string;
+    };
+    limits: {
+      members: 500;
+      parts: 2000;
+      rules: 1000;
+      source_rows: 20000;
+      blocks: 100000;
+      pages: 100000;
+      request_bytes: 1048576;
+      snapshot_bytes: 33554432;
+      original_bytes: 1073741824;
+    };
+  };
+  context_digest: string;
+  etag: string;
+  can_freeze: boolean;
+  blocking_reasons: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  catalog_complete: true;
+  timing: {
+    purpose: "current_prebid";
+    historical_as_of: null;
+    submitted_at: null;
+    label_known_at: null;
+    training_frozen_at: null;
+    submission_split_at: null;
+    label_available_as_of: null;
+    historical_qualification: "not_established";
+  };
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+};
+
+export type PackageTechnicalScopePage = {
+  items: {
+    id: string;
+    digest: string;
+    inventory_id: string;
+    created_at: string;
+    coverage_state: "partial" | "unknown";
+    selected_part_count: number;
+    included_rule_count: number;
+    scoring_ready: false;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageTechnicalScoringContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    scope_id: string;
+    scope_digest: string;
+  };
+  basis: {
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_digest: string;
+    rule_set_id: string;
+    rule_set_digest: string;
+    identity_digest: string;
+  };
+  observed_at: string;
+  coverage: {
+    state: "partial" | "unknown";
+    all_part_count: number;
+    selected_part_count: number;
+    all_scoring_rule_count: number;
+    included_rule_count: number;
+    frozen_parse_member_count: number;
+    gaps: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    visual_coverage: "unproven";
+    required_range_completeness: "unproven";
+  };
+  denominator: {
+    state:
+      | "unselected"
+      | "not_configured"
+      | "unavailable"
+      | "mismatched"
+      | "matched";
+    scale_id: string | null;
+    scale_digest: string | null;
+    purpose: "current_prebid" | "historical_backtest";
+    technical_maximum: string | null;
+    scale_description: string | null;
+    aggregation: {
+      status: "unknown" | "unsupported";
+      description: string;
+    } | null;
+    maximum_usable: boolean;
+    aggregation_usable: false;
+    evidence_refs: {
+      id: string;
+      document_version_id: string;
+      parse_id: string;
+      evidence_id: string;
+      source_id: string;
+      blob_digest: string;
+      evidence_digest: string;
+      physical_page: number;
+      source_revision: number | null;
+      quote: string;
+      supported_fields: (
+        | "technical_maximum"
+        | "scale_description"
+        | "aggregation"
+      )[];
+    }[];
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  judgments: {
+    required_valid_independent: 3;
+    recorded_valid_independent: 0;
+    producer_authority: "not_configured_for_exact_package";
+    previous_answers_in_input: false;
+    retries_count_as_independent: false;
+    unknown_send_auto_retry: false;
+    execution_enabled: false;
+  };
+  numeric_prediction: null;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+  version: "package-technical-scoring-context/1";
+  purpose: "current_prebid";
+  current_input: {
+    state: "matched" | "changed" | "unavailable";
+    stored_context_digest: string;
+    current_context_digest: string | null;
+    method_matches: boolean;
+    original_bytes_reverified: false;
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  official_label_access: "forbidden";
+};
+
+export type PackageTechnicalSampleContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    scope_id: string;
+    scope_digest: string;
+  };
+  basis: {
+    package_digest: string;
+    authority_revision_id: string;
+    authority_digest: string;
+    inventory_digest: string;
+    rule_set_id: string;
+    rule_set_digest: string;
+    identity_digest: string;
+  };
+  observed_at: string;
+  coverage: {
+    state: "partial" | "unknown";
+    all_part_count: number;
+    selected_part_count: number;
+    all_scoring_rule_count: number;
+    included_rule_count: number;
+    frozen_parse_member_count: number;
+    gaps: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    visual_coverage: "unproven";
+    required_range_completeness: "unproven";
+  };
+  denominator: {
+    state:
+      | "unselected"
+      | "not_configured"
+      | "unavailable"
+      | "mismatched"
+      | "matched";
+    scale_id: string | null;
+    scale_digest: string | null;
+    purpose: "current_prebid" | "historical_backtest";
+    technical_maximum: string | null;
+    scale_description: string | null;
+    aggregation: {
+      status: "unknown" | "unsupported";
+      description: string;
+    } | null;
+    maximum_usable: boolean;
+    aggregation_usable: false;
+    evidence_refs: {
+      id: string;
+      document_version_id: string;
+      parse_id: string;
+      evidence_id: string;
+      source_id: string;
+      blob_digest: string;
+      evidence_digest: string;
+      physical_page: number;
+      source_revision: number | null;
+      quote: string;
+      supported_fields: (
+        | "technical_maximum"
+        | "scale_description"
+        | "aggregation"
+      )[];
+    }[];
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  judgments: {
+    required_valid_independent: 3;
+    recorded_valid_independent: 0;
+    producer_authority: "not_configured_for_exact_package";
+    previous_answers_in_input: false;
+    retries_count_as_independent: false;
+    unknown_send_auto_retry: false;
+    execution_enabled: false;
+  };
+  numeric_prediction: null;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+  inventory_complete: false;
+  scoring_ready: false;
+  formal_scoring_eligible: false;
+  model_execution_enabled: false;
+  training_eligible: false;
+  version: "package-technical-sample-context/1";
+  purpose: "historical_backtest";
+  submission: {
+    id: string;
+    binding_digest: string;
+    submitted_at: string;
+    recorded_at: string;
+    is_current_head: boolean;
+    matches_scope: boolean;
+    platform_submission_verified: false;
+  };
+  official_result: {
+    outcome_id: string | null;
+    score_kind: "technical_total" | "comprehensive_total" | "unknown" | null;
+    technical_value: string | null;
+    reported_maximum: string | null;
+    label_known_at: string | null;
+    current_association: boolean;
+    reasons: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+  };
+  timing: {
+    scope_frozen_at: string;
+    historical_as_of: string;
+    submitted_at: string;
+    label_known_at: string | null;
+    training_frozen_at: null;
+    submission_split_at: null;
+    label_available_as_of: null;
+    strict_timing_ready: false;
+  };
+  original_scope_precedes_submission: boolean;
+  source_metadata_matches: boolean;
+  sample_state: "pending";
+  sample_created: false;
+  official_label_access: "association_check_only";
+};
+
+export type PackageTechnicalExecutionContext = {
+  version: "package-technical-execution-context/1";
+  qualification: {
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+      scope_id: string;
+      scope_digest: string;
+    };
+    basis: {
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      identity_digest: string;
+    };
+    observed_at: string;
+    coverage: {
+      state: "partial" | "unknown";
+      all_part_count: number;
+      selected_part_count: number;
+      all_scoring_rule_count: number;
+      included_rule_count: number;
+      frozen_parse_member_count: number;
+      gaps: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+      visual_coverage: "unproven";
+      required_range_completeness: "unproven";
+    };
+    denominator: {
+      state:
+        | "unselected"
+        | "not_configured"
+        | "unavailable"
+        | "mismatched"
+        | "matched";
+      scale_id: string | null;
+      scale_digest: string | null;
+      purpose: "current_prebid" | "historical_backtest";
+      technical_maximum: string | null;
+      scale_description: string | null;
+      aggregation: {
+        status: "unknown" | "unsupported";
+        description: string;
+      } | null;
+      maximum_usable: boolean;
+      aggregation_usable: false;
+      evidence_refs: {
+        id: string;
+        document_version_id: string;
+        parse_id: string;
+        evidence_id: string;
+        source_id: string;
+        blob_digest: string;
+        evidence_digest: string;
+        physical_page: number;
+        source_revision: number | null;
+        quote: string;
+        supported_fields: (
+          | "technical_maximum"
+          | "scale_description"
+          | "aggregation"
+        )[];
+      }[];
+      reasons: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+    };
+    judgments: {
+      required_valid_independent: 3;
+      recorded_valid_independent: 0;
+      producer_authority: "not_configured_for_exact_package";
+      previous_answers_in_input: false;
+      retries_count_as_independent: false;
+      unknown_send_auto_retry: false;
+      execution_enabled: false;
+    };
+    numeric_prediction: null;
+    blockers: {
+      id: string;
+      code: string;
+      subject: string | null;
+      message: string;
+    }[];
+    inventory_complete: false;
+    scoring_ready: false;
+    formal_scoring_eligible: false;
+    model_execution_enabled: false;
+    training_eligible: false;
+    version: "package-technical-scoring-context/1";
+    purpose: "current_prebid";
+    current_input: {
+      state: "matched" | "changed" | "unavailable";
+      stored_context_digest: string;
+      current_context_digest: string | null;
+      method_matches: boolean;
+      original_bytes_reverified: false;
+      reasons: {
+        id: string;
+        code: string;
+        subject: string | null;
+        message: string;
+      }[];
+    };
+    official_label_access: "forbidden";
+  };
+  producer: {
+    software_foundation: "not_installed" | "installed";
+    real_provider_configured: false;
+    formal_input_authority_configured: false;
+    mechanism_test_publicly_available: false;
+  };
+  method: {
+    schema: "package-technical-judgment-method/1";
+    provider: "deepseek";
+    model_alias: "deepseek-flash";
+    immutable_weights_verified: false;
+    input_protocol: "package-technical-judgment-input/1";
+    output_protocol: "package-technical-judgments/1";
+    transport_protocol: "controlled-score-response/1";
+    thinking: "disabled";
+    temperature: 0;
+    context_tokens: 1000000;
+    max_output_tokens: 4096;
+    maximum_prompt_characters: 262144;
+    prompt_digest: "b0f0dbab7ff8604813d50c9caf838f66c7d810f254b47773c68f5dda39a92eea";
+    output_schema_digest: "c41b1c0d5685dcddc247f1c0343046c6c52a749b039440f312fb62be7065829c";
+    valid_replicates_required: 3;
+    retry_is_replicate: false;
+    complete_package_snapshot_required: true;
+    visual_interpretation_supported: false;
+    formal_scoring_eligible: false;
+    digest: "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996";
+  };
+  execution_enabled: false;
+  blockers: {
+    id: string;
+    code: string;
+    subject: string | null;
+    message: string;
+  }[];
+};
+
+export type CreatePackageTechnicalExecution = {
+  purpose: "current_prebid";
+  scope_digest: string;
+  method_digest: "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996";
+  scale_id: string | null;
+  budget: string;
+  reason: string;
+};
+
+export type KnowledgePackageReviewTargetPage = {
+  bid_id: string;
+  items: {
+    id: string;
+    target_kind: "package_review_run";
+    created_at: string;
+    input_digest: string;
+    execution_input_id: string;
+    state: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    frozen_input_id: string;
+    result_digest: string | null;
+  }[];
+  next_offset: number | null;
+  reference_only: true;
+  changes_frozen_result: false;
+  formal_score_allowed: false;
+};
+
+export type HistoricalImportRequest = {
+  records: HistoricalImportRecord[];
+};
+
+export type HistoricalImportBatch = {
+  id: string;
+  mode: "dry_run" | "confirmed_import";
+  revision: number;
+  manifest_blob_id: string;
+  records: {
+    batch_id: string;
+    external_record_id: string;
+    source_digest: string;
+    state: "pending" | "imported" | "conflict" | "failed";
+    bid_id: string | null;
+    errors: string[];
+  }[];
+  next_offset: number | null;
+  counts: {
+    total: number;
+    pending: number;
+    imported: number;
+    errors: number;
+  };
+  formal_sample_admission: "separate_verified_technical_label_check";
+  standard_submission_gate_checked: false;
+};
+
+export type HistoricalImportReceipt = {
+  id: string;
+  mode: "dry_run" | "confirmed_import";
+  revision: number;
+  manifest_blob_id: string;
+  records: {
+    batch_id: string;
+    external_record_id: string;
+    source_digest: string;
+    state: "pending" | "imported" | "conflict" | "failed";
+    bid_id: string | null;
+    errors: string[];
+  }[];
+  next_offset: number | null;
+  counts: {
+    total: number;
+    pending: number;
+    imported: number;
+    errors: number;
+  };
+  formal_sample_admission: "separate_verified_technical_label_check";
+  standard_submission_gate_checked: false;
+  command: {
+    command_id: string;
+    actor_id: string;
+    command_kind: "preview-historical-import" | "confirm-historical-import";
+    target_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    if_match: string | null;
+  };
+};
+
+export type HistoricalImportPage = {
+  items: {
+    id: string;
+    mode: "dry_run" | "confirmed_import";
+    revision: number;
+    created_by: string;
+    created_at: string | null;
+    counts: {
+      total: number;
+      pending: number;
+      imported: number;
+      errors: number;
+    };
+  }[];
+  next_offset: number | null;
+};
+
+export type HistoricalImportSource = {
+  batch_id: string;
+  manifest_blob_id: string;
+  manifest_digest: string;
+  request: HistoricalImportRequest;
+  source_matches_saved_manifest: true;
+};
+
+export type PackageRuleCorrectionRequest = {
+  base_inventory_digest: string;
+  base_rule_set_digest: string;
+  reason: string;
+  changes: (
+    | {
+        op: "add";
+        rule: PackageRuleCorrection_RuleAddition;
+      }
+    | {
+        op: "replace";
+        rule_id: string;
+        rule_digest: string;
+        rule: PackageRuleCorrection_RuleAddition;
+      }
+    | {
+        op: "withdraw";
+        rule_id: string;
+        rule_digest: string;
+        evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+      }
+  )[];
+};
+
+export type ApplyPackageRuleCorrection = {
+  request: {
+    base_inventory_digest: string;
+    base_rule_set_digest: string;
+    reason: string;
+    changes: (
+      | {
+          op: "add";
+          rule: PackageRuleCorrection_RuleAddition;
+        }
+      | {
+          op: "replace";
+          rule_id: string;
+          rule_digest: string;
+          rule: PackageRuleCorrection_RuleAddition;
+        }
+      | {
+          op: "withdraw";
+          rule_id: string;
+          rule_digest: string;
+          evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+        }
+    )[];
+  };
+  preview_digest: string;
+};
+
+export type PackageRuleCorrectionPreviewView = {
+  manifest: {
+    version: "package-rule-correction-preview/1";
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    base: {
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+    };
+    authority: {
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    };
+    extraction_basis: {
+      inventory_id: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      extraction_result_id: string;
+      extraction_input_digest: string;
+      extraction_result_digest: string;
+      extraction_range_status: "all_frozen_evidence_submitted";
+      extraction_coverage: "complete" | "partial" | "conflict";
+      extraction_quality_status: "not_measured";
+    };
+    previous: {
+      id: string;
+      digest: string;
+    } | null;
+    sequence_no: number;
+    policy_digest: string;
+    request: {
+      base_inventory_digest: string;
+      base_rule_set_digest: string;
+      reason: string;
+      changes: (
+        | {
+            op: "add";
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "replace";
+            rule_id: string;
+            rule_digest: string;
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "withdraw";
+            rule_id: string;
+            rule_digest: string;
+            evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+          }
+      )[];
+    };
+    request_digest: string;
+    source_snapshot_digest: string;
+    changes: {
+      index: number;
+      op: "add" | "replace" | "withdraw";
+      rule_id: string | null;
+      rule_digest: string | null;
+      before: {
+        kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+        statement: string;
+        conditions: string[];
+        exceptions: string[];
+        max_points: string | null;
+        evidence_ids: string[];
+        bands: PackageRuleCorrection_RuleBand[];
+        applicability_scope: { [key: string]: unknown };
+        provenance_status: "effective" | "needs_revalidation" | "superseded";
+      } | null;
+      after: {
+        kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+        statement: string;
+        conditions: string[];
+        exceptions: string[];
+        max_points: string | null;
+        evidence_ids: string[];
+        bands: PackageRuleCorrection_RuleBand[];
+        applicability_scope: { [key: string]: unknown };
+        provenance_status: "effective" | "needs_revalidation" | "superseded";
+      };
+      quotes: {
+        evidence_id: string;
+        member_id: string;
+        document_version_id: string;
+        parse_run_id: string;
+        physical_page: number;
+        evidence_digest: string;
+        part_ids: string[];
+        quote: string;
+      }[];
+    }[];
+    counts: {
+      before: number;
+      after: number;
+      carried: number;
+      added: number;
+      replaced: number;
+      withdrawn: number;
+      active_after: number;
+    };
+    limitations: string[];
+    inventory_complete: false;
+    review_ready: false;
+    original_bytes_verified: false;
+  };
+  digest: string;
+};
+
+export type PackageRuleCorrectionView = {
+  manifest: {
+    version: "package-rule-correction/1";
+    id: string;
+    scope: {
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      inventory_id: string;
+    };
+    base: {
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+    };
+    authority: {
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    };
+    extraction_basis: {
+      inventory_id: string;
+      inventory_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      extraction_result_id: string;
+      extraction_input_digest: string;
+      extraction_result_digest: string;
+      extraction_range_status: "all_frozen_evidence_submitted";
+      extraction_coverage: "complete" | "partial" | "conflict";
+      extraction_quality_status: "not_measured";
+    };
+    previous: {
+      id: string;
+      digest: string;
+    } | null;
+    sequence_no: number;
+    policy_digest: string;
+    request: {
+      base_inventory_digest: string;
+      base_rule_set_digest: string;
+      reason: string;
+      changes: (
+        | {
+            op: "add";
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "replace";
+            rule_id: string;
+            rule_digest: string;
+            rule: PackageRuleCorrection_RuleAddition;
+          }
+        | {
+            op: "withdraw";
+            rule_id: string;
+            rule_digest: string;
+            evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+          }
+      )[];
+    };
+    request_digest: string;
+    source_snapshot_digest: string;
+    preview_digest: string;
+    actor_id: string;
+    command_id: string;
+    created_at: string;
+    result: {
+      inventory_id: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      rule_count: number;
+      rules_digest: string;
+    };
+    mappings: {
+      from_rule_id: string;
+      from_rule_digest: string;
+      to_rule_id: string;
+      to_rule_digest: string;
+      op: "carry" | "replace" | "withdraw";
+      change_index: number | null;
+    }[];
+    additions: {
+      change_index: number;
+      to_rule_id: string;
+      to_rule_digest: string;
+    }[];
+    decision_bindings: {
+      rule_id: string;
+      decision_id: string;
+      decision_digest: string;
+      mode: "carried" | "confirmed" | "rejected";
+    }[];
+  };
+  digest: string;
+};
+
+export type PackageRuleCorrectionAppliedView = {
+  correction: PackageRuleCorrectionView;
+  inventory: PackageRequirementInventoryView;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      request: {
+        base_inventory_digest: string;
+        base_rule_set_digest: string;
+        reason: string;
+        changes: (
+          | {
+              op: "add";
+              rule: PackageRuleCorrection_RuleAddition;
+            }
+          | {
+              op: "replace";
+              rule_id: string;
+              rule_digest: string;
+              rule: PackageRuleCorrection_RuleAddition;
+            }
+          | {
+              op: "withdraw";
+              rule_id: string;
+              rule_digest: string;
+              evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+            }
+        )[];
+      };
+      preview_digest: string;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageRuleCorrectionHistoryPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  items: {
+    id: string;
+    digest: string;
+    created_at: string;
+    actor_id: string;
+    base_inventory_id: string;
+    result_inventory_id: string;
+    added: number;
+    replaced: number;
+    withdrawn: number;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageRuleCorrectionDetail = PackageRuleCorrectionAppliedView;
+
+export type PackageRuleCorrectionEvidencePage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  inventory_digest: string;
+  authority: {
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  };
+  items: {
+    evidence_id: string;
+    member_id: string;
+    document_version_id: string;
+    parse_run_id: string;
+    physical_page: number;
+    evidence_digest: string;
+    part_ids: string[];
+    file_digest: string;
+    ordinal: number;
+    kind: "text" | "table" | "visual_observation";
+    excerpt: string;
+  }[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageRuleCorrectionEvidenceDetail = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  inventory_digest: string;
+  authority: {
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  };
+  evidence: {
+    evidence_id: string;
+    member_id: string;
+    document_version_id: string;
+    parse_run_id: string;
+    physical_page: number;
+    evidence_digest: string;
+    part_ids: string[];
+    file_digest: string;
+    ordinal: number;
+    kind: "text" | "table" | "visual_observation";
+    text_content: string;
+  };
+};
+
+export type AuthoringGenerationBatchCreateRequest = {
+  base_draft_revision: number;
+  price_version_id: string;
+  currency: "USD" | "CNY";
+  amount_scale: 1000000000;
+  total_limit_minor: number;
+  sections: {
+    section_id: string;
+    base_section_revision: number;
+    instruction: string;
+    source_version_ids: string[];
+    selected_node_ids: string[] | null;
+    max_tokens: number;
+    budget_limit_minor: number;
+  }[];
+  reason: string;
+};
+
+export type AuthoringGenerationBatchRetryRequest = {
+  batch_digest: string;
+  section_id: string;
+  previous_attempt: number;
+  previous_job_id: string;
+  reason: string;
+};
+
+export type AuthoringGenerationBatchResolveRequest = {
+  decision: "apply" | "reject";
+  batch_digest: string;
+  selections: {
+    section_id: string;
+    attempt: number;
+    job_id: string;
+    action_id: string;
+    candidate_digest: string;
+  }[];
+  reason: string;
+};
+
+export type AuthoringGenerationBatchReceipt = {
+  protocol: "authoring-generation-batch-command/1";
+  bid_id: string;
+  draft_id: string;
+  batch_id: string;
+  batch_digest: string;
+  kind: "created" | "retried" | "applied" | "rejected";
+  batch_state: "open" | "applied" | "rejected";
+  created_job_ids: string[];
+  applied_section_ids: string[];
+  unselected_section_ids: string[];
+  draft_revision: number | null;
+  snapshot_id: string | null;
+  snapshot_digest: string | null;
+  recorded_at: string;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request:
+      | {
+          base_draft_revision: number;
+          price_version_id: string;
+          currency: "USD" | "CNY";
+          amount_scale: 1000000000;
+          total_limit_minor: number;
+          sections: {
+            section_id: string;
+            base_section_revision: number;
+            instruction: string;
+            source_version_ids: string[];
+            selected_node_ids: string[] | null;
+            max_tokens: number;
+            budget_limit_minor: number;
+          }[];
+          reason: string;
+        }
+      | {
+          batch_digest: string;
+          section_id: string;
+          previous_attempt: number;
+          previous_job_id: string;
+          reason: string;
+        }
+      | {
+          decision: "apply" | "reject";
+          batch_digest: string;
+          selections: {
+            section_id: string;
+            attempt: number;
+            job_id: string;
+            action_id: string;
+            candidate_digest: string;
+          }[];
+          reason: string;
+        };
+    if_match: string | null;
+  };
+};
+
+export type AuthoringGenerationBatch = {
+  batch_id: string;
+  bid_id: string;
+  draft_id: string;
+  batch_digest: string;
+  base_draft_revision: number;
+  state: "open" | "applied" | "rejected";
+  created_at: string;
+  created_by: string;
+  section_count: number;
+  ready_count: number;
+  failed_count: number;
+  running_count: number;
+  budget: {
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    limit_minor: number;
+    charged_minor: number;
+    reserved_minor: number;
+    exposure_minor: number;
+    remaining_minor: number;
+    requires_reconciliation: boolean;
+    over_limit: boolean;
+    estimate_not_provider_spend_cap: true;
+  };
+  protocol: "authoring-generation-batch/1";
+  generation_mode: "section_patch_set/1";
+  base_snapshot_id: string;
+  base_snapshot_digest: string;
+  base_draft_etag: string;
+  price: {
+    price_version_id: string;
+    version: string;
+    provider: string;
+    model: string;
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    input_upper: number;
+    output_upper: number;
+    input_per_million_minor: number;
+    output_per_million_minor: number;
+    valid_until: string;
+    source_kind: string;
+    source_uri: string;
+    source_sha256: string;
+  };
+  reason: string;
+  etag: string;
+  sections: {
+    section_id: string;
+    base_section_revision: number;
+    instruction: string;
+    source_version_ids: string[];
+    selected_node_ids: string[] | null;
+    max_tokens: number;
+    budget_limit_minor: number;
+    title: string;
+    ordinal: number;
+    before_digest: string;
+    current_attempt: number;
+    budget: {
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      limit_minor: number;
+      charged_minor: number;
+      reserved_minor: number;
+      exposure_minor: number;
+      remaining_minor: number;
+      requires_reconciliation: boolean;
+      over_limit: boolean;
+      estimate_not_provider_spend_cap: true;
+    };
+    attempts: {
+      attempt: number;
+      job_id: string;
+      operation_id: string;
+      writing_plan_id: string;
+      created_at: string;
+      created_by: string;
+      state:
+        | "queued"
+        | "running"
+        | "cancel_requested"
+        | "succeeded"
+        | "failed"
+        | "cancelled";
+      publication_state: "pending" | "published" | "stale" | "failed";
+      action_id: string | null;
+      candidate_digest: string | null;
+      candidate_url: string | null;
+      error_code: string | null;
+      budget_state: "held" | "sent" | "unknown" | "settled" | "released";
+      reserved_minor: number;
+      charged_minor: number | null;
+      requires_reconciliation: boolean;
+      retry_allowed: boolean;
+      retry_blocked_reason: {
+        code: string;
+        message: string;
+      } | null;
+    }[];
+  }[];
+  preparation: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      base_draft_revision: number;
+      price_version_id: string;
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      total_limit_minor: number;
+      sections: {
+        section_id: string;
+        base_section_revision: number;
+        instruction: string;
+        source_version_ids: string[];
+        selected_node_ids: string[] | null;
+        max_tokens: number;
+        budget_limit_minor: number;
+      }[];
+      reason: string;
+    };
+    if_match: string | null;
+  };
+  resolution: {
+    protocol: "authoring-generation-batch-command/1";
+    bid_id: string;
+    draft_id: string;
+    batch_id: string;
+    batch_digest: string;
+    kind: "created" | "retried" | "applied" | "rejected";
+    batch_state: "open" | "applied" | "rejected";
+    created_job_ids: string[];
+    applied_section_ids: string[];
+    unselected_section_ids: string[];
+    draft_revision: number | null;
+    snapshot_id: string | null;
+    snapshot_digest: string | null;
+    recorded_at: string;
+    command: {
+      command_id: string;
+      actor_id: string;
+      idempotency_key: string;
+      request_digest: string;
+      request:
+        | {
+            base_draft_revision: number;
+            price_version_id: string;
+            currency: "USD" | "CNY";
+            amount_scale: 1000000000;
+            total_limit_minor: number;
+            sections: {
+              section_id: string;
+              base_section_revision: number;
+              instruction: string;
+              source_version_ids: string[];
+              selected_node_ids: string[] | null;
+              max_tokens: number;
+              budget_limit_minor: number;
+            }[];
+            reason: string;
+          }
+        | {
+            batch_digest: string;
+            section_id: string;
+            previous_attempt: number;
+            previous_job_id: string;
+            reason: string;
+          }
+        | {
+            decision: "apply" | "reject";
+            batch_digest: string;
+            selections: {
+              section_id: string;
+              attempt: number;
+              job_id: string;
+              action_id: string;
+              candidate_digest: string;
+            }[];
+            reason: string;
+          };
+      if_match: string | null;
+    };
+  } | null;
+  current_validity: "rechecked_on_retry_and_apply";
+  requires_explicit_selection: true;
+  atomic_apply: true;
+};
+
+export type AuthoringGenerationBatchPage = {
+  bid_id: string;
+  draft_id: string;
+  items: {
+    batch_id: string;
+    bid_id: string;
+    draft_id: string;
+    batch_digest: string;
+    base_draft_revision: number;
+    state: "open" | "applied" | "rejected";
+    created_at: string;
+    created_by: string;
+    section_count: number;
+    ready_count: number;
+    failed_count: number;
+    running_count: number;
+    budget: {
+      currency: "USD" | "CNY";
+      amount_scale: 1000000000;
+      limit_minor: number;
+      charged_minor: number;
+      reserved_minor: number;
+      exposure_minor: number;
+      remaining_minor: number;
+      requires_reconciliation: boolean;
+      over_limit: boolean;
+      estimate_not_provider_spend_cap: true;
+    };
+  }[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type AuthoringGenerationBatchCandidate = {
+  protocol: "authoring-generation-candidate/1";
+  generation_mode: "section_patch_set/1";
+  bid_id: string;
+  draft_id: string;
+  batch_id: string;
+  batch_digest: string;
+  section_id: string;
+  attempt: number;
+  job_id: string;
+  writing_plan_id: string;
+  action_id: string;
+  candidate_digest: string;
+  base_draft_revision: number;
+  base_section_revision: number;
+  base_draft_etag: string;
+  before_digest: string;
+  after_digest: string;
+  scope_digest: string;
+  before: AuthoringGenerationJson;
+  after: AuthoringGenerationJson;
+  changes: {
+    replaced_node_ids: string[];
+    insertions: {
+      after_node_id: string | null;
+      node_ids: string[];
+    }[];
+    added_paragraphs: number;
+  };
+  created_at: string;
+  expires_at: string;
+  state: "pending" | "executed" | "rejected" | "expired" | "stale" | "failed";
+  etag: string;
+};
+
+export type AuthoringGenerationBatchCapabilities = {
+  enabled: boolean;
+  unavailable_reason: {
+    code: string;
+    message: string;
+  } | null;
+  generation_mode: "section_patch_set/1";
+  max_sections: number;
+  max_attempts_per_section: number;
+  max_frozen_bytes: number;
+  max_instruction_chars: number;
+  max_limit_minor: number;
+  amount_scale: 1000000000;
+  default_max_tokens: number;
+  price: {
+    price_version_id: string;
+    version: string;
+    provider: string;
+    model: string;
+    currency: "USD" | "CNY";
+    amount_scale: 1000000000;
+    input_upper: number;
+    output_upper: number;
+    input_per_million_minor: number;
+    output_per_million_minor: number;
+    valid_until: string;
+    source_kind: string;
+    source_uri: string;
+    source_sha256: string;
+  } | null;
+  estimates: {
+    max_tokens: number;
+    reservation_minor: number;
+  }[];
+  requires_explicit_selection: true;
+  atomic_apply: true;
+  requires_verified_identity: true;
+  automatic_retry_authorized: false;
+};
+
+export type AuthoringWordImportPrepareRequest = {
+  source_document_version_id: string;
+  source_digest: string;
+  source_byte_size: number;
+  base_draft_revision: number;
+  method_digest: string;
+  reason: string;
+};
+
+export type AuthoringWordImportResolveRequest = {
+  decision: "append" | "reject";
+  candidate_digest: string;
+  acknowledged_issue_ids: string[];
+  reason: string;
+};
+
+export type AuthoringWordImportCandidate = {
+  candidate_id: string;
+  bid_id: string;
+  draft_id: string;
+  candidate_digest: string;
+  source: {
+    document_version_id: string;
+    digest: string;
+    byte_size: number;
+    media_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    filename: string;
+    role: string;
+    file_id: string;
+    file_revision: number;
+    intake_digest: string;
+  };
+  base_draft_revision: number;
+  method_digest: string;
+  state: "ready" | "blocked" | "applied" | "rejected";
+  created_at: string;
+  created_by: string;
+  section_count: number;
+  image_count: number;
+  warning_count: number;
+  blocker_count: number;
+  protocol: "authoring-word-import-candidate/1";
+  base_snapshot_id: string;
+  base_draft_etag: string;
+  before_digest: string;
+  existing_sections: {
+    section_id: string;
+    parent_id: string | null;
+    ordinal: number;
+    title: string;
+  }[];
+  method: AuthoringWordImportJson;
+  sections: {
+    key: string;
+    parent_key: string | null;
+    section_id: string;
+    parent_id: string | null;
+    ordinal: number;
+    title: string;
+    source_path: string;
+    content: AuthoringWordImportJson;
+  }[];
+  mapping: {
+    source_path: string;
+    section_key: string;
+    node_id: string;
+    kind: string;
+  }[];
+  images: {
+    key: string;
+    source_part: string;
+    source_digest: string;
+    source_byte_size: number;
+    source_media_type: "image/png" | "image/jpeg";
+    media_type: "image/png";
+    digest: string;
+    byte_size: number;
+    width_px: number;
+    height_px: number;
+  }[];
+  issues: {
+    id: string;
+    code: string;
+    severity: "warning" | "blocker";
+    source_path: string;
+    message: string;
+  }[];
+  can_apply: boolean;
+  current_validity: "rechecked_on_append";
+  append_only: true;
+  reason: string;
+  preparation: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      source_document_version_id: string;
+      source_digest: string;
+      source_byte_size: number;
+      base_draft_revision: number;
+      method_digest: string;
+      reason: string;
+    };
+    if_match: string | null;
+  };
+  resolution: AuthoringWordImportResult | null;
+};
+
+export type AuthoringWordImportResult = {
+  bid_id: string;
+  draft_id: string;
+  candidate_id: string;
+  candidate_digest: string;
+  decision: "append" | "reject";
+  state: "applied" | "rejected";
+  created_section_ids: string[];
+  draft_revision: number | null;
+  snapshot_id: string | null;
+  snapshot_digest: string | null;
+  resolved_at: string;
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      decision: "append" | "reject";
+      candidate_digest: string;
+      acknowledged_issue_ids: string[];
+      reason: string;
+    };
+    if_match: string | null;
+  };
+};
+
+export type AuthoringWordImportPage = {
+  bid_id: string;
+  draft_id: string;
+  items: {
+    candidate_id: string;
+    bid_id: string;
+    draft_id: string;
+    candidate_digest: string;
+    source: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      filename: string;
+      role: string;
+      file_id: string;
+      file_revision: number;
+      intake_digest: string;
+    };
+    base_draft_revision: number;
+    method_digest: string;
+    state: "ready" | "blocked" | "applied" | "rejected";
+    created_at: string;
+    created_by: string;
+    section_count: number;
+    image_count: number;
+    warning_count: number;
+    blocker_count: number;
+  }[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
+export type AuthoringWordImportCapabilities = {
+  enabled: boolean;
+  unavailable_reason: {
+    code: string;
+    message: string;
+  } | null;
+  method_digest: string;
+  method: AuthoringWordImportJson;
+  supported: string[];
+  limitations: string[];
+  limits: {
+    max_docx_bytes: number;
+    max_candidate_bytes: number;
+    max_sections: number;
+    max_images: number;
+  };
+  append_only: true;
+  requires_registered_original: true;
+  requires_loss_acknowledgement: true;
+};
+
+export type DocumentParseContext = {
+  context: {
+    protocol: "document-parse-context/1";
+    bid_id: string;
+    document_version_id: string;
+    document: {
+      sha256: string;
+      byte_size: number;
+      media_type: "application/pdf";
+      filename: string;
+      file_id: string;
+      file_revision: number;
+      role: "body" | "tender" | "supplement" | "drawing" | "boq";
+      artifact_kind: "source_original" | "bid_body";
+      locator_digest: string;
+    };
+    qualification: {
+      kind: "verified_upload" | "adopted_generated";
+      identity_digest: string;
+    };
+    source: {
+      root_id: string;
+      state: "unregistered" | "published";
+      authority_digest: string;
+    };
+    method: {
+      protocol: "document-parse-method/1";
+      mode: "physical_text_only" | "configured_local";
+      parser_digest: string;
+      config_digest: string;
+      implementation_digest: string;
+      max_bytes: 104857600;
+      max_pages: 1000;
+    };
+    word_coverage_claimed: false;
+    current_body_changed: false;
+    automatically_started_review: false;
+  };
+  context_digest: string;
+};
+
+export type StartDocumentParse = {
+  context_digest: string;
+  reason: string;
+};
+
+export type DocumentParseView = {
+  protocol: "document-parse-request/1";
+  id: string;
+  bid_id: string;
+  document_version_id: string;
+  actor_id: string;
+  created_at: string;
+  context: {
+    protocol: "document-parse-context/1";
+    bid_id: string;
+    document_version_id: string;
+    document: {
+      sha256: string;
+      byte_size: number;
+      media_type: "application/pdf";
+      filename: string;
+      file_id: string;
+      file_revision: number;
+      role: "body" | "tender" | "supplement" | "drawing" | "boq";
+      artifact_kind: "source_original" | "bid_body";
+      locator_digest: string;
+    };
+    qualification: {
+      kind: "verified_upload" | "adopted_generated";
+      identity_digest: string;
+    };
+    source: {
+      root_id: string;
+      state: "unregistered" | "published";
+      authority_digest: string;
+    };
+    method: {
+      protocol: "document-parse-method/1";
+      mode: "physical_text_only" | "configured_local";
+      parser_digest: string;
+      config_digest: string;
+      implementation_digest: string;
+      max_bytes: 104857600;
+      max_pages: 1000;
+    };
+    word_coverage_claimed: false;
+    current_body_changed: false;
+    automatically_started_review: false;
+  };
+  context_digest: string;
+  reason: string;
+  operation: {
+    id: string;
+    kind: "parse-document";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "cancelled"
+      | "succeeded"
+      | "failed";
+    input_digest: string;
+    handler_version: "document-parse/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    parse_run_id: string;
+    document_version_id: string;
+    source_digest: string;
+    parser_digest: string;
+    config_digest: string;
+    parsed_digest: string;
+    coverage: "complete" | "partial" | "failed";
+    page_count: number;
+    evidence_count: number;
+    gaps: string[];
+    gap_count: number;
+    word_coverage_claimed: false;
+  } | null;
+  current_body_changed: false;
+  automatically_started_review: false;
+};
+
+export type DocumentParseStarted = {
+  protocol: "document-parse-start/1";
+  actor_id: string;
+  command_id: string;
+  request_digest: string;
+  reused: boolean;
+  request: DocumentParseView;
+};
+
+export type DocumentParsePage = {
+  bid_id: string;
+  document_version_id: string;
+  items: DocumentParseView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type AdoptAuthoringOutput = {
+  snapshot_id: string;
+  snapshot_digest: string;
+  package_id: string | null;
+  member: {
+    member_id: string;
+    document_version_id: string;
+    parse_run_id?: string;
+    purposes: string[];
+    parts: {
+      part_id: string;
+      category: string;
+      first_page: number;
+      last_page: number;
+      shared_attachment: boolean;
+      heading_path: number[];
+    }[];
+  };
+  reason: string;
+};
+
+export type AuthoringOutputAdopted = {
+  protocol: "authoring-output-adoption/1";
+  bid_id: string;
+  build_id: string;
+  actor_id: string;
+  command_id: string;
+  request_digest: string;
+  output: AuthoringOutputQualification;
+  package: BidPackageStoredView;
+  package_etag: string;
+  automatically_started_review: false;
+  current_body_changed: false;
+};
+
+export type AuthoringOutputQualification = {
+  protocol: "authoring-build-output/1";
+  bid_id: string;
+  build_id: string;
+  document_version_id: string;
+  format: "docx" | "pdf";
+  sha256: string;
+  byte_size: number;
+  build_identity: {
+    draft_id: string;
+    draft_revision: number;
+    snapshot_id: string;
+    snapshot_digest: string;
+    build_input_id: string;
+    input_digest: string;
+    manifest_digest: string;
+    writer_kind:
+      | "strict_text/1"
+      | "structured_text/1"
+      | "generated_text/2"
+      | "generated_rich/3";
+  };
+  word_document_version_id: string;
+  word_sha256: string;
+  word_pdf_relation: "verified" | "not_applicable";
+  publication_receipt_digest: string;
+  source_authority_digest: string;
+  direct_source_ids: string[];
+};
+
+export type PackageReviewReportContext = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  human_decisions_digest: string;
+  method_digest: string;
+  context_digest: string;
+  formats: ("docx" | "pdf")[];
+  pdf_unavailable_code: string | null;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type StartPackageReviewReport = {
+  context_digest: string;
+  format: "docx" | "pdf";
+};
+
+export type PackageReviewReportView = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  id: string;
+  actor_id: string;
+  created_at: string;
+  context_digest: string;
+  report_input_digest: string;
+  format: "docx" | "pdf";
+  artifact_kind: "review_report";
+  operation: {
+    id: string;
+    kind: "package-scope-report";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-report/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    document_version_id: string;
+    blob_digest: string;
+    byte_size: number;
+    media_type:
+      | "application/pdf"
+      | "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    filename: string;
+    gaps: string[];
+  } | null;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type PackageReviewReportPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  items: PackageReviewReportView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewComparisonPage = {
+  version: "package-review-comparison/1";
+  kind: "declared_scope_review_comparison";
+  bid_id: string;
+  match_policy: "exact_requirement_id_and_definition_digests/1";
+  left: PackageReviewComparisonRun;
+  right: PackageReviewComparisonRun;
+  input_changes: {
+    run_input: boolean;
+    scope: boolean;
+    frozen_input: boolean;
+    prepared_input: boolean;
+    rerun_intent: boolean;
+    requirements: boolean;
+    submitted_documents: boolean;
+    selected_facts: boolean;
+    fact_admission: boolean;
+    dependency_plan: boolean;
+    inventory_proof: boolean;
+    method: boolean;
+    method_fields: (
+      | "assessment"
+      | "batch_limit"
+      | "batch_rule_limit"
+      | "endpoint"
+      | "engine"
+      | "formal_scoring_eligible"
+      | "input_character_limit"
+      | "input_scope"
+      | "model"
+      | "model_json_encoding"
+      | "output_tokens_per_batch"
+      | "purpose"
+      | "semantic_quality"
+      | "source_digest"
+      | "submission_eligible"
+    )[];
+  };
+  counts: {
+    added: number;
+    removed: number;
+    changed: number;
+    unchanged: number;
+    machine_row_changed: number;
+    verdict_changed: number;
+  };
+  overall_coverage: "partial";
+  risk_resolution_assessed: false;
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  comparison_digest: string;
+  items: PackageReviewComparisonRow[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewComparisonRun = {
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  input_digest: string;
+  method_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  result_digest: string;
+  requirement_count: number;
+  matrix_coverage: "partial" | "complete";
+  overall_coverage: "partial";
+  human_heads_digest: string;
+};
+
+export type PackageReviewComparisonRow = {
+  requirement_id: string;
+  definition_change: "added" | "removed" | "changed" | "unchanged";
+  machine_row_changed: boolean | null;
+  verdict_transition: {
+    from:
+      | "satisfied"
+      | "violated"
+      | "not_found"
+      | "unable_to_judge"
+      | "not_applicable";
+    to:
+      | "satisfied"
+      | "violated"
+      | "not_found"
+      | "unable_to_judge"
+      | "not_applicable";
+    changed: boolean;
+  } | null;
+  left: PackageReviewComparisonRowSide | null;
+  right: PackageReviewComparisonRowSide | null;
+  left_human: PackageReviewHumanDecisionSummary | null;
+  right_human: PackageReviewHumanDecisionSummary | null;
+};
+
+export type PackageReviewComparisonRowSide = {
+  row_digest: string;
+  requirement_digest: PackageScopeReview_Digest;
+  rule_digest: PackageScopeReview_Digest;
+  rule_kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  requirement_statement: string;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  target_part_ids: string[];
+  verdict:
+    | "satisfied"
+    | "violated"
+    | "not_found"
+    | "unable_to_judge"
+    | "not_applicable";
+  statement: string;
+  limitations: string[];
+};
+
+export type StartPackageReviewRun = {
+  execution_input_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+};
+
+export type PackageReviewRunInput = PackageScopeReview_Input;
+
+export type PackageReviewRunInputView = {
+  manifest: PackageReviewRunInput;
+  digest: string;
+};
+
+export type PackageReviewRunView = {
+  kind: "package_review_run";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  input_digest: string;
+  method_digest: string;
+  operation: {
+    id: string;
+    kind: "package-scope-review";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-review/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    manifest: PackageReviewResult;
+    digest: string;
+  } | null;
+};
+
+export type PackageReviewRunSummary = {
+  kind: "package_review_run";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  execution_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  input_digest: string;
+  method_digest: string;
+  operation: {
+    id: string;
+    kind: "package-scope-review";
+    state:
+      | "queued"
+      | "running"
+      | "cancel_requested"
+      | "succeeded"
+      | "failed"
+      | "cancelled";
+    input_digest: string;
+    handler_version: "package-review/1";
+    error_code: string | null;
+    created_at: string;
+    finished_at: string | null;
+  };
+  result: {
+    digest: string;
+    requirement_count: number;
+    matrix_coverage: "complete" | "partial";
+    overall_coverage: "partial";
+  } | null;
+};
+
+export type SavePackageReviewHumanDecision = {
+  result_digest: string;
+  row_digest: string;
+  expected_head: {
+    id: string;
+    digest: string;
+  } | null;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+  selected_quotes: PackageScopeReview_Quote[];
+};
+
+export type PackageReviewHumanDecision = {
+  version: "package-review-human-decision/1";
+  id: string;
+  actor_id: string;
+  created_at: string;
+  sequence_no: number;
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  requirement_id: string;
+  input_digest: string;
+  result_digest: string;
+  row_digest: string;
+  previous_head: {
+    id: string;
+    digest: string;
+  } | null;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+  selected_quotes: PackageScopeReview_Quote[];
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type PackageReviewHumanDecisionView = {
+  manifest: PackageReviewHumanDecision;
+  digest: string;
+};
+
+export type PackageReviewHumanDecisionCurrent = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  result_digest: string;
+  items: {
+    requirement_id: string;
+    row_digest: string;
+    current: PackageReviewHumanDecisionSummary | null;
+  }[];
+};
+
+export type PackageReviewHumanDecisionPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  run_id: string;
+  result_digest: string;
+  requirement_id: string;
+  row_digest: string;
+  items: PackageReviewHumanDecisionView[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type AuthoringRichCapabilities = {
+  schema_digest: string;
+  schema: AuthoringJsonValue;
+  build_schema_digest: string;
+  image_upload_max_bytes: 8388608;
+  renderer_configured: boolean;
+  runtime_verified_by_this_read: false;
+  table_pdf_geometry: "unverified";
+  pagination_modes: {
+    mode: "chapter_start_new_page" | "continuous";
+    page_count_impact: string;
+  }[];
+};
+
+export type AuthoringRichBuildRequest = {
+  draft_id: string;
+  draft_revision: number;
+  directory_template_version_id: string;
+  style_template_version_id: string;
+  formats: ("docx" | "pdf")[];
+  follow_up: "none" | "review";
+  pagination_mode: "chapter_start_new_page" | "continuous";
+};
+
+export type AuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: AuthoringSourceReference[];
+  };
+  content: (AuthoringBlock | AuthoringRichTable | AuthoringRichImage)[];
+};
+
+export type AuthoringImageUpload = {
+  title: string;
+  reason: string;
+  media_type: "image/png" | "image/jpeg";
+  content_base64: string;
+  source_refs: AuthoringSourceReference[];
+};
+
+export type AuthoringImageCreated = {
+  id: string;
+  bid_id: string;
+  asset_id: string;
+  revision: number;
+  previous_revision: number | null;
+  previous_version_id: string | null;
+  state: "active" | "withdrawn";
+  reason: string;
+  original_blob_id: string;
+  normalized_blob_id: string;
+  original_media_type: "image/png" | "image/jpeg";
+  width_px: number;
+  height_px: number;
+  normalization_proof: AuthoringJsonValue;
+  source_refs: AuthoringSourceReference[];
+  digest: string;
+  created_by: string;
+  created_at: string;
+  title: string;
+  head_revision: number;
+  head_version_id: string;
+  is_current: boolean;
+  etag: string;
+  upload_id: string;
+};
+
+export type AuthoringImageView = {
+  id: string;
+  bid_id: string;
+  asset_id: string;
+  revision: number;
+  previous_revision: number | null;
+  previous_version_id: string | null;
+  state: "active" | "withdrawn";
+  reason: string;
+  original_blob_id: string;
+  normalized_blob_id: string;
+  original_media_type: "image/png" | "image/jpeg";
+  width_px: number;
+  height_px: number;
+  normalization_proof: AuthoringJsonValue;
+  source_refs: AuthoringSourceReference[];
+  digest: string;
+  created_by: string;
+  created_at: string;
+  title: string;
+  head_revision: number;
+  head_version_id: string;
+  is_current: boolean;
+  etag: string;
+};
+
+export type AuthoringImagePage = {
+  items: AuthoringImageView[];
+  next_cursor: string | null;
+};
+
+export type AuthoringImageUploadStatus = {
+  upload_id: string;
+  state: "prepared" | "unconfirmed" | "rejected" | "completed";
+  asset_id: string | null;
+  asset_version_id: string | null;
+  error_code: string | null;
+  automatic_retry: false;
+  retry_requires_same_input: true;
+  updated_at: string;
+};
+
+export type AuthoringBuildLayout = {
+  scope: "navigation_only";
+  pagination_mode: "chapter_start_new_page" | "continuous";
+  state: "pending" | "partial" | "complete";
+  fixed_point: boolean;
+  page_count: number | null;
+  iteration_count: number;
+  entries: {
+    section_id: string;
+    start_page: number | null;
+    end_page: number | null;
+    printed_toc_page: number | null;
+    gaps: string[];
+  }[];
+  gaps: string[];
+};
+
+export type PackageReviewRunPage = {
+  scope: {
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+  };
+  frozen_input_id: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  items: PackageReviewRunSummary[];
+  has_more: boolean;
+  next_cursor: string | null;
+};
+
+export type PackageReviewResult = PackageScopeReview_Result;
 
 export type SavePackageDependencyPlan = PackageDependencyPlan_Save;
 
@@ -181,6 +4882,7 @@ export type PackageReviewEligibilityObservation = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -243,6 +4945,7 @@ export type PackageReviewOriginalVerification = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -293,6 +4996,7 @@ export type PackageReviewInputPreview = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -433,6 +5137,60 @@ export type PackageRequirementInventoryManifest =
       extraction_range_status: "all_frozen_evidence_submitted";
       extraction_coverage: "complete" | "partial" | "conflict";
       extraction_quality_status: "not_measured";
+    }
+  | {
+      version: "bid-package-requirements/3";
+      id: string;
+      bid_id: string;
+      package_id: string;
+      target_revision_id: string;
+      package_digest: string;
+      authority_revision_id: string;
+      authority_digest: string;
+      rule_set_id: string;
+      rule_set_digest: string;
+      revision: number;
+      predecessor_digest: string | null;
+      identity_digest: string;
+      source_snapshot: { [key: string]: unknown }[];
+      requirements: {
+        rule_id: string;
+        rule_digest: string;
+        rule_snapshot: { [key: string]: unknown };
+        decision_id: string | null;
+        decision_snapshot: { [key: string]: unknown } | null;
+        requirement: BidPackage_requirement;
+        requirement_digest: string;
+        source_bound: boolean;
+        annotation: {
+          kind: "human_check_plan_declaration";
+          mapped: boolean;
+          reason: string | null;
+          basis_evidence_ids: string[];
+        };
+      }[];
+      inventory_complete: false;
+      extraction_binding: "frozen_extraction_plus_human_derivation";
+      review_ready: false;
+      actor_id: string;
+      extraction_basis: {
+        inventory_id: string;
+        inventory_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        extraction_result_id: string;
+        extraction_input_digest: string;
+        extraction_result_digest: string;
+        extraction_range_status: "all_frozen_evidence_submitted";
+        extraction_coverage: "complete" | "partial" | "conflict";
+        extraction_quality_status: "not_measured";
+      };
+      human_derivation: {
+        version: "package-rule-derivation/1";
+        head_id: string;
+        head_digest: string;
+        length: number;
+      };
     };
 
 export type PackageCoverageAttemptManifest = {
@@ -550,6 +5308,60 @@ export type PackageRequirementInventoryView = {
         extraction_range_status: "all_frozen_evidence_submitted";
         extraction_coverage: "complete" | "partial" | "conflict";
         extraction_quality_status: "not_measured";
+      }
+    | {
+        version: "bid-package-requirements/3";
+        id: string;
+        bid_id: string;
+        package_id: string;
+        target_revision_id: string;
+        package_digest: string;
+        authority_revision_id: string;
+        authority_digest: string;
+        rule_set_id: string;
+        rule_set_digest: string;
+        revision: number;
+        predecessor_digest: string | null;
+        identity_digest: string;
+        source_snapshot: { [key: string]: unknown }[];
+        requirements: {
+          rule_id: string;
+          rule_digest: string;
+          rule_snapshot: { [key: string]: unknown };
+          decision_id: string | null;
+          decision_snapshot: { [key: string]: unknown } | null;
+          requirement: BidPackage_requirement;
+          requirement_digest: string;
+          source_bound: boolean;
+          annotation: {
+            kind: "human_check_plan_declaration";
+            mapped: boolean;
+            reason: string | null;
+            basis_evidence_ids: string[];
+          };
+        }[];
+        inventory_complete: false;
+        extraction_binding: "frozen_extraction_plus_human_derivation";
+        review_ready: false;
+        actor_id: string;
+        extraction_basis: {
+          inventory_id: string;
+          inventory_digest: string;
+          rule_set_id: string;
+          rule_set_digest: string;
+          extraction_result_id: string;
+          extraction_input_digest: string;
+          extraction_result_digest: string;
+          extraction_range_status: "all_frozen_evidence_submitted";
+          extraction_coverage: "complete" | "partial" | "conflict";
+          extraction_quality_status: "not_measured";
+        };
+        human_derivation: {
+          version: "package-rule-derivation/1";
+          head_id: string;
+          head_digest: string;
+          length: number;
+        };
       };
   digest: string;
 };
@@ -1504,6 +6316,18 @@ export type AssistantJob = {
         replacement: AuthoringNode;
         evidence_ids: string[];
       }
+    | {
+        node_id: string;
+        before_digest: string;
+        replacement_text: string;
+        evidence_ids: string[];
+        protocol: "package-authoring-candidate/1";
+        input: {
+          id: string;
+          digest: string;
+          context_digest: string;
+        };
+      }
     | null;
   formal_scoring_input: false;
   automatic_retry_authorized: false;
@@ -1603,6 +6427,19 @@ export type AssistantAction = {
         before: AuthoringDocument;
         after: AuthoringDocument;
         effect: string;
+      }
+    | {
+        kind: "package_authoring_patch";
+        section_id: string;
+        base_section_revision: number;
+        before: AuthoringDocument;
+        after: AuthoringDocument;
+        authoring_input_id: string;
+        authoring_input_digest: string;
+        source_scope: "exact_package_context";
+        apply_available: boolean;
+        build_available: false;
+        effect: string;
       };
   result:
     | {
@@ -1695,8 +6532,51 @@ export type TemplateRequest = {
     | "chapter_suggestion";
   instructions: string;
   section_id?: string | null;
-  source_selection?: SourceSelection;
+  source_selection?:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
   trigger?: Trigger;
+};
+
+export type ExactPackageTriggerSelection = {
+  mode: "exact_package_trigger";
+  input: PackageReviewSelection;
+};
+
+export type PackageTaskTriggerCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_trigger";
+  triggers: ("material_updated" | "schedule")[];
+  requires_independent_runner: true;
+  automatic_input_selection: false;
+  automatic_catchup_runs: 0;
+};
+
+export type PackageTriggerIntentView = {
+  id: string;
+  bid_id: string;
+  definition_id: string;
+  definition_version_id: string;
+  trigger: "material_updated" | "schedule";
+  trigger_event_id: string | null;
+  scheduled_at: string | null;
+  created_at: string;
+  selection: PackageReviewSelection;
+  input_digest: string;
+  state: "pending" | "accepted" | "blocked" | "cancelled";
+  error_code: string | null;
+  run_id: string | null;
+  run_ref: string | null;
+  reused: boolean;
+  automatic_input_selection: false;
+};
+
+export type PackageTriggerIntentPage = {
+  items: PackageTriggerIntentView[];
+  next_after: string | null;
 };
 
 export type TemplateView = {
@@ -1733,6 +6613,23 @@ export type RunRequest = {
   rerun?: boolean;
 };
 
+export type TaskAuthoringResult = {
+  schema: "task-authoring-result/1";
+  job_id: string;
+  job_input_digest: string;
+  writing_plan_id: string;
+  operation_id: string;
+  job_ref: string;
+  section_id: string;
+  base_section_revision: number;
+  publication_state: "pending" | "published" | "stale" | "failed";
+  candidate_digest: string | null;
+  action_id: string | null;
+  action_ref: string | null;
+  source_scope: "legacy_section_and_source_versions";
+  automatic_apply: false;
+};
+
 export type RunView = {
   id: string;
   bid_id: string;
@@ -1747,13 +6644,18 @@ export type RunView = {
     | "failed"
     | "cancelled"
     | "awaiting_review"
+    | "awaiting_publication"
     | "blocked"
     | "superseded"
     | "unknown"
     | "reconciliation_required";
   stage: "preparation" | "review" | "execution";
   frozen_manifest: { [key: string]: unknown };
-  result: { [key: string]: unknown } | null;
+  result:
+    | TaskAuthoringResult
+    | TaskPackageAuthoringResult
+    | { [key: string]: unknown }
+    | null;
   error_code: string | null;
   formal_decisions_created: false;
   coverage: "registered_effectivity_only_semantic_unknown" | "not_formal_score";
@@ -1788,7 +6690,11 @@ export type TaskScheduleRecoveryPage = {
 export type TaskDraftRequest = {
   request: string;
   section_id?: string | null;
-  source_selection?: SourceSelection;
+  source_selection?:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
 };
 
 export type TaskDraftView = {
@@ -2238,7 +7144,9 @@ export type OfflineSubmissionRequest = {
   explanation: string;
 };
 
-export type SubmissionView = {
+export type SubmissionView = SingleBodySubmissionView | PackageSubmissionView;
+
+export type SingleBodySubmissionView = {
   id: string;
   bid_id: string;
   body_version_id: string;
@@ -2292,6 +7200,452 @@ export type SubmissionView = {
   platform_submission_verified: false;
   explanation: string | null;
   correction_reason: string | null;
+  subject_kind?: "single_body";
+};
+
+export type PackageSubmissionSelection = {
+  package_id: string;
+  revision_id: string;
+  package_digest: string;
+  inventory: {
+    id: string;
+    digest: string;
+  } | null;
+  coverage: {
+    id: string;
+    digest: string;
+  } | null;
+  review_run: {
+    id: string;
+    input_digest: string;
+    result_digest: string | null;
+  } | null;
+};
+
+export type PackageSubmissionRequest = {
+  kind: "standard" | "offline_fact";
+  selection: {
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    inventory: {
+      id: string;
+      digest: string;
+    } | null;
+    coverage: {
+      id: string;
+      digest: string;
+    } | null;
+    review_run: {
+      id: string;
+      input_digest: string;
+      result_digest: string | null;
+    } | null;
+  };
+  input_digest: string;
+  evidence: {
+    document_version_id: string;
+    digest: string;
+    byte_size: number;
+  };
+  submitted_at: string;
+  explanation: string;
+  expected_head: {
+    id: string;
+    revision: number;
+  } | null;
+  correction_reason: string | null;
+};
+
+export type PackageSubmissionPreview = {
+  selection: {
+    target: BidPackageStoredView;
+    authority: BidPackageStoredView | null;
+    inventory: PackageRequirementInventoryView | null;
+    coverage: PackageCoverageAttemptView | null;
+  };
+  selection_request: {
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    inventory: {
+      id: string;
+      digest: string;
+    } | null;
+    coverage: {
+      id: string;
+      digest: string;
+    } | null;
+    review_run: {
+      id: string;
+      input_digest: string;
+      result_digest: string | null;
+    } | null;
+  };
+  gate: PackageSubmissionGateView;
+  input_digest: string;
+  bid_etag: string;
+  current_submission_head: {
+    id: string;
+    revision: number;
+    subject_kind: "single_body" | "bid_package";
+  } | null;
+};
+
+export type PackageSubmissionBindingView = {
+  manifest: {
+    version: "package-submission-binding/1";
+    submission_id: string;
+    bid_id: string;
+    subject: {
+      kind: "bid_package";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+    };
+    selection: {
+      target: BidPackageStoredView;
+      authority: BidPackageStoredView | null;
+      inventory: PackageRequirementInventoryView | null;
+      coverage: PackageCoverageAttemptView | null;
+    };
+    selection_request: {
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      coverage: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        id: string;
+        input_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+    package_identity: HistoricalBidIdentitySnapshot;
+    recorded_identity: BidIdentitySnapshot;
+    submitted_at: string;
+    recorded_at: string;
+    assessed_at: string;
+    actor_id: string;
+    command_id: string;
+    request: {
+      kind: "standard" | "offline_fact";
+      selection: {
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory: {
+          id: string;
+          digest: string;
+        } | null;
+        coverage: {
+          id: string;
+          digest: string;
+        } | null;
+        review_run: {
+          id: string;
+          input_digest: string;
+          result_digest: string | null;
+        } | null;
+      };
+      input_digest: string;
+      evidence: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      };
+      submitted_at: string;
+      explanation: string;
+      expected_head: {
+        id: string;
+        revision: number;
+      } | null;
+      correction_reason: string | null;
+    };
+    request_digest: string;
+    if_match: string;
+    input_digest: string;
+    context: { [key: string]: unknown };
+    review_run: PackageReviewRunView | null;
+    inventory_proof: { [key: string]: unknown } | null;
+    gate: PackageSubmissionGateView;
+    originals: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: string;
+      artifact_kind: string;
+      original_name: string;
+      roles: (
+        | "target"
+        | "authority"
+        | "submission_attachment"
+        | "source_ancestor"
+      )[];
+    }[];
+    evidence: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: string;
+      artifact_kind: string;
+      original_name: string;
+      roles: (
+        | "target"
+        | "authority"
+        | "submission_attachment"
+        | "source_ancestor"
+      )[];
+    };
+    attachment_sources: { [key: string]: unknown }[];
+    supersedes_id: string | null;
+    head_revision: number;
+    platform_submission_verified: false;
+    pre_submission_system_check_verified: false;
+    original_bytes_verified: true;
+  };
+  digest: string;
+};
+
+export type PackageSubmissionView = {
+  id: string;
+  bid_id: string;
+  subject_kind: "bid_package";
+  body_version_id: null;
+  review_id: null;
+  kind: "standard" | "offline_fact";
+  submitted_at: string;
+  recorded_at: string;
+  recorded_by: string;
+  gate_checked: boolean;
+  evidence_ref: string;
+  current: boolean;
+  supersedes_id: string | null;
+  identity: HistoricalBidIdentitySnapshot;
+  original_name: null;
+  artifact_kind: null;
+  checks_label: string;
+  open_risk_snapshot: { [key: string]: unknown };
+  platform_submission_verified: false;
+  explanation: string;
+  correction_reason: string | null;
+  package_binding: PackageSubmissionBindingView;
+};
+
+export type PackageSubmissionAppliedView = {
+  submission: {
+    id: string;
+    bid_id: string;
+    subject_kind: "bid_package";
+    body_version_id: null;
+    review_id: null;
+    kind: "standard" | "offline_fact";
+    submitted_at: string;
+    recorded_at: string;
+    recorded_by: string;
+    gate_checked: boolean;
+    evidence_ref: string;
+    current: boolean;
+    supersedes_id: string | null;
+    identity: HistoricalBidIdentitySnapshot;
+    original_name: null;
+    artifact_kind: null;
+    checks_label: string;
+    open_risk_snapshot: { [key: string]: unknown };
+    platform_submission_verified: false;
+    explanation: string;
+    correction_reason: string | null;
+    package_binding: PackageSubmissionBindingView;
+  };
+  command: {
+    command_id: string;
+    actor_id: string;
+    idempotency_key: string;
+    request_digest: string;
+    request: {
+      kind: "standard" | "offline_fact";
+      selection: {
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory: {
+          id: string;
+          digest: string;
+        } | null;
+        coverage: {
+          id: string;
+          digest: string;
+        } | null;
+        review_run: {
+          id: string;
+          input_digest: string;
+          result_digest: string | null;
+        } | null;
+      };
+      input_digest: string;
+      evidence: {
+        document_version_id: string;
+        digest: string;
+        byte_size: number;
+      };
+      submitted_at: string;
+      explanation: string;
+      expected_head: {
+        id: string;
+        revision: number;
+      } | null;
+      correction_reason: string | null;
+    };
+    if_match: string;
+  };
+};
+
+export type PackageSubmissionGateView = PackageSubmissionGate_View;
+
+export type PackageOutcomeContext = {
+  subject_kind: "bid_package";
+  bid_id: string;
+  submission_id: string;
+  body_version_id: null;
+  identity: {
+    project_id: string;
+    lot_id: string | null;
+    round_id: string;
+    bidder_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    binding_digest: string;
+    identity_digest: string;
+  };
+  package_identity: HistoricalBidIdentitySnapshot;
+  recorded_identity: BidIdentitySnapshot;
+  package_binding: PackageSubmissionBindingView;
+  authority: {
+    package_id: string;
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  } | null;
+  display: {
+    project_title: string;
+    lot: string | null;
+    round_no: number;
+    bidder_name: string;
+    body_filename: null;
+  };
+  submitted_at: string;
+  kind: "standard" | "offline_fact";
+  source_candidates: {
+    id: string;
+    original_name: string;
+    obtained_at: string;
+  }[];
+  identity_ready: boolean;
+  identity_status: "confirmed" | "unavailable" | "changed";
+  identity_reason: string | null;
+  verification_blockers: string[];
+  verification_requires_source_evidence: true;
+  formal_sample_eligible: false;
+  formal_sample_blockers: "package_formal_sample_not_supported"[];
+};
+
+export type PackageOutcomeVerificationRequest = {
+  version: "package-outcome-verification/1";
+  subject_kind: "bid_package";
+  state: "pending" | "verified" | "conflict" | "rejected";
+  reason: string;
+  identity: {
+    project_id: string;
+    lot_id: string | null;
+    round_id: string;
+    bidder_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    binding_digest: string;
+    identity_digest: string;
+  };
+  authority: {
+    package_id: string;
+    revision_id: string;
+    digest: string;
+    identity_digest: string;
+  } | null;
+  aggregation: string;
+  published_at: string | null;
+  evidence_refs: {
+    document_version_id: string;
+    evidence_id: string;
+    physical_page: number;
+    quote: string;
+  }[];
+};
+
+export type PackageOutcomeVerificationDetails = {
+  version: "package-outcome-verification-record/1";
+  subject_kind: "bid_package";
+  request: {
+    version: "package-outcome-verification/1";
+    subject_kind: "bid_package";
+    state: "pending" | "verified" | "conflict" | "rejected";
+    reason: string;
+    identity: {
+      project_id: string;
+      lot_id: string | null;
+      round_id: string;
+      bidder_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      binding_digest: string;
+      identity_digest: string;
+    };
+    authority: {
+      package_id: string;
+      revision_id: string;
+      digest: string;
+      identity_digest: string;
+    } | null;
+    aggregation: string;
+    published_at: string | null;
+    evidence_refs: {
+      document_version_id: string;
+      evidence_id: string;
+      physical_page: number;
+      quote: string;
+    }[];
+  };
+  package_identity: HistoricalBidIdentitySnapshot;
+  binding_digest: string;
+  checked_at: string;
+  authority_proof: {
+    digest: string;
+    snapshot: { [key: string]: unknown };
+  } | null;
+  official_source_proof: {
+    digest: string;
+    snapshot: { [key: string]: unknown };
+  } | null;
+  verification_scope: "official_outcome_association";
+  formal_sample_eligible: false;
+  formal_sample_blockers: "package_formal_sample_not_supported"[];
+};
+
+export type OutcomeRequest = {
+  submission_id: string;
+  score_kind: "technical_total" | "comprehensive_total" | "unknown";
+  value: string | null;
+  maximum: string | null;
+  source_version_id: string;
+  known_at: string;
 };
 
 export type SubmissionPage = {
@@ -2434,6 +7788,7 @@ export type PricingFormulaPage = {
     confirmed_at: string;
     confirmed_by: string;
     current_applicability: PricingApplicability;
+    package_binding?: PricingPackagePricingBinding;
   }[];
   next_cursor: string | null;
 };
@@ -2633,7 +7988,12 @@ export type KnowledgeReferenceRequest = {
   bid_id: string;
   version_id: string;
   purpose: "assist" | "authoring" | "compliance" | "history";
-  target_kind: "project" | "section" | "operation" | "review";
+  target_kind:
+    | "project"
+    | "section"
+    | "operation"
+    | "review"
+    | "package_review_run";
   target_object_id: string;
   excerpt: string;
   applicability_reason: string;
@@ -2914,8 +8274,18 @@ export type ResearchOutcomeDetail = {
   known_at: string;
   verification_revision: number;
   supersedes_id: string | null;
-  verification_details: ResearchOutcomeVerification | null;
+  verification_details:
+    | SingleBodyOutcomeVerification
+    | PackageOutcomeVerificationDetails
+    | null;
   current: boolean;
+  package_association?: {
+    available: boolean;
+    reasons: string[];
+    checked_at: string;
+    scope: "official_outcome_association";
+    formal_sample_eligible: false;
+  };
 };
 
 export type ResearchSamplePage = {
@@ -3011,8 +8381,8 @@ export type AuthoringPreviewRequest = {
 export type AuthoringPreview = {
   action_id: string;
   base_draft_revision: number;
-  before: AuthoringDocument;
-  after: AuthoringDocument;
+  before: AuthoringDocument | AuthoringRichDocument;
+  after: AuthoringDocument | AuthoringRichDocument;
   expires_in_seconds: number;
 };
 
@@ -3020,8 +8390,10 @@ export type AuthoringSnapshot = {
   snapshot_id: string;
   snapshot_digest: string;
   title: string;
-  sections: AuthoringDocument[];
+  sections: (AuthoringDocument | AuthoringRichDocument)[];
+  authoring_exact_sections?: AuthoringExactSnapshotExtension;
   authoring_structure?: AuthoringStructureExtension;
+  authoring_images?: AuthoringJsonValue;
 };
 
 export type AuthoringSectionAdded = {
@@ -3060,7 +8432,7 @@ export type SectionView = {
   draft_id: string;
   revision: number;
   schema_digest: string;
-  content: AuthoringDocument;
+  content: AuthoringDocument | AuthoringRichDocument;
   writing_plan_id: string | null;
 };
 
@@ -3077,14 +8449,17 @@ export type DraftSaved = {
 };
 
 export type BuildRequest =
-  | {
-      draft_id: string;
-      draft_revision: number;
-      template_version_id: string;
-      formats: ("docx" | "pdf")[];
-      follow_up: "none" | "review";
-    }
-  | AuthoringStructuredBuildRequest;
+  | (
+      | {
+          draft_id: string;
+          draft_revision: number;
+          template_version_id: string;
+          formats: ("docx" | "pdf")[];
+          follow_up: "none" | "review";
+        }
+      | AuthoringStructuredBuildRequest
+    )
+  | AuthoringRichBuildRequest;
 
 export type BuildView = {
   id: string;
@@ -3096,7 +8471,9 @@ export type BuildView = {
     document_version_id: string | null;
     gaps: string[];
   }[];
+  identity: AuthoringBuildIdentity;
   follow_up: BuildFollowUpView;
+  layout?: AuthoringBuildLayout | null;
 };
 
 export type BuildPage = {
@@ -3553,6 +8930,436 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type PackageHistorySelection = {
+  admission_id: string;
+  purpose: "fit" | "development" | "calibration" | "final";
+};
+
+export type AuthoringHistoryAuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: AuthoringHistoryAuthoringSourceReference[];
+  };
+  content: (
+    | AuthoringHistoryAuthoringBlock
+    | AuthoringHistoryAuthoringRichTable
+    | AuthoringHistoryAuthoringRichImage
+  )[];
+};
+
+export type AuthoringExactRevisionManifest = {
+  protocol: "authoring-exact-revision/1";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactRevisionOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactRevisionMethod;
+  method_digest: string;
+  candidate_adopted: true;
+  content_correctness_certified: false;
+};
+
+export type PackageContext = {
+  target: PackageReference;
+  authority: PackageReference;
+  inventory: InventoryReference;
+};
+
+export type SectionSelection = {
+  draft_id: string;
+  snapshot_id: string;
+  snapshot_digest: string;
+  base_draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  base_section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  node_id: string;
+  before_node_digest: string;
+};
+
+export type FactSelection = {
+  fact_set_id: string;
+  fact_head_revision: number;
+  identity_fact_ids: string[];
+  uses: FactUse[];
+};
+
+export type WorkContextReadOnlyAuthoringRichDocument = {
+  type: "doc";
+  attrs: {
+    title: string;
+    ordinal: number;
+    rule_ids: string[];
+    source_refs: WorkContextReadOnlyAuthoringSourceReference[];
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringBlock
+    | WorkContextReadOnlyAuthoringRichTable
+    | WorkContextReadOnlyAuthoringRichImage
+  )[];
+};
+
+export type WorkContextSelection =
+  | {
+      kind: "package_review_run";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory_id: string;
+      inventory_digest: string;
+      frozen_input_id: string;
+      frozen_input_digest: string;
+      execution_input_id: string;
+      execution_input_digest: string;
+      dependency_plan_id: string;
+      dependency_plan_digest: string;
+      run_id: string;
+      input_digest: string;
+      method_digest: string;
+      result_digest: string | null;
+    }
+  | {
+      kind: "package_submission";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      submission_id: string;
+      package_binding_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        kind: "package_review_run";
+        bid_id: string;
+        package_id: string;
+        revision_id: string;
+        package_digest: string;
+        inventory_id: string;
+        inventory_digest: string;
+        frozen_input_id: string;
+        frozen_input_digest: string;
+        execution_input_id: string;
+        execution_input_digest: string;
+        dependency_plan_id: string;
+        dependency_plan_digest: string;
+        run_id: string;
+        input_digest: string;
+        method_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+
+export type WorkContextDimensionObservation = {
+  status: "matched" | "changed" | "unknown" | "not_applicable";
+  selected_digest: string | null;
+  observed_digest: string | null;
+  reason: string;
+};
+
+export type WorkContextSummary = {
+  perspective: "declared_scope_history" | "submission_history";
+  review_status:
+    | "result_available"
+    | "run_unfinished"
+    | "bound_result_missing"
+    | "not_selected";
+  review: WorkContextReviewSummary | null;
+  whole_package_blocking_risk_count: null;
+  whole_package_passed: null;
+  formal_scoring: {
+    status: "scope_not_selected";
+    scope_id: null;
+    numeric_prediction: null;
+  };
+  official_labels_read: false;
+  primary_action:
+    | "open_selected_review"
+    | "view_selected_operation"
+    | "inspect_changed_basis"
+    | "open_selected_submission";
+  action_mode: "navigation_only";
+};
+
+export type WorkContextNativeTargets = {
+  package_revision: {
+    kind: "package_revision";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+  };
+  authority_revision: {
+    kind: "package_revision";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+  } | null;
+  package_review_run: {
+    kind: "package_review_run";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    inventory_id: string;
+    frozen_input_id: string;
+    execution_input_id: string;
+    run_id: string;
+    input_digest: string;
+    result_digest: string | null;
+  } | null;
+  package_submission: {
+    kind: "package_submission";
+    bid_id: string;
+    submission_id: string;
+    package_binding_digest: string;
+  } | null;
+};
+
+export type PricingFormulaParameters = {
+  method: "lowest_valid_ratio" | "mean_valid_deviation";
+  maximum: string;
+  minimum_price: string | null;
+  maximum_price: string | null;
+  minimum_valid_bids: number;
+  above_coefficient: string;
+  below_coefficient: string;
+};
+
+export type PricingInterpretation = {
+  baseline_set: "own_and_all_numerically_eligible_assumptions";
+  exclusions: "none";
+  random_parameters: "none";
+  intermediate_rounding: "none";
+  clamping: "zero_to_maximum";
+};
+
+export type PricingEvidenceQuote = {
+  source_id: string;
+  source_revision: number;
+  document_version_id: string;
+  parse_id: string;
+  physical_page: number;
+  evidence_id: string;
+  quote: string;
+  supported_fields: string[];
+};
+
+export type HistoricalImportRecord = {
+  external_record_id: string;
+  bid_id: string;
+  actual_document_version_id: string;
+  submitted_at: string;
+  evidence_ref: string;
+  explanation: string;
+  score_kind: "technical_total" | "comprehensive_total" | "unknown";
+  value: string | null;
+  maximum: string | null;
+  source_version_id: string | null;
+  known_at: string | null;
+};
+
+export type PackageRuleCorrection_RuleAddition = {
+  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  statement: string;
+  conditions: string[];
+  exceptions: string[];
+  scope: PackageRuleCorrection_RuleScope;
+  maximum: string | null;
+  bands: PackageRuleCorrection_RuleBand[];
+  evidence_quotes: PackageRuleCorrection_RuleEvidenceQuote[];
+};
+
+export type PackageRuleCorrection_RuleEvidenceQuote = {
+  evidence_id: string;
+  quote: string;
+};
+
+export type PackageRuleCorrection_RuleBand = {
+  label: string;
+  description: string;
+  points: string;
+  evidence_ids: string[];
+};
+
+export type AuthoringGenerationJson =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringGenerationJson[]
+  | { [key: string]: AuthoringGenerationJson };
+
+export type AuthoringWordImportJson =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringWordImportJson[]
+  | { [key: string]: AuthoringWordImportJson };
+
+export type PackageReviewHumanDecisionSummary = {
+  id: string;
+  digest: string;
+  sequence_no: number;
+  actor_id: string;
+  created_at: string;
+  state: "confirmed" | "rejected" | "needs_review";
+  reason: string;
+};
+
+export type PackageScopeReview_Digest = string;
+
+export type PackageScopeReview_Input = {
+  version: "package-scope-review-input/1";
+  purpose: "prebid_compliance";
+  scope: PackageScopeReview_Scope;
+  frozen_input: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+    input_digest: PackageScopeReview_Digest;
+    evidence_digest: PackageScopeReview_Digest;
+  };
+  execution_input: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+    identity: PackageScopeReview_Identity;
+  };
+  dependency_plan: {
+    id: PackageScopeReview_Id;
+    digest: PackageScopeReview_Digest;
+  };
+  usage_digest: PackageScopeReview_Digest;
+  selected_facts_digest: PackageScopeReview_Digest;
+  fact_admission: {
+    content_digest: PackageScopeReview_Digest;
+    proofs_digest: PackageScopeReview_Digest;
+    policy_digest: PackageScopeReview_Digest;
+    fact_declarations: {
+      fact_id: PackageScopeReview_Id;
+      declaration_id: PackageScopeReview_Id;
+      declaration_digest: PackageScopeReview_Digest;
+    }[];
+  };
+  inventory_proof_digest: PackageScopeReview_Digest;
+  executor_method: {
+    profile: PackageScopeReview_MethodProfile;
+    digest: PackageScopeReview_Digest;
+  };
+  model_input_digest: PackageScopeReview_Digest;
+  limitations: "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED"[];
+};
+
+export type PackageScopeReview_Quote = {
+  member_id: string;
+  evidence_id: PackageScopeReview_Id;
+  quote: string;
+  package_role: "target" | "authority";
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  physical_page: number;
+  part_ids: string[];
+  evidence_digest: PackageScopeReview_Digest;
+};
+
+export type AuthoringJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | AuthoringJsonValue[]
+  | { [key: string]: AuthoringJsonValue };
+
+export type AuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type AuthoringBlock =
+  | AuthoringParagraph
+  | AuthoringHeading
+  | AuthoringBulletList
+  | AuthoringOrderedList;
+
+export type AuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: AuthoringRichRow[];
+};
+
+export type AuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
+export type PackageScopeReview_Result = {
+  version: "package-scope-review-result/1";
+  kind: "declared_package_scope_review";
+  purpose: "prebid_compliance";
+  run_id: PackageScopeReview_Id;
+  bid_id: PackageScopeReview_Id;
+  input_digest: PackageScopeReview_Digest;
+  execution_input_id: PackageScopeReview_Id;
+  execution_input_digest: PackageScopeReview_Digest;
+  execution_digest: PackageScopeReview_Digest;
+  dependency_plan_id: PackageScopeReview_Id;
+  dependency_plan_digest: PackageScopeReview_Digest;
+  method_digest: PackageScopeReview_Digest;
+  scope: PackageScopeReview_Scope;
+  submitted_documents: PackageScopeReview_SubmittedDocument[];
+  requirement_count: number;
+  matrix_coverage: "complete" | "partial";
+  overall_coverage: "partial";
+  quality_status: "not_measured";
+  inventory_complete: false;
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  limitations: string[];
+  counts: {
+    satisfied: number;
+    violated: number;
+    not_found: number;
+    unable_to_judge: number;
+    not_applicable: number;
+  };
+  matrix: PackageScopeReview_MatrixRow[];
+};
+
 export type PackageDependencyPlan_Save = {
   execution_input_digest: PackageDependencyPlan_Assessment_Digest;
   purpose: "prebid_compliance";
@@ -3753,6 +9560,7 @@ export type PackageExecutionInputManifest = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -3815,6 +9623,7 @@ export type PackageReviewFrozenInputManifest = {
     | "PACKAGE_REVIEW_PACKAGE_STALE"
     | "PACKAGE_REVIEW_INVENTORY_STALE"
     | "PACKAGE_REVIEW_RULE_SET_STALE"
+    | "PACKAGE_REVIEW_GENERATED_OUTPUT_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_UNPROVEN"
     | "PACKAGE_REVIEW_SOURCE_CHANGED"
     | "PACKAGE_REVIEW_SOURCE_NOT_EFFECTIVE"
@@ -3986,14 +9795,6 @@ export type AuthoringPlanVersion = {
   created_at: string;
 };
 
-export type AuthoringJsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | AuthoringJsonValue[]
-  | { [key: string]: AuthoringJsonValue };
-
 export type AuthoringTreeNode = {
   section_id: string;
   parent_id: string | null;
@@ -4132,10 +9933,28 @@ export type SourceSelection = {
   version_ids?: string[];
 };
 
+export type ExactPackageReviewSelection = {
+  mode: "exact_package_review";
+  input: PackageReviewSelection;
+};
+
 export type Trigger = {
   mode?: "manual" | "material_updated" | "schedule";
   cron?: string | null;
   timezone?: string;
+};
+
+export type PackageReviewSelection = {
+  package_id: string;
+  revision_id: string;
+  inventory_id: string;
+  frozen_input_id: string;
+  frozen_input_digest: string;
+  execution_input_id: string;
+  execution_input_digest: string;
+  dependency_plan_id: string;
+  dependency_plan_digest: string;
+  method_digest: string;
 };
 
 export type TemplateSnapshotConfig = {
@@ -4164,6 +9983,9 @@ export type TaskKindView = {
   semantic_impact_coverage?: "unknown" | null;
   formal_decisions_allowed?: false | null;
   automatic_apply?: false | null;
+  exact_package_manual?: PackageTaskManualCapabilities | null;
+  exact_package_triggers?: PackageTaskTriggerCapabilities | null;
+  exact_package_authoring?: PackageTaskAuthoringCapabilities | null;
 };
 
 export type TaskNotification = {
@@ -4190,7 +10012,11 @@ export type TaskDraftInterpretation = {
     | null;
   instructions: string;
   section_id: string | null;
-  source_selection: SourceSelection;
+  source_selection:
+    | SourceSelection
+    | ExactPackageReviewSelection
+    | ExactPackageTriggerSelection
+    | ExactPackageAuthoringSelection;
   trigger: Trigger;
   target_description: string;
   output_description: string;
@@ -4303,6 +10129,61 @@ export type SubmissionRiskSnapshot = {
   scope_note: string;
 };
 
+export type HistoricalBidIdentitySnapshot =
+  | {
+      bidder_id: string;
+      bidder_name: string;
+      round_id: string;
+      engineering_project_id: string;
+      engineering_title: string;
+      region: string | null;
+      engineering_type: string | null;
+      lot: string | null;
+      round_no: number;
+      binding_status: "confirmed" | "pending";
+      authority_id: string | null;
+      digest: string;
+      identity_version?: "bid-identity/1";
+    }
+  | {
+      bidder_id: string;
+      bidder_name: string;
+      round_id: string;
+      engineering_project_id: string;
+      engineering_title: string;
+      region: string | null;
+      engineering_type: string | null;
+      lot: string | null;
+      lot_id: string | null;
+      round_no: number;
+      binding_status: "confirmed" | "pending";
+      authority_id: string | null;
+      digest: string;
+      identity_version: "bid-identity/2";
+    };
+
+export type BidIdentitySnapshot = {
+  bidder_id: string;
+  bidder_name: string;
+  round_id: string;
+  engineering_project_id: string;
+  engineering_title: string;
+  region: string | null;
+  engineering_type: string | null;
+  lot: string | null;
+  lot_id: string | null;
+  round_no: number;
+  binding_status: "confirmed" | "pending";
+  authority_id: string | null;
+  digest: string;
+  identity_version: "bid-identity/2";
+};
+
+export type PackageSubmissionGate_View = {
+  manifest: PackageSubmissionGate_Manifest;
+  digest: string;
+};
+
 export type SubmissionDocumentView = {
   document_version_id: string;
   original_name: string;
@@ -4312,42 +10193,13 @@ export type SubmissionDocumentView = {
   media_type: string;
 };
 
-export type PricingFormulaParameters = {
-  method: "lowest_valid_ratio" | "mean_valid_deviation";
-  maximum: string;
-  minimum_price: string | null;
-  maximum_price: string | null;
-  minimum_valid_bids: number;
-  above_coefficient: string;
-  below_coefficient: string;
-};
-
-export type PricingInterpretation = {
-  baseline_set: "own_and_all_numerically_eligible_assumptions";
-  exclusions: "none";
-  random_parameters: "none";
-  intermediate_rounding: "none";
-  clamping: "zero_to_maximum";
-};
-
-export type PricingEvidenceQuote = {
-  source_id: string;
-  source_revision: number;
-  document_version_id: string;
-  parse_id: string;
-  physical_page: number;
-  evidence_id: string;
-  quote: string;
-  supported_fields: string[];
-};
-
 export type PricingApplicability = {
   applicable: boolean;
   reasons: string[];
 };
 
 export type PricingFormulaManifest = {
-  schema: "pricing-formula/1";
+  schema: "pricing-formula/1" | "pricing-formula/2";
   formula_version_id: string;
   bid_id: string;
   material_snapshot_id: string | null;
@@ -4402,7 +10254,19 @@ export type PricingFormulaManifest = {
       valid_until: string | null;
       bid_id: string;
     }[];
+    package_snapshot?: {
+      version: "package-pricing-authority/1";
+      binding: PricingPackagePricingBinding;
+      package_digest: string;
+      authority_digest: string;
+      identity_digest: string;
+      source_heads_digest: string;
+      rule_set_id: string | null;
+      inventory_id: string | null;
+      inventory_digest: string | null;
+    };
   };
+  package_binding?: PricingPackagePricingBinding;
 };
 
 export type PricingCurveRange = {
@@ -4473,7 +10337,12 @@ export type KnowledgeReference = {
   citation_ids: string[];
   excerpt: string;
   purpose: "assist" | "authoring" | "compliance" | "history";
-  target_kind: "project" | "section" | "operation" | "review";
+  target_kind:
+    | "project"
+    | "section"
+    | "operation"
+    | "review"
+    | "package_review_run";
   target_object_id: string;
   applicability_reason: string;
   source_manifest: KnowledgeAuthority[];
@@ -4496,10 +10365,13 @@ export type ResearchOutcomeView = {
   known_at: string;
   verification_revision: number;
   supersedes_id: string | null;
-  verification_details: ResearchOutcomeVerification | null;
+  verification_details:
+    | SingleBodyOutcomeVerification
+    | PackageOutcomeVerificationDetails
+    | null;
 };
 
-export type ResearchOutcomeVerification = {
+export type SingleBodyOutcomeVerification = {
   state: "pending" | "verified" | "conflict" | "rejected";
   reason: string;
   identity: { [key: string]: string };
@@ -4521,19 +10393,6 @@ export type ResearchListedSample = {
   reasons: string[];
   current: boolean;
 };
-
-export type AuthoringSourceReference = {
-  source_id: string;
-  source_revision: number;
-  evidence_id: string;
-  document_version_id: string;
-};
-
-export type AuthoringBlock =
-  | AuthoringParagraph
-  | AuthoringHeading
-  | AuthoringBulletList
-  | AuthoringOrderedList;
 
 export type AuthoringBreak = {
   type: "hardBreak";
@@ -4588,6 +10447,12 @@ export type AuthoringListItem = {
   content: (AuthoringParagraph | AuthoringBulletList | AuthoringOrderedList)[];
 };
 
+export type AuthoringExactSnapshotExtension = {
+  protocol: "authoring-exact-snapshot/1";
+  sections: AuthoringExactSectionBinding[];
+  digest: string;
+};
+
 export type AuthoringStructureExtension = {
   id: string;
   schema_digest: string;
@@ -4612,7 +10477,7 @@ export type SectionChange = {
   section_id: string;
   base_section_revision: number;
   schema_digest: string;
-  content: AuthoringDocument;
+  content: AuthoringDocument | AuthoringRichDocument;
 };
 
 export type AuthoringStructuredBuildRequest = {
@@ -4622,6 +10487,20 @@ export type AuthoringStructuredBuildRequest = {
   style_template_version_id: string;
   formats: ("docx" | "pdf")[];
   follow_up: "none" | "review";
+};
+
+export type AuthoringBuildIdentity = {
+  protocol: "authoring-build-identity/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  build_input_id: string;
+  input_digest: string;
+  manifest_digest: string;
+  writer_kind: string;
+  request: BuildRequest;
 };
 
 export type BuildFollowUpView = {
@@ -4839,23 +10718,6 @@ export type MemberView = {
   active: boolean;
 };
 
-export type BidIdentitySnapshot = {
-  bidder_id: string;
-  bidder_name: string;
-  round_id: string;
-  engineering_project_id: string;
-  engineering_title: string;
-  region: string | null;
-  engineering_type: string | null;
-  lot: string | null;
-  lot_id: string | null;
-  round_no: number;
-  binding_status: "confirmed" | "pending";
-  authority_id: string | null;
-  digest: string;
-  identity_version: "bid-identity/2";
-};
-
 export type UploadPartGrant = {
   part_number: number;
   byte_offset: number;
@@ -4890,6 +10752,233 @@ export type DocumentRelation = {
   kind: "user_declared_same_draft" | "controlled_render";
   verification: "unverified" | "verified" | "rejected";
   evidence_ids: string[];
+};
+
+export type AuthoringHistoryAuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type AuthoringHistoryAuthoringBlock =
+  | AuthoringHistoryAuthoringParagraph
+  | AuthoringHistoryAuthoringHeading
+  | AuthoringHistoryAuthoringBulletList
+  | AuthoringHistoryAuthoringOrderedList;
+
+export type AuthoringHistoryAuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: AuthoringHistoryAuthoringRichRow[];
+};
+
+export type AuthoringHistoryAuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
+export type AuthoringExactInputIdentity = {
+  id: string;
+  digest: string;
+  context_digest: string;
+};
+
+export type AuthoringExactRevisionOrigin = {
+  kind: "model_candidate_adoption";
+  job_id: string;
+  job_input_digest: string;
+  action_id: string;
+  action_digest: string;
+  candidate_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+};
+
+export type AuthoringExactRevisionMethod = {
+  protocol: "authoring-exact-adoption-policy/1";
+  supported_content: "plain_text_stable_node";
+  source_sha256: { [key: string]: string };
+};
+
+export type PackageReference = {
+  package_id: string;
+  revision_id: string;
+  manifest_digest: string;
+};
+
+export type InventoryReference = {
+  id: string;
+  digest: string;
+  rule_set_id: string;
+};
+
+export type FactUse = {
+  fact_id: string;
+  fact_item_digest: string;
+  subject: FactSubject;
+  reason: string;
+};
+
+export type WorkContextReadOnlyAuthoringSourceReference = {
+  source_id: string;
+  source_revision: number;
+  evidence_id: string;
+  document_version_id: string;
+};
+
+export type WorkContextReadOnlyAuthoringBlock =
+  | WorkContextReadOnlyAuthoringParagraph
+  | WorkContextReadOnlyAuthoringHeading
+  | WorkContextReadOnlyAuthoringBulletList
+  | WorkContextReadOnlyAuthoringOrderedList;
+
+export type WorkContextReadOnlyAuthoringRichTable = {
+  type: "table";
+  attrs: {
+    id: string;
+    column_widths_twips: number[];
+    caption: string;
+  };
+  content: WorkContextReadOnlyAuthoringRichRow[];
+};
+
+export type WorkContextReadOnlyAuthoringRichImage = {
+  type: "image";
+  attrs: {
+    id: string;
+    asset_id: string;
+    asset_revision: number;
+    asset_version_id: string;
+    width_twips: number;
+    height_twips: number;
+    alt: string;
+    caption: string;
+  };
+};
+
+export type WorkContextReviewSummary = {
+  run_id: string;
+  input_digest: string;
+  result_digest: string;
+  requirement_count: number;
+  machine_counts: {
+    satisfied: number;
+    violated: number;
+    not_found: number;
+    unable_to_judge: number;
+    not_applicable: number;
+  };
+  human_counts: {
+    unreviewed: number;
+    confirmed: number;
+    rejected: number;
+    needs_review: number;
+  };
+  human_heads_digest: string;
+  human_basis: "current_heads_for_exact_result";
+  matrix_coverage: "complete" | "partial";
+  overall_coverage: "partial";
+  inventory_complete: false;
+  quality_status: "not_measured";
+  risk_resolution_assessed: false;
+};
+
+export type PackageRuleCorrection_RuleScope = {
+  bid_id: string;
+  description: string;
+};
+
+export type PackageScopeReview_Scope = {
+  bid_id: PackageScopeReview_Id;
+  package_id: PackageScopeReview_Id;
+  revision_id: PackageScopeReview_Id;
+  inventory_id: PackageScopeReview_Id;
+};
+
+export type PackageScopeReview_Id = string;
+
+export type PackageScopeReview_Identity = {
+  version: "package-review-execution/1";
+  kind: "identity";
+  binding: PackageScopeReview_Binding;
+  rerun: PackageScopeReview_RerunIntent | null;
+  content_digest: PackageScopeReview_Digest;
+  execution_digest: PackageScopeReview_Digest;
+};
+
+export type PackageScopeReview_MethodProfile = {
+  engine: "package-review/1";
+  purpose: "prebid_compliance";
+  assessment: "declared_requirement_response";
+  input_scope: "all_frozen_target_and_authority_members";
+  model_json_encoding: "finite-json-numbers/1";
+  model: "deepseek-flash" | "deepseek-v4-pro";
+  endpoint: "https://api.deepseek.com" | "https://api.deepseek.com/v1";
+  source_digest: PackageScopeReview_Digest;
+  batch_rule_limit: 100;
+  batch_limit: 4;
+  output_tokens_per_batch: 8192;
+  input_character_limit: 240000;
+  semantic_quality: "not_measured";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+};
+
+export type AuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringRichCell[];
+};
+
+export type PackageScopeReview_SubmittedDocument = {
+  package_role: "target" | "authority";
+  member_id: string;
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  file_digest: PackageScopeReview_Digest;
+  page_count: number;
+  parts: PackageScopeReview_Part[];
+  evidence_count: number;
+};
+
+export type PackageScopeReview_MatrixRow = {
+  requirement_id: PackageScopeReview_Id;
+  requirement_digest: PackageScopeReview_Digest;
+  rule_digest: PackageScopeReview_Digest;
+  rule_kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  requirement_statement: string;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  target_part_ids: string[];
+  inspected_ranges: PackageScopeReview_InspectedRange[];
+  verdict:
+    | "satisfied"
+    | "violated"
+    | "not_found"
+    | "unable_to_judge"
+    | "not_applicable";
+  statement: string;
+  target_quotes: PackageScopeReview_Quote[];
+  authority_quotes: PackageScopeReview_Quote[];
+  used_fact_ids: PackageScopeReview_Id[];
+  limitations: string[];
+  human_review_state: "unreviewed";
 };
 
 export type PackageDependencyPlan_Assessment_Digest = string;
@@ -4928,33 +11017,9 @@ export type PackageInputDependencies_Id = string;
 
 export type PackageInputDependencies_Digest = string;
 
-export type PackageInputDependencies_Manifest = {
-  version: "package-input-dependencies/1";
-  kind: "input_dependency_assessment";
-  purpose: "prebid_compliance";
-  prepared: PackageInputDependencies_Prepared;
-  frozen_digest: PackageInputDependencies_Digest;
-  inventory_digest: PackageInputDependencies_Digest;
-  usage_digest: PackageInputDependencies_Digest;
-  selected_fact_count: number;
-  requirement_count: number;
-  dependency_review_status: "incomplete" | "declared";
-  required_facts_assessment:
-    | "unknown"
-    | "missing"
-    | "selected_unvalidated"
-    | "not_used";
-  requirements: PackageInputDependencies_RequirementAssessment[];
-  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
-  declaration_kind: "human_dependency_annotation";
-  inventory_complete: false;
-  original_bytes_verified: false;
-  facts_qualified: false;
-  review_ready: false;
-  launch_available: false;
-  publication_authorized: false;
-  policy_digest: PackageInputDependencies_Digest;
-};
+export type PackageInputDependencies_Manifest =
+  | PackageInputDependencies_ManifestV1
+  | PackageInputDependencies_ManifestV2;
 
 export type PackageFactChange_Digest = string;
 
@@ -5077,6 +11142,18 @@ export type BidPackage_part = {
   heading_path: number[];
 };
 
+export type PackageTaskManualCapabilities = {
+  available: boolean;
+  reason: string | null;
+  input_mode: "exact_package_review";
+  method_digest: string;
+  trigger: "manual";
+  overall_coverage: "partial";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  automatic_input_selection: false;
+};
+
 export type TaskNotificationPayload = {
   key: string;
   run_id: string;
@@ -5088,7 +11165,8 @@ export type TaskNotificationPayload = {
 export type TaskScheduleRecoveryPayload = {
   schedule_id: string;
   definition_id: string;
-  run_current_once_ref: string;
+  run_current_once_ref: string | null;
+  reconfirm_template_ref?: string | null;
   definition_version_id: string;
   next_fire_at: string;
   missed: MissedTaskSchedule | null;
@@ -5098,6 +11176,47 @@ export type TaskScheduleRecoveryPayload = {
 export type TaskDraftUnresolvedField = {
   field: string;
   reason: string;
+};
+
+export type PackageSubmissionGate_Manifest = {
+  version: "package-submission-gate/1";
+  kind: "current_package_submission_observation";
+  subject: {
+    kind: "bid_package";
+    bid_id: string;
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    identity_digest: string;
+  };
+  selection: {
+    digest: string;
+    authority_revision_id: string | null;
+    authority_digest: string | null;
+    inventory_id: string | null;
+    inventory_digest: string | null;
+    coverage_attempt_id: string | null;
+    coverage_digest: string | null;
+    run_id: string | null;
+    result_digest: string | null;
+  };
+  checked_at: string;
+  policy_digest: string;
+  gates: {
+    current_input: PackageSubmissionGate_CurrentInput;
+    core_coverage: PackageSubmissionGate_CoreCoverage;
+    mandatory_confirmation: PackageSubmissionGate_MandatoryConfirmation;
+    known_blocking_risks: PackageSubmissionGate_KnownBlockingRisks;
+  };
+  state: "blocked" | "unknown";
+  allowed: false;
+  inventory_complete: false;
+  quality_status: "not_measured";
+  formal_scoring_eligible: false;
+  submission_eligible: false;
+  publication_authorized: false;
+  platform_submission_verified: false;
+  limitations: string[];
 };
 
 export type KnowledgeAuthority = {
@@ -5166,6 +11285,152 @@ export type RuleEvidenceQuote = {
   quote: string;
 };
 
+export type AuthoringHistoryAuthoringParagraph = {
+  type: "paragraph";
+  attrs: {
+    id: string;
+  };
+  content: (AuthoringHistoryAuthoringText | AuthoringHistoryAuthoringBreak)[];
+};
+
+export type AuthoringHistoryAuthoringHeading = {
+  type: "heading";
+  attrs: {
+    id: string;
+    level: number;
+  };
+  content: (AuthoringHistoryAuthoringText | AuthoringHistoryAuthoringBreak)[];
+};
+
+export type AuthoringHistoryAuthoringBulletList = {
+  type: "bulletList";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringListItem[];
+};
+
+export type AuthoringHistoryAuthoringOrderedList = {
+  type: "orderedList";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringListItem[];
+};
+
+export type AuthoringHistoryAuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: AuthoringHistoryAuthoringRichCell[];
+};
+
+export type FactSubject = {
+  kind: "engineering_project" | "lot" | "round" | "bidder";
+  id: string;
+};
+
+export type WorkContextReadOnlyAuthoringParagraph = {
+  type: "paragraph";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringText
+    | WorkContextReadOnlyAuthoringBreak
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringHeading = {
+  type: "heading";
+  attrs: {
+    id: string;
+    level: number;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringText
+    | WorkContextReadOnlyAuthoringBreak
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringBulletList = {
+  type: "bulletList";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringListItem[];
+};
+
+export type WorkContextReadOnlyAuthoringOrderedList = {
+  type: "orderedList";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringListItem[];
+};
+
+export type WorkContextReadOnlyAuthoringRichRow = {
+  type: "tableRow";
+  attrs: {
+    id: string;
+  };
+  content: WorkContextReadOnlyAuthoringRichCell[];
+};
+
+export type PackageScopeReview_Binding = {
+  bid_id: PackageScopeReview_Id;
+  package_id: PackageScopeReview_Id;
+  revision_id: PackageScopeReview_Id;
+  inventory_id: PackageScopeReview_Id;
+  identity_digest: PackageScopeReview_Digest;
+  frozen_input_id: PackageScopeReview_Id;
+  frozen_digest: PackageScopeReview_Digest;
+  input_digest: PackageScopeReview_Digest;
+  evidence_digest: PackageScopeReview_Digest;
+  context_digest: PackageScopeReview_Digest;
+  method_digest: PackageScopeReview_Digest;
+  policy_digest: PackageScopeReview_Digest;
+  purpose: "prebid_compliance";
+};
+
+export type PackageScopeReview_RerunIntent = {
+  nonce: PackageScopeReview_Id;
+  reason: string;
+};
+
+export type AuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (AuthoringParagraph | AuthoringBulletList | AuthoringOrderedList)[];
+};
+
+export type PackageScopeReview_Part = {
+  part_id: string;
+  category: string;
+  first_page: number;
+  last_page: number;
+  shared_attachment: boolean;
+  heading_path: number[];
+};
+
+export type PackageScopeReview_InspectedRange = {
+  member_id: string;
+  document_version_id: PackageScopeReview_Id;
+  parse_run_id: PackageScopeReview_Id;
+  part_id: string;
+  category: string;
+  first_page: number;
+  last_page: number;
+  shared_attachment: boolean;
+  heading_path: number[];
+};
+
 export type PackageDependencyPlan_Assessment_View = {
   manifest: PackageDependencyPlan_Assessment_Manifest;
   digest: PackageDependencyPlan_Assessment_Digest;
@@ -5176,34 +11441,66 @@ export type PackageDependencyPlan_Usage_View = {
   digest: PackageDependencyPlan_Usage_Digest;
 };
 
-export type PackageInputDependencies_Prepared = {
-  bid_id: PackageInputDependencies_Id;
-  package_id: PackageInputDependencies_Id;
-  revision_id: PackageInputDependencies_Id;
-  inventory_id: PackageInputDependencies_Id;
-  frozen_input_id: PackageInputDependencies_Id;
-  execution_input_id: PackageInputDependencies_Id;
-  execution_input_digest: PackageInputDependencies_Digest;
+export type PackageInputDependencies_ManifestV1 = {
+  version: "package-input-dependencies/1";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageInputDependencies_Prepared;
+  frozen_digest: PackageInputDependencies_Digest;
+  inventory_digest: PackageInputDependencies_Digest;
+  usage_digest: PackageInputDependencies_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageInputDependencies_RequirementAssessment[];
+  inventory_status: "unproven" | "range_submitted_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageInputDependencies_Digest;
 };
 
-export type PackageInputDependencies_RequirementAssessment = {
-  requirement_id: PackageInputDependencies_Id;
-  requirement_digest: PackageInputDependencies_Digest;
-  declaration: PackageInputDependencies_Dependency | null;
-  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
-  unselected_fact_ids: PackageInputDependencies_Id[];
-  coverage_state:
-    | "not_provided"
+export type PackageInputDependencies_ManifestV2 = {
+  version: "package-input-dependencies/2";
+  kind: "input_dependency_assessment";
+  purpose: "prebid_compliance";
+  prepared: PackageInputDependencies_Prepared;
+  frozen_digest: PackageInputDependencies_Digest;
+  inventory_digest: PackageInputDependencies_Digest;
+  usage_digest: PackageInputDependencies_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
     | "missing"
-    | "pending_parse"
-    | "parse_gap"
-    | "unsupported"
-    | "verified"
-    | "not_applicable"
-    | "conflict"
-    | "unknown";
-  source_bound: boolean;
-  applicability: "applicable" | "unknown" | "not_applicable";
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageInputDependencies_DerivedRequirementAssessment[];
+  inventory_status: "human_derivation_range_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+  policy_digest: PackageInputDependencies_Digest;
+  rule_state_counts: {
+    total: number;
+    active: number;
+    inactive: number;
+    needs_revalidation: number;
+  };
 };
 
 export type PackageFactScope_ScopeBinding = {
@@ -5252,10 +11549,290 @@ export type MissedTaskSchedule = {
   through: string;
   count: null;
   count_status: "not_enumerated";
-  resolution: "skipped_run_current_once_available";
+  resolution:
+    | "skipped_run_current_once_available"
+    | "skipped_reconfirm_exact_input";
 };
 
-export type PackageDependencyPlan_Assessment_Manifest = {
+export type PackageSubmissionGate_CurrentInput = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "current_metadata_observation";
+  observations_digest: string | null;
+  current_identity_digest: string | null;
+  original_verification: "not_performed" | "failed";
+  member_count: number;
+  physical_page_gaps: {
+    role: "target" | "authority";
+    member_id: string;
+    first_page: number;
+    last_page: number;
+  }[];
+};
+
+export type PackageSubmissionGate_CoreCoverage = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  inventory_proof_digest: string | null;
+  run_id: string | null;
+  active_core_count: number;
+  judged_core_count: number;
+  unknown_core_count: number;
+  unfavorable_core_count: number;
+  human_declared_count: number;
+  extraction_range_proven: boolean;
+  inventory_complete: false;
+  quality_status: "not_measured";
+  overall_coverage: "partial" | "unknown";
+};
+
+export type PackageSubmissionGate_MandatoryConfirmation = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  core_rule_count: number;
+  confirmed_count: number;
+  pending_rule_ids: string[];
+  inactive_rule_ids: string[];
+  needs_revalidation_rule_ids: string[];
+  decisions: {
+    rule_id: string;
+    rule_digest: string;
+    decision_id: string | null;
+    decision_digest: string | null;
+    decision: string | null;
+  }[];
+};
+
+export type PackageSubmissionGate_KnownBlockingRisks = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "whole_bid_known_history";
+  history_digest: string | null;
+  history_complete: boolean;
+  runs_read: number;
+  result_rows_read: number;
+  unknown_run_ids: string[];
+  blocked_count: number;
+  unknown_count: number;
+  risks: (
+    | {
+        kind: "package_core_requirement";
+        state: "blocked" | "unknown";
+        scope: {
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          inventory_id: string;
+        };
+        run_id: string;
+        frozen_input_id: string;
+        execution_input_id: string;
+        result_digest: string;
+        row_digest: string;
+        requirement_id: string;
+        rule_digest: string;
+        rule_kind: "disqualification" | "mandatory";
+        verdict: "violated" | "not_found" | "unable_to_judge";
+        statement: string;
+        human_decision: {
+          id: string;
+          digest: string;
+          state: "confirmed" | "rejected" | "needs_review";
+          reason: string;
+        } | null;
+        resolution: "no_verified_package_recheck_resolution";
+      }
+    | {
+        kind: "legacy_finding";
+        state: "blocked";
+        finding: {
+          id: string;
+          bid_id: string;
+          origin_id: string;
+          review_id: string;
+          rule_id: string | null;
+          rule_kind:
+            | "mandatory"
+            | "disqualification"
+            | "scoring"
+            | "advisory"
+            | null;
+          severity: "critical" | "major" | "minor" | "info";
+          category:
+            | "disqualification"
+            | "response"
+            | "consistency"
+            | "scope"
+            | "improvement";
+          verdict:
+            | "satisfied"
+            | "violated"
+            | "not_found"
+            | "unable_to_judge"
+            | "not_applicable";
+          lifecycle: "open" | "deferred" | "dismissed";
+          statement: string;
+        };
+        finding_digest: string;
+        resolution: "no_verified_recheck_resolution";
+      }
+  )[];
+};
+
+export type AuthoringHistoryAuthoringText = {
+  type: "text";
+  text: string;
+  marks?: {
+    type: "bold" | "italic";
+  }[];
+};
+
+export type AuthoringHistoryAuthoringBreak = {
+  type: "hardBreak";
+};
+
+export type AuthoringHistoryAuthoringListItem = {
+  type: "listItem";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | AuthoringHistoryAuthoringParagraph
+    | AuthoringHistoryAuthoringBulletList
+    | AuthoringHistoryAuthoringOrderedList
+  )[];
+};
+
+export type AuthoringHistoryAuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (
+    | AuthoringHistoryAuthoringParagraph
+    | AuthoringHistoryAuthoringBulletList
+    | AuthoringHistoryAuthoringOrderedList
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringText = {
+  type: "text";
+  text: string;
+  marks?: {
+    type: "bold" | "italic";
+  }[];
+};
+
+export type WorkContextReadOnlyAuthoringBreak = {
+  type: "hardBreak";
+};
+
+export type WorkContextReadOnlyAuthoringListItem = {
+  type: "listItem";
+  attrs: {
+    id: string;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringParagraph
+    | WorkContextReadOnlyAuthoringBulletList
+    | WorkContextReadOnlyAuthoringOrderedList
+  )[];
+};
+
+export type WorkContextReadOnlyAuthoringRichCell = {
+  type: "tableCell";
+  attrs: {
+    id: string;
+    colspan: number;
+    rowspan: number;
+    header: boolean;
+  };
+  content: (
+    | WorkContextReadOnlyAuthoringParagraph
+    | WorkContextReadOnlyAuthoringBulletList
+    | WorkContextReadOnlyAuthoringOrderedList
+  )[];
+};
+
+export type PackageDependencyPlan_Assessment_Manifest =
+  | PackageDependencyPlan_Assessment_ManifestV1
+  | PackageDependencyPlan_Assessment_ManifestV2;
+
+export type PackageDependencyPlan_Usage_Manifest = {
+  version: "package-fact-usage/1";
+  kind: "fact_usage_selection";
+  purpose: "prebid_compliance";
+  prepared: PackageDependencyPlan_Usage_Prepared;
+  identity_digest: PackageDependencyPlan_Usage_Digest;
+  selected: PackageDependencyPlan_Usage_Selected[];
+  selection_digest: PackageDependencyPlan_Usage_Digest;
+  selected_facts_digest: PackageDependencyPlan_Usage_Digest;
+  required_facts_assessment: "not_performed";
+  facts_qualified: false;
+  review_ready: false;
+  launch_available: false;
+  publication_authorized: false;
+};
+
+export type PackageDependencyPlan_Usage_Digest = string;
+
+export type PackageInputDependencies_Prepared = {
+  bid_id: PackageInputDependencies_Id;
+  package_id: PackageInputDependencies_Id;
+  revision_id: PackageInputDependencies_Id;
+  inventory_id: PackageInputDependencies_Id;
+  frozen_input_id: PackageInputDependencies_Id;
+  execution_input_id: PackageInputDependencies_Id;
+  execution_input_digest: PackageInputDependencies_Digest;
+};
+
+export type PackageInputDependencies_RequirementAssessment = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  declaration: PackageInputDependencies_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageInputDependencies_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+};
+
+export type PackageInputDependencies_DerivedRequirementAssessment = {
+  requirement_id: PackageInputDependencies_Id;
+  requirement_digest: PackageInputDependencies_Digest;
+  declaration: PackageInputDependencies_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageInputDependencies_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  rule_status: "active" | "inactive" | "needs_revalidation";
+};
+
+export type PackageDependencyPlan_Assessment_ManifestV1 = {
   version: "package-input-dependencies/1";
   kind: "input_dependency_assessment";
   purpose: "prebid_compliance";
@@ -5283,23 +11860,54 @@ export type PackageDependencyPlan_Assessment_Manifest = {
   policy_digest: PackageDependencyPlan_Assessment_Digest;
 };
 
-export type PackageDependencyPlan_Usage_Manifest = {
-  version: "package-fact-usage/1";
-  kind: "fact_usage_selection";
+export type PackageDependencyPlan_Assessment_ManifestV2 = {
+  version: "package-input-dependencies/2";
+  kind: "input_dependency_assessment";
   purpose: "prebid_compliance";
-  prepared: PackageDependencyPlan_Usage_Prepared;
-  identity_digest: PackageDependencyPlan_Usage_Digest;
-  selected: PackageDependencyPlan_Usage_Selected[];
-  selection_digest: PackageDependencyPlan_Usage_Digest;
-  selected_facts_digest: PackageDependencyPlan_Usage_Digest;
-  required_facts_assessment: "not_performed";
+  prepared: PackageDependencyPlan_Assessment_Prepared;
+  frozen_digest: PackageDependencyPlan_Assessment_Digest;
+  inventory_digest: PackageDependencyPlan_Assessment_Digest;
+  usage_digest: PackageDependencyPlan_Assessment_Digest;
+  selected_fact_count: number;
+  requirement_count: number;
+  dependency_review_status: "incomplete" | "declared";
+  required_facts_assessment:
+    | "unknown"
+    | "missing"
+    | "selected_unvalidated"
+    | "not_used";
+  requirements: PackageDependencyPlan_Assessment_DerivedRequirementAssessment[];
+  inventory_status: "human_derivation_range_quality_unmeasured";
+  declaration_kind: "human_dependency_annotation";
+  inventory_complete: false;
+  original_bytes_verified: false;
   facts_qualified: false;
   review_ready: false;
   launch_available: false;
   publication_authorized: false;
+  policy_digest: PackageDependencyPlan_Assessment_Digest;
+  rule_state_counts: {
+    total: number;
+    active: number;
+    inactive: number;
+    needs_revalidation: number;
+  };
 };
 
-export type PackageDependencyPlan_Usage_Digest = string;
+export type PackageDependencyPlan_Usage_Prepared = {
+  bid_id: PackageDependencyPlan_Usage_Id;
+  package_id: PackageDependencyPlan_Usage_Id;
+  revision_id: PackageDependencyPlan_Usage_Id;
+  inventory_id: PackageDependencyPlan_Usage_Id;
+  frozen_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_id: PackageDependencyPlan_Usage_Id;
+  execution_input_digest: PackageDependencyPlan_Usage_Digest;
+};
+
+export type PackageDependencyPlan_Usage_Selected = {
+  fact_id: PackageDependencyPlan_Usage_Id;
+  fact_item_digest: PackageDependencyPlan_Usage_Digest;
+};
 
 export type PackageDependencyPlan_Assessment_RequirementAssessment = {
   requirement_id: PackageDependencyPlan_Assessment_Id;
@@ -5321,19 +11929,25 @@ export type PackageDependencyPlan_Assessment_RequirementAssessment = {
   applicability: "applicable" | "unknown" | "not_applicable";
 };
 
-export type PackageDependencyPlan_Usage_Prepared = {
-  bid_id: PackageDependencyPlan_Usage_Id;
-  package_id: PackageDependencyPlan_Usage_Id;
-  revision_id: PackageDependencyPlan_Usage_Id;
-  inventory_id: PackageDependencyPlan_Usage_Id;
-  frozen_input_id: PackageDependencyPlan_Usage_Id;
-  execution_input_id: PackageDependencyPlan_Usage_Id;
-  execution_input_digest: PackageDependencyPlan_Usage_Digest;
-};
-
-export type PackageDependencyPlan_Usage_Selected = {
-  fact_id: PackageDependencyPlan_Usage_Id;
-  fact_item_digest: PackageDependencyPlan_Usage_Digest;
+export type PackageDependencyPlan_Assessment_DerivedRequirementAssessment = {
+  requirement_id: PackageDependencyPlan_Assessment_Id;
+  requirement_digest: PackageDependencyPlan_Assessment_Digest;
+  declaration: PackageDependencyPlan_Assessment_Dependency | null;
+  fact_status: "unknown" | "missing" | "selected_unvalidated" | "not_used";
+  unselected_fact_ids: PackageDependencyPlan_Assessment_Id[];
+  coverage_state:
+    | "not_provided"
+    | "missing"
+    | "pending_parse"
+    | "parse_gap"
+    | "unsupported"
+    | "verified"
+    | "not_applicable"
+    | "conflict"
+    | "unknown";
+  source_bound: boolean;
+  applicability: "applicable" | "unknown" | "not_applicable";
+  rule_status: "active" | "inactive" | "needs_revalidation";
 };
 
 export type PackageDependencyPlan_Usage_Id = string;
@@ -5399,10 +12013,24 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/authoring-actions/{action_id}/apply",
   "GET /api/v1/sections/{section_id}/revisions",
   "POST /api/v1/bids/{bid_id}/sections/{section_id}/restore",
+  "GET /api/v1/authoring/exact-revision-capabilities",
+  "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
+  "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/draft-snapshots/{snapshot_id}/sections/{section_id}/nodes",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets",
+  "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets/{fact_set_id}/facts",
+  "POST /api/v1/bids/{bid_id}/builds/{build_id}/package-adoptions",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-context",
+  "POST /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests",
+  "GET /api/v1/bids/{bid_id}/documents/{document_version_id}/parse-requests/{request_id}",
   "GET /api/v1/research/capabilities",
   "GET /api/v1/history",
   "POST /api/v1/research/import-previews",
+  "GET /api/v1/research/imports",
   "GET /api/v1/research/imports/{batch_id}",
+  "GET /api/v1/research/imports/{batch_id}/source",
   "POST /api/v1/research/imports/{batch_id}/confirm",
   "GET /api/v1/bids/{bid_id}/outcomes",
   "POST /api/v1/bids/{bid_id}/outcomes",
@@ -5443,6 +12071,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/knowledge/{knowledge_id}/versions/{version_id}",
   "GET /api/v1/knowledge/{knowledge_id}/impacts",
   "POST /api/v1/knowledge/{knowledge_id}/references",
+  "GET /api/v1/bids/{bid_id}/knowledge-reference-targets",
   "GET /api/v1/knowledge-references/{citation_id}",
   "GET /api/v1/knowledge/{knowledge_id}/source-positions",
   "POST /api/v1/bids/{bid_id}/knowledge-retrievals",
@@ -5497,6 +12126,17 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/dependency-plans/{plan_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/input",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/human-decisions",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/requirements/{requirement_id}/human-decisions",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/requirements/{requirement_id}/human-decisions",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs/{input_id}/execution-inputs/{execution_input_id}/review-runs/{run_id}/report-exports/{export_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}",
@@ -5505,8 +12145,18 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/coverage-attempts/{attempt_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-input-preview",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/review-original-verification",
+  "GET /api/v1/bids/{bid_id}/package-review-comparisons",
   "GET /api/v1/bids/{bid_id}/package-documents",
   "GET /api/v1/bids/{bid_id}/package-documents/{document_version_id}/parses",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scope-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scope-previews",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/scoring-context",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/sample-context",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/execution-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/executions",
   "GET /api/v1/bids/{bid_id}/pricing-context",
   "GET /api/v1/bids/{bid_id}/pricing-formula-sources",
   "POST /api/v1/bids/{bid_id}/pricing-formulas",
@@ -5517,6 +12167,9 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/pricing-plans",
   "GET /api/v1/bids/{bid_id}/pricing-plans",
   "GET /api/v1/bids/{bid_id}/pricing-plans/{plan_id}",
+  "GET /api/v1/bids/{bid_id}/package-pricing-context",
+  "GET /api/v1/bids/{bid_id}/package-pricing-formula-sources",
+  "POST /api/v1/bids/{bid_id}/package-pricing-formulas",
   "GET /api/v1/bids/{bid_id}/submission-gate",
   "POST /api/v1/bids/{bid_id}/submissions",
   "GET /api/v1/bids/{bid_id}/submissions",
@@ -5524,6 +12177,39 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/submissions/{submission_id}/corrections",
   "GET /api/v1/submissions/{submission_id}",
   "GET /api/v1/bids/{bid_id}/submission-documents",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives/choices",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives/preview",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives",
+  "GET /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}",
+  "POST /api/v1/bids/{bid_id}/package-retrospectives/{retrospective_id}/knowledge-candidate",
+  "GET /api/v1/bids/{bid_id}/work-contexts/package_review_run/{run_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/package_submission/{submission_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/build/{build_id}/relations",
+  "GET /api/v1/bids/{bid_id}/work-contexts/choices",
+  "GET /api/v1/bids/{bid_id}/work-contexts/draft_snapshot/{snapshot_id}",
+  "GET /api/v1/bids/{bid_id}/work-contexts/build/{build_id}",
+  "GET /api/v1/authoring/package-input-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}",
+  "GET /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/context",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/check",
+  "POST /api/v1/bids/{bid_id}/authoring/package-inputs/{input_id}/fact-withdrawals",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/historical-admission-context",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/historical-admissions",
+  "GET /api/v1/package-historical-research/admissions/{admission_id}",
+  "GET /api/v1/package-historical-research/cpu-protocol-template",
+  "POST /api/v1/package-historical-research/protocols",
+  "GET /api/v1/package-historical-research/protocols",
+  "POST /api/v1/package-historical-research/cohorts",
+  "GET /api/v1/package-historical-research/cohorts",
+  "GET /api/v1/package-historical-research/cohorts/{cohort_id}",
+  "POST /api/v1/package-historical-research/cohorts/{cohort_id}/jobs",
+  "GET /api/v1/package-historical-research/cohorts/{cohort_id}/jobs",
+  "GET /api/v1/package-historical-research/jobs/{job_id}",
+  "POST /api/v1/package-historical-research/jobs/{job_id}/control",
+  "GET /api/v1/package-historical-research/admissions",
   "GET /api/v1/reviews/{review_id}/report-exports",
   "POST /api/v1/reviews/{review_id}/report-exports",
   "GET /api/v1/reviews/{review_id}/report-context",
@@ -5546,12 +12232,22 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/task-runs/{run_id}",
   "GET /api/v1/bids/{bid_id}/task-runs",
   "GET /api/v1/bids/{bid_id}/task-notifications",
+  "GET /api/v1/bids/{bid_id}/task-package-trigger-intents",
+  "GET /api/v1/bids/{bid_id}/task-package-trigger-intents/{intent_id}",
+  "POST /api/v1/bids/{bid_id}/task-package-trigger-intents/{intent_id}/cancel",
   "GET /api/v1/bids/{bid_id}/task-schedule-recoveries",
   "GET /api/v1/task-kinds",
   "GET /api/v1/bids/{bid_id}/word-originals",
   "GET /api/v1/bids/{bid_id}/word-originals/{version_id}",
   "POST /api/v1/bids/{bid_id}/word-originals/{version_id}/retry-conversion",
   "GET /api/v1/bids/{bid_id}/word-materials/{version_id}",
+  "GET /api/v1/authoring/generation-batch-capabilities",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/candidates/{action_id}",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/retry",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/resolve",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
   "POST /api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",
@@ -5564,6 +12260,29 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/style-template/preview",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/restore-preview",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/history",
+  "GET /api/v1/authoring/rich-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring-images",
+  "GET /api/v1/bids/{bid_id}/authoring-images",
+  "GET /api/v1/bids/{bid_id}/authoring-image-uploads/{upload_id}",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}",
+  "POST /api/v1/bids/{bid_id}/authoring-images/{asset_id}/withdraw",
+  "GET /api/v1/bids/{bid_id}/authoring-images/{asset_id}/versions/{version_id}/bytes/{variant}",
+  "GET /api/v1/authoring/word-import-capabilities",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/resolve",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/word-imports/{candidate_id}/images/{image_key}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections/preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-corrections/{correction_id}",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence/{evidence_id}",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submission-preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submissions",
+  "POST /api/v1/submissions/{submission_id}/package-corrections",
   "GET /api/v1/technical-scale-capabilities",
   "GET /api/v1/bids/{bid_id}/technical-scale-context",
   "POST /api/v1/bids/{bid_id}/technical-scales",

@@ -15,7 +15,7 @@ from packages.contracts.bid_package_requirements_api import valid
 from packages.domain.bid_packages import PackageError, safe_integer
 from packages.domain.package_review_identity import candidate, summary
 from packages.domain.review_identity import canonical, digest
-from packages.domain.runtime import sha
+from packages.domain.runtime import DomainError, sha
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,6 +175,12 @@ def consume(row: dict[str, Any], scope: tuple[str, str, str, str], input_id: str
         )
         for view in (own, authority, inventory):
             _check(digest(view["manifest"]) == view["digest"])
+        if inv["version"] == "bid-package-requirements/3":
+            from packages.domain.package_rule_corrections import verify_inventory_header
+
+            # The exact archived chain/receipt is checked by inventory proof;
+            # consuming a root never grants extraction or execution qualification.
+            verify_inventory_header(inventory)
         coverage = selected["coverage"]
         if coverage:
             cm = coverage["manifest"]
@@ -203,5 +209,5 @@ def consume(row: dict[str, Any], scope: tuple[str, str, str, str], input_id: str
         )
         _documents(selected, root["documents"])
         return FrozenPackageReviewInput(canonical(m).decode("utf-8"), text, row["digest"])
-    except (ValueError, TypeError, KeyError, AttributeError, OverflowError):
+    except (ValueError, TypeError, KeyError, AttributeError, OverflowError, DomainError):
         raise PackageError("PACKAGE_REVIEW_FROZEN_INPUT_CORRUPT") from None

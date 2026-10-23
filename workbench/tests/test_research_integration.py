@@ -1,10 +1,14 @@
 """独立非owner真实PG＋真实会话/CSRF；仅显式合成资料，无外部模型请求。"""
 
+import io
+import json
 import os
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
+from botocore.exceptions import ClientError
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
@@ -30,6 +34,14 @@ def client(monkeypatch):
     objects = {}
     monkeypatch.setattr(storage, "put", lambda key, data, media: objects.__setitem__(key, data))
     monkeypatch.setattr(storage, "get", lambda key: objects[key])
+
+    def get_object(*, Bucket, Key):
+        if Key not in objects:
+            raise ClientError({"Error": {"Code": "NoSuchKey"}}, "GetObject")
+        return {"Body": io.BytesIO(objects[Key])}
+
+    monkeypatch.setattr(storage, "client", lambda: SimpleNamespace(get_object=get_object))
+    monkeypatch.setattr(storage, "bucket", lambda: "explicit-synthetic-memory-objects")
     monkeypatch.setenv("RESEARCH_RPM", "1000")
     monkeypatch.setenv("RESEARCH_TPM", "100000000")
     monkeypatch.setenv(
@@ -130,9 +142,12 @@ def seed(actor, *, year=2024, project_id=None, round_no=1, frozen_identity=True,
             if version == body and body_blob_id:
                 blob = body_blob_id
             else:
+                raw = json.dumps(str(version)).encode()
+                object_key = "synthetic-research/" + str(blob)
+                storage.put(object_key, raw, "application/pdf")
                 c.execute(
-                    "INSERT INTO blobs(id,digest,object_key,byte_size,media_type) VALUES(%s,%s,%s,1,'application/pdf')",
-                    (blob, sha(str(version)), "synthetic-research/" + str(blob)),
+                    "INSERT INTO blobs(id,digest,object_key,byte_size,media_type) VALUES(%s,%s,%s,%s,'application/pdf')",
+                    (blob, sha(raw), object_key, len(raw)),
                 )
             c.execute(
                 "INSERT INTO document_versions(id,bid_id,blob_id,original_name,obtained_at,artifact_kind,created_by) VALUES(%s,%s,%s,'合成测试.pdf',%s,%s,%s)",

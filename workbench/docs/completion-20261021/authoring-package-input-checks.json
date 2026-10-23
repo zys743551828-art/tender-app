@@ -1,0 +1,41 @@
+{
+  "schema": "authoring-package-input-checks/1",
+  "stage": "B1",
+  "passed": true,
+  "native_receipt": "docs/completion-20261021/authoring-package-input-receipt.json",
+  "native_tests": 30,
+  "paid_calls": 0,
+  "checks": [
+    {
+      "name": "ruff",
+      "command": "/workspace/scratch/31e56f630f51/review-venv/bin/ruff check packages/authoring/package_admission.py packages/authoring/package_input.py packages/authoring/package_input_contracts.py packages/authoring/package_input_observation.py packages/authoring/package_input_repository.py apps/api/authoring_package_inputs.py deploy/authoring_package_input_acceptance.py tests/authoring_package_input_fixtures.py tests/test_authoring_package_inputs_pg.py",
+      "exit_code": 0,
+      "output": "All checks passed!"
+    },
+    {
+      "name": "ruff_format",
+      "command": "/workspace/scratch/31e56f630f51/review-venv/bin/ruff format --check packages/authoring/package_admission.py packages/authoring/package_input.py packages/authoring/package_input_contracts.py packages/authoring/package_input_observation.py packages/authoring/package_input_repository.py apps/api/authoring_package_inputs.py deploy/authoring_package_input_acceptance.py tests/authoring_package_input_fixtures.py tests/test_authoring_package_inputs_pg.py",
+      "exit_code": 0,
+      "output": "9 files already formatted"
+    },
+    {
+      "name": "mypy",
+      "command": "/workspace/scratch/31e56f630f51/review-venv/bin/mypy --follow-imports=silent packages/authoring/package_admission.py packages/authoring/package_input.py packages/authoring/package_input_contracts.py packages/authoring/package_input_observation.py packages/authoring/package_input_repository.py apps/api/authoring_package_inputs.py deploy/authoring_package_input_acceptance.py",
+      "exit_code": 0,
+      "output": "Success: no issues found in 7 source files"
+    },
+    {
+      "name": "bandit",
+      "command": "/workspace/scratch/31e56f630f51/review-venv/bin/bandit -q -r packages/authoring/package_admission.py packages/authoring/package_input.py packages/authoring/package_input_contracts.py packages/authoring/package_input_observation.py packages/authoring/package_input_repository.py apps/api/authoring_package_inputs.py deploy/authoring_package_input_acceptance.py",
+      "exit_code": 0,
+      "output": "[tester]\tWARNING\tnosec encountered (B603), but no failed test on line 72"
+    },
+    {
+      "name": "prettier_documentation",
+      "command": "apps/web/node_modules/.bin/prettier --check docs/completion-20261021/exact-package-authoring-design.md docs/completion-20261021/authoring-package-input-acceptance.md docs/completion-20261021/authoring-package-input-receipt.json",
+      "exit_code": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!"
+    }
+  ],
+  "scope": "B1 input production and admission only; no generation, publication, apply, build, model quality or deployed capability claim"
+}

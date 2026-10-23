@@ -1,0 +1,203 @@
+.package-history-workspace,
+.package-history-step,
+.package-history-details,
+.package-history-directory,
+.package-history-form {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.package-history-workspace :is(h2, h3, h4, p, dl) {
+  margin: 0;
+}
+.package-history-workspace {
+  padding: 20px;
+}
+.package-history-workspace [hidden] {
+  display: none;
+}
+.package-history-workspace :is(p, li, dd, dt, small, summary, button, td, th) {
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+.package-history-workspace
+  :is(fieldset, details, label, input, textarea, select) {
+  min-width: 0;
+  max-width: 100%;
+}
+.package-history-workspace fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.package-history-workspace .notice {
+  display: block;
+}
+.package-history-workspace .notice > :not(:first-child) {
+  margin-top: 10px;
+}
+.package-history-workspace summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.package-history-workspace details > :not(summary) {
+  margin-top: 12px;
+}
+.package-history-workspace button {
+  white-space: normal;
+}
+.package-history-steps,
+.package-history-toolbar,
+.package-history-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.package-history-steps {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+}
+.package-history-steps button[aria-current="step"] {
+  background: var(--primary-soft);
+  color: var(--primary-soft-foreground);
+  font-weight: 600;
+}
+.package-history-step {
+  padding-top: 4px;
+}
+.package-history-directory-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 12px;
+}
+.package-history-record {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px;
+}
+.package-history-record[aria-current="true"] {
+  border-color: var(--primary);
+}
+.package-history-record small {
+  display: block;
+  color: var(--muted);
+}
+.package-history-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px 20px;
+}
+.package-history-facts dt,
+.package-history-identity dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.package-history-facts dd,
+.package-history-identity dd {
+  margin: 3px 0 0;
+}
+.package-history-identity dl {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+}
+.package-history-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.package-history-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.package-history-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.package-history-table-wrap :is(td, th) {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  min-width: 95px;
+  vertical-align: top;
+}
+.package-history-table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+.package-history-table-wrap small {
+  display: block;
+  max-width: 220px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.package-history-check {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+  font-weight: normal;
+}
+.package-history-check input {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 3px 0 0;
+  padding: 0;
+}
+.package-history-selection {
+  display: grid;
+  gap: 10px;
+}
+.package-history-selection-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 180px) auto;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.package-history-selection-row small {
+  display: block;
+  color: var(--muted);
+}
+.package-history-metrics {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.package-history-pending pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 280px;
+  overflow: auto;
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  .package-history-workspace {
+    padding: 16px;
+  }
+  .package-history-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .package-history-selection-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .package-history-steps button {
+    flex: 1 1 100px;
+  }
+  .package-history-workspace .section-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

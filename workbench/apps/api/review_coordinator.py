@@ -6,20 +6,29 @@ import signal
 import threading
 
 import psycopg
+from psycopg import sql
 
+from packages.domain.bounded_sweep import KeysetSweep
 from packages.domain.reviews import _locked, _write_intent, tick
 from packages.domain.runtime import DomainError, assert_role, connection
+from packages.tasks.review_runtime import configure_review_guard
+
+configure_review_guard()
 
 STOP = threading.Event()
 
 
 def run(once=False):
     assert_role()
+    sweep = KeysetSweep(("bid_id",))
     while not STOP.is_set():
         with connection() as c:
-            ids = c.execute(
-                "SELECT bid_id FROM review_slots WHERE pending_intent->>'state' IN('preparing','queued','running','cancel_requested') ORDER BY bid_id LIMIT 100"
-            ).fetchall()
+            ids = sweep.read(
+                c,
+                sql.SQL(
+                    "SELECT bid_id FROM review_slots WHERE pending_intent->>'state' IN('preparing','queued','running','cancel_requested')"
+                ),
+            )
         for item in ids:
             try:
                 tick(item["bid_id"])

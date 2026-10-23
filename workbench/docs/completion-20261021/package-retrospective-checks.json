@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-21",
+  "status": "independent_candidate_verified_integration_pending",
+  "native_postgres_runs": [
+    {
+      "exit_code": 0,
+      "original_io": "explicit synthetic fixtures only",
+      "paid_calls": 0,
+      "port": 59783,
+      "postgres": "17.11",
+      "roles": "fresh nonowner API and Worker logins",
+      "selection": null,
+      "sql_sha256": "1cf9ad92465191277c1a99860acdf98bf377966a288ecafcb40644dad7caae71",
+      "suite": "tests/test_package_retrospectives_pg.py",
+      "receipt": "/tmp/tender-review-retrospective/retrospective-pg-kgvymma5-receipt.json",
+      "passed": 20,
+      "cluster_stopped": true
+    },
+    {
+      "exit_code": 0,
+      "original_io": "explicit synthetic fixtures only",
+      "paid_calls": 0,
+      "port": 55889,
+      "postgres": "17.11",
+      "roles": "fresh nonowner API and Worker logins",
+      "selection": "later_prebid",
+      "sql_sha256": "1cf9ad92465191277c1a99860acdf98bf377966a288ecafcb40644dad7caae71",
+      "suite": "tests/test_package_retrospectives_pg.py",
+      "receipt": "/tmp/tender-review-retrospective/retrospective-pg-n3lxfwtd-receipt.json",
+      "passed": 2,
+      "cluster_stopped": true
+    }
+  ],
+  "python_pure": {
+    "passed": 13
+  },
+  "frontend": {
+    "protocol_tests": 10,
+    "component_tests": 4,
+    "scoped_typecheck": "passed",
+    "scoped_vite_library_build": "passed",
+    "lint": "passed",
+    "prettier": "passed after native-fixture formatting",
+    "whole_app_typecheck": "blocked by concurrent F11 TaskPanel.test.tsx and useTaskTriggerPage.ts errors; no retrospective errors"
+  },
+  "backend_static": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "8 source files passed",
+    "bandit": "passed"
+  },
+  "external_paid_calls": 0,
+  "real_tender_or_model_effectiveness": "not_run",
+  "main_app_integration": "root-owned, not modified by this batch",
+  "provenance": "Native nonowner PG/authenticated ASGI/real Worker engine; originals and provider HTTP ports explicitly synthetic, no live Kafka/OCR/model calls"
+}

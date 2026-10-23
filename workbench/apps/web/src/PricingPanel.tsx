@@ -1,3 +1,4 @@
+import { PackagePricingScope } from "./PackagePricingScope";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import type { ApiResult } from "./api";
@@ -21,6 +22,12 @@ import { ResourceState } from "./ResourceState";
 import { useCursorList } from "./useCursorList";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { useResource } from "./useResource";
+import {
+  pricingContextPath,
+  pricingScopeKey,
+  samePricingBinding,
+} from "./packagePricing";
+import type { PackagePricingBinding } from "./packagePricing";
 
 export function PricingPanel({
   bidId,
@@ -32,6 +39,28 @@ export function PricingPanel({
   onSettings: () => void;
 }) {
   const available = supportsApi("GET", `/bids/${bidId}/pricing-context`);
+  const packageAvailable = supportsApi(
+    "GET",
+    `/bids/${bidId}/package-pricing-context`,
+  );
+  const [mode, setMode] = useState<"package" | "legacy">(
+    packageAvailable ? "package" : "legacy",
+  );
+  const [selectedScope, setSelectedScope] = useKnowledgeInput<{
+    memberId: string;
+    bidId: string;
+    binding: PackagePricingBinding | null;
+  }>(knowledgeStorageKey(memberId, bidId) + "pricing-package-selection", {
+    memberId,
+    bidId,
+    binding: null,
+  });
+  const packageBinding =
+    selectedScope.memberId === memberId && selectedScope.bidId === bidId
+      ? (selectedScope.binding ?? undefined)
+      : undefined;
+  const setPackageBinding = (binding?: PackagePricingBinding) =>
+    setSelectedScope({ memberId, bidId, binding: binding ?? null });
   const settings = useResource<SettingsView>(
     available ? `/bids/${bidId}/settings` : null,
     5000,
@@ -86,20 +115,57 @@ export function PricingPanel({
       </div>
     );
   return (
-    <PricingWorkbench
-      key={`${memberId}:${bidId}`}
-      bidId={bidId}
-      memberId={memberId}
-    />
+    <>
+      {packageAvailable && (
+        <section className="panel">
+          <label>
+            报价范围
+            <select
+              value={mode}
+              onChange={(event) =>
+                setMode(event.target.value as "package" | "legacy")
+              }
+            >
+              <option value="package">按明确投标包报价</option>
+              <option value="legacy">独立报价与全部历史</option>
+            </select>
+          </label>
+          {mode === "package" && packageBinding && (
+            <button
+              className="text-button"
+              onClick={() => setPackageBinding(undefined)}
+            >
+              重新选择报价包修订
+            </button>
+          )}
+        </section>
+      )}
+      {mode === "package" && !packageBinding ? (
+        <PackagePricingScope
+          key={bidId}
+          bidId={bidId}
+          onSelect={setPackageBinding}
+        />
+      ) : (
+        <PricingWorkbench
+          key={`${memberId}:${bidId}:${mode}${pricingScopeKey(mode === "package" ? packageBinding : undefined)}`}
+          bidId={bidId}
+          memberId={memberId}
+          packageBinding={mode === "package" ? packageBinding : undefined}
+        />
+      )}
+    </>
   );
 }
 
 function PricingWorkbench({
   bidId,
   memberId,
+  packageBinding,
 }: {
   bidId: string;
   memberId: string;
+  packageBinding?: PackagePricingBinding;
 }) {
   const formulas = useCursorList<PricingFormulaPage>(
     `/bids/${bidId}/pricing-formulas?limit=25`,
@@ -110,7 +176,9 @@ function PricingWorkbench({
     (item) => item.id,
   );
   const [selected, setSelected] = useKnowledgeInput(
-    knowledgeStorageKey(memberId, bidId) + "pricing-selected",
+    knowledgeStorageKey(memberId, bidId) +
+      "pricing-selected" +
+      pricingScopeKey(packageBinding),
     "",
   );
   const formula = useResource<PricingFormulaView>(
@@ -123,17 +191,40 @@ function PricingWorkbench({
   const validFormula =
     formula.data?.formula.bid_id === bidId &&
     formula.data.formula_version_id === selected &&
-    formula.data.formula.formula_version_id === selected;
+    formula.data.formula.formula_version_id === selected &&
+    (!packageBinding ||
+      samePricingBinding(formula.data.formula.package_binding, packageBinding));
+  const matchingFormulas = formulas.items.filter(
+    (item) =>
+      !packageBinding ||
+      samePricingBinding(item.package_binding, packageBinding),
+  );
+  const matchingPlans = plans.items.filter(
+    (item) =>
+      !packageBinding ||
+      samePricingBinding(item.formula_snapshot.package_binding, packageBinding),
+  );
   async function beginFormula() {
     if (reading) return;
     setReading(true);
     setError(null);
     try {
       const snapshot = await api<PricingContext>(
-        `/bids/${bidId}/pricing-context`,
+        pricingContextPath(bidId, packageBinding),
       );
       if (snapshot.data.bid_id !== bidId || !snapshot.etag)
         throw new Error("报价依据项目或条件版本无法核对。");
+      if (
+        packageBinding &&
+        !(
+          "package_binding" in snapshot.data &&
+          samePricingBinding(
+            snapshot.data.package_binding as PackagePricingBinding,
+            packageBinding,
+          )
+        )
+      )
+        throw new Error("报价依据与所选包修订不一致，未打开其他包的公式编辑。");
       setEditor(snapshot);
     } catch (failure) {
       setError(failure);
@@ -150,6 +241,11 @@ function PricingWorkbench({
             <p className="small-note">
               有据公式、对手假设与价格分单独记录，不改变核心提交检查，不预测中标概率。
             </p>
+            {packageBinding && (
+              <p className="small-note">
+                当前公式绑定本次选择的投标包与招标补遗包；旧修订的方案可切换到“独立报价与全部历史”回看。
+              </p>
+            )}
           </div>
           <button
             className="button secondary"
@@ -178,7 +274,7 @@ function PricingWorkbench({
               ) && (
                 <option value={selected}>正在恢复先前选择的固定公式版本</option>
               )}
-            {formulas.items.map((item) => (
+            {matchingFormulas.map((item) => (
               <option
                 key={item.formula_version_id}
                 value={item.formula_version_id}
@@ -200,7 +296,7 @@ function PricingWorkbench({
             加载更多公式版本
           </button>
         )}
-        {formulas.data && !formulas.items.length && (
+        {formulas.data && !matchingFormulas.length && (
           <p className="small-empty">
             尚无已登记公式。从本项目生效招标或补遗原页核对条款，一次明确登记后即可试算。
           </p>
@@ -258,6 +354,7 @@ function PricingWorkbench({
           bidId={bidId}
           memberId={memberId}
           initialContext={editor}
+          packageBinding={packageBinding}
           onClose={() => setEditor(null)}
           onSaved={(value) => {
             setSelected(value.formula_version_id);
@@ -290,7 +387,7 @@ function PricingWorkbench({
           onRetry={() => void plans.reload()}
         />
         <ErrorNotice error={plans.moreError} />
-        {plans.items.map((plan) =>
+        {matchingPlans.map((plan) =>
           plan.formula_snapshot.bid_id !== bidId ? (
             <div className="notice error" key={plan.id}>
               方案项目身份不一致，未展示其他项目结果。
@@ -320,7 +417,7 @@ function PricingWorkbench({
             </article>
           ),
         )}
-        {plans.data && !plans.items.length && (
+        {plans.data && !matchingPlans.length && (
           <p className="small-empty">
             尚无已保存方案。情景结果可单独试算后按需保存。
           </p>

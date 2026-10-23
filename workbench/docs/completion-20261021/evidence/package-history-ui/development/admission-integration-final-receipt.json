@@ -1,0 +1,23 @@
+{
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/PackageHistoricalAdmission.integration.test.tsx"
+  ],
+  "exit_code": 0,
+  "source_before": {
+    "src/PackageHistoricalAdmission.integration.test.tsx": "f2bc2f0cfe72a9030013fcae13be88ef389526c390ce1458c16a99aa982d8513",
+    "src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+    "src/PackageTechnicalEligibility.tsx": "3b500cfa85cd69fda2987f3ea3afaf02b7ad76184cff2cdb708ef075753c921a",
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a"
+  },
+  "source_after": {
+    "src/PackageHistoricalAdmission.integration.test.tsx": "f2bc2f0cfe72a9030013fcae13be88ef389526c390ce1458c16a99aa982d8513",
+    "src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+    "src/PackageTechnicalEligibility.tsx": "3b500cfa85cd69fda2987f3ea3afaf02b7ad76184cff2cdb708ef075753c921a",
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a"
+  },
+  "unchanged": true,
+  "log_sha256": "b953f93884d00bbc147f3e859053ea5eecfd2c226ed1e6b713103d3833e5ae19"
+}

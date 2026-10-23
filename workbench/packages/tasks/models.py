@@ -44,18 +44,82 @@ class SourceSelection(StrictModel):
         return self
 
 
+class PackageReviewSelection(StrictModel):
+    package_id: UUID
+    revision_id: UUID
+    inventory_id: UUID
+    frozen_input_id: UUID
+    frozen_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    execution_input_id: UUID
+    execution_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    dependency_plan_id: UUID
+    dependency_plan_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    method_digest: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class ExactPackageReviewSelection(StrictModel):
+    mode: Literal["exact_package_review"]
+    input: PackageReviewSelection
+
+
+class ExactPackageTriggerSelection(StrictModel):
+    mode: Literal["exact_package_trigger"]
+    input: PackageReviewSelection
+
+
+class PackageAuthoringSelection(StrictModel):
+    authoring_input_id: UUID
+    authoring_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+
+
+class ExactPackageAuthoringSelection(StrictModel):
+    mode: Literal["exact_package_authoring"]
+    input: PackageAuthoringSelection
+
+
+def legacy_source_default(value):
+    """Keep the original omitted-mode request semantics before union dispatch."""
+    if isinstance(value, dict) and isinstance(value.get("source_selection"), dict):
+        source = value["source_selection"]
+        if "mode" not in source:
+            return {**value, "source_selection": {"mode": "current_project", **source}}
+    return value
+
+
 class TemplateRequest(StrictModel):
     name: str = Field(min_length=1, max_length=200, pattern=r"\S")
     task_kind: Literal["denial_check", "scoring_review", "supplement_impact", "chapter_suggestion"]
     instructions: str = Field(min_length=1, max_length=8000, pattern=r"\S")
     section_id: UUID | None = None
-    source_selection: SourceSelection = Field(default_factory=SourceSelection)
+    source_selection: (
+        SourceSelection
+        | ExactPackageReviewSelection
+        | ExactPackageTriggerSelection
+        | ExactPackageAuthoringSelection
+    ) = Field(default_factory=SourceSelection, discriminator="mode")
     trigger: Trigger = Field(default_factory=Trigger)
+
+    @model_validator(mode="before")
+    @classmethod
+    def legacy_source(cls, value):
+        return legacy_source_default(value)
 
     @model_validator(mode="after")
     def exact_target(self):
         if (self.task_kind == "chapter_suggestion") != (self.section_id is not None):
             raise ValueError("章节建议须指定真实章节；其他任务以项目当前正文为目标")
+        if isinstance(self.source_selection, ExactPackageReviewSelection) and (
+            self.task_kind != "denial_check" or self.trigger.mode != "manual"
+        ):
+            raise ValueError("精确整包输入仅用于手动否决及强制项范围核查，不自动触发或用于其他任务")
+        if isinstance(self.source_selection, ExactPackageTriggerSelection) and (
+            self.task_kind != "denial_check" or self.trigger.mode == "manual"
+        ):
+            raise ValueError("整包自动触发须显式选择事件或定时，只唤醒已保存的确切否决核查输入")
+        if isinstance(self.source_selection, ExactPackageAuthoringSelection) and (
+            self.task_kind != "chapter_suggestion" or self.trigger.mode != "manual"
+        ):
+            raise ValueError("固定整包编写只支持显式单章节手动任务")
         return self
 
 
@@ -104,6 +168,45 @@ class RunRequest(StrictModel):
     rerun: bool = Field(default=False, strict=True)
 
 
+class TaskAuthoringResult(StrictModel):
+    schema_version: Literal["task-authoring-result/1"] = Field(alias="schema")
+    job_id: UUID
+    job_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    writing_plan_id: UUID
+    operation_id: UUID
+    job_ref: str
+    section_id: UUID
+    base_section_revision: int = Field(ge=1)
+    publication_state: Literal["pending", "published", "stale", "failed"]
+    candidate_digest: str | None = Field(pattern="^[0-9a-f]{64}$")
+    action_id: UUID | None
+    action_ref: str | None
+    source_scope: Literal["legacy_section_and_source_versions"]
+    automatic_apply: Literal[False]
+
+
+class TaskPackageAuthoringResult(StrictModel):
+    schema_version: Literal["task-package-authoring-result/1"] = Field(alias="schema")
+    job_id: UUID
+    job_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    writing_plan_id: UUID
+    operation_id: UUID
+    job_ref: str
+    section_id: UUID
+    base_section_revision: int = Field(ge=1)
+    authoring_input_id: UUID
+    authoring_input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    context_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    publication_state: Literal["pending", "published", "stale", "failed"]
+    candidate_digest: str | None = Field(pattern="^[0-9a-f]{64}$")
+    action_id: UUID | None
+    action_ref: str | None
+    source_scope: Literal["exact_package_context"]
+    automatic_apply: Literal[False]
+    apply_available: Literal[False]
+    build_available: Literal[False]
+
+
 class RunView(StrictModel):
     id: UUID
     bid_id: UUID
@@ -118,6 +221,7 @@ class RunView(StrictModel):
         "failed",
         "cancelled",
         "awaiting_review",
+        "awaiting_publication",
         "blocked",
         "superseded",
         "unknown",
@@ -125,7 +229,7 @@ class RunView(StrictModel):
     ]
     stage: Literal["preparation", "review", "execution"]
     frozen_manifest: dict
-    result: dict | None
+    result: TaskAuthoringResult | TaskPackageAuthoringResult | dict | None
     error_code: str | None
     formal_decisions_created: Literal[False]
     coverage: Literal["registered_effectivity_only_semantic_unknown", "not_formal_score"]
@@ -134,6 +238,40 @@ class RunView(StrictModel):
 class RunPage(StrictModel):
     items: list[RunView]
     next_after: UUID | None
+
+
+class PackageTaskManualCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_review"]
+    method_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    trigger: Literal["manual"]
+    overall_coverage: Literal["partial"]
+    formal_scoring_eligible: Literal[False]
+    submission_eligible: Literal[False]
+    automatic_input_selection: Literal[False]
+
+
+class PackageTaskTriggerCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_trigger"]
+    triggers: list[Literal["material_updated", "schedule"]]
+    requires_independent_runner: Literal[True]
+    automatic_input_selection: Literal[False]
+    automatic_catchup_runs: Literal[0]
+
+
+class PackageTaskAuthoringCapabilities(StrictModel):
+    available: bool
+    reason: str | None
+    input_mode: Literal["exact_package_authoring"]
+    trigger: Literal["manual"]
+    source_scope: Literal["exact_package_context"]
+    automatic_input_selection: Literal[False]
+    rerun_supported: Literal[False]
+    apply_available: Literal[False]
+    build_available: Literal[False]
 
 
 class TaskKindView(StrictModel):
@@ -152,6 +290,9 @@ class TaskKindView(StrictModel):
     semantic_impact_coverage: Literal["unknown"] | None = None
     formal_decisions_allowed: Literal[False] | None = None
     automatic_apply: Literal[False] | None = None
+    exact_package_manual: PackageTaskManualCapabilities | None = None
+    exact_package_triggers: PackageTaskTriggerCapabilities | None = None
+    exact_package_authoring: PackageTaskAuthoringCapabilities | None = None
 
 
 class TaskKindPage(StrictModel):
@@ -184,13 +325,14 @@ class MissedTaskSchedule(StrictModel):
     through: datetime
     count: None
     count_status: Literal["not_enumerated"]
-    resolution: Literal["skipped_run_current_once_available"]
+    resolution: Literal["skipped_run_current_once_available", "skipped_reconfirm_exact_input"]
 
 
 class TaskScheduleRecoveryPayload(StrictModel):
     schedule_id: UUID
     definition_id: UUID
-    run_current_once_ref: str
+    run_current_once_ref: str | None
+    reconfirm_template_ref: str | None = None
     definition_version_id: UUID
     next_fire_at: datetime
     missed: MissedTaskSchedule | None
@@ -207,3 +349,31 @@ class TaskScheduleRecoveryPage(StrictModel):
     items: list[TaskScheduleRecovery]
     next_after: UUID | None
     run_current_once_supported: Literal[True]
+
+
+class PackageTriggerIntentView(StrictModel):
+    id: UUID
+    bid_id: UUID
+    definition_id: UUID
+    definition_version_id: UUID
+    trigger: Literal["material_updated", "schedule"]
+    trigger_event_id: UUID | None
+    scheduled_at: datetime | None
+    created_at: datetime
+    selection: PackageReviewSelection
+    input_digest: str = Field(pattern="^[0-9a-f]{64}$")
+    state: Literal["pending", "accepted", "blocked", "cancelled"]
+    error_code: str | None
+    run_id: UUID | None
+    run_ref: str | None
+    reused: bool
+    automatic_input_selection: Literal[False]
+
+
+class PackageTriggerIntentPage(StrictModel):
+    items: list[PackageTriggerIntentView]
+    next_after: UUID | None
+
+
+class CancelPackageTriggerIntent(StrictModel):
+    reason: str = Field(min_length=1, max_length=1000, pattern=r"\S")

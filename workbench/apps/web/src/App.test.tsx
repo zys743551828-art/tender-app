@@ -197,7 +197,7 @@ describe("解析依据", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     expect(onClose).toHaveBeenCalledOnce();
     view.unmount();
-    expect(original).toHaveFocus();
+    await waitFor(() => expect(original).toHaveFocus());
     original.remove();
   });
 });

@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, supportsApi } from "./api";
 import type {
   AuthoringRevisionPage,
+  AuthoringHistoricalSectionView,
   DraftSaved,
   RestoreAuthoringSection,
-  SectionView,
 } from "./contracts";
 import type { AuthoringHead } from "./SectionEditor";
 import { Badge, ErrorNotice } from "./components";
-import { editorText } from "./editorSchema";
+import { authoringText } from "./richEditorSchema";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useCommand } from "./useCommand";
+import { AuthoringRichSnapshot } from "./AuthoringRichSnapshot";
+import { TextChangePreview } from "./TextChangePreview";
+import {
+  historicalSectionPath,
+  readAuthoringRevisionPage,
+  validateHistoricalSection,
+} from "./authoringHistoryProtocol";
 
 export function AuthoringHistory({
   bidId,
@@ -39,6 +46,7 @@ export function AuthoringHistory({
       <summary>查看章节历史修订</summary>
       {open && (
         <RevisionList
+          key={`${bidId}:${getHead().draft.id}:${sectionId}`}
           bidId={bidId}
           sectionId={sectionId}
           disabled={disabled}
@@ -73,51 +81,179 @@ function RevisionList({
   );
   const [more, setMore] = useState<AuthoringRevisionPage[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<
+    AuthoringRevisionPage["items"][number] | null
+  >(null);
   const [error, setError] = useState<unknown>(null);
   const [restored, setRestored] = useState<number | null>(null);
+  const [compare, setCompare] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const restorePending = useRef(false);
+  const active = useRef(true);
+  const pageTicket = useRef(0);
+  const pagePending = useRef(false);
+  const invalidatePages = useCallback(() => {
+    pageTicket.current++;
+    pagePending.current = false;
+  }, []);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+      invalidatePages();
+    };
+  }, [invalidatePages]);
   const command = useCommand(`section-restore:${sectionId}`);
-  const path =
-    selected === null ? null : `/sections/${sectionId}/revisions/${selected}`;
-  const historical = useResource<SectionView>(path);
-  const valid =
-    historical.data &&
-    historical.data.id === sectionId &&
-    historical.data.revision === selected &&
-    historical.data.draft_id === getHead().draft.id;
-  const last = more.at(-1) ?? revisions.data;
-  const items = [
-    ...new Map(
-      [
-        ...(revisions.data?.items ?? []),
-        ...more.flatMap((page) => page.items),
-      ].map((item) => [item.revision, item]),
-    ).values(),
-  ];
+  const draftId = getHead().draft.id;
+  const selectedRevision = selected?.revision,
+    selectedDigest = selected?.digest;
+  const selection =
+    selected === null
+      ? null
+      : {
+          bidId,
+          draftId,
+          sectionId,
+          revision: selected.revision,
+          digest: selected.digest,
+        };
+  const path = selection === null ? null : historicalSectionPath(selection);
+  const historical = useResource<unknown>(path);
+  const [checked, setChecked] = useState<{
+    path: string;
+    raw: unknown;
+    value?: AuthoringHistoricalSectionView;
+    error?: unknown;
+  } | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (
+      !path ||
+      !historical.data ||
+      selectedRevision === undefined ||
+      selectedDigest === undefined
+    )
+      return;
+    const expected = {
+      bidId,
+      draftId,
+      sectionId,
+      revision: selectedRevision,
+      digest: selectedDigest,
+    };
+    void validateHistoricalSection(historical.data, expected).then(
+      (value) => {
+        if (live) setChecked({ path, raw: historical.data, value });
+      },
+      (failure) => {
+        if (live) setChecked({ path, raw: historical.data, error: failure });
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [
+    path,
+    historical.data,
+    bidId,
+    draftId,
+    sectionId,
+    selectedRevision,
+    selectedDigest,
+  ]);
+  const result =
+    checked?.path === path && checked.raw === historical.data ? checked : null;
+  const valid = result?.value;
+  const [preview, setPreview] = useState<{
+    value: AuthoringHistoricalSectionView;
+    ready: boolean;
+  } | null>(null);
+  const onPreviewReady = useCallback(
+    (ready: boolean) => {
+      if (valid) setPreview({ value: valid, ready });
+    },
+    [valid],
+  );
+  const previewReady = !!valid && preview?.value === valid && preview.ready;
+  const directory = useMemo(() => {
+    try {
+      if (!revisions.data) return { items: [], last: undefined, error: null };
+      const first = readAuthoringRevisionPage(revisions.data);
+      const byRevision = new Map<
+        number,
+        AuthoringRevisionPage["items"][number]
+      >();
+      for (const page of [first, ...more])
+        for (const item of page.items) {
+          const prior = byRevision.get(item.revision);
+          if (
+            prior &&
+            (prior.digest !== item.digest ||
+              prior.created_at !== item.created_at ||
+              prior.created_by !== item.created_by)
+          )
+            throw new Error("同一历史修订的保存身份不一致，请重新读取目录。");
+          byRevision.set(item.revision, item);
+        }
+      return {
+        items: [...byRevision.values()],
+        last: more.at(-1) ?? first,
+        error: null,
+      };
+    } catch (failure) {
+      return { items: [], last: undefined, error: failure };
+    }
+  }, [revisions.data, more]);
+  const { items, last } = directory;
   async function next() {
-    if (last?.next_cursor == null || loadingMore) return;
+    if (last?.next_cursor == null || pagePending.current) return;
+    pagePending.current = true;
+    const ticket = ++pageTicket.current;
     setLoadingMore(true);
     setError(null);
     try {
-      const { data } = await api<AuthoringRevisionPage>(
+      const { data } = await api<unknown>(
         `/sections/${sectionId}/revisions?before=${last.next_cursor}`,
       );
-      setMore((old) => [...old, data]);
+      const page = readAuthoringRevisionPage(data, last.next_cursor);
+      if (active.current && ticket === pageTicket.current)
+        setMore((old) => [...old, page]);
     } catch (failure) {
-      setError(failure);
+      if (active.current && ticket === pageTicket.current) setError(failure);
     } finally {
-      setLoadingMore(false);
+      if (active.current && ticket === pageTicket.current) {
+        setLoadingMore(false);
+        pagePending.current = false;
+      }
     }
   }
   async function restore() {
-    if (!valid || selected === null || command.busy || disabled) return;
+    if (
+      !valid ||
+      !previewReady ||
+      selected === null ||
+      restorePending.current ||
+      command.busy ||
+      disabled ||
+      historical.loading
+    )
+      return;
+    restorePending.current = true;
+    setRestoring(true);
     setBusy(true);
     setError(null);
     try {
       if (!(await flush())) return;
+      if (!active.current) return;
       const head = getHead();
+      if (
+        head.draft.id !== draftId ||
+        head.draft.bid_id !== bidId ||
+        head.section.id !== sectionId
+      )
+        throw new Error("当前章节已变化，请回到原章节重新核对后恢复。");
       const body: RestoreAuthoringSection = {
-        revision: selected,
+        revision: selected.revision,
         base_draft_revision: head.draft.revision,
         base_section_revision: head.section.revision,
       };
@@ -131,11 +267,15 @@ function RevisionList({
         setRestored(result.data.draft_revision);
         setSelected(null);
         setMore([]);
+        invalidatePages();
+        setLoadingMore(false);
         await revisions.reload();
       }
     } catch (failure) {
       setError(failure);
     } finally {
+      restorePending.current = false;
+      if (active.current) setRestoring(false);
       setBusy(false);
     }
   }
@@ -149,17 +289,18 @@ function RevisionList({
         hasData={!!revisions.data}
         onRetry={() => void revisions.reload()}
       />
-      <ErrorNotice error={error ?? command.error} />
+      <ErrorNotice error={error ?? command.error ?? directory.error} />
       <div className="revision-choices">
         {items.map((item) => (
           <button
             className="button secondary"
             key={item.revision}
             onClick={() => {
-              setSelected(item.revision);
+              setSelected(item);
               setRestored(null);
+              setCompare(false);
             }}
-            disabled={command.busy || disabled}
+            disabled={restoring || command.busy || disabled}
           >
             章节修订 {item.revision}
             <small>{new Date(item.created_at).toLocaleString("zh-CN")}</small>
@@ -187,30 +328,73 @@ function RevisionList({
             hasData={!!historical.data}
             onRetry={() => void historical.reload()}
           />
-          {historical.data && !valid && (
-            <div className="notice error" role="alert">
-              历史修订身份无法核对，未将当前正文冒充旧稿。
-            </div>
+          <ErrorNotice error={result?.error} />
+          {historical.data && !result && (
+            <p role="status">正在核验历史正文与图片绑定…</p>
           )}
           {valid && (
             <>
-              <Badge>历史章节修订 {selected}</Badge>
-              <div className="editor-comparison">
-                <div>
-                  <strong>当前已保存正文</strong>
-                  <pre>{editorText(getHead().section.content)}</pre>
-                </div>
-                <div>
-                  <strong>拟恢复的历史正文</strong>
-                  <pre>{editorText(historical.data!.content)}</pre>
-                </div>
-              </div>
+              <Badge>历史章节修订 {valid.revision}</Badge>
+              <p>
+                保存于 {new Date(valid.created_at).toLocaleString("zh-CN")}
+                。这是只读历史，恢复仍须重新核验当前来源。
+              </p>
+              <AuthoringRichSnapshot
+                key={`${valid.section_revision_id}:${valid.digest}`}
+                bidId={bidId}
+                content={valid.content}
+                expectedImages={valid.images}
+                label="拟恢复的完整历史正文"
+                onReady={onPreviewReady}
+              />
+              {!previewReady && (
+                <p className="small-note" role="status">
+                  完整正文与全部历史图片核验完成后，才能确认恢复。
+                </p>
+              )}
+              <details
+                onToggle={(event) => setCompare(event.currentTarget.open)}
+              >
+                <summary>与当前已保存正文比较</summary>
+                {compare && (
+                  <>
+                    <TextChangePreview
+                      before={authoringText(getHead().section.content)}
+                      after={authoringText(valid.content)}
+                      beforeLabel="当前已保存正文"
+                      afterLabel="拟恢复的历史正文 · 尚未恢复"
+                    />
+                    <AuthoringRichSnapshot
+                      bidId={bidId}
+                      content={getHead().section.content}
+                      label="完整当前已保存正文"
+                    />
+                  </>
+                )}
+              </details>
+              <details>
+                <summary>保存记录身份</summary>
+                <dl className="detail-grid">
+                  <dt>保存成员</dt>
+                  <dd>{valid.created_by}</dd>
+                  <dt>原修订标识</dt>
+                  <dd>{valid.section_revision_id}</dd>
+                  <dt>正文摘要</dt>
+                  <dd>{valid.digest}</dd>
+                </dl>
+              </details>
               <button
                 className="button secondary"
-                disabled={disabled || command.busy}
+                disabled={
+                  disabled ||
+                  restoring ||
+                  command.busy ||
+                  historical.loading ||
+                  !previewReady
+                }
                 onClick={() => void restore()}
               >
-                {command.busy
+                {restoring || command.busy
                   ? "正在核验来源并追加修订…"
                   : "恢复此历史正文为新修订"}
               </button>

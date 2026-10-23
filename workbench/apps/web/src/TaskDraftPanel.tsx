@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import type { Bid, AssistantSourcePage } from "./contracts";
 import type {
-  Bid,
-  AssistantSourcePage,
   TaskDraftView,
   TaskDraftPage,
   TaskDraftRequest,
   TemplateRequest,
   TemplateView,
-} from "./contracts";
+  TaskKindPage,
+} from "./taskTriggerContracts";
 import { ErrorNotice } from "./components";
 import { knowledgeStorageKey, useKnowledgeInput } from "./knowledgeStorage";
 import { ResourceState } from "./ResourceState";
@@ -17,8 +17,37 @@ import { useTaskPage } from "./useTaskPage";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { TaskTemplateEditor } from "./TaskTemplateEditor";
 import { TaskTemplateCard } from "./TaskTemplateCard";
-import { newTaskConfiguration } from "./taskState";
-import type { TaskKindPage } from "./contracts";
+import {
+  isExactPackageTask,
+  newTaskConfiguration,
+  sameTaskPackageSource,
+} from "./taskState";
+import {
+  normalizeTaskPackageRequest,
+  validateTaskPackageTemplate,
+} from "./taskPackageProtocol";
+import { historicalSame } from "./historicalImportProtocol";
+import { jsonDigest } from "./editorSchema";
+import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
+import { PackageAuthoringInputChooser } from "./PackageAuthoringInputChooser";
+import type { VerifiedAuthoringInput } from "./packageAuthoringInputProtocol";
+import {
+  isExactPackageAuthoring,
+  normalizePackageAuthoringRequest,
+  samePackageAuthoringSource,
+  validatePackageAuthoringTemplate,
+} from "./taskPackageAuthoringProtocol";
+
+const isFixedTask = (value: TemplateRequest) =>
+  isExactPackageTask(value) || isExactPackageAuthoring(value);
+const normalizeFixedTask = (value: TemplateRequest) =>
+  isExactPackageAuthoring(value)
+    ? normalizePackageAuthoringRequest(value)
+    : normalizeTaskPackageRequest(value);
+const sameFixedTaskSource = (a: TemplateRequest, b: TemplateRequest) =>
+  isExactPackageAuthoring(a)
+    ? samePackageAuthoringSource(a, b)
+    : sameTaskPackageSource(a, b);
 
 export function TaskDraftPanel({
   bidId,
@@ -34,20 +63,76 @@ export function TaskDraftPanel({
   const key = knowledgeStorageKey(memberId, bidId) + "task-draft-request:";
   const [text, setText] = useKnowledgeInput(key + "text", "");
   const [sectionId, setSectionId] = useKnowledgeInput(key + "section", "");
+  const [sourceMode, setSourceMode] = useKnowledgeInput<
+    "versions" | "package-authoring"
+  >(key + "source-mode", "versions");
+  const [selectedInput, setSelectedInput] = useKnowledgeInput<{
+    authoring_input_id: string;
+    authoring_input_digest: string;
+    section_id: string;
+  } | null>(key + "authoring-input", null);
+  const [verifiedInput, setVerifiedInput] =
+    useState<VerifiedAuthoringInput | null>(null);
   const [basis, setBasis] = useKnowledgeInput(key + "etag", bidEtag ?? "");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(() =>
     new URLSearchParams(window.location.search).get("task_draft"),
   );
   const [failure, setFailure] = useState<unknown>(null);
-  const command = useRecordedCommand(`task-draft:${memberId}:${bidId}:create`);
+  const createExpected = useRef<{
+    body: TaskDraftRequest;
+    etag: string;
+  } | null>(null);
+  const command = useRecordedCommand(
+    `task-draft:${memberId}:${bidId}:create`,
+    async (response) => {
+      const original = createExpected.current;
+      if (original?.body.source_selection?.mode === "exact_package_authoring") {
+        const item = response.data as TaskDraftView,
+          p = item.interpretation;
+        if (
+          !item.id ||
+          item.bid_id !== bidId ||
+          item.created_by !== memberId ||
+          item.revision !== 1 ||
+          response.etag !== `"task-draft:${item.id}:1"` ||
+          !p ||
+          p.raw_request !== original.body.request ||
+          p.section_id !== original.body.section_id ||
+          !historicalSame(p.source_selection, original.body.source_selection) ||
+          p.template_saved !== false ||
+          p.run_created !== false ||
+          p.formal_decisions_allowed !== false ||
+          item.saved_template_id !== null ||
+          item.configuration_digest !== (await jsonDigest(p))
+        )
+          throw new Error(
+            "固定整包编写草案的回执与原请求不一致，保留原请求继续恢复。",
+          );
+      }
+    },
+  );
+  if (command.pending)
+    createExpected.current = {
+      body: command.pending.body as TaskDraftRequest,
+      etag: command.pending.etag,
+    };
+  const packageInputReady =
+    !!selectedInput &&
+    !!verifiedInput &&
+    selectedInput.authoring_input_id === verifiedInput.manifest.id &&
+    selectedInput.authoring_input_digest === verifiedInput.digest &&
+    selectedInput.section_id ===
+      verifiedInput.manifest.selection.target_section.section_id;
   const drafts = useTaskPage<TaskDraftPage>(
     `/bids/${bidId}/task-definition-drafts?limit=20`,
     0,
     (page) => (page.has_more ? page.next_cursor : null),
   );
   const sections = useResource<AssistantSourcePage>(
-    open ? `/assistant/sources?kind=section&bid_id=${bidId}` : null,
+    open && sourceMode === "versions"
+      ? `/assistant/sources?kind=section&bid_id=${bidId}`
+      : null,
   );
   const kinds = useResource<TaskKindPage>("/task-kinds");
   useEffect(() => {
@@ -74,12 +159,30 @@ export function TaskDraftPanel({
     void drafts.reload();
   }
   async function create() {
-    if (!text.trim() || !basis) return;
+    if (
+      !text.trim() ||
+      !basis ||
+      (sourceMode === "package-authoring" && !packageInputReady)
+    )
+      return;
     const body: TaskDraftRequest = {
       request: text.trim(),
-      section_id: sectionId || null,
-      source_selection: { mode: "current_project", version_ids: [] },
+      section_id:
+        sourceMode === "package-authoring"
+          ? selectedInput!.section_id
+          : sectionId || null,
+      source_selection:
+        sourceMode === "package-authoring"
+          ? {
+              mode: "exact_package_authoring",
+              input: {
+                authoring_input_id: selectedInput!.authoring_input_id,
+                authoring_input_digest: selectedInput!.authoring_input_digest,
+              },
+            }
+          : { mode: "current_project", version_ids: [] },
     };
+    createExpected.current = { body, etag: basis };
     const result = await command.run<TaskDraftView>(
       `/bids/${bidId}/task-definition-drafts`,
       body,
@@ -108,6 +211,58 @@ export function TaskDraftPanel({
             }}
           >
             <label>
+              草案来源
+              <select
+                aria-label="任务草案来源"
+                value={sourceMode}
+                disabled={command.busy || !!command.pending}
+                onChange={(event) =>
+                  setSourceMode(
+                    event.target.value as "versions" | "package-authoring",
+                  )
+                }
+              >
+                <option value="versions">项目来源与章节</option>
+                <option value="package-authoring">
+                  明确保存的固定整包编写输入
+                </option>
+              </select>
+            </label>
+            {sourceMode === "package-authoring" && (
+              <>
+                <PackageAuthoringInputChooser
+                  key={`${memberId}:${bidId}`}
+                  bidId={bidId}
+                  memberId={memberId}
+                  disabled={command.busy || !!command.pending}
+                  onSelect={(input) => {
+                    setVerifiedInput(null);
+                    setSelectedInput({
+                      authoring_input_id: input.manifest.id,
+                      authoring_input_digest: input.digest,
+                      section_id:
+                        input.manifest.selection.target_section.section_id,
+                    });
+                  }}
+                />
+                {selectedInput && (
+                  <PackageAuthoringInputDetails
+                    key={`${memberId}:${bidId}:${selectedInput.authoring_input_id}:${selectedInput.authoring_input_digest}`}
+                    bidId={bidId}
+                    selection={{
+                      authoring_input_id: selectedInput.authoring_input_id,
+                      authoring_input_digest:
+                        selectedInput.authoring_input_digest,
+                    }}
+                    onVerified={setVerifiedInput}
+                  />
+                )}
+                <p className="small-note">
+                  只解释你明确选择的固定输入；目标章节来自其正文快照。自动或不明确的要求会保留为待明确草案。
+                </p>
+              </>
+            )}
+            <label>
               想反复完成什么工作
               <textarea
                 required
@@ -122,29 +277,34 @@ export function TaskDraftPanel({
                 }}
               />
             </label>
-            <label>
-              如需章节建议，明确选择目标章节
-              <select
-                aria-label="如需章节建议，明确选择目标章节"
-                value={sectionId}
-                disabled={command.busy || !!command.pending}
-                onChange={(event) => setSectionId(event.target.value)}
-              >
-                <option value="">尚未指定章节</option>
-                {sections.data?.items
-                  .filter(
-                    (item) =>
-                      item.available &&
-                      item.bid_id === bidId &&
-                      item.reference?.kind === "section",
-                  )
-                  .map((item) => (
-                    <option value={item.reference!.id} key={item.reference!.id}>
-                      {item.title}
-                    </option>
-                  ))}
-              </select>
-            </label>
+            {sourceMode === "versions" && (
+              <label>
+                如需章节建议，明确选择目标章节
+                <select
+                  aria-label="如需章节建议，明确选择目标章节"
+                  value={sectionId}
+                  disabled={command.busy || !!command.pending}
+                  onChange={(event) => setSectionId(event.target.value)}
+                >
+                  <option value="">尚未指定章节</option>
+                  {sections.data?.items
+                    .filter(
+                      (item) =>
+                        item.available &&
+                        item.bid_id === bidId &&
+                        item.reference?.kind === "section",
+                    )
+                    .map((item) => (
+                      <option
+                        value={item.reference!.id}
+                        key={item.reference!.id}
+                      >
+                        {item.title}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            )}
             <ResourceState
               {...sections}
               hasData={!!sections.data}
@@ -156,6 +316,7 @@ export function TaskDraftPanel({
               disabled={
                 !text.trim() ||
                 !basis ||
+                (sourceMode === "package-authoring" && !packageInputReady) ||
                 command.busy ||
                 !!command.pending ||
                 !!command.conflict
@@ -263,12 +424,66 @@ function TaskDraftDetail({
     resource.data.created_by === memberId
       ? resource.data
       : undefined;
-  const edit = useRecordedCommand(`task-draft:${memberId}:${bidId}:${id}:edit`);
-  const save = useRecordedCommand(`task-draft:${memberId}:${bidId}:${id}:save`);
-  const [failure, setFailure] = useState<unknown>(null);
-  const [ack, setAck] = useKnowledgeInput<{ etag: string } | null>(
-    knowledgeStorageKey(memberId, id) + "task-draft-save-ack",
+  const editExpected = useRef<{ input: TemplateRequest; etag: string } | null>(
     null,
+  );
+  const edit = useRecordedCommand(
+    `task-draft:${memberId}:${bidId}:${id}:edit`,
+    async (reply) => {
+      const original = editExpected.current;
+      if (original && isFixedTask(original.input)) {
+        const item = reply.data as TaskDraftView;
+        const revision = original.etag.match(
+          new RegExp(`^"task-draft:${id}:(\\d+)"$`),
+        );
+        if (
+          !revision ||
+          item.id !== id ||
+          item.bid_id !== bidId ||
+          item.created_by !== memberId ||
+          item.revision !== Number(revision[1]) + 1 ||
+          reply.etag !== `"task-draft:${id}:${item.revision}"` ||
+          !historicalSame(
+            normalizeFixedTask(draftConfiguration(item)),
+            normalizeFixedTask(original.input),
+          ) ||
+          item.configuration_digest !== (await jsonDigest(item.interpretation))
+        )
+          throw new Error(
+            "整包草案更新回执与原请求不一致，保留同一次更新请求。",
+          );
+      }
+    },
+  );
+  if (edit.pending)
+    editExpected.current = {
+      input: edit.pending.body as TemplateRequest,
+      etag: edit.pending.etag,
+    };
+  const [failure, setFailure] = useState<unknown>(null);
+  const [ack, setAck] = useKnowledgeInput<{
+    etag: string;
+    configuration?: TemplateRequest;
+  } | null>(knowledgeStorageKey(memberId, id) + "task-draft-save-ack", null);
+  const ackRef = useRef(ack);
+  ackRef.current = ack;
+  const save = useRecordedCommand(
+    `task-draft:${memberId}:${bidId}:${id}:save`,
+    async (result) => {
+      const original = ackRef.current?.configuration;
+      if (original && isFixedTask(original)) {
+        const validateTemplate = isExactPackageAuthoring(original)
+          ? validatePackageAuthoringTemplate
+          : validateTaskPackageTemplate;
+        const item = await validateTemplate(result.data, result.etag, bidId);
+        if (
+          item.revision !== 1 ||
+          item.paused ||
+          !historicalSame(item.configuration, normalizeFixedTask(original))
+        )
+          throw new Error("原草案保存的整包输入或模板回执不一致，保留原请求。");
+      }
+    },
   );
   const [intent, setIntent] = useKnowledgeInput<"draft" | "template">(
     knowledgeStorageKey(memberId, id) + "task-draft-intent",
@@ -276,6 +491,7 @@ function TaskDraftDetail({
   );
   async function saveAck(
     value: { data: TaskDraftView; etag: string | null } | null,
+    expected?: TemplateRequest,
   ) {
     if (!value) return;
     const current = value.data;
@@ -291,11 +507,25 @@ function TaskDraftDetail({
       !current.interpretation.ready_for_template_form
     )
       throw new Error("仍有待明确项；输入可继续编辑，未保存模板。");
-    setAck({ etag: value.etag });
+    const configuration = draftConfiguration(current);
+    if (isFixedTask(configuration)) {
+      if (
+        !expected ||
+        !historicalSame(
+          normalizeFixedTask(expected),
+          normalizeFixedTask(configuration),
+        ) ||
+        current.configuration_digest !==
+          (await jsonDigest(current.interpretation))
+      )
+        throw new Error("原草案更新回执与明确整包输入不一致，未继续保存模板。");
+    }
+    const accepted = { etag: value.etag, configuration };
+    setAck(accepted);
+    ackRef.current = accepted;
     const result = await save.run<TemplateView>(`${path}/save`, {}, value.etag);
     if (result?.data.bid_id === bidId) {
       void resource.reload();
-      onSaved();
       return result.data;
     }
     void resource.reload();
@@ -304,13 +534,14 @@ function TaskDraftDetail({
     setIntent("template");
     setFailure(null);
     try {
+      editExpected.current = { input, etag: ack?.etag ?? resource.etag ?? "" };
       const result = await edit.run<TaskDraftView>(
         path,
         input,
         ack?.etag ?? resource.etag ?? "",
         "PUT",
       );
-      return await saveAck(result);
+      return await saveAck(result, input);
     } catch (error) {
       setFailure(error);
     }
@@ -319,6 +550,7 @@ function TaskDraftDetail({
     setIntent("draft");
     setFailure(null);
     try {
+      editExpected.current = { input, etag: ack?.etag ?? resource.etag ?? "" };
       const value = await edit.run<TaskDraftView>(
         path,
         input,
@@ -332,6 +564,16 @@ function TaskDraftDetail({
           !value.etag
         )
           throw new Error("草案保存身份不一致。");
+        if (
+          isFixedTask(input) &&
+          (!historicalSame(
+            normalizeFixedTask(draftConfiguration(value.data)),
+            normalizeFixedTask(input),
+          ) ||
+            value.data.configuration_digest !==
+              (await jsonDigest(value.data.interpretation)))
+        )
+          throw new Error("原草案的整包输入回执不一致，输入保留。");
         setAck({ etag: value.etag });
         void resource.reload();
       }
@@ -347,6 +589,17 @@ function TaskDraftDetail({
       !current.etag
     )
       throw new Error("草案基准身份不一致。");
+    if (
+      draft &&
+      isFixedTask(draftConfiguration(draft)) &&
+      !sameFixedTaskSource(
+        draftConfiguration(draft),
+        draftConfiguration(current.data),
+      )
+    )
+      throw new Error(
+        "当前草案的原输入已改变，保留本地输入，不自动采用新来源。",
+      );
     setAck({ etag: current.etag });
     edit.clearError();
     save.clearError();
@@ -354,15 +607,8 @@ function TaskDraftDetail({
     return current.etag;
   }
   const proposal = draft?.interpretation;
-  const initial: TemplateRequest = proposal
-    ? {
-        name: proposal.name,
-        task_kind: proposal.task_kind ?? "supplement_impact",
-        instructions: proposal.instructions,
-        section_id: proposal.section_id,
-        source_selection: proposal.source_selection,
-        trigger: proposal.trigger,
-      }
+  const initial: TemplateRequest = draft
+    ? draftConfiguration(draft)
     : newTaskConfiguration();
   return (
     <section className="task-draft-detail">
@@ -454,7 +700,14 @@ function TaskDraftDetail({
                 void edit
                   .retry<TaskDraftView>()
                   .then(async (value) => {
-                    if (intent === "template") return saveAck(value);
+                    if (intent === "template") {
+                      const result = await saveAck(
+                        value,
+                        edit.pending?.body as TemplateRequest | undefined,
+                      );
+                      if (result) onSaved();
+                      return;
+                    }
                     if (value?.data.id === id && value.etag) {
                       setAck({ etag: value.etag });
                       void resource.reload();
@@ -470,7 +723,8 @@ function TaskDraftDetail({
             <button
               className="button secondary"
               onClick={() =>
-                void save.retry<TemplateView>().then(() => {
+                void save.retry<TemplateView>().then((value) => {
+                  if (!value) return;
                   void resource.reload();
                   onSaved();
                 })
@@ -483,4 +737,16 @@ function TaskDraftDetail({
       )}
     </section>
   );
+}
+
+function draftConfiguration(draft: TaskDraftView): TemplateRequest {
+  const proposal = draft.interpretation;
+  return {
+    name: proposal.name,
+    task_kind: proposal.task_kind ?? "supplement_impact",
+    instructions: proposal.instructions,
+    section_id: proposal.section_id,
+    source_selection: proposal.source_selection,
+    trigger: proposal.trigger,
+  };
 }

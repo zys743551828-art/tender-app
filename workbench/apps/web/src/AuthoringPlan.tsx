@@ -50,7 +50,7 @@ export function AuthoringPlan({
     setSaved(false);
   }
   async function save(retry = false) {
-    if (disabled || preparing) return;
+    if ((!retry && disabled) || preparing) return;
     setPreparing(true);
     setError(null);
     try {
@@ -295,7 +295,7 @@ export function AuthoringPlan({
           <button
             type="button"
             className="button secondary"
-            disabled={cmd.busy || disabled}
+            disabled={cmd.busy || preparing}
             onClick={() => void save(true)}
           >
             恢复原计划保存结果

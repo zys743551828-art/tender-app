@@ -1,0 +1,445 @@
+{
+  "artifacts": {
+    "/tmp/tender-authoring-history-browser-20261021-a/receipt.json": {
+      "sha256": "f21c50d49f02a0077d825463963cf8e0826c3b104b3945674dc6dc114962cd4a"
+    },
+    "/tmp/tender-authoring-history-browser-20261021-c/receipt.json": {
+      "sha256": "ed6fd23f73bb1c2896cc6f9e703d87524f8a5e55e0948b5c2d70bc543ee777dc"
+    },
+    "/tmp/tender-review-authoring-history-main/authoring-history-pg-9x3o4s1u-receipt.json": {
+      "sha256": "c48b58fbc48da7b3bd41d732972959d615a61d8f78db9271da8115afce9e8ffd"
+    },
+    "/tmp/tender-review-authoring-history-main/candidate-manifest.json": {
+      "sha256": "6479aa4a7953398160254ec92c28c8a2869593a613a295ad835d21b969e080bd"
+    },
+    "/tmp/tender-review-authoring-history-main/freeze.py": {
+      "sha256": "b056540e2a39177286b9ca206ab751c9876d91ccbaccbbbab51bbc050846ff5e"
+    },
+    "/tmp/tender-review-authoring-history-main/frontend-tsconfig.json": {
+      "sha256": "f29bc25d3a1d99cc3fb552a139d0ddce36fbc1dbc882f77c52e2f0810ee985c8"
+    },
+    "/tmp/tender-review-authoring-history-main/run_pg.py": {
+      "sha256": "866d267f404c41a4e709ec9446fe1638694ac20ca7d3958a6886bd8bf8cd7c82"
+    },
+    "/tmp/tender-review-authoring-history-main/web-candidate-manifest.json": {
+      "sha256": "63dd46080c63021243dfd957507ef1a3bbe03c839086bdceb0ae77632664afbf"
+    }
+  },
+  "backend_candidate": {
+    "manifest_sha256": "f41c3b55352a3eb089fbc93b749ac88fa061b73be9f08ad19fcfdd09c01fc54c",
+    "owned": [
+      "apps/api/authoring_history_routes.py",
+      "deploy/authoring_history_readiness.py",
+      "packages/contracts/authoring_history_api.py",
+      "packages/authoring_history/__init__.py",
+      "packages/authoring_history/permissions.py",
+      "packages/authoring_history/repository.py",
+      "packages/authoring_history/service.py",
+      "tests/authoring_history_fixtures.py",
+      "tests/test_authoring_history.py",
+      "tests/test_authoring_history_pg.py",
+      "tests/test_authoring_history_main.py"
+    ],
+    "root_integration_sha256": {
+      "apps/api/export_openapi.py": "64af168dfcaed36eb68cea9bab6265bb68cc6097ebb52fc346f4f2e7420cc63b",
+      "apps/api/main.py": "e0301788b5f552893035ac6737a084090543843e5aee530c95da519a8c414118"
+    }
+  },
+  "base_commit": "318ee83b95b4871dadb91a01d7d31aafe02fe4c1",
+  "browser": {
+    "candidate_manifest_sha256": "211026fdb27b27bfe70f5d0560c9aac8984db1fcdb9f283be1bc0e5e9b884156",
+    "frozen_candidate": "/tmp/tender-review-authoring-history-web-candidate",
+    "long_text_characters": 108016,
+    "passed": 6,
+    "receipt": {
+      "browser": "156.0.8078.47",
+      "bundle_sha256": {
+        "app.css": "90bb55deccf5daa4155236053c5f95d00b81e1eb20a720d8a0c35393d3c39b4b",
+        "app.js": "cd77c6b66147d4c3aff4f9af9f05ceb805d74c95f1ed320c8a10696021a22274",
+        "fixture.css": "f2af6022b7ab54b0c6030a4ff8b2576272eb7bd901c91be0cefcb65711c0cae9",
+        "theme.js": "397336507c738d1440d48f49550fb3d38701370301c103adbd0c2a47163f0d85"
+      },
+      "cases": [
+        {
+          "comparisonLayout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "completeness": {
+            "decoded": true,
+            "full": true,
+            "theme": "light",
+            "writes": 0
+          },
+          "initialLayout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "name": "light-390",
+          "outcome": {
+            "baseDraft": 3,
+            "baseSection": 3,
+            "refreshes": 1,
+            "revision": 2,
+            "writes": 1
+          },
+          "result": "passed"
+        },
+        {
+          "comparisonLayout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "completeness": {
+            "decoded": true,
+            "full": true,
+            "theme": "dark",
+            "writes": 0
+          },
+          "initialLayout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "name": "dark-390",
+          "outcome": {
+            "baseDraft": 3,
+            "baseSection": 3,
+            "refreshes": 1,
+            "revision": 2,
+            "writes": 1
+          },
+          "result": "passed"
+        },
+        {
+          "comparisonLayout": {
+            "outside": [],
+            "scroll": 1280,
+            "unexpected": [],
+            "width": 1280
+          },
+          "completeness": {
+            "decoded": true,
+            "full": true,
+            "theme": "light",
+            "writes": 0
+          },
+          "initialLayout": {
+            "outside": [],
+            "scroll": 1280,
+            "unexpected": [],
+            "width": 1280
+          },
+          "name": "light-1280",
+          "outcome": {
+            "baseDraft": 3,
+            "baseSection": 3,
+            "refreshes": 1,
+            "revision": 2,
+            "writes": 1
+          },
+          "result": "passed"
+        },
+        {
+          "comparisonLayout": {
+            "outside": [],
+            "scroll": 1280,
+            "unexpected": [],
+            "width": 1280
+          },
+          "completeness": {
+            "decoded": true,
+            "full": true,
+            "theme": "dark",
+            "writes": 0
+          },
+          "initialLayout": {
+            "outside": [],
+            "scroll": 1280,
+            "unexpected": [],
+            "width": 1280
+          },
+          "name": "dark-1280",
+          "outcome": {
+            "baseDraft": 3,
+            "baseSection": 3,
+            "refreshes": 1,
+            "revision": 2,
+            "writes": 1
+          },
+          "result": "passed"
+        },
+        {
+          "layout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "name": "bad_image",
+          "result": "passed"
+        },
+        {
+          "layout": {
+            "outside": [],
+            "scroll": 390,
+            "unexpected": [],
+            "width": 390
+          },
+          "name": "source_stale",
+          "result": "passed"
+        }
+      ],
+      "external_requests": [],
+      "page_errors": [],
+      "recorded_at": "2026-10-21T12:37:59.745Z",
+      "result": "passed",
+      "scope": "Actual AuthoringHistory, authoringHistoryProtocol, AuthoringRichSnapshot, TextChangePreview, useResource and unchanged useCommand, compiled once with recorded source hashes; synthetic local HTTP responses only. Native nonowner main HTTP/restore is separately tested. No real project or mobile soft-keyboard acceptance.",
+      "screenshots": [
+        {
+          "file": "body-light-390.png",
+          "sha256": "f539603933780730d4edbab41afa17334d251e8b391424e9ddc8bab877ec1276"
+        },
+        {
+          "file": "comparison-light-390.png",
+          "sha256": "213fe4b5e83d4a8cb32110992bfaa0dfc3d44d5a93837fa69855217fa9eef4ad"
+        },
+        {
+          "file": "restored-light-390.png",
+          "sha256": "66e42bc91adb2d38d2c4c46ffb6912e6ae8b6d053875a2556a6f564164a277ad"
+        },
+        {
+          "file": "body-dark-390.png",
+          "sha256": "c5c5d20637ca5fd1303503e5cde49a550bbde095c088173a63781d1a0c167349"
+        },
+        {
+          "file": "comparison-dark-390.png",
+          "sha256": "7562e35c9894f354ecde7db71aaa5756ca6d623c25d4a6918f71e556cc554cd3"
+        },
+        {
+          "file": "restored-dark-390.png",
+          "sha256": "4649782de73c913b4cd905fa1d8dd06c2b335440e2090680da80f4447747d2db"
+        },
+        {
+          "file": "body-light-1280.png",
+          "sha256": "49aa42e92be7ce5a8d716d51d8f2d4bea5fa6d548471c4985905dd0adf2bb39e"
+        },
+        {
+          "file": "comparison-light-1280.png",
+          "sha256": "23b348fcfd2dd632df1e69e6371c78fa6846a71aba588241c5a418987c0457a7"
+        },
+        {
+          "file": "restored-light-1280.png",
+          "sha256": "2f99f7acc7bca03d29bd7e6cadf9e8aa21da3ce538e0c8d362c53da5737bc909"
+        },
+        {
+          "file": "body-dark-1280.png",
+          "sha256": "357177b4dc71847690ba23013c4647b06774ed90358dc66c1058f7c47e0f99c5"
+        },
+        {
+          "file": "comparison-dark-1280.png",
+          "sha256": "3b9d35fd51c339afcedeeee33efecbdbfdb9509ce75f59c38c0e9d4c4d8945a5"
+        },
+        {
+          "file": "restored-dark-1280.png",
+          "sha256": "2fec1fbbfe34b3dd31a6a3a079fb4fb197c2ebd4ad3aab7f78ff1cbfe1e323f2"
+        },
+        {
+          "file": "bad_image.png",
+          "sha256": "fdb03bd62fa0cad05826cf56c732c22f1f3d737093073ee168f5fe9420df383d"
+        },
+        {
+          "file": "source_stale.png",
+          "sha256": "85afa30d9dc27b7b9dc6b55d6d7b9aec1887696d294fd79af0af6ee482257f43"
+        }
+      ],
+      "source_changes": [],
+      "source_inputs": {
+        "src/AuthoringHistory.tsx": "32dbcd8062239392b1a4e46d1c22fb0ee19221e8660856abd04853adf4a8caf2",
+        "src/AuthoringRichSnapshot.css": "cbdb03134d25aee4c1a1bdc17012d39a4a1da19faf56135d000fb0c572b05e99",
+        "src/AuthoringRichSnapshot.tsx": "b46c234491329c11894c1762fbf97b3e5d7f974eeb9abc43afb88e6fc5bae2f6",
+        "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+        "src/ResourceState.tsx": "a269f3ff0bc41a6c82afad59a8860b25bedddc7fe11a45b65a79d18906149508",
+        "src/TextChangePreview.css": "15c5018ee520a659c14de50543d0f8965a98e0eebcbb341f9aee9d061526ad8b",
+        "src/TextChangePreview.tsx": "aaa86fbd1cb68e8efdd678c8cd7e042d271f12de66936333a268f175728d4edf",
+        "src/ThemePicker.tsx": "dc59a7a6e1564c91848b63fc138aac1f13602a7c3eca95eb2b70eb60ec6c0a2f",
+        "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+        "src/authoringHistoryFixtures.test-support.ts": "85464b77d4963057b6406b41e1d669131e062a68e873f9d987d1a3c480f61087",
+        "src/authoringHistoryProtocol.ts": "108dc0730efd4ffe84fe89ad6379d5e96b6e360fbbe374819d447bce6ae7a245",
+        "src/authoringWordImportFixtures.test-support.ts": "f97b0c47ed658e10d4515957260a2c74453df050c5977fdba0f555eb5764b7ed",
+        "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+        "src/contracts.ts": "2ff41fac83e1786dba458fe6e2aad79a8cfbee56509e317bc7c695769deb1cfb",
+        "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+        "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+        "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+        "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+        "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+        "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+        "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+        "src/recordedCommandStorage.ts": "c1d5cd744764d0eef9aed78fd760c0f11aaa0acefcf5f688e48907aa53df0665",
+        "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+        "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+        "src/textDifference.ts": "296a08eda16776af86853f6ffc4998c1cb1c3b01ef6771ee9aabbbd8fccb8d66",
+        "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+        "src/theme.ts": "49e457350c87066c0d45d8c5cefd96f150671516e7d15425bb475bc8cd19affc",
+        "src/useCommand.ts": "2351db8f66eb16ac61b67f3b4186d627be36d20c659eeb61f149c3f882f25d19",
+        "src/useResource.ts": "4e7fb2749ec79db360f4c365fcc886e0e5cd010c431c86d4cab3b2daabcf704b"
+      }
+    },
+    "screenshots": 14,
+    "visual_inspection": [
+      "body-light-390.png: complete text tail, historical image and merged table",
+      "comparison-light-390.png: narrow change preview tabs",
+      "comparison-dark-1280.png: desktop full body, table and red/green actual changes"
+    ]
+  },
+  "commands": {
+    "browser": "PLAYWRIGHT_MODULE=/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright node scripts/check-authoring-history-browser.mjs /tmp/tender-authoring-history-browser-20261021-c",
+    "browser_cwd": "/tmp/tender-review-authoring-history-web-candidate",
+    "native": "/tmp/tender-review-venv/bin/python /tmp/tender-review-authoring-history-main/run_pg.py --expected-manifest-sha f41c3b55352a3eb089fbc93b749ac88fa061b73be9f08ad19fcfdd09c01fc54c",
+    "readiness": "python -m deploy.authoring_history_readiness"
+  },
+  "date": "2026-10-21",
+  "earlier_browser_attempts": [
+    {
+      "cause": "Harness used wrong theme storage key; first light mobile case passed, dark theme assertion failed; key corrected to actual bid-workbench:theme.",
+      "path": "/tmp/tender-authoring-history-browser-20261021-a/receipt.json",
+      "result": "failed"
+    },
+    {
+      "cause": "All six interactions completed and 14 screenshots written, then actual shared src/contracts.ts changed during B2 generation. Old harness threw before receipt write. No final passing claim taken from this run.",
+      "path": "/tmp/tender-authoring-history-browser-20261021-b",
+      "result": "source_consistency_gate_rejected"
+    }
+  ],
+  "frontend": {
+    "command": "node_modules/.bin/vitest run src/AuthoringHistory.test.tsx src/authoringHistoryProtocol.test.ts src/AuthoringRichSnapshot.test.tsx src/TextChangePreview.test.tsx",
+    "files": 4,
+    "generated_actual_operations": true,
+    "owned_history_component": 13,
+    "owned_protocol": 19,
+    "passed": 43,
+    "reused_rich_renderer": 10,
+    "reused_text_change": 1,
+    "unchanged_useCommand": true
+  },
+  "limits": [
+    "Actual backend PG/main TCP and actual browser with synthetic HTTP are separate evidence; no claim of browser connected to the native DB.",
+    "No real tender documents, external model calls, conversion quality, human user acceptance or mobile soft keyboard acceptance.",
+    "No current source or restore authority is granted by historical read; existing restore service rechecks it.",
+    "Full final checkpoint production build and aggregate regression remain root-owned gates.",
+    "All raw fixtures are synthetic; no real credentials, signed URLs, private original paths or real original bytes are included."
+  ],
+  "native": {
+    "actual_main_tcp_read_restore_replay": true,
+    "failed": 0,
+    "main_lifespan": "on",
+    "main_route_overlays": false,
+    "native_long_text_characters": 140000,
+    "native_pg_api": 22,
+    "original_revision": 2,
+    "passed": 36,
+    "previous_current_revision": 3,
+    "pure_and_main_schema": 14,
+    "receipt": {
+      "base_commit": "318ee83b95b4871dadb91a01d7d31aafe02fe4c1",
+      "cluster_stopped": true,
+      "exit_code": 0,
+      "manifest_sha256": "f41c3b55352a3eb089fbc93b749ac88fa061b73be9f08ad19fcfdd09c01fc54c",
+      "original_io": "explicit synthetic fixtures; context reads forbid storage/model calls",
+      "overlay_sha256": {
+        "apps/api/authoring_history_routes.py": "5bfcdbec1f94ba08f551b7d50cf151479103ba98d9d2711867462a830daaae7f",
+        "apps/api/export_openapi.py": "64af168dfcaed36eb68cea9bab6265bb68cc6097ebb52fc346f4f2e7420cc63b",
+        "apps/api/main.py": "e0301788b5f552893035ac6737a084090543843e5aee530c95da519a8c414118",
+        "deploy/authoring_history_readiness.py": "04281542779c0ead010fc8d359d9a383161905a2b49142b341af3fe469de0a9d",
+        "packages/authoring_history/__init__.py": "226d087356e0dd6c7d863939917627d9e024d643735b942e50a63bc08fc204bd",
+        "packages/authoring_history/permissions.py": "14e4a4382f7134bda0aaecce6a7f82180682fef88ab32a0b525069652d5587a3",
+        "packages/authoring_history/repository.py": "dd644b4b697173439726808578a9c4bff72b8f751c8ec7313d3cf18e8ba3581b",
+        "packages/authoring_history/service.py": "9f550d44ba00e685b372a09481919641f8e526e72d0936d63e25ab166dafe5cb",
+        "packages/contracts/authoring_history_api.py": "c1c5b92b3cc2e904947ec16afb9619ba61d1a2edd5dbd2201a20bf24db7e7ca3",
+        "tests/authoring_history_fixtures.py": "f2b085c09601adc690d2b4eccf2db1874cdc91d02f72d357df6a7257b4a38e4d",
+        "tests/test_authoring_history.py": "cae925a2b7246c54e41176503e047d27a1ec54ebc790b5771fda8c6dab0afd54",
+        "tests/test_authoring_history_main.py": "2d145bc057156aab148cadb06cddc1871e520fe741c837b44ebcca0fc2eb9d80",
+        "tests/test_authoring_history_pg.py": "d3f25c3b42537c80cf668e1329d3ad565b04023387105701074ef6d709c9fa4a"
+      },
+      "paid_calls": 0,
+      "port": 51729,
+      "postgres": "17.11",
+      "roles": "fresh nonowner API and Worker logins",
+      "selection": null,
+      "suites": [
+        "tests/test_authoring_history.py",
+        "tests/test_authoring_history_main.py",
+        "tests/test_authoring_history_pg.py"
+      ]
+    },
+    "restored_revision": 4,
+    "skipped": 0
+  },
+  "owned_source_sha256": {
+    "apps/api/authoring_history_routes.py": "5bfcdbec1f94ba08f551b7d50cf151479103ba98d9d2711867462a830daaae7f",
+    "apps/web/scripts/check-authoring-history-browser.mjs": "967713214e40d20ffbd1bc6b4a2dcdc25f766d2a8fa373eded09fe2e6fd908f7",
+    "apps/web/src/AuthoringHistory.test.tsx": "0bf045a1348f1c1140e1437221af28a1070795a0aa7c547890168208fc5446a1",
+    "apps/web/src/AuthoringHistory.tsx": "32dbcd8062239392b1a4e46d1c22fb0ee19221e8660856abd04853adf4a8caf2",
+    "apps/web/src/authoringHistoryFixtures.test-support.ts": "85464b77d4963057b6406b41e1d669131e062a68e873f9d987d1a3c480f61087",
+    "apps/web/src/authoringHistoryProtocol.test.ts": "35a450bb75f019834728024c550ffbd82aac2befed3ca44f0583a5e2de9cb11c",
+    "apps/web/src/authoringHistoryProtocol.ts": "108dc0730efd4ffe84fe89ad6379d5e96b6e360fbbe374819d447bce6ae7a245",
+    "deploy/authoring_history_readiness.py": "04281542779c0ead010fc8d359d9a383161905a2b49142b341af3fe469de0a9d",
+    "packages/authoring_history/__init__.py": "226d087356e0dd6c7d863939917627d9e024d643735b942e50a63bc08fc204bd",
+    "packages/authoring_history/permissions.py": "14e4a4382f7134bda0aaecce6a7f82180682fef88ab32a0b525069652d5587a3",
+    "packages/authoring_history/repository.py": "dd644b4b697173439726808578a9c4bff72b8f751c8ec7313d3cf18e8ba3581b",
+    "packages/authoring_history/service.py": "9f550d44ba00e685b372a09481919641f8e526e72d0936d63e25ab166dafe5cb",
+    "packages/contracts/authoring_history_api.py": "c1c5b92b3cc2e904947ec16afb9619ba61d1a2edd5dbd2201a20bf24db7e7ca3",
+    "tests/authoring_history_fixtures.py": "f2b085c09601adc690d2b4eccf2db1874cdc91d02f72d357df6a7257b4a38e4d",
+    "tests/test_authoring_history.py": "cae925a2b7246c54e41176503e047d27a1ec54ebc790b5771fda8c6dab0afd54",
+    "tests/test_authoring_history_main.py": "2d145bc057156aab148cadb06cddc1871e520fe741c837b44ebcca0fc2eb9d80",
+    "tests/test_authoring_history_pg.py": "d3f25c3b42537c80cf668e1329d3ad565b04023387105701074ef6d709c9fa4a"
+  },
+  "static": [
+    {
+      "check": "Ruff check + format --check",
+      "exit_code": 0,
+      "files": 11
+    },
+    {
+      "check": "mypy",
+      "exit_code": 0,
+      "product_files": 7
+    },
+    {
+      "check": "bandit -q -r",
+      "exit_code": 0,
+      "product_files": 7
+    },
+    {
+      "check": "ESLint",
+      "errors": 0,
+      "exit_code": 0,
+      "frontend_files_and_script": 6,
+      "warnings": 0
+    },
+    {
+      "check": "Prettier --check",
+      "exit_code": 0,
+      "frontend_files_and_script": 6
+    },
+    {
+      "check": "isolated strict TypeScript + actual transitive dependencies",
+      "config": "/tmp/tender-review-authoring-history-main/frontend-tsconfig.json",
+      "exit_code": 0
+    },
+    {
+      "check": "current shared tree tsc -b --pretty false",
+      "exit_code": 0,
+      "initial_blocker": "Concurrent task union narrowing errors were initially reported to root; root corrected shared task files, final current-tree typecheck passed. This agent did not edit task files."
+    }
+  ],
+  "version": "authoring-history-acceptance/1"
+}

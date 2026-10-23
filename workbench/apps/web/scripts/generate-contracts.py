@@ -1,22 +1,157 @@
 """Generate only schema types consumed by this UI, without inventing API routes."""
 
 import argparse
+import gzip
 import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--openapi", type=Path, default=root / "packages/contracts/fusion-implemented.openapi.json"
+    "--openapi", type=Path, default=root / "packages/contracts/fusion-implemented.openapi.json.gz"
 )
 parser.add_argument("--output", type=Path, default=root / "apps/web/src/contracts.ts")
 parser.add_argument(
     "--schemas", help="Generate only these comma-separated schema roots, without capability flags"
 )
 args = parser.parse_args()
-contract = json.loads(args.openapi.read_text(encoding="utf-8"))
+if args.openapi.suffix == ".gz":
+    with gzip.open(args.openapi, "rt", encoding="utf-8") as source_file:
+        contract = json.load(source_file)
+else:
+    contract = json.loads(args.openapi.read_text(encoding="utf-8"))
 schemas = contract["components"]["schemas"]
+history_schemas = [
+    "PackageHistoricalAdmissionContext",
+    "PackageHistoricalAdmission",
+    "PackageHistoricalAdmissionView",
+    "PackageHistoricalProtocol",
+    "PackageHistoricalProtocolTemplate",
+    "PackageHistoricalCohort",
+    "PackageHistoricalCohortView",
+    "PackageHistoricalJob",
+    "PackageHistoricalJobView",
+    "PackageHistoryAdmissionRequest",
+    "PackageHistoryProtocolRequest",
+    "PackageHistoryCohortRequest",
+    "PackageHistoryJobRequest",
+    "PackageHistoryJobControl",
+    "PackageHistoryAdmissionDirectory",
+    "PackageHistoryProtocolDirectory",
+    "PackageHistoryCohortDirectory",
+    "PackageHistoryJobDirectory",
+]
 wanted = [
+    *history_schemas,
+    "AuthoringHistoricalSectionView",
+    "AuthoringExactRevisionCapabilities",
+    "AuthoringExactDraftStatus",
+    "AuthoringExactRevisionView",
+    "AuthoringExactSectionBinding",
+    "PackageAuthoringNodeCatalog",
+    "PackageAuthoringFactSetPage",
+    "PackageAuthoringFactCatalog",
+    "PackageAuthoringSelection",
+    "ExactPackageAuthoringSelection",
+    "TaskPackageAuthoringResult",
+    "PackageTaskAuthoringCapabilities",
+    "PackageAuthoringInputRequest",
+    "PackageAuthoringInputCapabilities",
+    "PackageAuthoringInputView",
+    "PackageAuthoringInputPage",
+    "PackageAuthoringInputContext",
+    "PackageAuthoringInputCheck",
+    "PackageAuthoringInputStatus",
+    "PackageAuthoringFactWithdrawal",
+    "PackageAuthoringFactScopeView",
+    "AuthoringWorkContext",
+    "WorkContextChoicePage",
+    "WorkContextAnySelection",
+    "WorkContextDraftSelection",
+    "WorkContextBuildSelection",
+    "PackageWorkContext",
+    "WorkContextRelationPage",
+    "PricingRegisterPackageFormula",
+    "PricingPackagePricingBinding",
+    "PricingPackageSnapshot",
+    "PricingPackageContext",
+    "PackageTechnicalScopeRequest",
+    "FreezePackageTechnicalScope",
+    "PackageTechnicalScopePreview",
+    "PackageTechnicalScopeView",
+    "PackageTechnicalScopeApplied",
+    "PackageTechnicalScopeContext",
+    "PackageTechnicalScopePage",
+    "PackageTechnicalScoringContext",
+    "PackageTechnicalSampleContext",
+    "PackageTechnicalExecutionContext",
+    "CreatePackageTechnicalExecution",
+    "KnowledgePackageReviewTargetPage",
+    "HistoricalImportRequest",
+    "HistoricalImportBatch",
+    "HistoricalImportReceipt",
+    "HistoricalImportPage",
+    "HistoricalImportSource",
+    "PackageRuleCorrectionRequest",
+    "ApplyPackageRuleCorrection",
+    "PackageRuleCorrectionPreviewView",
+    "PackageRuleCorrectionView",
+    "PackageRuleCorrectionAppliedView",
+    "PackageRuleCorrectionHistoryPage",
+    "PackageRuleCorrectionDetail",
+    "PackageRuleCorrectionEvidencePage",
+    "PackageRuleCorrectionEvidenceDetail",
+    "AuthoringGenerationBatchCreateRequest",
+    "AuthoringGenerationBatchRetryRequest",
+    "AuthoringGenerationBatchResolveRequest",
+    "AuthoringGenerationBatchReceipt",
+    "AuthoringGenerationBatch",
+    "AuthoringGenerationBatchPage",
+    "AuthoringGenerationBatchCandidate",
+    "AuthoringGenerationBatchCapabilities",
+    "AuthoringWordImportPrepareRequest",
+    "AuthoringWordImportResolveRequest",
+    "AuthoringWordImportCandidate",
+    "AuthoringWordImportResult",
+    "AuthoringWordImportPage",
+    "AuthoringWordImportCapabilities",
+    "DocumentParseContext",
+    "StartDocumentParse",
+    "DocumentParseView",
+    "DocumentParseStarted",
+    "DocumentParsePage",
+    "AdoptAuthoringOutput",
+    "AuthoringOutputAdopted",
+    "AuthoringOutputQualification",
+    "PackageReviewReportContext",
+    "StartPackageReviewReport",
+    "PackageReviewReportView",
+    "PackageReviewReportPage",
+    "PackageReviewComparisonPage",
+    "PackageReviewComparisonRun",
+    "PackageReviewComparisonRow",
+    "PackageReviewComparisonRowSide",
+    "StartPackageReviewRun",
+    "PackageReviewRunInput",
+    "PackageReviewRunInputView",
+    "PackageReviewRunView",
+    "PackageReviewRunSummary",
+    "SavePackageReviewHumanDecision",
+    "PackageReviewHumanDecision",
+    "PackageReviewHumanDecisionView",
+    "PackageReviewHumanDecisionCurrent",
+    "PackageReviewHumanDecisionPage",
+    "AuthoringRichCapabilities",
+    "AuthoringRichBuildRequest",
+    "AuthoringRichDocument",
+    "AuthoringImageUpload",
+    "AuthoringImageCreated",
+    "AuthoringImageView",
+    "AuthoringImagePage",
+    "AuthoringImageUploadStatus",
+    "AuthoringBuildLayout",
+    "PackageReviewRunPage",
+    "PackageReviewResult",
     "SavePackageDependencyPlan",
     "PackageDependencyPlanView",
     "PackageDependencyPlanPage",
@@ -97,10 +232,15 @@ wanted = [
     "AssistantSourceRef",
     "AssistantAnswerPart",
     "TemplateRequest",
+    "ExactPackageTriggerSelection",
+    "PackageTaskTriggerCapabilities",
+    "PackageTriggerIntentView",
+    "PackageTriggerIntentPage",
     "TemplateView",
     "TemplatePage",
     "TemplateVersionView",
     "RunRequest",
+    "TaskAuthoringResult",
     "RunView",
     "RunPage",
     "PauseRequest",
@@ -130,6 +270,18 @@ wanted = [
     "SubmissionRequest",
     "OfflineSubmissionRequest",
     "SubmissionView",
+    "SingleBodySubmissionView",
+    "PackageSubmissionSelection",
+    "PackageSubmissionRequest",
+    "PackageSubmissionPreview",
+    "PackageSubmissionBindingView",
+    "PackageSubmissionView",
+    "PackageSubmissionAppliedView",
+    "PackageSubmissionGateView",
+    "PackageOutcomeContext",
+    "PackageOutcomeVerificationRequest",
+    "PackageOutcomeVerificationDetails",
+    "OutcomeRequest",
     "SubmissionPage",
     "SubmissionDocumentPage",
     "SubmissionCorrectionRequest",
@@ -282,7 +434,9 @@ def render(s):
             + "}"
         )
     if typ == "array":
-        return "(" + render(s["items"]) + ")[]"
+        if s.get("maxItems") == 0:
+            return "[]"
+        return "(" + render(s.get("items", {})) + ")[]"
     return {
         "integer": "number",
         "number": "number",
@@ -293,8 +447,8 @@ def render(s):
 
 
 source = (
-    "packages/contracts/fusion-implemented.openapi.json"
-    if args.openapi == root / "packages/contracts/fusion-implemented.openapi.json"
+    "packages/contracts/fusion-implemented.openapi.json.gz"
+    if args.openapi == root / "packages/contracts/fusion-implemented.openapi.json.gz"
     else str(args.openapi)
 )
 lines = [f"// Generated from {source}. Run python scripts/generate-contracts.py.\n"]
@@ -305,6 +459,40 @@ for name in wanted:
 args.output.write_text("\n".join(lines), encoding="utf-8")
 if args.schemas:
     raise SystemExit(0)
+
+# These closed runtime schemas come from the same actual API as the TypeScript
+# types. Keep the research result's null/decimal/count and no-qualification
+# constants intact instead of maintaining a second hand-written shape.
+history_runtime = {}
+
+
+def collect_history_schema(name):
+    if name in history_runtime:
+        return
+    history_runtime[name] = schemas[name]
+
+    def visit(value):
+        if isinstance(value, dict):
+            if "$ref" in value:
+                collect_history_schema(value["$ref"].rsplit("/", 1)[-1])
+            for item in value.values():
+                visit(item)
+        elif isinstance(value, list):
+            for item in value:
+                visit(item)
+
+    visit(schemas[name])
+
+
+for name in history_schemas:
+    collect_history_schema(name)
+args.output.with_name("packageHistoricalResearchSchemas.ts").write_text(
+    f"// Generated from {source}. Run python scripts/generate-contracts.py.\n"
+    "export const historySchemas: Record<string, unknown> = "
+    + json.dumps(history_runtime, ensure_ascii=False, indent=2)
+    + ";\n",
+    encoding="utf-8",
+)
 
 operations = [
     f"{method.upper()} {path}"

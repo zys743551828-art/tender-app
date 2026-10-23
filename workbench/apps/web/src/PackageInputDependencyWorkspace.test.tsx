@@ -9,6 +9,8 @@ import {
 } from "../qa-previews/frozen-inputs/inputDependencies";
 import { changeId as id } from "../qa-previews/frozen-inputs/factChange";
 import { frozenManifestDigest } from "./packageFrozenInput";
+import { dependencyPlanScope } from "./dependencyPlanProtocol";
+import { storeDependencyPlanRecord } from "./dependencyPlanRecovery";
 import {
   validateDependencyAssessment,
   validateDependencyInventory,
@@ -16,9 +18,9 @@ import {
 import type { CheckPackageInputDependencies } from "./contracts";
 let fixture: Awaited<ReturnType<typeof inputDependencyFixture>>;
 const fetchMock = vi.fn();
-const json = (v: unknown) =>
+const json = (v: unknown, status = 200) =>
   new Response(JSON.stringify(v), {
-    status: 200,
+    status,
     headers: { "Content-Type": "application/json" },
   });
 beforeEach(async () => {
@@ -234,6 +236,110 @@ it("does not show a late assessment after switching prepared input", async () =>
     screen.getByRole("button", { name: "读取原要求清单" }),
   ).toBeInTheDocument();
 });
+it.each(["before", "after"] as const)(
+  "a rejected plan recovery releases the pending check and ignores its response %s a new check",
+  async (order) => {
+    const body: CheckPackageInputDependencies = {
+      execution_input_digest: fixture.props.prepared.digest,
+      purpose: "prebid_compliance",
+      fact_ids: [],
+      dependencies: [],
+    };
+    const original = await dependencyReply(fixture, body);
+    storeDependencyPlanRecord({
+      version: 1,
+      scope: dependencyPlanScope(fixture.props),
+      pending: {
+        key: id(991),
+        body: {
+          ...body,
+          assessment_digest: original.digest,
+          reason: "恢复上次的精确计划请求",
+        },
+      },
+      lastId: null,
+    });
+    const requests: {
+      body: CheckPackageInputDependencies;
+      respond: (response: Response) => void;
+    }[] = [];
+    const closedMessage =
+      "项目已结束或归档；继续编制请明确重新打开，补录或更正请用专用入口";
+    fetchMock.mockImplementation(async (url: string, options?: RequestInit) => {
+      if (url.endsWith(`/requirement-inventories/${id(5)}`))
+        return json(fixture.inventory);
+      if (url.endsWith("/dependency-check"))
+        return new Promise<Response>((respond) => {
+          requests.push({
+            body: JSON.parse(String(options?.body)),
+            respond,
+          });
+        });
+      if (url.endsWith("/dependency-plans"))
+        return json(
+          { code: "PROJECT_WORK_CLOSED", message: closedMessage },
+          409,
+        );
+      throw new Error("unexpected synthetic route");
+    });
+    // Observe completion without replacing the real asynchronous validation.
+    const validation = vi.spyOn(
+      await import("./inputDependencyProtocol"),
+      "validateDependencyAssessment",
+    );
+    async function respond(index: number) {
+      const response = await dependencyReply(fixture, requests[index].body);
+      const call = validation.mock.calls.length;
+      await act(async () => requests[index].respond(json(response)));
+      await waitFor(() => expect(validation).toHaveBeenCalledTimes(call + 1));
+      await act(async () => {
+        await validation.mock.results[call].value;
+      });
+      return response;
+    }
+    show();
+    await load();
+    const recover = await screen.findByRole("button", {
+      name: "恢复原计划保存回执",
+    });
+    const calculateButton = screen.getByRole("button", {
+      name: "计算本轮依赖缺口（不保存）",
+    });
+    await userEvent.click(calculateButton);
+    expect(requests).toHaveLength(1);
+    expect(calculateButton).toBeDisabled();
+    expect(recover).toBeEnabled();
+    await userEvent.click(recover);
+    await screen.findByText(closedMessage);
+    expect(calculateButton).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "读取原要求清单" }),
+    ).toBeEnabled();
+
+    await edit();
+    await userEvent.selectOptions(
+      screen.getByLabelText("本次事实需求"),
+      "required",
+    );
+    await apply();
+    await userEvent.click(calculateButton);
+    expect(requests).toHaveLength(2);
+    expect(calculateButton).toBeDisabled();
+    if (order === "before") {
+      await respond(0);
+      expect(calculateButton).toBeDisabled();
+      expect(screen.queryByText(/本次只核对依赖标注与原事实选择/)).toBeNull();
+    }
+    const current = await respond(1);
+    await screen.findByText(current.digest);
+    expect(calculateButton).toBeEnabled();
+    if (order === "after") await respond(0);
+    expect(current.digest).not.toBe(original.digest);
+    expect(screen.getByText(current.digest)).toBeInTheDocument();
+    expect(screen.queryByText(original.digest)).toBeNull();
+    expect(calculateButton).toBeEnabled();
+  },
+);
 it("a corrupt inventory digest never enables assessment or silently changes revision", async () => {
   fixture.inventory.digest = "a".repeat(64);
   show();

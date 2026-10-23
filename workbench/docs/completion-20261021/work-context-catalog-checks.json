@@ -1,0 +1,277 @@
+{
+  "acceptance_document_sha256": "a815a7c3fa1c49c4752b3867ad1479d6ce8146ea7aca3d2b194e576f0f107ecb",
+  "base_commit": "ebe7e80b05cec1699eb0ce449cbda1406f4dc5d2",
+  "candidate": "/tmp/tender-review-work-context-catalog/candidate/workbench",
+  "candidate_manifest_sha256": "f5f18b1c6d7ff6f3b2e86e57ea894602330a7f00e74505c4364b9dcb94454b36",
+  "checks": {
+    "bandit": {
+      "files": 8,
+      "passed": true
+    },
+    "mypy": {
+      "files": 8,
+      "passed": true
+    },
+    "pytest": {
+      "failed": 0,
+      "passed": 28,
+      "pg_http_passed": 21,
+      "pure_passed": 7,
+      "skipped": 0,
+      "warning": "existing Starlette/AnyIO BlockingPortal deprecation",
+      "warnings": 1
+    },
+    "ruff_check": {
+      "files": 11,
+      "passed": true
+    },
+    "ruff_format_check": {
+      "files": 11,
+      "passed": true
+    }
+  },
+  "commands": [
+    "python -m ruff check apps/api/work_context_catalog_routes.py deploy/work_context_catalog_readiness.py packages/contracts/work_context_catalog_api.py packages/work_contexts/authoring_observations.py packages/work_contexts/authoring_repository.py packages/work_contexts/authoring_service.py packages/work_contexts/catalog.py packages/work_contexts/catalog_permissions.py tests/test_work_context_catalog.py tests/test_work_context_catalog_pg.py tests/work_context_catalog_fixtures.py",
+    "python -m ruff format --check apps/api/work_context_catalog_routes.py deploy/work_context_catalog_readiness.py packages/contracts/work_context_catalog_api.py packages/work_contexts/authoring_observations.py packages/work_contexts/authoring_repository.py packages/work_contexts/authoring_service.py packages/work_contexts/catalog.py packages/work_contexts/catalog_permissions.py tests/test_work_context_catalog.py tests/test_work_context_catalog_pg.py tests/work_context_catalog_fixtures.py",
+    "python -m mypy apps/api/work_context_catalog_routes.py deploy/work_context_catalog_readiness.py packages/contracts/work_context_catalog_api.py packages/work_contexts/authoring_observations.py packages/work_contexts/authoring_repository.py packages/work_contexts/authoring_service.py packages/work_contexts/catalog.py packages/work_contexts/catalog_permissions.py",
+    "python -m bandit -q apps/api/work_context_catalog_routes.py deploy/work_context_catalog_readiness.py packages/contracts/work_context_catalog_api.py packages/work_contexts/authoring_observations.py packages/work_contexts/authoring_repository.py packages/work_contexts/authoring_service.py packages/work_contexts/catalog.py packages/work_contexts/catalog_permissions.py",
+    "python -m pytest -q --tb=short tests/test_work_context_catalog.py tests/test_work_context_catalog_pg.py",
+    "python -m deploy.work_context_catalog_readiness"
+  ],
+  "date": "2026-10-21",
+  "ddl_applied": false,
+  "first_attempt": {
+    "cause": "Two directory SQL JOINs wrongly referenced bid_id on bid_package_revisions; fixed via bid_packages native bid/package scope.",
+    "failed": 3,
+    "passed": 21,
+    "receipt": "/tmp/tender-review-work-context-catalog/work-context-pg-3n3tn_qz-receipt.json"
+  },
+  "frozen": true,
+  "frozen_a_manifest_sha256": "b2e414355eccdb2696cd00d994e85c2ae687c5d26e6c13d42df73d7bac28d4fc",
+  "frozen_a_source_unchanged": true,
+  "integration": {
+    "paths": [
+      "GET /api/v1/bids/{bid_id}/work-contexts/choices",
+      "GET /api/v1/bids/{bid_id}/work-contexts/draft_snapshot/{snapshot_id}",
+      "GET /api/v1/bids/{bid_id}/work-contexts/build/{build_id}"
+    ],
+    "router": "apps.api.work_context_catalog_routes.router",
+    "schema_extension": "packages.contracts.work_context_catalog_api.extend_openapi",
+    "shared_mount_export_ui_owned_by": "root"
+  },
+  "native_log": "/tmp/tender-review-work-context-catalog/work-context-pg-rkxib8dv-pytest.log",
+  "native_receipt": "/tmp/tender-review-work-context-catalog/work-context-pg-rkxib8dv-receipt.json",
+  "native_receipt_sha256": "aa26f3153a20a9f53e18860ea8c1580c78916e60baf1228eb1d233ba6cb48251",
+  "native_runtime": {
+    "cluster_stopped": true,
+    "original_io": "explicit synthetic fixtures; context reads forbid storage/model calls",
+    "paid_calls": 0,
+    "postgres": "17.11",
+    "roles": "fresh nonowner API and Worker logins"
+  },
+  "not_claimed": [
+    "Full application/frontend integration acceptance",
+    "F05-05 six-level primary business action completion",
+    "New-use source or asset qualification",
+    "Reverified original bytes",
+    "Real controlled PDF successful rendering",
+    "Real tender quality or formal scoring quality"
+  ],
+  "owned_source_sha256": {
+    "apps/api/work_context_catalog_routes.py": "20c6cd039728ac75977ad01e1a9eeeb22616f4cb75bb64849b0f666b4205d3d8",
+    "deploy/work_context_catalog_readiness.py": "85650c2f4cb1016cfd927c0096d999e6a06275c0af35e678574737cdb2d4e7c0",
+    "packages/contracts/work_context_catalog_api.py": "7e30373451429eb801e2318bdb7d8a0cdbd91405f6d3f4b955fb31ec3c6f2b5c",
+    "packages/work_contexts/authoring_observations.py": "8937bfb9cc5fe7eec32b883bc0532a4b0561d83e2ca10fe525bd2116055130c1",
+    "packages/work_contexts/authoring_repository.py": "42f74a204c600cd4535043aa8a66fa5a2e322ed65cc08393c2babf7168fe04be",
+    "packages/work_contexts/authoring_service.py": "a02d504557c563c42cf485413ae7f356f82d0e0e35668032e878b484c014ea52",
+    "packages/work_contexts/catalog.py": "5d0d0b10de72ac07545fd63be7fe2d9ba5340d7d1656343e4de3d61c83bfb4ba",
+    "packages/work_contexts/catalog_permissions.py": "cf69d531201a0cd8ad3464a436623ccda58126aaa8905bc0b8bcdae15fc7f356",
+    "tests/test_work_context_catalog.py": "1e30488380592489b7980ec401a5db5eb31d5178c60adaef2ea5bc957f12c694",
+    "tests/test_work_context_catalog_pg.py": "c882af7d1b1791c7e10d5d7d26616e161d819bd1c175034984badbf08a5622bd",
+    "tests/work_context_catalog_fixtures.py": "d34d3873c0b11f9cbabb09af80599edcf832635ce26773570d453ef609f13759"
+  },
+  "owner_runtime_fallback": false,
+  "permissions": {
+    "build": {
+      "functions": [
+        "design.identity_snapshot_v2(uuid)",
+        "design.bid_requirement_source_snapshot(uuid,uuid)"
+      ],
+      "tables": [
+        "design.audit_entries",
+        "design.bid_package_heads",
+        "design.bid_package_members",
+        "design.bid_package_parts",
+        "design.bid_package_revisions",
+        "design.bid_packages",
+        "design.bid_profiles",
+        "design.bid_rounds",
+        "design.bidders",
+        "design.bids",
+        "design.blobs",
+        "design.build_inputs",
+        "design.build_outputs",
+        "design.builds",
+        "design.commands",
+        "design.document_file_versions",
+        "design.document_files",
+        "design.document_relations",
+        "design.document_versions",
+        "design.draft_snapshot_sections",
+        "design.draft_snapshots",
+        "design.engineering_lots",
+        "design.engineering_projects",
+        "design.operations",
+        "design.section_revisions",
+        "retrieval.lineage_edges",
+        "retrieval.source_ancestors",
+        "retrieval.source_heads",
+        "retrieval.source_nodes",
+        "design.drafts",
+        "design.authoring_image_assets",
+        "design.authoring_image_versions"
+      ]
+    },
+    "draft_snapshot": {
+      "functions": [
+        "design.identity_snapshot_v2(uuid)",
+        "design.bid_requirement_source_snapshot(uuid,uuid)"
+      ],
+      "tables": [
+        "design.audit_entries",
+        "design.bid_package_heads",
+        "design.bid_package_members",
+        "design.bid_package_parts",
+        "design.bid_package_revisions",
+        "design.bid_packages",
+        "design.bid_profiles",
+        "design.bid_rounds",
+        "design.bidders",
+        "design.bids",
+        "design.blobs",
+        "design.build_inputs",
+        "design.build_outputs",
+        "design.builds",
+        "design.commands",
+        "design.document_file_versions",
+        "design.document_files",
+        "design.document_relations",
+        "design.document_versions",
+        "design.draft_snapshot_sections",
+        "design.draft_snapshots",
+        "design.engineering_lots",
+        "design.engineering_projects",
+        "design.operations",
+        "design.section_revisions",
+        "retrieval.lineage_edges",
+        "retrieval.source_ancestors",
+        "retrieval.source_heads",
+        "retrieval.source_nodes",
+        "design.drafts",
+        "design.authoring_image_assets",
+        "design.authoring_image_versions"
+      ]
+    },
+    "package_review_run": {
+      "functions": [
+        "design.identity_snapshot_v2(uuid)",
+        "design.bid_requirement_source_snapshot(uuid,uuid)"
+      ],
+      "tables": [
+        "design.audit_entries",
+        "design.bid_package_coverage_attempts",
+        "design.bid_package_coverage_results",
+        "design.bid_package_dependency_plan_command_receipts",
+        "design.bid_package_dependency_plans",
+        "design.bid_package_execution_inputs",
+        "design.bid_package_fact_scopes",
+        "design.bid_package_heads",
+        "design.bid_package_members",
+        "design.bid_package_parts",
+        "design.bid_package_requirement_extraction_runs",
+        "design.bid_package_requirement_heads",
+        "design.bid_package_requirement_inventories",
+        "design.bid_package_review_decision_heads",
+        "design.bid_package_review_decisions",
+        "design.bid_package_review_inputs",
+        "design.bid_package_review_results",
+        "design.bid_package_review_runs",
+        "design.bid_package_revisions",
+        "design.bid_packages",
+        "design.bid_profiles",
+        "design.bid_rounds",
+        "design.bidders",
+        "design.bids",
+        "design.decision_heads",
+        "design.decisions",
+        "design.effect_receipts",
+        "design.engineering_lots",
+        "design.engineering_projects",
+        "design.evidence_blocks",
+        "design.fact_heads",
+        "design.fact_items",
+        "design.fact_sets",
+        "design.operations",
+        "design.pages",
+        "design.parse_runs",
+        "design.step_receipts",
+        "retrieval.source_ancestors",
+        "retrieval.source_heads",
+        "retrieval.source_nodes"
+      ]
+    },
+    "package_submission": {
+      "functions": [
+        "design.identity_snapshot_v2(uuid)",
+        "design.bid_requirement_source_snapshot(uuid,uuid)"
+      ],
+      "tables": [
+        "design.audit_entries",
+        "design.bid_package_coverage_attempts",
+        "design.bid_package_coverage_results",
+        "design.bid_package_dependency_plan_command_receipts",
+        "design.bid_package_dependency_plans",
+        "design.bid_package_execution_inputs",
+        "design.bid_package_fact_scopes",
+        "design.bid_package_heads",
+        "design.bid_package_members",
+        "design.bid_package_parts",
+        "design.bid_package_requirement_extraction_runs",
+        "design.bid_package_requirement_heads",
+        "design.bid_package_requirement_inventories",
+        "design.bid_package_review_decision_heads",
+        "design.bid_package_review_decisions",
+        "design.bid_package_review_inputs",
+        "design.bid_package_review_results",
+        "design.bid_package_review_runs",
+        "design.bid_package_revisions",
+        "design.bid_package_submission_bindings",
+        "design.bid_packages",
+        "design.bid_profiles",
+        "design.bid_rounds",
+        "design.bidders",
+        "design.bids",
+        "design.decision_heads",
+        "design.decisions",
+        "design.effect_receipts",
+        "design.engineering_lots",
+        "design.engineering_projects",
+        "design.evidence_blocks",
+        "design.fact_heads",
+        "design.fact_items",
+        "design.fact_sets",
+        "design.operations",
+        "design.pages",
+        "design.parse_runs",
+        "design.step_receipts",
+        "design.submission_heads",
+        "design.submission_records",
+        "retrieval.source_ancestors",
+        "retrieval.source_heads",
+        "retrieval.source_nodes"
+      ]
+    }
+  },
+  "scope": "B additive four explicit context choices and exact saved snapshot/build resolvers",
+  "version": "work-context-catalog-acceptance/1"
+}

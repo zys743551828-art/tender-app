@@ -1,0 +1,344 @@
+[
+  {
+    "width": 1200,
+    "fixtureSource": "Actual non-owner PG + explicit MockTransport Worker + coordinator; synthetic documents",
+    "boundary": "Browser API responses, unknown-cost scenario and atomic apply ACK are fixtures; no paid model API calls",
+    "fixedBrowserTime": "2026-10-21T02:12:01.916Z",
+    "ready": true,
+    "unknownBlocked": true,
+    "noRetry": true,
+    "table": [
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      }
+    ],
+    "bounds": {
+      "viewport": 1200,
+      "scrollWidth": 1200,
+      "overflows": []
+    },
+    "alerts": [],
+    "errors": [],
+    "postCalls": [
+      {
+        "method": "POST",
+        "path": "/api/v1/bids/e0365465-f535-4ef4-865f-6dc0e676ea5e/drafts/f4df57bb-57ba-4d07-9ced-bbd9e26a8ecf/generation-batches/1f07fb15-4ab1-458b-bc6e-31d4dd914959/resolve"
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "fixtureSource": "Actual non-owner PG + explicit MockTransport Worker + coordinator; synthetic documents",
+    "boundary": "Browser API responses, unknown-cost scenario and atomic apply ACK are fixtures; no paid model API calls",
+    "fixedBrowserTime": "2026-10-21T02:12:01.916Z",
+    "ready": true,
+    "unknownBlocked": true,
+    "noRetry": true,
+    "table": [
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      }
+    ],
+    "bounds": {
+      "viewport": 768,
+      "scrollWidth": 768,
+      "overflows": []
+    },
+    "alerts": [],
+    "errors": [],
+    "postCalls": [
+      {
+        "method": "POST",
+        "path": "/api/v1/bids/e0365465-f535-4ef4-865f-6dc0e676ea5e/drafts/f4df57bb-57ba-4d07-9ced-bbd9e26a8ecf/generation-batches/1f07fb15-4ab1-458b-bc6e-31d4dd914959/resolve"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "fixtureSource": "Actual non-owner PG + explicit MockTransport Worker + coordinator; synthetic documents",
+    "boundary": "Browser API responses, unknown-cost scenario and atomic apply ACK are fixtures; no paid model API calls",
+    "fixedBrowserTime": "2026-10-21T02:12:01.916Z",
+    "ready": true,
+    "unknownBlocked": true,
+    "noRetry": true,
+    "table": [
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      },
+      {
+        "rows": 2,
+        "spans": [
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      },
+      {
+        "width": 4,
+        "height": 4,
+        "verifiedBlob": true
+      }
+    ],
+    "bounds": {
+      "viewport": 390,
+      "scrollWidth": 390,
+      "overflows": []
+    },
+    "alerts": [],
+    "errors": [],
+    "postCalls": [
+      {
+        "method": "POST",
+        "path": "/api/v1/bids/e0365465-f535-4ef4-865f-6dc0e676ea5e/drafts/f4df57bb-57ba-4d07-9ced-bbd9e26a8ecf/generation-batches/1f07fb15-4ab1-458b-bc6e-31d4dd914959/resolve"
+      }
+    ]
+  }
+]

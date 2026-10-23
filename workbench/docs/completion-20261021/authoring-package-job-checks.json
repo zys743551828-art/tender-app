@@ -1,0 +1,221 @@
+{
+  "schema": "authoring-package-job-checks/1",
+  "stage": "B2 native exact package generation and actual publication",
+  "passed": true,
+  "native_receipt": "authoring-package-job-receipt.json",
+  "native_tests": {
+    "tests": 60,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "seconds": 315.819
+  },
+  "static_checks": [
+    {
+      "command": [
+        "/workspace/scratch/31e56f630f51/review-venv/bin/ruff",
+        "check",
+        "packages/authoring/package_job_identity.py",
+        "packages/authoring/package_job_authority.py",
+        "packages/authoring/package_generation.py",
+        "packages/authoring/package_jobs.py",
+        "packages/authoring/package_publication.py",
+        "packages/tasks/package_authoring_runs.py",
+        "packages/tasks/package_authoring_result.py",
+        "packages/assistant/budget.py",
+        "packages/assistant/generation.py",
+        "packages/assistant/authority.py",
+        "packages/assistant/coordinator.py",
+        "packages/assistant/actions.py",
+        "packages/assistant/actual.py",
+        "packages/tasks/models.py",
+        "packages/tasks/templates.py",
+        "packages/tasks/runs.py",
+        "packages/tasks/runner.py",
+        "packages/tasks/inputs.py",
+        "packages/tasks/draft_interpreter.py",
+        "packages/tasks/drafts.py",
+        "apps/api/task_routes.py",
+        "deploy/authoring_package_job_acceptance.py",
+        "tests/authoring_package_job_fixtures.py",
+        "tests/test_authoring_package_jobs_pg.py",
+        "tests/test_task_package_authoring.py",
+        "tests/test_task_package_inputs.py"
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/workspace/scratch/31e56f630f51/review-venv/bin/ruff",
+        "format",
+        "--check",
+        "packages/authoring/package_job_identity.py",
+        "packages/authoring/package_job_authority.py",
+        "packages/authoring/package_generation.py",
+        "packages/authoring/package_jobs.py",
+        "packages/authoring/package_publication.py",
+        "packages/tasks/package_authoring_runs.py",
+        "packages/tasks/package_authoring_result.py",
+        "packages/assistant/budget.py",
+        "packages/assistant/generation.py",
+        "packages/assistant/authority.py",
+        "packages/assistant/coordinator.py",
+        "packages/assistant/actions.py",
+        "packages/assistant/actual.py",
+        "packages/tasks/models.py",
+        "packages/tasks/templates.py",
+        "packages/tasks/runs.py",
+        "packages/tasks/runner.py",
+        "packages/tasks/inputs.py",
+        "packages/tasks/draft_interpreter.py",
+        "packages/tasks/drafts.py",
+        "apps/api/task_routes.py",
+        "deploy/authoring_package_job_acceptance.py",
+        "tests/authoring_package_job_fixtures.py",
+        "tests/test_authoring_package_jobs_pg.py",
+        "tests/test_task_package_authoring.py",
+        "tests/test_task_package_inputs.py"
+      ],
+      "returncode": 0,
+      "stdout": "26 files already formatted\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/workspace/scratch/31e56f630f51/review-venv/bin/bandit",
+        "-q",
+        "-ll",
+        "packages/authoring/package_job_identity.py",
+        "packages/authoring/package_job_authority.py",
+        "packages/authoring/package_generation.py",
+        "packages/authoring/package_jobs.py",
+        "packages/authoring/package_publication.py",
+        "packages/tasks/package_authoring_runs.py",
+        "packages/tasks/package_authoring_result.py",
+        "packages/assistant/budget.py",
+        "packages/assistant/generation.py",
+        "packages/assistant/authority.py",
+        "packages/assistant/coordinator.py",
+        "packages/assistant/actions.py",
+        "packages/assistant/actual.py",
+        "packages/tasks/models.py",
+        "packages/tasks/templates.py",
+        "packages/tasks/runs.py",
+        "packages/tasks/runner.py",
+        "packages/tasks/inputs.py",
+        "packages/tasks/draft_interpreter.py",
+        "packages/tasks/drafts.py",
+        "apps/api/task_routes.py",
+        "deploy/authoring_package_job_acceptance.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "[tester]\tWARNING\tnosec encountered (B603), but no failed test on line 87\n"
+    },
+    {
+      "command": [
+        "/workspace/scratch/31e56f630f51/review-venv/bin/mypy",
+        "packages/authoring/package_job_identity.py",
+        "packages/authoring/package_job_authority.py",
+        "packages/authoring/package_generation.py",
+        "packages/authoring/package_jobs.py",
+        "packages/authoring/package_publication.py",
+        "packages/tasks/package_authoring_runs.py",
+        "packages/tasks/package_authoring_result.py",
+        "packages/assistant/budget.py",
+        "packages/assistant/generation.py",
+        "packages/assistant/authority.py",
+        "packages/assistant/coordinator.py",
+        "packages/assistant/actions.py",
+        "packages/assistant/actual.py",
+        "packages/tasks/models.py",
+        "packages/tasks/templates.py",
+        "packages/tasks/runs.py",
+        "packages/tasks/runner.py",
+        "packages/tasks/inputs.py",
+        "packages/tasks/draft_interpreter.py",
+        "packages/tasks/drafts.py",
+        "apps/api/task_routes.py",
+        "deploy/authoring_package_job_acceptance.py"
+      ],
+      "returncode": 0,
+      "stdout": "Success: no issues found in 22 source files\n",
+      "stderr": ""
+    }
+  ],
+  "selected_regressions": {
+    "passed": 204,
+    "skipped": 3,
+    "failed": 0,
+    "errors": 0,
+    "seconds": 7.957,
+    "suites": [
+      "tests/test_assistant.py",
+      "tests/test_assistant_generation_lock_order.py",
+      "tests/test_task_actual_contracts.py",
+      "tests/test_task_guard_entrypoints.py",
+      "tests/test_task_draft_interpreter.py",
+      "tests/test_task_package_inputs.py",
+      "tests/test_task_package_authoring.py",
+      "tests/test_authoring_section_patch_set.py"
+    ],
+    "skips": [
+      {
+        "name": "test_original_generation_budget_then_graph_order_has_real_deadlock",
+        "reason": "Dedicated disposable fusion_budget_lock database required"
+      },
+      {
+        "name": "test_actual_generation_queue_locks_graph_before_budget_and_reuses_without_execution",
+        "reason": "Dedicated disposable fusion_budget_lock database required"
+      },
+      {
+        "name": "test_closed_project_still_rejects_before_budget_acceptance",
+        "reason": "Dedicated disposable fusion_budget_lock database required"
+      }
+    ],
+    "junit_sha256": "465a8e0860893cbe39710778cac0445c4dfe9c8358f95cef4a6e5bd4c05f7872"
+  },
+  "b1_frozen_predecessor": {
+    "paths": 14,
+    "all_hashes_unchanged": true,
+    "path_sha256": {
+      "apps/api/authoring_package_inputs.py": "e4c4aedc1de112a5247669e23ad4f9a08798c4f73388c90fb25edaacf181155f",
+      "packages/authoring/package_admission.py": "826b93218d28457365061ead68efa5627d68c78135abeaea255a120cb639954d",
+      "packages/authoring/package_input.py": "1132c0cdf1f35de7cc3dcdecdbb980920af760868cffcf1b41f4b58c934bf178",
+      "packages/authoring/package_input_contracts.py": "79d46372ca6338c550a5d0c1ca87cb0258ed68325c9a8b2bbe4823f3c8fd540e",
+      "packages/authoring/package_input_observation.py": "eb2c1839d5a43f8abc31a4c5b12708a8818845643da0030344c3d9a941c08bec",
+      "packages/authoring/package_input_repository.py": "2c8e182119f2b1bbe8dc5d4b86a9489ac5f681b66e456427194dca075872b04b",
+      "packages/contracts/sql/authoring-package-inputs.sql": "586f10b3c097bbe6be6191892cfd5562a9fdb4f0edc9bbd458a29029c3f71f00",
+      "deploy/authoring_package_input_acceptance.py": "346d021d0173b0256d130309201ab305abb5293843b29f5098660532af7b34eb",
+      "tests/authoring_package_input_fixtures.py": "680e75c7ab7e8bd43530f1aa59ba9064d2df04d29e652fde3766ce8768e551d6",
+      "tests/test_authoring_package_inputs_pg.py": "8f1b47a4850d7fec08bcdab732dd8cc48dcce77df7ab36c00e4954d53a45a64f",
+      "docs/completion-20261021/exact-package-authoring-design.md": "27c295b95a7dea0f7c3056dcd152304859925070d3790c0d646b0751d5c2bb74",
+      "docs/completion-20261021/authoring-package-input-acceptance.md": "dacf6cfd881becf68d51cd686d4d63ee8bb37172123afe2ed66c166495f3637d",
+      "docs/completion-20261021/authoring-package-input-receipt.json": "8db4a8b2bc544e7cca7df266680aea5f6c15fd0ad240d82de508feca64e76b53",
+      "docs/completion-20261021/authoring-package-input-checks.json": "46181a14dcc70026d3a3805156174bc5714ac284a0bcbbc341186a5f3b64b924"
+    }
+  },
+  "api_fixture_sha256": {
+    "awaiting-publication.json": "054c4a8908fdaaec40bac5185d2200b8b22f85077f17e18730393574a8169aa1",
+    "cancelled-before.json": "93bca2e3c0054711eb7756fafc583ce3261b664e6f0b3d4acde408beb8ccc6c2",
+    "cancelled-during_http.json": "263340c532e35b4a599b973dfc2e6a79692aa1b7ffee52d1f325e150182e6afc",
+    "private-draft-saved.json": "028e9957ca7ef8cb383b45cf04b01400404ba95dd4f8d2f12e4867db33c8b996",
+    "published.json": "f27e4d4faf6af078a95ca277fb56038aa14b10857b67383fc96a50274da8d794",
+    "queued.json": "86564312475cfdaa8998c3b8ba00c3d985f3fa4b5b823856a1b1fb4dee9f2b75",
+    "unknown-fee.json": "aa7c1b3dc969e1dd5a72adb2f4f8cd40043d89f8264e5b923a9afcd55f600a91"
+  },
+  "fixture_evidence": "Native HTTP responses over isolated PG17 and S3; synthetic domain fixtures and explicit MockTransport model. Private draft fixture records original revision 1, revision 2, template-save ACK, final revision 3, ETags and identical original-key replay bodies.",
+  "authority": "Distinct nonowner API and Worker LOGINs; optional authoring-package-jobs.sql; BASE-only executor unavailable.",
+  "completion_limits": {
+    "apply_available": false,
+    "build_available": false,
+    "paid_calls": 0,
+    "semantic_model_quality_evaluated": false,
+    "production_data_used": false,
+    "browser_validation": "Owned separately by integration agent; not counted in these backend checks."
+  },
+  "source_and_sql_unchanged_during_native_execution": true,
+  "own_services_stopped": true
+}

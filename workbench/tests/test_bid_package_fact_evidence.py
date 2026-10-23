@@ -55,8 +55,10 @@ def ports(packet, monkeypatch):  # noqa: F811
     monkeypatch.setattr(service, "source_closure", lambda *args, **kw: closure)
     c = SimpleNamespace(
         autocommit=False,
-        execute=lambda *args: SimpleNamespace(
-            fetchone=lambda: dict(at=datetime(2026, 10, 20, tzinfo=timezone.utc))
+        execute=lambda query, *args: SimpleNamespace(
+            fetchone=lambda: None
+            if "FROM design.document_relations" in query
+            else dict(at=datetime(2026, 10, 20, tzinfo=timezone.utc))
         ),
     )
     scope = tuple(

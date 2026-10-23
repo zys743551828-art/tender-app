@@ -155,8 +155,8 @@
 .package-fact-change blockquote {
   margin: 0.65rem 0;
   padding: 0.7rem;
-  border-left: 3px solid #a3b6d5;
-  background: #f8fafc;
+  border-left: 3px solid var(--border-strong);
+  background: var(--subtle);
   max-height: 16rem;
   overflow: auto;
 }

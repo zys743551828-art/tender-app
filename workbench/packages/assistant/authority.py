@@ -18,6 +18,10 @@ def lock_job_target(c, row):
 
 
 def assert_source_guards(c, manifest):
+    if manifest.get("generation_mode") == "exact_package_authoring/1":
+        from packages.authoring.package_job_authority import assert_manifest
+
+        return assert_manifest(c, manifest)
     lock_graph(c)
     if manifest["kind"] == "authoring":
         guards = [

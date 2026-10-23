@@ -6,6 +6,7 @@ from psycopg import sql
 
 from packages.domain.runtime import DomainError, clean, etag, fetch, sha
 from packages.identity.repository import snapshot as identity_snapshot
+from packages.rag.indexing import parse_source_id
 from packages.word_intake.declarations import view as pdf_declaration_view
 
 
@@ -220,12 +221,41 @@ def document_view(c, row):
     )
 
 
-def evidence_view(c, eid):
-    r = fetch(
-        c,
-        "SELECT e.*,p.width,p.height,p.rotation,p.printed_label,r.document_version_id FROM evidence_blocks e JOIN pages p ON p.parse_id=e.parse_id AND p.physical_page=e.physical_page JOIN parse_runs r ON r.id=e.parse_id WHERE e.id=%s",
-        (eid,),
-    )
+_EVIDENCE_ROWS = """SELECT e.*,p.width,p.height,p.rotation,p.printed_label,r.document_version_id
+FROM evidence_blocks e JOIN pages p ON p.parse_id=e.parse_id AND p.physical_page=e.physical_page
+JOIN parse_runs r ON r.id=e.parse_id"""
+
+
+def _evidence_sources(c, rows):
+    # Publication is a display observation, not a grant to use the source. Exact
+    # parse ancestry avoids another parse's status and includes controlled Word.
+    sources: dict[str, list[str | None]] = {
+        str(parse_source_id(row["parse_id"])): [] for row in rows
+    }
+    if not sources:
+        return {}
+    heads = c.execute(
+        """WITH RECURSIVE ancestors(source_id,ancestor_id) AS (
+            SELECT id,id FROM retrieval.source_nodes WHERE id=ANY(%s::uuid[])
+            UNION SELECT a.source_id,e.parent_id FROM ancestors a
+                JOIN retrieval.lineage_edges e ON e.child_id=a.ancestor_id
+        ) SELECT a.source_id::text AS source_id,h.status FROM ancestors a
+        LEFT JOIN retrieval.source_heads h ON h.source_id=a.ancestor_id""",
+        (sorted(sources),),
+    ).fetchall()
+    for head in heads:
+        sources[head["source_id"]].append(head["status"])
+    return {
+        source: "withdrawn"
+        if "withdrawn" in statuses
+        else "published"
+        if statuses and all(status == "published" for status in statuses)
+        else "candidate"
+        for source, statuses in sources.items()
+    }
+
+
+def _evidence_projection(r, status):
     return {
         "id": str(r["id"]),
         "document_version_id": str(r["document_version_id"]),
@@ -238,5 +268,21 @@ def evidence_view(c, eid):
         "page_width": float(r["width"]),
         "page_height": float(r["height"]),
         "rotation": r["rotation"],
-        "source_status": "published",
+        "source_status": status,
     }
+
+
+def evidence_view(c, eid):
+    row = fetch(c, _EVIDENCE_ROWS + " WHERE e.id=%s", (eid,))
+    status = _evidence_sources(c, [row])[str(parse_source_id(row["parse_id"]))]
+    return _evidence_projection(row, status)
+
+
+def evidence_views(c, parse_id):
+    rows = c.execute(
+        _EVIDENCE_ROWS + " WHERE e.parse_id=%s ORDER BY e.physical_page,e.ordinal,e.id", (parse_id,)
+    ).fetchall()
+    sources = _evidence_sources(c, rows)
+    return [
+        _evidence_projection(row, sources[str(parse_source_id(row["parse_id"]))]) for row in rows
+    ]

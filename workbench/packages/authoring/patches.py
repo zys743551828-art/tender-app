@@ -8,12 +8,12 @@ from uuid import UUID
 
 from psycopg.types.json import Jsonb
 
-from packages.authoring.content import SCHEMA_DIGEST, validate_content
+from packages.authoring import section_sources
+from packages.authoring.content import schema_digest_for, validate_content
 from packages.authoring.repository import (
     assert_sources,
     lock_draft,
     save_draft,
-    source_authority_manifest,
 )
 from packages.domain.runtime import DomainError, fetch, now, sha, uid
 
@@ -45,9 +45,12 @@ def create_proposal(
     """Called only after a budgeted model result or explicit manual preview; no model I/O."""
     s = fetch(c, "SELECT * FROM sections WHERE id=%s AND bid_id=%s", (section, bid))
     draft = lock_draft(c, bid, s["draft_id"])
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, s["draft_id"])
     from packages.authoring.snapshot_structure import assert_active
 
-    assert_active(c, bid, s["draft_id"], section)
+    extension = assert_active(c, bid, s["draft_id"], section)
     s = fetch(c, "SELECT * FROM sections WHERE id=%s AND bid_id=%s FOR UPDATE", (section, bid))
     if s["head_revision"] != base_revision:
         raise DomainError("SECTION_REVISION_CONFLICT", "章节已更新，请重新预览", 412)
@@ -66,7 +69,9 @@ def create_proposal(
     context = proposal_context(c, bid)
     payload = {
         "context": context,
-        "authority_manifest": source_authority_manifest(c, updated["attrs"]["source_refs"]),
+        "authority_manifest": section_sources.authority(
+            c, bid, s["draft_id"], section, updated, extension=extension
+        ),
         "kind": "authoring_patch",
         "section_id": str(section),
         "draft_id": str(s["draft_id"]),
@@ -76,7 +81,7 @@ def create_proposal(
         "before_digest": before_digest,
         "replacement": replacement,
         "source_refs": updated["attrs"]["source_refs"],
-        "schema_digest": SCHEMA_DIGEST,
+        "schema_digest": schema_digest_for(updated),
     }
     c.execute(
         "INSERT INTO proposed_actions(id,bid_id,base_revision,request_digest,expires_at,payload) VALUES(%s,%s,%s,%s,%s,%s)",
@@ -109,6 +114,10 @@ def apply_proposal(c, bid, action, actor, command_id, condition):
     if c.execute("SELECT 1 FROM action_consumptions WHERE action_id=%s", (action,)).fetchone():
         raise DomainError("ACTION_CONSUMED", "该建议已有处理结果", 409)
     p = row["payload"]
+    if p.get("kind") == "authoring_patch_set":
+        raise DomainError(
+            "AUTHORING_BATCH_CONFIRM_REQUIRED", "批次候选必须在原批次统一确认，未应用单章", 409
+        )
     if p.get("kind") != "authoring_patch" or sha(p) != row["request_digest"]:
         raise DomainError("ACTION_KIND_INVALID", "建议类型或内容身份不正确", 409)
     from packages.assistant.actions import assert_linked_generation_context
@@ -126,7 +135,10 @@ def apply_proposal(c, bid, action, actor, command_id, condition):
     updated = replace_node(original["content"], p["node_id"], p["before_digest"], p["replacement"])
     updated["attrs"]["source_refs"] = p["source_refs"]
     assert_sources(c, bid, updated)
-    if source_authority_manifest(c, p["source_refs"]) != p["authority_manifest"]:
+    if (
+        section_sources.authority(c, bid, UUID(p["draft_id"]), UUID(p["section_id"]), updated)
+        != p["authority_manifest"]
+    ):
         raise DomainError(
             "AUTHORING_AUTHORITY_CHANGED", "来源版本或祖先效力已变化，请重新生成建议", 409
         )

@@ -7,6 +7,24 @@ import { clearKnowledgeStorage, knowledgeStorageKey } from "./knowledgeStorage";
 import { setAuth } from "./api";
 import type { KnowledgeView } from "./contracts";
 
+const packageRun = "00000000-0000-4000-8000-000000000052";
+
+function packageTarget(id = packageRun) {
+  return {
+    id,
+    target_kind: "package_review_run",
+    created_at: "2026-10-21T02:00:00Z",
+    input_digest: "b".repeat(64),
+    execution_input_id: "execution",
+    state: "succeeded",
+    package_id: "package",
+    revision_id: "exact-revision",
+    inventory_id: "exact-inventory",
+    frozen_input_id: "exact-input",
+    result_digest: "c".repeat(64),
+  };
+}
+
 // Explicit component fixtures; these checks do not attest published knowledge quality.
 const source = {
   source_id: "source",
@@ -494,6 +512,131 @@ it("引用上下文409后不普通重试，明确重读主体与原知识版本�
     excerpt: "有来源的施工方法",
   });
 });
+
+it.each([false, true])(
+  "整包知识引用必须明确选择目录中的一次核查，回执核对精确目标（错误回执=%s）",
+  async (wrongReceipt) => {
+    const user = userEvent.setup();
+    const writes: RequestInit[] = [];
+    const published = {
+      ...item,
+      state: "published",
+      workflow: "published",
+      published_version_id: item.version_id,
+      published_workflow: "published",
+    };
+    const bid = {
+      id: "bid",
+      title: "目标项目",
+      phase: "working",
+      archived_at: null,
+      identity: {
+        bidder_id: "company",
+        bidder_name: "已确认公司",
+        region: "浙江",
+        engineering_type: "市政",
+        binding_status: "confirmed",
+      },
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, options?: RequestInit) => {
+        const parsed = new URL(url, window.location.href);
+        const path = parsed.pathname;
+        if (options?.method === "POST") {
+          writes.push(options);
+          const request = JSON.parse(options.body as string);
+          return json({
+            ...request,
+            knowledge_id: item.id,
+            citation_ids: [],
+            source_manifest: [],
+            source_refs: [source],
+            reference_only: true,
+            project_fact_created: false,
+            target_object_id: wrongReceipt
+              ? "different-run"
+              : request.target_object_id,
+          });
+        }
+        if (path === "/api/v1/bids")
+          return json({ items: [bid], has_more: false, next_cursor: null });
+        if (path === "/api/v1/bids/bid") return json(bid);
+        if (path === "/api/v1/knowledge/knowledge") return json(published);
+        if (path.endsWith("/knowledge-reference-targets"))
+          return json({
+            bid_id: "bid",
+            items: [
+              packageTarget(
+                parsed.searchParams.has("offset") ? packageRun : "earlier-run",
+              ),
+            ],
+            next_offset: parsed.searchParams.has("offset") ? null : 1,
+            reference_only: true,
+            changes_frozen_result: false,
+            formal_score_allowed: false,
+          });
+        return basic(url);
+      }),
+    );
+    render(
+      <Knowledge memberId="member" selectedId="knowledge" onSelect={vi.fn()} />,
+    );
+    await screen.findByRole("option", { name: "目标项目" });
+    await user.selectOptions(screen.getByLabelText("知识目标项目"), "bid");
+    await screen.findByLabelText("引用位置");
+    await user.type(screen.getByLabelText("本次使用的实际摘录"), item.content);
+    await user.type(
+      screen.getByLabelText("为何适用于此项目与用途"),
+      "作为本次核查另行参考",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("引用位置"),
+      "package_review_run",
+    );
+    expect(
+      screen.getByRole("button", { name: "登记本次项目参考" }),
+    ).toBeDisabled();
+    await user.click(
+      await screen.findByRole("button", { name: "加载更多核查记录" }),
+    );
+    await waitFor(() =>
+      expect(
+        screen
+          .getByLabelText("关联的整包核查")
+          .querySelector(`option[value="${packageRun}"]`),
+      ).not.toBeNull(),
+    );
+    await user.selectOptions(
+      screen.getByLabelText("关联的整包核查"),
+      packageRun,
+    );
+    await user.click(screen.getByRole("button", { name: "登记本次项目参考" }));
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(writes[0].body as string)).toMatchObject({
+      bid_id: "bid",
+      version_id: item.version_id,
+      target_kind: "package_review_run",
+      target_object_id: packageRun,
+      excerpt: item.content,
+      applicability_reason: "作为本次核查另行参考",
+    });
+    if (wrongReceipt) {
+      await screen.findByText("返回的引用与本次选择不一致，尚未确认登记成功。");
+      expect(screen.queryByText("参考已登记，未创建项目事实")).toBeNull();
+    } else {
+      await screen.findByText("参考已登记，未创建项目事实");
+      expect(
+        screen.getByText(`已关联核查 ${packageRun}；原核查结果保持冻结。`),
+      ).toBeVisible();
+    }
+    await user.selectOptions(screen.getByLabelText("引用位置"), "project");
+    expect(screen.queryByText("参考已登记，未创建项目事实")).toBeNull();
+    expect(screen.getByLabelText("本次使用的实际摘录")).toHaveValue(
+      item.content,
+    );
+  },
+);
 
 it("明确历史版本写入URL并保留查证上下文；返回/前进及刷新恢复原版本身份", async () => {
   const user = userEvent.setup();

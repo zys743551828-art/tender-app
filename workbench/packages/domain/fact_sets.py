@@ -22,7 +22,9 @@ def identity(fact):
     return sha(value)
 
 
-def evidence_basis(c, bid, evidence_ids, *, publish=True):
+def evidence_basis(c, bid, evidence_ids, *, publish=True, lock_sources=True):
+    if publish and not lock_sources:
+        raise ValueError("Source publication requires locked authority")
     ids = sorted(set(map(str, evidence_ids)))
     rows = c.execute(
         "SELECT e.id,e.parse_id,p.document_version_id FROM evidence_blocks e JOIN parse_runs p ON p.id=e.parse_id AND p.bid_id=e.bid_id WHERE e.bid_id=%s AND e.id=ANY(%s::uuid[]) ORDER BY e.id",
@@ -50,8 +52,8 @@ def evidence_basis(c, bid, evidence_ids, *, publish=True):
         )
     content = empty_content("事实依据核验", 0)
     content["attrs"]["source_refs"] = refs
-    assert_sources(c, bid, content)
-    closure = source_closure(c, [{"id": ref["source_id"]} for ref in refs], lock=True)
+    assert_sources(c, bid, content, lock_sources=lock_sources)
+    closure = source_closure(c, [{"id": ref["source_id"]} for ref in refs], lock=lock_sources)
     return {"references": refs, "source_closure_digest": sha(closure)}
 
 

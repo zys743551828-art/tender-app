@@ -154,7 +154,9 @@ def schemas():
             "bid_id": ID,
             "version_id": ID,
             "purpose": PURPOSE,
-            "target_kind": {"enum": ["project", "section", "operation", "review"]},
+            "target_kind": {
+                "enum": ["project", "section", "operation", "review", "package_review_run"]
+            },
             "target_object_id": ID,
             "excerpt": {"type": "string", "minLength": 1, "maxLength": 20000},
             "applicability_reason": {"type": "string", "minLength": 1, "maxLength": 4000},
@@ -184,7 +186,9 @@ def schemas():
             "citation_ids": array(ID, minItems=1),
             "excerpt": TEXT,
             "purpose": PURPOSE,
-            "target_kind": {"enum": ["project", "section", "operation", "review"]},
+            "target_kind": {
+                "enum": ["project", "section", "operation", "review", "package_review_run"]
+            },
             "target_object_id": ID,
             "applicability_reason": TEXT,
             "source_manifest": array(ref("KnowledgeAuthority")),
@@ -262,6 +266,32 @@ def schemas():
         "KnowledgeReferenceRequest": request,
         "KnowledgeAuthority": authority,
         "KnowledgeReference": reference,
+        "KnowledgePackageReviewTargetPage": obj(
+            {
+                "bid_id": ID,
+                "items": array(
+                    obj(
+                        {
+                            "id": ID,
+                            "target_kind": {"const": "package_review_run"},
+                            "created_at": TIME,
+                            "input_digest": HASH,
+                            "execution_input_id": ID,
+                            "state": TEXT,
+                            "package_id": ID,
+                            "revision_id": ID,
+                            "inventory_id": ID,
+                            "frozen_input_id": ID,
+                            "result_digest": {"anyOf": [HASH, {"type": "null"}]},
+                        }
+                    )
+                ),
+                "next_offset": {"type": ["integer", "null"], "minimum": 0},
+                "reference_only": {"const": True},
+                "changes_frozen_result": {"const": False},
+                "formal_score_allowed": {"const": False},
+            }
+        ),
         "KnowledgeReferenceHistory": obj(
             {
                 "reference": ref("KnowledgeReference"),
@@ -341,6 +371,13 @@ def extend_openapi(actual):
         ),
         ("/knowledge/{knowledge_id}/impacts", "get", None, "KnowledgeImpact", 200),
         ("/knowledge-references/{citation_id}", "get", None, "KnowledgeReferenceHistory", 200),
+        (
+            "/bids/{bid_id}/knowledge-reference-targets",
+            "get",
+            None,
+            "KnowledgePackageReviewTargetPage",
+            200,
+        ),
     ]
     routes.append(
         ("/knowledge/{knowledge_id}/source-positions", "get", None, "KnowledgeSourcePositions", 200)

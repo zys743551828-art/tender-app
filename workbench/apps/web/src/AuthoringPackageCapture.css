@@ -1,0 +1,123 @@
+.authoring-package-capture {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.authoring-package-capture
+  :where(header, section, fieldset, label, article, details, dl, dd) {
+  min-width: 0;
+}
+.authoring-package-capture :where(p, li, dd, h2, h3, h4) {
+  overflow-wrap: anywhere;
+}
+.authoring-package-capture :where(select, textarea) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.capture-step {
+  display: grid;
+  gap: 0.85rem;
+}
+.capture-step h3,
+.capture-step h4 {
+  margin: 0;
+}
+.capture-two-columns,
+.capture-identities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.authoring-package-capture fieldset {
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+.authoring-package-capture legend {
+  color: var(--text);
+  font-weight: 600;
+  padding-inline: 0.4rem;
+  max-width: 100%;
+}
+.capture-revisions,
+.capture-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+.capture-facts {
+  display: grid;
+  gap: 1rem;
+}
+.capture-fact,
+.capture-use,
+.capture-node-preview {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  display: grid;
+  gap: 0.6rem;
+}
+.capture-fact-value,
+.capture-node-preview .preserve-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+}
+.authoring-package-capture .preserve-text {
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.capture-check {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+.capture-check input {
+  flex: 0 0 auto;
+  margin-block-start: 0.3rem;
+  width: auto;
+  min-height: 0;
+}
+.capture-blockers {
+  margin: 0.3rem 0;
+  padding-inline-start: 1.4rem;
+  color: var(--text);
+  background: var(--surface-secondary);
+  border-radius: 0.4rem;
+}
+.capture-blockers li {
+  padding-block: 0.25rem;
+}
+.capture-fact details dd {
+  margin-inline-start: 0;
+}
+.capture-fact details ul {
+  padding-inline-start: 1.2rem;
+}
+@media (max-width: 700px) {
+  .capture-two-columns,
+  .capture-identities {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .authoring-package-capture fieldset,
+  .capture-fact,
+  .capture-use,
+  .capture-node-preview {
+    padding: 0.75rem;
+  }
+  .capture-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

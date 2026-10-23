@@ -89,7 +89,19 @@ def validate_use(c, bid, state, contents):
     )
     for binding in state["metadata"].get("format_bindings", []):
         refs.extend(binding["source_refs"])
-    return {"sources": source_authority_manifest(c, refs), "format": report}
+    authority = {"sources": source_authority_manifest(c, refs), "format": report}
+    if "word_import_sources" in state["metadata"]:
+        from packages.authoring.docx_import_sources import assert_import_sources
+
+        imported = assert_import_sources(
+            c,
+            bid,
+            state["metadata"],
+            section_ids=[n["section_id"] for n in state["nodes"] if not n["deleted"]],
+        )
+        if imported["items"]:
+            authority["word_imports"] = imported
+    return authority
 
 
 def view(c, bid, draft):
@@ -150,7 +162,10 @@ def view(c, bid, draft):
 
 
 def preview(c, bid, draft, actor, body, condition, *, prospective=None):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     row = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     match(condition, "draft", draft, row["revision"])
     if body["base_draft_revision"] != row["revision"]:
         raise DomainError("DRAFT_REVISION_CONFLICT", "草稿已更新，请重新预览", 412)
@@ -159,6 +174,10 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
     if prospective is None:
         result = mutate(state["nodes"], contents, body["changes"])
         after = deepcopy(state) | {"nodes": result["nodes"]}
+        if result["copied_from"] and "word_import_sources" in after["metadata"]:
+            from packages.authoring.docx_import_sources import extend_import_copies
+
+            after["metadata"] = extend_import_copies(after["metadata"], result["copied_from"])
         texts = result["contents"]
         created = result["created_ids"]
     else:
@@ -216,6 +235,9 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
 
 
 def commit(c, bid, draft, actor, state, contents, revision):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
+    assert_ordinary_edit(c, bid, draft)
     current = {
         str(r["section_id"]): r for r in latest_sections(c, bid, draft, include_deleted=True)
     }
@@ -302,7 +324,10 @@ def resolve(c, bid, action, actor, command_id, decision, condition):
 
 
 def save_plan(c, bid, draft, section, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     head = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     templates.ensure_defaults(c, actor)
     match(condition, "draft", draft, head["revision"])
     if head["revision"] != body["base_draft_revision"]:
@@ -490,7 +515,10 @@ def directory_preview(c, bid, draft, actor, body, condition):
 
 
 def style_preview(c, bid, draft, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     head = lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     templates.ensure_defaults(c, actor)
     match(condition, "draft", draft, head["revision"])
     if body["base_draft_revision"] != head["revision"]:
@@ -511,7 +539,10 @@ def style_preview(c, bid, draft, actor, body, condition):
 
 
 def restore_preview(c, bid, draft, actor, body, condition):
+    from packages.authoring.exact_sources import assert_ordinary_edit
+
     lock_draft(c, bid, draft)
+    assert_ordinary_edit(c, bid, draft)
     current, contents = load(c, bid, draft)
     saved = fetch(
         c,

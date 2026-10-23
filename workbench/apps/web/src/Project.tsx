@@ -81,12 +81,16 @@ export function Project({
   onBack,
   navigation,
   reviewNotice,
+  onAuthoring,
+  onPackages,
 }: {
   id: string;
   memberId?: string;
   onBack: () => void;
   navigation?: ReactNode;
   reviewNotice?: ReactNode;
+  onAuthoring?: () => void;
+  onPackages?: () => void;
 }) {
   const [bid, setBid] = useState<Bid | null>(null);
   const [etag, setEtag] = useState<string | null>(null);
@@ -1013,16 +1017,56 @@ export function Project({
           </div>
         )}
       </section>
-      <BidPackages
-        bidId={id}
-        memberId={memberId}
-        disabled={
-          busy ||
-          !!bid?.archived_at ||
-          bid?.phase === "closed" ||
-          bid?.phase === "terminated"
-        }
-      />
+      {onAuthoring && (
+        <section className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>编写与生成投标正文</h2>
+              <p className="muted">
+                从章节计划继续编辑，保存精确修订，生成 Word 或 PDF
+                后明确采用到投标包。
+              </p>
+            </div>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={onAuthoring}
+            >
+              打开章节编写与生成
+            </button>
+          </div>
+        </section>
+      )}
+      {onPackages ? (
+        <section className="panel">
+          <div className="section-heading">
+            <div>
+              <h2>继续整包核查</h2>
+              <p className="muted">
+                从已入库原件建立资料包，选择确切修订、要求清单与核查输入。
+              </p>
+            </div>
+            <button
+              type="button"
+              className="button primary"
+              onClick={onPackages}
+            >
+              打开整包核查工作面
+            </button>
+          </div>
+        </section>
+      ) : (
+        <BidPackages
+          bidId={id}
+          memberId={memberId}
+          disabled={
+            busy ||
+            !!bid?.archived_at ||
+            bid?.phase === "closed" ||
+            bid?.phase === "terminated"
+          }
+        />
+      )}
       <WordOriginals
         bidId={id}
         memberId={memberId}

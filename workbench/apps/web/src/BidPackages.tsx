@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { api, ApiError, roleNames, supportsApi } from "./api";
 import type {
   AppendBidPackage,
@@ -14,6 +14,25 @@ import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import { PackageRequirements } from "./PackageRequirements";
+import DocumentParseWorkspace from "./DocumentParseWorkspace";
+import { NavigationGuardContext } from "./navigationGuard";
+import { PackageScopeGuardProvider } from "./PackageScopeGuardProvider";
+import { usePackageScopeState } from "./packageScopeGuard";
+import {
+  emptyPackageNavigationState,
+  validPackageDirectory,
+  validatePackageNavigationView,
+  type PackageNavigationState,
+  type PackageNavigationTarget,
+} from "./packageNavigation";
+
+type Navigation = {
+  target: PackageNavigationTarget | null;
+  onLocation: (
+    target: PackageNavigationTarget | null,
+    replace?: boolean,
+  ) => void;
+};
 
 type Member = CreateBidPackage["members"][number];
 type Part = Member["parts"][number];
@@ -80,19 +99,23 @@ export function BidPackages({
   bidId,
   memberId = "current",
   disabled = false,
+  navigation,
 }: {
   bidId: string;
   memberId?: string;
   disabled?: boolean;
+  navigation?: Navigation;
 }) {
   if (!supportsApi("GET", `/bids/${bidId}/packages`)) return null;
   return (
-    <PackageWorkspace
-      key={`${bidId}:${memberId}`}
-      bidId={bidId}
-      memberId={memberId}
-      disabled={disabled}
-    />
+    <PackageScopeGuardProvider key={`${bidId}:${memberId}`}>
+      <PackageWorkspace
+        bidId={bidId}
+        memberId={memberId}
+        disabled={disabled}
+        navigation={navigation}
+      />
+    </PackageScopeGuardProvider>
   );
 }
 
@@ -100,12 +123,15 @@ function PackageWorkspace({
   bidId,
   memberId,
   disabled,
+  navigation,
 }: {
   bidId: string;
   memberId: string;
   disabled: boolean;
+  navigation?: Navigation;
 }) {
   const path = `/bids/${bidId}/packages`;
+  const deepState = usePackageScopeState();
   const [recovery] = useState(() => restorePending(bidId, memberId));
   const [pending, setPending] = useState<Pending | null>(recovery.pending);
   const [kind, setKind] = useState<CreateBidPackage["kind"]>(
@@ -115,15 +141,102 @@ function PackageWorkspace({
     structuredClone(pending?.body.members ?? []),
   );
   const [base, setBase] = useState<Base | null>(pending?.base ?? null);
-  const [selected, setSelected] = useState("");
-  const [revision, setRevision] = useState("");
+  const [localSelected, setSelected] = useState("");
+  const [localRevision, setRevision] = useState("");
+  const selected = navigation
+    ? (navigation.target?.packageId ?? "")
+    : localSelected;
+  const revision = navigation
+    ? (navigation.target?.revisionId ?? "")
+    : localRevision;
+  const [requirementsState, setRequirementsState] =
+    useState<PackageNavigationState>(emptyPackageNavigationState);
+  const onRequirementsState = useCallback(
+    (state: PackageNavigationState) => setRequirementsState(state),
+    [],
+  );
+  const [navigationNotice, setNavigationNotice] = useState("");
+  const [checkedView, setCheckedView] = useState<BidPackageStoredView | null>(
+    null,
+  );
+  const [viewIdentityError, setViewIdentityError] = useState<unknown>(null);
+  const [checkingView, setCheckingView] = useState(false);
+  const navigationEnabled = !!navigation;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [notice, setNotice] = useState("");
   const [conflict, setConflict] = useState(false);
   const [candidateBase, setCandidateBase] = useState<
-    (Base & { digest: string; revision: number }) | null
+    | (Base & { digest: string; revision: number; view?: BidPackageStoredView })
+    | null
   >(null);
+  const childLocked =
+    !!navigation &&
+    (requirementsState.busy ||
+      requirementsState.dirty ||
+      requirementsState.pending ||
+      deepState.busy ||
+      deepState.dirty ||
+      deepState.pending);
+  const scopeLocked =
+    busy ||
+    !!pending ||
+    recovery.blocked ||
+    !!draft.length ||
+    !!base ||
+    childLocked;
+  const registerGuard = useContext(NavigationGuardContext);
+  const routeGuard = useRef(async () => true);
+  routeGuard.current = async () => {
+    if (!scopeLocked) return true;
+    setNavigationNotice(
+      !!pending ||
+        recovery.blocked ||
+        requirementsState.pending ||
+        deepState.pending
+        ? "当前包或清单有已持久化的待核原请求。请先恢复原操作回执再切换工作面；刷新后仍按原身份、原请求恢复。"
+        : "当前包或清单有未保存输入或进行中的操作。请先保存、明确放弃未发送输入，或等待操作完成再切换工作面。",
+    );
+    return false;
+  };
+  useEffect(
+    () =>
+      navigationEnabled ? registerGuard(() => routeGuard.current()) : undefined,
+    [navigationEnabled, registerGuard],
+  );
+  useEffect(() => {
+    if (
+      !navigationEnabled ||
+      (!draft.length && !base && !requirementsState.dirty && !deepState.dirty)
+    )
+      return;
+    const leave = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", leave);
+    return () => window.removeEventListener("beforeunload", leave);
+  }, [
+    navigationEnabled,
+    draft.length,
+    base,
+    requirementsState.dirty,
+    deepState.dirty,
+  ]);
+  function selectTarget(
+    packageId: string,
+    revisionId: string,
+    inventoryId: string | null = null,
+    replace = false,
+  ) {
+    setNavigationNotice("");
+    if (navigation)
+      navigation.onLocation({ packageId, revisionId, inventoryId }, replace);
+    else {
+      setSelected(packageId);
+      setRevision(revisionId);
+    }
+  }
   const active = useRef(true);
   useEffect(() => {
     active.current = true;
@@ -131,8 +244,13 @@ function PackageWorkspace({
       active.current = false;
     };
   }, []);
+  const validateDirectory = useCallback(
+    (value: unknown) => validPackageDirectory(value, bidId, kind),
+    [bidId, kind],
+  );
   const packages = useDirectory<BidPackageHeadPage>(
     `${path}?kind=${kind}&limit=20`,
+    navigation ? validateDirectory : undefined,
   );
   const documents = useDirectory<BidPackageDocumentPage>(
     `/bids/${bidId}/package-documents?kind=${kind}&limit=20`,
@@ -145,12 +263,67 @@ function PackageWorkspace({
       ? `${path}/${selected}${revision ? `/revisions/${revision}` : ""}`
       : null,
   );
-  const verifiedView =
-    view.data?.manifest.scope.bid_id === bidId &&
-    view.data.manifest.package_id === selected &&
-    (!revision || view.data.manifest.revision_id === revision)
+  useEffect(() => {
+    let current = true;
+    setViewIdentityError(null);
+    setCheckingView(!!(navigationEnabled && selected && revision && view.data));
+    if (navigationEnabled && selected && revision && view.data) {
+      void validatePackageNavigationView(view.data, bidId, {
+        packageId: selected,
+        revisionId: revision,
+        inventoryId: null,
+      })
+        .then((value) => {
+          if (current)
+            setCheckedView((old) =>
+              old?.digest === value.digest ? old : value,
+            );
+        })
+        .catch((failure) => {
+          if (current) setViewIdentityError(failure);
+        })
+        .finally(() => {
+          if (current) setCheckingView(false);
+        });
+    }
+    return () => {
+      current = false;
+    };
+  }, [view.data, bidId, navigationEnabled, selected, revision]);
+  const verifiedView = navigationEnabled
+    ? checkedView?.manifest.scope.bid_id === bidId &&
+      checkedView.manifest.package_id === selected &&
+      checkedView.manifest.revision_id === revision
+      ? checkedView
+      : undefined
+    : view.data?.manifest.scope.bid_id === bidId &&
+        view.data.manifest.package_id === selected &&
+        (!revision || view.data.manifest.revision_id === revision)
       ? view.data
       : undefined;
+  useEffect(() => {
+    if (navigationEnabled && verifiedView && !draft.length && !base && !pending)
+      setKind(verifiedView.manifest.kind);
+  }, [navigationEnabled, verifiedView, draft.length, base, pending]);
+  const viewUnavailable =
+    navigationEnabled &&
+    (checkingView ||
+      !!viewIdentityError ||
+      view.loading ||
+      !!view.error ||
+      (!!navigation?.target?.inventoryId &&
+        verifiedView?.manifest.kind !== "bid"));
+  const directoryValid =
+    !navigation ||
+    (!!packages.data &&
+      validPackageDirectory(packages.data, bidId, kind) &&
+      packages.items.every((item) =>
+        validPackageDirectory(
+          { items: [item], has_more: false, next_cursor: null },
+          bidId,
+          kind,
+        ),
+      ));
 
   function patch(id: string, value: Partial<Member>) {
     setDraft((old) =>
@@ -158,7 +331,15 @@ function PackageWorkspace({
     );
   }
   async function editCurrent() {
-    if (!selected || busy || draft.length) return;
+    if (
+      !selected ||
+      busy ||
+      draft.length ||
+      childLocked ||
+      pending ||
+      viewUnavailable
+    )
+      return;
     setBusy(true);
     setError(null);
     try {
@@ -170,6 +351,12 @@ function PackageWorkspace({
         result.data.manifest.package_id !== selected
       )
         throw new Error("资料包身份或版本响应不一致，请重新读取。");
+      if (navigation)
+        await validatePackageNavigationView(result.data, bidId, {
+          packageId: selected,
+          revisionId: result.data.manifest.revision_id,
+          inventoryId: null,
+        });
       setBase({ id: selected, etag: result.etag });
       setKind(result.data.manifest.kind);
       setDraft(
@@ -194,6 +381,7 @@ function PackageWorkspace({
     if (
       !draft.length ||
       busy ||
+      childLocked ||
       (!pending && disabled) ||
       conflict ||
       recovery.blocked
@@ -275,8 +463,12 @@ function PackageWorkspace({
         throw new Error("保存结果项目身份不一致，请重新读取。");
       sessionStorage.removeItem(pendingStorage(bidId, memberId));
       setPending(null);
-      setSelected(result.data.manifest.package_id);
-      setRevision(result.data.manifest.revision_id);
+      selectTarget(
+        result.data.manifest.package_id,
+        result.data.manifest.revision_id,
+        null,
+        true,
+      );
       setDraft([]);
       setBase(null);
       setNotice(
@@ -338,10 +530,19 @@ function PackageWorkspace({
         etag: result.etag,
         digest: result.data.digest,
         revision: result.data.manifest.revision,
+        view: navigation
+          ? await validatePackageNavigationView(result.data, bidId, {
+              packageId: base.id,
+              revisionId: result.data.manifest.revision_id,
+              inventoryId: null,
+            })
+          : result.data,
       });
-      setSelected(base.id);
-      setRevision("");
-      await view.reload();
+      if (!navigation) {
+        setSelected(base.id);
+        setRevision("");
+        await view.reload();
+      }
     } catch (failure) {
       if (active.current) setError(failure);
     } finally {
@@ -361,11 +562,32 @@ function PackageWorkspace({
             按版本保存权威依据与本方标书，不自动选择最后上传的正文。
           </p>
         </div>
-        <Badge>尚未接入正式评审</Badge>
+        <Badge>
+          {navigation
+            ? "可按冻结输入核查 · 正式资格未开放"
+            : "尚未接入正式评审"}
+        </Badge>
       </div>
       <p className="notice neutral">
         保存只冻结本次选择的原件、解析和逻辑范围；不代表材料齐全、合规、评分通过或正式提交。未选择明确解析的原件将保持未冻结。
       </p>
+      {navigationNotice && (
+        <p role="status" className="notice warning">
+          {navigationNotice}
+        </p>
+      )}
+      {navigation?.target && (
+        <div className="package-navigation-context">
+          <strong>链接固定到明确选择</strong>
+          <p>
+            包 {selected} · 修订 {revision}
+          </p>
+          <p>
+            清单 {navigation.target.inventoryId ?? "尚未选择"}
+            。刷新、返回和分享链接均保留这些身份；链接本身不授予业务资格。
+          </p>
+        </div>
+      )}
       {disabled && (
         <p className="notice warning">
           当前项目暂不可新增工作，已保存资料包与历史仍可查看。
@@ -386,13 +608,12 @@ function PackageWorkspace({
         <select
           aria-label="资料包类型"
           value={kind}
-          disabled={
-            busy || !!draft.length || !!base || !!pending || recovery.blocked
-          }
+          disabled={scopeLocked}
           onChange={(e) => {
             setKind(e.target.value as CreateBidPackage["kind"]);
             setSelected("");
             setRevision("");
+            if (navigation) navigation.onLocation(null);
           }}
         >
           <option value="bid">本方投标包</option>
@@ -404,12 +625,28 @@ function PackageWorkspace({
         hasData={!!packages.data}
         onRetry={() => void packages.reload()}
       />
-      {packages.data && !packages.items.length && (
-        <p className="small-empty">尚无此类资料包，可从已入库文件明确建立。</p>
+      {packages.data &&
+        directoryValid &&
+        !packages.loading &&
+        !packages.error &&
+        !packages.moreError &&
+        !packages.hasMore &&
+        !packages.items.length && (
+          <p className="small-empty">
+            尚无此类资料包，可从已入库文件明确建立。
+          </p>
+        )}
+      {navigation && !packages.data && (
+        <p className="small-note">资料包目录尚未读取，数量保持未知。</p>
+      )}
+      {navigation && packages.data && !directoryValid && (
+        <p role="alert">
+          资料包目录身份不一致，未据此选择修订或声明没有资料包。
+        </p>
       )}
       <div className="batch-choices">
         {packages.items
-          .filter((p) => p.bid_id === bidId)
+          .filter((p) => p.bid_id === bidId && directoryValid)
           .map((p) => (
             <article key={p.id}>
               <span>
@@ -418,10 +655,17 @@ function PackageWorkspace({
               </span>
               <button
                 className="text-button"
-                disabled={busy}
+                disabled={
+                  navigation
+                    ? scopeLocked ||
+                      packages.loading ||
+                      !!packages.error ||
+                      !!packages.moreError
+                    : busy
+                }
                 onClick={() => {
-                  setSelected(p.id);
-                  setRevision("");
+                  if (navigation && scopeLocked) return;
+                  selectTarget(p.id, navigation ? p.revision_id : "");
                 }}
               >
                 查看资料包 {p.id.slice(0, 8)}
@@ -446,11 +690,30 @@ function PackageWorkspace({
             hasData={!!verifiedView}
             onRetry={() => void view.reload()}
           />
+          <ErrorNotice error={viewIdentityError} />
+          {!!viewIdentityError && verifiedView && (
+            <p className="small-note">
+              保留上次核对的固定修订，当前读取未通过核对，新增操作暂停。
+            </p>
+          )}
+          {navigation?.target?.inventoryId &&
+            verifiedView?.manifest.kind === "authority" && (
+              <p role="alert">
+                要求清单必须属于本方投标包。此链接所指是依据包，未加载其他清单。
+              </p>
+            )}
+          {navigation && view.loading && !view.data && (
+            <p role="status">正在读取链接所指的确切修订…</p>
+          )}
           {verifiedView && (
             <>
               <h3>
-                {revision ? "历史冻结记录" : "当前冻结记录"} · 修订{" "}
-                {verifiedView.manifest.revision}
+                {navigation
+                  ? "明确选择的冻结记录"
+                  : revision
+                    ? "历史冻结记录"
+                    : "当前冻结记录"}{" "}
+                · 修订 {verifiedView.manifest.revision}
               </h3>
               <p className="small-note">
                 主体 {verifiedView.identity.bidder_name} · 标段{" "}
@@ -493,7 +756,9 @@ function PackageWorkspace({
                   busy ||
                   !!draft.length ||
                   !!pending ||
-                  recovery.blocked
+                  recovery.blocked ||
+                  childLocked ||
+                  viewUnavailable
                 }
                 onClick={() => void editCurrent()}
               >
@@ -505,7 +770,31 @@ function PackageWorkspace({
                   bidId={bidId}
                   memberId={memberId}
                   packageView={verifiedView}
-                  disabled={disabled}
+                  disabled={
+                    disabled ||
+                    viewUnavailable ||
+                    (!!navigation &&
+                      (busy ||
+                        !!pending ||
+                        recovery.blocked ||
+                        !!draft.length ||
+                        !!base))
+                  }
+                  navigation={
+                    navigation
+                      ? {
+                          inventoryId: navigation.target?.inventoryId ?? null,
+                          onInventory: (inventoryId, replace) =>
+                            selectTarget(
+                              selected,
+                              revision,
+                              inventoryId,
+                              replace,
+                            ),
+                          onState: onRequirementsState,
+                        }
+                      : undefined
+                  }
                 />
               )}
             </>
@@ -518,10 +807,33 @@ function PackageWorkspace({
           />
           <button
             className="text-button"
-            disabled={busy}
-            onClick={() => {
-              setRevision("");
-              void view.reload();
+            disabled={navigation ? scopeLocked : busy}
+            onClick={async () => {
+              if (!navigation) {
+                setRevision("");
+                void view.reload();
+                return;
+              }
+              if (scopeLocked) return;
+              setBusy(true);
+              setError(null);
+              try {
+                const result = await api<BidPackageStoredView>(
+                  `${path}/${selected}`,
+                );
+                if (!active.current) return;
+                const target = {
+                  packageId: selected,
+                  revisionId: result.data.manifest.revision_id,
+                  inventoryId: null,
+                };
+                await validatePackageNavigationView(result.data, bidId, target);
+                if (active.current) navigation.onLocation(target);
+              } catch (failure) {
+                if (active.current) setError(failure);
+              } finally {
+                if (active.current) setBusy(false);
+              }
             }}
           >
             读取当前修订
@@ -530,8 +842,17 @@ function PackageWorkspace({
             <button
               key={r.id}
               className="text-button"
-              disabled={busy}
-              onClick={() => setRevision(r.id)}
+              disabled={
+                navigation
+                  ? scopeLocked ||
+                    history.loading ||
+                    !!history.error ||
+                    r.package_id !== selected
+                  : busy
+              }
+              onClick={() => {
+                if (!navigation || !scopeLocked) selectTarget(selected, r.id);
+              }}
             >
               查看历史修订 {r.revision}
             </button>
@@ -554,11 +875,16 @@ function PackageWorkspace({
         hasData={!!documents.data}
         onRetry={() => void documents.reload()}
       />
-      {documents.data && !documents.items.length && (
-        <p className="small-empty">
-          没有此类已提交文件版本。先在资料入库区上传并明确入库。
-        </p>
-      )}
+      {documents.data &&
+        !documents.loading &&
+        !documents.error &&
+        !documents.moreError &&
+        !documents.hasMore &&
+        !documents.items.length && (
+          <p className="small-empty">
+            没有此类已提交文件版本。先在资料入库区上传并明确入库。
+          </p>
+        )}
       {documents.items
         .filter((d) => d.bid_id === bidId)
         .map((document) => (
@@ -574,6 +900,7 @@ function PackageWorkspace({
                 busy ||
                 !document.verified_upload ||
                 conflict ||
+                childLocked ||
                 document.artifact_kind !==
                   (kind === "bid" ? "bid_body" : "source_original")
               }
@@ -617,10 +944,16 @@ function PackageWorkspace({
         <MemberEditor
           key={m.document_version_id}
           bidId={bidId}
+          memberId={memberId}
           member={m}
           document={documents.items.find((d) => d.id === m.document_version_id)}
           disabled={
-            disabled || busy || conflict || !!pending || recovery.blocked
+            disabled ||
+            busy ||
+            conflict ||
+            !!pending ||
+            recovery.blocked ||
+            childLocked
           }
           onChange={(value) => patch(m.document_version_id, value)}
           onRemove={() =>
@@ -655,8 +988,11 @@ function PackageWorkspace({
                 busy ||
                 view.loading ||
                 !!view.error ||
-                !!revision ||
-                verifiedView?.digest !== candidateBase.digest
+                (!navigation &&
+                  (!!revision ||
+                    verifiedView?.digest !== candidateBase.digest)) ||
+                (!!navigation &&
+                  candidateBase.view?.digest !== candidateBase.digest)
               }
               onClick={() => {
                 setBase(candidateBase);
@@ -694,7 +1030,8 @@ function PackageWorkspace({
             busy ||
             conflict ||
             !draft.length ||
-            recovery.blocked
+            recovery.blocked ||
+            childLocked
           }
           onClick={() => void save()}
         >
@@ -713,6 +1050,7 @@ function PackageWorkspace({
 
 function MemberEditor({
   bidId,
+  memberId,
   member,
   document,
   disabled,
@@ -720,6 +1058,7 @@ function MemberEditor({
   onRemove,
 }: {
   bidId: string;
+  memberId: string;
   member: Member;
   document?: Document;
   disabled: boolean;
@@ -736,175 +1075,187 @@ function MemberEditor({
     });
   }
   return (
-    <fieldset disabled={disabled}>
-      <legend>{document?.filename ?? "已选原件（版本身份见详情）"}</legend>
-      <button className="text-button" onClick={onRemove}>
-        从本次选择移除
-      </button>
-      <label>
-        用途（逗号分隔）
-        <input
-          list={`package-purposes-${member.document_version_id}`}
-          aria-label={`用途 ${member.document_version_id}`}
-          value={purposeText}
-          onChange={(e) => {
-            setPurposeText(e.target.value);
-            onChange({
-              purposes: e.target.value
-                .split(/[,，]/)
-                .map((s) => s.trim())
-                .filter(Boolean),
-            });
-          }}
-        />
-      </label>
-      <datalist id={`package-purposes-${member.document_version_id}`}>
-        {["资格", "商务", "技术", "报价", "附件", "要求依据"].map((value) => (
-          <option key={value} value={value} />
-        ))}
-      </datalist>
-      <p className="small-note">
-        可选资格、商务、技术、报价、附件，也可输入自定义用途；多个用途以逗号分隔。
-      </p>
-      <details>
-        <summary>原件与解析身份</summary>
-        <p>文件版本 {member.document_version_id}</p>
-        {parses.items.map((p) => (
-          <p key={p.id}>
-            {new Date(p.created_at).toLocaleString()} · {p.id} ·{" "}
-            {p.parser_digest}
-          </p>
-        ))}
-      </details>
-      <ResourceState
-        {...parses}
-        hasData={!!parses.data}
-        onRetry={() => void parses.reload()}
-      />
-      <label>
-        明确选择解析记录
-        <select
-          aria-label={`解析记录 ${member.document_version_id}`}
-          value={member.parse_run_id ?? ""}
-          onChange={(e) =>
-            onChange({ parse_run_id: e.target.value || undefined, parts: [] })
-          }
-        >
-          <option value="">不冻结解析（未知页数，不划逻辑范围）</option>
-          {member.parse_run_id &&
-            !parses.items.some((p) => p.id === member.parse_run_id) && (
-              <option value={member.parse_run_id}>
-                已保存的精确解析 {member.parse_run_id}（待目录核对）
-              </option>
-            )}
-          {parses.items
-            .filter((p) => p.document_version_id === member.document_version_id)
-            .map((p) => (
-              <option
-                value={p.id}
-                key={p.id}
-                disabled={p.coverage !== "complete" || p.page_count < 1}
-              >
-                {new Date(p.created_at).toLocaleString()} · {p.id.slice(0, 8)} ·{" "}
-                {p.coverage === "complete"
-                  ? "完整标记，保存时重核"
-                  : p.coverage === "partial"
-                    ? "存在缺口，不可冻结"
-                    : "失败，不可冻结"}{" "}
-                · {p.page_count} 页
-              </option>
-            ))}
-        </select>
-      </label>
-      {parses.hasMore && (
-        <button
-          className="text-button"
-          disabled={parses.moreBusy}
-          onClick={() => void parses.loadMore()}
-        >
-          加载更多解析记录
+    <>
+      <fieldset disabled={disabled}>
+        <legend>{document?.filename ?? "已选原件（版本身份见详情）"}</legend>
+        <button className="text-button" onClick={onRemove}>
+          从本次选择移除
         </button>
-      )}
-      <ErrorNotice error={parses.moreError} />
-      <p className="small-note">
-        更换解析会清空本地页段，需重新明确范围；不会自动选最新解析。历史已冻结记录保持原样。
-      </p>
-      {member.parts.map((p, index) => (
-        <fieldset key={index}>
-          <legend>逻辑范围 {index + 1}</legend>
-          <label>
-            范围分类
-            <input
-              aria-label={`范围分类 ${member.document_version_id} ${index}`}
-              value={p.category}
-              onChange={(e) => part(index, { category: e.target.value })}
-            />
-          </label>
-          <label>
-            起始物理页
-            <input
-              type="number"
-              min="1"
-              aria-label={`起始页 ${member.document_version_id} ${index}`}
-              value={p.first_page}
-              onChange={(e) =>
-                part(index, { first_page: Number(e.target.value) })
-              }
-            />
-          </label>
-          <label>
-            结束物理页
-            <input
-              type="number"
-              min="1"
-              aria-label={`结束页 ${member.document_version_id} ${index}`}
-              value={p.last_page}
-              onChange={(e) =>
-                part(index, { last_page: Number(e.target.value) })
-              }
-            />
-          </label>
-          <label className="evidence-select-item">
-            <input
-              type="checkbox"
-              checked={p.shared_attachment}
-              onChange={(e) =>
-                part(index, { shared_attachment: e.target.checked })
-              }
-            />
-            共享附件范围（仅明确重叠双方均声明时允许）
-          </label>
-          <button
-            className="text-button"
-            onClick={() =>
-              onChange({ parts: member.parts.filter((_, i) => i !== index) })
+        <label>
+          用途（逗号分隔）
+          <input
+            list={`package-purposes-${member.document_version_id}`}
+            aria-label={`用途 ${member.document_version_id}`}
+            value={purposeText}
+            onChange={(e) => {
+              setPurposeText(e.target.value);
+              onChange({
+                purposes: e.target.value
+                  .split(/[,，]/)
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              });
+            }}
+          />
+        </label>
+        <datalist id={`package-purposes-${member.document_version_id}`}>
+          {["资格", "商务", "技术", "报价", "附件", "要求依据"].map((value) => (
+            <option key={value} value={value} />
+          ))}
+        </datalist>
+        <p className="small-note">
+          可选资格、商务、技术、报价、附件，也可输入自定义用途；多个用途以逗号分隔。
+        </p>
+        <details>
+          <summary>原件与解析身份</summary>
+          <p>文件版本 {member.document_version_id}</p>
+          {parses.items.map((p) => (
+            <p key={p.id}>
+              {new Date(p.created_at).toLocaleString()} · {p.id} ·{" "}
+              {p.parser_digest}
+            </p>
+          ))}
+        </details>
+        <ResourceState
+          {...parses}
+          hasData={!!parses.data}
+          onRetry={() => void parses.reload()}
+        />
+        <label>
+          明确选择解析记录
+          <select
+            aria-label={`解析记录 ${member.document_version_id}`}
+            value={member.parse_run_id ?? ""}
+            onChange={(e) =>
+              onChange({ parse_run_id: e.target.value || undefined, parts: [] })
             }
           >
-            移除此范围
+            <option value="">不冻结解析（未知页数，不划逻辑范围）</option>
+            {member.parse_run_id &&
+              !parses.items.some((p) => p.id === member.parse_run_id) && (
+                <option value={member.parse_run_id}>
+                  已保存的精确解析 {member.parse_run_id}（待目录核对）
+                </option>
+              )}
+            {parses.items
+              .filter(
+                (p) => p.document_version_id === member.document_version_id,
+              )
+              .map((p) => (
+                <option
+                  value={p.id}
+                  key={p.id}
+                  disabled={p.coverage !== "complete" || p.page_count < 1}
+                >
+                  {new Date(p.created_at).toLocaleString()} · {p.id.slice(0, 8)}{" "}
+                  ·{" "}
+                  {p.coverage === "complete"
+                    ? "完整标记，保存时重核"
+                    : p.coverage === "partial"
+                      ? "存在缺口，不可冻结"
+                      : "失败，不可冻结"}{" "}
+                  · {p.page_count} 页
+                </option>
+              ))}
+          </select>
+        </label>
+        {parses.hasMore && (
+          <button
+            className="text-button"
+            disabled={parses.moreBusy}
+            onClick={() => void parses.loadMore()}
+          >
+            加载更多解析记录
           </button>
-        </fieldset>
-      ))}
-      <button
-        className="button secondary"
-        disabled={!member.parse_run_id}
-        onClick={() =>
-          onChange({
-            parts: [
-              ...member.parts,
-              {
-                part_id: crypto.randomUUID(),
-                category: member.purposes[0] || "技术",
-                first_page: 1,
-                last_page: 1,
-                shared_attachment: false,
-                heading_path: [],
-              },
-            ],
-          })
-        }
-      >
-        添加明确逻辑范围
-      </button>
-    </fieldset>
+        )}
+        <ErrorNotice error={parses.moreError} />
+        <p className="small-note">
+          更换解析会清空本地页段，需重新明确范围；不会自动选最新解析。历史已冻结记录保持原样。
+        </p>
+        {member.parts.map((p, index) => (
+          <fieldset key={index}>
+            <legend>逻辑范围 {index + 1}</legend>
+            <label>
+              范围分类
+              <input
+                aria-label={`范围分类 ${member.document_version_id} ${index}`}
+                value={p.category}
+                onChange={(e) => part(index, { category: e.target.value })}
+              />
+            </label>
+            <label>
+              起始物理页
+              <input
+                type="number"
+                min="1"
+                aria-label={`起始页 ${member.document_version_id} ${index}`}
+                value={p.first_page}
+                onChange={(e) =>
+                  part(index, { first_page: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label>
+              结束物理页
+              <input
+                type="number"
+                min="1"
+                aria-label={`结束页 ${member.document_version_id} ${index}`}
+                value={p.last_page}
+                onChange={(e) =>
+                  part(index, { last_page: Number(e.target.value) })
+                }
+              />
+            </label>
+            <label className="evidence-select-item">
+              <input
+                type="checkbox"
+                checked={p.shared_attachment}
+                onChange={(e) =>
+                  part(index, { shared_attachment: e.target.checked })
+                }
+              />
+              共享附件范围（仅明确重叠双方均声明时允许）
+            </label>
+            <button
+              className="text-button"
+              onClick={() =>
+                onChange({ parts: member.parts.filter((_, i) => i !== index) })
+              }
+            >
+              移除此范围
+            </button>
+          </fieldset>
+        ))}
+        <button
+          className="button secondary"
+          disabled={!member.parse_run_id}
+          onClick={() =>
+            onChange({
+              parts: [
+                ...member.parts,
+                {
+                  part_id: crypto.randomUUID(),
+                  category: member.purposes[0] || "技术",
+                  first_page: 1,
+                  last_page: 1,
+                  shared_attachment: false,
+                  heading_path: [],
+                },
+              ],
+            })
+          }
+        >
+          添加明确逻辑范围
+        </button>
+      </fieldset>
+      <DocumentParseWorkspace
+        bidId={bidId}
+        memberId={memberId}
+        documentId={member.document_version_id}
+        disabled={disabled}
+        onParsed={() => void parses.reload()}
+      />
+    </>
   );
 }

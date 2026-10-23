@@ -17,11 +17,18 @@ from psycopg.types.json import Jsonb
 from apps.api.assistant_routes import router as assistant_router
 from apps.api.auth import COOKIE, auth, auth_view, csrf, origin, password_ok
 from apps.api.authoring import router as authoring_router
+from apps.api.authoring_exact_revisions import router as authoring_exact_revisions_router
+from apps.api.authoring_history_routes import router as authoring_history_router
+from apps.api.authoring_input_catalog_routes import router as authoring_input_catalog_router
+from apps.api.authoring_package_inputs import router as authoring_package_input_router
+from apps.api.authoring_package_routes import router as authoring_package_router
 from apps.api.bid_package_requirement_routes import router as bid_package_requirement_router
+from apps.api.bid_package_review_comparison_routes import router as package_review_comparison_router
 from apps.api.bid_package_routes import discovery_router as package_discovery_router
 from apps.api.bid_package_routes import router as bid_package_router
 from apps.api.comparison_routes import router as comparison_router
 from apps.api.composition import mount as mount_composition
+from apps.api.document_parse_routes import router as document_parse_router
 from apps.api.event_routes import router as event_router
 from apps.api.export_openapi import implemented_openapi
 from apps.api.history_routes import router as history_router
@@ -32,6 +39,17 @@ from apps.api.metrics_routes import router as metrics_router
 from apps.api.multipart_routes import router as multipart_router
 from apps.api.object_transfer import make_download_url, make_upload_url
 from apps.api.object_transfer import router as transfer_router
+from apps.api.package_historical_directory import router as package_history_directory_router
+from apps.api.package_historical_research import router as package_historical_research_router
+from apps.api.package_history_exposure_errors import (
+    install as install_package_history_exposure_errors,
+)
+from apps.api.package_history_public_gate import require_history_public_guard
+from apps.api.package_pricing_routes import router as package_pricing_router
+from apps.api.package_retrospective_routes import router as package_retrospective_router
+from apps.api.package_technical_eligibility import router as package_technical_eligibility_router
+from apps.api.package_technical_execution import router as package_technical_execution_router
+from apps.api.package_technical_scope import router as package_technical_scope_router
 from apps.api.pricing_routes import router as pricing_router
 from apps.api.rag_routes import router as rag_router
 from apps.api.report_routes import router as report_router
@@ -48,7 +66,7 @@ from apps.api.views import (
     bid_etag,
     bid_view,
     document_view,
-    evidence_view,
+    evidence_views,
     match_bid,
     operation_etag,
     operation_view,
@@ -57,8 +75,10 @@ from apps.api.views import (
 )
 from apps.api.word_intake_routes import router as word_router
 from apps.api.word_material_routes import router as word_material_router
-from packages.domain import reviews as review_domain
+from apps.api.work_context_catalog_routes import router as work_context_catalog_router
+from apps.api.work_context_routes import router as work_context_router
 from packages.domain import storage, word_materials
+from packages.domain.object_transfer_mode import same_origin as same_origin_transfers
 from packages.domain.parsing_profile import configured_parser
 from packages.domain.parsing_profile import profile as parser_profile
 from packages.domain.reviews import on_material_commit
@@ -86,13 +106,13 @@ from packages.domain.runtime import (
 )
 from packages.domain.work_access import begin as work_command
 from packages.identity.repository import create_association, record_binding
-from packages.tasks.inputs import review_guard
+from packages.tasks.review_runtime import configure_review_guard
 from packages.uploads import service as multipart
 from packages.word_intake.declarations import assert_commit_file, assert_target, require_new_file
 from packages.word_intake.inspection import DOCX, filename_type
 from packages.word_intake.repository import assert_file_format, declare_pdf_source
 
-review_domain.TASK_INPUT_GUARD = review_guard
+configure_review_guard()
 
 
 @asynccontextmanager
@@ -116,6 +136,11 @@ app.include_router(settings_router)
 app.include_router(assistant_router)
 app.include_router(comparison_router)
 app.include_router(authoring_router)
+app.include_router(authoring_exact_revisions_router)
+app.include_router(authoring_history_router)
+app.include_router(authoring_input_catalog_router)
+app.include_router(authoring_package_router)
+app.include_router(document_parse_router)
 app.include_router(research_router)
 app.include_router(event_router)
 app.include_router(history_router)
@@ -127,9 +152,22 @@ app.include_router(upload_layout_router)
 app.include_router(identity_router)
 app.include_router(bid_package_router)
 app.include_router(bid_package_requirement_router)
+app.include_router(package_review_comparison_router)
 app.include_router(package_discovery_router)
+app.include_router(package_technical_scope_router)
+app.include_router(package_technical_eligibility_router)
+app.include_router(package_technical_execution_router)
 app.include_router(pricing_router)
+app.include_router(package_pricing_router)
 app.include_router(submission_router)
+app.include_router(package_retrospective_router)
+app.include_router(work_context_router)
+app.include_router(work_context_catalog_router)
+app.include_router(authoring_package_input_router)
+app.include_router(
+    package_historical_research_router, dependencies=[Depends(require_history_public_guard)]
+)
+app.include_router(package_history_directory_router)
 app.include_router(report_router)
 app.include_router(metrics_router)
 app.include_router(retained_upload_router)
@@ -200,6 +238,9 @@ async def storage_error(request, exc):
             "OBJECT_STORE_UNAVAILABLE", "对象存储暂不可用，请保留输入重试", 503, retryable=True
         ),
     )
+
+
+install_package_history_exposure_errors(app)
 
 
 def result(value, replay=False):
@@ -581,7 +622,7 @@ def create_upload(bid_id: UUID, r: Request, body: dict = Body(...)):
                 revision=1,
                 expires_at=min(now() + timedelta(minutes=15), expires),
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(key, "put_object"),
             "part_size": body["byte_size"],
             "part_count": 1,
@@ -1059,21 +1100,13 @@ def document_evidence(document_version_id: UUID, r: Request):
             "SELECT * FROM parse_runs WHERE document_version_id=%s ORDER BY created_at DESC,id DESC LIMIT 1",
             (document_version_id,),
         ).fetchone()
-        ids = (
-            c.execute(
-                "SELECT id FROM evidence_blocks WHERE parse_id=%s ORDER BY physical_page,ordinal",
-                (parsed["id"],),
-            ).fetchall()
-            if parsed
-            else []
-        )
         return clean(
             {
                 "document_version_id": document_version_id,
                 "parse_run_id": parsed["id"] if parsed else None,
                 "coverage": parsed["coverage"] if parsed else "pending",
                 "gaps": parsed["gaps"] if parsed else [],
-                "items": [evidence_view(c, x["id"]) for x in ids],
+                "items": evidence_views(c, parsed["id"]) if parsed else [],
             }
         )
 
@@ -1097,7 +1130,7 @@ def download(artifact_id: UUID, r: Request):
                 filename=doc["original_name"],
                 byte_size=doc["byte_size"],
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(doc["object_key"]),
             "expires_at": (now() + timedelta(minutes=15)).isoformat(),
             "filename": doc["original_name"],
@@ -1172,7 +1205,7 @@ def refresh_upload(upload_id: UUID, r: Request, body: dict = Body(...)):
                 revision=revision,
                 expires_at=expires,
             )
-            if os.environ.get("OBJECT_STORE_BACKEND") == "oss"
+            if same_origin_transfers()
             else storage.sign(
                 u["staging_key"],
                 "put_object",

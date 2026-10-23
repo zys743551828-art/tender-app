@@ -1,0 +1,88 @@
+.workspace-navigation.workspace-navigation--grouped {
+  overflow: visible;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.2rem;
+}
+.workspace-navigation__picker {
+  display: none;
+}
+.workspace-navigation__more {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.workspace-navigation__more-button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 13px 10px 14px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.workspace-navigation__more-button[data-current="true"] {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 650;
+}
+.workspace-navigation__secondary {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 15;
+  min-width: 11rem;
+  max-width: min(20rem, 85vw);
+  padding: 0.35rem;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.65rem;
+  box-shadow: 0 10px 30px rgb(var(--shadow-color) / 12%);
+}
+.workspace-navigation__secondary:not([hidden]) {
+  display: grid;
+}
+.workspace-navigation .workspace-navigation__secondary a {
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-radius: 0.35rem;
+  white-space: normal;
+  color: var(--foreground);
+}
+.workspace-navigation .workspace-navigation__secondary a:hover,
+.workspace-navigation .workspace-navigation__secondary a[aria-current="page"] {
+  background: var(--primary-soft);
+  color: var(--primary-soft-foreground);
+}
+@media (max-width: 1000px) {
+  .workspace-navigation.workspace-navigation--grouped {
+    padding: 0.5rem 0;
+    border-bottom: 0;
+  }
+  .workspace-navigation .workspace-navigation__primary,
+  .workspace-navigation__more {
+    display: none;
+  }
+  .workspace-navigation__picker {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+    width: 100%;
+    color: var(--muted-foreground);
+    font-size: 12px;
+  }
+  .workspace-navigation__picker select {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.8rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--card);
+    color: var(--foreground);
+    border: 1px solid var(--border-strong);
+    border-radius: 0.5rem;
+    font-size: 14px;
+  }
+}

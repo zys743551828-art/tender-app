@@ -1,0 +1,24 @@
+.dependency-requirement-pager {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.dependency-requirement-pager__actions {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.dependency-requirement-pager__actions > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.dependency-requirement-pager label {
+  display: grid;
+  gap: 0.3rem;
+  flex: 1 1 8rem;
+}
+.dependency-requirement-pager select {
+  width: 100%;
+  min-width: 0;
+}

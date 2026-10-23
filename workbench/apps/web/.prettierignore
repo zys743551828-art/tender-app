@@ -40,3 +40,15 @@ qa-previews/assistant-continuation-11/
 
 # Candidate12 raw contract/runtime evidence and immutable archive.
 qa-previews/word-authoring-12/
+
+# Native HTTP capture retains its exact recorded response bytes.
+src/test-fixtures/authoring-input-catalog-http.json
+src/test-fixtures/authoring-exact-adoption-http.json
+src/test-fixtures/authoring-exact-build-http.json
+
+# Original same-run package history API bodies and ETags are native evidence.
+src/test-fixtures/package-history-ui-complete-http.json
+src/test-fixtures/package-history-ui-directory-change-http.json
+src/test-fixtures/package-history-ui-unavailable-http.json
+src/test-fixtures/package-history-ui-method-recovery-http.json
+src/test-fixtures/package-history-ui-role-boundaries-http.json

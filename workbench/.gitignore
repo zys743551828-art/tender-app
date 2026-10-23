@@ -16,3 +16,6 @@ dist/
 .local/
 qa/artifacts/private/
 
+# Readable local export; the complete deterministic gzip snapshot is tracked.
+/packages/contracts/fusion-implemented.openapi.json
+

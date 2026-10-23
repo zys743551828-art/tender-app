@@ -1,0 +1,7 @@
+{
+  "url": "https://raw.githubusercontent.com/util-linux/util-linux/2da5c904e18fdcffd2b252d641e6f76374c7b406/libuuid/src/uuid.h",
+  "commit": "2da5c904e18fdcffd2b252d641e6f76374c7b406",
+  "sha256": "883bef35f0766a9d520bf9cfde86bea86c1dc47a675f68fae3cb1f2dcbe3088d",
+  "bytes": 4041,
+  "purpose": "uuid-ossp build headers matching installed util-linux 2.39.3"
+}

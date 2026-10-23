@@ -1,0 +1,946 @@
+{
+  "fixture_kind": "synthetic source/model data; unchanged real PG17/API/Worker/S3 responses",
+  "member_id": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+  "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+  "saved": {
+    "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+    "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+    "draft_revision": 2,
+    "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf"
+  },
+  "build_request": {
+    "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+    "draft_revision": 2,
+    "template_version_id": "1d4bb5cb-09a1-5858-b668-dac8c94aab53",
+    "formats": [
+      "docx",
+      "pdf"
+    ],
+    "follow_up": "none"
+  },
+  "build_ack": {
+    "resource_id": "1d17e883-9e6b-4674-a8d1-c073480b6f8e",
+    "resource_kind": "build",
+    "operation": {
+      "id": "f8a266f7-3e59-4741-9d3e-2a14802f01f3",
+      "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+      "kind": "build",
+      "state": "queued",
+      "input_digest": "7deef1bd0bd4c8ada765a4f2a8dc6bf7b68d4338ccafad753eb8b95233de3bfe",
+      "handler_version": "export/1",
+      "result_ref": null
+    },
+    "disposition": "created",
+    "operation_url": "/api/v1/operations/f8a266f7-3e59-4741-9d3e-2a14802f01f3"
+  },
+  "build": {
+    "id": "1d17e883-9e6b-4674-a8d1-c073480b6f8e",
+    "draft_snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+    "operation_id": "f8a266f7-3e59-4741-9d3e-2a14802f01f3",
+    "outputs": [
+      {
+        "format": "docx",
+        "state": "succeeded",
+        "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+        "gaps": []
+      },
+      {
+        "format": "pdf",
+        "state": "failed",
+        "document_version_id": null,
+        "gaps": [
+          "RENDERER_UNAVAILABLE"
+        ]
+      }
+    ],
+    "identity": {
+      "protocol": "authoring-build-identity/1",
+      "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+      "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+      "draft_revision": 2,
+      "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+      "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+      "build_input_id": "7b8c3dbd-6a51-4590-b789-cd78c0bb1e33",
+      "input_digest": "7deef1bd0bd4c8ada765a4f2a8dc6bf7b68d4338ccafad753eb8b95233de3bfe",
+      "manifest_digest": "8162020049fed3acb8217e7e6c6ca80867bee5646f1886c5f2c7d371843d9a7e",
+      "writer_kind": "strict_text/1",
+      "request": {
+        "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "draft_revision": 2,
+        "formats": [
+          "docx",
+          "pdf"
+        ],
+        "follow_up": "none",
+        "template_version_id": "1d4bb5cb-09a1-5858-b668-dac8c94aab53"
+      }
+    },
+    "follow_up": {
+      "requested": false,
+      "state": "not_requested",
+      "adopted_document_version_id": null,
+      "parse_operation_id": null,
+      "request_id": null,
+      "review_id": null,
+      "reasons": []
+    },
+    "layout": null
+  },
+  "adoption_request": {
+    "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+    "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+    "package_id": null,
+    "member": {
+      "member_id": "generated-3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+      "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+      "purposes": [
+        "technical"
+      ],
+      "parts": []
+    },
+    "reason": "Explicit synthetic exact authoring output selection"
+  },
+  "adoption_ack": {
+    "protocol": "authoring-output-adoption/1",
+    "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+    "build_id": "1d17e883-9e6b-4674-a8d1-c073480b6f8e",
+    "actor_id": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+    "command_id": "27009d40-a4c3-447e-9316-2606504d1b28",
+    "request_digest": "55d658c896f541e5f52fd872632261b3b7461cd2be7e80ece2a2ce4f59b83ba8",
+    "output": {
+      "protocol": "authoring-build-output/1",
+      "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+      "build_id": "1d17e883-9e6b-4674-a8d1-c073480b6f8e",
+      "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+      "format": "docx",
+      "sha256": "0ce9667bceadbb4bcf618c286b95bdeb59cf6c79f5f80cc69d2a6d05aef83ffd",
+      "byte_size": 2225,
+      "build_identity": {
+        "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "draft_revision": 2,
+        "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+        "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+        "build_input_id": "7b8c3dbd-6a51-4590-b789-cd78c0bb1e33",
+        "input_digest": "7deef1bd0bd4c8ada765a4f2a8dc6bf7b68d4338ccafad753eb8b95233de3bfe",
+        "manifest_digest": "8162020049fed3acb8217e7e6c6ca80867bee5646f1886c5f2c7d371843d9a7e",
+        "writer_kind": "strict_text/1"
+      },
+      "word_document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+      "word_sha256": "0ce9667bceadbb4bcf618c286b95bdeb59cf6c79f5f80cc69d2a6d05aef83ffd",
+      "word_pdf_relation": "not_applicable",
+      "publication_receipt_digest": "7dd28a1c45dbb97b295ff8bc8c5371822f9aef48a4f9262b7a29a09026033b06",
+      "source_authority_digest": "c16ce036c0ee494c66cd1ebb8e1f77662d61868274f9c925c4f75ae946280247",
+      "direct_source_ids": [
+        "82f0b14d-22fd-5b4c-a907-62779fc9c7a8",
+        "f7fa92c3-43be-5951-b5f0-5cd1b57e346a"
+      ]
+    },
+    "package": {
+      "manifest": {
+        "package_id": "052e34c0-f132-4f86-920a-131075ba3b7b",
+        "revision_id": "08c47fde-1c05-430a-92f3-a655aae4739b",
+        "revision": 1,
+        "kind": "bid",
+        "scope": {
+          "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+          "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+          "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+          "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+          "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+          "bidder_status": "confirmed"
+        },
+        "members": [
+          {
+            "member_id": "generated-3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+            "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+            "file_digest": "0ce9667bceadbb4bcf618c286b95bdeb59cf6c79f5f80cc69d2a6d05aef83ffd",
+            "source_kind": "own",
+            "source_ref": "document-file:a32a9975-b7db-42fd-92db-952ccb189bd2:revision:1",
+            "scope": {
+              "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+              "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+              "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+              "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+              "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+              "bidder_status": "confirmed"
+            },
+            "purposes": [
+              "technical"
+            ],
+            "page_count": null,
+            "parse": {
+              "status": "not_frozen",
+              "parse_run_id": null,
+              "parser_digest": null,
+              "config_digest": null,
+              "evidence_digest": null,
+              "reason": "No exact parse run selected"
+            },
+            "parts": []
+          }
+        ],
+        "predecessor_digest": null,
+        "identity_version": "bid-package/1"
+      },
+      "digest": "8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc",
+      "identity": {
+        "lot": "same visible lot",
+        "digest": "43a35d0a5b7053236e86a942d6d9392251326ebadc769f7ad13fd0e1358021ae",
+        "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+        "region": null,
+        "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+        "round_no": 1,
+        "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+        "bidder_name": "synthetic bidder",
+        "authority_id": "e077481d-4fb0-4935-9ddc-1ebc2f8f7ff5",
+        "binding_status": "confirmed",
+        "engineering_type": null,
+        "identity_version": "bid-identity/2",
+        "engineering_title": "synthetic project",
+        "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f"
+      },
+      "storage_eligible": false,
+      "review_ready": false
+    },
+    "package_etag": "\"bid-package-head:052e34c0-f132-4f86-920a-131075ba3b7b:8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc\"",
+    "automatically_started_review": false,
+    "current_body_changed": false
+  },
+  "adoption_etag": "\"bid-package-head:052e34c0-f132-4f86-920a-131075ba3b7b:8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc\"",
+  "reads": {
+    "/api/v1/authoring/capabilities": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "schema_digest": "9e22e5a83d21e688ce1acf28484e960d89a78c5fb14ea9c2a0ee8e05d2508f3c",
+        "schema": {
+          "version": 1,
+          "nodes": [
+            "doc",
+            "paragraph",
+            "heading",
+            "text",
+            "hardBreak",
+            "bulletList",
+            "orderedList",
+            "listItem"
+          ],
+          "marks": [
+            "bold",
+            "italic"
+          ],
+          "metadata": [
+            "title",
+            "ordinal",
+            "rule_ids",
+            "source_refs"
+          ]
+        },
+        "default_template_version_id": "1d4bb5cb-09a1-5858-b668-dac8c94aab53",
+        "formats": [
+          "docx",
+          "pdf"
+        ],
+        "supports_external_docx_import": true,
+        "supported_nodes": [
+          "doc",
+          "paragraph",
+          "heading",
+          "text",
+          "hardBreak",
+          "bulletList",
+          "orderedList",
+          "listItem"
+        ],
+        "unsupported": [
+          "images",
+          "tables",
+          "external_links",
+          "word_roundtrip",
+          "production_renderer_sandbox"
+        ]
+      }
+    },
+    "/api/v1/authoring/rich-capabilities": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "schema_digest": "73b0628f5a50e61115ed2dcd3cfef0106c4756c64db42d90341de1bcc751382a",
+        "schema": {
+          "version": 2,
+          "text_schema": {
+            "version": 1,
+            "nodes": [
+              "doc",
+              "paragraph",
+              "heading",
+              "text",
+              "hardBreak",
+              "bulletList",
+              "orderedList",
+              "listItem"
+            ],
+            "marks": [
+              "bold",
+              "italic"
+            ],
+            "metadata": [
+              "title",
+              "ordinal",
+              "rule_ids",
+              "source_refs"
+            ]
+          },
+          "block_nodes": [
+            "table",
+            "image"
+          ],
+          "table_nodes": [
+            "tableRow",
+            "tableCell"
+          ],
+          "image_identity": [
+            "asset_id",
+            "asset_revision",
+            "asset_version_id"
+          ],
+          "limits": {
+            "rows": 200,
+            "columns": 100,
+            "cells": 10000,
+            "nodes": 10000
+          }
+        },
+        "build_schema_digest": "1aed4f9cf378aa3d6baa75f47fb441cb48bc8ea23ad29961e7509b55292cb60f",
+        "image_upload_max_bytes": 8388608,
+        "renderer_configured": false,
+        "runtime_verified_by_this_read": false,
+        "table_pdf_geometry": "unverified",
+        "pagination_modes": [
+          {
+            "mode": "chapter_start_new_page",
+            "page_count_impact": "每章另起一页，可能增加物理页数"
+          },
+          {
+            "mode": "continuous",
+            "page_count_impact": "连续排版；实际章末页可能未知"
+          }
+        ]
+      }
+    },
+    "/api/v1/authoring/exact-revision-capabilities": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "protocol": "authoring-exact-revision-capabilities/1",
+        "apply_available": true,
+        "build_available": true,
+        "ordinary_edit_available": false,
+        "supported_content": "plain_text_stable_node",
+        "blocking_reasons": []
+      }
+    },
+    "/api/v1/authoring/templates": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "items": [
+          {
+            "id": "160c51cd-d3f1-5cfa-84bd-d9938b3f25fe",
+            "family_id": "0b5d95e6-de55-5c42-9fdd-324fee9fdda0",
+            "revision": 1,
+            "name": "内置技术方案目录",
+            "kind": "outline",
+            "config": {
+              "nodes": [
+                {
+                  "key": "technical",
+                  "title": "技术方案",
+                  "ordinal": 0,
+                  "node_type": "chapter",
+                  "parent_key": null
+                }
+              ],
+              "schema_version": 1
+            },
+            "config_digest": "80990195d65c30f600d48e076ea40524aa6aeb291fba2fe9a1011c163ababaa2",
+            "schema_digest": "cc8ca0102b8077dc0e15de4d6a8506896d7a94b709f985b0cbbaececd165c900",
+            "previous_version_id": null,
+            "created_by": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+            "created_at": "2026-10-21T07:23:37.404786-07:00",
+            "immutable": true,
+            "is_builtin": true
+          },
+          {
+            "id": "bce07704-db7c-5918-ba3e-1b9025c32520",
+            "family_id": "c11eb22f-580d-5d7e-a564-07ffde29e981",
+            "revision": 1,
+            "name": "内置A4正文版式",
+            "kind": "layout",
+            "config": {
+              "font": "Noto Sans CJK SC",
+              "page": "A4",
+              "cover_title": "投标正文",
+              "footer_text": "",
+              "header_text": "",
+              "page_number": true,
+              "toc_enabled": true,
+              "cover_enabled": false,
+              "schema_version": 1,
+              "margin_top_twips": 1440,
+              "chapter_numbering": "decimal",
+              "margin_left_twips": 1440,
+              "margin_right_twips": 1440,
+              "margin_bottom_twips": 1440,
+              "font_size_halfpoints": 22,
+              "paragraph_after_twips": 0
+            },
+            "config_digest": "38cfd7f4e88bc1847b82696dd3fb75af1c1a269f3a45cb2f410770911401e1c9",
+            "schema_digest": "638834e7e68671624c993325fbd11aa39c22d3abb1c8673eb62cf9b89cd1f47e",
+            "previous_version_id": null,
+            "created_by": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+            "created_at": "2026-10-21T07:23:37.408151-07:00",
+            "immutable": true,
+            "is_builtin": true
+          }
+        ],
+        "next_cursor": null,
+        "coverage": "partial",
+        "notice": "模板只定义结构或样式，不授项目事实/合规资格；使用游标读取后续模板"
+      }
+    },
+    "/api/v1/operations/f8a266f7-3e59-4741-9d3e-2a14802f01f3": {
+      "status": 200,
+      "etag": "\"operation:f8a266f7-3e59-4741-9d3e-2a14802f01f3:af8df90db47c71ae91ed52a16fefd64624ada534ff0db727dbeb8b1cded841ee\"",
+      "body": {
+        "id": "f8a266f7-3e59-4741-9d3e-2a14802f01f3",
+        "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+        "kind": "build",
+        "state": "succeeded",
+        "input_digest": "7deef1bd0bd4c8ada765a4f2a8dc6bf7b68d4338ccafad753eb8b95233de3bfe",
+        "handler_version": "export/1",
+        "result_ref": "1d17e883-9e6b-4674-a8d1-c073480b6f8e"
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/drafts": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "items": [
+          {
+            "id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+            "revision": 2,
+            "title": "Synthetic B1 draft",
+            "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/drafts/96f4c4e8-0e33-4120-9a5a-61a62aca9deb": {
+      "status": 200,
+      "etag": "\"draft:96f4c4e8-0e33-4120-9a5a-61a62aca9deb:2\"",
+      "body": {
+        "id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+        "revision": 2,
+        "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+        "sections": [
+          {
+            "id": "3805166c-3fb4-4bfa-b0b3-22691a552784",
+            "title": "技术方案",
+            "ordinal": 0,
+            "revision": 2,
+            "rule_ids": [],
+            "save_state": "saved"
+          }
+        ]
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/drafts/96f4c4e8-0e33-4120-9a5a-61a62aca9deb/structure": {
+      "status": 200,
+      "etag": "\"draft:96f4c4e8-0e33-4120-9a5a-61a62aca9deb:2\"",
+      "body": {
+        "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "draft_revision": 2,
+        "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+        "structure_version_id": null,
+        "nodes": [
+          {
+            "section_id": "3805166c-3fb4-4bfa-b0b3-22691a552784",
+            "parent_id": null,
+            "ordinal": 0,
+            "node_type": "chapter",
+            "deleted": false,
+            "section_revision": 2,
+            "plan_version_id": null,
+            "template_family_id": null,
+            "template_key": null,
+            "title": "技术方案",
+            "rule_ids": [],
+            "source_refs": [
+              {
+                "source_id": "f7fa92c3-43be-5951-b5f0-5cd1b57e346a",
+                "evidence_id": "398285f7-f68e-4636-a859-9fed61676a14",
+                "source_revision": 2,
+                "document_version_id": "9835ee98-d0d0-4dde-be29-cdb2a0ff73ca"
+              }
+            ],
+            "plan": null,
+            "plan_content_basis_state": "none",
+            "actual_page_range": null
+          }
+        ],
+        "directory_template_version_id": "160c51cd-d3f1-5cfa-84bd-d9938b3f25fe",
+        "style_template_version_id": "bce07704-db7c-5918-ba3e-1b9025c32520",
+        "metadata": {
+          "format_bindings": [],
+          "format_review_ack": null
+        },
+        "page_budget": {
+          "planned_total": 0,
+          "unknown_section_ids": [
+            "3805166c-3fb4-4bfa-b0b3-22691a552784"
+          ],
+          "actual_total": null,
+          "actual_ranges_state": "unknown"
+        }
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/authoring/drafts/96f4c4e8-0e33-4120-9a5a-61a62aca9deb/exact-qualification": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "protocol": "authoring-exact-draft-status/1",
+        "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+        "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "draft_revision": 2,
+        "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+        "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+        "exact_sections": [
+          {
+            "section_id": "3805166c-3fb4-4bfa-b0b3-22691a552784",
+            "section_revision_id": "4bdf843f-92f0-4fad-a3f8-fa47189c1ca5",
+            "section_revision": 2,
+            "section_digest": "d2a75255a067f88306d3c81a3221e7ba976e80ec9a174952419534774532adf7",
+            "qualification_id": "e3a1eec0-f3f7-4afd-bc3a-af8caab58ba0",
+            "qualification_digest": "f2099aadb775bb43202c7adcd979bf0edd74aeff75c79ad6c92dd86f380d36d5",
+            "authoring_input_id": "444aba10-3b92-461f-9cf0-7a7dde887a58",
+            "authoring_input_digest": "de9c4a4825e62e3a0ec61452cbb39288cadee497ea52c40c82209c429d1c1f6f",
+            "source_scope": "exact_package_context"
+          }
+        ],
+        "ordinary_edit_available": false,
+        "build_available": true,
+        "blocking_reasons": [
+          "AUTHORING_EXACT_REVISION_OPERATION_UNSUPPORTED"
+        ]
+      }
+    },
+    "/api/v1/sections/3805166c-3fb4-4bfa-b0b3-22691a552784": {
+      "status": 200,
+      "etag": "\"section:3805166c-3fb4-4bfa-b0b3-22691a552784:2\"",
+      "body": {
+        "id": "3805166c-3fb4-4bfa-b0b3-22691a552784",
+        "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+        "revision": 2,
+        "schema_digest": "9e22e5a83d21e688ce1acf28484e960d89a78c5fb14ea9c2a0ee8e05d2508f3c",
+        "content": {
+          "type": "doc",
+          "attrs": {
+            "title": "技术方案",
+            "ordinal": 0,
+            "rule_ids": [],
+            "source_refs": [
+              {
+                "source_id": "f7fa92c3-43be-5951-b5f0-5cd1b57e346a",
+                "evidence_id": "398285f7-f68e-4636-a859-9fed61676a14",
+                "source_revision": 2,
+                "document_version_id": "9835ee98-d0d0-4dde-be29-cdb2a0ff73ca"
+              }
+            ]
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "attrs": {
+                "id": "6c9bdb1b-3bea-4dea-bde5-90368d7f9b84"
+              },
+              "content": [
+                {
+                  "text": "来自合成完整整包的可审阅修改建议；尚未采用。",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        "writing_plan_id": null
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/draft-snapshots/6c3ea505-0e97-4c0c-a0fa-b021197e3ce1": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+        "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+        "title": "Synthetic B1 draft",
+        "sections": [
+          {
+            "type": "doc",
+            "attrs": {
+              "title": "技术方案",
+              "ordinal": 0,
+              "rule_ids": [],
+              "source_refs": [
+                {
+                  "source_id": "f7fa92c3-43be-5951-b5f0-5cd1b57e346a",
+                  "evidence_id": "398285f7-f68e-4636-a859-9fed61676a14",
+                  "source_revision": 2,
+                  "document_version_id": "9835ee98-d0d0-4dde-be29-cdb2a0ff73ca"
+                }
+              ]
+            },
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": {
+                  "id": "6c9bdb1b-3bea-4dea-bde5-90368d7f9b84"
+                },
+                "content": [
+                  {
+                    "text": "来自合成完整整包的可审阅修改建议；尚未采用。",
+                    "type": "text"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "authoring_exact_sections": {
+          "digest": "2a306a5a462c2383f01041d0097e776d9507927c56f491853dd39bd0b8841fed",
+          "protocol": "authoring-exact-snapshot/1",
+          "sections": [
+            {
+              "section_id": "3805166c-3fb4-4bfa-b0b3-22691a552784",
+              "source_scope": "exact_package_context",
+              "section_digest": "d2a75255a067f88306d3c81a3221e7ba976e80ec9a174952419534774532adf7",
+              "qualification_id": "e3a1eec0-f3f7-4afd-bc3a-af8caab58ba0",
+              "section_revision": 2,
+              "authoring_input_id": "444aba10-3b92-461f-9cf0-7a7dde887a58",
+              "section_revision_id": "4bdf843f-92f0-4fad-a3f8-fa47189c1ca5",
+              "qualification_digest": "f2099aadb775bb43202c7adcd979bf0edd74aeff75c79ad6c92dd86f380d36d5",
+              "authoring_input_digest": "de9c4a4825e62e3a0ec61452cbb39288cadee497ea52c40c82209c429d1c1f6f"
+            }
+          ]
+        }
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/builds?draft_id=96f4c4e8-0e33-4120-9a5a-61a62aca9deb": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "items": [
+          {
+            "id": "1d17e883-9e6b-4674-a8d1-c073480b6f8e",
+            "draft_snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+            "operation_id": "f8a266f7-3e59-4741-9d3e-2a14802f01f3",
+            "outputs": [
+              {
+                "format": "docx",
+                "state": "succeeded",
+                "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+                "gaps": []
+              },
+              {
+                "format": "pdf",
+                "state": "failed",
+                "document_version_id": null,
+                "gaps": [
+                  "RENDERER_UNAVAILABLE"
+                ]
+              }
+            ],
+            "identity": {
+              "protocol": "authoring-build-identity/1",
+              "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+              "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+              "draft_revision": 2,
+              "snapshot_id": "6c3ea505-0e97-4c0c-a0fa-b021197e3ce1",
+              "snapshot_digest": "f111bc301d4653686aa7ad69c28ecde5cefdff5525a7b329f9b98556bd9c4fdf",
+              "build_input_id": "7b8c3dbd-6a51-4590-b789-cd78c0bb1e33",
+              "input_digest": "7deef1bd0bd4c8ada765a4f2a8dc6bf7b68d4338ccafad753eb8b95233de3bfe",
+              "manifest_digest": "8162020049fed3acb8217e7e6c6ca80867bee5646f1886c5f2c7d371843d9a7e",
+              "writer_kind": "strict_text/1",
+              "request": {
+                "draft_id": "96f4c4e8-0e33-4120-9a5a-61a62aca9deb",
+                "draft_revision": 2,
+                "formats": [
+                  "docx",
+                  "pdf"
+                ],
+                "follow_up": "none",
+                "template_version_id": "1d4bb5cb-09a1-5858-b668-dac8c94aab53"
+              }
+            },
+            "follow_up": {
+              "requested": false,
+              "state": "not_requested",
+              "adopted_document_version_id": null,
+              "parse_operation_id": null,
+              "request_id": null,
+              "review_id": null,
+              "reasons": []
+            },
+            "layout": null
+          }
+        ],
+        "has_more": false,
+        "next_cursor": null
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/packages?kind=bid&limit=20": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "items": [
+          {
+            "id": "052e34c0-f132-4f86-920a-131075ba3b7b",
+            "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+            "kind": "bid",
+            "revision_id": "08c47fde-1c05-430a-92f3-a655aae4739b",
+            "revision": 1,
+            "digest": "8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc"
+          },
+          {
+            "id": "83004662-9608-4b71-87f1-e71b0ecbf7e6",
+            "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+            "kind": "bid",
+            "revision_id": "84b16b0e-a2fe-4d56-8f4c-80f85f216814",
+            "revision": 1,
+            "digest": "bfb4db5aecc3afa6ce1ed6a45ca493c7abad25a2aaf868a3f8ad846bee24df2d"
+          }
+        ],
+        "has_more": false,
+        "next_cursor": null
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/packages/052e34c0-f132-4f86-920a-131075ba3b7b": {
+      "status": 200,
+      "etag": "\"bid-package-head:052e34c0-f132-4f86-920a-131075ba3b7b:8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc\"",
+      "body": {
+        "manifest": {
+          "package_id": "052e34c0-f132-4f86-920a-131075ba3b7b",
+          "revision_id": "08c47fde-1c05-430a-92f3-a655aae4739b",
+          "revision": 1,
+          "kind": "bid",
+          "scope": {
+            "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+            "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+            "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+            "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+            "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+            "bidder_status": "confirmed"
+          },
+          "members": [
+            {
+              "member_id": "generated-3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+              "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+              "file_digest": "0ce9667bceadbb4bcf618c286b95bdeb59cf6c79f5f80cc69d2a6d05aef83ffd",
+              "source_kind": "own",
+              "source_ref": "document-file:a32a9975-b7db-42fd-92db-952ccb189bd2:revision:1",
+              "scope": {
+                "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+                "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+                "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+                "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+                "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+                "bidder_status": "confirmed"
+              },
+              "purposes": [
+                "technical"
+              ],
+              "page_count": null,
+              "parse": {
+                "status": "not_frozen",
+                "parse_run_id": null,
+                "parser_digest": null,
+                "config_digest": null,
+                "evidence_digest": null,
+                "reason": "No exact parse run selected"
+              },
+              "parts": []
+            }
+          ],
+          "predecessor_digest": null,
+          "identity_version": "bid-package/1"
+        },
+        "digest": "8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc",
+        "identity": {
+          "lot": "same visible lot",
+          "digest": "43a35d0a5b7053236e86a942d6d9392251326ebadc769f7ad13fd0e1358021ae",
+          "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+          "region": null,
+          "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+          "round_no": 1,
+          "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+          "bidder_name": "synthetic bidder",
+          "authority_id": "e077481d-4fb0-4935-9ddc-1ebc2f8f7ff5",
+          "binding_status": "confirmed",
+          "engineering_type": null,
+          "identity_version": "bid-identity/2",
+          "engineering_title": "synthetic project",
+          "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f"
+        },
+        "storage_eligible": false,
+        "review_ready": false
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/packages/052e34c0-f132-4f86-920a-131075ba3b7b/revisions/08c47fde-1c05-430a-92f3-a655aae4739b": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "manifest": {
+          "package_id": "052e34c0-f132-4f86-920a-131075ba3b7b",
+          "revision_id": "08c47fde-1c05-430a-92f3-a655aae4739b",
+          "revision": 1,
+          "kind": "bid",
+          "scope": {
+            "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+            "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+            "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+            "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+            "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+            "bidder_status": "confirmed"
+          },
+          "members": [
+            {
+              "member_id": "generated-3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+              "document_version_id": "3e61a4e0-c214-45ec-8efb-dc70b3172e07",
+              "file_digest": "0ce9667bceadbb4bcf618c286b95bdeb59cf6c79f5f80cc69d2a6d05aef83ffd",
+              "source_kind": "own",
+              "source_ref": "document-file:a32a9975-b7db-42fd-92db-952ccb189bd2:revision:1",
+              "scope": {
+                "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f",
+                "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+                "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+                "bid_id": "27e97156-404f-4978-b381-a628eec5c77c",
+                "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+                "bidder_status": "confirmed"
+              },
+              "purposes": [
+                "technical"
+              ],
+              "page_count": null,
+              "parse": {
+                "status": "not_frozen",
+                "parse_run_id": null,
+                "parser_digest": null,
+                "config_digest": null,
+                "evidence_digest": null,
+                "reason": "No exact parse run selected"
+              },
+              "parts": []
+            }
+          ],
+          "predecessor_digest": null,
+          "identity_version": "bid-package/1"
+        },
+        "digest": "8c547cdec25f1e9bdbfb654e85d6b3046c9dba3029e641d1a6600b02e6ea48dc",
+        "identity": {
+          "lot": "same visible lot",
+          "digest": "43a35d0a5b7053236e86a942d6d9392251326ebadc769f7ad13fd0e1358021ae",
+          "lot_id": "2c36bb04-f83f-4400-b37c-aa25a34dcb3b",
+          "region": null,
+          "round_id": "c9523782-ef52-4081-92b1-e356411eefe3",
+          "round_no": 1,
+          "bidder_id": "c8ef38ad-0ae1-4200-881b-2fe1b2f0cf2b",
+          "bidder_name": "synthetic bidder",
+          "authority_id": "e077481d-4fb0-4935-9ddc-1ebc2f8f7ff5",
+          "binding_status": "confirmed",
+          "engineering_type": null,
+          "identity_version": "bid-identity/2",
+          "engineering_title": "synthetic project",
+          "engineering_project_id": "368270b3-ad2c-4f7c-bbbe-52b038999e0f"
+        },
+        "storage_eligible": false,
+        "review_ready": false
+      }
+    },
+    "/api/v1/bids/27e97156-404f-4978-b381-a628eec5c77c/package-documents/3e61a4e0-c214-45ec-8efb-dc70b3172e07/parses?limit=20": {
+      "status": 200,
+      "etag": null,
+      "body": {
+        "items": [],
+        "has_more": false,
+        "next_cursor": null
+      }
+    },
+    "/api/v1/authoring/template-versions/160c51cd-d3f1-5cfa-84bd-d9938b3f25fe": {
+      "status": 200,
+      "etag": "\"authoring-template:0b5d95e6-de55-5c42-9fdd-324fee9fdda0:1\"",
+      "body": {
+        "id": "160c51cd-d3f1-5cfa-84bd-d9938b3f25fe",
+        "family_id": "0b5d95e6-de55-5c42-9fdd-324fee9fdda0",
+        "revision": 1,
+        "name": "内置技术方案目录",
+        "kind": "outline",
+        "config": {
+          "nodes": [
+            {
+              "key": "technical",
+              "title": "技术方案",
+              "ordinal": 0,
+              "node_type": "chapter",
+              "parent_key": null
+            }
+          ],
+          "schema_version": 1
+        },
+        "config_digest": "80990195d65c30f600d48e076ea40524aa6aeb291fba2fe9a1011c163ababaa2",
+        "schema_digest": "cc8ca0102b8077dc0e15de4d6a8506896d7a94b709f985b0cbbaececd165c900",
+        "previous_version_id": null,
+        "created_by": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+        "created_at": "2026-10-21T07:23:37.404786-07:00",
+        "immutable": true,
+        "is_builtin": true
+      }
+    },
+    "/api/v1/authoring/template-versions/bce07704-db7c-5918-ba3e-1b9025c32520": {
+      "status": 200,
+      "etag": "\"authoring-template:c11eb22f-580d-5d7e-a564-07ffde29e981:1\"",
+      "body": {
+        "id": "bce07704-db7c-5918-ba3e-1b9025c32520",
+        "family_id": "c11eb22f-580d-5d7e-a564-07ffde29e981",
+        "revision": 1,
+        "name": "内置A4正文版式",
+        "kind": "layout",
+        "config": {
+          "font": "Noto Sans CJK SC",
+          "page": "A4",
+          "cover_title": "投标正文",
+          "footer_text": "",
+          "header_text": "",
+          "page_number": true,
+          "toc_enabled": true,
+          "cover_enabled": false,
+          "schema_version": 1,
+          "margin_top_twips": 1440,
+          "chapter_numbering": "decimal",
+          "margin_left_twips": 1440,
+          "margin_right_twips": 1440,
+          "margin_bottom_twips": 1440,
+          "font_size_halfpoints": 22,
+          "paragraph_after_twips": 0
+        },
+        "config_digest": "38cfd7f4e88bc1847b82696dd3fb75af1c1a269f3a45cb2f410770911401e1c9",
+        "schema_digest": "638834e7e68671624c993325fbd11aa39c22d3abb1c8673eb62cf9b89cd1f47e",
+        "previous_version_id": null,
+        "created_by": "70cc164e-e92e-48f2-a130-7adb6debf66c",
+        "created_at": "2026-10-21T07:23:37.408151-07:00",
+        "immutable": true,
+        "is_builtin": true
+      }
+    }
+  }
+}

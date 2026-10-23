@@ -21,6 +21,9 @@ from packages.lifecycle.service import assert_work_writable, lock
 from packages.tasks import runs as task_runs
 from packages.tasks import templates
 from packages.tasks.models import (
+    CancelPackageTriggerIntent,
+    PackageTriggerIntentPage,
+    PackageTriggerIntentView,
     PauseRequest,
     RunPage,
     RunRequest,
@@ -158,6 +161,33 @@ def get_template_version(bid_id: UUID, definition_id: UUID, version_id: UUID, r:
 )
 def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest):
     actor = auth(r, True)
+    from packages.tasks import package_authoring_runs, package_runs
+
+    authoring_result = package_authoring_runs.start(
+        actor["member_id"],
+        bid_id,
+        definition_id,
+        r.headers.get("idempotency-key"),
+        r.headers.get("if-match"),
+        body.model_dump(mode="json"),
+        final_auth=lambda: auth(r, True)["member_id"],
+    )
+    if authoring_result is not None:
+        saved, replay = authoring_result
+        return response(saved, replay)
+
+    package_result = package_runs.start(
+        actor["member_id"],
+        bid_id,
+        definition_id,
+        r.headers.get("idempotency-key"),
+        r.headers.get("if-match"),
+        body.model_dump(mode="json"),
+        final_auth=lambda: auth(r, True)["member_id"],
+    )
+    if package_result is not None:
+        saved, replay = package_result
+        return response(saved, replay)
     with connection() as c:
         lock(c, bid_id)
         row = templates.current(c, bid_id, definition_id)
@@ -222,6 +252,58 @@ def task_notifications(
         }
 
 
+@router.get("/bids/{bid_id}/task-package-trigger-intents", response_model=PackageTriggerIntentPage)
+def package_trigger_intents(
+    bid_id: UUID, r: Request, after: UUID | None = None, limit: int = Query(20, ge=1, le=100)
+):
+    auth(r)
+    from packages.tasks import package_triggers
+
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        return package_triggers.page(c, bid_id, after, limit)
+
+
+@router.get(
+    "/bids/{bid_id}/task-package-trigger-intents/{intent_id}",
+    response_model=PackageTriggerIntentView,
+)
+def package_trigger_intent(bid_id: UUID, intent_id: UUID, r: Request):
+    auth(r)
+    from packages.tasks import package_triggers
+
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        value = package_triggers.view(package_triggers.load(c, bid_id, intent_id))
+        return JSONResponse(
+            value,
+            headers={"ETag": etag("task-package-trigger-intent", intent_id, value["input_digest"])},
+        )
+
+
+@router.post(
+    "/bids/{bid_id}/task-package-trigger-intents/{intent_id}/cancel",
+    response_model=PackageTriggerIntentView,
+)
+def cancel_package_trigger_intent(
+    bid_id: UUID, intent_id: UUID, r: Request, body: CancelPackageTriggerIntent
+):
+    actor = auth(r, True)
+    from packages.tasks import package_triggers
+
+    with connection() as c:
+        saved, replayed = package_triggers.cancel(
+            c,
+            bid=bid_id,
+            identity=intent_id,
+            actor=actor["member_id"],
+            key=r.headers.get("idempotency-key"),
+            reason=body.reason,
+            condition=r.headers.get("if-match"),
+        )
+        return response(saved, replayed)
+
+
 @router.get("/bids/{bid_id}/task-schedule-recoveries", response_model=TaskScheduleRecoveryPage)
 def task_recoveries(
     bid_id: UUID, r: Request, after: UUID | None = None, limit: int = Query(20, ge=1, le=100)
@@ -243,10 +325,20 @@ def task_recoveries(
 @router.get("/task-kinds", response_model=TaskKindPage, response_model_exclude_unset=True)
 def task_kinds(r: Request):
     auth(r)
+    from packages.authoring.package_job_authority import available as authoring_available
     from packages.domain import reviews
+    from packages.domain.package_scope_review import method_profile
+    from packages.domain.review_identity import digest
     from packages.tasks.inputs import review_guard
+    from packages.tasks.package_runs import available
+    from packages.tasks.package_triggers import available as triggers_available
 
     review_ready = getattr(reviews, "TASK_INPUT_GUARD", None) is review_guard
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        package_ready = available(c)
+        triggers_ready = package_ready and triggers_available(c)
+        authoring_ready = authoring_available(c)
     return {
         "items": [
             {
@@ -256,6 +348,26 @@ def task_kinds(r: Request):
                 "execution": "existing_review_control_plane" if review_ready else "unavailable",
                 "reason": None if review_ready else "TASK_REVIEW_EXECUTOR_NOT_READY",
                 "formal_scoring_eligible": False,
+                "exact_package_manual": {
+                    "available": package_ready,
+                    "reason": None if package_ready else "TASK_PACKAGE_EXECUTOR_NOT_READY",
+                    "input_mode": "exact_package_review",
+                    "method_digest": digest(method_profile()),
+                    "trigger": "manual",
+                    "overall_coverage": "partial",
+                    "formal_scoring_eligible": False,
+                    "submission_eligible": False,
+                    "automatic_input_selection": False,
+                },
+                "exact_package_triggers": {
+                    "available": triggers_ready,
+                    "reason": None if triggers_ready else "TASK_PACKAGE_TRIGGER_NOT_READY",
+                    "input_mode": "exact_package_trigger",
+                    "triggers": ["material_updated", "schedule"],
+                    "requires_independent_runner": True,
+                    "automatic_input_selection": False,
+                    "automatic_catchup_runs": 0,
+                },
             },
             {
                 "task_kind": "scoring_review",
@@ -280,6 +392,19 @@ def task_kinds(r: Request):
                 "purpose": "assist",
                 "execution": "existing_authoring_proposal_queue",
                 "automatic_apply": False,
+                "exact_package_authoring": {
+                    "available": authoring_ready,
+                    "reason": None
+                    if authoring_ready
+                    else "AUTHORING_PACKAGE_EXECUTOR_NOT_CONFIGURED",
+                    "input_mode": "exact_package_authoring",
+                    "trigger": "manual",
+                    "source_scope": "exact_package_context",
+                    "automatic_input_selection": False,
+                    "rerun_supported": False,
+                    "apply_available": False,
+                    "build_available": False,
+                },
             },
         ],
         "default_trigger": "manual",

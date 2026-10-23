@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { api } from "./api";
 import type {
   ResearchCapabilities,
@@ -8,13 +8,77 @@ import type {
   ResearchOutcomeDetail,
   ResearchSamplePage,
 } from "./contracts";
-import { Badge, ErrorNotice } from "./components";
+import { Badge, ErrorNotice, Loading } from "./components";
 import { OutcomeCard } from "./Archives";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useCommand } from "./useCommand";
 
-export function Research({ onOpen }: { onOpen: (id: string) => void }) {
+const PackageHistoricalResearch = lazy(() =>
+  import("./PackageHistoricalResearch").then((module) => ({
+    default: module.PackageHistoricalResearch,
+  })),
+);
+
+export function Research({
+  memberId,
+  onOpen,
+  onOpenPackage,
+}: {
+  memberId: string;
+  onOpen: (id: string) => void;
+  onOpenPackage?: (id: string) => void;
+}) {
+  const [view, setView] = useState<"package" | "legacy">("package");
+  const [legacyOpened, setLegacyOpened] = useState(false);
+  return (
+    <div className="page-content research-page">
+      <header className="page-heading">
+        <div>
+          <span className="eyebrow">独立研究空间</span>
+          <h1>评分研究</h1>
+          <p>选择确切实交与证据，冻结研究方案，再核对独立执行的结果。</p>
+        </div>
+        <Badge>回溯研究 · 正式预测未开放</Badge>
+      </header>
+      <nav className="review-shortcuts" aria-label="研究记录类型">
+        <button
+          type="button"
+          aria-pressed={view === "package"}
+          onClick={() => setView("package")}
+        >
+          整包历史研究
+        </button>
+        <button
+          type="button"
+          aria-pressed={view === "legacy"}
+          onClick={() => {
+            setLegacyOpened(true);
+            setView("legacy");
+          }}
+        >
+          既有单稿研究记录
+        </button>
+      </nav>
+      <div hidden={view !== "package"}>
+        <Suspense fallback={<Loading text="正在打开整包历史研究…" />}>
+          <PackageHistoricalResearch
+            key={memberId}
+            memberId={memberId}
+            onOpenBid={onOpenPackage ?? onOpen}
+          />
+        </Suspense>
+      </div>
+      {legacyOpened && (
+        <div hidden={view !== "legacy"}>
+          <LegacyResearch onOpen={onOpen} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LegacyResearch({ onOpen }: { onOpen: (id: string) => void }) {
   const capabilities = useResource<ResearchCapabilities>(
     "/research/capabilities",
   );
@@ -51,7 +115,7 @@ export function Research({ onOpen }: { onOpen: (id: string) => void }) {
       <header className="page-heading">
         <div>
           <span className="eyebrow">独立研究空间</span>
-          <h1>评分研究</h1>
+          <h2>既有单稿研究记录</h2>
           <p>核对正式标签与来源分组，为受控实验准备可靠样本。</p>
         </div>
         <Badge>与业务评审分开</Badge>

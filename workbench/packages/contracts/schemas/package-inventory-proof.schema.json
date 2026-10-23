@@ -96,7 +96,23 @@
         "evidence_count"
       ]
     },
-    "Manifest": {
+    "View": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "manifest",
+        "digest"
+      ]
+    },
+    "ManifestV1": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -265,20 +281,280 @@
         "policy_digest"
       ]
     },
-    "View": {
+    "ManifestV2": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "manifest": {
-          "$ref": "#/$defs/Manifest"
+        "version": {
+          "const": "package-inventory-proof/2"
         },
-        "digest": {
+        "kind": {
+          "const": "frozen_inventory_scope_observation"
+        },
+        "scope": {
+          "const": "frozen_authority_parse_blocks_only"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "frozen_digest": {
           "$ref": "#/$defs/Digest"
+        },
+        "inventory_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "authority_revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "authority_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Document"
+          }
+        },
+        "all_declared_pages_bound": {
+          "type": "boolean"
+        },
+        "frozen_evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "frozen_evidence_ids_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "extraction_receipt_state": {
+          "enum": [
+            "not_frozen",
+            "archive_missing",
+            "matched",
+            "read_set_mismatch"
+          ]
+        },
+        "receipt_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recorded_read_evidence_ids_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraction_coverage": {
+          "enum": [
+            "unknown",
+            "complete",
+            "partial",
+            "conflict"
+          ]
+        },
+        "extraction_range_proven": {
+          "type": "boolean"
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unbound_requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "quality_status": {
+          "const": "not_measured"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED",
+              "INVENTORY_EXTRACTION_NOT_FROZEN",
+              "INVENTORY_EXTRACTION_ARCHIVE_MISSING",
+              "INVENTORY_READ_EVIDENCE_MISMATCH",
+              "INVENTORY_DECLARED_PAGE_GAP",
+              "INVENTORY_EXTRACTION_PARTIAL",
+              "INVENTORY_EXTRACTION_CONFLICT",
+              "INVENTORY_EMPTY_REQUIREMENTS",
+              "INVENTORY_UNBOUND_REQUIREMENT",
+              "INVENTORY_NO_FROZEN_EVIDENCE"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "human_derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": [
+                "verified",
+                "archive_missing"
+              ]
+            },
+            "root_inventory_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "root_rule_set_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "head_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "head_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32
+            },
+            "counts": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "active": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "inactive": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "needs_revalidation": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "human_withdrawn": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "inherited_superseded": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "total",
+                "active",
+                "inactive",
+                "needs_revalidation",
+                "human_withdrawn",
+                "inherited_superseded"
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "root_inventory_id",
+            "root_rule_set_id",
+            "head_id",
+            "head_digest",
+            "length",
+            "counts"
+          ]
         }
       },
       "required": [
-        "manifest",
-        "digest"
+        "version",
+        "kind",
+        "scope",
+        "prepared",
+        "frozen_digest",
+        "inventory_digest",
+        "authority_revision_id",
+        "authority_digest",
+        "documents",
+        "all_declared_pages_bound",
+        "frozen_evidence_count",
+        "frozen_evidence_ids_digest",
+        "extraction_receipt_state",
+        "receipt_digest",
+        "recorded_read_evidence_ids_digest",
+        "extraction_coverage",
+        "extraction_range_proven",
+        "requirement_count",
+        "unbound_requirement_count",
+        "quality_status",
+        "inventory_complete",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "blockers",
+        "policy_digest",
+        "human_derivation"
+      ]
+    },
+    "Manifest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ManifestV1"
+        },
+        {
+          "$ref": "#/$defs/ManifestV2"
+        }
       ]
     }
   }

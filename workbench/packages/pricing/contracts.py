@@ -5,6 +5,7 @@ from copy import deepcopy
 from pydantic import BaseModel
 
 from packages.pricing.models import PricingRequest, RegisterFormula, SavePlan
+from packages.pricing.package_models import RegisterPackageFormula
 
 
 def obj(properties):
@@ -41,6 +42,7 @@ def extend_openapi(actual):
         ("PricingRegisterFormula", RegisterFormula),
         ("PricingRequest", PricingRequest),
         ("PricingSavePlan", SavePlan),
+        ("PricingRegisterPackageFormula", RegisterPackageFormula),
     ]
     for name, model in input_models:
         schema = model.model_json_schema(ref_template="#/components/schemas/Pricing{model}")
@@ -98,6 +100,34 @@ def extend_openapi(actual):
         }
     )
     schemas["PricingFormulaManifest"] = manifest
+    binding = ref("PricingPackagePricingBinding")
+    package_snapshot = obj(
+        {
+            "version": {"const": "package-pricing-authority/1"},
+            "binding": binding,
+            "package_digest": D,
+            "authority_digest": D,
+            "identity_digest": D,
+            "source_heads_digest": D,
+            "rule_set_id": NULL_UUID,
+            "inventory_id": NULL_UUID,
+            "inventory_digest": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        }
+    )
+    schemas["PricingPackageSnapshot"] = package_snapshot
+    manifest["properties"]["schema"] = {"enum": ["pricing-formula/1", "pricing-formula/2"]}
+    manifest["properties"]["package_binding"] = binding
+    manifest["properties"]["source_authority"]["properties"]["package_snapshot"] = package_snapshot
+    manifest["allOf"] = [
+        {
+            "if": {"properties": {"schema": {"const": "pricing-formula/2"}}},
+            "then": {
+                "required": ["package_binding"],
+                "properties": {"source_authority": {"required": ["package_snapshot"]}},
+            },
+            "else": {"not": {"required": ["package_binding"]}},
+        }
+    ]
     schemas["PricingFormulaView"] = obj(
         {
             "formula_version_id": U,
@@ -122,6 +152,7 @@ def extend_openapi(actual):
         }
     )
     schemas["PricingFormulaPage"] = obj({"items": arr(summary), "next_cursor": NULL_UUID})
+    summary["properties"]["package_binding"] = binding
     schemas["PricingContext"] = obj(
         {
             "bid_id": U,
@@ -142,6 +173,10 @@ def extend_openapi(actual):
                 )
             ),
         }
+    )
+    schemas["PricingPackageContext"] = obj(
+        deepcopy(schemas["PricingContext"]["properties"])
+        | {"package_binding": binding, "package_snapshot": package_snapshot}
     )
     schemas["PricingFormulaSourcePage"] = obj(
         {
@@ -227,6 +262,30 @@ def extend_openapi(actual):
         {"items": arr(ref("PricingPlanView")), "next_cursor": NULL_UUID}
     )
     routes = [
+        (
+            "/package-pricing-context",
+            "get",
+            "getPackagePricingContext",
+            None,
+            "PricingPackageContext",
+            200,
+        ),
+        (
+            "/package-pricing-formula-sources",
+            "get",
+            "listPackagePricingFormulaSources",
+            None,
+            "PricingFormulaSourcePage",
+            200,
+        ),
+        (
+            "/package-pricing-formulas",
+            "post",
+            "registerPackagePricingFormula",
+            "PricingRegisterPackageFormula",
+            "PricingFormulaView",
+            201,
+        ),
         ("/pricing-context", "get", "getPricingContext", None, "PricingContext", 200),
         (
             "/pricing-formula-sources",
@@ -297,7 +356,13 @@ def extend_openapi(actual):
                 "description": "Actual implemented pricing resource",
                 **(
                     {"headers": {"ETag": {"schema": S}}}
-                    if response in {"PricingContext", "PricingFormulaView", "PricingSimulationView"}
+                    if response
+                    in {
+                        "PricingContext",
+                        "PricingPackageContext",
+                        "PricingFormulaView",
+                        "PricingSimulationView",
+                    }
                     else {}
                 ),
                 "content": {"application/json": {"schema": ref(response)}},

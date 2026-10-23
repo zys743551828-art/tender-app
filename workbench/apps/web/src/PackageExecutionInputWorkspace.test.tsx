@@ -109,7 +109,9 @@ it("仅显式保存，先写恢复记录再请求，校验回执且不启动任�
   expect(fetchMock).not.toHaveBeenCalled();
   await save();
   expect(
-    await screen.findByText("执行准备输入已读回并校验，尚未启动评审。"),
+    await screen.findByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).toBeInTheDocument();
   expect(JSON.parse(sessionStorage.getItem(storageKey)!).pending).toBeNull();
   expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -127,7 +129,9 @@ it("丢失回执后重挂载不自动重发，候选消失仍用原键原体恢�
   expect(fetchMock).toHaveBeenCalledTimes(1);
   fetchMock.mockResolvedValueOnce(response(await prepared(frozen, id(20))));
   await recover();
-  await screen.findByText("执行准备输入已读回并校验，尚未启动评审。");
+  await screen.findByText(
+    "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+  );
   expect(fetchMock.mock.calls[1][1]).toEqual(first[1]);
 });
 it.each([false, true])(
@@ -232,7 +236,9 @@ it("回执成功但本机完成记录失败，保留原请求供恢复", async (
     JSON.parse(sessionStorage.getItem(storageKey)!).pending,
   ).not.toBeNull();
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
 });
 it("旧范围迟到回执不清理待恢复记录", async () => {
@@ -261,7 +267,9 @@ it("旧范围迟到回执不清理待恢复记录", async () => {
     JSON.parse(sessionStorage.getItem(storageKey)!).pending,
   ).not.toBeNull();
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
 });
 it("精确历史读取允许历史操作者，且不释放待恢复保存", async () => {
@@ -278,7 +286,9 @@ it("精确历史读取允许历史操作者，且不释放待恢复保存", asyn
   await userEvent.click(
     screen.getByRole("button", { name: "读取执行准备输入" }),
   );
-  await screen.findByText("执行准备输入已读回并校验，尚未启动评审。");
+  await screen.findByText(
+    "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+  );
   expect(
     JSON.parse(sessionStorage.getItem(storageKey)!).pending,
   ).not.toBeNull();
@@ -296,7 +306,9 @@ it("异常回执不得确认成功或释放原请求", async () => {
     JSON.parse(sessionStorage.getItem(storageKey)!).pending,
   ).not.toBeNull();
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
 });
 
@@ -321,7 +333,9 @@ it("编辑历史编号后迟到读回不得覆盖当前选择", async () => {
     resolve(response(await prepared(frozen, id(20)), 200));
   });
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
 });
 
@@ -329,12 +343,16 @@ it("新保存结果未知时不显示上一笔成功记录", async () => {
   fetchMock.mockResolvedValueOnce(response(await prepared(frozen, id(20))));
   render(<Workspace scope={scope} frozen={frozen} candidate={candidate} />);
   await save();
-  await screen.findByText("执行准备输入已读回并校验，尚未启动评审。");
+  await screen.findByText(
+    "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+  );
   fetchMock.mockRejectedValueOnce(new Error("offline"));
   await save();
   await screen.findByText(/有一笔执行准备输入保存尚未确认/);
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
   expect(JSON.parse(sessionStorage.getItem(storageKey)!).lastId).toBe(id(20));
 });
@@ -360,6 +378,8 @@ it("保存开始后此前历史读取的迟到结果不得覆盖未知状态", a
     resolve(response(await prepared(frozen, id(20)), 200));
   });
   expect(
-    screen.queryByText("执行准备输入已读回并校验，尚未启动评审。"),
+    screen.queryByText(
+      "执行准备输入已读回并校验；任务受理与结果见下方核查记录。",
+    ),
   ).not.toBeInTheDocument();
 });

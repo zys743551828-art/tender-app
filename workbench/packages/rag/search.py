@@ -8,10 +8,11 @@ from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from packages.rag.core import fuse_rankings
+from packages.rag.numeric import numeric_patterns
 from packages.rag.repository import source_scope_digest
 
 
-def candidates(c, scope, profile_id, vector, lexemes, excluded_evidence_ids=()):
+def candidates(c, scope, profile_id, vector, lexemes, excluded_evidence_ids=(), *, query=""):
     foreign = c.execute(
         "SELECT n.id FROM retrieval.source_nodes n LEFT JOIN design.document_versions v ON v.id=n.document_version_id WHERE n.id=ANY(%s) AND (v.bid_id IS DISTINCT FROM %s OR n.kind<>'document')",
         (list(scope.source_ids), scope.bid_id),
@@ -40,10 +41,20 @@ def candidates(c, scope, profile_id, vector, lexemes, excluded_evidence_ids=()):
         ),
         (*params, lexemes),
     ).fetchall()
-    identities = [
-        identity
-        for identity, _ in fuse_rankings([[r["id"] for r in dense], [r["id"] for r in lexical]])
-    ]
+    rankings = [[r["id"] for r in dense], [r["id"] for r in lexical]]
+    patterns = numeric_patterns(query)
+    if patterns:
+        numeric = c.execute(
+            sql.SQL(allowed)
+            + sql.SQL(
+                "SELECT c.id FROM allowed c WHERE normalize(c.text_content,NFKC) ~* ANY(%s::text[]) "
+                "ORDER BY (SELECT count(*) FROM unnest(%s::text[]) AS p(pattern) "
+                "WHERE normalize(c.text_content,NFKC) ~* p.pattern) DESC,c.id LIMIT 50"
+            ),
+            (*params, list(patterns), list(patterns)),
+        ).fetchall()
+        rankings.append([r["id"] for r in numeric])
+    identities = [identity for identity, _ in fuse_rankings(rankings)]
     rows = c.execute(
         sql.SQL(allowed)
         + sql.SQL(
@@ -56,22 +67,25 @@ def candidates(c, scope, profile_id, vector, lexemes, excluded_evidence_ids=()):
 
 
 def rerank(query, rows, reranker):
-    route = "exact_vector+lexical+rrf"
+    route = "exact_vector+lexical" + ("+numeric_exact" if numeric_patterns(query) else "") + "+rrf"
     identity = None
     if rows:
         try:
             scores = reranker.rank(query, [row["text_content"] for row in rows])
             if len(scores) != len(rows) or any(not math.isfinite(score) for score in scores):
                 raise ValueError("Invalid reranker response")
+            identity = getattr(reranker, "last_identity", None)
+            if not isinstance(identity, dict) or not identity:
+                raise ValueError("Reranker identity is missing")
             rows = [
                 row
                 for _, row in sorted(
                     zip(scores, rows, strict=True), key=lambda pair: (-pair[0], str(pair[1]["id"]))
                 )
             ]
-            identity = getattr(reranker, "last_identity", None)
             route += "+reranker"
         except Exception:
+            identity = None
             route += "+reranker_unavailable"
     return rows[:8], route, identity
 

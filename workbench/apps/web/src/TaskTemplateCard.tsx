@@ -1,13 +1,27 @@
 import { useState } from "react";
 import { ApiError } from "./api";
-import type { RunView, TemplateView, TaskKindPage } from "./contracts";
+import type { RunView } from "./contracts";
+import type { TemplateView, TaskKindPage } from "./taskTriggerContracts";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useRecordedCommand } from "./useRecordedCommand";
-import { taskNames, taskScopes, triggerDescription } from "./taskState";
+import {
+  exactPackageTaskScope,
+  isExactPackageTask,
+  taskNames,
+  taskScopes,
+  triggerDescription,
+} from "./taskState";
 import { assistantReason } from "./assistantState";
 import { TaskTemplateEditor } from "./TaskTemplateEditor";
+import { ExactPackageTaskRunControl } from "./ExactPackageTaskRunControl";
+import { ExactPackageTaskScope } from "./ExactPackageTaskScope";
+import { emptyPackageNavigationState } from "./packageNavigation";
+import { isExactPackageAuthoring } from "./taskPackageAuthoringProtocol";
+import { packageAuthoringScope } from "./packageAuthoringInputProtocol";
+import { PackageAuthoringRunControl } from "./PackageAuthoringRunControl";
+import { taskPackageStorageKey } from "./useTaskPackageCommand";
 
 export function TaskTemplateCard({
   bidId,
@@ -36,6 +50,11 @@ export function TaskTemplateCard({
   const pause = useRecordedCommand(`task-pause:${memberId}:${bidId}:${id}`);
   const run = useRecordedCommand(`task-run:${memberId}:${bidId}:${id}:start`);
   const [edit, setEdit] = useState(false);
+  const [editorMounted, setEditorMounted] = useState(false);
+  const [editorState, setEditorState] = useState(emptyPackageNavigationState);
+  const [exactRunState, setExactRunState] = useState(
+    emptyPackageNavigationState,
+  );
   const [error, setError] = useState<unknown>(null);
   const capability = kinds?.items.find(
     (capability) => capability.task_kind === item?.configuration.task_kind,
@@ -45,6 +64,25 @@ export function TaskTemplateCard({
     (run.error instanceof ApiError &&
       run.error.code === "MODEL_CALL_REQUIRES_RECONCILIATION");
   const unavailable = !capability || capability.execution === "unavailable";
+  const exact = item && isExactPackageTask(item.configuration);
+  const authoring = item && isExactPackageAuthoring(item.configuration);
+  let authoringRecovery = false;
+  try {
+    authoringRecovery =
+      sessionStorage.getItem(
+        taskPackageStorageKey({
+          kind: "authoring_run",
+          bidId,
+          memberId,
+          identity: id,
+        }),
+      ) !== null;
+  } catch {
+    /* An unavailable store is handled inside the command control. */
+  }
+  const exactBusy = exactRunState.busy || exactRunState.pending;
+  const editBlocked =
+    editorState.busy || editorState.pending || editorState.dirty;
   function changed() {
     void resource.reload();
     onChanged();
@@ -79,9 +117,25 @@ export function TaskTemplateCard({
           </p>
           <p className="preserve-text">{item.configuration.instructions}</p>
           <p className="small-note">
-            {taskScopes[item.configuration.task_kind]}
+            {authoring
+              ? packageAuthoringScope
+              : exact
+                ? exactPackageTaskScope
+                : taskScopes[item.configuration.task_kind]}
           </p>
+          {isExactPackageTask(item.configuration) && (
+            <ExactPackageTaskScope
+              bidId={bidId}
+              selection={item.configuration.source_selection.input}
+            />
+          )}
           <p>{triggerDescription(item.configuration.trigger)}</p>
+          {item.configuration.source_selection?.mode ===
+            "exact_package_trigger" && (
+            <p className="notice neutral">
+              只唤醒本模板已保存的确切输入；需独立调度服务启用后处理。手动执行须先核对输入并将模板明确保存为手动模式。已受理的原运行不随改版或暂停而消失。
+            </p>
+          )}
           {item.next_run_at && (
             <p>
               下一次计划时刻：
@@ -91,7 +145,7 @@ export function TaskTemplateCard({
               （Asia/Shanghai）
             </p>
           )}
-          {capability?.reason && (
+          {capability?.reason && !authoring && (
             <p className="notice warning">
               {assistantReason(capability.reason)}
             </p>
@@ -113,7 +167,11 @@ export function TaskTemplateCard({
               明确运行可能请求模型处理并产生费用；受理不表示候选已生成或核对已完成。
             </p>
           )}
-          <ErrorNotice error={error ?? pause.error ?? run.error} />
+          <ErrorNotice
+            error={
+              error ?? pause.error ?? (exact || authoring ? null : run.error)
+            }
+          />
           <div className="review-shortcuts">
             <button
               className="button secondary"
@@ -122,10 +180,14 @@ export function TaskTemplateCard({
                 !!resource.error ||
                 pause.busy ||
                 !!pause.pending ||
+                exactBusy ||
                 run.busy ||
                 !!run.pending
               }
-              onClick={() => setEdit(!edit)}
+              onClick={() => {
+                setEditorMounted(true);
+                setEdit(!edit);
+              }}
               aria-expanded={edit}
             >
               修改并保存新版本
@@ -137,6 +199,8 @@ export function TaskTemplateCard({
                 !!resource.error ||
                 pause.busy ||
                 !!pause.pending ||
+                exactBusy ||
+                editBlocked ||
                 !resource.etag
               }
               onClick={() =>
@@ -151,35 +215,58 @@ export function TaskTemplateCard({
             >
               {item.paused ? "恢复后续触发" : "暂停后续触发"}
             </button>
-            <button
-              className="button primary"
-              disabled={
-                resource.loading ||
-                !!resource.error ||
-                item.paused ||
-                unavailable ||
-                feeBlocked ||
-                run.busy ||
-                !!run.pending ||
-                !resource.etag
-              }
-              onClick={() =>
-                void run
-                  .run<RunView>(
-                    `/bids/${bidId}/task-definitions/${id}/runs`,
-                    { rerun: false },
-                    resource.etag ?? "",
-                  )
-                  .then((value) => accept(value?.data))
-              }
-            >
-              手动运行当前版本
-            </button>
+            {!exact && !authoring && (
+              <button
+                className="button primary"
+                disabled={
+                  resource.loading ||
+                  !!resource.error ||
+                  item.paused ||
+                  unavailable ||
+                  feeBlocked ||
+                  run.busy ||
+                  !!run.pending ||
+                  !resource.etag
+                }
+                onClick={() =>
+                  void run
+                    .run<RunView>(
+                      `/bids/${bidId}/task-definitions/${id}/runs`,
+                      { rerun: false },
+                      resource.etag ?? "",
+                    )
+                    .then((value) => accept(value?.data))
+                }
+              >
+                手动运行当前版本
+              </button>
+            )}
           </div>
           <p className="small-note">
             保存／修改不运行。暂停只影响未来触发，取消在途任务须到该运行记录明确操作；重复点击同输入可能恢复原运行，不另建重复付费任务。
           </p>
-          {run.pending && !run.busy && (
+          {exact && (
+            <ExactPackageTaskRunControl
+              key={`${memberId}:${bidId}:${id}`}
+              bidId={bidId}
+              memberId={memberId}
+              template={item}
+              etag={resource.etag}
+              kinds={kinds}
+              disabled={
+                resource.loading ||
+                !!resource.error ||
+                pause.busy ||
+                !!pause.pending ||
+                editBlocked ||
+                executionBlocked
+              }
+              onRun={onRun}
+              onChanged={changed}
+              onStateChange={setExactRunState}
+            />
+          )}
+          {!exact && !authoring && run.pending && !run.busy && (
             <button
               className="button secondary"
               onClick={() =>
@@ -197,19 +284,27 @@ export function TaskTemplateCard({
               恢复原暂停或恢复操作结果
             </button>
           )}
-          {edit && (
-            <TaskTemplateEditor
-              key={`${id}:${item.version_id}`}
-              bidId={bidId}
-              memberId={memberId}
-              template={item}
-              etag={resource.etag}
-              onSaved={() => {
-                setEdit(false);
-                changed();
-              }}
-              onClose={() => setEdit(false)}
-            />
+          {(exact || authoring ? editorMounted : edit) && (
+            <div hidden={!edit}>
+              <TaskTemplateEditor
+                key={
+                  exact || authoring
+                    ? `${memberId}:${bidId}:${id}`
+                    : `${id}:${item.version_id}`
+                }
+                bidId={bidId}
+                memberId={memberId}
+                template={item}
+                etag={resource.etag}
+                onSaved={() => {
+                  setEdit(false);
+                  setEditorMounted(false);
+                  changed();
+                }}
+                onClose={() => setEdit(false)}
+                onStateChange={setEditorState}
+              />
+            </div>
           )}
           <details className="identity-details">
             <summary>模板、固定版本与摘要</summary>
@@ -219,6 +314,28 @@ export function TaskTemplateCard({
             </p>
           </details>
         </>
+      )}
+      {(authoring || authoringRecovery) && (
+        <PackageAuthoringRunControl
+          key={`${memberId}:${bidId}:${id}`}
+          bidId={bidId}
+          memberId={memberId}
+          id={id}
+          template={item}
+          etag={resource.etag}
+          kinds={kinds}
+          disabled={
+            resource.loading ||
+            !!resource.error ||
+            pause.busy ||
+            !!pause.pending ||
+            editBlocked ||
+            executionBlocked
+          }
+          onRun={onRun}
+          onChanged={changed}
+          onStateChange={setExactRunState}
+        />
       )}
     </article>
   );

@@ -162,18 +162,20 @@ function PriceCurve({
         role="img"
         aria-label="情景价格分曲线，未知点断开，非中标概率或最优报价"
       >
-        <path d="M35 20V170H550" fill="none" stroke="#a5b8af" />
+        <path d="M35 20V170H550" fill="none" stroke="var(--border-strong)" />
         {segments.map((coordinates, index) => (
           <g key={index}>
             <polyline
               points={coordinates.join(" ")}
               fill="none"
-              stroke="#176b50"
+              stroke="var(--primary)"
               strokeWidth="2"
             />
             {coordinates.map((coordinate, i) => {
               const [cx, cy] = coordinate.split(",");
-              return <circle key={i} cx={cx} cy={cy} r="2.5" fill="#176b50" />;
+              return (
+                <circle key={i} cx={cx} cy={cy} r="2.5" fill="var(--primary)" />
+              );
             })}
           </g>
         ))}

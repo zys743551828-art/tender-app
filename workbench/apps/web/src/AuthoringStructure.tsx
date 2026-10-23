@@ -31,6 +31,7 @@ export function AuthoringStructure({
   draftRevision,
   sectionId,
   disabled,
+  readOnly = false,
   onChoose,
   onContinue,
   prepare,
@@ -43,6 +44,7 @@ export function AuthoringStructure({
   draftRevision: number;
   sectionId: string | undefined;
   disabled: boolean;
+  readOnly?: boolean;
   onChoose: (id: string) => Promise<void>;
   onContinue?: () => void;
   prepare: () => Promise<ApiResult<DraftView> | null>;
@@ -101,7 +103,7 @@ export function AuthoringStructure({
       previewPanel.current?.scrollIntoView?.({ block: "start" });
     }
   }, [held]);
-  const locked =
+  const navigationLocked =
     disabled ||
     planWorking ||
     working ||
@@ -110,6 +112,7 @@ export function AuthoringStructure({
     !!preview.pending ||
     !!resolve.pending ||
     !!held;
+  const locked = readOnly || navigationLocked;
   useEffect(() => {
     onBusy(
       working ||
@@ -142,7 +145,7 @@ export function AuthoringStructure({
     body: (revision: number) => unknown,
     retry = false,
   ) {
-    if (disabled || working) return;
+    if (disabled || (!retry && readOnly) || working) return;
     setWorking(true);
     setError(null);
     try {
@@ -182,6 +185,7 @@ export function AuthoringStructure({
   }
   async function decide(decision: "confirm" | "reject", retry = false) {
     if (!held?.value.action_id && !resolve.pending) return;
+    if (!retry && decision === "confirm" && (disabled || readOnly)) return;
     setWorking(true);
     try {
       const r = retry
@@ -244,7 +248,7 @@ export function AuthoringStructure({
                 <button
                   className={`chapter-link${n.section_id === sectionId ? " selected" : ""}`}
                   aria-current={n.section_id === sectionId ? "true" : undefined}
-                  disabled={locked}
+                  disabled={navigationLocked}
                   onClick={() => void onChoose(n.section_id)}
                 >
                   <span>{n.node_type === "appendix" ? "附" : "章"}</span>
@@ -267,10 +271,10 @@ export function AuthoringStructure({
           {sectionId && onContinue && (
             <button
               className="button secondary"
-              disabled={locked}
+              disabled={navigationLocked}
               onClick={onContinue}
             >
-              继续编写本章
+              {readOnly ? "查看本章正文" : "继续编写本章"}
             </button>
           )}
           <details>
@@ -521,7 +525,13 @@ export function AuthoringStructure({
               <div className="review-shortcuts">
                 <button
                   className="button primary"
-                  disabled={working || resolve.busy || !!resolve.pending}
+                  disabled={
+                    disabled ||
+                    readOnly ||
+                    working ||
+                    resolve.busy ||
+                    !!resolve.pending
+                  }
                   onClick={() => void decide("confirm")}
                 >
                   应用这次变更

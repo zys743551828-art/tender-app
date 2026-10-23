@@ -20,7 +20,7 @@ export function AuthoringReferences({
   changeAttrs,
 }: {
   bidId: string;
-  content: AuthoringDocument;
+  content: Pick<AuthoringDocument, "attrs">;
   disabled: boolean;
   changeAttrs: (
     update: (attrs: AuthoringDocument["attrs"]) => AuthoringDocument["attrs"],

@@ -1,0 +1,32 @@
+.F.F                                                                     [100%]
+=================================== FAILURES ===================================
+______ test_actual_public_ui_flow_exact_ack_directories_and_isolated_cpu _______
+tests/test_package_history_ui_pg.py:217: in test_actual_public_ui_flow_exact_ack_directories_and_isolated_cpu
+    prepared_case(api, tmp_path, capture, name, value=value)
+tests/test_package_history_ui_pg.py:160: in prepared_case
+    assert receipt["paid_calls"] == 0 and receipt["provider_requests"] == 0
+           ^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'paid_calls'
+_ test_normal_api_cannot_admit_synthetic_and_purpose_roles_cannot_read_directory _
+tests/test_package_history_ui_pg.py:501: in test_normal_api_cannot_admit_synthetic_and_purpose_roles_cannot_read_directory
+    w = prepared_case(api, tmp_path, capture, "primary")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_package_history_ui_pg.py:160: in prepared_case
+    assert receipt["paid_calls"] == 0 and receipt["provider_requests"] == 0
+           ^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'paid_calls'
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/starlette/testclient.py:37
+  /workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_package_history_ui_pg.py::test_missing_public_installation_and_unknown_directory_are_not_empty
+  /workspace/scratch/d0221a1cc751/tender-app/workbench/.venv/lib/python3.12/site-packages/oss2/api.py:703: SyntaxWarning: invalid escape sequence '\&'
+    r'http://your-bucket.oss-cn-hangzhou.aliyuncs.com/logo.jpg?OSSAccessKeyId=YourAccessKeyId\&Expires=1447178011&Signature=UJfeJgvcypWq6Q%2Bm3IJcSHbvSak%3D'
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-- generated xml file: /tmp/package-history-ui-acceptance-g_cg5wem/pytest.xml --
+=========================== short test summary info ============================
+FAILED tests/test_package_history_ui_pg.py::test_actual_public_ui_flow_exact_ack_directories_and_isolated_cpu
+FAILED tests/test_package_history_ui_pg.py::test_normal_api_cannot_admit_synthetic_and_purpose_roles_cannot_read_directory
+2 failed, 2 passed, 2 warnings in 12.45s

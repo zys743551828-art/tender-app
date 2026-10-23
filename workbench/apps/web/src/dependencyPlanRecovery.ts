@@ -12,6 +12,7 @@ import {
   executionId,
   recordObject,
 } from "./executionInputValidation";
+import { recordedCommandStorageKey } from "./recordedCommandStorage";
 
 export type DependencyPlanRecord = {
   version: 1;
@@ -20,7 +21,18 @@ export type DependencyPlanRecord = {
   lastId: string | null;
 };
 export const dependencyPlanStorageKey = (s: DependencyPlanScope) =>
-  `tender:command-record:dependency-plan:${s.memberId}:${s.bidId}:${s.packageId}:${s.revisionId}:${s.inventoryId}:${s.frozenId}:${s.frozenDigest}:${s.preparedId}:${s.preparedDigest}`;
+  recordedCommandStorageKey(
+    "dependency-plan",
+    s.memberId,
+    s.bidId,
+    s.packageId,
+    s.revisionId,
+    s.inventoryId,
+    s.frozenId,
+    s.frozenDigest,
+    s.preparedId,
+    s.preparedDigest,
+  );
 export function loadDependencyPlanRecord(
   p: DependencyProps,
 ): DependencyPlanRecord {

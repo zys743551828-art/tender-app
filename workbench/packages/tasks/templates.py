@@ -58,6 +58,25 @@ def view(c, bid, definition):
 
 
 def assert_targets(c, bid, definition):
+    if definition.source_selection.mode == "exact_package_authoring":
+        from packages.authoring.package_job_authority import require_schema
+        from packages.authoring.package_job_identity import selected as authoring_selected
+
+        require_schema(c)
+        authoring_selected(
+            c, bid, definition.source_selection.input.model_dump(mode="json"), definition.section_id
+        )
+        return
+    if definition.source_selection.mode in ("exact_package_review", "exact_package_trigger"):
+        from packages.tasks.package_inputs import selected
+
+        selected(c, bid, definition.source_selection.input.model_dump(mode="json"))
+        if definition.source_selection.mode == "exact_package_trigger":
+            from packages.tasks.package_triggers import available
+
+            if not available(c):
+                raise DomainError("TASK_PACKAGE_TRIGGER_NOT_READY", "整包触发存储尚未安装", 503)
+        return
     if definition.section_id:
         fetch(c, "SELECT id FROM sections WHERE bid_id=%s AND id=%s", (bid, definition.section_id))
     for version in definition.source_selection.version_ids:

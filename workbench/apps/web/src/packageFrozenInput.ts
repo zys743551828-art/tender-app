@@ -3,6 +3,7 @@ import type {
   PackageReviewFrozenInputView,
 } from "./contracts";
 import { matchesExecutionContext } from "./packageReviewContext";
+import { recordedCommandStorageKey } from "./recordedCommandStorage";
 
 export type FreezeScope = {
   memberId: string;
@@ -29,7 +30,14 @@ export const validFrozenInputId = uuid;
 export const freezePath = (s: FreezeScope) =>
   `/bids/${s.bidId}/packages/${s.packageId}/revisions/${s.revisionId}/requirement-inventories/${s.inventoryId}/frozen-review-inputs`;
 export const freezeStorageKey = (s: FreezeScope) =>
-  `tender:command-record:package-freeze:${s.memberId}:${s.bidId}:${s.packageId}:${s.revisionId}:${s.inventoryId}`;
+  recordedCommandStorageKey(
+    "package-freeze",
+    s.memberId,
+    s.bidId,
+    s.packageId,
+    s.revisionId,
+    s.inventoryId,
+  );
 
 export function validFreezeBody(v: unknown): v is FreezePackageReviewInput {
   if (

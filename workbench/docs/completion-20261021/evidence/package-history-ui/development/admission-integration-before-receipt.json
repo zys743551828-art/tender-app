@@ -1,0 +1,13 @@
+{
+  "src/PackageHistoricalAdmission.integration.test.tsx": "a39a66a2369f86266740bf8f8928729435c4890ff7f62759c6b26221308c241d",
+  "src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+  "src/PackageTechnicalEligibility.tsx": "3b500cfa85cd69fda2987f3ea3afaf02b7ad76184cff2cdb708ef075753c921a",
+  "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/PackageHistoricalAdmission.integration.test.tsx"
+  ],
+  "exit_code": 1
+}

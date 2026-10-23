@@ -1,0 +1,656 @@
+{
+  "schema": "work-context-frontend-acceptance/1",
+  "base_commit": "ebe7e80b05cec1699eb0ce449cbda1406f4dc5d2",
+  "date": "2026-10-21",
+  "owned_source_sha256": {
+    "apps/web/qa-previews/frozen-inputs/workContext.ts": "6335dadab536b53b72ac12cb0f075013e1b952539c4f669ea30b0e7fe8b75a9b",
+    "apps/web/qa-previews/frozen-inputs/workContextAuthoring.ts": "d925137794e46eaf0132d56d0bec5e4a846a82021a1d7f18709c1d95df9d557f",
+    "apps/web/scripts/check-work-context-browser.mjs": "4303eebd838883ff2894eb77a4a47d0071b5a1024f70de4ea3d8dcf6bb73d35a",
+    "apps/web/src/App.tsx": "7c5a4512c421c576e76360d9d2a08e123ca0ae622a384748b9c045f894b142d0",
+    "apps/web/src/AuthoringRichSnapshot.test.tsx": "ca1d03d5f3c97d43d8d26886eddca4d67ca2ec43ed15c07c41f35d4a3632e02a",
+    "apps/web/src/AuthoringRichSnapshot.tsx": "b46c234491329c11894c1762fbf97b3e5d7f974eeb9abc43afb88e6fc5bae2f6",
+    "apps/web/src/NextActionControl.tsx": "9b3a55ece43ca8abd85099953adbf1f870ee62c1d3ef588523311afe35b6ae93",
+    "apps/web/src/ProjectWorkspace.tsx": "a57c54c83ecdd11037ab38ce8f8d87383ab04e135b344b1581cc070d48623ded",
+    "apps/web/src/WorkContext.css": "c9b4b2f16182e8b4b2d615fbc3747d7f75db873554be80d6c554d034ac54517f",
+    "apps/web/src/WorkContextAppNavigation.test.tsx": "2dd1f8b4046790387f3ce35a9a03e367f5f944be6d26f9bf12169bbff9d91e24",
+    "apps/web/src/WorkContextAuthoringDetails.tsx": "9e1774744f302a725b2d081658d5423bd971e79ab30cd61e3f1ea40bf00730b0",
+    "apps/web/src/WorkContextBuildRelations.tsx": "de397bd78cf239b685d6f1cbb9e7bb7ee635acae97913f35af7306c61e271af6",
+    "apps/web/src/WorkContextChoices.tsx": "3b7d766f2ef7c7de4e1daa57dd3da2cc09994d95d4eeb87248e09517e0d2b40c",
+    "apps/web/src/WorkContextReviewDetails.test.tsx": "fd68abd388ce7ad51dcdf67357f5cc657c272d0113dcafa9b172a1dc524336d4",
+    "apps/web/src/WorkContextReviewDetails.tsx": "2907e2d4d9f8ca3c12d17a7c69a2839d8551f400bb066bf7b22e5cc475f597c2",
+    "apps/web/src/WorkContextSubmissionDetails.test.tsx": "76a2a826c380b1fada998aa8f4878f3793542f4bf978d0a502848b033df94b1b",
+    "apps/web/src/WorkContextSubmissionDetails.tsx": "f432b056dfebb56c3b0f3e8dafbbcb18f6cdb514a25861cd80674278369f4cbe",
+    "apps/web/src/WorkContextSummary.test.tsx": "20658592185cabb13934ee0746749ea34d8402d31c000785b65518d79e55fb47",
+    "apps/web/src/WorkContextSummary.tsx": "c69ab6024594d79f924985d77517a52e2b84a6c4030115ca13db389c3652d742",
+    "apps/web/src/WorkContextWorkspace.test.tsx": "5c943f9873dce5d862ebdde4b8d30960feb7f0db0e291a61c6bec687c8ab664f",
+    "apps/web/src/WorkContextWorkspace.tsx": "016f546821e7e7540468b7fabb31cc89b181e1857da757bfd7241733577b29b8",
+    "apps/web/src/WorkspaceNavigation.tsx": "524252552ef987ac632e700b44dfcac7fef138403ed9ee9af038ced749608261",
+    "apps/web/src/useWorkContextDirectory.ts": "6924443d4cd7b302dbb1dcae41dde8a003e101ea34756f122a4784bd4529f540",
+    "apps/web/src/workContextAuthoringProtocol.test.ts": "df941f3066871050cbd00f9cc6e980f763a4aa8f4b0971027c25a503fa04845e",
+    "apps/web/src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+    "apps/web/src/workContextDirectoryProtocol.ts": "863b4aa7a705f845c6ca7eb181188e1a3e6e3358d34209bc8f013e6b6c74e8dd",
+    "apps/web/src/workContextNavigation.ts": "d4da8291e2283a17e153731685db3ecfa0924e465fd52189f5a41e9030731ec5",
+    "apps/web/src/workContextProtocol.test.ts": "7f49a58cc16e2b52fc68dd2729abee3b7bc7dcbff7c987e101e9d6c35a28ff75",
+    "apps/web/src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6",
+    "apps/web/src/workspacePosition.test.ts": "33b4065b434a03896a21497c78fe9655c8e4aaabc923c4c64c92baadfb23600c",
+    "apps/web/src/workspacePosition.ts": "1aa6683d7de99f18575ce1ebf4876c631976b31d3e4590cd38c30e303d327126",
+    "apps/web/src/workspaceTypes.ts": "79dcd10aee10b84756f873d078cf1971bf16d636873a5bb425f5b799b53fb5c4"
+  },
+  "browser": {
+    "schema": "work-context-browser/1",
+    "passed": true,
+    "real_model_calls": 0,
+    "real_database_in_browser": false,
+    "transport": "Synthetic immutable API records; real React components, rich text and Chromium",
+    "source_sha256": {
+      "qa-previews/frozen-inputs/dependencyPlan.ts": "53ec05cb3ea9a01131fc07fee28a4819d94ce22d814828c0770c2368fb0164f1",
+      "qa-previews/frozen-inputs/factChange.ts": "9e2f2dec9760ba0c2023e976bb3076b60075cb57f3a531b943cd3c68fc8d173f",
+      "qa-previews/frozen-inputs/inputDependencies.ts": "0480f63c72725ceaed2ed5da172e12ef3cfac385f1bbe8e8bd9b75ef6a3aab20",
+      "qa-previews/frozen-inputs/packageReview.ts": "da713ab1119a6f16ffe354e8588ecf5cc7d0101fb19e5bf56567301703bc9095",
+      "qa-previews/frozen-inputs/packageReviewComparison.ts": "e05a2bfa8548ac9e324b5b5acede48673c7105774057e2a6f162e48092494306",
+      "qa-previews/frozen-inputs/packageReviewDecision.ts": "0b8d03f3fdba73fac2760a00bb7226849473559bdc10ed2e62dc09363fcd0f08",
+      "qa-previews/frozen-inputs/prepared.ts": "00ccb1e63bde9b0debfecfb601739e379eb473fac9c4a1b1d5af850938658b90",
+      "qa-previews/frozen-inputs/workContext.ts": "6335dadab536b53b72ac12cb0f075013e1b952539c4f669ea30b0e7fe8b75a9b",
+      "qa-previews/frozen-inputs/workContextAuthoring.ts": "d925137794e46eaf0132d56d0bec5e4a846a82021a1d7f18709c1d95df9d557f",
+      "scripts/check-work-context-browser.mjs": "4303eebd838883ff2894eb77a4a47d0071b5a1024f70de4ea3d8dcf6bb73d35a",
+      "src/ArtifactActions.tsx": "1b6a6dc897251ece574de035825720f8ca8f7755f9533a6dc79260bd693d89ee",
+      "src/AssistantDrawer.css": "7e3a45f33d7929afba06fd1e6780664199c82eb02c93cbf9b508d27b0a945d4d",
+      "src/AuthoringRichSnapshot.css": "cbdb03134d25aee4c1a1bdc17012d39a4a1da19faf56135d000fb0c572b05e99",
+      "src/AuthoringRichSnapshot.tsx": "b46c234491329c11894c1762fbf97b3e5d7f974eeb9abc43afb88e6fc5bae2f6",
+      "src/AuxiliaryResizeHandle.tsx": "f96da85a076488c29d4396d59bf0419e1baff1869f2c42c597dcd6a0ba59112c",
+      "src/DocumentRelationNotice.tsx": "df02434496e0e0b08450698f6592a718a954aa3ded67a0dd91c6cb3d685bdb6a",
+      "src/Evidence.tsx": "fed9e259014e2d4c42b485ff87552187f74ab983168b62fd5d8f780dfb5bbc92",
+      "src/PackageReviewEvidence.tsx": "7028d66cc2eb52066646689cfd09c5ab6246f32851372a08655e6ee04415446d",
+      "src/PackageReviewInputDetails.tsx": "b99b1cb983aee92797c9bf28b863daa3037dda89c8abae5e3bd8ccaa490c50f8",
+      "src/PackageReviewReport.tsx": "c863b27a15db96bb8e3eeceb97e7a4bbf37b56e573570ea091626d3fdd19aac4",
+      "src/PackageSubmission.css": "a3ef78f141786b8ec47479413ecd5d0cfc20253f04a230f55b2b0227319daf61",
+      "src/PackageSubmissionGates.tsx": "c9234be36ee3c5390be7b9d823bde93533438f9c9f1fd489833c201197812cb5",
+      "src/PdfPreview.tsx": "7e7648e1775b86c2eab23d4ae06c0a75583aed539b637ca9113907a78a8b7da5",
+      "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+      "src/SourceSurface.css": "2589a12fbd6af0d9044383ac372e6b452cbaacd600f9d7db92d30de3e2453984",
+      "src/SourceSurface.tsx": "d19bf1db5e4e8656f26ecc5f9dbbed021cd9acd5d70e60eab0bec962ad7bc2d9",
+      "src/WorkContext.css": "c9b4b2f16182e8b4b2d615fbc3747d7f75db873554be80d6c554d034ac54517f",
+      "src/WorkContextAuthoringDetails.tsx": "9e1774744f302a725b2d081658d5423bd971e79ab30cd61e3f1ea40bf00730b0",
+      "src/WorkContextBuildRelations.tsx": "de397bd78cf239b685d6f1cbb9e7bb7ee635acae97913f35af7306c61e271af6",
+      "src/WorkContextChoices.tsx": "3b7d766f2ef7c7de4e1daa57dd3da2cc09994d95d4eeb87248e09517e0d2b40c",
+      "src/WorkContextReviewDetails.tsx": "2907e2d4d9f8ca3c12d17a7c69a2839d8551f400bb066bf7b22e5cc475f597c2",
+      "src/WorkContextSubmissionDetails.tsx": "f432b056dfebb56c3b0f3e8dafbbcb18f6cdb514a25861cd80674278369f4cbe",
+      "src/WorkContextSummary.tsx": "c69ab6024594d79f924985d77517a52e2b84a6c4030115ca13db389c3652d742",
+      "src/WorkContextWorkspace.tsx": "016f546821e7e7540468b7fabb31cc89b181e1857da757bfd7241733577b29b8",
+      "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+      "src/assistantDock.ts": "af8b4011faf0ca6e9ee18285bbb4c5b1405eb00bf6339821b2854a20e48b7fa3",
+      "src/authoringWordImportFixtures.test-support.ts": "f97b0c47ed658e10d4515957260a2c74453df050c5977fdba0f555eb5764b7ed",
+      "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+      "src/contracts.ts": "991924f348af23ebe1f81a5a17f0bb499d6335978bfa18068c089a58bf961f2a",
+      "src/dependencyPlanProtocol.ts": "7a739752d489d74cd9d316e1c73a26332159ac1cbae661b13869bbed10c12008",
+      "src/dependencyRequestLimits.ts": "6a253e5863e22cb594e6a0b749c586f7c2471d324ee9e195fd1ea168d5f4f3ce",
+      "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+      "src/executionInputRecovery.ts": "5e906fe6c7ece376bf4f208badd4b8e0d7e1b3512940e882f6a8bf3274252ddb",
+      "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+      "src/factScopeValidation.ts": "13564fcad9f5aec0c46c98572aac30d154578d6ed51cd0ead278ddc89cd35c8a",
+      "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+      "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+      "src/inputDependencyProtocol.ts": "5172faea11e2c69c348ad6eeaf83251c6044b04acd3c1867fee0a358ad843569",
+      "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+      "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+      "src/packageReview.css": "0fa637eff5e2cbcfdbd42c6faf390c3afebd486ec090dcb5ff397fa988c665b9",
+      "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+      "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+      "src/packageReviewInputProtocol.ts": "2a4e6f518e09ea213d140b98a8390469059180f5dab618c200c901112e4b368d",
+      "src/packageReviewProtocol.ts": "67dff999ece6e18718808bcb3f3006748cb12c09a1106d94b68715e862a9564d",
+      "src/packageRuleCorrectionFixtures.test-support.ts": "98d33aeaf39fa95f9da76b2d786b3a20901262c562bc794d4ab29e8d5d66a9a4",
+      "src/packageRuleCorrectionProtocol.ts": "f9f3d4b6d800b9ab9f274f7e97e9623e75b58fcc05e07cd2d57a41146885bf45",
+      "src/packageRuleCorrectionRecovery.ts": "a21f0c53206bdc033feaabd09f163cd9d48031fe80516121d78396ac9bc16cdb",
+      "src/packageSubmissionFixtures.test-support.ts": "97659611005affae6ffc2bbf587aae4993f2d23a09cb14e503f898578baa6a11",
+      "src/packageSubmissionProtocol.ts": "758b233812907543eac30b41863d23f3e51bfe732c80a014271c279ce902c0d4",
+      "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+      "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+      "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+      "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+      "src/useAssistantDock.ts": "5794b62752da0f19acf434afc31b65e2336ce2ba7a8f00403351af3b99ed8c7a",
+      "src/useAuxiliaryFocus.ts": "2fe7445ff86a44012b19adbe0b2f629800fb04cae148fb2adc978f4eb4b1d0cf",
+      "src/useWorkContextDirectory.ts": "6924443d4cd7b302dbb1dcae41dde8a003e101ea34756f122a4784bd4529f540",
+      "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+      "src/workContextDirectoryProtocol.ts": "863b4aa7a705f845c6ca7eb181188e1a3e6e3358d34209bc8f013e6b6c74e8dd",
+      "src/workContextNavigation.ts": "d4da8291e2283a17e153731685db3ecfa0924e465fd52189f5a41e9030731ec5",
+      "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6",
+      "src/workspaceAuxiliary.ts": "e12542181c9c4bac5838211b1884b9ea2fc1f02558c8b66fa69dc2eadc14bdd8",
+      "src/workspaceAuxiliaryContext.ts": "f8c5dccb13ac72cf681e6528a678c7ab3402c2170ae25d6144cb44b76fa44c29",
+      "src/workspaceDockReservation.ts": "64457bc4aa96e830082e1a15dbb47e660dd5ce407093f75d987b77ae9f3c9205"
+    },
+    "checks": [
+      {
+        "width": 1280,
+        "theme": "light",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 768,
+        "theme": "light",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 768,
+        "theme": "dark",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "stage": "draft_snapshot",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 2
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "stage": "build",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "stage": "package_review_run",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 5
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "stage": "package_submission",
+        "explicit_selection": true,
+        "exact_original": true,
+        "horizontal_overflow": false,
+        "writes": 0,
+        "javascript_errors": [],
+        "external_requests": [],
+        "requests": 3
+      }
+    ],
+    "screenshots": [
+      {
+        "file": "draft_snapshot-light-1280.png",
+        "sha256": "498c057266c10293e31b342ec41401df36abdb85dd851123ed725b8777bd71cd"
+      },
+      {
+        "file": "build-light-1280.png",
+        "sha256": "f5968064e3f49df5cdb07add82e6f4d59db7ab10c760f7791786cca93b1c316e"
+      },
+      {
+        "file": "package_review_run-light-1280.png",
+        "sha256": "80736529b09ece7636ac76b15b8319142ac318d8290ce38ff87011fadf212651"
+      },
+      {
+        "file": "package_submission-light-1280.png",
+        "sha256": "b8d82f42dbae4ce79152ad682efe2c0da163cd9882c78ee7c7657e108fdd40c9"
+      },
+      {
+        "file": "draft_snapshot-dark-1280.png",
+        "sha256": "f5ecb05fb0dccb7a846b990f6dabbd6548fbf5a426e046262bf6f4dafc8ca229"
+      },
+      {
+        "file": "build-dark-1280.png",
+        "sha256": "b21994844777f2eaf4020314e28daa672025c0487f76961edb81f7fb5202df15"
+      },
+      {
+        "file": "package_review_run-dark-1280.png",
+        "sha256": "72ac29397e09e30dd5c6721a29a2fe849308f0110af8638ea48997807c1b4720"
+      },
+      {
+        "file": "package_submission-dark-1280.png",
+        "sha256": "21d250269872d20f55246ffc52c83b8f254a76d52bb062cf5bfef599e02fa2a8"
+      },
+      {
+        "file": "draft_snapshot-light-768.png",
+        "sha256": "fe161d6a4b63e92b568971ba9c944c030676f81d29accbd801e4ef45422392d3"
+      },
+      {
+        "file": "build-light-768.png",
+        "sha256": "91906bfcc3f5256884a874e1b8a9ac9173a361e1cd7e399f9e64428bf2fbcad0"
+      },
+      {
+        "file": "package_review_run-light-768.png",
+        "sha256": "ba34312840f4dc51d02b9d8e05fdbc448a3a27b3bec5e18b2b43de76b179f503"
+      },
+      {
+        "file": "package_submission-light-768.png",
+        "sha256": "07b044a1ede43af8df9f6c38c80fdfb44af3eeea00b772b4bcffe10ace951246"
+      },
+      {
+        "file": "draft_snapshot-dark-768.png",
+        "sha256": "c0109d4331c5b505cec6ee216cea74e8fb56b90c9529c850087d36ae847d9b80"
+      },
+      {
+        "file": "build-dark-768.png",
+        "sha256": "dbe6dbad12f7526bf06861b8e0a073c2ca29ad5763f0e7db28cc8c359166aa84"
+      },
+      {
+        "file": "package_review_run-dark-768.png",
+        "sha256": "8208c335479d5cf1141547cb6626cded5e8da9d03e3732298c55b77eb169a83c"
+      },
+      {
+        "file": "package_submission-dark-768.png",
+        "sha256": "ed71d47831c2a87e44f2d88e8695d38a19cb5867852f56a8ef75d8af3f7551ef"
+      },
+      {
+        "file": "draft_snapshot-light-390.png",
+        "sha256": "e30b81d02affce0d3d99b6e07a01d236cad04fc4cc8718108179d19c6d9d197e"
+      },
+      {
+        "file": "build-light-390.png",
+        "sha256": "6e3da917c6c4cbffe4d8775eb105d3406d6f85969b1bfc8b098c573b684a0c4b"
+      },
+      {
+        "file": "package_review_run-light-390.png",
+        "sha256": "e4c8540fd07f97f6cf2dbcbe56c0851b2da6e492a8f3d17960f8c02e8f195866"
+      },
+      {
+        "file": "package_submission-light-390.png",
+        "sha256": "0c317a1302febaefbb68c4594f969e0818fdb0fca5cd261b2cfcae3a745128da"
+      },
+      {
+        "file": "draft_snapshot-dark-390.png",
+        "sha256": "6d97677d7a70a28dd9c35de4143b58b9a65313690f59594a22401b87a87f891e"
+      },
+      {
+        "file": "build-dark-390.png",
+        "sha256": "95eb7b3d092acd067a25a840ea0f3b542d8ef5fd5faefd9df7cb4cb09c2329ff"
+      },
+      {
+        "file": "package_review_run-dark-390.png",
+        "sha256": "6163a0c967f6da4f6a5f60ddb8232feb39a2cc59b6e73a855f36f76ae363c060"
+      },
+      {
+        "file": "package_submission-dark-390.png",
+        "sha256": "e0968133ea2d20a85f08836d8975e67a8a4426da93f7822e91b4c4a6abb0c2f1"
+      }
+    ],
+    "chromium": "156.0.8078.47"
+  },
+  "browser_receipt_sha256": "ef7ae8268ff2ba24b6e4882a5d3cb11ed7c210f5fd07c8d5ea41a01abf0569ee",
+  "visual_inspection": [
+    "draft_snapshot-dark-390.png",
+    "package_review_run-light-1280.png"
+  ],
+  "last_focused_regression": {
+    "files": 3,
+    "passed": 34,
+    "names": [
+      "workContextAuthoringProtocol.test.ts",
+      "AuthoringRichSnapshot.test.tsx",
+      "WorkContextWorkspace.test.tsx"
+    ],
+    "whole_suite": "See checkpoint 13 frozen integration receipt; counts overlap and must not be added"
+  },
+  "native_api_crosscheck": "work-context-native-response-checks.json",
+  "fixed_findings": [
+    "stored image version and normalized bytes must match the saved snapshot, before bytes load",
+    "relations must match the validated successful build output format, exact document version and byte hash",
+    "legacy saved body ordinals need not equal contiguous snapshot display ordinals",
+    "native report CSS, compact radios and responsive padding"
+  ],
+  "limits": [
+    "Synthetic browser HTTP; real components and Chromium",
+    "Native API/PG response crosscheck is a separate layer",
+    "No formal score, whole-package risk or new-use qualification granted",
+    "No paid model calls, deployment or merge"
+  ],
+  "integration_amendment": {
+    "initial_typecheck": "failed on nullable proof test typing, unsupported Testing Library option and nullable successful output property",
+    "resolution": "Use typed fixture proof; match named radio without unsupported exact flag; explicitly guard non-null output. Full candidate regression follows.",
+    "result": "Complete frozen candidate: 154 frontend files, 1421 tests, TypeScript and production build passed. Native API replay 13/13 and 24 browser groups also passed."
+  },
+  "native_final_replay": {
+    "version": "work-context-native-frontend/1",
+    "passed": true,
+    "started_at": "2026-10-21T12:12:46.978Z",
+    "node": "v24.19.0",
+    "esbuild": "0.25.12",
+    "input": {
+      "path": "/tmp/tender-review-work-context-native-responses/native-responses.json",
+      "sha256": "c4045efba7eab1f09dd53a0b40f0602e01f327f68681aa84de221852773ac1a1",
+      "bytes": 609364,
+      "unchanged": true
+    },
+    "compiled_validators": {
+      "path": "/tmp/tender-review-current/checkpoint13-native-context-final-receipt.json.validators.mjs",
+      "sha256": "b1765581b7ec60190d758bca6febf74bdee930d8b972cd5c2b76cf22944679af"
+    },
+    "source_sha256": {
+      "package-lock.json": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+      "package.json": "73f5c33f0ee13aea682b19ce92ddcee5423c16d2026ac90e7893721dc1665e67",
+      "scripts/check-work-context-native.mjs": "0805a6e1bbbc986d61e699c186456d4b042522716a5555fdeb311ae7642899a4",
+      "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+      "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+      "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+      "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+      "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+      "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+      "src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+      "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+      "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+      "src/workContextDirectoryProtocol.ts": "863b4aa7a705f845c6ca7eb181188e1a3e6e3358d34209bc8f013e6b6c74e8dd",
+      "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+    },
+    "sources_unchanged": true,
+    "synthetic_only": true,
+    "responses_expected": 12,
+    "protocol_checks_expected": 11,
+    "body_values_modified": false,
+    "checks": [
+      {
+        "label": "build",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "package_review_run",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "package_submission",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "choices_package_review_run",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "choices_package_submission",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "draft_snapshot",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "build_relations",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "draft_snapshot_sparse_ordinal",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "draft_snapshot_rich",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "choices_draft_snapshot",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "choices_build",
+        "kind": "current_ts_protocol",
+        "passed": true
+      },
+      {
+        "label": "historical_image_metadata",
+        "kind": "image_binding_consistency",
+        "passed": true
+      },
+      {
+        "label": "synthetic_normalized_png",
+        "kind": "image_byte_consistency",
+        "passed": true
+      }
+    ],
+    "limitations": [
+      "Offline replay of real routed native API JSON from explicit synthetic fixtures; no live database or HTTP request is performed by this script.",
+      "Image bytes are the native test fixture's normalized PNG, not a captured bytes HTTP response; metadata/binding/hash/IHDR consistency does not assert browser decoding or transport correctness.",
+      "No renderer, navigation, pagination interaction, permissions, real document quality or prediction quality is established by this replay alone."
+    ],
+    "finished_at": "2026-10-21T12:12:47.119Z"
+  },
+  "visual_inspection_identity": "The inspected draft_snapshot-dark-390.png and package_review_run-light-1280.png are byte-identical to the final frozen candidate screenshots."
+}

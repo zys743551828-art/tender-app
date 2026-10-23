@@ -358,7 +358,8 @@ class LocalParser:
                 for block in page["blocks"]:
                     text = block["text_content"].strip()
                     if len(text) < 120 and HEADING.match(text):
-                        block["kind"] = "heading"
+                        # A guessed chapter is metadata, not a new evidence type.
+                        # In particular a numbered table must remain a table.
                         current = [text]
                         chapters.append(
                             {

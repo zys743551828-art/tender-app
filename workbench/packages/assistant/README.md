@@ -28,6 +28,12 @@ Action 的目标、参数与预览由 API 从冻结可信上下文构造；模�
 
 ## 执行与权限
 
+### 多章节批次
+
+`generation_batches` 在既有项目生成任务上增加 `section_patch_set/1`：最多 20 章、每章最多 5 次显式尝试，冻结精确草稿与来源，复用同一预算和调用账本。完整 Rich 前后候选须明确选中，所有任务终结且费用核清后一次事务应用；表格、图片和未选节点保持原样。旧单章确认入口不能旁路消费批次候选。
+
+可选 SQL 顺序为 `assistant.sql` → `live-facts.sql` → `intent-budget.sql` → `generation-batches.sql`，不加入默认预览的基础 schema。新增三表只向 API 授予读取和追加；普通 Worker 继续处理原生任务，API coordinator 发布候选。能力、七个实际路由、累计额度、失败恢复和验证边界见 [M2 验收记录](../../docs/completion-20261021/authoring-m2-acceptance.md)。
+
 项目普通 Worker hooks：`tasks.compute(message,lease)` / `tasks.publish(c,message,outcome)`。处理器 `assistant/1` 对应 step `assistant-answer`，`authoring-generate/1` 对应 step `authoring-generate`；topic 为 `tender.task.assistant.v1`。`payload_ref=assistant_jobs.id`，任务 input_digest 为 `sha({id:job.id,digest:job.input_digest})`。主后端集中注册 engine/main；本目录不改共享入口。
 
 全局 `global_runtime` 为独立单次 run；reserve 顺序是逻辑 intent/profile advisory 锁 → run/fence/租约 → 全局 unresolved 检查 → 唯一账本。单 run 仅一次预留；unknown/reserved/失败不会自动重发。取消或失租后的迟到响应仍保留实际费用，但不产生可用候选。模型响应 blob 摘要、实际账本和输出内容精确绑定。

@@ -1,0 +1,194 @@
+{
+  "scope": "F12-09 and the authoring portion of F12-11/F12-12; explicit synthetic browser HTTP, not whole F12 or business acceptance",
+  "unit_tests": {
+    "files": 7,
+    "passed": 43,
+    "new_tests": 8
+  },
+  "typecheck": "npx tsc -b --pretty false passed",
+  "eslint": "20 owned source/test/script/style files checked as applicable, passed",
+  "prettier": "20 files passed",
+  "browser": {
+    "scope": "Actual ProjectWorkspace, AuthoringPanel, SectionEditor, AssistantDrawer, AssistantWorkspace; explicit synthetic HTTP. No model, original conversion, or business acceptance.",
+    "cases": [
+      {
+        "width": 1440,
+        "theme": "light",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "width": 1440,
+        "theme": "dark",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "width": 1440,
+        "theme": "system",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "width": 1280,
+        "theme": "light",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "width": 1280,
+        "theme": "dark",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "width": 1280,
+        "theme": "system",
+        "body_top": 609.6875,
+        "layout": "no whole-page overflow",
+        "assistant": "nonmodal bounded side panel",
+        "focus_restored": true
+      },
+      {
+        "workflow": "resize desktop/390/desktop, source task, retrieval exclusion",
+        "same_draft_nodes": true,
+        "unsent_text_preserved": true
+      },
+      {
+        "width": 820,
+        "theme": "light",
+        "body_top": 675.46875,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "width": 820,
+        "theme": "dark",
+        "body_top": 675.46875,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "width": 820,
+        "theme": "system",
+        "body_top": 675.46875,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "width": 390,
+        "theme": "light",
+        "body_top": 727.25,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "width": 390,
+        "theme": "dark",
+        "body_top": 727.25,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "width": 390,
+        "theme": "system",
+        "body_top": 727.25,
+        "layout": "no whole-page overflow",
+        "assistant": "modal single task",
+        "focus_restored": true
+      },
+      {
+        "workflow": "failed save -> denied chapter switch -> explicit original-key recovery -> chapter switch",
+        "pending_navigation_protected": true,
+        "applied_saves": 1
+      }
+    ],
+    "screenshots": [
+      "body-light-1440.png",
+      "assistant-light-1440.png",
+      "directory-light-1440.png",
+      "body-dark-1440.png",
+      "assistant-dark-1440.png",
+      "directory-dark-1440.png",
+      "body-system-1440.png",
+      "assistant-system-1440.png",
+      "directory-system-1440.png",
+      "body-light-1280.png",
+      "assistant-light-1280.png",
+      "directory-light-1280.png",
+      "body-dark-1280.png",
+      "assistant-dark-1280.png",
+      "directory-dark-1280.png",
+      "body-system-1280.png",
+      "assistant-system-1280.png",
+      "directory-system-1280.png",
+      "sources-compact.png",
+      "body-light-820.png",
+      "assistant-light-820.png",
+      "directory-light-820.png",
+      "body-dark-820.png",
+      "assistant-dark-820.png",
+      "directory-dark-820.png",
+      "body-system-820.png",
+      "assistant-system-820.png",
+      "directory-system-820.png",
+      "body-light-390.png",
+      "assistant-light-390.png",
+      "directory-light-390.png",
+      "body-dark-390.png",
+      "assistant-dark-390.png",
+      "directory-dark-390.png",
+      "body-system-390.png",
+      "assistant-system-390.png",
+      "directory-system-390.png",
+      "directory-save-failure-390.png"
+    ],
+    "page_errors": []
+  },
+  "browser_receipt": "/tmp/tender-authoring-layout-browser/receipt.json",
+  "source_sha256": {
+    "apps/web/src/AssistantDrawer.tsx": "0d8983b5c8925d990520dbcb33d8e17e979d74837c9eadeceeea8e1d4ba5310e",
+    "apps/web/src/AssistantDrawer.css": "7e3a45f33d7929afba06fd1e6780664199c82eb02c93cbf9b508d27b0a945d4d",
+    "apps/web/src/AssistantDrawer.test.tsx": "717dbdd091a3fd07b672208855bbde19f8c22fb91477076744aa3ae20dd14dbd",
+    "apps/web/src/AssistantSourceSurface.tsx": "9c15eb668ee95e376d417a48bef69b81beb3f01bc506cbd5c416476045c6bfad",
+    "apps/web/src/AssistantSourceSurface.css": "feba52a4ae6b64a35d5dc6b8b448b704f160a8ae677fad287521fb5550a92f89",
+    "apps/web/src/AssistantWorkspace.tsx": "3042ae42ba623a9d54a38ec99a020e7e511d5c91c9ee23c00e8077af90d155eb",
+    "apps/web/src/AuthoringPanel.tsx": "63eb29e5e53dcaa72eeb75866bae318295b86130f84d54c64cfd6cc3b6774e3f",
+    "apps/web/src/AuthoringLayout.css": "ecad193a598375f8d0711b01687496a5239abf630d50bcbe0c270938ee60704e",
+    "apps/web/src/AuthoringLayout.test.tsx": "4d6c17b4abddabd6f0885f90fb94f59bace12df317e8536bbc3186ba6d604137",
+    "apps/web/src/ProjectWorkspace.tsx": "713a232e7748e372450bbeef5b618ece2bb58abb20052d1c1470a0a80d68fd26",
+    "apps/web/src/SourceEditor.tsx": "23943212f7451e2346cb603a3b80f4afd62d15b9f47d5cf6a80e1691006552cd",
+    "apps/web/src/EditorToolsDisclosure.tsx": "d547e408dc12cdf910d83e11fcece9f5f7ed85d911feb06a07f1166f88eabe5b",
+    "apps/web/src/EditorToolsDisclosure.css": "6ea8bf052afc8636bb757e6a70cd2d2c6ff2c211b7b85c7dec6ee7701b83662f",
+    "apps/web/src/assistantDock.ts": "af8b4011faf0ca6e9ee18285bbb4c5b1405eb00bf6339821b2854a20e48b7fa3",
+    "apps/web/src/useAssistantDock.ts": "43b796b7e766ee9ba41768070e61ed31d4553af31d13d9a873990b6a349355bf",
+    "apps/web/src/useAuxiliaryFocus.ts": "e358569970e73d56acb3a3c7fa254463399239f027e2296ac2c9ae2d48902aed",
+    "apps/web/src/useElementWidth.ts": "069541453b98b21ed37fb2e6221bee58b4a186d20606eb9e87fb97a48f3ec063",
+    "apps/web/src/workspaceAuxiliary.ts": "e12542181c9c4bac5838211b1884b9ea2fc1f02558c8b66fa69dc2eadc14bdd8",
+    "apps/web/src/authoringLayoutFixtures.test-support.ts": "848e5ef8d9f017555d087d91ffcfbd95de607bb151d2c9539372eaef3897c0ed",
+    "apps/web/scripts/check-authoring-layout-browser.mjs": "4afff25c975262967c6ec343ba90d9363f64866d65ad31c8628f2d4e69a184ad"
+  },
+  "vite_build": {
+    "passed": true,
+    "command": "npx vite build --outDir /tmp/tender-authoring-layout-browser/vite-build",
+    "warnings": [
+      "AssistantWorkspace is imported both statically and dynamically; not split into another chunk",
+      "The largest minified JS chunk exceeds 500 kB; performance not accepted by this slice"
+    ]
+  }
+}

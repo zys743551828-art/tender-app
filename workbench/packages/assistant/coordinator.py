@@ -52,7 +52,8 @@ def publish(job_id):
             return jobs.view(c, job_id)
         try:
             with c.transaction():
-                if manifest.get("logical_intent"):
+                exact_package = manifest.get("generation_mode") == "exact_package_authoring/1"
+                if manifest.get("logical_intent") and not exact_package:
                     from packages.assistant.intent_identity import revalidate
 
                     revalidate(
@@ -64,15 +65,35 @@ def publish(job_id):
                         generation=row["kind"] == "authoring",
                     )
                 if row["kind"] == "authoring":
+                    from packages.authoring import section_patch_set
                     from packages.authoring.generation import accept_generated_proposal
                     from packages.lifecycle.service import assert_work_writable
 
                     assert_work_writable(c, row["bid_id"])
-                    context.assert_generation_context(c, row["bid_id"], manifest["project_memory"])
+                    if not exact_package:
+                        context.assert_generation_context(
+                            c, row["bid_id"], manifest["project_memory"]
+                        )
                     value = validate_generation(manifest, output["payload"], canonical=True)
-                    result = accept_generated_proposal(
-                        c, row["bid_id"], row["writing_plan_id"], value
-                    )
+                    if exact_package:
+                        from packages.authoring.package_publication import create
+
+                        result = create(c, row, output)
+                    elif manifest.get("generation_mode") == section_patch_set.MODE:
+                        from packages.authoring.batch_patches import accept_generated_patch_set
+
+                        result = accept_generated_patch_set(
+                            c,
+                            row["bid_id"],
+                            row["writing_plan_id"],
+                            value,
+                            manifest["batch_context"],
+                            job_id=row["id"],
+                        )
+                    else:
+                        result = accept_generated_proposal(
+                            c, row["bid_id"], row["writing_plan_id"], value
+                        )
                     actions.link(c, UUID(result["action_id"]), job_id, "authoring.apply_patch")
                     c.execute(
                         "INSERT INTO assistant_publications(job_id,scope,kind,state,action_id) VALUES(%s,'project','authoring','published',%s)",

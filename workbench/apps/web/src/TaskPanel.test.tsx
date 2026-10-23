@@ -7,7 +7,11 @@ import { TaskTemplateCard } from "./TaskTemplateCard";
 import { TaskDraftPanel } from "./TaskDraftPanel";
 import { TaskRunCard } from "./TaskRunCard";
 import { newTaskConfiguration } from "./taskState";
-import type { TaskDraftView, TaskKindPage, TemplateView } from "./contracts";
+import type {
+  TaskDraftView,
+  TaskKindPage,
+  TemplateView,
+} from "./taskTriggerContracts";
 
 const template: TemplateView = {
   id: "template",

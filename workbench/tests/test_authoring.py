@@ -154,15 +154,17 @@ def test_renderer_process_environment_excludes_business_credentials(monkeypatch)
     assert "DEEPSEEK_API_KEY" not in renderer_environment()
 
 
-def test_truncated_converter_pdf_is_failed_while_actual_word_is_retained(monkeypatch):
+def test_truncated_converter_pdf_is_failed_while_actual_word_is_retained(monkeypatch, tmp_path):
     """Synthetic converter output, actual PDFium error boundary; no LO quality claim."""
     from pathlib import Path
 
     from packages.authoring import build, build_repository
 
+    font = tmp_path / "synthetic-font.ttf"
+    font.write_bytes(b"synthetic-font")
     identity = {
         "renderer_digest": sha("synthetic-converter"),
-        "fontset_digest": sha("synthetic-font"),
+        "fontset_digest": sha(font.read_bytes()),
         "options_digest": build.TEMPLATE_DIGEST,
     }
     monkeypatch.setattr(build, "render_identity", lambda *_: identity)
@@ -197,7 +199,7 @@ def test_truncated_converter_pdf_is_failed_while_actual_word_is_retained(monkeyp
     invalid = build.render_pdf(
         assemble_docx(snapshot),
         executable="synthetic",
-        font_path="synthetic",
+        font_path=str(font),
         expected_identity=identity,
         sandbox_attested=False,
     )

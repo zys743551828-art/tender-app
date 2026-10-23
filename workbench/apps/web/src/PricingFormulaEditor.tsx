@@ -6,6 +6,7 @@ import type {
   PricingEvidenceQuote,
   PricingFormulaSourcePage,
   PricingFormulaView,
+  PricingPackageContext,
   PricingRegisterFormula,
 } from "./contracts";
 import { ErrorNotice } from "./components";
@@ -14,6 +15,12 @@ import { knowledgeStorageKey, useKnowledgeInput } from "./knowledgeStorage";
 import { ResourceState } from "./ResourceState";
 import { useCursorList } from "./useCursorList";
 import { useRecordedCommand } from "./useRecordedCommand";
+import {
+  pricingContextPath,
+  pricingScopeKey,
+  samePricingBinding,
+} from "./packagePricing";
+import type { PackagePricingBinding } from "./packagePricing";
 
 const fields = [
   ["method", "基准价方法"],
@@ -77,25 +84,34 @@ export function PricingFormulaEditor({
   initialContext,
   onSaved,
   onClose,
+  packageBinding,
 }: {
   bidId: string;
   memberId: string;
-  initialContext: ApiResult<PricingContext>;
+  initialContext: ApiResult<PricingContext | PricingPackageContext>;
   onSaved: (formula: PricingFormulaView) => void;
   onClose: () => void;
+  packageBinding?: PackagePricingBinding;
 }) {
   const [input, setInput] = useKnowledgeInput<Inputs>(
-    knowledgeStorageKey(memberId, bidId) + "pricing-formula",
+    knowledgeStorageKey(memberId, bidId) +
+      "pricing-formula" +
+      pricingScopeKey(packageBinding),
     empty,
   );
   const [basis, setBasis] = useState(initialContext);
   const [error, setError] = useState<unknown>(null);
   const [reading, setReading] = useState(false);
   const sources = useCursorList<PricingFormulaSourcePage>(
-    `/bids/${bidId}/pricing-formula-sources?limit=50`,
+    packageBinding
+      ? `/bids/${bidId}/package-pricing-formula-sources?limit=50&${new URLSearchParams(packageBinding)}`
+      : `/bids/${bidId}/pricing-formula-sources?limit=50`,
     (item) => item.evidence_id,
   );
-  const command = useRecordedCommand(`pricing-formula:${memberId}:${bidId}`);
+  const command = useRecordedCommand(
+    `pricing-formula:${memberId}:${bidId}${pricingScopeKey(packageBinding)}`,
+    ({ data }) => verifyFormula(data),
+  );
   const requiredFields = fields.filter(
     ([field]) =>
       input.method !== "lowest_valid_ratio" ||
@@ -104,12 +120,17 @@ export function PricingFormulaEditor({
   const locked = command.busy || !!command.pending;
   const set = (key: keyof Inputs, value: string | boolean) =>
     setInput((old) => ({ ...old, [key]: value }));
-  async function received(value: PricingFormulaView) {
+  function verifyFormula(data: unknown) {
+    const value = data as Partial<PricingFormulaView> | null;
     if (
+      !value?.formula ||
       value.formula.bid_id !== bidId ||
-      value.formula.formula_version_id !== value.formula_version_id
+      value.formula.formula_version_id !== value.formula_version_id ||
+      !samePricingBinding(value.formula.package_binding, packageBinding)
     )
       throw new Error("公式返回身份无法核对，请重读目录，未使用其他项目公式。");
+  }
+  async function received(value: PricingFormulaView) {
     setInput(empty);
     onSaved(value);
   }
@@ -179,8 +200,8 @@ export function PricingFormulaEditor({
         reason: input.reason.trim(),
       };
       const result = await command.run<PricingFormulaView>(
-        `/bids/${bidId}/pricing-formulas`,
-        body,
+        `/bids/${bidId}/${packageBinding ? "package-pricing-formulas" : "pricing-formulas"}`,
+        packageBinding ? { ...body, package_binding: packageBinding } : body,
         basis.etag,
       );
       if (result) await received(result.data);
@@ -193,8 +214,18 @@ export function PricingFormulaEditor({
     setReading(true);
     setError(null);
     try {
-      const next = await api<PricingContext>(`/bids/${bidId}/pricing-context`);
+      const next = await api<PricingContext | PricingPackageContext>(
+        pricingContextPath(bidId, packageBinding),
+      );
       if (next.data.bid_id !== bidId) throw new Error("报价项目身份不一致。");
+      if (
+        packageBinding &&
+        !(
+          "package_binding" in next.data &&
+          samePricingBinding(next.data.package_binding, packageBinding)
+        )
+      )
+        throw new Error("重读报价依据与明确选择的包修订不一致。");
       setBasis(next);
       await sources.reload();
       command.clearError();

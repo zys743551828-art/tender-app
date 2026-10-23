@@ -104,6 +104,8 @@ def blob(c, value):
 
 
 def insert(c, bid, actor, title, reason, source_refs, proof, original_object, normalized_object):
+    from packages.authoring.docx_import_sources import assert_image_import_source
+
     require_transaction(c)
     require_available(c)
     assert_work_writable(c, bid)
@@ -116,6 +118,7 @@ def insert(c, bid, actor, title, reason, source_refs, proof, original_object, no
     ):
         raise DomainError("AUTHORING_IMAGE_METADATA_INVALID", "请输入图片名称和本次登记原因", 422)
     source_guard(c, bid, source_refs)
+    assert_image_import_source(c, bid, proof)
     if (
         proof.get("protocol") != rich_images.PROTOCOL
         or original_object["digest"] != proof.get("input_digest")
@@ -235,6 +238,8 @@ def freeze_assets(c, bid, identities, *, worker=False):
     Worker has SELECT only. Do NOT FOR UPDATE the asset tables; API head changes
     must take this same existing bid lock before updating their own writable head.
     """
+    from packages.authoring.docx_import_sources import assert_image_import_source
+
     require_transaction(c)
     require_available(c, worker=worker)
     lock(c, bid, worker=worker)
@@ -244,6 +249,7 @@ def freeze_assets(c, bid, identities, *, worker=False):
         if not value["is_current"] or value["revision"] != revision or value["state"] != "active":
             raise DomainError("AUTHORING_IMAGE_STALE", "图片已更新或停用，请重新选择有效图片", 409)
         source_guard(c, bid, value["source_refs"])
+        assert_image_import_source(c, bid, value["normalization_proof"])
         original = fetch(c, "SELECT * FROM blobs WHERE id=%s", (UUID(value["original_blob_id"]),))
         normalized = fetch(
             c, "SELECT * FROM blobs WHERE id=%s", (UUID(value["normalized_blob_id"]),)

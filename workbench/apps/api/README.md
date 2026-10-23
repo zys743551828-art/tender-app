@@ -16,6 +16,17 @@ bootstrap隐藏口令；自动化可`--password-stdin`，不提供生产HTTP绕�
 
 当前代码注册了T0/PDF、评审准备及核心核对、人工规则／事实／效力、RAG、authoring、knowledge、identity、research、SSE的实际路由。注册只表示有真实处理器，不表示各能力均通过独立验收。实际接口由`python -m apps.api.export_openapi`或`/openapi.json`导出，目标计划中未实现的接口不出现在actual路径中。各独立模块有各Owner的候选及限制。
 
+实施版完整快照以确定性 gzip 保存：`packages/contracts/fusion-implemented.openapi.json.gz`。它保留完整普通 JSON，只移除 gzip 的文件名和构建时间元数据；不会影响运行时 `/openapi.json` 的响应格式。更新快照及本地可读导出：
+
+```sh
+python -m apps.api.export_openapi --output packages/contracts/fusion-implemented.openapi.json.gz
+python -m apps.api.export_openapi --output packages/contracts/fusion-implemented.openapi.json
+# 不带 --output 时仍向 stdout 输出普通 JSON，可继续使用重定向。
+python -m apps.api.export_openapi > /tmp/implemented.openapi.json
+```
+
+本地可读 `fusion-implemented.openapi.json` 被 Git 忽略；提交完整 `.json.gz` 并重新生成前端类型。快照回归逐字节核对解压内容与当前全部实际契约，并验证普通 JSON 与 gzip 生成同一类型和能力集合。
+
 T0包含会话恢复/撤销、真实游标项目分页、PDF批次与单文件100MiB、字节核验、显式verified字节重绑、新文件/新版本CAS入库、历史版本、原页证据、下载及操作取消。DOCX直接上传仍415。OSS大于8MiB时选择原生分片，S3保留single；分片接线有独立原生OSS候选，本批整体仍待独立验证。GET upload/layout提供数据库权威总片数、片大小、整文件大小及SHA，跨浏览器从批次发现上传后读取，不依赖本地grant缓存；授权仍用实ETag与Cookie/CSRF。S3开发使用签名传输，OSS使用同源私有传输，不改变桶CORS/ACL。文件head修订与版本序号分开；保留已核验字节不等于用户已同意新目标。
 
 A1.1代码提供一键评审持久准备请求：解析和要求准备完成后，独立API控制面冻结真实稿件/规则/事实/来源全祖先与方法身份，再派核心核对→汇总两阶段任务。用户离开不会阻止推进。自动开关开启时合并未冻结最新稿；关闭时旧请求过期。冻结后输入不改写。读取入口有review-state、单轮manifest、历史列表、矩阵、问题、规则及证据。准备请求取消使用review-state强ETag，已冻结轮次使用operation取消；共享解析不因单次请求取消而终止。

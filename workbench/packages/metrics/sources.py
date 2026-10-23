@@ -1,5 +1,6 @@
 """Positive canonical official-source authority; database only, no provider calls."""
 
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -148,6 +149,23 @@ def inspect(c, bid, source, *, as_of, cutoff=None, refs=(), lock=False):
 
 def outcome_reasons(c, outcome, as_of):
     """Technical outcome projections use the same authority, including decision evidence IDs."""
+    submission = c.execute(
+        "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
+        (outcome["bid_id"], outcome["submission_id"]),
+    ).fetchone()
+    if submission and submission.get("subject_kind") == "bid_package":
+        from packages.research.package_outcomes import current_reasons
+
+        recorded = c.execute(
+            "SELECT d.reason FROM decision_heads h JOIN decisions d ON d.id=h.decision_id "
+            "WHERE h.bid_id=%s AND h.object_kind='outcome' AND h.object_id=%s",
+            (outcome["bid_id"], outcome["id"]),
+        ).fetchone()
+        try:
+            details = json.loads(recorded["reason"]) if recorded else None
+        except (TypeError, ValueError):
+            return ["package_outcome_verification_invalid"]
+        return current_reasons(c, submission, outcome, details, as_of=as_of)
     decision = c.execute(
         "SELECT d.evidence_ids FROM decision_heads h JOIN decisions d ON d.id=h.decision_id WHERE h.object_kind='outcome' AND h.object_id=%s",
         (outcome["id"],),

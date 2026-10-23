@@ -65,6 +65,10 @@ def lifecycle(c, row, at):
         return "superseded" if decision and decision["decision"] == "superseded" else "withdrawn"
     if row["applicability"].get("readiness") != "complete":
         return "candidate"
+    from packages.retrospectives.knowledge import unchanged as retrospective_unchanged
+
+    if not retrospective_unchanged(c, row["item_id"]):
+        return "source_invalid"
     if row["valid_until"] is not None and row["valid_until"] <= at:
         return "expired"
     try:
@@ -151,6 +155,11 @@ def view(c, knowledge_id, version_id=None, at=None):
 def insert_version(
     c, item_id, version_no, actor, content, categories, metadata, parents, policy, at
 ):
+    from packages.retrospectives.knowledge import inherit as inherit_retrospective
+
+    categories, metadata, parents, policy = inherit_retrospective(
+        c, item_id, categories, metadata, parents, policy
+    )
     version, source = uuid4(), uuid4()
     rules = metadata.get("rules")
     start = instant(rules["valid_from"]) if rules else at

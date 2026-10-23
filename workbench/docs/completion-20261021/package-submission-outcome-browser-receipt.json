@@ -1,0 +1,411 @@
+{
+  "version": "package-submission-outcome-browser-receipt/1",
+  "scope": "F05 package submission facts and official outcomes",
+  "paid_model_calls": 0,
+  "transaction_platform_submission": false,
+  "synthetic_nonproduction": true,
+  "runs": [
+    {
+      "workflow": "package_submissions",
+      "raw_receipt_sha256": "4ae4c1bd35dc304436629d18084302e9e4db01b2e48fbe6e2457d9249ab0fd99",
+      "viewports": [
+        {
+          "width": 1200,
+          "fixtureSource": "Immutable actual non-owner PG + MockTransport Worker result + byte-verified offline submission; directory projections from same exact identities",
+          "boundary": "Local fixture HTTP and one injected lost ACK; no real platform submission, no paid model, no repeated original download",
+          "noWritesBeforePreview": true,
+          "standardBlocked": true,
+          "guarded": true,
+          "pendingSaved": true,
+          "historyDidNotClearPending": true,
+          "cleared": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "previewCount": 2,
+          "write_count": 2,
+          "original_request_and_replay_sha256": "de144d80b04cf99986773eafc831819a75540a36d4dc961c8d694a653610a7d6",
+          "raw_request_omitted": true
+        },
+        {
+          "width": 768,
+          "fixtureSource": "Immutable actual non-owner PG + MockTransport Worker result + byte-verified offline submission; directory projections from same exact identities",
+          "boundary": "Local fixture HTTP and one injected lost ACK; no real platform submission, no paid model, no repeated original download",
+          "noWritesBeforePreview": true,
+          "standardBlocked": true,
+          "guarded": true,
+          "pendingSaved": true,
+          "historyDidNotClearPending": true,
+          "cleared": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "previewCount": 2,
+          "write_count": 2,
+          "original_request_and_replay_sha256": "de144d80b04cf99986773eafc831819a75540a36d4dc961c8d694a653610a7d6",
+          "raw_request_omitted": true
+        },
+        {
+          "width": 390,
+          "fixtureSource": "Immutable actual non-owner PG + MockTransport Worker result + byte-verified offline submission; directory projections from same exact identities",
+          "boundary": "Local fixture HTTP and one injected lost ACK; no real platform submission, no paid model, no repeated original download",
+          "noWritesBeforePreview": true,
+          "standardBlocked": true,
+          "guarded": true,
+          "pendingSaved": true,
+          "historyDidNotClearPending": true,
+          "cleared": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "previewCount": 2,
+          "write_count": 2,
+          "original_request_and_replay_sha256": "de144d80b04cf99986773eafc831819a75540a36d4dc961c8d694a653610a7d6",
+          "raw_request_omitted": true
+        }
+      ],
+      "screenshots": {
+        "exact-selection-1200.png": "1df70505dcbcbed43ad88e225a0cee6d488bd54e60ccfa1290d09c00da4e89e8",
+        "exact-selection-390.png": "3adea897ba0f6d5f331b8499fcc3ece3a0fc733aba6683bd7b1c9d9da98f2815",
+        "exact-selection-768.png": "4a90baa49051604ea31cafe5fe7367832e21dbd6320ee71a45603ca9c63394b3",
+        "four-gates-1200.png": "9582af47e3d74fd31f2ab01b8545f04b8d0cac00b36429cf490cb8af1f7d5433",
+        "four-gates-390.png": "7eeb2ecbb1cb00ffb7472005392afe5f60bc9e9521633b7d9532e17ecd98d1c9",
+        "four-gates-768.png": "e948e5171c83c5fa5871f14d24107e79da34bb9385404755ec2cbb94f384045c",
+        "historical-gates-1200.png": "56b6cbf452e910819a264f0819ad3cb3c588b5f38b400c892e7c8f6c5e42d9a7",
+        "historical-gates-390.png": "d05c544a27d69b93c117f4f464ee4a0439134bf242932961ba01d6a2c9d42b2f",
+        "historical-gates-768.png": "97bf3373746d7846ae8032448874b214ae3ddd5b00c8728b7866be53a50725da",
+        "lost-ack-1200.png": "8226497f5b7ca8f2f4ebb4730392ecbe7b0a37accd88c1c21c9eb9915764bf36",
+        "lost-ack-390.png": "695cece9fa68a5e1cb11ef9ecd4d7b939947a7b6a01e3229c15f7684dfc07cf5",
+        "lost-ack-768.png": "7dc8169f4b70e7c6300a7396264f29403456f0b10a397e8993aa82a43c00113b",
+        "originals-history-1200.png": "c3081d25b3d74f013b300ed00844789400913eb7f4f95e85bd720bbfbda4c200",
+        "originals-history-390.png": "8783883e0b92b0cad868dca7c7d87cce8dfd299e8d2399717fe25ad5c798fd24",
+        "originals-history-768.png": "74d3e347df677bcacd417830dd52a6fd5b9eef2285cdcc6805a60c74ca13d035"
+      },
+      "screenshot_count": 15
+    },
+    {
+      "workflow": "package_outcomes",
+      "raw_receipt_sha256": "065cb381c5336d1d3f6fcb5f8381e9763035b36b5b7567b419318153d93768fa",
+      "viewports": [
+        {
+          "width": 1200,
+          "source": "Actual isolated non-owner PostgreSQL HTTP context/page/detail/ACK unchanged for pending, verified and withdrawn stages",
+          "boundary": "Read-only original-page directory is a projection of the exact native evidence response. Local HTTP injected one lost ACK; withdrawal is an already exported fixture state, no live source mutation or paid model",
+          "confirmationBox": {
+            "width": 14,
+            "height": 39,
+            "labelWidth": 479
+          },
+          "pendingUnavailable": true,
+          "noWritesBeforeConfirmation": true,
+          "pendingStored": true,
+          "verifiedReadKeptPending": true,
+          "originalAckCleared": true,
+          "currentlyAvailable": true,
+          "historicVerificationKept": true,
+          "withdrawnQuoteDisabled": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            },
+            {
+              "viewport": 1200,
+              "scrollWidth": 1200,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "write_count": 2,
+          "original_request_and_replay_sha256": "7498339bbcffb9e07dca6d1f902bf85c7031835ced883a0065c03be1246611a9",
+          "raw_request_omitted": true
+        },
+        {
+          "width": 768,
+          "source": "Actual isolated non-owner PostgreSQL HTTP context/page/detail/ACK unchanged for pending, verified and withdrawn stages",
+          "boundary": "Read-only original-page directory is a projection of the exact native evidence response. Local HTTP injected one lost ACK; withdrawal is an already exported fixture state, no live source mutation or paid model",
+          "confirmationBox": {
+            "width": 14,
+            "height": 39,
+            "labelWidth": 479
+          },
+          "pendingUnavailable": true,
+          "noWritesBeforeConfirmation": true,
+          "pendingStored": true,
+          "verifiedReadKeptPending": true,
+          "originalAckCleared": true,
+          "currentlyAvailable": true,
+          "historicVerificationKept": true,
+          "withdrawnQuoteDisabled": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            },
+            {
+              "viewport": 768,
+              "scrollWidth": 768,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "write_count": 2,
+          "original_request_and_replay_sha256": "7498339bbcffb9e07dca6d1f902bf85c7031835ced883a0065c03be1246611a9",
+          "raw_request_omitted": true
+        },
+        {
+          "width": 390,
+          "source": "Actual isolated non-owner PostgreSQL HTTP context/page/detail/ACK unchanged for pending, verified and withdrawn stages",
+          "boundary": "Read-only original-page directory is a projection of the exact native evidence response. Local HTTP injected one lost ACK; withdrawal is an already exported fixture state, no live source mutation or paid model",
+          "confirmationBox": {
+            "width": 14,
+            "height": 39,
+            "labelWidth": 242
+          },
+          "pendingUnavailable": true,
+          "noWritesBeforeConfirmation": true,
+          "pendingStored": true,
+          "verifiedReadKeptPending": true,
+          "originalAckCleared": true,
+          "currentlyAvailable": true,
+          "historicVerificationKept": true,
+          "withdrawnQuoteDisabled": true,
+          "sameReplay": true,
+          "bounds": [
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            },
+            {
+              "viewport": 390,
+              "scrollWidth": 390,
+              "overflows": []
+            }
+          ],
+          "errors": [],
+          "alerts": [],
+          "write_count": 2,
+          "original_request_and_replay_sha256": "7498339bbcffb9e07dca6d1f902bf85c7031835ced883a0065c03be1246611a9",
+          "raw_request_omitted": true
+        }
+      ],
+      "screenshots": {
+        "lost-ack-1200.png": "c3452ba9b89096f750b1bf7b28ea55074f6ebc3abbc64c0961ebf5e32867865d",
+        "lost-ack-390.png": "2c1bc7e37472c74a7586f972f4dbbfc72a0ac23fdf51763ae11606efb5494644",
+        "lost-ack-768.png": "c476720098942ec776ff3389efbc4c6ded867e998cc5a84d57afe87752912a09",
+        "original-page-verification-1200.png": "9e06325d6d721cc5d754458b9f087bcb64252789b796a46bb1af7fba3c1ada02",
+        "original-page-verification-390.png": "2a9c5c11832dba271e15ed50d3ba64e708b5a1b8a9b7fcf2b08ec17d6487b6a6",
+        "original-page-verification-768.png": "b76e714a4a455aa8d3b372badd49ce31a49759fb8a3e8b81dba0eaaeef085039",
+        "pending-1200.png": "8b5719a634bf026f0b6096d76e9f1fd8b50388de4069925757c2738f57eeed75",
+        "pending-390.png": "1efee1fcb35211fd7fe0387ecd338c48fe894e6df180667483f7e5a271acfe46",
+        "pending-768.png": "2481b3576ae6c88b6be69cf014154ee00bd134622ed02c93db0db552b17ebf7a",
+        "source-withdrawn-1200.png": "f9f56de9aba71f92cd602e816bfc58a637f71840b2206acedee0f756ff736572",
+        "source-withdrawn-390.png": "b5ccbd0dce5a3f426580561b996e73d4f6e8cebff6fc2272e69f996fe4f53af6",
+        "source-withdrawn-768.png": "67f240b0c74628919be10687badb1dcc682bb89ad938cb1aaacb2d1ec7312f7f",
+        "verified-1200.png": "8993690bdbb881c54d7faf9ed25e974e9aa5e19e390c76ce5b3d6a0b612e7962",
+        "verified-390.png": "dd1512b9b93d5ea81d8ea7c49bc120f05eaa8fd4d050ececf4edfe155f53cf85",
+        "verified-768.png": "52478930461bfe0f48562f79e71eccefbd707ba5d4bc06f35374b519f6193469",
+        "withdrawn-original-page-1200.png": "ce085f4aadd440d22293eeb0941bff43cb3fc1492d6a6667f4fd51dc0aa0465a",
+        "withdrawn-original-page-390.png": "d9a151376b27d0d5dbd745adef2d4a8f9ea032cd86aeb68d3563a6c72b8fee1c",
+        "withdrawn-original-page-768.png": "591b51c0ba930a890bc1726152934d5f570c4cde1f7941ba3166b908ee1dc408"
+      },
+      "screenshot_count": 18
+    }
+  ],
+  "native_http_response_protocol_validation": {
+    "synthetic_nonproduction": true,
+    "transport": "actual API responses from isolated native PostgreSQL",
+    "checks": [
+      {
+        "stage": "pending",
+        "context": true,
+        "page": true,
+        "detail": true,
+        "available": false
+      },
+      {
+        "stage": "verified",
+        "context": true,
+        "page": true,
+        "detail": true,
+        "available": true
+      },
+      {
+        "stage": "withdrawn",
+        "context": true,
+        "page": true,
+        "detail": true,
+        "available": false
+      },
+      {
+        "command": "registration",
+        "ack": true
+      },
+      {
+        "command": "correction",
+        "ack": true
+      },
+      {
+        "command": "verification",
+        "ack": true
+      }
+    ]
+  },
+  "native_http_response_protocol_receipt_sha256": "ad04d0e28d6d90d08aed3f3ae5d9bb977676e3b33f2354ec8a9d54a05b49f1b1",
+  "manual_visual_review": [
+    "package submissions: desktop four gates and phone history reviewed",
+    "official outcomes: desktop/phone exact source, quote selection and confirmation checkbox reviewed; latest phone confirmation copy no longer squeezed into a narrow column"
+  ],
+  "representative_screenshots_saved": {
+    "screenshots/f05-submission-gates-1200.png": "9582af47e3d74fd31f2ab01b8545f04b8d0cac00b36429cf490cb8af1f7d5433",
+    "screenshots/f05-official-original-390.png": "2a9c5c11832dba271e15ed50d3ba64e708b5a1b8a9b7fcf2b08ec17d6487b6a6"
+  }
+}

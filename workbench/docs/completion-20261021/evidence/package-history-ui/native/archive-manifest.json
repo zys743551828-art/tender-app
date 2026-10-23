@@ -1,0 +1,56 @@
+{
+  "schema": "package-history-ui-native-archive/1",
+  "original_bytes_preserved": true,
+  "files": [
+    {
+      "path": "run-01-receipt.json",
+      "sha256": "15168a93097934cfa047aa006e303755ea2516cfd5d65465cfb05f2dfc66b0a4",
+      "bytes": 109607
+    },
+    {
+      "path": "run-01-pytest.log",
+      "sha256": "a836727a303bd537eb1b724ce10769924e359f17c73c090c63dd2e6a97c69895",
+      "bytes": 2517
+    },
+    {
+      "path": "run-02-receipt.json",
+      "sha256": "c42ee144d4066ca6964d5715bc4e31d5b2032f43188a230c00df35cfef228ec7",
+      "bytes": 109922
+    },
+    {
+      "path": "run-02-pytest.log",
+      "sha256": "1084f2ce92c2e3af3db50e58525fff185e4fe259c9ab3bb2edf471ced0d916aa",
+      "bytes": 1152
+    },
+    {
+      "path": "run-03-receipt.json",
+      "sha256": "c672830faf6c1862defe63fde3aae106da3cdfece9011bfa9a3ac6717ebeb4d9",
+      "bytes": 110218
+    },
+    {
+      "path": "run-03-pytest.log",
+      "sha256": "fb7a831e7f76ed606c7e0b9c837a87fb1a23025a059be5570993eead6e1c8f33",
+      "bytes": 735
+    },
+    {
+      "path": "runtime-postgresql-source.json",
+      "sha256": "af4b728626d3e6c9d8794b858b9c9a928c3780b3fc7bc3b8ed7af5233bd258fc",
+      "bytes": 560
+    },
+    {
+      "path": "runtime-builddeps-source.json",
+      "sha256": "ef5bbb544bd7617f8a787058175542d261ec399848b46e6b5e614711c7169266",
+      "bytes": 1027
+    },
+    {
+      "path": "runtime-uuid-header-source.json",
+      "sha256": "60920353788e0421e5337aea5caf01aa428712f9e06d3c68baf07f8892398c92",
+      "bytes": 361
+    },
+    {
+      "path": "runtime-browser-source.json",
+      "sha256": "664a4141a3aeedd6d22462b99c61fbd5f239aa24e013836eca882faeb49698b8",
+      "bytes": 283
+    }
+  ]
+}

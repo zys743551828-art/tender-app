@@ -1,13 +1,41 @@
-import { useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { Operation, RunView, TemplateVersionView } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useRecordedCommand } from "./useRecordedCommand";
-import { taskNames, taskRunNames, triggerDescription } from "./taskState";
+import {
+  claimsExactPackageRun,
+  exactPackageTaskScope,
+  taskNames,
+  taskRunNames,
+  triggerDescription,
+} from "./taskState";
 import { useAssistantPolling } from "./useAssistantFeed";
 import { ArtifactActions } from "./ArtifactActions";
 import { assistantReason } from "./assistantState";
+import { ExactPackageTaskScope } from "./ExactPackageTaskScope";
+import { historicalSame } from "./historicalImportProtocol";
+import { taskAuthoringProjection } from "./taskAuthoringProtocol";
+import {
+  validateCurrentRun,
+  type TaskPackageRunView,
+} from "./taskPackageProtocol";
+import {
+  claimsPackageAuthoringRun,
+  validatePackageAuthoringRun,
+  type PackageAuthoringRunView,
+} from "./taskPackageAuthoringProtocol";
+
+const ExactPackageTaskRunDetails = lazy(
+  () => import("./ExactPackageTaskRunDetails"),
+);
+const TaskAuthoringResultPanel = lazy(
+  () => import("./TaskAuthoringResultPanel"),
+);
+const PackageAuthoringTaskResult = lazy(
+  () => import("./PackageAuthoringTaskResult"),
+);
 
 export function TaskRunCard({
   bidId,
@@ -20,10 +48,105 @@ export function TaskRunCard({
 }) {
   const poll = useAssistantPolling();
   const resource = useResource<RunView>(`/bids/${bidId}/task-runs/${id}`, poll);
-  const run =
+  const raw =
     resource.data?.id === id && resource.data.bid_id === bidId
       ? resource.data
       : undefined;
+  const [checked, setChecked] = useState<{
+    source: RunView;
+    run: TaskPackageRunView;
+  } | null>(null);
+  const [checkedAuthoring, setCheckedAuthoring] = useState<{
+    source: RunView;
+    run: PackageAuthoringRunView;
+  } | null>(null);
+  const [authoringError, setAuthoringError] = useState<unknown>(null);
+  const originalAuthoring = useRef<PackageAuthoringRunView | null>(null);
+  const authoringClaim =
+    !!raw &&
+    (claimsPackageAuthoringRun(raw) ||
+      (checkedAuthoring?.run.id === raw.id &&
+        checkedAuthoring.run.bid_id === bidId));
+  const exactClaim =
+    !!raw &&
+    !authoringClaim &&
+    (claimsExactPackageRun(raw) ||
+      (checked?.run.id === raw.id && checked.run.bid_id === bidId));
+  const [exactError, setExactError] = useState<unknown>(null);
+  const [nativeOpen, setNativeOpen] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setExactError(null);
+    if (raw && exactClaim)
+      void validateCurrentRun(raw, bidId, id)
+        .then((run) => {
+          if (active) setChecked({ source: raw, run });
+        })
+        .catch((error) => {
+          if (active) setExactError(error);
+        });
+    return () => {
+      active = false;
+    };
+  }, [raw, exactClaim, bidId, id]);
+  useEffect(() => {
+    let active = true;
+    setAuthoringError(null);
+    if (raw && authoringClaim)
+      void validatePackageAuthoringRun(raw, bidId, id)
+        .then((run) => {
+          if (active) {
+            const original = originalAuthoring.current;
+            if (
+              original?.id === run.id &&
+              original.bid_id === run.bid_id &&
+              !historicalSame(original.frozen_manifest, run.frozen_manifest)
+            )
+              throw new Error(
+                "同一编写运行的原冻结身份发生变化，保留此前已核验记录并暂停操作。",
+              );
+            originalAuthoring.current = run;
+            setCheckedAuthoring({ source: raw, run });
+          }
+        })
+        .catch((error) => {
+          if (active) setAuthoringError(error);
+        });
+    return () => {
+      active = false;
+    };
+  }, [raw, authoringClaim, bidId, id]);
+  const authoringRun =
+    authoringClaim &&
+    checkedAuthoring?.run.id === id &&
+    checkedAuthoring.run.bid_id === bidId
+      ? checkedAuthoring.run
+      : null;
+  const exactRun =
+    exactClaim && checked?.run.id === id && checked.run.bid_id === bidId
+      ? checked.run
+      : null;
+  const run = authoringClaim
+    ? (authoringRun ?? undefined)
+    : exactClaim
+      ? (exactRun ?? undefined)
+      : raw;
+  const chapter =
+    !exactClaim && !authoringClaim
+      ? taskAuthoringProjection(raw, bidId, id)
+      : null;
+  const authoringStale =
+    authoringClaim &&
+    (resource.loading ||
+      !!resource.error ||
+      checkedAuthoring?.source !== raw ||
+      !!authoringError);
+  const exactStale =
+    exactClaim &&
+    (resource.loading ||
+      !!resource.error ||
+      checked?.source !== raw ||
+      !!exactError);
   const definitionId =
     typeof run?.frozen_manifest.definition_id === "string"
       ? run.frozen_manifest.definition_id
@@ -36,7 +159,33 @@ export function TaskRunCard({
   const config =
     version.data?.id === run?.definition_version_id &&
     version.data?.bid_id === bidId &&
-    version.data.definition_id === definitionId
+    version.data.definition_id === definitionId &&
+    (!authoringRun ||
+      (version.data.digest ===
+        authoringRun.frozen_manifest.configuration_digest &&
+        historicalSame(
+          version.data.config.definition,
+          authoringRun.frozen_manifest.configuration,
+        ) &&
+        version.data.instructions ===
+          authoringRun.frozen_manifest.configuration.instructions &&
+        version.data.config.formal_decisions_allowed === false &&
+        version.data.config.paused === false)) &&
+    (!chapter ||
+      historicalSame(
+        version.data.config.definition,
+        run?.frozen_manifest.configuration,
+      )) &&
+    (!exactRun ||
+      (version.data.digest === exactRun.frozen_manifest.configuration_digest &&
+        historicalSame(
+          version.data.config.definition,
+          exactRun.frozen_manifest.configuration,
+        ) &&
+        version.data.instructions ===
+          exactRun.frozen_manifest.configuration.instructions &&
+        version.data.config.formal_decisions_allowed === false &&
+        version.data.config.paused === false))
       ? version.data
       : undefined;
   const operationId = run?.final_operation_id ?? run?.root_operation_id;
@@ -56,6 +205,9 @@ export function TaskRunCard({
   const [reason, setReason] = useState("");
   const [cancelOpen, setCancelOpen] = useState(false);
   const bodyId =
+    !exactClaim &&
+    !authoringClaim &&
+    !chapter &&
     typeof run?.frozen_manifest.context === "object" &&
     run.frozen_manifest.context !== null &&
     "body_version_id" in run.frozen_manifest.context &&
@@ -69,16 +221,28 @@ export function TaskRunCard({
         hasData={!!run}
         onRetry={() => void resource.reload()}
       />
-      {resource.data && !run && (
+      {resource.data && !raw && (
         <p className="notice error">任务运行身份不一致，未显示其他项目。</p>
       )}
+      {exactClaim && !exactRun && !exactError && (
+        <p role="status">正在核验任务的固定整包身份与原生运行引用…</p>
+      )}
+      <ErrorNotice error={exactError} />
+      {authoringClaim && !authoringRun && !authoringError && (
+        <p role="status">正在核验固定整包编写输入、原生任务与发布关联…</p>
+      )}
+      <ErrorNotice error={authoringError} />
       {run && (
         <>
           <div className="section-title">
             <h3>
-              {config
-                ? taskNames[config.config.definition.task_kind]
-                : "固定版本任务"}
+              {authoringRun
+                ? "固定整包章节编写"
+                : exactRun
+                  ? "整包否决核对"
+                  : config
+                    ? taskNames[config.config.definition.task_kind]
+                    : "固定版本任务"}
             </h3>
             <Badge
               tone={
@@ -92,9 +256,97 @@ export function TaskRunCard({
                   : ""
               }
             >
-              {taskRunNames[run.state]}
+              {chapter?.error ? "章节结果关联待核对" : taskRunNames[run.state]}
             </Badge>
           </div>
+          {authoringRun && (
+            <Suspense fallback={<p role="status">正在加载固定整包编写结果…</p>}>
+              <PackageAuthoringTaskResult
+                key={`${memberId}:${bidId}:${id}`}
+                run={authoringRun}
+                stale={authoringStale}
+              />
+            </Suspense>
+          )}
+          {exactRun && (
+            <section className="exact-package-task-result">
+              {exactStale && (
+                <p className="notice warning" role="status">
+                  任务的最新读取正在核验或未通过核验，下面保留上次已核验快照；写操作暂停，未把旧结果当作当前状态。
+                </p>
+              )}
+              <p className="notice warning">{exactPackageTaskScope}</p>
+              <p>
+                {exactStale ? "上次已核验任务状态" : "服务器当前任务状态"}：
+                {taskRunNames[exactRun.state]}
+                。原启动回执可能仍记录“等待处理”，不会把历史受理回执改成后续完成状态。
+              </p>
+              <ExactPackageTaskScope
+                bidId={bidId}
+                selection={exactRun.frozen_manifest.context.selection}
+              />
+              {exactRun.frozen_manifest.trigger_intent_id && (
+                <p>
+                  <a
+                    className="text-link"
+                    href={`/bids/${bidId}/tasks?task_trigger=${exactRun.frozen_manifest.trigger_intent_id}`}
+                  >
+                    查看唤醒这份原输入的事件或计划
+                  </a>
+                </p>
+              )}
+              {exactRun.result && (
+                <p>已保存这次声明范围内的核查结果，整体覆盖仍为部分。</p>
+              )}
+              <details className="identity-details">
+                <summary>原生核查运行与结果摘要</summary>
+                <p>
+                  原生核查运行：{exactRun.frozen_manifest.package_review.run_id}
+                </p>
+                <p>
+                  结果摘要：{exactRun.result?.result_digest ?? "尚无完成结果"}
+                </p>
+              </details>
+              <button
+                type="button"
+                className="button secondary"
+                aria-expanded={nativeOpen}
+                disabled={exactStale}
+                onClick={() => setNativeOpen(!nativeOpen)}
+              >
+                查看任务绑定的原生整包核查
+              </button>
+              {nativeOpen && (
+                <fieldset
+                  disabled={exactStale}
+                  className="exact-package-task-readonly"
+                >
+                  <Suspense
+                    fallback={<p role="status">正在加载原生核查工作面…</p>}
+                  >
+                    <ExactPackageTaskRunDetails
+                      key={`${memberId}:${exactRun.id}`}
+                      memberId={memberId}
+                      task={exactRun}
+                      onClose={() => setNativeOpen(false)}
+                    />
+                  </Suspense>
+                </fieldset>
+              )}
+            </section>
+          )}
+          <ErrorNotice error={chapter?.error} />
+          {chapter?.result && (
+            <Suspense fallback={<p role="status">正在加载章节任务结果…</p>}>
+              <TaskAuthoringResultPanel
+                key={`${memberId}:${run.id}:${chapter.result.job_id}`}
+                bidId={bidId}
+                state={run.state}
+                result={chapter.result}
+                stale={resource.loading || !!resource.error}
+              />
+            </Suspense>
+          )}
           {run.coverage === "registered_effectivity_only_semantic_unknown" ? (
             <p className="notice warning">
               已登记补遗关系核对：
@@ -104,7 +356,9 @@ export function TaskRunCard({
             </p>
           ) : (
             <p className="small-note">
-              任务未创建正式确认、提交、核验或发布。操作结束与业务通过分别核对，章节提案不会自动改稿。
+              {chapter
+                ? "章节任务只产生可审阅提案，不创建正式确认、提交或评分结论。采纳须在原提案中明确操作。"
+                : "任务未创建正式确认、提交、核验或发布。操作结束与业务通过分别核对，章节提案不会自动改稿。"}
             </p>
           )}
           {["unknown", "reconciliation_required"].includes(run.state) && (
@@ -125,6 +379,11 @@ export function TaskRunCard({
             hasData={!!config}
             onRetry={() => void version.reload()}
           />
+          {(exactRun || authoringRun) && version.data && !config && (
+            <p className="notice error">
+              固定模板版本与这次任务的冻结说明不一致，未显示其他模板内容。
+            </p>
+          )}
           {config && (
             <details className="coverage-details">
               <summary>本次冻结的模板版本{config.revision}与目标</summary>
@@ -157,78 +416,88 @@ export function TaskRunCard({
               到章节编制核对实际提案，未自动应用
             </a>
           )}
-          <ErrorNotice error={command.error} />
-          <ResourceState
-            {...operation}
-            hasData={!!actualOperation}
-            onRetry={() => void operation.reload()}
-          />
-          {actualOperation &&
-            ["queued", "running"].includes(actualOperation.state) && (
+          <fieldset
+            disabled={
+              exactStale ||
+              authoringStale ||
+              (!!chapter &&
+                (resource.loading || !!resource.error || !!chapter.error))
+            }
+            className="exact-package-task-readonly"
+          >
+            <ErrorNotice error={command.error} />
+            <ResourceState
+              {...operation}
+              hasData={!!actualOperation}
+              onRetry={() => void operation.reload()}
+            />
+            {actualOperation &&
+              ["queued", "running"].includes(actualOperation.state) && (
+                <button
+                  className="text-button"
+                  onClick={() => setCancelOpen(!cancelOpen)}
+                  aria-expanded={cancelOpen}
+                >
+                  取消本次在途处理
+                </button>
+              )}
+            {cancelOpen &&
+              actualOperation &&
+              ["queued", "running"].includes(actualOperation.state) && (
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void command
+                      .run<Operation>(
+                        `/operations/${operationId}/cancel`,
+                        {
+                          reason: reason.trim(),
+                          cancel_pending_same_input: false,
+                        },
+                        operation.etag ?? "",
+                      )
+                      .then(() => {
+                        void operation.reload();
+                        void resource.reload();
+                      });
+                  }}
+                >
+                  <label>
+                    取消原因
+                    <input
+                      required
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      disabled={command.busy || !!command.pending}
+                    />
+                  </label>
+                  <button
+                    className="button secondary"
+                    disabled={
+                      !reason.trim() ||
+                      !operation.etag ||
+                      command.busy ||
+                      !!command.pending
+                    }
+                  >
+                    请求取消当前处理
+                  </button>
+                </form>
+              )}
+            {command.pending && !command.busy && (
               <button
-                className="text-button"
-                onClick={() => setCancelOpen(!cancelOpen)}
-                aria-expanded={cancelOpen}
+                className="button secondary"
+                onClick={() =>
+                  void command.retry<Operation>().then(() => {
+                    void operation.reload();
+                    void resource.reload();
+                  })
+                }
               >
-                取消本次在途处理
+                恢复原取消请求结果
               </button>
             )}
-          {cancelOpen &&
-            actualOperation &&
-            ["queued", "running"].includes(actualOperation.state) && (
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void command
-                    .run<Operation>(
-                      `/operations/${operationId}/cancel`,
-                      {
-                        reason: reason.trim(),
-                        cancel_pending_same_input: false,
-                      },
-                      operation.etag ?? "",
-                    )
-                    .then(() => {
-                      void operation.reload();
-                      void resource.reload();
-                    });
-                }}
-              >
-                <label>
-                  取消原因
-                  <input
-                    required
-                    value={reason}
-                    onChange={(event) => setReason(event.target.value)}
-                    disabled={command.busy || !!command.pending}
-                  />
-                </label>
-                <button
-                  className="button secondary"
-                  disabled={
-                    !reason.trim() ||
-                    !operation.etag ||
-                    command.busy ||
-                    !!command.pending
-                  }
-                >
-                  请求取消当前处理
-                </button>
-              </form>
-            )}
-          {command.pending && !command.busy && (
-            <button
-              className="button secondary"
-              onClick={() =>
-                void command.retry<Operation>().then(() => {
-                  void operation.reload();
-                  void resource.reload();
-                })
-              }
-            >
-              恢复原取消请求结果
-            </button>
-          )}
+          </fieldset>
           <details className="identity-details">
             <summary>固定输入、处理阶段与原始结果</summary>
             <p>

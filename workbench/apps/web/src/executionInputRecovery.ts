@@ -10,9 +10,11 @@ import {
   executionSha,
   contextKeys,
   recordObject,
+  validExecutionRerun,
 } from "./executionInputValidation";
 import { freezePath } from "./packageFrozenInput";
 import { matchesExecutionContext } from "./packageReviewContext";
+import { recordedCommandStorageKey } from "./recordedCommandStorage";
 
 export type ExecutionScope = FreezeScope & {
   frozenId: string;
@@ -40,7 +42,15 @@ export const executionScope = (
 export const executionPath = (scope: FreezeScope, frozenId: string) =>
   `${freezePath(scope)}/${frozenId}/execution-inputs`;
 export const executionStorageKey = (scope: ExecutionScope) =>
-  `tender:command-record:package-execution:${scope.memberId}:${scope.bidId}:${scope.packageId}:${scope.revisionId}:${scope.inventoryId}:${scope.frozenId}`;
+  recordedCommandStorageKey(
+    "package-execution",
+    scope.memberId,
+    scope.bidId,
+    scope.packageId,
+    scope.revisionId,
+    scope.inventoryId,
+    scope.frozenId,
+  );
 export function loadExecutionRecord(scope: ExecutionScope): ExecutionRecord {
   const raw = sessionStorage.getItem(executionStorageKey(scope));
   if (raw === null) return { version: 1, scope, pending: null, lastId: null };
@@ -76,7 +86,7 @@ export function loadExecutionRecord(scope: ExecutionScope): ExecutionRecord {
       !exactKeys(p.body, ["frozen_digest", "context_digest", "rerun"]) ||
       p.body.frozen_digest !== scope.frozenDigest ||
       !executionSha(p.body.context_digest) ||
-      p.body.rerun !== null ||
+      !validExecutionRerun(p.body.rerun) ||
       !recordObject(p.context) ||
       !exactKeys(p.context, contextKeys) ||
       !matchesExecutionContext(

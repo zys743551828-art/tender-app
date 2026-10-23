@@ -22,6 +22,11 @@ import {
 } from "./dependencyPlanRecovery";
 import type { DependencyPlanRecord } from "./dependencyPlanRecovery";
 import "./packageDependencyPlans.css";
+import DependencyRequirementPager, {
+  DEPENDENCY_PAGE_SIZE,
+} from "./DependencyRequirementPager";
+import { assertDependencyRequestFits } from "./dependencyRequestLimits";
+import { usePackageScopeGuard } from "./packageScopeGuard";
 
 export type DependencyPlanCandidate = {
   request: CheckPackageInputDependencies;
@@ -30,6 +35,9 @@ export type DependencyPlanCandidate = {
 type Props = DependencyProps & {
   candidate: DependencyPlanCandidate | null;
   onRecheck: () => void;
+  onSelectPlan?: (plan: PackageDependencyPlanView) => void;
+  onSaved?: (plan: PackageDependencyPlanView) => void;
+  selectedPlanId?: string | null;
 };
 const states = {
   unknown: "事实需求尚未核定",
@@ -70,7 +78,7 @@ function Workspace(props: Props) {
   const [error, setError] = useState<unknown>(loaded.error);
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [historyVisible, setHistoryVisible] = useState(20);
+  const [historyPage, setHistoryPage] = useState(0);
   const [page, setPage] = useState<PackageDependencyPlanPage | null>(null);
   const [history, setHistory] = useState<PackageDependencyPlanView | null>(
     null,
@@ -80,6 +88,11 @@ function Workspace(props: Props) {
     ticket = useRef(0);
   const path = dependencyPlanPath(props),
     scope = dependencyPlanScope(props);
+  usePackageScopeGuard(`dependency-plan:${JSON.stringify(scope)}`, {
+    busy: saving,
+    pending: !!record?.pending || !!loaded.error,
+    dirty: !!reason && !record?.pending,
+  });
   const saveAvailable = supportsApi("POST", path),
     readAvailable = supportsApi("GET", path);
   useEffect(() => {
@@ -122,6 +135,12 @@ function Workspace(props: Props) {
           }
         : null;
     if (!pending || !validPlanBody(pending.body, props)) return;
+    try {
+      assertDependencyRequestFits(pending.body, recover);
+    } catch (failure) {
+      setError(failure);
+      return;
+    }
     writing.current = true;
     const request = ++ticket.current;
     setBusy(true);
@@ -129,7 +148,18 @@ function Workspace(props: Props) {
     setError(null);
     setHistory(null);
     try {
-      persist({ ...current, pending });
+      try {
+        persist({ ...current, pending });
+      } catch (failure) {
+        if (
+          failure instanceof DOMException &&
+          failure.name === "QuotaExceededError"
+        )
+          throw new Error(
+            "本机恢复存储空间不足，本次请求尚未发送；当前页面标注和已有恢复记录仍保留。",
+          );
+        throw failure;
+      }
       let data: PackageDependencyPlanView;
       try {
         ({ data } = await api<PackageDependencyPlanView>(path, {
@@ -138,6 +168,17 @@ function Workspace(props: Props) {
           body: pending.body,
         }));
       } catch (failure) {
+        if (
+          active.current &&
+          !recover &&
+          failure instanceof ApiError &&
+          failure.status === 413
+        ) {
+          // A new rejected request cannot have a receipt. Keep the candidate
+          // and reason so the human can shorten the draft without losing it.
+          persist({ ...current, pending: null });
+          throw failure;
+        }
         if (
           active.current &&
           failure instanceof ApiError &&
@@ -159,8 +200,10 @@ function Workspace(props: Props) {
       persist({ ...current, pending: null, lastId: data.manifest.id });
       setConfirmed(false);
       setHistory(data);
-      setHistoryVisible(20);
+      setHistoryPage(0);
       setPage(null);
+      setReason("");
+      props.onSaved?.(data);
     } catch (failure) {
       if (active.current && ticket.current === request) setError(failure);
     } finally {
@@ -215,7 +258,7 @@ function Workspace(props: Props) {
         throw new Error("指定计划历史身份或摘要不符，未采用其他记录。");
       if (active.current && ticket.current === request) {
         setHistory(data);
-        setHistoryVisible(20);
+        setHistoryPage(0);
       }
     } catch (failure) {
       if (active.current && ticket.current === request) setError(failure);
@@ -287,6 +330,17 @@ function Workspace(props: Props) {
                 }}
               />
             </label>
+            <button
+              type="button"
+              className="text-button"
+              disabled={busy || !!record?.pending || !reason}
+              onClick={() => {
+                setReason("");
+                setConfirmed(false);
+              }}
+            >
+              清空未发送的计划保存理由
+            </button>
             <label className="package-dependency-plans__choice">
               <input
                 type="checkbox"
@@ -388,6 +442,20 @@ function Workspace(props: Props) {
                 。这是保存时的记录，当前事实资格和执行条件须另行核验。
               </p>
             </div>
+            {props.onSelectPlan && (
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy || props.selectedPlanId === history.manifest.id}
+                onClick={() => {
+                  if (!busy && !writing.current) props.onSelectPlan?.(history);
+                }}
+              >
+                {props.selectedPlanId === history.manifest.id
+                  ? "已选用这份计划"
+                  : "选择这份计划继续核查"}
+              </button>
+            )}
             <p>
               保存时间：
               <time>
@@ -401,10 +469,15 @@ function Workspace(props: Props) {
               <summary>查看原计划的标注与身份</summary>
               <ol>
                 {history.manifest.assessment.manifest.requirements
-                  .slice(0, historyVisible)
+                  .slice(
+                    historyPage * DEPENDENCY_PAGE_SIZE,
+                    (historyPage + 1) * DEPENDENCY_PAGE_SIZE,
+                  )
                   .map((row, n) => (
                     <li key={row.requirement_id}>
-                      <strong>原要求 {n + 1}</strong>
+                      <strong>
+                        原要求 {historyPage * DEPENDENCY_PAGE_SIZE + n + 1}
+                      </strong>
                       <p>
                         {row.declaration?.reason ?? "此条未标注，保持未知。"}
                       </p>
@@ -412,16 +485,13 @@ function Workspace(props: Props) {
                     </li>
                   ))}
               </ol>
-              {history.manifest.assessment.manifest.requirement_count >
-                historyVisible && (
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => setHistoryVisible((n) => n + 20)}
-                >
-                  继续查看原标注
-                </button>
-              )}
+              <DependencyRequirementPager
+                label="原计划标注"
+                count={history.manifest.assessment.manifest.requirement_count}
+                page={historyPage}
+                disabled={busy}
+                onPage={setHistoryPage}
+              />
               <p>
                 计划身份：<code>{history.manifest.id}</code>
               </p>

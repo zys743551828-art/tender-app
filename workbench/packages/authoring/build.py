@@ -33,6 +33,7 @@ OPTIONS = {
     "font_size_halfpoints": 22,
     "renderer_filter": "writer_pdf_Export",
     "content_subset": 1,
+    "font_scope": "isolated-frozen-file/1",
 }
 TEMPLATE_DIGEST = sha(OPTIONS)
 WRITER_DIGEST = sha(Path(__file__).read_bytes())
@@ -218,6 +219,30 @@ def render_identity(executable: str, font_path: str) -> dict:
     }
 
 
+def isolated_font_environment(directory: Path, font_bytes: bytes, suffix: str) -> dict:
+    """The converter sees exactly the font bytes bound in its immutable profile."""
+    fonts = directory / "fonts"
+    fonts.mkdir(mode=0o700)
+    extension = suffix.lower() if suffix.lower() in {".otf", ".ttf", ".ttc"} else ".font"
+    selected = fonts / ("frozen" + extension)
+    selected.write_bytes(font_bytes)
+    selected.chmod(0o600)
+    cache = directory / "font-cache"
+    cache.mkdir(mode=0o700)
+    config = ET.Element("fontconfig")
+    ET.SubElement(config, "reset-dirs")
+    ET.SubElement(config, "dir").text = str(fonts)
+    ET.SubElement(config, "cachedir").text = str(cache)
+    config_file = directory / "fonts.conf"
+    config_file.write_bytes(ET.tostring(config, encoding="utf-8", xml_declaration=True))
+    config_file.chmod(0o600)
+    return {
+        **renderer_environment(str(directory)),
+        "FONTCONFIG_FILE": str(config_file),
+        "FONTCONFIG_PATH": str(directory),
+    }
+
+
 def render_pdf(
     docx: bytes,
     *,
@@ -245,6 +270,10 @@ def render_pdf(
             return RenderResult("failed", None, chain, ("RENDER_INPUT_TOO_LARGE",))
         with tempfile.TemporaryDirectory(prefix="tender-render-") as directory:
             path = Path(directory)
+            font_bytes = Path(font_path).read_bytes()
+            if sha(font_bytes) != identity["fontset_digest"]:
+                return RenderResult("failed", None, chain, tuple(gaps + ["RENDER_PROFILE_CHANGED"]))
+            environment = isolated_font_environment(path, font_bytes, Path(font_path).suffix)
             source = path / "body.docx"
             source.write_bytes(docx)
             os.chmod(source, 0o600)
@@ -267,7 +296,7 @@ def render_pdf(
                 stderr=subprocess.PIPE,
                 start_new_session=True,
                 cwd=path,
-                env=renderer_environment(str(path)),
+                env=environment,
             ) as process:
                 try:
                     process.communicate(timeout=timeout)

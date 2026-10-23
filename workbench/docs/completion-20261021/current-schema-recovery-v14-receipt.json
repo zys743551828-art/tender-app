@@ -1,0 +1,319 @@
+{
+  "format": "completion-current-schema-recovery-receipt/1",
+  "observed_at": "2026-10-21T10:33:28.234183+00:00",
+  "ordered_sql": [
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd"
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96"
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319"
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738"
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876"
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-requirements.sql",
+      "sha256": "d08c29c6b56a46674ab78f37dd5cb38fe074963c68d334b595fbf87fb0197bf9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-inputs.sql",
+      "sha256": "d066c92234ba5b3cba3990e51cab3316dc5b72ec6a6c563a5a776c9c13067da6"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-execution-inputs.sql",
+      "sha256": "f5f473c2b92f652b016e1eb0170eb2b22952160cf0432d831b5ba021390d8706"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-fact-scopes.sql",
+      "sha256": "4a86390f08d9ed4e16277220fe655d28f2d9f8df0310ed1671b44d87c2623a10"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-dependency-plans.sql",
+      "sha256": "443a3f1a82ef60120ffadfbd073623c2e98308792f2f6bdc5cf47715a5e41260"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-runs.sql",
+      "sha256": "5ef4cf1160b17abe4cf106cb1acd9676277f9b31f982c06f96bf0ea8a3de3281"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-decisions.sql",
+      "sha256": "a53f0210e68844fc339dcf0fe0cc10b685bcf049b0f0b20a6022deb5a68358e9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-report-exports.sql",
+      "sha256": "48adf4288f4e2ac4e0b94d2b59edde19229cc83b91bf773a48a1b653275e7184"
+    },
+    {
+      "path": "packages/contracts/sql/document-parses.sql",
+      "sha256": "b965bc6826d783e368517ffb505631196f051d8ddcb561eb3843f98c45011681"
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1"
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d"
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd"
+    },
+    {
+      "path": "packages/authoring/sql/docx_import.sql",
+      "sha256": "2a832ccf1b9a549105a9923705de0f720f64aeef30c8607ac12944ba305a92b0"
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e"
+    },
+    {
+      "path": "deploy/sql/bid-package-requirement-runtime-grants.sql",
+      "sha256": "4d510b265e9e98355d2794839ab204a9501a9cbcad1b9b82f4ad53c924d9498e"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-input-runtime-grants.sql",
+      "sha256": "eb4f56ecfa2ad25bf86468ab35d657cd7859ae1880ed3bffeb0a46a5def14d55"
+    },
+    {
+      "path": "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+      "sha256": "53bc424cfbcd1b8207875f3882c5738813ff6a1a9e5d8c6ad91988af7cb10373"
+    },
+    {
+      "path": "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+      "sha256": "12c23369c1e9a5abbc5beea52b82cdbad0d198e619b2f5d3655cf4db1aa791a7"
+    },
+    {
+      "path": "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
+      "sha256": "2c7170ac325fa3027aa137ad0934456c0b4a0a4298980caaaa672dc128da9a1c"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-run-runtime-grants.sql",
+      "sha256": "eb82e88cd04b60b10f5ff026596c20029a164ab64144075b48cd2433cf5fb624"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-rule-corrections.sql",
+      "sha256": "a87cc9ea616d2e7a9c151322450bb80f4cc4d0ee4b1e99ea26d6af8c1b889e87"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-decision-runtime-grants.sql",
+      "sha256": "e48a7d76ed72bc360854be02d63eb96d68d67b77d58fda43a89958dcc29c2911"
+    },
+    {
+      "path": "deploy/sql/bid-package-report-runtime-grants.sql",
+      "sha256": "8630b580795663dbd6d6a32bd242697e6dd4858294fe37aaa817cc7777bbfa24"
+    },
+    {
+      "path": "deploy/sql/document-parse-runtime-grants.sql",
+      "sha256": "155737233a97e71d40ade0a342ef33c819c2775172aa08bbb1ec8dbccbbc97c1"
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619"
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-submissions.sql",
+      "sha256": "d6fea7f77da4378e23fae217737ac7cffc38f30255d1bd39885852bc0aaf2b0c"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-technical-scopes.sql",
+      "sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-reviews.sql",
+      "sha256": "2e1c9ae9b24533402c0a8e5da43f6c5098539b6d8697098be2e2f14dc4e7e1f2"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-triggers.sql",
+      "sha256": "ca96f73baec6e5b3db739da5420db1e6efdde0769c0c2d8fd49e7c5fd8cea45f"
+    },
+    {
+      "path": "packages/contracts/sql/package-retrospectives.sql",
+      "sha256": "1cf9ad92465191277c1a99860acdf98bf377966a288ecafcb40644dad7caae71"
+    },
+    {
+      "path": "packages/word_intake/schema.sql",
+      "sha256": "380a58eef00224a6094652c076d0d3ff0cb268a30a9868544671f4d37eb1dbfe"
+    },
+    {
+      "path": "packages/knowledge/sql/rag.sql",
+      "sha256": "51c98cf1aea5364b418747161e86bb374b9b3d44222d67891ec18e27bc200003"
+    },
+    {
+      "path": "packages/assistant/sql/assistant.sql",
+      "sha256": "4030b5e6a749aa060956c4039aa0cdd34e057508ea6a4ce9c58100f5a6ca81b0"
+    },
+    {
+      "path": "packages/assistant/sql/live-facts.sql",
+      "sha256": "42fc9646225a67a8d209822ac9d0e3573e6903b3f5681042e9cb49fa6eeb11a2"
+    },
+    {
+      "path": "packages/assistant/sql/intent-budget.sql",
+      "sha256": "173078b95a5cd58db9f8f8aa09ff2728bae2c4a1e1b3817a4b593e719b04a6b0"
+    },
+    {
+      "path": "packages/assistant/sql/generation-batches.sql",
+      "sha256": "1042f97f6fa25411a1eabb28444fa3ca8f4389b7137990ebf67d6f97992a72e0"
+    },
+    {
+      "path": "deploy/sql/model-governance.sql",
+      "sha256": "0b7dc8863fb83703116189fb3e6bcf442ed5fae2250d50993189e04aefa6f51a"
+    },
+    {
+      "path": "deploy/sql/historical-backtest.sql",
+      "sha256": "e811920d92478fd6e20a9b0d200c2769396eae92deee142a0cc2fbafd0086c44"
+    },
+    {
+      "path": "deploy/sql/model-governance-release.sql",
+      "sha256": "80d5c94246bbfe4c47f320c9ad749eea2328a0c66b30a5614556168e0398d936"
+    },
+    {
+      "path": "deploy/sql/historical-input-qualification.sql",
+      "sha256": "a5d3823cfa1f9cd360649114da8026a07bf5b93b13ec900c22226117137c1052"
+    },
+    {
+      "path": "deploy/sql/score-execution.sql",
+      "sha256": "28e9a2f5042e29078c24a20d2191ada9935034b745627e8b1a5c865b487ec5be"
+    },
+    {
+      "path": "deploy/sql/technical-scale-authority.sql",
+      "sha256": "ba5bd56c4ae03628cfac01d085cf8eb10fa95b094d3d554f2e866db10bb5dfad"
+    },
+    {
+      "path": "deploy/sql/technical-scale-package-identity.sql",
+      "sha256": "432f123552b6f7033a8e3fa88b83b38b697d5406e9b3c4a2ea60b533176b1691"
+    },
+    {
+      "path": "deploy/sql/score-denominator.sql",
+      "sha256": "e771ab52c25cbd19ac0e48f5732de051c2f8f5ecc7b6599a0f7064826b169195"
+    }
+  ],
+  "source_files": {
+    "deploy/schema_plan.py": "c1041dcbdd7783047708ba1a44d1752834b70966f12e883967e893dd74f3676c",
+    "deploy/completion_recovery.py": "42d8ac6884b1ff1ff4e0bc38289e85b461dbc8c504e94e18cae71b0dab0bb29a",
+    "deploy/completion_recovery_runtime.py": "95c8667cea5f03ea35791ee411ce4fd3564b3b0056793e0e587c88c8e411b9c3",
+    "deploy/backups/generic.py": "5307f1cb06a8f1fcceabc7e66c3cc797110adc9ded4461af49b3192d6949021f",
+    "deploy/backups/run.py": "a64c40a64271c62210b072b95bfad69b123169e6b7808c00d51d181ae1497604",
+    "deploy/application_recovery/archive.py": "47b1810034a6e4f205df7379dc699a9a92b7fe131e38842dde5a300e820f3ea6",
+    "deploy/application_recovery/definition_equivalence.py": "1581e1b04c75bf1c5225c893a153aabae7320e5002ddcbc640fd6127d916dcca",
+    "tests/test_completion_recovery.py": "277b0a185c256d8f8a6df8d96135f06e7ebb194ee2366f6bcd3bc723ead78ecf",
+    "tests/test_completion_recovery_pg.py": "835b9053f8367872dc35953fc1a29138e62cc7525f44db51e1ef6e948df209fe",
+    "tests/completion_recovery_native_records.py": "a91414054bcef8cf70541e5c1ca4c4fae0e047be1c3c0a6f31698c12443c83ca"
+  },
+  "pg_server_version": "17.11",
+  "pg_binary_sha256": {
+    "postgres": "1267880246db3adc969b21bd91ac335174aed88470c2a25637cb9eb8ba35425b",
+    "initdb": "da30f63f1d6b79eecab3a9f4119dc74bef6dd7a602fed4c96d8a6cba55f0f738",
+    "pg_dump": "da2d32c7290056f0eff204c19d51da082544c4ca2e42a61a7e0f8eebc1c58c45",
+    "pg_restore": "4f2a3ed268bf544bdf10edaf2bf8bd3a5bbbf9e4005e5974567c596c0662c089"
+  },
+  "extensions": [
+    {
+      "name": "plpgsql",
+      "version": "1.0",
+      "schema": "pg_catalog"
+    },
+    {
+      "name": "uuid-ossp",
+      "version": "1.1",
+      "schema": "public"
+    },
+    {
+      "name": "vector",
+      "version": "0.8.0",
+      "schema": "design"
+    }
+  ],
+  "schemas": [
+    "design",
+    "historical_backtest",
+    "historical_input",
+    "model_governance",
+    "model_release",
+    "public",
+    "retrieval",
+    "score_basis",
+    "score_execution",
+    "technical_scale"
+  ],
+  "tables": 228,
+  "nonempty_tables": 57,
+  "all_table_rows_sha256_verified": true,
+  "definitions_counts": {
+    "acl_role_dependencies": 10,
+    "schemas": 10,
+    "relations": 716,
+    "columns": 2696,
+    "functions": 311,
+    "constraints": 1633,
+    "indexes": 483,
+    "triggers": 245,
+    "types": 474,
+    "extensions": 3,
+    "default_acl": 0,
+    "sequences": 1,
+    "blob_foreign_keys": 19
+  },
+  "all_definitions_and_acl_preserved_before_hardening": true,
+  "read_only_nonowner_login_verified": true,
+  "table_and_column_write_privileges_removed": true,
+  "real_column_update_with_read_only_disabled_denied": true,
+  "f04_native_correction_rows_and_f05_native_binding_restored": true,
+  "f05_historical_service_response_unchanged": true,
+  "new_task_and_retrospective_records": {
+    "exact_template_response_identical": true,
+    "exact_trigger_pending_and_cancelled_views_identical": true,
+    "retrospective_immutable_view_identical": true,
+    "retrospective_state": "pending_review",
+    "knowledge_link_created": false,
+    "task_runs_created": 0,
+    "model_calls": 0
+  },
+  "concurrent_commit_excluded": true,
+  "originals": 2,
+  "original_bytes": 5324,
+  "real_loopback_s3_sha256_and_size_verified": true,
+  "failure_controls": [
+    "wrong_s3_secret_403",
+    "corrupt_archive_original",
+    "missing_archive_original",
+    "corrupt_restored_object",
+    "missing_restored_object_404",
+    "corrupt_source_original_prevents_archive_completion",
+    "missing_source_original_404_prevents_archive_completion"
+  ],
+  "source_database": "completion_source_0205a338edd24afcbd447474fa6985f0",
+  "target_database": "tender_catalog_restore_1b9c318433df4f158c0dee9b40d734e5",
+  "same_disposable_pg_cluster_distinct_databases": true,
+  "source_and_target_objects_distinct_buckets": true,
+  "source_rows_original_bytes_and_runtime_privileges_unchanged": true,
+  "private_archive": ".local/backups/completion-current-2c0384ca7e9a45e69ccc4f0232fc26fb",
+  "database_archive_sha256": "a158419c731ab828b366eb0629776c14131c3205ef0b909f3c3747a9f109f8e9",
+  "database_manifest_sha256": "75940499907733895f98c8494e983628fc40efe2e6f5a762f812bcf792ff2d63",
+  "originals_manifest_sha256": "373fbe811ae81db2ed4223713613ed04686037165a98d04702e5fb6d99362e9b",
+  "model_calls": 0,
+  "consumer_started": false,
+  "old_queue_resume_qualified": false,
+  "native_oss_qualified": false,
+  "full_application_restore_qualified": false,
+  "production_rpo_rto_qualified": false
+}

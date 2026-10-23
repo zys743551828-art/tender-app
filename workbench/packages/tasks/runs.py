@@ -10,6 +10,13 @@ from packages.tasks import inputs, templates
 
 
 def operations(c, row):
+    from packages.tasks import package_authoring_result, package_repository
+
+    if package_authoring_result.is_exact(row):
+        return [package_authoring_result.bound(c, row)[2]["id"]]
+
+    if package_repository.is_package(row):
+        return [UUID(package_repository.native(c, row)["operation"]["id"])]
     manifest = row["frozen_manifest"]
     ids = [row["operation_id"]]
     if manifest["task_kind"] == "denial_check":
@@ -53,6 +60,10 @@ def operations(c, row):
 
 def billing_operations(c, row):
     ids = operations(c, row)
+    from packages.tasks import package_authoring_result, package_repository
+
+    if package_repository.is_package(row) or package_authoring_result.is_exact(row):
+        return ids
     frozen = row["frozen_manifest"]
     if frozen["task_kind"] == "denial_check":
         possible = c.execute(
@@ -70,6 +81,10 @@ def billing_operations(c, row):
 
 def view(c, bid, identity):
     row = fetch(c, "SELECT * FROM task_runs WHERE bid_id=%s AND id=%s", (bid, identity))
+    from packages.tasks import package_repository
+
+    if package_repository.is_package(row):
+        return package_repository.view(c, row)
     frozen = row["frozen_manifest"]
     ids = operations(c, row)
     root = fetch(
@@ -82,6 +97,15 @@ def view(c, bid, identity):
     state = root["state"]
     stage = "execution"
     error = None
+    chapter_result = None
+    if frozen["task_kind"] == "chapter_suggestion":
+        from packages.tasks import authoring_result, package_authoring_result
+
+        state, error, chapter_result = (
+            package_authoring_result.project(c, row)
+            if package_authoring_result.is_exact(row)
+            else authoring_result.project(c, row)
+        )
     if frozen["task_kind"] == "denial_check":
         stage = "preparation"
         if len(ids) > 1:
@@ -139,7 +163,9 @@ def view(c, bid, identity):
             "stage": stage,
             "frozen_manifest": frozen,
             "result": (
-                {"review_operation_ref": f"/api/v1/operations/{ids[-1]}"}
+                chapter_result
+                if frozen["task_kind"] == "chapter_suggestion"
+                else {"review_operation_ref": f"/api/v1/operations/{ids[-1]}"}
                 if stage == "review"
                 else result["result"]
                 if result and stage != "preparation"
@@ -180,6 +206,16 @@ def dispatch(
         raise DomainError("TASK_TEMPLATE_PAUSED", "模板已暂停；在途任务没有取消", 409)
     config = row["config"]["definition"]
     kind = config["task_kind"]
+    if config["source_selection"]["mode"] in (
+        "exact_package_review",
+        "exact_package_trigger",
+        "exact_package_authoring",
+    ):
+        raise DomainError(
+            "TASK_PACKAGE_EXPLICIT_COORDINATOR_REQUIRED",
+            "精确整包任务当前只接受显式手动入口；旧定时器、资料事件或当前正文流程不能代为启动",
+            409,
+        )
     if kind == "scoring_review":
         raise DomainError(
             "TASK_SCORING_NOT_QUALIFIED",
@@ -259,7 +295,7 @@ def dispatch(
     if prior and (
         not rerun
         or view(c, bid, prior[-1]["id"])["state"]
-        in ("queued", "running", "cancel_requested", "awaiting_review")
+        in ("queued", "running", "cancel_requested", "awaiting_review", "awaiting_publication")
     ):
         audit(
             c,
@@ -343,6 +379,7 @@ def dispatch(
         c.execute("UPDATE review_slots SET pending_intent=%s WHERE bid_id=%s", (Jsonb(intent), bid))
     elif kind == "chapter_suggestion":
         from packages.assistant.jobs import queue_generation
+        from packages.tasks.authoring_result import bind
 
         section = context["section"]
         accepted = queue_generation(
@@ -359,6 +396,7 @@ def dispatch(
         )
         operation = UUID(accepted["operation"]["id"])
         frozen["assistant_job_id"] = accepted["id"]
+        frozen["authoring_binding"] = bind(c, bid, frozen, operation)
     else:
         from packages.domain.source_effectivity import evidence_impacts
 
@@ -448,4 +486,28 @@ def notify(c, bid, identity):
             "run_ref": f"/api/v1/bids/{bid}/task-runs/{identity}",
         },
     )
+    result = value["result"]
+    if (
+        value["frozen_manifest"]["task_kind"] == "chapter_suggestion"
+        and result
+        and result.get("schema") in {"task-authoring-result/1", "task-package-authoring-result/1"}
+    ):
+        # Retain legacy notifications as history. A former operation-only success
+        # cannot suppress a newly verified publication notification on a closed bid.
+        audit(
+            c,
+            UUID(value["frozen_manifest"]["actor_id"]),
+            bid,
+            "task.package_authoring_notification_bound"
+            if result.get("schema") == "task-package-authoring-result/1"
+            else "task.authoring_notification_bound",
+            {
+                "notification_key": key,
+                "run_id": identity,
+                "job_id": result["job_id"],
+                "publication_state": result["publication_state"],
+                "action_id": result["action_id"],
+                "result_digest": sha(result),
+            },
+        )
     return True

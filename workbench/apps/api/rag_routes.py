@@ -24,6 +24,7 @@ from packages.rag import search
 from packages.rag.core import normalized_vector
 from packages.rag.http_port import DenseHttp, LexicalHttp, RerankHttp, RuntimeUnavailable
 from packages.rag.indexing import ensure_profile
+from packages.rag.numeric import NUMERIC_POLICY, numeric_patterns
 from packages.rag.repository import (
     assert_embedding_profile,
     resolve_project_scope,
@@ -127,6 +128,10 @@ def retrieval(request: Request, body: dict = Body(...)):
         raise DomainError("PROJECT_REQUIRED", "请先选择要查证的项目", 422)
     if not body["query"].strip():
         raise DomainError("INVALID_QUERY", "请输入需要查证的内容", 422)
+    try:
+        numeric_patterns(body["query"])
+    except ValueError:
+        raise DomainError("INVALID_QUERY", "请将检索中的编号和数字缩减到32项以内", 422) from None
     key = request.headers.get("idempotency-key")
     if not key or len(key) > 128:
         raise DomainError("IDEMPOTENCY_REQUIRED", "请提供有效的操作幂等键", 428)
@@ -158,6 +163,7 @@ def retrieval(request: Request, body: dict = Body(...)):
                     (ROOT / "packages/contracts/policies/retrieval-policy.json").read_bytes()
                 ),
                 "lexical_dictionary": dense.lexical_dictionary_digest,
+                "numeric_policy": NUMERIC_POLICY,
             }
         )
         with connection() as c:
@@ -173,7 +179,9 @@ def retrieval(request: Request, body: dict = Body(...)):
             if source_manifest(c, scope) != manifest or control(c, bid) != frozen_control:
                 raise DomainError("RETRIEVAL_SOURCE_CHANGED", "查证期间资料已变化，请重新查询", 409)
             blocked = excluded_evidence(c, bid, scope.purpose)
-            rows = search.candidates(c, scope, profile, vector, lexemes, blocked)
+            rows = search.candidates(
+                c, scope, profile, vector, lexemes, blocked, query=body["query"]
+            )
         rows, route, observed_reranker = search.rerank(body["query"], rows, reranker)
         rows = rows[: min(body["limit"], 8)]
         with connection() as c:

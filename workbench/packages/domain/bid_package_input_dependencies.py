@@ -4,6 +4,7 @@ from packages.domain import bid_package_execution_input_repository as prepared_i
 from packages.domain import bid_package_review_input_repository as frozen_inputs
 from packages.domain import package_fact_usage as fact_usage
 from packages.domain import package_input_dependencies as dependencies
+from packages.domain.package_dependency_limits import require_dependency_body
 from packages.domain.runtime import DomainError, connection
 
 
@@ -47,6 +48,7 @@ def observe(
 def check(scope, frozen_id, input_id, body):
     from packages.contracts.bid_package_requirements_api import validate
 
+    require_dependency_body(body)
     validate("CheckPackageInputDependencies", body)
     return observe(
         scope,

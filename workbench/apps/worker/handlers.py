@@ -1,7 +1,6 @@
 """PDF真实字节核验及保守的物理页文字提取。"""
 
 import os
-import threading
 from datetime import timedelta
 
 import pypdfium2 as pdfium
@@ -13,13 +12,8 @@ from packages.domain.parsing_profile import profile as parser_profile
 from packages.domain.retained_uploads import verification_object_key
 from packages.domain.runtime import DomainError, connection, fetch, sha, uid
 from packages.parsing.http_port import ParsingUnavailable
-
-PDFIUM_LOCK = threading.Lock()
-
-PARSER_DIGEST = sha(
-    {"parser": "pypdfium2", "version": "4.30.1", "purpose": "physical_page_text_only"}
-)
-CONFIG_DIGEST = sha({"bbox": None, "ocr": False, "tables": False, "visual": False})
+from packages.parsing.physical_pdf import CONFIG_DIGEST, PARSER_DIGEST
+from packages.parsing.physical_pdf import LOCK as PDFIUM_LOCK
 
 
 def compute(message):

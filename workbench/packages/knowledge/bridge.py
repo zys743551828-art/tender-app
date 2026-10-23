@@ -10,12 +10,39 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from packages.domain.fact_sets import carryover, decision_basis, evidence_basis, identity
+from packages.domain.review_identity import utc
 from packages.domain.rule_sets import current_decision
 from packages.domain.runtime import DomainError, audit, clean, fetch, now, sha
 from packages.identity.repository import snapshot as identity_snapshot
 from packages.knowledge.content import PURPOSES, text
 from packages.knowledge.repository import lifecycle, version_row
 from packages.knowledge.sources import authority_manifest, lock_graph, lock_heads
+
+REFERENCE_TARGETS = {
+    "project": "bids",
+    "section": "sections",
+    "operation": "operations",
+    "review": "review_runs",
+    "package_review_run": "bid_package_review_runs",
+}
+
+
+def require_reference_target(c, bid, kind, target):
+    if kind not in REFERENCE_TARGETS:
+        raise DomainError("KNOWLEDGE_TARGET_INVALID", "引用目标类型不支持", 422)
+    if kind == "project":
+        if str(target) != str(bid):
+            raise DomainError("KNOWLEDGE_TARGET_INVALID", "引用目标不属于当前项目", 409)
+        return
+    from psycopg import sql
+
+    fetch(
+        c,
+        sql.SQL("SELECT id FROM {} WHERE id=%s AND bid_id=%s").format(
+            sql.Identifier(REFERENCE_TARGETS[kind])
+        ),
+        (target, bid),
+    )
 
 
 def project_context(c, bid):
@@ -258,15 +285,9 @@ def cite(c, bid, knowledge_id, version, actor, body, command_id):
 
     require_read_committed(c)
     assert_work_writable(c, bid)
-    permitted = {
-        "project": "bids",
-        "section": "sections",
-        "operation": "operations",
-        "review": "review_runs",
-    }
     kind = body["target_kind"]
     target = UUID(body["target_object_id"])
-    if kind not in permitted:
+    if kind not in REFERENCE_TARGETS:
         raise DomainError("KNOWLEDGE_TARGET_INVALID", "引用目标类型不支持", 422)
     selected = check_reference(c, bid, knowledge_id, version, body["purpose"])
     context, _ = project_context(c, bid)
@@ -274,20 +295,7 @@ def cite(c, bid, knowledge_id, version, actor, body, command_id):
         raise DomainError(
             "PROJECT_NOT_WRITABLE", "已提交或归档项目不能新增选用引用，历史引用保持可读", 409
         )
-    if kind == "project":
-        if target != bid:
-            raise DomainError("KNOWLEDGE_TARGET_INVALID", "引用目标不属于当前项目", 409)
-    else:
-        # Identifier is selected only from the server-side constant map.
-        from psycopg import sql
-
-        fetch(
-            c,
-            sql.SQL("SELECT id FROM {} WHERE id=%s AND bid_id=%s").format(
-                sql.Identifier(permitted[kind])
-            ),
-            (target, bid),
-        )
+    require_reference_target(c, bid, kind, target)
     text(body["excerpt"], 20000)
     text(body["applicability_reason"], 4000)
     if body["excerpt"] not in selected["content"]:
@@ -328,6 +336,43 @@ def cite(c, bid, knowledge_id, version, actor, body, command_id):
     }
     audit(c, actor, bid, "knowledge.cited", result, command_id)
     return result
+
+
+def package_review_targets(c, bid, *, limit=20, offset=0):
+    """Historical targets for reference annotations, never additions to frozen inputs."""
+    if not 1 <= limit <= 100 or not 0 <= offset <= 100000:
+        raise DomainError("INVALID_REQUEST", "知识引用目标分页超出范围", 422)
+    fetch(c, "SELECT id FROM bids WHERE id=%s", (bid,))
+    rows = c.execute(
+        "SELECT r.id,r.created_at,r.input_digest,r.execution_input_id,o.state,"
+        "r.input_manifest#>>'{scope,package_id}' AS package_id,"
+        "r.input_manifest#>>'{scope,revision_id}' AS revision_id,"
+        "r.input_manifest#>>'{scope,inventory_id}' AS inventory_id,"
+        "r.input_manifest#>>'{frozen_input,id}' AS frozen_input_id,"
+        "result.digest AS result_digest "
+        "FROM design.bid_package_review_runs r "
+        "JOIN design.operations o ON o.bid_id=r.bid_id AND o.id=r.operation_id "
+        "LEFT JOIN design.bid_package_review_results result ON result.bid_id=r.bid_id AND result.run_id=r.id "
+        "WHERE r.bid_id=%s ORDER BY r.created_at DESC,r.id DESC LIMIT %s OFFSET %s",
+        (bid, limit + 1, offset),
+    ).fetchall()
+    return clean(
+        {
+            "bid_id": bid,
+            "items": [
+                dict(row)
+                | {
+                    "target_kind": "package_review_run",
+                    "created_at": utc(row["created_at"].isoformat()),
+                }
+                for row in rows[:limit]
+            ],
+            "next_offset": offset + limit if len(rows) > limit else None,
+            "reference_only": True,
+            "changes_frozen_result": False,
+            "formal_score_allowed": False,
+        }
+    )
 
 
 def reference_history(c, citation_id):

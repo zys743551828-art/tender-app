@@ -60,6 +60,31 @@ def test_history_does_not_recompute_against_current_dependency_policy(case, monk
     assert plans.read(value.view(), case["frozen"], case["prepared"]).view() == value.view()
 
 
+def test_old_policy_receipt_is_readable_but_cannot_authorize_new_use(case, monkeypatch):
+    value, body, usage, assessment = make(case)
+    monkeypatch.setattr(
+        dependencies,
+        "POLICY_FILES",
+        (*dependencies.POLICY_FILES, "packages/domain/runtime.py"),
+    )
+    # Read validates the original immutable ACK; it does not renew its policy.
+    assert plans.read(value.view(), case["frozen"], case["prepared"]).view() == value.view()
+    with pytest.raises(ValueError):
+        dependencies.verify(assessment.view(), case["frozen"], case["prepared"], usage)
+    with pytest.raises(ValueError):
+        plans.build(
+            case["frozen"],
+            case["prepared"],
+            usage,
+            assessment,
+            record_id=uid(93),
+            actor_id=uid(91),
+            command_id=uid(94),
+            saved_at="2026-10-21T08:00:00Z",
+            body=body,
+        )
+
+
 @pytest.mark.parametrize(
     "field",
     [

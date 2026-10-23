@@ -6,7 +6,7 @@ from packages.authoring import format_bindings
 from packages.domain.runtime import DomainError, fetch
 
 
-def requirement_basis(c, bid, payload):
+def requirement_basis(c, bid, payload, *, lock_sources=True):
     if payload["budget_basis"] != "requirement":
         return None
     identity = payload["budget_rule_id"]
@@ -24,11 +24,11 @@ def requirement_basis(c, bid, payload):
         raise DomainError(
             "AUTHORING_BUDGET_BASIS_REQUIRED", "要求页预算的原页依据必须属于该要求", 422
         )
-    return format_bindings.confirmed_basis(c, bid, rule)
+    return format_bindings.confirmed_basis(c, bid, rule, lock_sources=lock_sources)
 
 
-def assert_budget(c, bid, row):
-    expected = requirement_basis(c, bid, row["payload"])
+def assert_budget(c, bid, row, *, lock_sources=True):
+    expected = requirement_basis(c, bid, row["payload"], lock_sources=lock_sources)
     if expected != row["payload"].get("budget_proof"):
         raise DomainError(
             "AUTHORING_BUDGET_BASIS_STALE", "页预算的要求确认依据已变化，请重新核对计划", 409

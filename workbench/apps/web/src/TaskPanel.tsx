@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { supportsApi } from "./api";
+import type { Bid, RunPage, TaskNotificationPage } from "./contracts";
 import type {
-  Bid,
-  RunPage,
   TemplatePage,
   TaskKindPage,
-  TaskNotificationPage,
   TaskScheduleRecoveryPage,
-} from "./contracts";
+} from "./taskTriggerContracts";
 import { taskTemplatesContractReady } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
@@ -19,6 +17,8 @@ import { TaskRunCard } from "./TaskRunCard";
 import { taskNames, taskScopes, taskRunNames } from "./taskState";
 import { assistantReason } from "./assistantState";
 import { useAssistantPolling } from "./useAssistantFeed";
+import { TaskPackageTriggerPanel } from "./TaskPackageTriggerPanel";
+import { PackageAuthoringTemplateEditor } from "./PackageAuthoringTemplateEditor";
 
 export function TaskPanel({
   bidId,
@@ -28,8 +28,12 @@ export function TaskPanel({
   memberId: string;
 }) {
   const [creating, setCreating] = useState(false);
+  const [creatingAuthoring, setCreatingAuthoring] = useState(false);
   const [selectedRun, setSelectedRun] = useState(() =>
     new URLSearchParams(window.location.search).get("run"),
+  );
+  const [selectedTemplate, setSelectedTemplate] = useState(() =>
+    new URLSearchParams(window.location.search).get("task_template"),
   );
   const [showRuns, setShowRuns] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -61,8 +65,12 @@ export function TaskPanel({
     "after",
   );
   useEffect(() => {
-    const sync = () =>
+    const sync = () => {
       setSelectedRun(new URLSearchParams(window.location.search).get("run"));
+      setSelectedTemplate(
+        new URLSearchParams(window.location.search).get("task_template"),
+      );
+    };
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
@@ -131,6 +139,15 @@ export function TaskPanel({
         >
           新建任务模板
         </button>
+        <button
+          type="button"
+          className="button secondary"
+          disabled={!bid.etag}
+          onClick={() => setCreatingAuthoring(!creatingAuthoring)}
+          aria-expanded={creatingAuthoring}
+        >
+          新建固定整包编写模板
+        </button>
         {supportsApi("POST", `/bids/${bidId}/task-definition-drafts`) && (
           <TaskDraftPanel
             bidId={bidId}
@@ -151,6 +168,20 @@ export function TaskPanel({
             changed();
           }}
           onClose={() => setCreating(false)}
+        />
+      )}
+      {creatingAuthoring && (
+        <PackageAuthoringTemplateEditor
+          key={`${memberId}:${bidId}:new`}
+          bidId={bidId}
+          memberId={memberId}
+          template={null}
+          etag={bid.etag}
+          onSaved={() => {
+            setCreatingAuthoring(false);
+            changed();
+          }}
+          onClose={() => setCreatingAuthoring(false)}
         />
       )}
       <ResourceState
@@ -191,6 +222,29 @@ export function TaskPanel({
         >
           加载更多任务模板
         </button>
+      )}
+      {selectedTemplate &&
+        !templates.items.some(
+          (item) => item.id === selectedTemplate && item.bid_id === bidId,
+        ) && (
+          <TaskTemplateCard
+            bidId={bidId}
+            memberId={memberId}
+            id={selectedTemplate}
+            kinds={kinds.data}
+            onChanged={changed}
+            onRun={openRun}
+            executionBlocked={feeBlocked}
+          />
+        )}
+      {kinds.data?.items.some(
+        (item) => item.exact_package_triggers != null,
+      ) && (
+        <TaskPackageTriggerPanel
+          bidId={bidId}
+          memberId={memberId}
+          onRun={openRun}
+        />
       )}
       <section className="panel">
         <button
@@ -256,6 +310,9 @@ export function TaskPanel({
         </button>
         {showNotifications && (
           <>
+            <p className="small-note">
+              以下是已持久保存的站内通知，不代表邮件或其他外部消息送达。通知保留当时记录；当前发布状态请打开绑定任务核对。
+            </p>
             <ResourceState
               {...notifications}
               hasData={!!notifications.data}
@@ -266,7 +323,9 @@ export function TaskPanel({
               <article className="notification-row" key={item.id}>
                 <p>
                   {new Date(item.created_at).toLocaleString("zh-CN")} ·{" "}
-                  {item.payload.state}
+                  {taskRunNames[
+                    item.payload.state as keyof typeof taskRunNames
+                  ] ?? item.payload.state}
                 </p>
                 {item.payload.error_code && (
                   <p>{assistantReason(item.payload.error_code)}</p>
@@ -333,17 +392,32 @@ export function TaskPanel({
                     的时段已跳过，未枚举次数，不自动补历史。
                   </p>
                 )}
-                <TaskTemplateCard
-                  bidId={bidId}
-                  memberId={memberId}
-                  id={item.payload.definition_id}
-                  kinds={kinds.data}
-                  onChanged={changed}
-                  onRun={openRun}
-                  executionBlocked={feeBlocked}
-                />
+                {item.payload.run_current_once_ref === null ||
+                item.payload.missed?.resolution ===
+                  "skipped_reconfirm_exact_input" ? (
+                  <a
+                    className="text-link"
+                    href={`/bids/${bidId}/tasks?task_template=${item.payload.definition_id}`}
+                  >
+                    重新核对这份模板的确切输入
+                  </a>
+                ) : (
+                  <TaskTemplateCard
+                    bidId={bidId}
+                    memberId={memberId}
+                    id={item.payload.definition_id}
+                    kinds={kinds.data}
+                    onChanged={changed}
+                    onRun={openRun}
+                    executionBlocked={feeBlocked}
+                  />
+                )}
                 <p className="small-note">
-                  如仍需要，使用当前模板卡片的“手动运行当前版本”一次启动当前输入，不重放错过的历史。
+                  {item.payload.run_current_once_ref === null ||
+                  item.payload.missed?.resolution ===
+                    "skipped_reconfirm_exact_input"
+                    ? "此固定整包计划已跳过错过时段。请核对原模板的确切输入，明确保存为手动模式后再运行一次；不会直接启动当前最新包。"
+                    : "如仍需要，使用当前模板卡片的“手动运行当前版本”一次启动当前输入，不重放错过的历史。"}
                 </p>
               </article>
             ))}

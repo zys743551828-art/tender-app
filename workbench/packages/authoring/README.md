@@ -53,7 +53,7 @@ GET `/builds/{id}` 现在以同一只读快照返回产物与 `follow_up`，复�
 - `POST .../style-template/preview` 用严格本地字体/A4/边距等配置，手工已确认要求的有据字段优先于企业模板；冲突报告明确 project_requirement_wins。未判明条款范围仍列出，不冒称语义自动检查完成。有当前要求时先返回 requires_format_review 和 review_digest，第二次携带完全一致 format_review_ack 才生成候选。
 - `GET .../structure/history` 提供服务端游标历史；`POST .../structure/restore-preview` 选择真实 structure_version_id，先比较后恢复成新修订，后来章节保留可恢复墓碑，不改写旧快照。
 
-所有新写接口仍须 CSRF、Idempotency-Key；草稿相关须强 If-Match。旧人工保存/建议/生成入口仍可使用，但不得改已删除章，不得通过正文 ordinal 旁路树顺序。正文内容仍为原严格文本 PM 子集，图片/表格/Word 内容导入另切片，不能把 Word 接收预检文字当无损导入。
+所有新写接口仍须 CSRF、Idempotency-Key；草稿相关须强 If-Match。旧人工保存/建议/生成入口仍可使用，但不得改已删除章，不得通过正文 ordinal 旁路树顺序。后续已集成严格 Rich 表图与外部 Word 结构导入，使用独立候选、真实结构预览和明确追加；支持范围及验证见 [Word 导入验收](../../docs/completion-20261021/word-rich-import-acceptance.md)。Word 接收预检文字本身不作为无损导入依据。
 
 结构草稿构建必须显式提交 `AuthoringStructuredBuildRequest` 中目录和版式两个版本，且都与已保存 draft_revision 快照相等。manifest 冻结完整树/计划/两个模板/格式证明，Worker 从原 core 快照读；发布再次检查正文、计划和格式依据。实际 DOCX 支持层级标题、静态目录、字体字号、边距、封面、页眉页脚文本及列表/强调。可信生成正文的页脚页码由下述独立端口实际转换并逐页核验；未配置或未完整核验时明确 `PAGE_CORRESPONDENCE_UNVERIFIED`。实际章节页范围明确 unknown/null，绝不将计划页数冒为实测。PDF 产物与 Word 完整对应资格分别显示。该切片不是完整 A2 通过。
 

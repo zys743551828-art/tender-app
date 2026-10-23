@@ -1,11 +1,6 @@
 import { useState } from "react";
-import type {
-  AssistantAction,
-  AssistantJob,
-  AuthoringDocument,
-  AuthoringNode,
-  Bid,
-} from "./contracts";
+import type { AssistantAction, AssistantJob, Bid } from "./contracts";
+import { AssistantPatchComparison } from "./AssistantPatchComparison";
 import { Badge, ErrorNotice } from "./components";
 import { ArtifactActions } from "./ArtifactActions";
 import { assistantJobs, assistantReason } from "./assistantState";
@@ -13,6 +8,13 @@ import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { useAssistantPolling } from "./useAssistantFeed";
+import {
+  claimsPackageAuthoringAction,
+  readPackageAuthoringProposal,
+} from "./taskPackageAuthoringProtocol";
+import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
+import { PackageAuthoringActionControls } from "./PackageAuthoringActionControls";
+import type { VerifiedAuthoringInput } from "./packageAuthoringInputProtocol";
 
 const actionNames = {
   pending: "待明确处理",
@@ -22,19 +24,6 @@ const actionNames = {
   stale: "依据已变化，未执行",
   failed: "执行失败",
 };
-function documentText(value: AuthoringDocument): string {
-  const walk = (node: AuthoringNode): string =>
-    node.type === "text"
-      ? (node.text ?? "")
-      : ("content" in node ? node.content : [])
-          .map(walk)
-          .join(
-            ["paragraph", "heading", "listItem"].includes(node.type)
-              ? "\n"
-              : "",
-          );
-  return value.content.map(walk).join("\n");
-}
 export function AssistantActionCard({
   id,
   memberId,
@@ -42,8 +31,20 @@ export function AssistantActionCard({
   id: string;
   memberId: string;
 }) {
+  const [packageInput, setPackageInput] =
+    useState<VerifiedAuthoringInput | null>(null);
   const resource = useResource<AssistantAction>(`/assistant/actions/${id}`);
-  const action = resource.data?.action_id === id ? resource.data : undefined;
+  let action = resource.data?.action_id === id ? resource.data : undefined;
+  let packageError: unknown = null;
+  const packageClaim = claimsPackageAuthoringAction(resource.data);
+  if (action && packageClaim) {
+    try {
+      action = readPackageAuthoringProposal(action, action.target_bid_id);
+    } catch (error) {
+      packageError = error;
+      action = undefined;
+    }
+  }
   const project = useResource<Bid>(
     action ? `/bids/${action.target_bid_id}` : null,
   );
@@ -68,6 +69,7 @@ export function AssistantActionCard({
       {resource.data && !action && (
         <p className="notice error">操作提议身份不一致，未执行其他卡片。</p>
       )}
+      <ErrorNotice error={packageError} />
       {action && (
         <>
           <div className="section-title">
@@ -131,16 +133,54 @@ export function AssistantActionCard({
               <p>
                 应用后追加正文修订。采纳不表示风险已解决，未保存的本地编辑须保留后核对。
               </p>
-              <div className="assistant-patch">
-                <section>
-                  <h4>修改前</h4>
-                  <pre>{documentText(action.preview.before)}</pre>
-                </section>
-                <section>
-                  <h4>修改后</h4>
-                  <pre>{documentText(action.preview.after)}</pre>
-                </section>
-              </div>
+              <AssistantPatchComparison
+                key={`${action.action_id}:${action.request_digest}`}
+                bidId={action.target_bid_id}
+                before={action.preview.before}
+                after={action.preview.after}
+              />
+            </>
+          )}
+          {action.preview.kind === "package_authoring_patch" && (
+            <>
+              <p className="notice neutral">
+                这是固定整包输入产生的章节候选。请核对完整原稿与拟稿后明确处理；正文采纳、文件构建和入包分别记录。
+              </p>
+              <PackageAuthoringInputDetails
+                key={`${memberId}:${action.target_bid_id}:${action.preview.authoring_input_id}:${action.preview.authoring_input_digest}`}
+                bidId={action.target_bid_id}
+                selection={{
+                  authoring_input_id: action.preview.authoring_input_id,
+                  authoring_input_digest: action.preview.authoring_input_digest,
+                }}
+                onVerified={setPackageInput}
+              />
+              <AssistantPatchComparison
+                key={`${action.action_id}:${action.request_digest}`}
+                bidId={action.target_bid_id}
+                before={action.preview.before}
+                after={action.preview.after}
+              />
+              <PackageAuthoringActionControls
+                key={`${memberId}:${action.action_id}`}
+                action={readPackageAuthoringProposal(
+                  action,
+                  action.target_bid_id,
+                )}
+                etag={resource.etag}
+                memberId={memberId}
+                input={packageInput}
+                fresh={!resource.loading && !resource.error}
+                projectWritable={
+                  !!target &&
+                  !project.loading &&
+                  !project.error &&
+                  !target.archived_at &&
+                  target.phase !== "closed" &&
+                  target.phase !== "terminated"
+                }
+                onChanged={changed}
+              />
             </>
           )}
           {action.error_code && (
@@ -148,7 +188,7 @@ export function AssistantActionCard({
               {assistantReason(action.error_code)}
             </p>
           )}
-          {resolution && (
+          {resolution && !packageClaim && (
             <>
               <p>
                 {resolution.business_effect_executed
@@ -172,12 +212,13 @@ export function AssistantActionCard({
               )}
             </>
           )}
-          <ErrorNotice error={command.error} />
-          {action.state === "pending" && (
+          {!packageClaim && <ErrorNotice error={command.error} />}
+          {action.state === "pending" && !packageClaim && (
             <div className="review-shortcuts">
               <button
                 className="button primary"
                 disabled={
+                  packageClaim ||
                   resource.loading ||
                   !!resource.error ||
                   project.loading ||
@@ -200,13 +241,15 @@ export function AssistantActionCard({
               >
                 {command.busy
                   ? "正在取得处理结果…"
-                  : action.tool === "review.request"
-                    ? "确认启动本轮评审"
-                    : action.tool === "authoring.generate"
-                      ? "确认生成章节候选"
-                      : action.tool === "knowledge.candidate"
-                        ? "确认建立知识候选"
-                        : "应用这份正文修改"}
+                  : packageClaim
+                    ? "此固定整包候选暂不可采纳"
+                    : action.tool === "review.request"
+                      ? "确认启动本轮评审"
+                      : action.tool === "authoring.generate"
+                        ? "确认生成章节候选"
+                        : action.tool === "knowledge.candidate"
+                          ? "确认建立知识候选"
+                          : "应用这份正文修改"}
               </button>
               <button
                 className="button secondary"
@@ -231,7 +274,7 @@ export function AssistantActionCard({
               </button>
             </div>
           )}
-          {command.pending && !command.busy && (
+          {command.pending && !command.busy && !packageClaim && (
             <div className="notice warning">
               <p>
                 原操作的答复尚未取得。先读取当前卡片，再恢复同一请求；不另建确认。

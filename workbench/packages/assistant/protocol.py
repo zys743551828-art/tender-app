@@ -98,6 +98,7 @@ SCHEMAS = {
             "base_section_revision": {"type": "integer", "minimum": 1},
             "instruction": TEXT | {"maxLength": 8000},
             "source_version_ids": array(ID, 30),
+            "max_tokens": {"type": "integer", "minimum": 1, "maximum": 8192},
             "node_id": NODE_ID,
             "selection_start": {"type": "integer", "minimum": 0},
             "selection_end": {"type": "integer", "minimum": 0},

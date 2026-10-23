@@ -5,8 +5,8 @@ import {
   selectableSource,
   sourceIdentity,
   sourceKinds,
-  assistantReason,
 } from "./assistantState";
+import { AssistantSourceDetails } from "./AssistantSourceDetails";
 import { useBidChoices } from "./useBidChoices";
 import { useResource } from "./useResource";
 import { ResourceState } from "./ResourceState";
@@ -43,12 +43,68 @@ export function AssistantSourcePicker({
   const choices = useResource<AssistantSourcePage>(
     available ? `/assistant/sources?${params}` : null,
   );
+  const observed =
+    !!choices.data &&
+    !choices.loading &&
+    !choices.error &&
+    !choices.unavailable;
+  const selectedInScope = selected.filter(
+    (source) => !bidId || source.bidId === bidId,
+  );
+  const projectTitle = (id: string | null) =>
+    project.data?.id === id
+      ? project.data.title
+      : bids.items.find((item) => item.id === id)?.title;
   return (
     <section className="assistant-source-picker" aria-label="可信来源选择">
       <h3>选择这条消息的可信来源</h3>
-      <p className="small-note">
+      <p className="assistant-source-basis-note">
         只绑定服务器给出的来源与版本。章节为已保存版本，未保存编辑不在此上下文；来源文字不能授权执行操作。
       </p>
+      {!!selectedInScope.length && (
+        <section
+          className="assistant-source-selected-details"
+          aria-label="已选来源版本核对"
+        >
+          <h4>已选来源及固定版本（{selectedInScope.length}）</h4>
+          {selectedInScope.map((source) => {
+            const current = observed
+              ? choices.data?.items.find(
+                  (item) =>
+                    item.bid_id === source.bidId &&
+                    item.reference &&
+                    sourceIdentity(item.reference) ===
+                      sourceIdentity(source.reference),
+                )
+              : undefined;
+            const availability = !current
+              ? "unverified"
+              : current.reference?.version !== source.reference.version
+                ? "changed"
+                : !current.available
+                  ? "unavailable"
+                  : "available";
+            return (
+              <AssistantSourceDetails
+                key={`${source.bidId}:${sourceIdentity(source.reference)}:${source.reference.version}`}
+                title={source.title}
+                reference={source.reference}
+                kind={source.reference.kind}
+                bidId={source.bidId}
+                projectTitle={projectTitle(source.bidId)}
+                availability={availability}
+                reasons={current?.reasons}
+                currentVersion={
+                  availability === "changed"
+                    ? current?.reference?.version
+                    : undefined
+                }
+                summary={`核对已选来源：${source.title}${source.reference.physical_page ? ` · 物理页 ${source.reference.physical_page}` : ""}`}
+              />
+            );
+          })}
+        </section>
+      )}
       <fieldset disabled={disabled}>
         {!bidId && (
           <>
@@ -171,51 +227,73 @@ export function AssistantSourcePicker({
                   !!existing &&
                   existing.reference.version === reference?.version;
                 return (
-                  <label
+                  <div
                     key={`${reference ? sourceIdentity(reference) : item.title}:${index}`}
-                    className="evidence-select-item"
+                    className="assistant-source-option"
                   >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      disabled={
-                        !selectableSource(item, sourceBid) ||
-                        (!checked && selected.length >= 30)
+                    <label className="evidence-select-item">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={
+                          !observed ||
+                          !selectableSource(item, sourceBid) ||
+                          (!checked && selected.length >= 30)
+                        }
+                        onChange={(event) => {
+                          if (!reference) return;
+                          const others = selected.filter(
+                            (source) =>
+                              sourceIdentity(source.reference) !==
+                              sourceIdentity(reference),
+                          );
+                          onChange(
+                            event.target.checked
+                              ? [
+                                  ...others,
+                                  {
+                                    reference,
+                                    title: item.title,
+                                    bidId: item.bid_id,
+                                  },
+                                ]
+                              : others,
+                          );
+                        }}
+                      />
+                      <span>
+                        {item.title}
+                        {reference?.physical_page
+                          ? ` · 物理页${reference.physical_page}`
+                          : ""}
+                        {existing && !checked
+                          ? " · 选择将明确换用当前依据"
+                          : ""}
+                        {!item.available && (
+                          <span className="assistant-source-option__unavailable">
+                            {item.reasons.includes("SOURCE_WITHDRAWN")
+                              ? "来源已撤回，当前不可选择。"
+                              : "当前不可选择，请展开来源详情核对原因。"}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                    <AssistantSourceDetails
+                      title={item.title}
+                      reference={reference}
+                      kind={reference?.kind ?? kind}
+                      bidId={item.bid_id}
+                      projectTitle={projectTitle(item.bid_id)}
+                      availability={
+                        !observed
+                          ? "unverified"
+                          : item.available
+                            ? "available"
+                            : "unavailable"
                       }
-                      onChange={(event) => {
-                        if (!reference) return;
-                        const others = selected.filter(
-                          (source) =>
-                            sourceIdentity(source.reference) !==
-                            sourceIdentity(reference),
-                        );
-                        onChange(
-                          event.target.checked
-                            ? [
-                                ...others,
-                                {
-                                  reference,
-                                  title: item.title,
-                                  bidId: item.bid_id,
-                                },
-                              ]
-                            : others,
-                        );
-                      }}
+                      reasons={item.reasons}
                     />
-                    <span>
-                      {item.title}
-                      {reference?.physical_page
-                        ? ` · 物理页${reference.physical_page}`
-                        : ""}
-                      {existing && !checked ? " · 选择将明确换用当前依据" : ""}
-                      {!item.available && (
-                        <small>
-                          {item.reasons.map(assistantReason).join("；")}
-                        </small>
-                      )}
-                    </span>
-                  </label>
+                  </div>
                 );
               })}
             {!choices.data.items.some(

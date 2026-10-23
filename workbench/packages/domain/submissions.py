@@ -104,6 +104,17 @@ def register(c, bid, actor, command_id, body, *, kind, supersedes=None, correcti
             raise DomainError(
                 "SUBMISSION_CORRECTION_REASON_REQUIRED", "请填写实际提交依据及本次更正理由", 422
             )
+        previous = fetch(
+            c,
+            "SELECT * FROM submission_records WHERE bid_id=%s AND id=%s",
+            (bid, supersedes),
+        )
+        if previous.get("subject_kind", "single_body") == "bid_package":
+            raise DomainError(
+                "PACKAGE_SUBMISSION_CORRECTION_REQUIRED",
+                "整包实际提交须在整包更正入口明确选择完整包，不能替换为单一正文",
+                409,
+            )
     elif head:
         raise DomainError(
             "SUBMISSION_ALREADY_RECORDED",
@@ -244,9 +255,13 @@ def register(c, bid, actor, command_id, body, *, kind, supersedes=None, correcti
 def view(c, submission_id):
     row = fetch(
         c,
-        "SELECT s.*,d.original_name,d.artifact_kind,h.submission_id AS head_id FROM submission_records s JOIN document_versions d ON d.id=s.body_version_id LEFT JOIN submission_heads h ON h.bid_id=s.bid_id WHERE s.id=%s",
+        "SELECT s.*,d.original_name,d.artifact_kind,h.submission_id AS head_id FROM submission_records s LEFT JOIN document_versions d ON d.id=s.body_version_id LEFT JOIN submission_heads h ON h.bid_id=s.bid_id WHERE s.id=%s",
         (submission_id,),
     )
+    if row.get("subject_kind", "single_body") == "bid_package":
+        from packages.domain.bid_package_submission_repository import binding, value
+
+        return value(row, binding(c, row["bid_id"], submission_id))
     identity = row["evidence"].get("identity")
     checked = (
         row["kind"] == "standard"
@@ -257,6 +272,7 @@ def view(c, submission_id):
         {
             "id": row["id"],
             "bid_id": row["bid_id"],
+            "subject_kind": "single_body",
             "body_version_id": row["body_version_id"],
             "review_id": row["review_id"],
             "kind": row["kind"],

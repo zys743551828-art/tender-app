@@ -1,0 +1,257 @@
+{
+  "schema": "package-navigation-browser-receipt/2",
+  "fixture_kind": "synthetic technical data from real service plus explicit browser transport projections",
+  "production_connected": false,
+  "paid_model_calls": 0,
+  "checks": [
+    {
+      "width": 1200,
+      "fixtureSource": "Unmodified package/inventory from actual non-owner PG submission fixture; catalog/session/current-rules projections are synthetic navigation transport",
+      "boundary": "Local App browser bundle and synthetic fetch, no production service/original download/model call",
+      "groupedNavigation": {
+        "pickerVisible": false,
+        "current": "overview",
+        "primaryVisible": 5,
+        "horizontalScroll": false
+      },
+      "morePanel": {
+        "left": 586.34375,
+        "right": 740.34375,
+        "visible": true,
+        "escapeFocus": true
+      },
+      "activePackageVisible": true,
+      "exactSelection": true,
+      "refreshExact": true,
+      "backExact": true,
+      "dirtyBlocked": true,
+      "scopeBlocked": true,
+      "invalidReads": 0,
+      "unknownNotEmpty": true,
+      "bounds": [
+        {
+          "scenario": "overview",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "scenario": "exact-package-inventory",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "scenario": "dirty-navigation-guard",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "scenario": "invalid-url",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "scenario": "unknown-directory",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "writeCount": 0,
+      "implicitHeadReads": 0,
+      "screenshots": [
+        {
+          "name": "overview-1200.png",
+          "sha256": "aba3365a4306041124e2b26fe51a230ab64675b55634a42af758db63edba4c6f"
+        },
+        {
+          "name": "exact-package-inventory-1200.png",
+          "sha256": "3fdab605b981f10d06f46665ab12077aea3f1f08104609cd04383aa72e8fdef8"
+        },
+        {
+          "name": "dirty-navigation-guard-1200.png",
+          "sha256": "4c78bdcb6d12ad24acd94557bb694ddc4354770e671c2785775cf0f5eebafc65"
+        },
+        {
+          "name": "invalid-url-1200.png",
+          "sha256": "b1d89919eccd977a95523823d93851f9a34950a1a499342ca10b6a956a8830d4"
+        },
+        {
+          "name": "unknown-directory-1200.png",
+          "sha256": "28455ea53f55822ffda87fb93241ec825ab83ed303f02a5c37956b094c5be59c"
+        },
+        {
+          "name": "more-workspaces-1200.png",
+          "sha256": "f1ebb114fdae6c1d21303cb194a94fd0be47f47f57820f148c0d3d53a2f193a5"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "fixtureSource": "Unmodified package/inventory from actual non-owner PG submission fixture; catalog/session/current-rules projections are synthetic navigation transport",
+      "boundary": "Local App browser bundle and synthetic fetch, no production service/original download/model call",
+      "groupedNavigation": {
+        "pickerVisible": true,
+        "current": "overview",
+        "primaryVisible": 0,
+        "horizontalScroll": false
+      },
+      "morePanel": null,
+      "activePackageVisible": true,
+      "exactSelection": true,
+      "refreshExact": true,
+      "backExact": true,
+      "dirtyBlocked": true,
+      "scopeBlocked": true,
+      "invalidReads": 0,
+      "unknownNotEmpty": true,
+      "bounds": [
+        {
+          "scenario": "overview",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "scenario": "exact-package-inventory",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "scenario": "dirty-navigation-guard",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "scenario": "invalid-url",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "scenario": "unknown-directory",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "writeCount": 0,
+      "implicitHeadReads": 0,
+      "screenshots": [
+        {
+          "name": "overview-768.png",
+          "sha256": "6f660d8d9fee67c25cc22472e966b32739e06efb5032c4610824f701ad0c9bb3"
+        },
+        {
+          "name": "exact-package-inventory-768.png",
+          "sha256": "9288624290f572419f7be26c03570b37bae33d9bedcb6611963c21e43aa1a595"
+        },
+        {
+          "name": "dirty-navigation-guard-768.png",
+          "sha256": "6b8f760448b7af607ad2a25904b133d33ade7e279dbabba192f6f1ccadb9c859"
+        },
+        {
+          "name": "invalid-url-768.png",
+          "sha256": "035a9a826db1b3ea08946c0367132fb7162449d0cc15ec398fe438c1db543485"
+        },
+        {
+          "name": "unknown-directory-768.png",
+          "sha256": "02b248f8d7951626f85be989eb9264170d5dbca4e5279502ef76a913261ba7ee"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "fixtureSource": "Unmodified package/inventory from actual non-owner PG submission fixture; catalog/session/current-rules projections are synthetic navigation transport",
+      "boundary": "Local App browser bundle and synthetic fetch, no production service/original download/model call",
+      "groupedNavigation": {
+        "pickerVisible": true,
+        "current": "overview",
+        "primaryVisible": 0,
+        "horizontalScroll": false
+      },
+      "morePanel": null,
+      "activePackageVisible": true,
+      "exactSelection": true,
+      "refreshExact": true,
+      "backExact": true,
+      "dirtyBlocked": true,
+      "scopeBlocked": true,
+      "invalidReads": 0,
+      "unknownNotEmpty": true,
+      "bounds": [
+        {
+          "scenario": "overview",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "scenario": "exact-package-inventory",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "scenario": "dirty-navigation-guard",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "scenario": "invalid-url",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "scenario": "unknown-directory",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "writeCount": 0,
+      "implicitHeadReads": 0,
+      "screenshots": [
+        {
+          "name": "overview-390.png",
+          "sha256": "a74dc48f9dbd0614cd8e4ad4e245e3c7fdaedb82eff247c378b640a7293c6ab4"
+        },
+        {
+          "name": "exact-package-inventory-390.png",
+          "sha256": "80fa6aac9d52a8376dc9a8920d72777dd753c817611ac2535cc084e6edbaed3b"
+        },
+        {
+          "name": "dirty-navigation-guard-390.png",
+          "sha256": "11c46e8ce0d72f60ed45bd2e4a0f2d9d2ef2508806d7afbc64ade391c679769a"
+        },
+        {
+          "name": "invalid-url-390.png",
+          "sha256": "3dccde2e0f86d2e92f7cd450570ddb528515c478c883cc2bb76f53272e8b899d"
+        },
+        {
+          "name": "unknown-directory-390.png",
+          "sha256": "4914215174cf96184298d1b7b15a5886b87574fc6eaae30d25602b35fe6f35f9"
+        }
+      ]
+    }
+  ],
+  "manual_inspection_final": [
+    "overview-1200.png",
+    "more-workspaces-1200.png",
+    "overview-390.png"
+  ],
+  "repository_screenshots": [
+    "screenshots/package-navigation-overview-1200.png",
+    "screenshots/package-navigation-overview-390.png"
+  ]
+}
