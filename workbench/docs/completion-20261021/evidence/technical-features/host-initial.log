@@ -1,0 +1,41 @@
+......................................F                                  [100%]
+================================== FAILURES ===================================
+______________ test_float_and_legacy_projection_do_not_enter_v2 _______________
+
+projection = {'attempts': [{'attempt': 1, 'call_id': '00000000-0000-0000-0000-000000000065', 'judgment': {'band_id': '高', 'coverage...ge_digest': '0eb236e50de35c59c03b63629624351af778cc33fbc55a92254e3c29e58e6255', ...}], 'max_attempts_per_slot': 2, ...}
+
+    def test_float_and_legacy_projection_do_not_enter_v2(projection):
+        projection["evidence_catalog"][0]["page_width"] = 100.0
+>       expect_code(projection, "FEATURE_PROJECTION_INVALID")
+
+tests\test_package_technical_features.py:407: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_features.py:139: in expect_code
+    build(value)
+tests\test_package_technical_features.py:126: in build
+    expected_projection_digest=digest(value),
+                               ^^^^^^^^^^^^^
+packages\domain\review_identity.py:50: in digest
+    return hashlib.sha256(canonical(value)).hexdigest()
+                          ^^^^^^^^^^^^^^^^
+packages\domain\review_identity.py:43: in canonical
+    check(value)
+packages\domain\review_identity.py:38: in check
+    check(x)
+packages\domain\review_identity.py:41: in check
+    check(x)
+packages\domain\review_identity.py:38: in check
+    check(x)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+v = 100.0
+
+    def check(v):
+        if isinstance(v, float):
+>           raise ValueError("float_forbidden")
+E           ValueError: float_forbidden
+
+packages\domain\review_identity.py:31: ValueError
+=========================== short test summary info ===========================
+FAILED tests/test_package_technical_features.py::test_float_and_legacy_projection_do_not_enter_v2
+1 failed, 38 passed in 0.53s

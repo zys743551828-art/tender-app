@@ -100,6 +100,12 @@ SUITES["package-next-actions"] = [
     "tests/test_work_contexts.py",
     "tests/test_package_next_actions_api.py",
 ]
+SUITES["technical-features-pure"] = [
+    "tests/test_package_technical_features.py",
+    "tests/test_scoring_contracts_profiles.py",
+    "tests/test_package_scoring_recovery.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():

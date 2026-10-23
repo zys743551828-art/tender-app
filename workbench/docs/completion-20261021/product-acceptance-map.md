@@ -6,7 +6,9 @@
 
 ## 口径
 
-F05-05已接[明确运行](package-next-actions-acceptance.md)、[直接报告](report-next-actions-acceptance.md)、[实交关联](submission-next-actions-acceptance.md)及[登记前明确选择](registration-next-actions-acceptance.md)：同快照原生证明、当前确认、原矩阵要求与去重计数。登记前原报告只读、外部跳转先收起表单、取消关联立即收起待办；最新完整前端1786项及本机部署通过。62项及215 API回归和12契约为前一证据，本批无后端改动。明确项目与完整视觉继续，已声明范围数字不充整包风险或提交资格；无完整关联保持未知。
+F05-05已接[明确运行](package-next-actions-acceptance.md)、[直接报告](report-next-actions-acceptance.md)、[实交关联](submission-next-actions-acceptance.md)及[登记前明确选择](registration-next-actions-acceptance.md)：同快照原生证明、当前确认、原矩阵要求与去重计数。登记前原报告只读、外部跳转先收起表单、取消关联立即收起待办；该切片完整前端1786项及本机部署通过。62项及215 API回归和12契约为前一证据，不记当前纯CPU增量重跑。明确项目与完整视觉继续，已声明范围数字不充整包风险或提交资格；无完整关联保持未知。
+
+F06-02／08的[非数值CPU特征闭包](technical-features-acceptance.md)已实现，106项Linux／54项Windows及方法身份验证通过；原/1隔离通道不变，三槽位、引用、页图与失败缺口严格保留，数值和资格仍不授予。完整图文输入／验证器、provider、原生存储／Worker及后续线性校准与受控发布继续，不能据纯特征函数关闭正式三评或F06。
 
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 

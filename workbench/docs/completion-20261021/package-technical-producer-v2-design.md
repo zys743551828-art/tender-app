@@ -1,6 +1,6 @@
 # F06：完整图文三次判断与特征 producer 的实际软件装配
 
-状态：下一批独立增量设计，提交架构审阅；尚未实现或验收。不会修改冻结的 scope、eligibility、execution/1、reconciliation/1、历史研究核心或旧 WIP SQL。真实配对材料缺失只阻塞真实资格/效果结论，不阻塞本设计的软件实现及零费用机制验收。
+状态：正式执行链仍是独立增量设计；[非数值CPU特征投影](../../packages/contracts/package-technical-features.md)已有封闭协议及处理器，输入／供应商权威、原生持久化与执行装配尚未完成。不会修改冻结的scope、eligibility、execution/1、reconciliation/1、历史研究核心或旧WIP SQL。真实配对材料缺失只阻塞真实资格／效果，不阻塞软件与零费用机制验证。
 
 ## 1. 目标和已确认的软件缺口
 
