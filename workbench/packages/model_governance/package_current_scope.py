@@ -14,6 +14,7 @@ from psycopg.rows import dict_row
 
 from packages.domain import review_identity
 from packages.domain.review_identity import canonical, digest
+from packages.model_governance import read_purpose
 from packages.model_governance.technical_png import digest_bytes
 
 GROUP = "tender_current_scope_verify"
@@ -55,6 +56,7 @@ def method_digest():
             "source_digest": digest_bytes(Path(__file__).read_bytes()),
             "sql_digest": digest_bytes(SQL_FILE.read_bytes()),
             "canonical_source_digest": digest_bytes(Path(review_identity.__file__).read_bytes()),
+            "read_purpose_source_digest": digest_bytes(Path(read_purpose.__file__).read_bytes()),
             "maximum_bytes": MAX_BYTES,
             "authority_grants": False,
         }
@@ -69,42 +71,22 @@ def _expected_native_body():
 
 
 def _role(c):
-    row = c.execute(
-        "SELECT current_user=session_user AS direct,rolcanlogin,rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls FROM pg_roles WHERE rolname=session_user"
-    ).fetchone()
-    if (
-        row is None
-        or not row["direct"]
-        or not row["rolcanlogin"]
-        or any(
-            row[k]
-            for k in ("rolsuper", "rolcreatedb", "rolcreaterole", "rolreplication", "rolbypassrls")
-        )
-    ):
-        fail("INDEPENDENT_LOGIN_REQUIRED")
-    membership = c.execute(
-        "WITH RECURSIVE memberships(id) AS (SELECT roleid FROM pg_auth_members WHERE member=(SELECT oid FROM pg_roles WHERE rolname=session_user) UNION SELECT m.roleid FROM pg_auth_members m JOIN memberships p ON m.member=p.id) SELECT r.rolname FROM memberships m JOIN pg_roles r ON r.oid=m.id"
-    ).fetchall()
-    if {row["rolname"] for row in membership} != {GROUP}:
-        fail("INDEPENDENT_MEMBERSHIP_REQUIRED")
-    if c.execute(
-        "SELECT has_database_privilege(current_user,current_database(),'CREATE') OR EXISTS(SELECT FROM pg_namespace n WHERE left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND has_schema_privilege(current_user,n.oid,'CREATE')) AS bad"
-    ).fetchone()["bad"]:
-        fail("CREATE_PRIVILEGE")
-    if c.execute(
-        "SELECT EXISTS(SELECT FROM pg_class t JOIN pg_namespace n ON n.oid=t.relnamespace WHERE t.relkind IN ('r','p','v','m','f') AND left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND (has_table_privilege(current_user,t.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') OR has_any_column_privilege(current_user,t.oid,'SELECT,INSERT,UPDATE,REFERENCES'))) AS bad"
-    ).fetchone()["bad"]:
-        fail("DIRECT_TABLE_PRIVILEGE")
-    if c.execute(
-        "SELECT EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosecdef AND left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND has_schema_privilege(current_user,n.oid,'USAGE') AND has_function_privilege(current_user,p.oid,'EXECUTE') AND p.oid<>coalesce(to_regprocedure(%s)::oid,0)) AS bad",
-        (RPC,),
-    ).fetchone()["bad"]:
-        fail("EXCESS_DEFINER_PRIVILEGE")
+    policy = read_purpose.ReadPurpose(groups=frozenset({GROUP}), definer_calls=(RPC,))
+    try:
+        read_purpose.require_read_purpose(c, policy)
+    except read_purpose.ReadPurposeError as error:
+        aliases = {
+            "EXCESS_TABLE_PRIVILEGE": "DIRECT_TABLE_PRIVILEGE",
+            "DEFINER_EXECUTE_PRIVILEGE": "EXCESS_DEFINER_PRIVILEGE",
+            "DATABASE_CREATE_PRIVILEGE": "CREATE_PRIVILEGE",
+            "SCHEMA_WRITE_PRIVILEGE": "CREATE_PRIVILEGE",
+        }
+        fail(aliases.get(error.code, error.code))
 
 
 def _native_method(c):
     row = c.execute(
-        "SELECT p.prosrc,p.prosecdef,p.provolatile,p.proconfig,l.lanname,p.prorettype::regtype::text AS returns,p.proowner=(SELECT oid FROM pg_roles WHERE rolname=session_user) AS caller_owner FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=to_regprocedure(%s)",
+        "SELECT p.prosrc,p.prosecdef,p.provolatile,p.proconfig,l.lanname,p.prorettype::regtype::text AS returns,pg_has_role(session_user,p.proowner,'MEMBER') AS caller_owner FROM pg_proc p JOIN pg_language l ON l.oid=p.prolang WHERE p.oid=to_regprocedure(%s)",
         (RPC,),
     ).fetchone()
     if (

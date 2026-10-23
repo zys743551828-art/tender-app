@@ -277,3 +277,28 @@ def test_default_rpc_call_without_owned_readonly_transaction_is_rejected(saved):
                 w["saved_scope"]["digest"],
             ),
         )
+
+
+def test_rpc_owned_by_inherited_group_is_not_independent(saved):
+    w = saved
+    c = w["database"]["owner"]
+    owner = c.execute(
+        "SELECT pg_get_userbyid(proowner) AS name FROM pg_proc WHERE oid=%s::regprocedure",
+        (current.RPC,),
+    ).fetchone()["name"]
+    try:
+        c.execute(
+            "ALTER FUNCTION current_technical_scope.observe(uuid,uuid,text) OWNER TO tender_current_scope_verify"
+        )
+        with pytest.raises(current.CurrentScopeError, match="NATIVE_METHOD_MISMATCH"):
+            observe(w)
+    finally:
+        c.execute(
+            sql.SQL(
+                "ALTER FUNCTION current_technical_scope.observe(uuid,uuid,text) OWNER TO {}"
+            ).format(sql.Identifier(owner))
+        )
+        c.execute(
+            "GRANT EXECUTE ON FUNCTION current_technical_scope.observe(uuid,uuid,text) TO tender_current_scope_verify"
+        )
+    assert observe(w).metadata["native_current_facts_checked"]

@@ -9,3 +9,5 @@
 结果为`package-current-source-observation/1`：数据库观察时间、方法、文档、计数、根／节点／边及内容摘要。结果不含正文、原件locator或凭据；只有`native_parse_and_current_sources_reverified=true`。`original_bytes_reverified/necessary_scope_verified/input_authority_granted/execution_authorized/historical_existence_verified`均false。本结果不是`package-technical-verification-binding/2`，不能代入正式输入回执或发送账本。
 
 repeatable-read保证同次观察内部一致，不能阻止观察后的撤回。正式安装仍需原件字节端口、当前包／身份／规则与必要范围核验、独立原生回执注册及每次发送前的锁／CAS／lease重核。没有任何时间推算的历史原件或解析存在性证明。
+
+有效权限检查由纯`read_purpose`模块执行，角色／可读表列／允许的窄接口是实现中固定的独立策略，不接受请求字段，不加载环境、不建连接、不切角色或修复授权。来源观察方法同时绑定这份共用源码，旧观察保留原方法摘要。

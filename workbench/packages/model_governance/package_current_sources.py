@@ -15,6 +15,7 @@ from psycopg.rows import dict_row
 from packages.domain import bid_package_repository as parses
 from packages.domain.bid_packages import PackageError
 from packages.domain.review_identity import digest
+from packages.model_governance import read_purpose
 from packages.model_governance.technical_png import digest_bytes
 
 GROUP = "tender_current_source_verify"
@@ -68,6 +69,7 @@ def method_digest():
     root = Path(__file__).parents[1]
     names = (
         "model_governance/package_current_sources.py",
+        "model_governance/read_purpose.py",
         "domain/bid_package_repository.py",
         "domain/bid_packages.py",
         "domain/review_identity.py",
@@ -138,49 +140,15 @@ def _expected(documents):
 
 
 def _role(c):
-    row = c.execute(
-        "SELECT current_user=session_user AS direct,rolcanlogin,rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls FROM pg_roles WHERE rolname=session_user"
-    ).fetchone()
-    if (
-        row is None
-        or not row["direct"]
-        or not row["rolcanlogin"]
-        or any(
-            row[k]
-            for k in ("rolsuper", "rolcreatedb", "rolcreaterole", "rolreplication", "rolbypassrls")
-        )
-    ):
-        fail("INDEPENDENT_LOGIN_REQUIRED")
-    memberships = c.execute(
-        "WITH RECURSIVE memberships(id) AS (SELECT roleid FROM pg_auth_members WHERE member=(SELECT oid FROM pg_roles WHERE rolname=session_user) UNION SELECT m.roleid FROM pg_auth_members m JOIN memberships p ON m.member=p.id) SELECT r.rolname FROM memberships m JOIN pg_roles r ON r.oid=m.id"
-    ).fetchall()
-    if {r["rolname"] for r in memberships} != {GROUP}:
-        fail("INDEPENDENT_MEMBERSHIP_REQUIRED")
-    if c.execute(
-        "SELECT has_database_privilege(current_user,current_database(),'CREATE') AS bad"
-    ).fetchone()["bad"]:
-        fail("DATABASE_CREATE_PRIVILEGE")
-    # Effective grants include PUBLIC and indirect memberships; a direct REVOKE
-    # cannot counteract either. Reject excessive access rather than repair it.
-    if c.execute(
-        "SELECT EXISTS(SELECT FROM pg_namespace n WHERE left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND has_schema_privilege(current_user,n.oid,'CREATE')) AS bad"
-    ).fetchone()["bad"]:
-        fail("SCHEMA_WRITE_PRIVILEGE")
-    if c.execute(
-        "SELECT EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosecdef AND left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND has_schema_privilege(current_user,n.oid,'USAGE') AND has_function_privilege(current_user,p.oid,'EXECUTE')) AS bad"
-    ).fetchone()["bad"]:
-        fail("DEFINER_EXECUTE_PRIVILEGE")
-    if c.execute(
-        "SELECT EXISTS(SELECT FROM pg_class t JOIN pg_namespace n ON n.oid=t.relnamespace WHERE t.relkind IN ('r','p','v','m','f') AND left(n.nspname,3)<>'pg_' AND n.nspname<>'information_schema' AND (has_table_privilege(current_user,t.oid,'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') OR has_any_column_privilege(current_user,t.oid,'INSERT,UPDATE,REFERENCES') OR ((has_table_privilege(current_user,t.oid,'SELECT') OR has_any_column_privilege(current_user,t.oid,'SELECT')) AND n.nspname||'.'||t.relname<>ALL(%s::text[])))) AS bad",
-        (list(TABLES),),
-    ).fetchone()["bad"]:
-        fail("EXCESS_TABLE_PRIVILEGE")
-    columns = c.execute(
-        "SELECT n.nspname||'.'||t.relname AS relation,a.attname FROM pg_attribute a JOIN pg_class t ON t.oid=a.attrelid JOIN pg_namespace n ON n.oid=t.relnamespace WHERE a.attnum>0 AND NOT a.attisdropped AND n.nspname||'.'||t.relname=ANY(%s::text[]) AND has_column_privilege(current_user,t.oid,a.attnum,'SELECT')",
-        (list(METADATA_COLUMNS),),
-    ).fetchall()
-    if any(row["attname"] not in METADATA_COLUMNS[row["relation"]] for row in columns):
-        fail("EXCESS_METADATA_COLUMN_PRIVILEGE")
+    policy = read_purpose.ReadPurpose(
+        groups=frozenset({GROUP}),
+        tables=frozenset(TABLES),
+        columns=tuple((name, frozenset(columns)) for name, columns in METADATA_COLUMNS.items()),
+    )
+    try:
+        read_purpose.require_read_purpose(c, policy)
+    except read_purpose.ReadPurposeError as error:
+        fail(error.code)
 
 
 def _documents(c, bid_id, expected):

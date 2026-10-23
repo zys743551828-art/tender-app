@@ -28,6 +28,8 @@ F06-02的[独立当前来源观察](current-source-acceptance.md)通过53项Linu
 
 F06-02的[当前包与范围原生事实](current-scope-acceptance.md)通过37项Linux及5项Windows（重叠），含20原生PG／真实API：单一窄RPC且无业务表直接读取；真实包／清单追加与当前身份／规则／阶段变化拒绝，旧记录保持。原必要范围unproven及人工排除原样保留；对象字节、必要范围权威和原生核验binding及后续执行继续。
 
+F06-02独立来源／范围端口的[共用只读权限审计](read-purpose-acceptance.md)通过76项Linux及6项Windows（重叠），包含继承组拥有RPC必须拒绝。两种观察方法绑定共用源码，原生读取体／SQL、旧回执及原页／图文／特征方法保持；对象字节、必要范围及原生核验binding继续。
+
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 
 Windows完整运行组已通过191项检查和真实同源文件链／五角色私有卷核验，见[桌面Compose验收](desktop-runtime-acceptance.md)。这是F02、F03和F14中的本机装配证据，不整体关闭工作包；目标主机、转换隔离、真实业务及完整视觉仍须分别验收。

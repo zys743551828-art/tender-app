@@ -33,6 +33,7 @@
 /packages/domain/errors.py text eol=lf
 /packages/model_governance/package_current_sources.py text eol=lf
 /packages/model_governance/package_current_scope.py text eol=lf
+/packages/model_governance/read_purpose.py text eol=lf
 /packages/contracts/package-current-scope.md text eol=lf
 /tests/test_package_current_scope_pg.py text eol=lf
 /packages/contracts/package-current-sources.md text eol=lf
@@ -94,4 +95,5 @@
 /docs/completion-20261021/evidence/provider-errors/** -text
 /docs/completion-20261021/evidence/current-source/** -text
 /docs/completion-20261021/evidence/current-scope/** -text
+/docs/completion-20261021/evidence/read-purpose/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

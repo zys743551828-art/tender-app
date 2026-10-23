@@ -11,3 +11,5 @@
 只有`native_current_facts_checked=true`。`necessary_scope_verified/original_bytes_reverified/input_authority_granted/execution_authorized/historical_existence_verified`均false，不产生正式核验binding。当前head或身份变化拒绝新观察，旧包／scope／报告及回执保持原值。同次只读快照不是持续有效性或发送租约；后续还需全部当前来源、必要范围权威、对象字节、独立原生登记及发送前CAS／lease。
 
 此扩展不入BASE、不开放HTTP，不为正常API或模型Worker补权限，不把已有范围选择或评分分母声明升级为业务完整性证明。
+
+有效角色／表列／窄接口权限复用纯`read_purpose`固定策略。窄RPC的owner分离包含直接及继承角色：核验LOGIN即使只通过所属能力组拥有RPC，也拒绝。当前范围方法绑定共用审计源码；旧观察不回填，新执行必须冻结新方法身份。
