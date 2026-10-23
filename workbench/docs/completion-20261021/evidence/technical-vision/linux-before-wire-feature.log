@@ -1,0 +1,17 @@
+........................................................................ [ 26%]
+........................................................................ [ 53%]
+........................................................................ [ 80%]
+......................................................                   [100%]
+=============================== warnings summary ===============================
+tests/test_providers.py::test_native_oss_signing_and_strict_grants
+  /usr/local/lib/python3.12/site-packages/oss2/auth.py:579: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_datetime = datetime.utcnow()
+
+tests/test_package_technical_assets.py::test_existing_text_parser_uses_same_lock_and_keeps_partial_claims
+  /usr/local/lib/python3.12/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+    warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------- generated xml file: /evidence/technical-vision-pure.xml ------------
+270 passed, 2 warnings in 2.25s
+{"suite": "technical-vision-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

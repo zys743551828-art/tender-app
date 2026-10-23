@@ -28,6 +28,12 @@
 /packages/model_governance/package_technical_features.py text eol=lf
 /packages/model_governance/package_technical_assets.py text eol=lf
 /packages/model_governance/package_technical_input.py text eol=lf
+/packages/model_governance/package_technical_vision.py text eol=lf
+/packages/domain/providers/deepseek.py text eol=lf
+/packages/domain/providers/deepseek_vision.py text eol=lf
+/packages/domain/providers/json_protocol.py text eol=lf
+/packages/contracts/package-technical-vision.md text eol=lf
+/tests/test_package_technical_vision.py text eol=lf
 /packages/contracts/package_technical_input.py text eol=lf
 /packages/contracts/package-technical-input.md text eol=lf
 /tests/test_package_technical_input.py text eol=lf
@@ -69,4 +75,5 @@
 /docs/completion-20261021/evidence/technical-features/** -text
 /docs/completion-20261021/evidence/technical-assets/** -text
 /docs/completion-20261021/evidence/technical-input/** -text
+/docs/completion-20261021/evidence/technical-vision/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

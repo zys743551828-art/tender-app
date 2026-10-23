@@ -16,6 +16,8 @@ F06-02的[静态PDF整页及同像素裁片](technical-assets-acceptance.md)通�
 
 F06-02的[完整图文材料绑定](technical-input-acceptance.md)通过167项Linux／51项Windows和实际合成渲染→输入→三槽特征链；所有投影材料保留、章节传递展开、规则来源／原文与页图严格绑定。只证明外部冻结投影内一致性，独立必要范围／当前来源、可读性、provider payload、硬隔离和原生权限继续，正式三评与F06保持进行中。
 
+F06-02的[实际图文请求与单次端口](technical-vision-acceptance.md)通过272项Linux／63项Windows：全量图片实际内嵌、精确大小／15图边界、真实HTTPX显式MockTransport与响应／三槽特征链。没有外部付费调用或真实效果、token／费用上界、原生账本／租约／Worker和受限执行证明；F06正式执行仍须独立接线。
+
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 
 Windows完整运行组已通过191项检查和真实同源文件链／五角色私有卷核验，见[桌面Compose验收](desktop-runtime-acceptance.md)。这是F02、F03和F14中的本机装配证据，不整体关闭工作包；目标主机、转换隔离、真实业务及完整视觉仍须分别验收。

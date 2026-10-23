@@ -1,0 +1,115 @@
+....................................F..........................          [100%]
+================================== FAILURES ===================================
+_ test_actual_wire_responses_feed_features_but_invalid_citations_cannot_pass[True] _
+
+bundle = <packages.model_governance.package_technical_input.TechnicalInputBundle object at 0x0000022FEAB20470>
+request_packet = <packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x0000022FEAD6A2D0>
+bad_quote = True
+
+    @pytest.mark.parametrize("bad_quote", [False, True])
+    def test_actual_wire_responses_feed_features_but_invalid_citations_cannot_pass(
+        bundle, request_packet, bad_quote
+    ):
+        catalog = bundle.metadata["material"]["evidence_catalog"]
+        source = catalog[0]
+        cite = {
+            key: source[key]
+            for key in (
+                "evidence_id",
+                "document_version_id",
+                "parse_run_id",
+                "physical_page",
+                "page_image_digest",
+            )
+        }
+        cite.update(quote="not in the source" if bad_quote else source["text"], region=None)
+        value = judgment()
+        value.update(status="valid", coverage="complete", covered_part_ids=["target"], evidence=[cite])
+        observed = []
+    
+        def handler(request):
+            observed.append(request.content)
+            response = envelope(json.dumps(value))
+            response["id"] = f"response-{len(observed)}"
+            return httpx.Response(200, json=response)
+    
+        port = client(handler)
+        calls = [send(port, request_packet) for _ in range(3)]
+        packet = bundle.metadata["rule_packets"][0]
+        rule = {key: packet["rule"][key] for key in ("rule_id", "rule_digest", "band_ids")}
+        rule.update(
+            required_part_ids=packet["required_part_ids"],
+            semantic_input_digest=packet["semantic_input_digest"],
+            request_digest=request_packet.receipt["request_digest"],
+        )
+        binding = bundle.metadata["material"]["binding"]
+        attempts = [
+            {
+                "rule_id": rule["rule_id"],
+                "slot": index,
+                "attempt": 1,
+                "call_id": uid(700 + index),
+                "semantic_input_digest": rule["semantic_input_digest"],
+                "request_digest": call.request_digest,
+                "judgment_method_digest": binding["judgment_method_digest"],
+                "provider_profile_digest": binding["provider_profile_digest"],
+                "state": "succeeded",
+                "response_model": call.model,
+                "response_id": call.response_id,
+                "response_digest": call.raw_response_digest,
+                "judgment_digest": digest(call.data),
+                "judgment": call.data,
+            }
+            for index, call in enumerate(calls, 1)
+        ]
+        projection = {
+            "version": "package-technical-feature-projection/2",
+            "binding": binding,
+            "provider": {
+                "provider_id": "deepseek",
+                "model_alias": vision.MODEL,
+                "response_model": vision.MODEL,
+            },
+            "max_attempts_per_slot": 1,
+            "rules": [rule],
+            "evidence_catalog": catalog,
+            "attempts": attempts,
+        }
+        assert observed == [request_packet.body] * 3
+        if bad_quote:
+            with pytest.raises(DomainError) as caught:
+>               features.build_features(
+                    projection,
+                    expected_projection_digest=digest(projection),
+                    expected_method_digest=features.method_digest(),
+                )
+
+tests\test_package_technical_vision.py:547: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+packages\model_governance\package_technical_features.py:217: in build_features
+    evidence = _valid(attempt, rule, catalog)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\model_governance\package_technical_features.py:130: in _valid
+    return _citation_parts(value, rule, catalog)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages\model_governance\package_technical_features.py:99: in _citation_parts
+    fail("FEATURE_QUOTE_MISMATCH")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+code = 'FEATURE_QUOTE_MISMATCH'
+
+    def fail(code: str) -> NoReturn:
+>       raise FeatureProjectionError(code)
+E       packages.model_governance.package_technical_features.FeatureProjectionError: FEATURE_QUOTE_MISMATCH
+
+packages\model_governance\package_technical_features.py:29: FeatureProjectionError
+============================== warnings summary ===============================
+tests/test_providers.py::test_native_oss_signing_and_strict_grants
+  D:\workspace\tender\tender-app\workbench\.venv\Lib\site-packages\oss2\auth.py:579: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_datetime = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\technical-vision\host-final.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_package_technical_vision.py::test_actual_wire_responses_feed_features_but_invalid_citations_cannot_pass[True]
+1 failed, 62 passed, 1 warning in 1.14s

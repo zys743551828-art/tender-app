@@ -117,6 +117,16 @@ SUITES["technical-input-pure"] = [
     "tests/test_package_technical_features.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["technical-vision-pure"] = [
+    "tests/test_package_technical_vision.py",
+    "tests/test_providers.py",
+    "tests/test_package_technical_input.py",
+    "tests/test_package_technical_assets.py",
+    "tests/test_package_technical_features.py",
+    "tests/test_scoring_contracts_profiles.py",
+    "tests/test_package_scoring_recovery.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
