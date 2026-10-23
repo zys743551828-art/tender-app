@@ -23,7 +23,7 @@ export function PackageNextActions({
   disabled = false,
 }: {
   onOpenOriginal: () => void;
-  onOpenPackage: (target: PackageNavigationTarget) => void;
+  onOpenPackage?: (target: PackageNavigationTarget) => void;
   onOpenRules?: () => void;
   heading?: string;
   disabled?: boolean;
@@ -55,12 +55,19 @@ export function PackageNextActions({
       queueMicrotask(() => basis.current?.querySelector("summary")?.focus());
     } else if (key === "confirm_critical_rules") onOpenRules?.();
     else if (key === "inspect_package_limitations")
-      onOpenPackage({
+      onOpenPackage?.({
         packageId: selected.package_id,
         revisionId: selected.revision_id,
         inventoryId: selected.inventory_id,
       });
     else onOpenOriginal();
+  }
+  function actionDisabled(key: string) {
+    return (
+      disabled ||
+      (key === "confirm_critical_rules" && !onOpenRules) ||
+      (key === "inspect_package_limitations" && !onOpenPackage)
+    );
   }
   return (
     <section className="panel package-next-actions" aria-label={heading}>
@@ -86,10 +93,7 @@ export function PackageNextActions({
         <>
           <button
             className="button primary"
-            disabled={
-              disabled ||
-              (value.primary.key === "confirm_critical_rules" && !onOpenRules)
-            }
+            disabled={actionDisabled(value.primary.key)}
             onClick={() => open(value.primary.key)}
           >
             {value.primary.title}
@@ -130,11 +134,7 @@ export function PackageNextActions({
                   <li key={action.key}>
                     <button
                       className="button secondary"
-                      disabled={
-                        disabled ||
-                        (action.key === "confirm_critical_rules" &&
-                          !onOpenRules)
-                      }
+                      disabled={actionDisabled(action.key)}
                       onClick={() => open(action.key)}
                     >
                       {action.title}（{action.item_count}项）

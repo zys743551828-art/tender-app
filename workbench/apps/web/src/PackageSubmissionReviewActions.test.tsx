@@ -9,9 +9,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { api } from "./api";
 import type { PackageNextActions, PackageSubmissionView } from "./contracts";
 import { PackageSubmissionReviewActions } from "./PackageSubmissionReviewActions";
+import { PackageSubmissionSelectedReviewActions } from "./PackageSubmissionSelectedReviewActions";
 import { PackageSubmissionCard } from "./PackageSubmissionCard";
 import { WorkContextSubmissionDetails } from "./WorkContextSubmissionDetails";
 import { nextActionSelection } from "./packageNextActionsProtocol";
+import type { WorkContextRunSelection } from "./workContextProtocol";
 import { workContextFixture } from "../qa-previews/frozen-inputs/workContext";
 import { jsonDigest } from "./editorSchema";
 import { validatePackageSubmission } from "./packageSubmissionProtocol";
@@ -28,6 +30,18 @@ vi.mock("./api", async (original) => ({
   api: vi.fn(),
 }));
 vi.mock("./BusinessResults", () => ({ BusinessResults: () => null }));
+vi.mock("./WorkContextReviewDetails", () => ({
+  WorkContextReviewDetails: (p: {
+    selection: WorkContextRunSelection;
+    memberId: string;
+    onClose: () => void;
+  }) => (
+    <section aria-label="登记前只读原报告">
+      {p.selection.run_id} · {p.selection.result_digest} · {p.memberId}
+      <button onClick={p.onClose}>关闭只读原报告</button>
+    </section>
+  ),
+}));
 vi.mock("./PackageOfficialOutcomes", () => ({
   PackageOfficialOutcomes: () => null,
 }));
@@ -161,6 +175,88 @@ function response(value = record): PackageNextActions {
   };
 }
 const events = () => ({ onOpenPackage: vi.fn(), onOpenRules: vi.fn() });
+function selectedProps() {
+  const m = record.package_binding.manifest;
+  return {
+    run: m.review_run!,
+    memberId: submissionScope.memberId,
+    packageDigest: m.subject.package_digest,
+    inventoryDigest: m.selection_request.inventory!.digest,
+    disabled: false,
+  };
+}
+it("登记前只打开确切选择的只读原报告，不发登记或人工决定", async () => {
+  vi.mocked(api).mockResolvedValue(answer(response()));
+  render(<PackageSubmissionSelectedReviewActions {...selectedProps()} />);
+  fireEvent.click(
+    await screen.findByRole("button", { name: /核对实交所关联的关键问题/ }),
+  );
+  const original = await screen.findByRole("region", {
+    name: "登记前只读原报告",
+  });
+  expect(original).toHaveTextContent(
+    record.package_binding.manifest.review_run!.id,
+  );
+  expect(original).toHaveTextContent(
+    record.package_binding.manifest.review_run!.result!.digest,
+  );
+  expect(original).toHaveTextContent(submissionScope.memberId);
+  expect(
+    vi
+      .mocked(api)
+      .mock.calls.every(
+        ([, options]) => !options?.method || options.method === "GET",
+      ),
+  ).toBe(true);
+  expect(
+    screen.queryByRole("button", { name: /保存|提交|人工判断/ }),
+  ).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "关闭只读原报告" }));
+  expect(
+    screen.queryByRole("region", { name: "登记前只读原报告" }),
+  ).not.toBeInTheDocument();
+});
+it("登记前未完成的选择保持未知，不补用已完成报告", async () => {
+  record = await saved("pending");
+  render(<PackageSubmissionSelectedReviewActions {...selectedProps()} />);
+  expect(screen.getByText(/所选运行尚无完整报告/)).toBeInTheDocument();
+  expect(vi.mocked(api)).not.toHaveBeenCalled();
+});
+it("登记前读取或请求互锁时不打开另一个工作面", async () => {
+  vi.mocked(api).mockResolvedValue(answer(response()));
+  render(
+    <PackageSubmissionSelectedReviewActions {...selectedProps()} disabled />,
+  );
+  expect(
+    await screen.findByRole("button", { name: /核对实交所关联的关键问题/ }),
+  ).toBeDisabled();
+});
+it("登记前规则动作不离开表单，有明确的收起说明", async () => {
+  const value = response();
+  value.current_scope_counts!.pending_critical_rules = 1;
+  value.other_actions = [
+    {
+      level: 4,
+      key: "confirm_critical_rules",
+      title: "登记前核对关键规则",
+      item_count: 1,
+      requirement_ids: [
+        record.package_binding.manifest.review_run!.result!.manifest.matrix[0]
+          .requirement_id,
+      ],
+    },
+  ];
+  vi.mocked(api).mockResolvedValue(answer(value));
+  render(<PackageSubmissionSelectedReviewActions {...selectedProps()} />);
+  await screen.findByRole("button", { name: /核对实交所关联的关键问题/ });
+  fireEvent.click(screen.getByText(/剩余关键问题/));
+  expect(
+    screen.getByRole("button", { name: "登记前核对关键规则（1项）" }),
+  ).toBeDisabled();
+  expect(
+    screen.getByText(/需要前往规则或资料包时，请先收起登记表单/),
+  ).toBeInTheDocument();
+});
 it("实交阶段原记录使用同一冻结绑定和动作入口", async () => {
   const m = record.package_binding.manifest;
   vi.mocked(api).mockImplementation((path) =>

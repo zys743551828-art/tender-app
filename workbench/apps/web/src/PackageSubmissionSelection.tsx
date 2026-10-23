@@ -17,6 +17,7 @@ import { ArtifactActions } from "./ArtifactActions";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import { useSubmissionRunTargets } from "./useSubmissionRunTargets";
+import { PackageSubmissionSelectedReviewActions } from "./PackageSubmissionSelectedReviewActions";
 import {
   packageSubmissionBase,
   submissionPackageMatches,
@@ -27,12 +28,14 @@ import {
 
 export function PackageSubmissionSelection({
   bidId,
+  memberId,
   disabled,
   initial,
   restoredSelection,
   onChange,
 }: {
   bidId: string;
+  memberId: string;
   disabled: boolean;
   initial: PackageSubmissionView | null;
   restoredSelection?: Selection;
@@ -576,6 +579,18 @@ export function PackageSubmissionSelection({
           </>
         )}
       </fieldset>
+      {chosen?.review_run &&
+        chosen.inventory &&
+        checkedRun &&
+        chosenRun === checkedRun.target && (
+          <PackageSubmissionSelectedReviewActions
+            run={checkedRun.value}
+            memberId={memberId}
+            packageDigest={chosen.package_digest}
+            inventoryDigest={chosen.inventory.digest}
+            disabled={disabled}
+          />
+        )}
       {chosen && (
         <p className="small-note" role="status">
           本次固定选择：{chosen.inventory ? "已关联需求清单" : "不关联需求清单"}

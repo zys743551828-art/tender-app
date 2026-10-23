@@ -1,0 +1,115 @@
+{
+  "scope": "registration selector uses the same exact selected-run next actions and a read-only original details component; no backend changes",
+  "tests": {
+    "frontend_files": 179,
+    "frontend_passed": 1786,
+    "frontend_seconds": 61.23,
+    "targeted_passed": 58,
+    "targeted_seconds": 8.04,
+    "new_cases_in_full_suite": 5,
+    "overlapping_counts_not_added": true,
+    "python_or_contract_suites_rerun": false
+  },
+  "quality": [
+    "Prettier",
+    "ESLint",
+    "TypeScript",
+    "production Vite build",
+    "Compose config"
+  ],
+  "build_seconds": 6.68,
+  "existing_chunk_warning": true,
+  "ui_fixture": "real React selector/API client with explicit synthetic HTTP; selected read-only details component mocked as exact-selection observer; no new PG original-byte end-to-end proof",
+  "runtime_inputs": 1162,
+  "production_js_css_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "business_projects": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "browser_blocker": "missing browser/26.1016.62342/scripts/browser-service.mjs before bootstrap",
+  "source_identity_scope": "modified inputs equal staged Git raw bytes; development source mounts are not an immutable release",
+  "inputs": [
+    {
+      "path": "apps/web/src/PackageNextActions.tsx",
+      "sha256": "bdbf3ace257b1bb44fde577366ab044b63fe04e018fc97be6d07a8c86f06f83b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionForm.tsx",
+      "sha256": "f7c738b68d44f75748709f042c33167f3464b10f7fa4f319213a23c105d7c245",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionPanel.test.tsx",
+      "sha256": "286f2f191271a1e02e39849320a3f8a5b29cbdb38e8e0d57ad53471260750a4a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionReviewActions.test.tsx",
+      "sha256": "d162478521b1bdab1d2f877226c1716ab5fe92babf60c3d1ed209ca823f3f4b0",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionSelectedReviewActions.tsx",
+      "sha256": "9e07730c59176c92e87878b5930ebb291c122de327784bd3cc818641832c468b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionSelection.tsx",
+      "sha256": "e88b401ce8a69760a9e41cb2a8134b90166f791a07bd68fc691bc0abaa0e78df",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-next-actions.md",
+      "sha256": "ac11256d064d1b5f95ef94e3332060b28d1be5fc7b5d1e75fa5805d4405c78d2",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "frontend-full.log": "c4f6715cba6bc4587c6401d692270a49a3fdda6885ab7f3aed47add47c35e537",
+    "frontend-targeted.log": "f20fee2d53e4d55ab686e6a8092c91aef1ba758ebe47a3278708795b9c5fb6dd",
+    "format.log": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283",
+    "lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build.log": "9489bfad68796f4a7846d8b3420a9099906a6d831aca7f426531f2a71b1ca0e7",
+    "compose-config.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "http-runtime.json": "bca1d5ce6ebf65b9223d441bdce65e776a11e86594b25a3a9a633e5a3572044c"
+  }
+}

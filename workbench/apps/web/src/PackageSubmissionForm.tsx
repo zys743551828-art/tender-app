@@ -241,6 +241,7 @@ export function PackageSubmissionForm({
       )}
       <SelectionEditor
         bidId={scope.bidId}
+        memberId={scope.memberId}
         initial={initial as PackageSubmissionView | null}
         restoredSelection={restored?.body.selection}
         disabled={disabled}

@@ -10,6 +10,8 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { PackageSubmissionPanel } from "./PackageSubmissionPanel";
 import { SubmissionPanel } from "./SubmissionPanel";
+import { workContextFixture } from "../qa-previews/frozen-inputs/workContext";
+import { jsonDigest } from "./editorSchema";
 import type {
   PackageSubmissionAppliedView,
   PackageSubmissionRequest,
@@ -533,6 +535,10 @@ it("运行目录能继续分页，只显示匹配清单并读取确切frozen/pre
     .setup()
     .selectOptions(screen.getByLabelText("关联整包核查"), run.id);
   await screen.findByText("核对核查的固定输入链");
+  expect(screen.getByText(/所选运行尚无完整报告/)).toBeInTheDocument();
+  expect(
+    s.server.reads.some((path) => path.includes("/package-next-actions/")),
+  ).toBe(false);
   expect(s.server.reads).toContain(
     `/api/v1${submissionRunPath(submissionScope.bidId, target)}`,
   );
@@ -573,6 +579,105 @@ it("混入另一个原输入的run响应不开放登记检查", async () => {
     screen.getByRole("button", { name: "读取所选整包的提交检查" }),
   ).toBeDisabled();
   expect(s.server.previews).toHaveLength(0);
+});
+it("完整报告的明确选择显示同源待办，取消关联立即收起且不发送登记", async () => {
+  const f = await submissionFixture(true),
+    s = await setup(f);
+  const run = (await workContextFixture()).completed;
+  run.scope = submissionRunFixture(f).run.scope;
+  run.result!.manifest.scope = run.scope;
+  run.result!.digest = await jsonDigest(run.result!.manifest);
+  const target = {
+    ...submissionRunFixture(f).target,
+    id: run.id,
+    input_digest: run.input_digest,
+    execution_input_id: run.execution_input_id,
+    frozen_input_id: run.frozen_input_id,
+    state: run.operation.state,
+    result_digest: run.result!.digest,
+  };
+  const actionPath = `/api/v1/bids/${submissionScope.bidId}/package-next-actions/${run.id}?expected_input_digest=${run.input_digest}`;
+  s.server.onRead = (path) => {
+    if (path.includes("knowledge-reference-targets"))
+      return response({
+        bid_id: submissionScope.bidId,
+        items: [target],
+        next_offset: null,
+        reference_only: true,
+        changes_frozen_result: false,
+        formal_score_allowed: false,
+      });
+    if (path === `/api/v1${submissionRunPath(submissionScope.bidId, target)}`)
+      return response(run);
+    if (path === actionPath)
+      return response({
+        version: "package-next-actions/1",
+        binding: {
+          scope: run.scope,
+          run_id: run.id,
+          input_digest: run.input_digest,
+          result_digest: run.result!.digest,
+          frozen_input_id: run.frozen_input_id,
+          frozen_input_digest: run.frozen_input_digest,
+          execution_input_id: run.execution_input_id,
+          execution_input_digest: run.execution_input_digest,
+          dependency_plan_id: run.dependency_plan_id,
+          dependency_plan_digest: run.dependency_plan_digest,
+          method_digest: run.method_digest,
+        },
+        method_digest: "a".repeat(64),
+        confirmation_digest: "b".repeat(64),
+        basis_digest: "c".repeat(64),
+        observation_digest: "d".repeat(64),
+        observed_at: "2026-10-23T12:00:00Z",
+        basis_status: "matched",
+        basis_issues: [],
+        current_scope_counts: {
+          critical: 1,
+          suggestions: 0,
+          pending_critical_rules: 0,
+        },
+        historical_scope_counts: { critical: 1, suggestions: 0 },
+        primary: {
+          level: 3,
+          key: "inspect_critical_risks",
+          title: "检查本次所选报告的问题",
+          item_count: 1,
+          requirement_ids: [run.result!.manifest.matrix[1].requirement_id],
+        },
+        other_actions: [],
+        remaining_critical_count: 0,
+        remaining_suggestion_count: 0,
+        action_mode: "navigation_only",
+        perspective: "selected_declared_scope",
+        original_bytes_reverified: false,
+        inventory_complete: false,
+        formal_scoring_eligible: false,
+        submission_eligible: false,
+      });
+    return null;
+  };
+  render(<PackageSubmissionPanel {...props()} />);
+  const user = userEvent.setup();
+  await user.click(
+    screen.getByRole("button", { name: "检查并登记整包线下事实" }),
+  );
+  await choosePackage(f);
+  await waitFor(() =>
+    expect(
+      within(screen.getByLabelText("关联整包核查")).getAllByRole("option"),
+    ).toHaveLength(2),
+  );
+  await user.selectOptions(screen.getByLabelText("关联整包核查"), run.id);
+  await screen.findByRole("button", { name: "检查本次所选报告的问题（1项）" });
+  expect(s.server.reads).toContain(actionPath);
+  await user.selectOptions(screen.getByLabelText("关联整包核查"), "");
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("region", { name: "本次登记所选核查的下一步" }),
+    ).not.toBeInTheDocument(),
+  );
+  expect(s.server.writes).toHaveLength(0);
 });
 it("统一历史保留无subject_kind旧单稿，明确整包更正走新路由与统一head", async () => {
   const f = await submissionFixture(false, {
