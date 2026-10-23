@@ -18,3 +18,5 @@
 /packages/identity/sql/*.sql text eol=lf
 /packages/knowledge/sql/*.sql text eol=lf
 /deploy/sql/*.sql text eol=lf
+/docs/completion-20261021/evidence/windows-compose/** -text
+/docs/completion-20261021/evidence/history-dispatch/** -text
