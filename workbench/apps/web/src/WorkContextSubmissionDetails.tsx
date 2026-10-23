@@ -6,20 +6,31 @@ import type { PackageSubmissionView, WorkContextSelection } from "./contracts";
 import { validatePackageSubmission } from "./packageSubmissionProtocol";
 import { PackageSubmissionGates } from "./PackageSubmissionGates";
 import "./PackageSubmission.css";
+import { PackageSubmissionReviewActions } from "./PackageSubmissionReviewActions";
+import type { PackageNavigationTarget } from "./packageNavigation";
 
 type Selection = Extract<WorkContextSelection, { kind: "package_submission" }>;
 export function WorkContextSubmissionDetails(p: {
   selection: Selection;
   onClose: () => void;
+  memberId?: string;
+  onOpenPackage?: (target: PackageNavigationTarget) => void;
+  onOpenRules?: () => void;
 }) {
   return <SubmissionDetails key={JSON.stringify(p.selection)} {...p} />;
 }
 function SubmissionDetails({
   selection,
   onClose,
+  memberId,
+  onOpenPackage,
+  onOpenRules,
 }: {
   selection: Selection;
   onClose: () => void;
+  memberId?: string;
+  onOpenPackage?: (target: PackageNavigationTarget) => void;
+  onOpenRules?: () => void;
 }) {
   const [record, setRecord] = useState<PackageSubmissionView | null>(null),
     [error, setError] = useState<unknown>(null),
@@ -98,6 +109,14 @@ function SubmissionDetails({
             <time dateTime={record.recorded_at}>{record.recorded_at}</time>。
           </p>
           <p>{record.explanation}</p>
+          {memberId && (
+            <PackageSubmissionReviewActions
+              record={record}
+              memberId={memberId}
+              onOpenPackage={onOpenPackage}
+              onOpenRules={onOpenRules}
+            />
+          )}
           <p className="small-note">
             该记录保留用户登记的提交事实。登记时原件核验与本次历史阅读分别记录；交易平台回执和事前系统检查真实性仍未验证。
           </p>

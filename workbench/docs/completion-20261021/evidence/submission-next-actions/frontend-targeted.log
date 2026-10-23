@@ -1,0 +1,25 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/WorkContextSubmissionDetails.test.tsx (3 tests) 98ms
+ ✓ src/PackageNextActions.test.tsx (30 tests) 403ms
+ ✓ src/PackageSubmissionReviewActions.test.tsx (8 tests) 543ms
+   ✓ 实交卡完整核验后按保存的运行读取，原报告只按原引用打开  411ms
+ ✓ src/PackageSubmissionPanel.test.tsx (14 tests) 5233ms
+   ✓ 确切包四门检查后只能明确线下登记；保存前重读并使用原head条件  503ms
+   ✓ 保存前头变化不发登记，不悄悄采用新ETag，输入保留  446ms
+   ✓ 提交已成功但ACK丢失，刷新后仍用同一body/key/etag恢复，不以历史取代回执  442ms
+   ✓ wrong-actor 保留原命令并锁住新登记  413ms
+   ✓ missing-header 保留原命令并锁住新登记  435ms
+   ✓ generic-422 保留原命令并锁住新登记  447ms
+   ✓ 本地恢复记录写不下时不发送登记，表单不丢失  426ms
+   ✓ 明确CAS拒绝结束pending但保留输入，新检查需重新确认  417ms
+   ✓ 未知ACK在退出后的迟到响应不会重建已清除的账户恢复记录  445ms
+   ✓ 运行目录能继续分页，只显示匹配清单并读取确切frozen/prepared运行  404ms
+   ✓ 统一历史保留无subject_kind旧单稿，明确整包更正走新路由与统一head  497ms
+
+ Test Files  4 passed (4)
+      Tests  55 passed (55)
+   Start at  20:47:50
+   Duration  7.52s (transform 638ms, setup 1.50s, collect 1.72s, tests 6.28s, environment 3.42s, prepare 666ms)
+

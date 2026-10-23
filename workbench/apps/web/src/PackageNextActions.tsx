@@ -19,10 +19,14 @@ export function PackageNextActions({
   onOpenOriginal,
   onOpenPackage,
   onOpenRules,
+  heading = "本轮主要下一步",
+  disabled = false,
 }: {
   onOpenOriginal: () => void;
   onOpenPackage: (target: PackageNavigationTarget) => void;
   onOpenRules?: () => void;
+  heading?: string;
+  disabled?: boolean;
 } & (
   | { context: PackageWorkContext; run?: never }
   | { run: PackageReviewRunView; context?: never }
@@ -59,9 +63,9 @@ export function PackageNextActions({
     else onOpenOriginal();
   }
   return (
-    <section className="panel package-next-actions" aria-label="本轮主要下一步">
+    <section className="panel package-next-actions" aria-label={heading}>
       <div className="section-heading">
-        <h2>本轮主要下一步</h2>
+        <h2>{heading}</h2>
         <button
           className="text-button"
           disabled={resource.loading}
@@ -83,7 +87,8 @@ export function PackageNextActions({
           <button
             className="button primary"
             disabled={
-              value.primary.key === "confirm_critical_rules" && !onOpenRules
+              disabled ||
+              (value.primary.key === "confirm_critical_rules" && !onOpenRules)
             }
             onClick={() => open(value.primary.key)}
           >
@@ -126,7 +131,9 @@ export function PackageNextActions({
                     <button
                       className="button secondary"
                       disabled={
-                        action.key === "confirm_critical_rules" && !onOpenRules
+                        disabled ||
+                        (action.key === "confirm_critical_rules" &&
+                          !onOpenRules)
                       }
                       onClick={() => open(action.key)}
                     >

@@ -26,6 +26,7 @@ import type { WorkspacePage } from "./workspaceTypes";
 import { PackageSubmissionPanel } from "./PackageSubmissionPanel";
 import type { PackageSubmissionOpenRequest } from "./PackageSubmissionPanel";
 import { PackageSubmissionCard } from "./PackageSubmissionCard";
+import type { PackageNavigationTarget } from "./packageNavigation";
 
 const PackageRetrospectives = lazy(() =>
   import("./PackageRetrospectives").then((module) => ({
@@ -60,12 +61,14 @@ export function SubmissionPanel({
   onNavigate,
   onChanged,
   onOpenKnowledge,
+  onOpenPackage,
 }: {
   bidId: string;
   memberId: string;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
   onChanged: () => void;
   onOpenKnowledge?: (knowledgeId: string) => void;
+  onOpenPackage?: (target: PackageNavigationTarget) => void;
 }) {
   const available = supportsApi("GET", `/bids/${bidId}/submission-gate`);
   const packageAvailable = supportsApi(
@@ -316,6 +319,8 @@ export function SubmissionPanel({
                 record={record}
                 disabled={busy || input.open || packageLocked}
                 onCorrect={() => beginPackageCorrection(record)}
+                onOpenPackage={onOpenPackage}
+                onOpenRules={() => onNavigate("rules")}
               />
             ) : (
               <SubmissionCard

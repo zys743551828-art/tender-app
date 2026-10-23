@@ -6,6 +6,8 @@ import { BusinessResults } from "./BusinessResults";
 import { PackageOfficialOutcomes } from "./PackageOfficialOutcomes";
 import { PackageSubmissionGates } from "./PackageSubmissionGates";
 import { validatePackageSubmission } from "./packageSubmissionProtocol";
+import { PackageSubmissionReviewActions } from "./PackageSubmissionReviewActions";
+import type { PackageNavigationTarget } from "./packageNavigation";
 
 const roles = {
   target: "实际投标包原件",
@@ -19,12 +21,16 @@ export function PackageSubmissionCard({
   memberId,
   disabled,
   onCorrect,
+  onOpenPackage,
+  onOpenRules,
 }: {
   record: PackageSubmissionView;
   bidId: string;
   memberId: string;
   disabled: boolean;
   onCorrect: () => void;
+  onOpenPackage?: (target: PackageNavigationTarget) => void;
+  onOpenRules?: () => void;
 }) {
   const [checked, setChecked] = useState<PackageSubmissionView | null>(null),
     [error, setError] = useState<unknown>(null),
@@ -78,6 +84,13 @@ export function PackageSubmissionCard({
         这是用户声明的线下提交事实。原件字节已核验，交易平台回执真实性与事前系统检查未获验证。
       </p>
       <p>{record.explanation}</p>
+      <PackageSubmissionReviewActions
+        record={checked}
+        memberId={memberId}
+        disabled={disabled}
+        onOpenPackage={onOpenPackage}
+        onOpenRules={onOpenRules}
+      />
       {record.supersedes_id && (
         <p className="small-note digest">
           追加更正自 {record.supersedes_id}，原记录继续保留。

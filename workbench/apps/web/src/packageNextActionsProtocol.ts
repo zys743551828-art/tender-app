@@ -13,7 +13,7 @@ import { contextTime } from "./workContextProtocol";
 
 export type NextActionSource = PackageWorkContext | PackageReviewRunView;
 
-/** Both inputs have already passed their native, exact-identity validator. */
+/** Inputs have passed their respective exact-identity validator before use. */
 export function nextActionSelection(source: NextActionSource) {
   if ("selection" in source)
     return source.selection.kind === "package_review_run"

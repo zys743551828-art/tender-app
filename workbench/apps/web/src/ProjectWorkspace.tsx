@@ -452,6 +452,7 @@ export function ProjectWorkspace({
                   onNavigate={onNavigate}
                   onChanged={refresh}
                   onOpenKnowledge={onOpenKnowledge}
+                  onOpenPackage={onOpenPackage}
                 />
               </Suspense>
               <OutcomesPanel bidId={bid.id} />

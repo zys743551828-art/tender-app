@@ -246,6 +246,9 @@ function SelectedWorkContext(p: Props & { target: WorkContextTarget }) {
           {original && context.selection.kind === "package_submission" && (
             <WorkContextSubmissionDetails
               selection={context.selection}
+              memberId={p.memberId}
+              onOpenPackage={p.onOpenPackage}
+              onOpenRules={p.onOpenRules}
               onClose={() => setOriginal(false)}
             />
           )}

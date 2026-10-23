@@ -150,6 +150,23 @@ export function packageReviewHistoricalComparison(
     },
   };
 }
+/** The saved native packet supplies a reference; opening still verifies the original inputs. */
+export function packageReviewHistoricalOriginal(
+  run: PackageReviewRunView,
+): PackageReviewHistoricalReference {
+  return {
+    ...identity(run),
+    operation_id: run.operation.id,
+    result: run.result
+      ? {
+          digest: run.result.digest,
+          requirement_count: run.result.manifest.requirement_count,
+          matrix_coverage: run.result.manifest.matrix_coverage,
+          overall_coverage: run.result.manifest.overall_coverage,
+        }
+      : null,
+  };
+}
 export function matchesPackageReviewHistoricalReference(
   run: PackageReviewRunView,
   reference: PackageReviewHistoricalReference,
