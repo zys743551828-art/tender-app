@@ -31,6 +31,9 @@
 /packages/model_governance/package_technical_vision.py text eol=lf
 /packages/domain/providers/deepseek.py text eol=lf
 /packages/domain/errors.py text eol=lf
+/packages/model_governance/package_current_sources.py text eol=lf
+/packages/contracts/package-current-sources.md text eol=lf
+/tests/test_package_current_sources_pg.py text eol=lf
 /packages/domain/runtime.py text eol=lf
 /packages/domain/providers/errors.py text eol=lf
 /tests/test_provider_error_isolation.py text eol=lf
@@ -86,4 +89,5 @@
 /docs/completion-20261021/evidence/technical-context/** -text
 /docs/completion-20261021/evidence/asset-runtime/** -text
 /docs/completion-20261021/evidence/provider-errors/** -text
+/docs/completion-20261021/evidence/current-source/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

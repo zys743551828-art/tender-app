@@ -1,0 +1,4 @@
+packages\model_governance\package_current_sources.py:240: error: Need type annotation for "seen" (hint: "seen: set[<type>] = ...")  [var-annotated]
+packages\model_governance\package_current_sources.py:240: error: Need type annotation for "edges" (hint: "edges: set[<type>] = ...")  [var-annotated]
+packages\model_governance\package_current_sources.py:294: error: Need type annotation for "parents"  [var-annotated]
+Found 3 errors in 1 file (checked 2 source files)

@@ -1,0 +1,10 @@
+tests\test_package_current_sources_pg.py:376:63: E701 Multiple statements on one line (colon)
+    |
+374 | def test_graph_limits_reject_instead_of_partial_receipt(native,monkeypatch,limit,value,error):
+375 |     monkeypatch.setattr(sources,limit,value)
+376 |     with pytest.raises(sources.CurrentSourceError,match=error):observe(native)
+    |                                                               ^ E701
+    |
+
+Found 1 error.
+1 file reformatted, 3 files left unchanged

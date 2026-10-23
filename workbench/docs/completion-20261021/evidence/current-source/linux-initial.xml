@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.849" timestamp="2026-10-23T17:54:58.826701+00:00" hostname="262e38a3be2d"><testcase classname="tests.test_package_current_sources_pg" name="test_native_login_observation_and_denied_history_and_object_locator" time="0.489"><failure message="psycopg.ProgrammingError: only '%s', '%b', '%t' are allowed as placeholders, got '%''">native = {'api_dsn': 'user=fusion_package_requirements_service password=ujEr5ExT7ne1KrXeb7DowHtvFUUwziks6Ycpx0dGcC-nTLHd dbname...3f77e37cd3e', 'block': '61890835-4d57-4f45-9520-9d8b3f4912eb', 'document': '9c2241a9-678e-4452-981e-b1ed4bd056f7', ...}
+
+    def test_native_login_observation_and_denied_history_and_object_locator(native):
+        w = native
+&gt;       value = observe(w).metadata
+                ^^^^^^^^^^
+
+tests/test_package_current_sources_pg.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_package_current_sources_pg.py:139: in observe
+    return sources.observe(
+packages/model_governance/package_current_sources.py:326: in observe
+    _role(c)
+packages/model_governance/package_current_sources.py:167: in _role
+    if c.execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;psycopg.Cursor [closed] [IDLE] (host=fusion-nonowner-postgres user=fusion_current_source_verify database=fusion_package_requirements_api) at 0x789a30541490&gt;
+query = "SELECT EXISTS(SELECT FROM pg_class t JOIN pg_namespace n ON n.oid=t.relnamespace WHERE t.relkind IN ('r','p','v','m',...T') OR has_any_column_privilege(current_user,t.oid,'SELECT')) AND n.nspname||'.'||t.relname&lt;&gt;ALL(%s::text[])))) AS bad"
+params = (['design.document_versions', 'design.blobs', 'design.parse_runs', 'design.pages', 'design.evidence_blocks', 'retrieval.source_nodes', ...],)
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool | None = None,
+    ) -&gt; Self:
+        """
+        Execute a query or command to the database.
+        """
+        try:
+            with self._conn.lock:
+                self._conn.wait(
+                    self._execute_gen(query, params, prepare=prepare, binary=binary)
+                )
+        except e._NO_TRACEBACK as ex:
+&gt;           raise ex.with_traceback(None)
+E           psycopg.ProgrammingError: only '%s', '%b', '%t' are allowed as placeholders, got '%''
+
+/usr/local/lib/python3.12/site-packages/psycopg/cursor.py:97: ProgrammingError</failure></testcase></testsuite></testsuites>

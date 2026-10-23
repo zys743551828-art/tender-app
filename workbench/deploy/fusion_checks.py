@@ -140,6 +140,11 @@ SUITES["provider-errors-pure"] = [
     "tests/test_openapi_snapshot.py::test_committed_gzip_contains_the_complete_current_actual_contract",
     "tests/test_openapi_snapshot.py::test_export_stdout_plain_file_and_path_independent_gzip_are_equivalent",
 ]
+SUITES["current-source-native"] = [
+    "tests/test_package_current_sources_pg.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
@@ -181,6 +186,7 @@ def main():
         "scope-review-api",
         "completion-api",
         "technical-scope-api",
+        "current-source-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -214,6 +220,9 @@ def main():
             environment["FUSION_REQUIREMENTS_ADMIN_DSN"] = check_dsn
             if suite == "technical-scope-api":
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
+            if suite == "current-source-native":
+                environment["FUSION_CURRENT_SOURCE_PG"] = "1"
+                environment["FUSION_CURRENT_SOURCE_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"
