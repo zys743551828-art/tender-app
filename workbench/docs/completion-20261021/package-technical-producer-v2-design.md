@@ -1,6 +1,6 @@
 # F06：完整图文三次判断与特征 producer 的实际软件装配
 
-状态：正式执行链仍是独立增量设计；[非数值CPU特征投影](../../packages/contracts/package-technical-features.md)及[静态原页／细节派生](../../packages/contracts/package-technical-page-assets.md)已有封闭协议和处理器，输入／供应商权威、硬隔离Worker、原生持久化与执行装配尚未完成。不会修改冻结的scope、eligibility、execution/1、reconciliation/1、历史研究核心或旧WIP SQL。真实配对材料缺失只阻塞真实资格／效果，不阻塞软件与零费用机制验证。
+状态：正式执行链仍是独立增量设计；[非数值CPU特征投影](../../packages/contracts/package-technical-features.md)、[静态原页／细节派生](../../packages/contracts/package-technical-page-assets.md)及[完整图文材料绑定](../../packages/contracts/package-technical-input.md)已有封闭协议和处理器。完整材料绑定仅核外部owned投影的一致性，独立必要范围／来源权威、供应商核验、硬隔离Worker、原生持久化与执行装配尚未完成。不会修改冻结的scope、eligibility、execution/1、reconciliation/1、历史研究核心或旧WIP SQL。真实配对材料缺失只阻塞真实资格／效果，不阻塞软件与零费用机制验证。
 
 ## 1. 目标和已确认的软件缺口
 

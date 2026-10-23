@@ -14,6 +14,8 @@ F06-02／08的[非数值CPU特征闭包](technical-features-acceptance.md)已实
 
 F06-02的[静态PDF整页及同像素裁片](technical-assets-acceptance.md)通过80项Linux／50项Windows和合成图像实际检查；所有整页保留，父摘要与区域像素核对。实际输入权威、可读性、硬隔离与正式API／Worker仍未装配，不关闭完整图文／三评资格或真实效果验收。
 
+F06-02的[完整图文材料绑定](technical-input-acceptance.md)通过167项Linux／51项Windows和实际合成渲染→输入→三槽特征链；所有投影材料保留、章节传递展开、规则来源／原文与页图严格绑定。只证明外部冻结投影内一致性，独立必要范围／当前来源、可读性、provider payload、硬隔离和原生权限继续，正式三评与F06保持进行中。
+
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 
 Windows完整运行组已通过191项检查和真实同源文件链／五角色私有卷核验，见[桌面Compose验收](desktop-runtime-acceptance.md)。这是F02、F03和F14中的本机装配证据，不整体关闭工作包；目标主机、转换隔离、真实业务及完整视觉仍须分别验收。

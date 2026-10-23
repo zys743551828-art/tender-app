@@ -27,6 +27,10 @@
 /packages/model_governance/package_history_dispatch.py text eol=lf
 /packages/model_governance/package_technical_features.py text eol=lf
 /packages/model_governance/package_technical_assets.py text eol=lf
+/packages/model_governance/package_technical_input.py text eol=lf
+/packages/contracts/package_technical_input.py text eol=lf
+/packages/contracts/package-technical-input.md text eol=lf
+/tests/test_package_technical_input.py text eol=lf
 /packages/model_governance/technical_png.py text eol=lf
 /packages/contracts/package_technical_assets.py text eol=lf
 /packages/contracts/package-technical-page-assets.md text eol=lf
@@ -64,4 +68,5 @@
 /docs/completion-20261021/evidence/registration-next-actions/** -text
 /docs/completion-20261021/evidence/technical-features/** -text
 /docs/completion-20261021/evidence/technical-assets/** -text
+/docs/completion-20261021/evidence/technical-input/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

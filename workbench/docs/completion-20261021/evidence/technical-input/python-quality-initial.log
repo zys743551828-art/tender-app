@@ -1,0 +1,4 @@
+All checks passed!
+2 files reformatted, 1 file left unchanged
+packages\model_governance\package_technical_input.py:151: error: Need type annotation for "blobs" (hint: "blobs: dict[<type>, <type>] = ...")  [var-annotated]
+Found 1 error in 1 file (checked 2 source files)

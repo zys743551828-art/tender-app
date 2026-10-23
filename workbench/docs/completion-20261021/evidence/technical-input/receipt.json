@@ -1,0 +1,115 @@
+{
+  "scope": "all externally projected frozen material retained and bound; no independent source authority, provider, SQL or Worker",
+  "tests": {
+    "linux_passed": 167,
+    "linux_seconds": 1.404,
+    "linux_skipped": 0,
+    "by_module": {
+      "tests.test_package_technical_input": 51,
+      "tests.test_package_technical_assets": 50,
+      "tests.test_package_technical_features": 54,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 51,
+    "host_reported_seconds": 1.1,
+    "counts_overlap": true,
+    "frontend_rerun": false
+  },
+  "synthetic_render_input_feature_chain_verified": true,
+  "real_provider_response_verified": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "formal_prediction_eligible": false,
+  "runtime_inputs": 1173,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "source_identity_scope": "six modified inputs equal staged Git bytes, not immutable whole deployment",
+  "inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "3991b627b7864a153f319a8fdeddad248a2d995d3de265dce5b8368f5db1840c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "e9dfce178e395dd8a431bc79ed8c943e0c88ced73addcdf47536da021d0efcf9",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-input.md",
+      "sha256": "80f295a12c33a781c6b78830d5f3cde456602b759f4036d3eaf7736f8c5df2ac",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_input.py",
+      "sha256": "3b3d2f8af8964a3e65737a4c6e6b7823a9858e3c3e1005188e5e985b4560df2b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_input.py",
+      "sha256": "88df54e97af509fa0ad7965cf15e61a10ee77cd0b097cf78c8b8bfb366afcb97",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_input.py",
+      "sha256": "1d2d2f9f0fb0d8520dffaba3eb1d9f6a2d04261b87af1bf9ec25e2f496f6c598",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-initial.log": "6dc40e4422846b5602027fc46cce61fa8f06f44ac2be3a1de80937efd404085e",
+    "host-initial.xml": "b3b6750674e6fe2745046eb7969cd72fba6e11dbd1975ebd42dc3e3fb83abd94",
+    "host-final.log": "fbd4d4036f3d49c9e77a67e31ee6ca306da87e4e5b9e3c8c3ec6adec2e8197b9",
+    "host-final.xml": "b4e89a77cbb0eb7bb96175c2ad8ec771db091c3723f957132fca25bb217e0dc5",
+    "linux-final.log": "7e148b3d17a87860667214ef5da4049b50e4254d37dfcc6d325925906ad34d6b",
+    "linux-final.xml": "4e3d4913f0c918cb58e51f5944301c9fb4bda7862e08e774039bdc5bc880a5aa",
+    "python-quality-initial.log": "a23b9d03fe6f9722cc4bd7d65127d30ed0f3749d96e8df761946e35ee3425993",
+    "python-quality.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "http-runtime.json": "9e72c435b9b3984fbf68a71b9523cb14b20c87459fe1ee855b22f77da81952ec",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614",
+    "method-boundaries.json": "2604e3fed140d2c7de5db976fbbfa46f649ed4192aefe468b2b36bf477698bf6"
+  }
+}
