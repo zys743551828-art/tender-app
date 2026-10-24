@@ -10,11 +10,14 @@ from uuid import uuid4
 
 import pytest
 from psycopg.pq import TransactionStatus
-from test_cost_quotes_pg import database, quote
 from test_cost_quotes_pg import publish as publish_prices
+from test_cost_quotes_pg import quote
 from test_cost_quotes_pg import reread as read_quote
 from test_fusion_context_derivation_native import collect, freeze, runtime
 from test_input_authority_pg import approve, qualify, reread
+from test_input_renewals_pg import database, record, wire_digests
+from test_input_renewals_pg import publish as publish_renewal
+from test_input_renewals_pg import reread as read_renewal
 from test_input_seals_pg import publish, seal
 from test_input_seals_pg import reread as read_seal
 from test_native_evidence_issuers_pg import SIGNER, assign
@@ -45,7 +48,8 @@ from packages.model_governance import package_technical_material as material
 pytestmark = pytest.mark.skipif(
     os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1"
     or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1"
-    or os.environ.get("FUSION_COST_QUOTES_HOST") != "1",
+    or os.environ.get("FUSION_COST_QUOTES_HOST") != "1"
+    or os.environ.get("FUSION_INPUT_RENEWALS_HOST") != "1",
     reason="explicit actual trusted-host program execution required",
 )
 
@@ -189,7 +193,11 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
         result["observation"]["verified_material"]["live_derivation"]["context_digest"]
     ) == canonical(frozen.metadata["digest"])
     authority_args = approve(
-        w, first.result, image=runtime.expected_image_id, source=runtime.expected_source_digest
+        w,
+        first.result,
+        image=runtime.expected_image_id,
+        source=runtime.expected_source_digest,
+        changes={"max_program_age_seconds": 5},
     )
     verified = qualify(w, authority_args)
     current = reread(w, verified)
@@ -340,6 +348,99 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
                 "synthetic_material_and_configuration": True,
                 "actual_human_review": False,
                 "input_authority_granted": False,
+                "provider_attempts": 0,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    # Earlier proofs are milestones before renewal, not totals for this longer case.
+    profile_id, profile_digest = publish_renewal(w, quoted)
+    old_input, old_wire = wire_digests(frozen, verified.binding)
+    assert old_input == bound.metadata["digest"]
+    new_logical = str(uuid4())
+    new_ticket = begin(w, program_case, new_logical)
+    assert state["attempts"] == 12 and len(receipts) == 10
+    renewed_program = asyncio.run(
+        program.execute(
+            *connections,
+            runtime=runtime,
+            command_id=new_logical,
+            expected_command_digest=new_ticket.metadata["digest"],
+            expected_method_digest=program.method_digest(),
+            profile="development_s3",
+            url_for_locator=url,
+        )
+    )
+    expired_seal = read_seal(w, sealed)
+    expired_quote = read_quote(w, quoted)
+    assert not expired_seal.metadata["current"]["software_input_current"]
+    assert not expired_quote.metadata["current"]["software_quote_current"]
+    fresh = qualify(
+        w,
+        authority_args
+        | {
+            "program_result_id": renewed_program.result.metadata["document"]["result_id"],
+            "expected_program_result_digest": renewed_program.result.metadata["digest"],
+            "command_id": new_logical,
+        },
+    )
+    renewal_args = {
+        "seal_id": seal_document["seal_id"],
+        "expected_seal_digest": sealed.metadata["digest"],
+        "quote_id": quoted.metadata["document"]["quote_id"],
+        "expected_quote_digest": quoted.metadata["digest"],
+        "verification_id": fresh.metadata["document"]["verification_id"],
+        "expected_verification_digest": fresh.metadata["digest"],
+        "profile_id": profile_id,
+        "expected_profile_digest": profile_digest,
+        "command_id": new_logical,
+    }
+    from packages.model_governance import material_input_renewals as renewals
+
+    renewal_args["expected_method_digest"] = renewals.method_digest()
+    renewed = record(w, renewal_args)
+    reopened_renewal = read_renewal(w, renewed)
+    assert reopened_renewal.record == renewed
+    assert reopened_renewal.metadata["current"]["software_evidence_current"]
+    assert reopened_renewal.metadata["current"]["software_budget_sufficient"]
+    assert record(w, renewal_args) == renewed
+    assert wire_digests(frozen, verified.binding) == (old_input, old_wire)
+    assert wire_digests(frozen, fresh.binding) != (old_input, old_wire)
+    assert renewed.metadata["document"]["quote_digest"] == quoted.metadata["digest"]
+    assert state["attempts"] == state["idle_checks"] == 18 and len(receipts) == 13
+    assert len({r["container_id"] for r in receipts}) == 13
+    assert all(r["stopped_verified"] and r["container_pid"] == 0 for r in receipts)
+    (directory / "host-input-renewals-proof.json").write_text(
+        json.dumps(
+            {
+                "renewal": renewed.metadata,
+                "current": reopened_renewal.metadata,
+                "original_verification": verified.metadata,
+                "fresh_verification": fresh.metadata,
+                "original_seal_expired": expired_seal.metadata,
+                "original_quote_input_expired": expired_quote.metadata,
+                "wire_digests": old_wire,
+                "prior_milestone_gets": 12,
+                "prior_milestone_sessions": 10,
+                "renewal_program_gets": 6,
+                "renewal_program_sessions": 3,
+                "actual_loopback_gets_total": 18,
+                "actual_fresh_compose_sessions": 13,
+                "kernel_receipts": receipts,
+                "independent_connections_idle_during_http_and_kernel_execution": 7,
+                "native_program_command_precedes_new_io": True,
+                "exact_input_and_quote_preserved": True,
+                "naive_rebinding_changes_input_and_wire": True,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "fee_ledger_reserved": False,
+                "execution_authorized": False,
+                "model_calls_created": 0,
                 "provider_attempts": 0,
                 "body_exported": False,
             },
