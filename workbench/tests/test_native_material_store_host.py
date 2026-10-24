@@ -1,6 +1,7 @@
 """Actual host rendering and independent native private storage, no local CAS."""
 # ruff: noqa: F401,F811
 
+import asyncio
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ from test_package_material_scope_findings import checked, draft_for
 
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import package_material_scope_review as review
+from packages.model_governance import package_native_material_recovery as native_recovery
 from packages.model_governance import package_native_material_store as store
 
 pytestmark = pytest.mark.skipif(
@@ -101,3 +103,53 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
         + "\n",
         encoding="utf-8",
     )
+    if os.environ.get("FUSION_NATIVE_MATERIAL_RECOVERY_HOST") == "1":
+        restored = asyncio.run(
+            native_recovery.restore(
+                w["database"]["material_reader"],
+                *(
+                    w["database"][k]
+                    for k in ("scope_verifier", "original_verifier", "parse_verifier")
+                ),
+                store_command_id=command,
+                expected_packet_digest=packet_digest,
+                expected_storage_record_digest=record.metadata["digest"],
+                expected_context_digest=frozen.metadata["digest"],
+                expected_method_digest=native_recovery.method_digest(),
+                bid_id=frozen.metadata["bid_id"],
+                scope_id=frozen.metadata["scope_id"],
+                expected_scope_digest=frozen.metadata["scope_digest"],
+                profile="development_s3",
+                url_for_locator=url,
+            )
+        )
+        assert canonical(restored.context.metadata) == canonical(frozen.metadata)
+        assert canonical(restored.findings.metadata) == canonical(report.metadata)
+        assert state["attempts"] == state["idle_checks"] == 6
+        assert restored.metadata["trusted_derivation_freshly_verified"] is False
+        assert restored.metadata["input_authority_granted"] is False
+        (directory / "host-native-material-recovery-proof.json").write_text(
+            json.dumps(
+                {
+                    "recovery_method_digest": native_recovery.method_digest(),
+                    "observation": restored.metadata,
+                    "actual_loopback_gets_total": 6,
+                    "recovery_loopback_gets": 2,
+                    "actual_prior_fresh_compose_sessions": 7,
+                    "physical_pages": 4,
+                    "frozen_details": 1,
+                    "prior_actual_derivation_and_store_verified": True,
+                    "exact_context_and_report_preserved_after_fresh_original_gets": True,
+                    "renderer_replayed_during_recovery": False,
+                    "live_derivation_certificate_constructed": False,
+                    "actual_human_review": False,
+                    "synthetic_material": True,
+                    "input_authority_granted": False,
+                    "provider_attempts": 0,
+                    "body_exported": False,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )

@@ -176,3 +176,7 @@
 /tests/test_native_material_store*.py text eol=lf
 /packages/contracts/package-native-material-store.md text eol=lf
 /docs/completion-20261021/evidence/native-material-store/** -text
+/packages/model_governance/package_native_material_recovery.py text eol=lf
+/tests/test_native_material_recovery*.py text eol=lf
+/packages/contracts/package-native-evidence-recovery.md text eol=lf
+/docs/completion-20261021/evidence/native-material-recovery/** -text

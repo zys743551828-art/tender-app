@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/native-material-store"
+LOCAL = ROOT / ".local/native-material-recovery"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -139,6 +139,7 @@ def main():
                 "FUSION_CONTEXT_DERIVATION_EVIDENCE": str(LOCAL),
                 "FUSION_NATIVE_MATERIAL_STORE_HOST": "1",
                 "FUSION_NATIVE_MATERIAL_STORE_HOST_EVIDENCE": str(LOCAL),
+                "FUSION_NATIVE_MATERIAL_RECOVERY_HOST": "1",
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -156,7 +157,7 @@ def main():
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/native-material-store/host-native-final.xml",
+                "--junitxml=.local/native-material-recovery/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,
