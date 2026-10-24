@@ -139,6 +139,12 @@ SUITES["material-derivation-pure"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["context-derivation-pure"] = [
+    "tests/test_fusion_context_derivation.py",
+    "tests/test_fusion_asset_runtime.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 SUITES["provider-errors-pure"] = [
     "tests/test_provider_error_isolation.py",
     *SUITES["technical-vision-pure"],

@@ -167,3 +167,7 @@
 /packages/contracts/package-current-scope-review.md text eol=lf
 /tests/test_current_scope_review*.py text eol=lf
 /docs/completion-20261021/evidence/current-scope-review/** -text
+/deploy/fusion_context_derivation.py text eol=lf
+/tests/test_fusion_context_derivation*.py text eol=lf
+/packages/contracts/fusion-context-derivation.md text eol=lf
+/docs/completion-20261021/evidence/context-derivation/** -text

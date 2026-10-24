@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/material-derivation"
+LOCAL = ROOT / ".local/context-derivation"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -133,6 +133,8 @@ def main():
                 "FUSION_MATERIAL_DERIVATION_NATIVE": "1",
                 "FUSION_MATERIAL_DERIVATION_IMAGE": image,
                 "FUSION_MATERIAL_DERIVATION_EVIDENCE": str(LOCAL),
+                "FUSION_CONTEXT_DERIVATION_NATIVE": "1",
+                "FUSION_CONTEXT_DERIVATION_EVIDENCE": str(LOCAL),
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -144,11 +146,12 @@ def main():
                 "-m",
                 "pytest",
                 "tests/test_fusion_material_derivation_native.py",
+                "tests/test_fusion_context_derivation_native.py",
                 "-q",
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/material-derivation/native-final.xml",
+                "--junitxml=.local/context-derivation/native-final.xml",
             ],
             cwd=ROOT,
             env=env,
