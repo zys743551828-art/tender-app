@@ -11,13 +11,15 @@ from uuid import uuid4
 import pytest
 from psycopg.pq import TransactionStatus
 from test_fusion_context_derivation_native import collect, freeze, runtime
-from test_native_evidence_issuers_pg import SIGNER, assign, database
+from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_material_pg import api, exact, pdf_data, requirements, saved, world
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
+from test_verification_commands_pg import configure, database
 
 from deploy import fusion_verified_material as verified
 from packages.domain.review_identity import canonical, digest
+from packages.model_governance import material_verification_commands as commands
 from packages.model_governance import package_material_scope_review as review
 from packages.model_governance import package_native_current_review as joint
 from packages.model_governance import package_native_evidence_issuers as issuer
@@ -388,6 +390,21 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
                             "profile": "development_s3",
                             "url_for_locator": url,
                         }
+                        if os.environ.get("FUSION_VERIFICATION_COMMANDS_HOST") == "1":
+                            program_case = configure(w, registered, attested)
+                            logical_command = str(uuid4())
+                            staged = commands.begin(
+                                w["database"]["verification_requester"],
+                                case_id=program_case[1],
+                                command_id=logical_command,
+                                expected_case_digest=program_case[2],
+                                expected_method_digest=commands.method_digest(),
+                            )
+                            assert state["attempts"] == 8 and len(kernel_receipts) == 7
+                            assert (
+                                w["database"]["verification_requester"].info.transaction_status
+                                == TransactionStatus.IDLE
+                            )
 
                         def execute():
                             return asyncio.run(
@@ -469,3 +486,51 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
                             + "\n",
                             encoding="utf-8",
                         )
+                        if os.environ.get("FUSION_VERIFICATION_COMMANDS_HOST") == "1":
+                            with w["database"]["verification_requester_factory"]() as reopened:
+                                recovered_command = commands.read(
+                                    reopened,
+                                    case_id=program_case[1],
+                                    command_id=logical_command,
+                                    expected_case_digest=program_case[2],
+                                    expected_method_digest=commands.method_digest(),
+                                )
+                            assert recovered_command.metadata["record"] == {
+                                k: staged.metadata[k] for k in ("document", "digest")
+                            }
+                            assert (
+                                recovered_command.metadata["current"][
+                                    "program_runtime_authenticated"
+                                ]
+                                is False
+                            )
+                            assert (
+                                recovered_command.metadata["current"]["input_authority_granted"]
+                                is False
+                            )
+                            (directory / "host-verification-commands-proof.json").write_text(
+                                json.dumps(
+                                    {
+                                        "command_method_digest": commands.method_digest(),
+                                        "record": staged.metadata,
+                                        "observation_after_host_checks": recovered_command.metadata,
+                                        "prior_gets_at_command_commit": 8,
+                                        "prior_sessions_at_command_commit": 7,
+                                        "subsequent_actual_gets": 12,
+                                        "subsequent_actual_sessions": 6,
+                                        "actual_loopback_gets_total": 20,
+                                        "actual_fresh_compose_sessions": 13,
+                                        "logical_command_durable_before_next_actual_verification": True,
+                                        "unknown_result_reopened_without_repeating_io": True,
+                                        "operator_host_checks_do_not_authenticate_declared_program": True,
+                                        "target_program_execution_not_recorded": True,
+                                        "synthetic_material_and_configuration": True,
+                                        "input_authority_granted": False,
+                                        "provider_attempts": 0,
+                                        "body_exported": False,
+                                    },
+                                    indent=2,
+                                )
+                                + "\n",
+                                encoding="utf-8",
+                            )

@@ -1,0 +1,9 @@
+...........                                                              [100%]
+============================== warnings summary ===============================
+tests/test_fusion_material_derivation_native.py::test_native_sources_actual_compose_render_and_fresh_post_render_observations
+  D:\workspace\tender\tender-app\workbench\.venv\Lib\site-packages\starlette\testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\verification-commands\host-native-final.xml -
+11 passed, 1 warning in 215.87s (0:03:35)
