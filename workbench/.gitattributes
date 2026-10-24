@@ -152,3 +152,8 @@
 /tests/test_package_material_scope_findings*.py text eol=lf
 /docs/completion-20261021/evidence/material-scope-findings/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text
+/packages/model_governance/package_scope_review_issuers.py text eol=lf
+/deploy/sql/package-scope-review-issuers.sql text eol=lf
+/packages/contracts/package-scope-review-issuers.md text eol=lf
+/tests/test_scope_review_issuers*.py text eol=lf
+/docs/completion-20261021/evidence/scope-review-issuers/** -text
