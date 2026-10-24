@@ -274,6 +274,12 @@ SUITES["native-current-review"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["verified-material-pure"] = [
+    "tests/test_fusion_verified_material.py",
+    "tests/test_fusion_context_derivation.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():

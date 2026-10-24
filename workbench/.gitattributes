@@ -194,3 +194,7 @@
 /tests/test_native_current_review*.py text eol=lf
 /packages/contracts/package-native-current-review.md text eol=lf
 /docs/completion-20261021/evidence/native-current-review/** -text
+/deploy/fusion_verified_material.py text eol=lf
+/tests/test_fusion_verified_material.py text eol=lf
+/packages/contracts/fusion-verified-material.md text eol=lf
+/docs/completion-20261021/evidence/verified-material/** -text

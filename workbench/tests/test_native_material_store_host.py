@@ -4,6 +4,7 @@
 import asyncio
 import json
 import os
+from copy import deepcopy
 from pathlib import Path
 from uuid import uuid4
 
@@ -15,6 +16,7 @@ from test_package_current_material_pg import api, exact, pdf_data, requirements,
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
 
+from deploy import fusion_verified_material as verified
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import package_material_scope_review as review
 from packages.model_governance import package_native_current_review as joint
@@ -30,11 +32,42 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_store(
-    wire, runtime
+    wire, runtime, monkeypatch
 ):
     w, state, url = wire
+    kernel_receipts = []
+    if os.environ.get("FUSION_VERIFIED_MATERIAL_HOST") == "1":
+
+        def capture(name):
+            operation = getattr(runtime, name)
+
+            def wrapped(*args, **kwargs):
+                assert all(
+                    w["database"][key].info.transaction_status == TransactionStatus.IDLE
+                    for key in (
+                        "native_registrar",
+                        "material_reader",
+                        "scope_verifier",
+                        "original_verifier",
+                        "parse_verifier",
+                        "native_issuer_reader",
+                    )
+                )
+                value = operation(*args, **kwargs)
+                receipt = (
+                    value["execution_receipt"] if name == "describe" else value.execution_receipt
+                )
+                kernel_receipts.append(deepcopy(receipt))
+                return value
+
+            monkeypatch.setattr(runtime, name, wrapped)
+
+        capture("describe")
+        capture("render")
     frozen = freeze(wire, runtime)
     live = collect(wire, runtime, frozen)
+    if os.environ.get("FUSION_VERIFIED_MATERIAL_HOST") == "1":
+        assert len(kernel_receipts) == 7
     plan = review.build(
         live.context,
         expected_context_digest=frozen.metadata["digest"],
@@ -338,3 +371,101 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
                         + "\n",
                         encoding="utf-8",
                     )
+                    if os.environ.get("FUSION_VERIFIED_MATERIAL_HOST") == "1":
+                        review_arguments = {
+                            "registration_command_id": registration_command,
+                            "expected_registration_packet_digest": document["packet_digest"],
+                            "expected_registration_digest": registered.metadata["digest"],
+                            "issuer_command_id": issuer_command,
+                            "expected_issuer_reference_digest": digest(
+                                attested.metadata["document"]["reference"]
+                            ),
+                            "expected_issuer_digest": attested.metadata["digest"],
+                            "expected_context_digest": frozen.metadata["digest"],
+                            "bid_id": frozen.metadata["bid_id"],
+                            "scope_id": frozen.metadata["scope_id"],
+                            "expected_scope_digest": frozen.metadata["scope_digest"],
+                            "profile": "development_s3",
+                            "url_for_locator": url,
+                        }
+
+                        def execute():
+                            return asyncio.run(
+                                verified.collect(
+                                    *connections,
+                                    runtime=runtime,
+                                    review_arguments=review_arguments,
+                                    expected_method_digest=verified.method_digest(),
+                                )
+                            )
+
+                        state["callback"] = idle
+                        try:
+                            capsule = execute()
+                            assert state["attempts"] == state["idle_checks"] == 14
+                            assert len(kernel_receipts) == 10
+                            assert canonical(capsule.context.metadata) == canonical(frozen.metadata)
+                            assert canonical(capsule.findings.metadata) == canonical(
+                                report.metadata
+                            )
+                            assert capsule.metadata["trusted_derivation_bound"]
+                            assert capsule.metadata["input_authority_granted"] is False
+
+                            def reenabling():
+                                idle()
+                                if state["attempts"] == 18:
+                                    owner = w["database"]["owner"]
+                                    owner.execute(
+                                        "UPDATE scope_review_issuer.profile_heads SET enabled=false,revision=revision+1 WHERE login_name=%s",
+                                        (SIGNER,),
+                                    )
+                                    owner.execute(
+                                        "UPDATE scope_review_issuer.profile_heads SET enabled=true,revision=revision+1 WHERE login_name=%s",
+                                        (SIGNER,),
+                                    )
+
+                            state["callback"] = reenabling
+                            with pytest.raises(
+                                verified.VerifiedMaterialError,
+                                match="ISSUER_STATE_CHANGED_ACROSS_DERIVATION",
+                            ):
+                                execute()
+                        finally:
+                            state["callback"] = None
+                        assert state["attempts"] == state["idle_checks"] == 20
+                        assert len(kernel_receipts) == 13
+                        assert len({r["container_id"] for r in kernel_receipts}) == 13
+                        assert all(
+                            r["stopped_verified"] and r["container_pid"] == 0
+                            for r in kernel_receipts
+                        )
+                        (directory / "host-verified-material-proof.json").write_text(
+                            json.dumps(
+                                {
+                                    "controller_method_digest": verified.method_digest(),
+                                    "positive_live_observation": capsule.metadata,
+                                    "actual_loopback_gets_total": 20,
+                                    "positive_stage_gets_total": 14,
+                                    "positive_controller_gets": 6,
+                                    "negative_controller_gets": 6,
+                                    "actual_fresh_compose_sessions": 13,
+                                    "positive_stage_compose_sessions": 10,
+                                    "controller_compose_sessions_each": 3,
+                                    "kernel_receipts": kernel_receipts,
+                                    "physical_pages": 4,
+                                    "frozen_details": 1,
+                                    "independent_connections_idle_during_http_and_kernel_execution": 6,
+                                    "reenabled_issuer_between_two_joint_checks_rejected": True,
+                                    "positive_observation_precedes_injected_head_revision": True,
+                                    "exact_context_report_and_registration_preserved": True,
+                                    "synthetic_material_and_issuer_configuration": True,
+                                    "actual_human_review": False,
+                                    "input_authority_granted": False,
+                                    "provider_attempts": 0,
+                                    "body_exported": False,
+                                },
+                                indent=2,
+                            )
+                            + "\n",
+                            encoding="utf-8",
+                        )
