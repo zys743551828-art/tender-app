@@ -183,6 +183,14 @@ SUITES["complete-material-native"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["material-archive-pure"] = [
+    "tests/test_private_content_store.py",
+    "tests/test_package_material_archive.py",
+    "tests/test_package_material_archive_codec.py",
+    "tests/test_package_technical_material.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():

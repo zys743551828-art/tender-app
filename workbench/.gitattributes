@@ -123,4 +123,10 @@
 /docs/completion-20261021/evidence/current-original-set/** -text
 /docs/completion-20261021/evidence/current-material/** -text
 /docs/completion-20261021/evidence/complete-material/** -text
+/packages/storage/*.py text eol=lf
+/packages/model_governance/package_material_archive.py text eol=lf
+/packages/contracts/package-private-material-archive.md text eol=lf
+/tests/test_private_content_store.py text eol=lf
+/tests/test_package_material_archive*.py text eol=lf
+/docs/completion-20261021/evidence/material-archive/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text
