@@ -1,0 +1,19 @@
+.........F..                                                             [100%]
+================================== FAILURES ===================================
+_______ test_substituted_rehashed_observation_is_not_frozen_observation _______
+
+synthetic = <packages.model_governance.package_current_material.CurrentMaterial object at 0x000001AC4D13BAA0>
+
+    def test_substituted_rehashed_observation_is_not_frozen_observation(synthetic):
+        store, ctx, key = saved(synthetic)
+        envelope, _, observation = recovery._read(store, key, ctx.metadata["digest"])
+        changed = deepcopy(observation)
+>       changed["document_count"] += 1
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'document_count'
+
+tests\test_package_material_recovery.py:94: KeyError
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\material-recovery\host-initial.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_package_material_recovery.py::test_substituted_rehashed_observation_is_not_frozen_observation
+1 failed, 11 passed in 1.67s

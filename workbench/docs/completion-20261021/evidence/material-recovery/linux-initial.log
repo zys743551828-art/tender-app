@@ -1,0 +1,66 @@
+...F
+=================================== FAILURES ===================================
+_ test_stale_native_facts_reject_before_new_get_and_keep_frozen_commit[parse] __
+
+wire = ({'actor': '25a7e2a6-e04c-46f8-abff-ee425a2deb1c', 'app': <apps.api.main.WorkbenchAPI object at 0x763ed6ef2300>, 'base...tempts': 2, 'callback': None, 'corrupt': False, 'idle_checks': 2}, <function wire.<locals>.<lambda> at 0x763ed4766160>)
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_stale_native_facts_reject2')
+mutation = 'parse'
+
+    @pytest.mark.parametrize("mutation", ["closed", "withdrawn", "parse", "revision"])
+    def test_stale_native_facts_reject_before_new_get_and_keep_frozen_commit(wire, tmp_path, mutation):
+        w, state, url = wire
+        root, key, bundle = setup(wire, tmp_path)
+        old = (root / "commits" / key).read_bytes()
+        owner = w["database"]["owner"]
+        if mutation == "closed":
+            owner.execute(
+                "UPDATE design.bid_profiles SET phase='closed' WHERE bid_id=%s",
+                (w["technical_scope"][0],),
+            )
+        elif mutation == "parse":
+            parse = bundle.context.origin.material["native_documents"][0]["parse_run_id"]
+>           owner.execute(
+                "UPDATE design.pages SET quality='unknown' WHERE bid_id=%s AND parse_id=%s AND physical_page=1",
+                (w["technical_scope"][0], parse),
+            )
+
+tests/test_package_material_recovery_pg.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=postgres database=fusion_package_requirements_api) at 0x763edd65e660>
+query = "UPDATE design.pages SET quality='unknown' WHERE bid_id=%s AND parse_id=%s AND physical_page=1"
+params = ('8df87764-fbd3-4aaf-9f2d-45640d952403', '7c0ead91-7c20-4025-a83d-a4bdfd8889f6')
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -> Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.ObjectNotInPrerequisiteState: immutable_record
+E           CONTEXT:  PL/pgSQL function append_only() line 2 at RAISE
+
+/usr/local/lib/python3.12/site-packages/psycopg/connection.py:257: ObjectNotInPrerequisiteState
+=============================== warnings summary ===============================
+tests/test_package_material_recovery_pg.py::test_native_reopen_recovers_exact_v3_request_and_separate_fresh_observation
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- generated xml file: /evidence/material-recovery-native.xml ----------
+=========================== short test summary info ============================
+FAILED tests/test_package_material_recovery_pg.py::test_stale_native_facts_reject_before_new_get_and_keep_frozen_commit[parse]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 3 passed, 1 warning in 14.99s
+{"suite": "material-recovery-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

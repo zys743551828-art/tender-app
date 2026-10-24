@@ -1,0 +1,218 @@
+{
+  "scope": "exact /3 archived context recovery with fresh native reads; no authority grant",
+  "tests": {
+    "linux_passed": 146,
+    "linux_seconds": 37.589,
+    "linux_by_module": {
+      "tests.test_package_material_recovery_pg": 9,
+      "tests.test_package_material_recovery": 12,
+      "tests.test_private_content_store": 29,
+      "tests.test_package_material_archive": 16,
+      "tests.test_package_material_archive_codec": 14,
+      "tests.test_package_technical_material": 35,
+      "tests.test_provider_error_isolation": 19,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 96,
+    "host_seconds": 15.086,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "d2121720b1c786b117b3c9ff42b98dceb0957af80b3571b5440810ae27219968",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "e40b5c681151fd8a02404d112af9d199f4460b4532adf34f142790579ac35697",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-native-material-recovery.md",
+      "sha256": "89d7644d583d980fea603cb4cca0944b432b80a785002831e9deea03726f833d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_material_recovery.py",
+      "sha256": "3afac2046b78de21c7dfe4d05cfcc2f37b1b040a0594f25452834c277286f1e3",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_recovery.py",
+      "sha256": "c3f1ac267fd0baf28b6427af769c8c4bdf027e2eaa38ff4b993c91e7125cb49d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_recovery_pg.py",
+      "sha256": "5632497b4e5eb46c62f1c62bf5db16aec41ede2dfd5d2d52dbb46821519bb8e9",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "4a484537e9c3f7df8a7fecad2a0f972ef8a704188e17854dac9dafab7a8dc1a1",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c"
+  },
+  "native_recovery_proof": {
+    "recovery_observation": {
+      "version": "package-native-material-recovery-observation/1",
+      "method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+      "recovery_commit_digest": "98e448628da2576aa89b775d2b77de514c22f600f2076b953351a96efd5cf08c",
+      "material_commit_digest": "0c4562db56de0019e79655eaf42229943cbbc5cf6fe8f7a0d46858e6b1ef2242",
+      "context_digest": "69d60e96fe6ea982e387ca068ed3cc2364319424e05bcc6d4c2129793da6b4a6",
+      "original_source_observation_digest": "c75114e4d24ad1fe9e71251fa7b4a3095be28fb3651f6fcf44fc62f973a4e910",
+      "fresh_initial_parse_digest": "fc715a0d3f17bf5795183b0bf446ac6e8aa4d7687c20bc19695032ea4e5697ae",
+      "fresh_final_parse_digest": "31b2498448edb333c4d5fcc1e49aa19f9985503af934c22a0f97d316574bd2be",
+      "fresh_final_scope_digest": "67e69554b5808a68acd188e869ad2fc2802bd7a87de05745ea53df1781255a27",
+      "fresh_original_set_digest": "394cfb9808621e6e9436e49409ab22762fd4ff052974ed7dd88d6030436f6063",
+      "observed_at": "2026-10-24T03:17:40.960654+00:00",
+      "exact_frozen_context_recovered": true,
+      "current_native_parse_and_originals_rechecked": true,
+      "page_assets_rerendered": false,
+      "native_binding_verified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "8b4e403bc62f317cd5de124938fdc596efb4971ee615837708eb7dc99ca78234"
+    },
+    "synthetic_content": true,
+    "synthetic_binding_reference_only": true,
+    "native_binding_registered": false,
+    "actual_loopback_gets": 4,
+    "recovery_loopback_gets": 2,
+    "exact_request_bytes_preserved": true,
+    "context_time_and_digest_preserved": true,
+    "private_filesystem_closed_and_reopened": true,
+    "provider_attempts": 0,
+    "in_process_renderer_used_only_at_initial_acquisition": true,
+    "body_exported": false
+  },
+  "files": {
+    "linux-initial.log": "bbf38fd0c80bdc0ec2e70f7f5522c1c04da6a8159b6a227dfaf48eb0da7a9276",
+    "linux-initial.xml": "270cdfec5b2f0da97dc5e657a2893fa2bc9519cd02a3cb3a1d606d00b2f15f55",
+    "host-initial.log": "f4ed6d8f0efa0bbf8cd8e77ee15362e1b631db3c891ca6a1ef6c177c2c129c86",
+    "host-initial.xml": "c3c33b973fa379de59dffc56b7daca882b31b7c406de4890bbbc7eb83dcf5f88",
+    "material-recovery-native-proof.json": "d73f89d63c53d90cd0c82b6ac3ab5ff4e409edd7882ad1a2a23e4e163959259c",
+    "linux-final.log": "8318468c54b48a76e3a3a6e3f2054e3d4a3b737afd85c26c89c116d99f47acf3",
+    "linux-final.xml": "d9f89e5ff4d95ada690b2b64f1c043e6453ccddbe7ad48e6028102927bae44e6",
+    "host-final.log": "cbe14d3106573ff1f660f8a7113464452f7d16173f2e420d32d07d54d232739b",
+    "host-final.xml": "6befb995daa62a8f52627eed2c6f035a418880ce853479ae9e5b58839f9c0287",
+    "python-final.log": "277b16922543b7b334df9ab6232e57d9b42ad4d42ad552aba3c4f0837e3f5474",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "business-boundary.json": "1b978e268569509d805fed328333f1ebb34beabd2f169ef10e9d294fafb42339",
+    "http-runtime.json": "6802e075854083dbf7451877f48dcd623942526bb6d3ef6743787c6389703d16",
+    "method-boundaries.json": "f7a77ebbdb683f9e518404109e3acafdd8f15c3d577d48de078c7c9a42bb6c69"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136
+  },
+  "runtime_inputs": 1214,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}

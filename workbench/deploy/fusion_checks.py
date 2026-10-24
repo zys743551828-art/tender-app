@@ -191,6 +191,11 @@ SUITES["material-archive-pure"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["material-recovery-native"] = [
+    "tests/test_package_material_recovery_pg.py",
+    "tests/test_package_material_recovery.py",
+    *SUITES["material-archive-pure"],
+]
 
 
 def main():
@@ -239,6 +244,7 @@ def main():
         "current-original-set-native",
         "current-material-native",
         "complete-material-native",
+        "material-recovery-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -284,6 +290,7 @@ def main():
                 "current-original-set-native",
                 "current-material-native",
                 "complete-material-native",
+                "material-recovery-native",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -297,6 +304,9 @@ def main():
                 if suite == "complete-material-native":
                     environment["FUSION_COMPLETE_MATERIAL_PG"] = "1"
                     environment["FUSION_COMPLETE_MATERIAL_EVIDENCE"] = "/evidence"
+                if suite == "material-recovery-native":
+                    environment["FUSION_MATERIAL_RECOVERY_PG"] = "1"
+                    environment["FUSION_MATERIAL_RECOVERY_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"
