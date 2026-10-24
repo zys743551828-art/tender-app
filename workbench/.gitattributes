@@ -133,4 +133,9 @@
 /packages/contracts/package-native-material-recovery.md text eol=lf
 /tests/test_package_material_recovery*.py text eol=lf
 /docs/completion-20261021/evidence/material-recovery/** -text
+/packages/model_governance/package_material_registration.py text eol=lf
+/packages/contracts/package-native-material-registration.md text eol=lf
+/deploy/sql/package-material-registration.sql text eol=lf
+/tests/test_package_material_registration*.py text eol=lf
+/docs/completion-20261021/evidence/material-registration/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

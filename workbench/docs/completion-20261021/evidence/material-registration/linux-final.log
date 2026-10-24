@@ -1,0 +1,12 @@
+........................................................................ [ 37%]
+........................................................................ [ 75%]
+..............................................                           [100%]
+=============================== warnings summary ===============================
+tests/test_package_material_registration_pg.py::test_actual_recovery_stages_durable_command_then_native_lookup_and_replay
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------- generated xml file: /evidence/material-registration-native.xml --------
+190 passed, 1 warning in 71.26s (0:01:11)
+{"suite": "material-registration-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

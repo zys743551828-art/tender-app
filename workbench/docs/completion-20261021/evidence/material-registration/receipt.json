@@ -1,0 +1,230 @@
+{
+  "scope": "durable command and native immutable pending references; no input verification grant",
+  "tests": {
+    "linux_passed": 190,
+    "linux_seconds": 71.257,
+    "linux_by_module": {
+      "tests.test_package_material_registration_pg": 26,
+      "tests.test_package_material_registration": 26,
+      "tests.test_package_material_recovery": 12,
+      "tests.test_private_content_store": 29,
+      "tests.test_package_material_archive": 16,
+      "tests.test_package_material_archive_codec": 14,
+      "tests.test_package_technical_material": 35,
+      "tests.test_provider_error_isolation": 20,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 123,
+    "host_seconds": 17.047,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "4152f79fcf7c64e9e8c99cbb6ddd2e2fa6855b4dddf8d05dd5df3dbba59a0665",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "62d2e85c791a311b6f466dcb1bbe51e94837d68d36ecc1a043963b716b26d043",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-material-registration.sql",
+      "sha256": "ce5299210804df4bf3bf9e7a87d1a2b0a768c57b26c4c7ae69007bf50f6ae11f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-native-material-registration.md",
+      "sha256": "7646a1bfcfddbaf5f226a3bb9a54c6275c60a7afd1c79580182029cabcc238d3",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_material_registration.py",
+      "sha256": "0cae526ef3c053022bc89b9c7b2eb26f27da4b28f3e5ef5328d28dbe1c45ec41",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_registration.py",
+      "sha256": "651e67c85389cce1310454f093d33857b57af8b397dcc820518e80068bc2e315",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_registration_pg.py",
+      "sha256": "13985bbab4e80f5fbe57a9eabb95444119fd572f146b97e8dccfe8a2762e602d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "2f5d9f718c3a040c52ad6a3fe47685b76db96627800ad36814c8e53c08b6b983",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+    "pending_material_registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf"
+  },
+  "native_pending_registration_proof": {
+    "record": {
+      "digest": "b76e8f73691665bd71d6e2f5fd75a3f4b6aea72eb82209d1a064c93385735c04",
+      "document": {
+        "bid_id": "5d110b47-5fa8-4dd9-811a-39b0b362bfed",
+        "packet": {
+          "version": "package-native-material-registration-packet/1",
+          "context_digest": "97a8d4fd714ba12702d33e03650ec6b901f84f3baa6db20a221fc0b1704e2778",
+          "material_digest": "b51e591f2210706a966f2ec75b1f76ed05a928a12cec8b34c86119c1cdf24d45",
+          "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+          "recovery_commit_digest": "315dd50dcefb23a102b20164868cbc1d4d1b08210dbeedfa522d906e2e34b498",
+          "recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+          "source_observation_digest": "1fd6e755a47e5c6e59a66b24901d3e928ac9d70965c67269887200daf6e1096c",
+          "registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+          "recovery_observation_digest": "2358f6eb0e08324751ecbfc159919ce62d8d2cd302e17d15e2c8e3cccb478ac3"
+        },
+        "status": "awaiting_independent_verification",
+        "version": "package-native-material-registration/1",
+        "scope_id": "efd35f27-9d58-4b59-bc96-4cdabb1ee0c9",
+        "command_id": "0fcbe964-f4ea-4050-b201-44aa003f9ba0",
+        "recorded_at": "2026-10-24T03:33:49.727696Z",
+        "recorded_by": "fusion_material_registration",
+        "scope_digest": "e4ff67fea80a756342ce653b285ae51dec43a868377adfdd042b67a3a2e8dddb",
+        "registration_id": "48f98acc-798e-4834-9099-b1a8d3031278",
+        "execution_authorized": false,
+        "input_authority_granted": false,
+        "native_binding_verified": false,
+        "necessary_scope_verified": false
+      },
+      "native_record_identity_verified": true
+    },
+    "command_commit_digest": "fd627600141c9fd2cff83f9dbc9e2866b209fa7830d67ecd9cb00ef6058dd421",
+    "synthetic_content": true,
+    "actual_recovery_loopback_gets": 4,
+    "durable_command_reopened": true,
+    "unknown_result_lookup_same_record": true,
+    "replay_same_record": true,
+    "provider_attempts": 0,
+    "input_authority_granted": false,
+    "native_binding_registered": false,
+    "body_exported": false
+  },
+  "files": {
+    "material-registration-native-proof.json": "f48d54892210bb1d028c5633b088da0d06e645ed1b59b2537a0b72294ff83e57",
+    "linux-final.log": "f7c503b105cfc1bbc0e576c8b2110141dedb02205b8f71d345a11deb217a63be",
+    "linux-final.xml": "e0106aebb94a791b95af1ce258584b5955733fbaa426e58783b69e87cb5d8763",
+    "host-final.log": "bf81f31f32f25645091201045b72e01177cc62d5ec1d1381df16822bb6aa645e",
+    "host-final.xml": "dd645b636ab537d6401336a08c27b8653a7b1fc13bd8426b4a73d6f6d0b7df5d",
+    "python-final.log": "277b16922543b7b334df9ab6232e57d9b42ad4d42ad552aba3c4f0837e3f5474",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "business-boundary.json": "e9f47c346e9c8aa594021e2ec92653a68cb62034fd45b45b7406c471b066a31c",
+    "http-runtime.json": "7928aed0b2e90aa7f547bc11549dfffeda56925826ab2c57d4d586e4a2d74740",
+    "method-boundaries.json": "853cafbca4cff43954b94c2c3b4fc594fa4d6a7c9229a3a7f8c0b15109614e36"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136,
+    "registration_schemas": 0
+  },
+  "runtime_inputs": 1217,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants_in_business_database": false,
+  "optional_new_capability_only_in_fresh_independent_checks_database": true,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}

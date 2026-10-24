@@ -1,0 +1,42 @@
+{
+  "record": {
+    "digest": "b76e8f73691665bd71d6e2f5fd75a3f4b6aea72eb82209d1a064c93385735c04",
+    "document": {
+      "bid_id": "5d110b47-5fa8-4dd9-811a-39b0b362bfed",
+      "packet": {
+        "version": "package-native-material-registration-packet/1",
+        "context_digest": "97a8d4fd714ba12702d33e03650ec6b901f84f3baa6db20a221fc0b1704e2778",
+        "material_digest": "b51e591f2210706a966f2ec75b1f76ed05a928a12cec8b34c86119c1cdf24d45",
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "recovery_commit_digest": "315dd50dcefb23a102b20164868cbc1d4d1b08210dbeedfa522d906e2e34b498",
+        "recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+        "source_observation_digest": "1fd6e755a47e5c6e59a66b24901d3e928ac9d70965c67269887200daf6e1096c",
+        "registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+        "recovery_observation_digest": "2358f6eb0e08324751ecbfc159919ce62d8d2cd302e17d15e2c8e3cccb478ac3"
+      },
+      "status": "awaiting_independent_verification",
+      "version": "package-native-material-registration/1",
+      "scope_id": "efd35f27-9d58-4b59-bc96-4cdabb1ee0c9",
+      "command_id": "0fcbe964-f4ea-4050-b201-44aa003f9ba0",
+      "recorded_at": "2026-10-24T03:33:49.727696Z",
+      "recorded_by": "fusion_material_registration",
+      "scope_digest": "e4ff67fea80a756342ce653b285ae51dec43a868377adfdd042b67a3a2e8dddb",
+      "registration_id": "48f98acc-798e-4834-9099-b1a8d3031278",
+      "execution_authorized": false,
+      "input_authority_granted": false,
+      "native_binding_verified": false,
+      "necessary_scope_verified": false
+    },
+    "native_record_identity_verified": true
+  },
+  "command_commit_digest": "fd627600141c9fd2cff83f9dbc9e2866b209fa7830d67ecd9cb00ef6058dd421",
+  "synthetic_content": true,
+  "actual_recovery_loopback_gets": 4,
+  "durable_command_reopened": true,
+  "unknown_result_lookup_same_record": true,
+  "replay_same_record": true,
+  "provider_attempts": 0,
+  "input_authority_granted": false,
+  "native_binding_registered": false,
+  "body_exported": false
+}
