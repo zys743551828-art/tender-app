@@ -262,6 +262,12 @@ SUITES["native-evidence-registration"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["native-evidence-issuers"] = [
+    "tests/test_native_evidence_issuers_pg.py",
+    "tests/test_native_evidence_issuers.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
@@ -320,6 +326,7 @@ def main():
         "native-material-store",
         "native-material-recovery",
         "native-evidence-registration",
+        "native-evidence-issuers",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -375,6 +382,7 @@ def main():
                 "native-material-store",
                 "native-material-recovery",
                 "native-evidence-registration",
+                "native-evidence-issuers",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -418,6 +426,9 @@ def main():
                 if suite == "native-evidence-registration":
                     environment["FUSION_NATIVE_EVIDENCE_REGISTRATION_PG"] = "1"
                     environment["FUSION_NATIVE_EVIDENCE_REGISTRATION_EVIDENCE"] = "/evidence"
+                if suite == "native-evidence-issuers":
+                    environment["FUSION_NATIVE_EVIDENCE_ISSUERS_PG"] = "1"
+                    environment["FUSION_NATIVE_EVIDENCE_ISSUERS_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"

@@ -185,3 +185,8 @@
 /tests/test_native_evidence_registration*.py text eol=lf
 /packages/contracts/package-native-evidence-registration.md text eol=lf
 /docs/completion-20261021/evidence/native-evidence-registration/** -text
+/packages/model_governance/package_native_evidence_issuers.py text eol=lf
+/deploy/sql/package-native-evidence-issuers.sql text eol=lf
+/tests/test_native_evidence_issuers*.py text eol=lf
+/packages/contracts/package-native-evidence-issuers.md text eol=lf
+/docs/completion-20261021/evidence/native-evidence-issuers/** -text

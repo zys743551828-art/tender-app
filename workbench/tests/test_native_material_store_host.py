@@ -9,13 +9,14 @@ from uuid import uuid4
 
 import pytest
 from test_fusion_context_derivation_native import collect, freeze, runtime
-from test_native_evidence_registration_pg import database
+from test_native_evidence_issuers_pg import SIGNER, assign, database
 from test_package_current_material_pg import api, exact, pdf_data, requirements, saved, world
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
 
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import package_material_scope_review as review
+from packages.model_governance import package_native_evidence_issuers as issuer
 from packages.model_governance import package_native_evidence_registration as registration
 from packages.model_governance import package_native_material_recovery as native_recovery
 from packages.model_governance import package_native_material_store as store
@@ -204,3 +205,63 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
                 + "\n",
                 encoding="utf-8",
             )
+            if os.environ.get("FUSION_NATIVE_EVIDENCE_ISSUERS_HOST") == "1":
+                _, case_id = assign(
+                    w,
+                    registered,
+                    restored.findings.metadata["review_digest"],
+                    profile_changes={"login_name": SIGNER, "store": store.method_digest()},
+                )
+                issuer_command = str(uuid4())
+                attested = issuer.attest(
+                    w["database"]["native_issuer"],
+                    registered,
+                    restored,
+                    case_id=case_id,
+                    command_id=issuer_command,
+                    expected_registration_digest=registered.metadata["digest"],
+                    expected_findings_digest=restored.findings.metadata["digest"],
+                    expected_method_digest=issuer.method_digest(),
+                )
+                with w["database"]["native_issuer_reader_factory"]() as verifier:
+                    observed = issuer.read(
+                        verifier,
+                        bid_id=frozen.metadata["bid_id"],
+                        command_id=issuer_command,
+                        expected_reference_digest=digest(
+                            attested.metadata["document"]["reference"]
+                        ),
+                        expected_method_digest=issuer.method_digest(),
+                    )
+                assert observed.metadata["record"]["digest"] == attested.metadata["digest"]
+                assert observed.metadata["current"]["issuer_active"]
+                assert observed.metadata["current"]["case_active"]
+                assert observed.metadata["current"]["input_authority_granted"] is False
+                assert canonical(restored.context.metadata) == canonical(frozen.metadata)
+                assert state["attempts"] == state["idle_checks"] == 6
+                (directory / "host-native-evidence-issuers-proof.json").write_text(
+                    json.dumps(
+                        {
+                            "issuer_method_digest": issuer.method_digest(),
+                            "record": attested.metadata,
+                            "observation": observed.metadata,
+                            "actual_loopback_gets_total": 6,
+                            "actual_prior_fresh_compose_sessions": 7,
+                            "physical_pages": 4,
+                            "frozen_details": 1,
+                            "actual_derivation_store_recovery_registration_before_attestation": True,
+                            "independent_issuer_and_reader_logins": True,
+                            "unknown_result_lookup_after_reader_reopen": True,
+                            "synthetic_material_and_issuer_configuration": True,
+                            "exact_context_bytes_preserved": True,
+                            "old_cas_commit_fields_fabricated": False,
+                            "actual_human_review": False,
+                            "input_authority_granted": False,
+                            "provider_attempts": 0,
+                            "body_exported": False,
+                        },
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
