@@ -1,0 +1,28 @@
+..............................F
+================================== FAILURES ===================================
+________________ test_timeout_preserves_unknown_without_retry _________________
+
+synthetic = <packages.model_governance.package_current_material.CurrentMaterial object at 0x000001E9D63C0F80>
+
+    def test_timeout_preserves_unknown_without_retry(synthetic):
+        b = bound(deepcopy(synthetic))
+        request = prepared(b)
+        client, count = send(request, b"{}", timeout=0.01, delay=0.1)
+        with pytest.raises(VisionProviderError, match="COMPLETE_VISION_TIMEOUT") as caught:
+            client.generate(
+                request,
+                expected_request_digest=request.receipt["request_digest"],
+                expected_profile_digest=vision.profile_digest(),
+            )
+        assert len(count) == 1 and caught.value.details["billing_state"] == "unknown"
+>       assert caught.value.__context__ is None
+E       AssertionError: assert RuntimeError('no running event loop') is None
+E        +  where RuntimeError('no running event loop') = VisionProviderError('COMPLETE_VISION_TIMEOUT').__context__
+E        +    where VisionProviderError('COMPLETE_VISION_TIMEOUT') = <ExceptionInfo VisionProviderError('COMPLETE_VISION_TIMEOUT') tblen=6>.value
+
+tests\test_package_technical_material.py:613: AssertionError
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\complete-material\host-initial.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_package_technical_material.py::test_timeout_preserves_unknown_without_retry
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 30 passed in 3.26s

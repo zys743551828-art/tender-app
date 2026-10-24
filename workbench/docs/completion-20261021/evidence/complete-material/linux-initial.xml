@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="2.717" timestamp="2026-10-24T02:32:49.792002+00:00" hostname="e811f503d67b"><testcase classname="tests.test_package_technical_material_pg" name="test_native_full_material_to_actual_v3_wire_and_checked_judgment" time="1.586"><error message="failed on setup with &quot;file /tmp/fusion-checks-97uogciv/tests/test_package_technical_material_pg.py, line 24&#10;  def test_native_full_material_to_actual_v3_wire_and_checked_judgment(wire):&#10;file /tmp/fusion-checks-97uogciv/tests/test_package_current_original_set_pg.py, line 29&#10;  @pytest.fixture&#10;  def wire(saved):&#10;file /tmp/fusion-checks-97uogciv/tests/test_package_current_scope_pg.py, line 63&#10;  @pytest.fixture&#10;  def saved(exact):&#10;file /tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py, line 98&#10;  @pytest.fixture&#10;  def exact(requirements, monkeypatch):&#10;file /tmp/fusion-checks-97uogciv/tests/test_bid_package_requirements_api.py, line 103&#10;  @pytest.fixture&#10;  def requirements(world):&#10;file /tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py, line 90&#10;  @pytest.fixture&#10;  def world(api, pdf_data, monkeypatch):&#10;E       fixture 'pdf_data' not found&#10;&gt;       available fixtures: api, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, database, doctest_namespace, exact, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, requirements, saved, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, wire, world&#10;&gt;       use 'pytest --fixtures [testpath]' for help on them.&#10;&#10;/tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py:90&quot;">file /tmp/fusion-checks-97uogciv/tests/test_package_technical_material_pg.py, line 24
+  def test_native_full_material_to_actual_v3_wire_and_checked_judgment(wire):
+file /tmp/fusion-checks-97uogciv/tests/test_package_current_original_set_pg.py, line 29
+  @pytest.fixture
+  def wire(saved):
+file /tmp/fusion-checks-97uogciv/tests/test_package_current_scope_pg.py, line 63
+  @pytest.fixture
+  def saved(exact):
+file /tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py, line 98
+  @pytest.fixture
+  def exact(requirements, monkeypatch):
+file /tmp/fusion-checks-97uogciv/tests/test_bid_package_requirements_api.py, line 103
+  @pytest.fixture
+  def requirements(world):
+file /tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py, line 90
+  @pytest.fixture
+  def world(api, pdf_data, monkeypatch):
+E       fixture 'pdf_data' not found
+&gt;       available fixtures: api, capfd, capfdbinary, caplog, capsys, capsysbinary, capteesys, database, doctest_namespace, exact, monkeypatch, pytestconfig, record_property, record_testsuite_property, record_xml_attribute, recwarn, requirements, saved, tmp_path, tmp_path_factory, tmpdir, tmpdir_factory, wire, world
+&gt;       use 'pytest --fixtures [testpath]' for help on them.
+
+/tmp/fusion-checks-97uogciv/tests/test_package_current_material_pg.py:90</error></testcase></testsuite></testsuites>

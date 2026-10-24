@@ -1,0 +1,128 @@
+{
+  "native_observation_digest": "c3519b5244c837f2ae22644f764df2e87e81c1894fe1ade7a8e9ce8a8c43f1bd",
+  "native_material_digest": "f23f99924260187b856e27cf39014e1abd779289accbabe4653824e88e76db62",
+  "context_digest": "fac64438bd4aaad134d1486c3539a55f2a1973cabad64c4ab8190d7900f404ef",
+  "input_digest": "9b3f05c000836adfe4ed152210bb89bf69d713366f400cc75a69d991593d3f3e",
+  "request_receipt": {
+    "version": "package-technical-complete-vision-request/3",
+    "input_digest": "9b3f05c000836adfe4ed152210bb89bf69d713366f400cc75a69d991593d3f3e",
+    "context_digest": "fac64438bd4aaad134d1486c3539a55f2a1973cabad64c4ab8190d7900f404ef",
+    "serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "rule_id": "f14ccef0-e47d-4432-a0ac-58640a406168",
+    "semantic_input_digest": "82be523c9940d3aa8807101f0989f4ac446dfb0b8112489fecbf31b21cbe96c0",
+    "request_digest": "1b7e30447765cc7594e11bbd85fe7361bcb429d1e24f0526c61534709acada5b",
+    "body_byte_count": 153170,
+    "image_count": 4,
+    "complete_native_material_serialized": true,
+    "native_binding_verified": false,
+    "model_token_limit_verified": false,
+    "visual_readability_verified": false,
+    "execution_authorized": false
+  },
+  "judgment_check": {
+    "version": "package-complete-rule-features/3",
+    "rule_id": "f14ccef0-e47d-4432-a0ac-58640a406168",
+    "rule_digest": "dff31671a443ab642e74ddf7f8ab697b4712bcb9448f4ed33a99acab162715f3",
+    "input_digest": "9b3f05c000836adfe4ed152210bb89bf69d713366f400cc75a69d991593d3f3e",
+    "semantic_input_digest": "82be523c9940d3aa8807101f0989f4ac446dfb0b8112489fecbf31b21cbe96c0",
+    "feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "attempt_count": 3,
+    "valid_slots": [
+      1,
+      2,
+      3
+    ],
+    "missing_valid_slots": [],
+    "unresolved_slots": [],
+    "feature_coverage": "complete",
+    "attempts": [
+      {
+        "slot": 1,
+        "attempt": 1,
+        "call_id": "12dffefb-65ef-404d-85a5-8378a852701e",
+        "state": "succeeded",
+        "response_id": "synthetic-native-response-1",
+        "response_digest": "b7bf5d128845f9f80098767ae7e985836f5eea55ff81089b582cefa4366f9ca5",
+        "valid_slot": true,
+        "semantic_rejection": null
+      },
+      {
+        "slot": 2,
+        "attempt": 1,
+        "call_id": "cefd275c-7a60-458b-a189-7749c3e1f3c3",
+        "state": "succeeded",
+        "response_id": "synthetic-native-response-2",
+        "response_digest": "be489122f8f5f7430c1a83af41ec7231173df15154edacf0eb6a73567398415d",
+        "valid_slot": true,
+        "semantic_rejection": null
+      },
+      {
+        "slot": 3,
+        "attempt": 1,
+        "call_id": "4ab6b39d-f59b-467e-bbc2-ef1c409fa8db",
+        "state": "succeeded",
+        "response_id": "synthetic-native-response-3",
+        "response_digest": "a87282f0b470856c2d7aa594ee7e9646dc8298dcfe75aa968ffb763154de3622",
+        "valid_slot": true,
+        "semantic_rejection": null
+      }
+    ],
+    "features": {
+      "band_votes": [
+        {
+          "band_id": "band/1/6e9dc49b568fd337a6158a00803bfd0b10170af36e7d48010eb509f2fa542082",
+          "count": 3
+        },
+        {
+          "band_id": "band/2/e04be590a73b142e1ecd7818d469ff414efd3f59a4aab4d25e387eeed1ac411d",
+          "count": 0
+        }
+      ],
+      "modal_band_ids": [
+        "band/1/6e9dc49b568fd337a6158a00803bfd0b10170af36e7d48010eb509f2fa542082"
+      ],
+      "band_disagreement": false,
+      "dimension_votes": {
+        "specificity": {
+          "supported": 3,
+          "unsupported": 0,
+          "uncertain": 0
+        },
+        "validity": {
+          "supported": 3,
+          "unsupported": 0,
+          "uncertain": 0
+        },
+        "consistency": {
+          "supported": 0,
+          "unsupported": 0,
+          "uncertain": 3
+        }
+      }
+    },
+    "raw_numeric_total": null,
+    "formal_prediction": null,
+    "native_binding_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "formal_prediction_eligible": false,
+    "training_eligible": false,
+    "metrics_eligible": false,
+    "statistical_independence_claimed": false,
+    "digest": "4e4825a82ce1bbd86fb920999d56440311376ab2e5b436819ae72e55bb5e42fc"
+  },
+  "synthetic_binding_reference_only": true,
+  "native_binding_registered": false,
+  "mock_provider_attempts": 3,
+  "real_original_loopback_gets": 2,
+  "full_rule_declarations": 4,
+  "selected_rule_source_evidence": 3,
+  "selected_rule_bands": 2,
+  "raw_body_exported": false,
+  "real_external_provider_attempts": 0,
+  "paid_calls": 0
+}

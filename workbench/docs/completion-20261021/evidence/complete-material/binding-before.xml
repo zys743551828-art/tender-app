@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="8" time="2.457" timestamp="2026-10-24T10:42:28.028360+08:00" hostname="zhangyansong"><testcase classname="tests.test_package_technical_material" name="test_response_receipt_cannot_be_rebound_to_another_included_rule" time="0.190"><failure message="Failed: DID NOT RAISE &lt;class 'packages.model_governance.package_technical_material.MaterialInputError'&gt;">synthetic = &lt;packages.model_governance.package_current_material.CurrentMaterial object at 0x00000240A4DBEA20&gt;
+
+    def test_response_receipt_cannot_be_rebound_to_another_included_rule(synthetic):
+        origin=deepcopy(synthetic)
+        second=origin.material['scope']['manifest']['preview']['manifest']['rules'][1]
+        second['selection']='include'
+        second['part_ids']=['target']
+        bundle=bound(reseal(origin))
+        request=prepared(bundle)
+        actual_digest=request.receipt['request_digest']
+        generated=parse_response(response(judgment(bundle)),'synthetic-request',actual_digest)
+        another=vision.prepare_request(bundle,uid(62),expected_input_digest=bundle.metadata['digest'],expected_serializer_digest=vision.serializer_digest())
+        request.receipt.update(another.receipt)
+        request.receipt['request_digest']=actual_digest
+        request.receipt['body_byte_count']=len(request.body)
+&gt;       with pytest.raises(inputs.MaterialInputError,match='RESPONSE_BINDING_MISMATCH'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'packages.model_governance.package_technical_material.MaterialInputError'&gt;
+
+tests\test_package_technical_material.py:649: Failed</failure></testcase><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[response_id]" time="0.300" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[call_id]" time="0.248" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[sequence]" time="0.266" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[bool_slot]" time="0.246" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[unknown_with_response]" time="0.248" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[body]" time="0.251" /><testcase classname="tests.test_package_complete_features" name="test_duplicate_or_misbound_attempts_reject[invalid_response_id]" time="0.266"><failure message="TypeError: unhashable type: 'list'">synthetic = &lt;packages.model_governance.package_current_material.CurrentMaterial object at 0x00000240A4DE4A10&gt;
+mutation = 'invalid_response_id'
+
+    @pytest.mark.parametrize(
+        "mutation", ["response_id", "call_id", "sequence", "bool_slot", "unknown_with_response", "body", "invalid_response_id"]
+    )
+    def test_duplicate_or_misbound_attempts_reject(synthetic, mutation):
+        bundle = bound(deepcopy(synthetic))
+        rows = [attempt(bundle, s) for s in (1, 2, 3)]
+        if mutation == "response_id":
+            rows[1] = replace(rows[1], generation=rows[0].generation)
+        elif mutation == "call_id":
+            rows[1] = replace(rows[1], call_id=rows[0].call_id)
+        elif mutation == "sequence":
+            rows[0] = replace(rows[0], attempt=2)
+        elif mutation == "bool_slot":
+            rows[0] = replace(rows[0], slot=True)
+        elif mutation == "unknown_with_response":
+            rows[0] = replace(rows[0], state="unknown")
+        elif mutation == 'invalid_response_id':
+            rows[0]=replace(rows[0],generation=replace(rows[0].generation,response_id=['synthetic-invalid-id']))
+        else:
+            rows[0] = replace(rows[0], request=replace(rows[0].request, body=b"tampered"))
+        with pytest.raises(inputs.MaterialInputError):
+&gt;           aggregate(bundle, rows)
+
+tests\test_package_complete_features.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_complete_features.py:39: in aggregate
+    return features.aggregate_rule(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+bundle = &lt;packages.model_governance.package_technical_material.MaterialInput object at 0x00000240A4DBE7B0&gt;
+rule_id = '00000000-0000-0000-0000-00000000003d'
+attempts = [&lt;packages.model_governance.package_complete_features.CompleteJudgmentAttempt object at 0x00000240A4DE5460&gt;, &lt;packages...0A377FB30&gt;, &lt;packages.model_governance.package_complete_features.CompleteJudgmentAttempt object at 0x00000240A4DBEBD0&gt;]
+
+    def aggregate_rule(bundle, rule_id, attempts, *, expected_input_digest, expected_method_digest):
+        method = method_digest()
+        if method != expected_method_digest:
+            fail("METHOD_MISMATCH")
+        if not isinstance(attempts, (list, tuple)) or len(attempts) &gt; MAX_ATTEMPTS:
+            fail("ATTEMPT_LIMIT")
+        verified = inputs.verify_input(bundle, expected_input_digest)
+        request = vision.prepare_request(
+            verified,
+            rule_id,
+            expected_input_digest=expected_input_digest,
+            expected_serializer_digest=vision.serializer_digest(),
+        )
+        packet = next(r for r in verified.context.metadata["rules"] if r["rule_id"] == rule_id)
+        slots: dict[int, list[CompleteJudgmentAttempt]] = {1: [], 2: [], 3: []}
+        calls = set()
+        response_ids = set()
+        total = 0
+        for row in attempts:
+            if (
+                type(row) is not CompleteJudgmentAttempt
+                or row.rule_id != rule_id
+                or type(row.slot) is not int
+                or row.slot not in slots
+                or type(row.attempt) is not int
+                or not 1 &lt;= row.attempt &lt;= 5
+            ):
+                fail("ATTEMPT_INVALID")
+            valid_id = False
+            try:
+                valid_id = str(UUID(row.call_id)) == row.call_id
+            except (ValueError, TypeError, AttributeError):
+                pass
+            if not valid_id or row.call_id in calls:
+                fail("CALL_ID_REUSED_OR_INVALID")
+            calls.add(row.call_id)
+            if (
+                type(row.request) is not vision.PreparedCompleteVisionRequest
+                or row.request.body != request.body
+                or canonical(row.request.receipt) != canonical(request.receipt)
+            ):
+                fail("REQUEST_MISMATCH")
+            if row.state not in {"succeeded", "failed", "unknown"} or (row.state == "succeeded") != (
+                row.generation is not None
+            ):
+                fail("GENERATION_STATE_MISMATCH")
+            if row.generation is not None:
+                if type(row.generation) is not VisionGeneration:
+                    fail("GENERATION_INVALID")
+                total += len(row.generation.raw_response)
+                if total &gt; MAX_RESPONSE_BYTES:
+                    fail("RESPONSE_LIMIT")
+            slots[row.slot].append(row)
+        valid = []
+        reports = []
+        unknown = []
+        for slot, rows in slots.items():
+            rows.sort(key=lambda r: r.attempt)
+            if [r.attempt for r in rows] != list(range(1, len(rows) + 1)):
+                fail("ATTEMPT_SEQUENCE_INVALID")
+            for index, row in enumerate(rows):
+                if row.state == "unknown":
+                    if index != len(rows) - 1:
+                        fail("UNKNOWN_ATTEMPT_RETRIED")
+                    unknown.append(slot)
+                checked = None
+                rejection = None
+                if row.generation is not None:
+                    identity = row.generation.response_id
+&gt;                   if identity in response_ids:
+                       ^^^^^^^^^^^^^^^^^^^^^^^^
+E                   TypeError: unhashable type: 'list'
+
+packages\model_governance\package_complete_features.py:123: TypeError</failure></testcase></testsuite></testsuites>

@@ -1,7 +1,7 @@
 param(
     [ValidateSet('up', 'stop', 'status', 'logs', 'checks', 'config')]
     [string] $Action = 'status',
-    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'package-next-actions', 'technical-features-pure', 'technical-assets-pure', 'technical-input-pure', 'technical-vision-pure', 'asset-runtime-pure', 'provider-errors-pure', 'current-source-native', 'current-scope-native', 'read-purpose-native', 'original-get-pure', 'current-original-native', 'current-original-set-native', 'current-material-native', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
+    [ValidateSet('pure', 'delivery-pure', 'desktop-pure', 'history-dispatch', 'project-summaries', 'package-next-actions', 'technical-features-pure', 'technical-assets-pure', 'technical-input-pure', 'technical-vision-pure', 'asset-runtime-pure', 'provider-errors-pure', 'current-source-native', 'current-scope-native', 'read-purpose-native', 'original-get-pure', 'current-original-native', 'current-original-set-native', 'current-material-native', 'complete-material-native', 'budget', 'requirements-pure', 'requirements-api', 'scope-review-pure', 'scope-review-api', 'completion-pure', 'completion-api')]
     [string] $Suite = 'pure'
 )
 $ErrorActionPreference = 'Stop'
