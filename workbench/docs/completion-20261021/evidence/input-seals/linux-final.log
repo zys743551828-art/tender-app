@@ -1,0 +1,11 @@
+........................................................................ [ 75%]
+........................                                                 [100%]
+=============================== warnings summary ===============================
+tests/test_input_seals_pg.py::test_server_constructs_exact_old_input_and_binds_full_native_evidence
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------- generated xml file: /evidence/input-seals-native.xml -------------
+96 passed, 1 warning in 179.02s (0:02:59)
+{"suite": "input-seals-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

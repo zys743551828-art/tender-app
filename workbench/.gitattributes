@@ -215,3 +215,9 @@
 /tests/test_input_authority*.py text eol=lf
 /packages/contracts/material-input-authority.md text eol=lf
 /docs/completion-20261021/evidence/input-authority/** -text
+
+/packages/model_governance/material_input_seals.py text eol=lf
+/deploy/sql/material-input-seals.sql text eol=lf
+/tests/test_input_seals*.py text eol=lf
+/packages/contracts/material-input-seals.md text eol=lf
+/docs/completion-20261021/evidence/input-seals/** -text

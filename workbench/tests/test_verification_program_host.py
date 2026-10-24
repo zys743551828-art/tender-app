@@ -11,7 +11,9 @@ from uuid import uuid4
 import pytest
 from psycopg.pq import TransactionStatus
 from test_fusion_context_derivation_native import collect, freeze, runtime
-from test_input_authority_pg import approve, database, qualify, reread
+from test_input_authority_pg import approve, qualify, reread
+from test_input_seals_pg import database, publish, seal
+from test_input_seals_pg import reread as read_seal
 from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
@@ -37,7 +39,8 @@ from packages.model_governance import package_native_material_store as store
 from packages.model_governance import package_technical_material as material
 
 pytestmark = pytest.mark.skipif(
-    os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1",
+    os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1"
+    or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1",
     reason="explicit actual trusted-host program execution required",
 )
 
@@ -196,8 +199,44 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
     )
     assert bound.metadata["native_binding_verified"] is False
     assert bound.metadata["input_authority_granted"] is False
+    seal_args = publish(w, verified)
+    sealed = seal(w, seal_args)
+    reopened_seal = read_seal(w, sealed)
+    assert reopened_seal.record == sealed
+    assert reopened_seal.metadata["current"]["software_input_current"]
+    assert not reopened_seal.metadata["current"]["current_input_verified"]
+    seal_document = sealed.metadata["document"]
+    assert seal_document["material_input"] == bound.metadata
+    assert seal_document["storage_record_id"] == stored.metadata["document"]["record_id"]
+    assert seal_document["storage_record_digest"] == stored.metadata["digest"]
+    assert seal_document["context_object_digest"] == prepared.packet["context_object"]["sha256"]
     assert state["attempts"] == 12 and len(receipts) == 10
     directory = Path(os.environ["FUSION_MATERIAL_DERIVATION_EVIDENCE"])
+    (directory / "host-input-seals-proof.json").write_text(
+        json.dumps(
+            {
+                "seal": sealed.metadata,
+                "current": reopened_seal.metadata,
+                "exact_old_input_metadata_matches": True,
+                "complete_native_object_set_rehashed": True,
+                "independent_sealer_login_and_oid": True,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "actual_loopback_gets_total": 12,
+                "actual_fresh_compose_sessions": 10,
+                "sealing_additional_gets": 0,
+                "sealing_additional_sessions": 0,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "input_authority_granted": False,
+                "provider_attempts": 0,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (directory / "host-input-authority-proof.json").write_text(
         json.dumps(
             {
