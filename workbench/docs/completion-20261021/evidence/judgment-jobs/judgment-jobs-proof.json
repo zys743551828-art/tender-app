@@ -1,0 +1,632 @@
+{
+  "method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+  "job": {
+    "digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+    "document": {
+      "slots": [
+        {
+          "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+          "slot_id": "c3a8dcd4-137c-4a62-a9ba-a08e9910df0d",
+          "slot_number": 1,
+          "max_attempts": 5,
+          "rule_ordinal": 1
+        },
+        {
+          "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+          "slot_id": "35f53ec2-89e2-4678-a139-58ebeb2fe7ed",
+          "slot_number": 2,
+          "max_attempts": 5,
+          "rule_ordinal": 1
+        },
+        {
+          "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+          "slot_id": "f9f8bbfc-d6f8-46d6-9eed-10056f2e152f",
+          "slot_number": 3,
+          "max_attempts": 5,
+          "rule_ordinal": 1
+        },
+        {
+          "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "slot_id": "bae6be82-57b7-4eb8-b0bd-ff0e5e5528ec",
+          "slot_number": 1,
+          "max_attempts": 5,
+          "rule_ordinal": 2
+        },
+        {
+          "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "slot_id": "a2eda64c-8e3c-43a9-9490-f2125d608768",
+          "slot_number": 2,
+          "max_attempts": 5,
+          "rule_ordinal": 2
+        },
+        {
+          "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "slot_id": "31921690-e003-46e4-9632-5f863b906d7b",
+          "slot_number": 3,
+          "max_attempts": 5,
+          "rule_ordinal": 2
+        },
+        {
+          "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+          "slot_id": "ed7faf97-4128-4133-83dd-2616c34a432a",
+          "slot_number": 1,
+          "max_attempts": 5,
+          "rule_ordinal": 3
+        },
+        {
+          "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+          "slot_id": "5f91d8ac-de58-4cb3-b38e-6cf016fdb128",
+          "slot_number": 2,
+          "max_attempts": 5,
+          "rule_ordinal": 3
+        },
+        {
+          "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+          "slot_id": "c17624c7-24d1-4fda-be77-3a459862ab0e",
+          "slot_number": 3,
+          "max_attempts": 5,
+          "rule_ordinal": 3
+        }
+      ],
+      "bid_id": "45175d0e-989f-4d1c-be1a-80552facb5ce",
+      "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+      "origin": "synthetic_mechanism",
+      "status": "awaiting_budget_reservation",
+      "seal_id": "2d5963e4-67dc-4ca6-940f-9bfcdd09e550",
+      "version": "material-judgment-job/1",
+      "currency": "USD",
+      "quote_id": "1ec258b2-bc6f-4043-bfa7-db10cc5e2fd6",
+      "rule_ids": [
+        "54c70311-1853-4080-a287-e55c0358e5c5",
+        "6d52d487-782d-4258-9d55-d38962b7f3d7",
+        "c7fd8962-532b-41fd-8457-7d1ba708588a"
+      ],
+      "scope_id": "737c8fdf-f3f5-4996-bec7-aff07407fca9",
+      "command_id": "cea5d90d-1266-4577-a2a0-87ee2c512c12",
+      "generation": 1,
+      "profile_id": "0245f9e3-4aa6-4337-878a-2c3026386c05",
+      "recorded_at": "2026-10-24T14:56:01.884855Z",
+      "recorded_by": "fusion_material_job_submitter",
+      "seal_digest": "469fe7d2ee82c0a81a847cfca04c5b2a28547e2e0b43d17d495c43ff0e0bb912",
+      "quote_digest": "f4a9f38a205010c7096e7924ac5438481b05a77a106423c8a74529dbb7a11bcd",
+      "scope_digest": "6e1cd80db1ce9f951bd5aaf752fa577d8f3f71107d0ddaa3ac515dfdc1a8bffd",
+      "request_login": "fusion_verification_commands",
+      "context_digest": "fb578f7be86ec0cf35065167eb35691009e71d91442a383580e84cd58bd7ff2a",
+      "profile_digest": "cf71f1432efd856fc74281924ddfb07cc0e8e3bddbb469b9683ec74f2612a738",
+      "automatic_retry": false,
+      "findings_digest": "96a611bade383c68f1f94e47882a0a6e3b995cac753b8cf05023c581788d06a2",
+      "recorded_by_oid": 1707299,
+      "intent_command_id": "2b50978f-0c0f-4b3c-9684-2a46401c8302",
+      "job_method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+      "request_login_oid": 1706850,
+      "initial_renewal_id": "c8223aa0-4923-4ca7-989b-66f5aaddfb37",
+      "send_lease_granted": false,
+      "fee_ledger_reserved": false,
+      "initial_evidence_id": "7b78c4f8-c266-4171-b871-905a6e9777e4",
+      "budget_ceiling_minor": 10000000000,
+      "execution_authorized": false,
+      "required_valid_slots": 9,
+      "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+      "intent_command_digest": "b5e46c7ecd6664796e6a9ef66b59c0ffb7b4a7e3fd33b27967c17686f74c0e10",
+      "material_input_digest": "72b5ea29ff153f4e55f09cf1eb0eff53ad3c8dfc4e02c74af2a5248880cbf9b8",
+      "max_attempts_per_slot": 5,
+      "profile_head_revision": 1,
+      "initial_renewal_digest": "8fe45e74df6829f1ae2e48b9fb09727eefe4d8ba463b29c9864aff682313eb62",
+      "maximum_external_calls": 45,
+      "account_price_confirmed": false,
+      "input_authority_granted": false,
+      "native_binding_verified": true,
+      "software_job_registered": true,
+      "atomic_snapshot_verified": false,
+      "model_context_fit_proven": false,
+      "native_sql_method_digest": "d326faff6ca98c463b0a233b5ab40ad10a20e6c0a8b10586b1060cc4aa5f17a1",
+      "required_reservation_minor": 14376960,
+      "request_body_limit_verified": false,
+      "actual_human_reading_verified": false
+    }
+  },
+  "initial": {
+    "version": "material-judgment-job-observation/1",
+    "method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+    "record": {
+      "digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+      "document": {
+        "slots": [
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "c3a8dcd4-137c-4a62-a9ba-a08e9910df0d",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "35f53ec2-89e2-4678-a139-58ebeb2fe7ed",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "f9f8bbfc-d6f8-46d6-9eed-10056f2e152f",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "bae6be82-57b7-4eb8-b0bd-ff0e5e5528ec",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "a2eda64c-8e3c-43a9-9490-f2125d608768",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "31921690-e003-46e4-9632-5f863b906d7b",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "ed7faf97-4128-4133-83dd-2616c34a432a",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "5f91d8ac-de58-4cb3-b38e-6cf016fdb128",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "c17624c7-24d1-4fda-be77-3a459862ab0e",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          }
+        ],
+        "bid_id": "45175d0e-989f-4d1c-be1a-80552facb5ce",
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "origin": "synthetic_mechanism",
+        "status": "awaiting_budget_reservation",
+        "seal_id": "2d5963e4-67dc-4ca6-940f-9bfcdd09e550",
+        "version": "material-judgment-job/1",
+        "currency": "USD",
+        "quote_id": "1ec258b2-bc6f-4043-bfa7-db10cc5e2fd6",
+        "rule_ids": [
+          "54c70311-1853-4080-a287-e55c0358e5c5",
+          "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "c7fd8962-532b-41fd-8457-7d1ba708588a"
+        ],
+        "scope_id": "737c8fdf-f3f5-4996-bec7-aff07407fca9",
+        "command_id": "cea5d90d-1266-4577-a2a0-87ee2c512c12",
+        "generation": 1,
+        "profile_id": "0245f9e3-4aa6-4337-878a-2c3026386c05",
+        "recorded_at": "2026-10-24T14:56:01.884855Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "seal_digest": "469fe7d2ee82c0a81a847cfca04c5b2a28547e2e0b43d17d495c43ff0e0bb912",
+        "quote_digest": "f4a9f38a205010c7096e7924ac5438481b05a77a106423c8a74529dbb7a11bcd",
+        "scope_digest": "6e1cd80db1ce9f951bd5aaf752fa577d8f3f71107d0ddaa3ac515dfdc1a8bffd",
+        "request_login": "fusion_verification_commands",
+        "context_digest": "fb578f7be86ec0cf35065167eb35691009e71d91442a383580e84cd58bd7ff2a",
+        "profile_digest": "cf71f1432efd856fc74281924ddfb07cc0e8e3bddbb469b9683ec74f2612a738",
+        "automatic_retry": false,
+        "findings_digest": "96a611bade383c68f1f94e47882a0a6e3b995cac753b8cf05023c581788d06a2",
+        "recorded_by_oid": 1707299,
+        "intent_command_id": "2b50978f-0c0f-4b3c-9684-2a46401c8302",
+        "job_method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+        "request_login_oid": 1706850,
+        "initial_renewal_id": "c8223aa0-4923-4ca7-989b-66f5aaddfb37",
+        "send_lease_granted": false,
+        "fee_ledger_reserved": false,
+        "initial_evidence_id": "7b78c4f8-c266-4171-b871-905a6e9777e4",
+        "budget_ceiling_minor": 10000000000,
+        "execution_authorized": false,
+        "required_valid_slots": 9,
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "intent_command_digest": "b5e46c7ecd6664796e6a9ef66b59c0ffb7b4a7e3fd33b27967c17686f74c0e10",
+        "material_input_digest": "72b5ea29ff153f4e55f09cf1eb0eff53ad3c8dfc4e02c74af2a5248880cbf9b8",
+        "max_attempts_per_slot": 5,
+        "profile_head_revision": 1,
+        "initial_renewal_digest": "8fe45e74df6829f1ae2e48b9fb09727eefe4d8ba463b29c9864aff682313eb62",
+        "maximum_external_calls": 45,
+        "account_price_confirmed": false,
+        "input_authority_granted": false,
+        "native_binding_verified": true,
+        "software_job_registered": true,
+        "atomic_snapshot_verified": false,
+        "model_context_fit_proven": false,
+        "native_sql_method_digest": "d326faff6ca98c463b0a233b5ab40ad10a20e6c0a8b10586b1060cc4aa5f17a1",
+        "required_reservation_minor": 14376960,
+        "request_body_limit_verified": false,
+        "actual_human_reading_verified": false
+      }
+    },
+    "current": {
+      "observed_at": "2026-10-24T14:56:02.011516Z",
+      "slots_intact": true,
+      "profile_current": true,
+      "renewal_current": true,
+      "request_current": true,
+      "evidence_revision": 1,
+      "send_lease_granted": false,
+      "fee_ledger_reserved": false,
+      "execution_authorized": false,
+      "atomic_snapshot_verified": false,
+      "software_budget_sufficient": true,
+      "software_preparation_current": true
+    },
+    "evidence": {
+      "digest": "fa46c066744240e4c06d5edf0f79cf619ad5d041c7e5e80ce5635ef485c2db37",
+      "document": {
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "version": "material-judgment-evidence/1",
+        "event_id": "7b78c4f8-c266-4171-b871-905a6e9777e4",
+        "revision": 1,
+        "command_id": "cea5d90d-1266-4577-a2a0-87ee2c512c12",
+        "job_digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+        "renewal_id": "c8223aa0-4923-4ca7-989b-66f5aaddfb37",
+        "recorded_at": "2026-10-24T14:56:01.884855Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "renewal_digest": "8fe45e74df6829f1ae2e48b9fb09727eefe4d8ba463b29c9864aff682313eb62",
+        "recorded_by_oid": 1707299,
+        "previous_revision": 0
+      }
+    },
+    "digest": "b9afea124572cfbc9fb11d51a2cdb5907bb889d038077def7d203242d4cdbe94"
+  },
+  "refreshed": {
+    "version": "material-judgment-job-observation/1",
+    "method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+    "record": {
+      "digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+      "document": {
+        "slots": [
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "c3a8dcd4-137c-4a62-a9ba-a08e9910df0d",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "35f53ec2-89e2-4678-a139-58ebeb2fe7ed",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "f9f8bbfc-d6f8-46d6-9eed-10056f2e152f",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "bae6be82-57b7-4eb8-b0bd-ff0e5e5528ec",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "a2eda64c-8e3c-43a9-9490-f2125d608768",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "31921690-e003-46e4-9632-5f863b906d7b",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "ed7faf97-4128-4133-83dd-2616c34a432a",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "5f91d8ac-de58-4cb3-b38e-6cf016fdb128",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "c17624c7-24d1-4fda-be77-3a459862ab0e",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          }
+        ],
+        "bid_id": "45175d0e-989f-4d1c-be1a-80552facb5ce",
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "origin": "synthetic_mechanism",
+        "status": "awaiting_budget_reservation",
+        "seal_id": "2d5963e4-67dc-4ca6-940f-9bfcdd09e550",
+        "version": "material-judgment-job/1",
+        "currency": "USD",
+        "quote_id": "1ec258b2-bc6f-4043-bfa7-db10cc5e2fd6",
+        "rule_ids": [
+          "54c70311-1853-4080-a287-e55c0358e5c5",
+          "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "c7fd8962-532b-41fd-8457-7d1ba708588a"
+        ],
+        "scope_id": "737c8fdf-f3f5-4996-bec7-aff07407fca9",
+        "command_id": "cea5d90d-1266-4577-a2a0-87ee2c512c12",
+        "generation": 1,
+        "profile_id": "0245f9e3-4aa6-4337-878a-2c3026386c05",
+        "recorded_at": "2026-10-24T14:56:01.884855Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "seal_digest": "469fe7d2ee82c0a81a847cfca04c5b2a28547e2e0b43d17d495c43ff0e0bb912",
+        "quote_digest": "f4a9f38a205010c7096e7924ac5438481b05a77a106423c8a74529dbb7a11bcd",
+        "scope_digest": "6e1cd80db1ce9f951bd5aaf752fa577d8f3f71107d0ddaa3ac515dfdc1a8bffd",
+        "request_login": "fusion_verification_commands",
+        "context_digest": "fb578f7be86ec0cf35065167eb35691009e71d91442a383580e84cd58bd7ff2a",
+        "profile_digest": "cf71f1432efd856fc74281924ddfb07cc0e8e3bddbb469b9683ec74f2612a738",
+        "automatic_retry": false,
+        "findings_digest": "96a611bade383c68f1f94e47882a0a6e3b995cac753b8cf05023c581788d06a2",
+        "recorded_by_oid": 1707299,
+        "intent_command_id": "2b50978f-0c0f-4b3c-9684-2a46401c8302",
+        "job_method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+        "request_login_oid": 1706850,
+        "initial_renewal_id": "c8223aa0-4923-4ca7-989b-66f5aaddfb37",
+        "send_lease_granted": false,
+        "fee_ledger_reserved": false,
+        "initial_evidence_id": "7b78c4f8-c266-4171-b871-905a6e9777e4",
+        "budget_ceiling_minor": 10000000000,
+        "execution_authorized": false,
+        "required_valid_slots": 9,
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "intent_command_digest": "b5e46c7ecd6664796e6a9ef66b59c0ffb7b4a7e3fd33b27967c17686f74c0e10",
+        "material_input_digest": "72b5ea29ff153f4e55f09cf1eb0eff53ad3c8dfc4e02c74af2a5248880cbf9b8",
+        "max_attempts_per_slot": 5,
+        "profile_head_revision": 1,
+        "initial_renewal_digest": "8fe45e74df6829f1ae2e48b9fb09727eefe4d8ba463b29c9864aff682313eb62",
+        "maximum_external_calls": 45,
+        "account_price_confirmed": false,
+        "input_authority_granted": false,
+        "native_binding_verified": true,
+        "software_job_registered": true,
+        "atomic_snapshot_verified": false,
+        "model_context_fit_proven": false,
+        "native_sql_method_digest": "d326faff6ca98c463b0a233b5ab40ad10a20e6c0a8b10586b1060cc4aa5f17a1",
+        "required_reservation_minor": 14376960,
+        "request_body_limit_verified": false,
+        "actual_human_reading_verified": false
+      }
+    },
+    "current": {
+      "observed_at": "2026-10-24T14:56:04.109894Z",
+      "slots_intact": true,
+      "profile_current": true,
+      "renewal_current": true,
+      "request_current": true,
+      "evidence_revision": 2,
+      "send_lease_granted": false,
+      "fee_ledger_reserved": false,
+      "execution_authorized": false,
+      "atomic_snapshot_verified": false,
+      "software_budget_sufficient": true,
+      "software_preparation_current": true
+    },
+    "evidence": {
+      "digest": "c7939e0189ca9967f4e664fe8f8a72ff8058d215571248c6d60832cc29a21d39",
+      "document": {
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "version": "material-judgment-evidence/1",
+        "event_id": "16b5d44f-5942-4577-8539-e4f91fc3748a",
+        "revision": 2,
+        "command_id": "84293c8b-9399-43d1-b0c8-919ba9cbe714",
+        "job_digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+        "renewal_id": "3eaa25f8-6854-4b38-ba03-146418097f51",
+        "recorded_at": "2026-10-24T14:56:03.949541Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "renewal_digest": "dc5f4b280f61c2b2b594948ee87ab04c5e5495986dc4579336d0cf848bc522b7",
+        "recorded_by_oid": 1707299,
+        "previous_revision": 1
+      }
+    },
+    "digest": "eb44a83cf420843cb484469b20e218ad5dda751ca51edf48b76edc85ab1344de"
+  },
+  "expired": {
+    "version": "material-judgment-job-observation/1",
+    "method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+    "record": {
+      "digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+      "document": {
+        "slots": [
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "c3a8dcd4-137c-4a62-a9ba-a08e9910df0d",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "35f53ec2-89e2-4678-a139-58ebeb2fe7ed",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "54c70311-1853-4080-a287-e55c0358e5c5",
+            "slot_id": "f9f8bbfc-d6f8-46d6-9eed-10056f2e152f",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 1
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "bae6be82-57b7-4eb8-b0bd-ff0e5e5528ec",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "a2eda64c-8e3c-43a9-9490-f2125d608768",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "6d52d487-782d-4258-9d55-d38962b7f3d7",
+            "slot_id": "31921690-e003-46e4-9632-5f863b906d7b",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 2
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "ed7faf97-4128-4133-83dd-2616c34a432a",
+            "slot_number": 1,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "5f91d8ac-de58-4cb3-b38e-6cf016fdb128",
+            "slot_number": 2,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          },
+          {
+            "rule_id": "c7fd8962-532b-41fd-8457-7d1ba708588a",
+            "slot_id": "c17624c7-24d1-4fda-be77-3a459862ab0e",
+            "slot_number": 3,
+            "max_attempts": 5,
+            "rule_ordinal": 3
+          }
+        ],
+        "bid_id": "45175d0e-989f-4d1c-be1a-80552facb5ce",
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "origin": "synthetic_mechanism",
+        "status": "awaiting_budget_reservation",
+        "seal_id": "2d5963e4-67dc-4ca6-940f-9bfcdd09e550",
+        "version": "material-judgment-job/1",
+        "currency": "USD",
+        "quote_id": "1ec258b2-bc6f-4043-bfa7-db10cc5e2fd6",
+        "rule_ids": [
+          "54c70311-1853-4080-a287-e55c0358e5c5",
+          "6d52d487-782d-4258-9d55-d38962b7f3d7",
+          "c7fd8962-532b-41fd-8457-7d1ba708588a"
+        ],
+        "scope_id": "737c8fdf-f3f5-4996-bec7-aff07407fca9",
+        "command_id": "cea5d90d-1266-4577-a2a0-87ee2c512c12",
+        "generation": 1,
+        "profile_id": "0245f9e3-4aa6-4337-878a-2c3026386c05",
+        "recorded_at": "2026-10-24T14:56:01.884855Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "seal_digest": "469fe7d2ee82c0a81a847cfca04c5b2a28547e2e0b43d17d495c43ff0e0bb912",
+        "quote_digest": "f4a9f38a205010c7096e7924ac5438481b05a77a106423c8a74529dbb7a11bcd",
+        "scope_digest": "6e1cd80db1ce9f951bd5aaf752fa577d8f3f71107d0ddaa3ac515dfdc1a8bffd",
+        "request_login": "fusion_verification_commands",
+        "context_digest": "fb578f7be86ec0cf35065167eb35691009e71d91442a383580e84cd58bd7ff2a",
+        "profile_digest": "cf71f1432efd856fc74281924ddfb07cc0e8e3bddbb469b9683ec74f2612a738",
+        "automatic_retry": false,
+        "findings_digest": "96a611bade383c68f1f94e47882a0a6e3b995cac753b8cf05023c581788d06a2",
+        "recorded_by_oid": 1707299,
+        "intent_command_id": "2b50978f-0c0f-4b3c-9684-2a46401c8302",
+        "job_method_digest": "d8c227ef0c3e1d7b6e5f79b1591edb0436f971aa18a4e4d3c73cf44d7d1a36bc",
+        "request_login_oid": 1706850,
+        "initial_renewal_id": "c8223aa0-4923-4ca7-989b-66f5aaddfb37",
+        "send_lease_granted": false,
+        "fee_ledger_reserved": false,
+        "initial_evidence_id": "7b78c4f8-c266-4171-b871-905a6e9777e4",
+        "budget_ceiling_minor": 10000000000,
+        "execution_authorized": false,
+        "required_valid_slots": 9,
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "intent_command_digest": "b5e46c7ecd6664796e6a9ef66b59c0ffb7b4a7e3fd33b27967c17686f74c0e10",
+        "material_input_digest": "72b5ea29ff153f4e55f09cf1eb0eff53ad3c8dfc4e02c74af2a5248880cbf9b8",
+        "max_attempts_per_slot": 5,
+        "profile_head_revision": 1,
+        "initial_renewal_digest": "8fe45e74df6829f1ae2e48b9fb09727eefe4d8ba463b29c9864aff682313eb62",
+        "maximum_external_calls": 45,
+        "account_price_confirmed": false,
+        "input_authority_granted": false,
+        "native_binding_verified": true,
+        "software_job_registered": true,
+        "atomic_snapshot_verified": false,
+        "model_context_fit_proven": false,
+        "native_sql_method_digest": "d326faff6ca98c463b0a233b5ab40ad10a20e6c0a8b10586b1060cc4aa5f17a1",
+        "required_reservation_minor": 14376960,
+        "request_body_limit_verified": false,
+        "actual_human_reading_verified": false
+      }
+    },
+    "current": {
+      "observed_at": "2026-10-24T14:56:08.880712Z",
+      "slots_intact": true,
+      "profile_current": true,
+      "renewal_current": false,
+      "request_current": true,
+      "evidence_revision": 2,
+      "send_lease_granted": false,
+      "fee_ledger_reserved": false,
+      "execution_authorized": false,
+      "atomic_snapshot_verified": false,
+      "software_budget_sufficient": false,
+      "software_preparation_current": false
+    },
+    "evidence": {
+      "digest": "c7939e0189ca9967f4e664fe8f8a72ff8058d215571248c6d60832cc29a21d39",
+      "document": {
+        "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+        "version": "material-judgment-evidence/1",
+        "event_id": "16b5d44f-5942-4577-8539-e4f91fc3748a",
+        "revision": 2,
+        "command_id": "84293c8b-9399-43d1-b0c8-919ba9cbe714",
+        "job_digest": "1d9f7989c531da8754abdc934b0389491792646b8b5ef723d0932fd0fd889015",
+        "renewal_id": "3eaa25f8-6854-4b38-ba03-146418097f51",
+        "recorded_at": "2026-10-24T14:56:03.949541Z",
+        "recorded_by": "fusion_material_job_submitter",
+        "renewal_digest": "dc5f4b280f61c2b2b594948ee87ab04c5e5495986dc4579336d0cf848bc522b7",
+        "recorded_by_oid": 1707299,
+        "previous_revision": 1
+      }
+    },
+    "digest": "ef259ab8d3ae1cda3c77f5f1708b00331d4b3667bde3442d5d34d57776a58c2f"
+  },
+  "outbox": {
+    "event_type": "judgment_job_preparation_requested",
+    "payload": {
+      "job_id": "65bb01e0-6b53-4a90-bd60-a8c38a695dc0",
+      "generation": 1
+    }
+  },
+  "actual_loopback_gets": 16,
+  "original_intent_unique": true,
+  "complete_rules_and_three_native_slots": true,
+  "evidence_refresh_preserves_job_input_quote_and_slots": true,
+  "synthetic_renderer_stub": true,
+  "actual_renderer_used": false,
+  "synthetic_material_and_configuration": true,
+  "actual_human_review": false,
+  "model_calls_created": 0,
+  "provider_attempts": 0,
+  "fee_ledger_reserved": false,
+  "execution_authorized": false,
+  "outbox_delivered": false,
+  "body_exported": false
+}

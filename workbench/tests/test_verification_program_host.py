@@ -15,11 +15,16 @@ from test_cost_quotes_pg import quote
 from test_cost_quotes_pg import reread as read_quote
 from test_fusion_context_derivation_native import collect, freeze, runtime
 from test_input_authority_pg import approve, qualify, reread
-from test_input_renewals_pg import database, record, wire_digests
 from test_input_renewals_pg import publish as publish_renewal
+from test_input_renewals_pg import record, wire_digests
 from test_input_renewals_pg import reread as read_renewal
 from test_input_seals_pg import publish, seal
 from test_input_seals_pg import reread as read_seal
+from test_judgment_jobs_pg import database
+from test_judgment_jobs_pg import publish as publish_job
+from test_judgment_jobs_pg import refresh_args as job_refresh_args
+from test_judgment_jobs_pg import reread as read_job
+from test_judgment_jobs_pg import start as start_job
 from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
@@ -36,6 +41,7 @@ from test_verification_program_pg import (
 
 from deploy import fusion_verification_program as program
 from packages.domain.review_identity import canonical, digest
+from packages.model_governance import material_judgment_jobs as jobs
 from packages.model_governance import material_verification_program as port
 from packages.model_governance import package_material_cost as cost
 from packages.model_governance import package_material_scope_review as review
@@ -49,7 +55,8 @@ pytestmark = pytest.mark.skipif(
     os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1"
     or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1"
     or os.environ.get("FUSION_COST_QUOTES_HOST") != "1"
-    or os.environ.get("FUSION_INPUT_RENEWALS_HOST") != "1",
+    or os.environ.get("FUSION_INPUT_RENEWALS_HOST") != "1"
+    or os.environ.get("FUSION_JUDGMENT_JOBS_HOST") != "1",
     reason="explicit actual trusted-host program execution required",
 )
 
@@ -442,6 +449,111 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
                 "execution_authorized": False,
                 "model_calls_created": 0,
                 "provider_attempts": 0,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    job_profile, job_profile_digest = publish_job(w, renewed)
+    job_args = {
+        "renewal_id": renewed.metadata["document"]["renewal_id"],
+        "expected_renewal_digest": renewed.metadata["digest"],
+        "profile_id": job_profile,
+        "expected_profile_digest": job_profile_digest,
+        "command_id": str(uuid4()),
+        "expected_method_digest": jobs.method_digest(),
+    }
+    job = start_job(w, job_args)
+    initial_job = read_job(w, job)
+    assert initial_job.metadata["current"]["software_preparation_current"]
+    assert job.metadata["document"]["material_input_digest"] == old_input
+    assert job.metadata["document"]["quote_digest"] == quoted.metadata["digest"]
+    next_logical = str(uuid4())
+    next_ticket = begin(w, program_case, next_logical)
+    next_program = asyncio.run(
+        program.execute(
+            *connections,
+            runtime=runtime,
+            command_id=next_logical,
+            expected_command_digest=next_ticket.metadata["digest"],
+            expected_method_digest=program.method_digest(),
+            profile="development_s3",
+            url_for_locator=url,
+        )
+    )
+    expired_job = read_job(w, job)
+    assert not expired_job.metadata["current"]["software_preparation_current"]
+    assert start_job(w, job_args) == job
+    next_verified = qualify(
+        w,
+        authority_args
+        | {
+            "program_result_id": next_program.result.metadata["document"]["result_id"],
+            "expected_program_result_digest": next_program.result.metadata["digest"],
+            "command_id": next_logical,
+        },
+    )
+    next_renewal = record(
+        w,
+        renewal_args
+        | {
+            "verification_id": next_verified.metadata["document"]["verification_id"],
+            "expected_verification_digest": next_verified.metadata["digest"],
+            "command_id": next_logical,
+        },
+    )
+    update_args = job_refresh_args(job, next_renewal)
+    updated_evidence = jobs.refresh(db["job_submitter"], **update_args)
+    final_job = read_job(w, job)
+    assert final_job.record == job and final_job.evidence == updated_evidence
+    assert final_job.metadata["current"]["software_preparation_current"]
+    assert final_job.metadata["current"]["evidence_revision"] == 2
+    assert jobs.refresh(db["job_submitter"], **update_args) == updated_evidence
+    with pytest.raises(jobs.JudgmentJobError, match="INTENT_ALREADY_REGISTERED"):
+        start_job(
+            w,
+            job_args
+            | {
+                "renewal_id": next_renewal.metadata["document"]["renewal_id"],
+                "expected_renewal_digest": next_renewal.metadata["digest"],
+                "command_id": str(uuid4()),
+            },
+        )
+    assert wire_digests(frozen, verified.binding) == (old_input, old_wire)
+    assert state["attempts"] == state["idle_checks"] == 24 and len(receipts) == 16
+    assert len({r["container_id"] for r in receipts}) == 16
+    assert all(r["stopped_verified"] and r["container_pid"] == 0 for r in receipts)
+    (directory / "host-judgment-jobs-proof.json").write_text(
+        json.dumps(
+            {
+                "job": job.metadata,
+                "initial": initial_job.metadata,
+                "expired": expired_job.metadata,
+                "refreshed": final_job.metadata,
+                "wire_digests": old_wire,
+                "original_intent_unique": True,
+                "complete_rules_and_three_native_slots": True,
+                "evidence_refresh_preserves_job_input_quote_and_slots": True,
+                "durable_program_commands_precede_new_io": True,
+                "actual_loopback_gets_total": 24,
+                "actual_fresh_compose_sessions": 16,
+                "prior_milestone_gets": 18,
+                "prior_milestone_sessions": 13,
+                "job_evidence_program_gets": 6,
+                "job_evidence_program_sessions": 3,
+                "kernel_receipts": receipts,
+                "independent_connections_idle_during_http_and_kernel_execution": 7,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "fee_ledger_reserved": False,
+                "execution_authorized": False,
+                "model_calls_created": 0,
+                "provider_attempts": 0,
+                "outbox_delivered": False,
                 "body_exported": False,
             },
             indent=2,

@@ -234,3 +234,10 @@
 /tests/test_input_renewals*.py text eol=lf
 /packages/contracts/material-input-renewals.md text eol=lf
 /docs/completion-20261021/evidence/input-renewals/** -text
+
+/deploy/sql/material-judgment-jobs.sql text eol=lf
+/packages/model_governance/material_judgment_jobs.py text eol=lf
+/packages/contracts/material-judgment-jobs.md text eol=lf
+/tests/test_judgment_jobs.py text eol=lf
+/tests/test_judgment_jobs_pg.py text eol=lf
+/docs/completion-20261021/evidence/judgment-jobs/** -text
