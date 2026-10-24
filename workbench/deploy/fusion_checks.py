@@ -307,6 +307,13 @@ SUITES["input-seals-native"] = [
     "tests/test_fusion_compose.py",
 ]
 
+SUITES["cost-quotes-native"] = [
+    "tests/test_cost_quotes_pg.py",
+    "tests/test_cost_quotes.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
+
 
 def main():
     suite = os.environ.get("FUSION_CHECK_SUITE", "pure")
@@ -370,6 +377,7 @@ def main():
         "verification-program-native",
         "input-authority-native",
         "input-seals-native",
+        "cost-quotes-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -431,6 +439,7 @@ def main():
                 "verification-program-native",
                 "input-authority-native",
                 "input-seals-native",
+                "cost-quotes-native",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -483,6 +492,9 @@ def main():
                 if suite == "verification-commands-native":
                     environment["FUSION_VERIFICATION_COMMANDS_PG"] = "1"
                     environment["FUSION_VERIFICATION_COMMANDS_EVIDENCE"] = "/evidence"
+                if suite == "cost-quotes-native":
+                    environment["FUSION_COST_QUOTES_PG"] = "1"
+                    environment["FUSION_COST_QUOTES_EVIDENCE"] = "/evidence"
                 if suite == "input-seals-native":
                     environment["FUSION_INPUT_SEALS_PG"] = "1"
                     environment["FUSION_INPUT_SEALS_EVIDENCE"] = "/evidence"

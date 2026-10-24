@@ -10,9 +10,12 @@ from uuid import uuid4
 
 import pytest
 from psycopg.pq import TransactionStatus
+from test_cost_quotes_pg import database, quote
+from test_cost_quotes_pg import publish as publish_prices
+from test_cost_quotes_pg import reread as read_quote
 from test_fusion_context_derivation_native import collect, freeze, runtime
 from test_input_authority_pg import approve, qualify, reread
-from test_input_seals_pg import database, publish, seal
+from test_input_seals_pg import publish, seal
 from test_input_seals_pg import reread as read_seal
 from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_original_set_pg import wire
@@ -31,6 +34,7 @@ from test_verification_program_pg import (
 from deploy import fusion_verification_program as program
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import material_verification_program as port
+from packages.model_governance import package_material_cost as cost
 from packages.model_governance import package_material_scope_review as review
 from packages.model_governance import package_native_evidence_issuers as issuer
 from packages.model_governance import package_native_evidence_registration as registration
@@ -40,7 +44,8 @@ from packages.model_governance import package_technical_material as material
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1"
-    or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1",
+    or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1"
+    or os.environ.get("FUSION_COST_QUOTES_HOST") != "1",
     reason="explicit actual trusted-host program execution required",
 )
 
@@ -210,8 +215,54 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
     assert seal_document["storage_record_id"] == stored.metadata["document"]["record_id"]
     assert seal_document["storage_record_digest"] == stored.metadata["digest"]
     assert seal_document["context_object_digest"] == prepared.packet["context_object"]["sha256"]
+    price_args, price_data = publish_prices(w, sealed)
+    quoted = quote(w, price_args)
+    current_quote = read_quote(w, quoted)
+    assert current_quote.record == quoted
+    assert current_quote.metadata["current"]["software_budget_sufficient"]
+    price_policy = cost.bind_policy(price_data, expected_policy_digest=digest(price_data))
+    expected_quote = cost.quote(
+        frozen,
+        price_policy,
+        expected_context_digest=frozen.metadata["digest"],
+        expected_policy_digest=price_policy.metadata["digest"],
+        expected_method_digest=cost.method_digest(),
+        as_of=quoted.metadata["document"]["recorded_at"],
+        max_attempts_per_slot=5,
+        budget_currency="USD",
+        budget_ceiling_minor=price_args["budget_ceiling_minor"],
+    )
+    assert quoted.metadata["document"]["quote"] == expected_quote.metadata
     assert state["attempts"] == 12 and len(receipts) == 10
     directory = Path(os.environ["FUSION_MATERIAL_DERIVATION_EVIDENCE"])
+    (directory / "host-cost-quotes-proof.json").write_text(
+        json.dumps(
+            {
+                "quote": quoted.metadata,
+                "current": current_quote.metadata,
+                "independent_quoter_login_and_oid": True,
+                "exact_pure_quote_metadata_matches": True,
+                "complete_included_rules_from_native_context": True,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "actual_loopback_gets_total": 12,
+                "actual_fresh_compose_sessions": 10,
+                "quote_additional_gets": 0,
+                "quote_additional_sessions": 0,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "account_price_confirmed": False,
+                "fee_ledger_reserved": False,
+                "input_authority_granted": False,
+                "execution_authorized": False,
+                "provider_attempts": 0,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (directory / "host-input-seals-proof.json").write_text(
         json.dumps(
             {

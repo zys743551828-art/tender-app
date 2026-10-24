@@ -1,0 +1,552 @@
+{
+  "controller_method_digest": "3050bb3cbe9d0390e9b9092b76234be3f39896f06a13d07ab78ecd4ac119ccdb",
+  "observation": {
+    "version": "fusion-exact-context-derivation/1",
+    "method_digest": "3050bb3cbe9d0390e9b9092b76234be3f39896f06a13d07ab78ecd4ac119ccdb",
+    "context_digest": "53507836b310338187e3417fe3d8bd9cd0e6f6121ce83b7a00f3434dc9937a4f",
+    "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "frozen_material_digest": "b23701774ffad031cad469974e70185f341f3a42a3635c8045fe7d35ce502d4c",
+    "fresh_material_digest": "e47dc251b59bd1961fe4a42a74185be536730ed8038dcb6b454c8a78e9f62ccd",
+    "original_source_observation_digest": "6efef0f0154cc5fc18fbc8281340bb8c0b11247f56584f65cccb2d8712f338c5",
+    "fresh_material_observation": {
+      "version": "package-current-material-observation/1",
+      "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+      "scope_id": "bd8cd0a6-b69f-49ee-8d4b-187dccd3e046",
+      "scope_digest": "225cd3a866c1c4af98c1c577b8f0285cd00e7ced9b4d9f748ed2fdb9010a7751",
+      "method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+      "material_digest": "e47dc251b59bd1961fe4a42a74185be536730ed8038dcb6b454c8a78e9f62ccd",
+      "original_set_digest": "eafd08fccce295691e9d92343f63f19504bd96f05fe5a5a321674c2c0fe5f1e6",
+      "initial_parse_observation": {
+        "version": "package-current-parse-material/1",
+        "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+        "observed_at": "2026-10-24T11:51:46.530816+00:00",
+        "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+        "documents_digest": "365bf6a5223cd84a676c4da54aa4b26f4091d972d36d74914dcc1267a16a034e",
+        "counts": {
+          "pages": 4,
+          "blocks": 6,
+          "text_bytes": 166,
+          "metadata_bytes": 2460
+        },
+        "graph": {
+          "roots": [
+            "0bccff43-685d-5b30-9cb0-24d2492ee724",
+            "39dc8382-23e7-5441-b514-4d22f2b465ea",
+            "9d98ef91-b817-5bcb-a992-4e758fd837e7",
+            "be110de3-c8b2-59d8-8c7a-25297ab28ca6"
+          ],
+          "nodes": [
+            {
+              "id": "0bccff43-685d-5b30-9cb0-24d2492ee724",
+              "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.190295+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.190295+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "39dc8382-23e7-5441-b514-4d22f2b465ea",
+              "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.164528+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.164528+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "9d98ef91-b817-5bcb-a992-4e758fd837e7",
+              "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.164528+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.164528+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "be110de3-c8b2-59d8-8c7a-25297ab28ca6",
+              "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.190295+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.190295+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            }
+          ],
+          "edges": [
+            [
+              "0bccff43-685d-5b30-9cb0-24d2492ee724",
+              "be110de3-c8b2-59d8-8c7a-25297ab28ca6"
+            ],
+            [
+              "39dc8382-23e7-5441-b514-4d22f2b465ea",
+              "9d98ef91-b817-5bcb-a992-4e758fd837e7"
+            ]
+          ]
+        },
+        "native_parse_content_reverified": true,
+        "original_bytes_reverified": false,
+        "necessary_scope_verified": false,
+        "input_authority_granted": false,
+        "execution_authorized": false,
+        "historical_existence_verified": false,
+        "digest": "417f25b9baffafd1a4e4fe80523c6bbcd401eca0146f31ddbd74dd229eb3eb6f"
+      },
+      "final_parse_observation": {
+        "version": "package-current-parse-material/1",
+        "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+        "observed_at": "2026-10-24T11:51:53.476165+00:00",
+        "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+        "documents_digest": "365bf6a5223cd84a676c4da54aa4b26f4091d972d36d74914dcc1267a16a034e",
+        "counts": {
+          "pages": 4,
+          "blocks": 6,
+          "text_bytes": 166,
+          "metadata_bytes": 2460
+        },
+        "graph": {
+          "roots": [
+            "0bccff43-685d-5b30-9cb0-24d2492ee724",
+            "39dc8382-23e7-5441-b514-4d22f2b465ea",
+            "9d98ef91-b817-5bcb-a992-4e758fd837e7",
+            "be110de3-c8b2-59d8-8c7a-25297ab28ca6"
+          ],
+          "nodes": [
+            {
+              "id": "0bccff43-685d-5b30-9cb0-24d2492ee724",
+              "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.190295+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.190295+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "39dc8382-23e7-5441-b514-4d22f2b465ea",
+              "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.164528+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.164528+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "9d98ef91-b817-5bcb-a992-4e758fd837e7",
+              "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.164528+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.164528+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            },
+            {
+              "id": "be110de3-c8b2-59d8-8c7a-25297ab28ca6",
+              "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+              "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-24T11:51:29.190295+00:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-24T11:51:29.190295+00:00",
+              "valid_until": null,
+              "bid_id": "f32896b9-8162-4d79-ae0e-fe7f6953af40",
+              "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+            }
+          ],
+          "edges": [
+            [
+              "0bccff43-685d-5b30-9cb0-24d2492ee724",
+              "be110de3-c8b2-59d8-8c7a-25297ab28ca6"
+            ],
+            [
+              "39dc8382-23e7-5441-b514-4d22f2b465ea",
+              "9d98ef91-b817-5bcb-a992-4e758fd837e7"
+            ]
+          ]
+        },
+        "native_parse_content_reverified": true,
+        "original_bytes_reverified": false,
+        "necessary_scope_verified": false,
+        "input_authority_granted": false,
+        "execution_authorized": false,
+        "historical_existence_verified": false,
+        "digest": "ee6e5df88a7d170530ff4501d81473fdd368264e335bbba73ed3c2d9f9fa42cc"
+      },
+      "final_scope_observation_digest": "146884a884c7a2e86fe6008d705ce926e12a49738be1ee7e7f4b6b6da806e80a",
+      "document_count": 2,
+      "physical_page_count": 4,
+      "asset_bytes": 59648,
+      "asset_pixels": 7219200,
+      "native_parse_and_original_material_observed": true,
+      "complete_frozen_declarations_retained": true,
+      "renderer_boundary_verified": false,
+      "visual_readability_verified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "cc78ad913baff29839b1729db4dc8df8c30b1bc593cf3ae29b817784645a5a4f"
+    },
+    "runtime": {
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "hard_timeout_ms": 40000
+    },
+    "runtime_description_receipt": {
+      "container_id": "7d7c78672a8fa8d7476676a08544b41ee2b7f95fa1b478042d2419dca540ec9c",
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "compose_project": "tender-fusion",
+      "compose_service": "asset-renderer",
+      "hard_timeout_ms": 40000,
+      "container_started_at": "2026-10-24T11:51:44.705416301Z",
+      "observed_kernel_limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "pids.max": "32",
+        "cpu.max": "100000 100000",
+        "no_new_privileges": true,
+        "seccomp_filter_active": true,
+        "effective_permitted_bounding_ambient_capabilities_zero": true,
+        "network_interfaces": [
+          "lo"
+        ],
+        "read_only_source_files": 7
+      },
+      "stopped_verified": true,
+      "container_pid": 0,
+      "oom_killed": false,
+      "container_finished_at": "2026-10-24T11:51:46.172913588Z",
+      "container_exit_code": 0,
+      "was_running_before_stop": true,
+      "source_fingerprint_checked_before_and_after": true
+    },
+    "documents": [
+      {
+        "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+        "manifest_digest": "8341ebb09409885f420c4b3c6a1a60c96ff647006de3a4c2ef72bd4f19f8d905",
+        "receipt": {
+          "container_id": "081c7da9f3837e2ec49b27c597df48bf1de23ce087e175dd61e66d26b88e052d",
+          "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+          "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+          "compose_project": "tender-fusion",
+          "compose_service": "asset-renderer",
+          "hard_timeout_ms": 40000,
+          "container_started_at": "2026-10-24T11:51:47.891513116Z",
+          "observed_kernel_limits": {
+            "memory.max": "1073741824",
+            "memory.swap.max": "0",
+            "pids.max": "32",
+            "cpu.max": "100000 100000",
+            "no_new_privileges": true,
+            "seccomp_filter_active": true,
+            "effective_permitted_bounding_ambient_capabilities_zero": true,
+            "network_interfaces": [
+              "lo"
+            ],
+            "read_only_source_files": 7
+          },
+          "stopped_verified": true,
+          "container_pid": 0,
+          "oom_killed": false,
+          "container_finished_at": "2026-10-24T11:51:49.769616616Z",
+          "container_exit_code": 0,
+          "was_running_before_stop": true,
+          "source_fingerprint_checked_before_and_after": true,
+          "version": "package-page-render-execution/1",
+          "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "result_manifest_digest": "8341ebb09409885f420c4b3c6a1a60c96ff647006de3a4c2ef72bd4f19f8d905",
+          "wire_result_digest": "f813826d2440827df6ca270b630df9b4e8645ae622a30cd5c7af115824e3b7da",
+          "container_boundary_observed": true,
+          "input_authority_granted": false,
+          "visual_readability_verified": false,
+          "formal_execution_authorized": false
+        }
+      },
+      {
+        "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+        "manifest_digest": "b3262451684612300d41075027828589dfab54bd2f70ddb0a1fe820c9343467c",
+        "receipt": {
+          "container_id": "8586742ddfd98b218f761bde6e326c05578c8cbf3bc048461d941a93b5d5b17f",
+          "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+          "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+          "compose_project": "tender-fusion",
+          "compose_service": "asset-renderer",
+          "hard_timeout_ms": 40000,
+          "container_started_at": "2026-10-24T11:51:51.302375347Z",
+          "observed_kernel_limits": {
+            "memory.max": "1073741824",
+            "memory.swap.max": "0",
+            "pids.max": "32",
+            "cpu.max": "100000 100000",
+            "no_new_privileges": true,
+            "seccomp_filter_active": true,
+            "effective_permitted_bounding_ambient_capabilities_zero": true,
+            "network_interfaces": [
+              "lo"
+            ],
+            "read_only_source_files": 7
+          },
+          "stopped_verified": true,
+          "container_pid": 0,
+          "oom_killed": false,
+          "container_finished_at": "2026-10-24T11:51:53.138713338Z",
+          "container_exit_code": 0,
+          "was_running_before_stop": true,
+          "source_fingerprint_checked_before_and_after": true,
+          "version": "package-page-render-execution/1",
+          "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "result_manifest_digest": "b3262451684612300d41075027828589dfab54bd2f70ddb0a1fe820c9343467c",
+          "wire_result_digest": "1f8051f75686d10926f39c48388ed78da62abd2c9ef8ce71e87e6d039cb12afd",
+          "container_boundary_observed": true,
+          "input_authority_granted": false,
+          "visual_readability_verified": false,
+          "formal_execution_authorized": false
+        }
+      }
+    ],
+    "document_manifest_links": [
+      {
+        "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+        "frozen_manifest_digest": "06a6bf47b2ed85c337ffcc2453fad7a93b507337c6abeb77db98530008d8338e",
+        "fresh_manifest": {
+          "crop_method_digest": "8ae2729962b4a914627210ceecd43202f58650e53cf3fcb880de76b96b7254f7",
+          "cropped_at": "2026-10-24T11:51:49.380669Z",
+          "details": [
+            {
+              "asset": {
+                "byte_size": 424,
+                "height": 160,
+                "id": "37c12498c0e07f2b74e96b10b340dc62b393ede7506e301b4864c7313241da5b",
+                "media_type": "image/png",
+                "sha256": "7d0bf21c252076325026c0bac6a6963a90305b51b1b1a257ef7e600f7f4f20f3",
+                "width": 120
+              },
+              "parent_asset_id": "5f07de9463fe83a09d0a74745439e3ac8d3a140342313114742a6bdcef82d165",
+              "parent_image_digest": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+              "physical_page": 1,
+              "rectangle": [
+                0,
+                0,
+                120,
+                160
+              ]
+            }
+          ],
+          "digest": "8341ebb09409885f420c4b3c6a1a60c96ff647006de3a4c2ef72bd4f19f8d905",
+          "document_version_id": "04d91dc6-c153-4d9a-8bde-33d9a3ace9a4",
+          "font_reproducibility_verified": false,
+          "full_pages_retained": true,
+          "historical_byte_existence_verified": false,
+          "input_authority_granted": false,
+          "isolated_execution_verified": false,
+          "limitations": [
+            "CURRENT_DERIVATION_NOT_HISTORICAL_BYTE_PROOF",
+            "PIXELS_NOT_READABILITY_PROOF",
+            "PDFIUM_CANVAS_UNITS_NOT_VERIFIED_DPI",
+            "FONT_AND_COLOR_REPRODUCTION_NOT_CERTIFIED",
+            "ISOLATED_WORKER_REQUIRED_BEFORE_PUBLIC_USE"
+          ],
+          "page_count": 2,
+          "pages": [
+            {
+              "asset": {
+                "byte_size": 14616,
+                "height": 1500,
+                "id": "5f07de9463fe83a09d0a74745439e3ac8d3a140342313114742a6bdcef82d165",
+                "media_type": "image/png",
+                "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+                "width": 1200
+              },
+              "canvas_height": "500.0",
+              "canvas_width": "400.0",
+              "crop_box": null,
+              "media_box": [
+                "0.0",
+                "0.0",
+                "400.0",
+                "500.0"
+              ],
+              "physical_page": 1,
+              "rotation": 0
+            },
+            {
+              "asset": {
+                "byte_size": 14996,
+                "height": 1500,
+                "id": "9e7cf7139a3b40b616d627bd6d91ec37b7bf409d1f6513431f63ada5affc9318",
+                "media_type": "image/png",
+                "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+                "width": 1200
+              },
+              "canvas_height": "500.0",
+              "canvas_width": "400.0",
+              "crop_box": null,
+              "media_box": [
+                "0.0",
+                "0.0",
+                "400.0",
+                "500.0"
+              ],
+              "physical_page": 2,
+              "rotation": 0
+            }
+          ],
+          "parent_manifest_digest": "a2e68d3248ff4b5c7491bf4e9bdd43f57c2dbc2cd9906a45711d4307fcfdf855",
+          "pixel_format": "rgb8-filter0/1",
+          "render_method_digest": "c100f326047a47013569fa5c82f6598e3b172677db9e20726776d8ab2aa49fd5",
+          "render_scope": "all_pdfium_page_viewports",
+          "rendered_at": "2026-10-24T11:51:49.353012Z",
+          "source_byte_size": 1814,
+          "source_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "version": "package-technical-page-assets/2",
+          "visual_readability_verified": false
+        },
+        "stable_assets_digest": "28df344d885e13bce54b9fcdb05c2305cebffe8374db77c9083a290fb38cedab",
+        "actual_png_bytes_equal": true,
+        "derivation_observation_times_retained_separately": true
+      },
+      {
+        "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+        "frozen_manifest_digest": "4c9b0daae10aabe633ae2e192ccc218e6851048201e7f403aa2c2793e10eb7f1",
+        "fresh_manifest": {
+          "crop_method_digest": null,
+          "cropped_at": null,
+          "details": [],
+          "digest": "b3262451684612300d41075027828589dfab54bd2f70ddb0a1fe820c9343467c",
+          "document_version_id": "a5aeb7e8-7399-47f9-9242-031637985070",
+          "font_reproducibility_verified": false,
+          "full_pages_retained": true,
+          "historical_byte_existence_verified": false,
+          "input_authority_granted": false,
+          "isolated_execution_verified": false,
+          "limitations": [
+            "CURRENT_DERIVATION_NOT_HISTORICAL_BYTE_PROOF",
+            "PIXELS_NOT_READABILITY_PROOF",
+            "PDFIUM_CANVAS_UNITS_NOT_VERIFIED_DPI",
+            "FONT_AND_COLOR_REPRODUCTION_NOT_CERTIFIED",
+            "ISOLATED_WORKER_REQUIRED_BEFORE_PUBLIC_USE"
+          ],
+          "page_count": 2,
+          "pages": [
+            {
+              "asset": {
+                "byte_size": 14616,
+                "height": 1500,
+                "id": "ad6c61c477b35f40d54f7880410c8544537c0f75e0f3f67d63d7459c9f5c4a00",
+                "media_type": "image/png",
+                "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+                "width": 1200
+              },
+              "canvas_height": "500.0",
+              "canvas_width": "400.0",
+              "crop_box": null,
+              "media_box": [
+                "0.0",
+                "0.0",
+                "400.0",
+                "500.0"
+              ],
+              "physical_page": 1,
+              "rotation": 0
+            },
+            {
+              "asset": {
+                "byte_size": 14996,
+                "height": 1500,
+                "id": "65918c7370ec6f3dded428a0bbe5a0a691c3a4300ed44bc539b57147fc65800e",
+                "media_type": "image/png",
+                "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+                "width": 1200
+              },
+              "canvas_height": "500.0",
+              "canvas_width": "400.0",
+              "crop_box": null,
+              "media_box": [
+                "0.0",
+                "0.0",
+                "400.0",
+                "500.0"
+              ],
+              "physical_page": 2,
+              "rotation": 0
+            }
+          ],
+          "parent_manifest_digest": null,
+          "pixel_format": "rgb8-filter0/1",
+          "render_method_digest": "c100f326047a47013569fa5c82f6598e3b172677db9e20726776d8ab2aa49fd5",
+          "render_scope": "all_pdfium_page_viewports",
+          "rendered_at": "2026-10-24T11:51:52.764899Z",
+          "source_byte_size": 1814,
+          "source_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "version": "package-technical-page-assets/2",
+          "visual_readability_verified": false
+        },
+        "stable_assets_digest": "75f130600b3cac0589f3f634868f84561d0fac3e45956cfed99475d1bacc1dc0",
+        "actual_png_bytes_equal": true,
+        "derivation_observation_times_retained_separately": true
+      }
+    ],
+    "exact_frozen_context_preserved": true,
+    "trusted_derivation_bound": true,
+    "frozen_detail_crops_preserved": true,
+    "fresh_native_facts_checked_after_all_render_sessions": true,
+    "visual_readability_verified": false,
+    "necessary_scope_verified": false,
+    "native_binding_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "atomic_snapshot_verified": false,
+    "send_lease_granted": false,
+    "digest": "e0ad994fb519bc428046d85ed3b65907bf453f4f6b1165ed8ad89d820241073e"
+  },
+  "actual_loopback_gets": 4,
+  "actual_fresh_compose_sessions": 7,
+  "physical_pages": 4,
+  "frozen_details": 1,
+  "exact_context_time_and_digest_preserved": true,
+  "actual_derived_image_bytes_equal": true,
+  "database_rechecked_after_new_derivation": true,
+  "synthetic_material": true,
+  "actual_human_review": false,
+  "input_authority_granted": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

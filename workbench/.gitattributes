@@ -221,3 +221,10 @@
 /tests/test_input_seals*.py text eol=lf
 /packages/contracts/material-input-seals.md text eol=lf
 /docs/completion-20261021/evidence/input-seals/** -text
+
+/packages/model_governance/material_cost_quotes.py text eol=lf
+/packages/model_governance/native_rpc_audit.py text eol=lf
+/deploy/sql/material-cost-quotes.sql text eol=lf
+/tests/test_cost_quotes*.py text eol=lf
+/packages/contracts/material-cost-quotes.md text eol=lf
+/docs/completion-20261021/evidence/cost-quotes/** -text
