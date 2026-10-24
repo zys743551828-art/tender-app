@@ -241,3 +241,10 @@
 /tests/test_judgment_jobs.py text eol=lf
 /tests/test_judgment_jobs_pg.py text eol=lf
 /docs/completion-20261021/evidence/judgment-jobs/** -text
+
+/deploy/sql/material-preparation-leases.sql text eol=lf
+/packages/model_governance/material_preparation_leases.py text eol=lf
+/packages/contracts/material-preparation-leases.md text eol=lf
+/tests/test_preparation_leases.py text eol=lf
+/tests/test_preparation_leases_pg.py text eol=lf
+/docs/completion-20261021/evidence/preparation-leases/** -text

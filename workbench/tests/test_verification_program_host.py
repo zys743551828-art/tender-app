@@ -20,7 +20,6 @@ from test_input_renewals_pg import record, wire_digests
 from test_input_renewals_pg import reread as read_renewal
 from test_input_seals_pg import publish, seal
 from test_input_seals_pg import reread as read_seal
-from test_judgment_jobs_pg import database
 from test_judgment_jobs_pg import publish as publish_job
 from test_judgment_jobs_pg import refresh_args as job_refresh_args
 from test_judgment_jobs_pg import reread as read_job
@@ -28,6 +27,11 @@ from test_judgment_jobs_pg import start as start_job
 from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
+from test_preparation_leases_pg import claim as claim_preparation
+from test_preparation_leases_pg import database
+from test_preparation_leases_pg import inspect as inspect_preparation
+from test_preparation_leases_pg import publish as publish_preparation
+from test_preparation_leases_pg import refs as preparation_refs
 from test_verification_commands_pg import begin, configure
 from test_verification_program_pg import (
     KEYS,
@@ -42,6 +46,7 @@ from test_verification_program_pg import (
 from deploy import fusion_verification_program as program
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import material_judgment_jobs as jobs
+from packages.model_governance import material_preparation_leases as preparation
 from packages.model_governance import material_verification_program as port
 from packages.model_governance import package_material_cost as cost
 from packages.model_governance import package_material_scope_review as review
@@ -50,13 +55,15 @@ from packages.model_governance import package_native_evidence_registration as re
 from packages.model_governance import package_native_material_recovery as recovery
 from packages.model_governance import package_native_material_store as store
 from packages.model_governance import package_technical_material as material
+from packages.storage.private_cas import sha
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1"
     or os.environ.get("FUSION_INPUT_SEALS_HOST") != "1"
     or os.environ.get("FUSION_COST_QUOTES_HOST") != "1"
     or os.environ.get("FUSION_INPUT_RENEWALS_HOST") != "1"
-    or os.environ.get("FUSION_JUDGMENT_JOBS_HOST") != "1",
+    or os.environ.get("FUSION_JUDGMENT_JOBS_HOST") != "1"
+    or os.environ.get("FUSION_PREPARATION_LEASES_HOST") != "1",
     reason="explicit actual trusted-host program execution required",
 )
 
@@ -554,6 +561,94 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
                 "model_calls_created": 0,
                 "provider_attempts": 0,
                 "outbox_delivered": False,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    preparation_profile, preparation_profile_digest = publish_preparation(w, job)
+    preparation_args = {
+        "job_id": job.metadata["document"]["job_id"],
+        "expected_job_digest": job.metadata["digest"],
+        "profile_id": preparation_profile,
+        "expected_profile_digest": preparation_profile_digest,
+        "command_id": str(uuid4()),
+        "expected_method_digest": preparation.method_digest(),
+    }
+    lease = claim_preparation(w, preparation_args)
+    opened = inspect_preparation(w, lease)
+    assert opened.metadata["current"]["preparation_lease_current"]
+    projection = preparation.owned_context(db["preparation_worker"], **preparation_refs(lease))
+    assert projection.metadata["context"] == frozen.metadata
+    assert projection.metadata["material_input"] == bound.metadata
+    owned_assets = {
+        sha(raw): raw
+        for bundle in frozen.origin.page_bundles.values()
+        for raw in bundle.blobs.values()
+    }
+    batch = preparation.owned_assets(
+        db["preparation_worker"],
+        **preparation_refs(lease),
+        expected_object_digests=sorted(owned_assets),
+    )
+    assert sorted(batch.objects) == sorted(owned_assets)
+    assert all(sha(batch.objects[key]) == sha(raw) for key, raw in owned_assets.items())
+    for object_digest, raw in owned_assets.items():
+        asset = preparation.owned_asset(
+            db["preparation_worker"], **preparation_refs(lease), object_digest=object_digest
+        )
+        assert asset.data == raw
+    with pytest.raises(preparation.PreparationError, match="ASSET_NOT_OWNED"):
+        preparation.owned_asset(
+            db["preparation_worker"],
+            **preparation_refs(lease),
+            object_digest=projection.metadata["context_object_digest"],
+        )
+    heartbeat_command = str(uuid4())
+    heartbeat = preparation.heartbeat(
+        db["preparation_worker"], **preparation_refs(lease), command_id=heartbeat_command
+    )
+    assert (
+        preparation.heartbeat(
+            db["preparation_worker"], **preparation_refs(lease), command_id=heartbeat_command
+        )
+        == heartbeat
+    )
+    after_heartbeat = inspect_preparation(w, lease)
+    assert after_heartbeat.metadata["current"]["preparation_lease_current"]
+    assert state["attempts"] == state["idle_checks"] == 24 and len(receipts) == 16
+    (directory / "host-preparation-leases-proof.json").write_text(
+        json.dumps(
+            {
+                "lease": lease.metadata,
+                "reopened": opened.metadata,
+                "heartbeat": heartbeat.metadata,
+                "after_heartbeat": after_heartbeat.metadata,
+                "context_digest": projection.metadata["context"]["digest"],
+                "material_input_digest": projection.metadata["material_input"]["digest"],
+                "owned_asset_digests": sorted(owned_assets),
+                "controlled_owned_projection_matches_frozen_context": True,
+                "complete_asset_bytes_match_earlier_actual_render": True,
+                "complete_owned_image_batch_verified": True,
+                "non_image_context_object_denied": True,
+                "projection_is_not_authorized_material_context": True,
+                "actual_loopback_gets_total": 24,
+                "actual_fresh_compose_sessions": 16,
+                "ownership_additional_gets": 0,
+                "ownership_additional_sessions": 0,
+                "kernel_receipts": receipts,
+                "independent_connections_idle_during_http_and_kernel_execution": 7,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "fee_ledger_reserved": False,
+                "execution_authorized": False,
+                "send_lease_granted": False,
+                "model_calls_created": 0,
+                "provider_attempts": 0,
                 "body_exported": False,
             },
             indent=2,

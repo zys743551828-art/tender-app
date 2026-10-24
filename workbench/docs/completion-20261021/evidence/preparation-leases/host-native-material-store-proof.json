@@ -1,0 +1,94 @@
+{
+  "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+  "producer_method_digest": "3050bb3cbe9d0390e9b9092b76234be3f39896f06a13d07ab78ecd4ac119ccdb",
+  "record": {
+    "digest": "dc0bdc95a22073cad114aaa415a063f5aa6317dd95e68c474ac968764be6d287",
+    "document": {
+      "bid_id": "bba01ed7-87cd-4819-9a00-8d82f20997a3",
+      "packet": {
+        "version": "package-native-material-store-packet/1",
+        "image_objects": [
+          {
+            "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+            "asset_id": "2ba98f62b225574d679577340673884a0a24bfe20139c9a98c77f099703c24af",
+            "byte_size": 14996
+          },
+          {
+            "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+            "asset_id": "334e614e2bc808358b4fda9425aae748b1e343f80acaefe653d47e41a56957b0",
+            "byte_size": 14996
+          },
+          {
+            "sha256": "7d0bf21c252076325026c0bac6a6963a90305b51b1b1a257ef7e600f7f4f20f3",
+            "asset_id": "6c499c6ed5133f9b8bb7279fbb25dd4b23f2c92d3fd8f3943291aa86190d00c9",
+            "byte_size": 424
+          },
+          {
+            "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+            "asset_id": "76daa92c6f28888f3ac440fe4301897fa8003dbf330155ea7dffed5b8478b923",
+            "byte_size": 14616
+          },
+          {
+            "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+            "asset_id": "7805e4521ec243bd036b55806ec3ebdb42043d18c37f25b970e8bdc411cb8f94",
+            "byte_size": 14616
+          }
+        ],
+        "review_digest": "e6f89d836a911932ac3de042b97f494496d7c52701154e88726eaabd8351d869",
+        "context_digest": "fa2268d679c5bcbf4b91507e8e9ee5103e2ffc175495e4ba7f57d56a9e339573",
+        "context_object": {
+          "sha256": "0cda0091abad6431aa17ee969c20ea8a5d3c3c783068ee36183197a0fd9f82b5",
+          "byte_size": 63730
+        },
+        "findings_digest": "334b02db01c30686544a2e0f5084963101f459a34d7ff3c4ec695f594a9548cc",
+        "findings_object": {
+          "sha256": "c55a282b282bd6bf8efcb757d802e87c6f8aefca647b900481d0cf871d957870",
+          "byte_size": 11043
+        },
+        "derivation_object": {
+          "sha256": "5b66d6af4cd10f752d6364fe542e8704ccf9c2fcda5edcbd0f841a9afbba507e",
+          "byte_size": 17441
+        },
+        "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "source_observation_digest": "a81a4b1e0ff8a752426d092cb6e223f86bc4aed8882e21529983b65bf4da04c4",
+        "source_observation_object": {
+          "sha256": "e760c28bd01b330058154403f3a3cdf4170393b22a45bca1cd1348560c5c8640",
+          "byte_size": 7250
+        },
+        "derivation_observation_digest": "b0f5d7bd1d22971f43f7eeec5942a10ace4a7c1ceb483a7f53c491917fff0bf4"
+      },
+      "status": "private_evidence_stored",
+      "version": "package-native-material-store-record/1",
+      "scope_id": "1c5153f9-00b4-45ba-abb8-3fab5d10e791",
+      "record_id": "32308f69-b881-4339-85b4-3ac05d5a767a",
+      "command_id": "67dc9188-93cc-4b11-b101-f475b7f8c09f",
+      "recorded_at": "2026-10-24T15:37:26.340904Z",
+      "recorded_by": "fusion_material_store_writer",
+      "scope_digest": "8dc94bc8fef7df6f701ef7c12c1839bf0f97550592479b7235ff0f373d53708d",
+      "packet_digest": "638f88f73e4567300e65e94bf827da3c84b65519164b8aa41b43b5de8d2f8b81",
+      "execution_authorized": false,
+      "input_authority_granted": false,
+      "native_binding_verified": false,
+      "necessary_scope_verified": false,
+      "historical_existence_verified": false
+    },
+    "native_record_identity_verified": true
+  },
+  "object_count": 7,
+  "asset_count": 5,
+  "actual_loopback_gets": 4,
+  "actual_fresh_compose_sessions": 7,
+  "physical_pages": 4,
+  "frozen_details": 1,
+  "actual_renderer_used": true,
+  "exact_context_derivation_report_and_png_bytes_recovered_after_reopen": true,
+  "private_native_byte_store_verified": true,
+  "windows_private_acl_backend_installed": false,
+  "synthetic_material": true,
+  "synthetic_review_claims": true,
+  "actual_human_review": false,
+  "input_authority_granted": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

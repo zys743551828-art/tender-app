@@ -330,6 +330,14 @@ SUITES["judgment-jobs-native"] = [
 ]
 
 
+SUITES["preparation-leases-native"] = [
+    "tests/test_preparation_leases_pg.py",
+    "tests/test_preparation_leases.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
+
+
 def main():
     suite = os.environ.get("FUSION_CHECK_SUITE", "pure")
     if suite not in SUITES:
@@ -395,6 +403,7 @@ def main():
         "cost-quotes-native",
         "input-renewals-native",
         "judgment-jobs-native",
+        "preparation-leases-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -459,6 +468,7 @@ def main():
                 "cost-quotes-native",
                 "input-renewals-native",
                 "judgment-jobs-native",
+                "preparation-leases-native",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -511,6 +521,9 @@ def main():
                 if suite == "verification-commands-native":
                     environment["FUSION_VERIFICATION_COMMANDS_PG"] = "1"
                     environment["FUSION_VERIFICATION_COMMANDS_EVIDENCE"] = "/evidence"
+                if suite == "preparation-leases-native":
+                    environment["FUSION_PREPARATION_LEASES_PG"] = "1"
+                    environment["FUSION_PREPARATION_LEASES_EVIDENCE"] = "/evidence"
                 if suite == "judgment-jobs-native":
                     environment["FUSION_JUDGMENT_JOBS_PG"] = "1"
                     environment["FUSION_JUDGMENT_JOBS_EVIDENCE"] = "/evidence"

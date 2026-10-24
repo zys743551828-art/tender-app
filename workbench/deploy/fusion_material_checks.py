@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/judgment-jobs"
+LOCAL = ROOT / ".local/preparation-leases"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -52,6 +52,7 @@ GROUPS = (
     "tender_material_cost_quote",
     "tender_material_input_renew",
     "tender_material_judgment_submit",
+    "tender_material_preparation_worker",
 )
 COMPOSE = [
     "docker",
@@ -160,6 +161,7 @@ def main():
                 "FUSION_COST_QUOTES_HOST": "1",
                 "FUSION_INPUT_RENEWALS_HOST": "1",
                 "FUSION_JUDGMENT_JOBS_HOST": "1",
+                "FUSION_PREPARATION_LEASES_HOST": "1",
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -178,7 +180,7 @@ def main():
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/judgment-jobs/host-native-final.xml",
+                "--junitxml=.local/preparation-leases/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,
