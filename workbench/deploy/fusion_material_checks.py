@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/verification-program"
+LOCAL = ROOT / ".local/input-authority"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -47,6 +47,7 @@ GROUPS = (
     "tender_native_evidence_verify",
     "tender_material_verification_commands",
     "tender_material_verification_program",
+    "tender_material_input_verify",
 )
 COMPOSE = [
     "docker",
@@ -169,7 +170,7 @@ def main():
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/verification-program/host-native-final.xml",
+                "--junitxml=.local/input-authority/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,

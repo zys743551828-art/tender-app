@@ -209,3 +209,9 @@
 /tests/test_verification_program*.py text eol=lf
 /packages/contracts/material-verification-program.md text eol=lf
 /docs/completion-20261021/evidence/verification-program/** -text
+
+/packages/model_governance/material_input_authority.py text eol=lf
+/deploy/sql/material-input-authority.sql text eol=lf
+/tests/test_input_authority*.py text eol=lf
+/packages/contracts/material-input-authority.md text eol=lf
+/docs/completion-20261021/evidence/input-authority/** -text

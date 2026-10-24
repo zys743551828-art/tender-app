@@ -52,6 +52,7 @@ SYSTEM_KEYS = {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "LANG", "LC_ALL", 
         "packages.model_governance.material_verification_commands",
         "packages.model_governance.material_verification_program",
         "deploy.fusion_verification_program",
+        "packages.model_governance.material_input_authority",
     ],
 )
 def test_purpose_import_never_enters_business_runtime_or_reads_env(module):

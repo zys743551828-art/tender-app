@@ -293,6 +293,13 @@ SUITES["verification-program-native"] = [
     "tests/test_fusion_compose.py",
 ]
 
+SUITES["input-authority-native"] = [
+    "tests/test_input_authority_pg.py",
+    "tests/test_input_authority.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
+
 
 def main():
     suite = os.environ.get("FUSION_CHECK_SUITE", "pure")
@@ -354,6 +361,7 @@ def main():
         "native-current-review",
         "verification-commands-native",
         "verification-program-native",
+        "input-authority-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -413,6 +421,7 @@ def main():
                 "native-current-review",
                 "verification-commands-native",
                 "verification-program-native",
+                "input-authority-native",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -465,6 +474,9 @@ def main():
                 if suite == "verification-commands-native":
                     environment["FUSION_VERIFICATION_COMMANDS_PG"] = "1"
                     environment["FUSION_VERIFICATION_COMMANDS_EVIDENCE"] = "/evidence"
+                if suite == "input-authority-native":
+                    environment["FUSION_INPUT_AUTHORITY_PG"] = "1"
+                    environment["FUSION_INPUT_AUTHORITY_EVIDENCE"] = "/evidence"
                 if suite == "verification-program-native":
                     environment["FUSION_VERIFICATION_PROGRAM_PG"] = "1"
                     environment["FUSION_VERIFICATION_PROGRAM_EVIDENCE"] = "/evidence"

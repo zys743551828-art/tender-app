@@ -11,6 +11,7 @@ from uuid import uuid4
 import pytest
 from psycopg.pq import TransactionStatus
 from test_fusion_context_derivation_native import collect, freeze, runtime
+from test_input_authority_pg import approve, database, qualify, reread
 from test_native_evidence_issuers_pg import SIGNER, assign
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
@@ -18,7 +19,6 @@ from test_verification_commands_pg import begin, configure
 from test_verification_program_pg import (
     KEYS,
     api,
-    database,
     exact,
     pdf_data,
     requirements,
@@ -34,6 +34,7 @@ from packages.model_governance import package_native_evidence_issuers as issuer
 from packages.model_governance import package_native_evidence_registration as registration
 from packages.model_governance import package_native_material_recovery as recovery
 from packages.model_governance import package_native_material_store as store
+from packages.model_governance import package_technical_material as material
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("FUSION_VERIFICATION_PROGRAM_HOST") != "1",
@@ -179,7 +180,49 @@ def test_actual_program_identity_kernel_execution_native_result_and_unknown_reco
     assert canonical(
         result["observation"]["verified_material"]["live_derivation"]["context_digest"]
     ) == canonical(frozen.metadata["digest"])
+    authority_args = approve(
+        w, first.result, image=runtime.expected_image_id, source=runtime.expected_source_digest
+    )
+    verified = qualify(w, authority_args)
+    current = reread(w, verified)
+    assert current.record == verified and current.metadata["current"]["software_input_current"]
+    assert not current.metadata["current"]["current_input_verified"]
+    bound = material.bind_input(
+        frozen,
+        verified.binding,
+        expected_context_digest=frozen.metadata["digest"],
+        expected_binding_digest=digest(verified.binding),
+        expected_method_digest=material.method_digest(),
+    )
+    assert bound.metadata["native_binding_verified"] is False
+    assert bound.metadata["input_authority_granted"] is False
+    assert state["attempts"] == 12 and len(receipts) == 10
     directory = Path(os.environ["FUSION_MATERIAL_DERIVATION_EVIDENCE"])
+    (directory / "host-input-authority-proof.json").write_text(
+        json.dumps(
+            {
+                "verification": verified.metadata,
+                "current": current.metadata,
+                "binding": verified.binding,
+                "material_input": bound.metadata,
+                "actual_renderer_used": True,
+                "synthetic_renderer_stub": False,
+                "actual_loopback_gets_total": 12,
+                "actual_fresh_compose_sessions": 10,
+                "qualification_additional_gets": 0,
+                "qualification_additional_sessions": 0,
+                "independent_verifier_login_and_oid": True,
+                "synthetic_material_and_configuration": True,
+                "actual_human_review": False,
+                "input_authority_granted": False,
+                "provider_attempts": 0,
+                "body_exported": False,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (directory / "host-verification-program-proof.json").write_text(
         json.dumps(
             {
