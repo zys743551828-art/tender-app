@@ -1,0 +1,156 @@
+{
+  "scope": "native scope-driven complete original collection and fresh final observations; no parse or input authority",
+  "tests": {
+    "linux_passed": 65,
+    "linux_junit_seconds": 26.943,
+    "linux_by_module": {
+      "tests.test_package_current_original_set_pg": 9,
+      "tests.test_original_bytes": 35,
+      "tests.test_provider_error_isolation": 9,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 44,
+    "host_junit_seconds": 3.256,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "aec8106349b54b472126693e50e2cfa902954a1bd06c49c5ba5d00573540ad14",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "1bab361e490a1071edb6e1b7f1203c5ee75412112ae7f0394f79355ea3108126",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-original-set.md",
+      "sha256": "52304e05ecb16fe3f421021e3e3b0ae4fa024970e6eb234555287ea5a9f01c72",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_original_set.py",
+      "sha256": "b586d6e62d4c3a47bb7210fdd7ff76015150f33fdff8fb3381786fe5ac2f2cbd",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_original_set_pg.py",
+      "sha256": "9042994ae2d897726e9163bab10bc70cbbd0fcd0c946640dabdf74c4f8180ccb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "ded5f75b991861395bfdf0f99e4886f19a3f7682050aa08d92c801105a1645b6",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false
+  },
+  "actual_http_bytes": 122,
+  "actual_successful_http_gets": 2,
+  "real_oss_or_s3_reads": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "public_http_api_changed": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "runtime_inputs": 1198,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "new_original_capability_roles": 0,
+    "scope_capability_roles": 0
+  },
+  "normal_business_boundary": {
+    "new_locator_schemas": 0,
+    "new_locator_roles": 0,
+    "design_tables": 136
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-final.log": "e069349ada591e09eb4785a8131609c6d50e367663ec24591238a5d7f2491680",
+    "linux-final.xml": "a21c39fb938be739c562199364b4c81c095799e63f3b44749edd5114e65dd85f",
+    "host-final.log": "972a5543c9f0774d375e2e0662f3374efaf4e9538a81ccc3d9e30b3c99c943ef",
+    "host-final.xml": "06728fdb901a2a7df00c862900a61a4eff64de686bbc235c266aaac631d17019",
+    "python-final.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "original-set-native-proof.json": "e890c6972b3e084d90fada6a023114f3f4951daacc46a7fa8cb0f06a4dd9babf",
+    "checks-cleanup.json": "33aabf42052e4e82d18f78b85ae96cba69d80e46dbe0e47430cbf14076fabd85",
+    "business-boundary.json": "6d8e8186fb070dd8ca8483389ba1a5851b5f3bb0e01fa4d96575748f2a3677c6",
+    "http-runtime.json": "3cf9ac60a896aea82c1d7b1b91ced1b7a92518adbd98030f400816baa4835f2f",
+    "method-boundaries.json": "0e46c491eb2fb67fcd760e16dd5ff67d79c0b184b4bb7112ea698cb840357457"
+  }
+}
