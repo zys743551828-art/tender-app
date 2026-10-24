@@ -202,6 +202,12 @@ SUITES["material-registration-native"] = [
     "tests/test_package_material_recovery.py",
     *SUITES["material-archive-pure"],
 ]
+SUITES["material-scope-review-native"] = [
+    "tests/test_package_material_scope_review_pg.py",
+    "tests/test_package_material_scope_review.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
@@ -252,6 +258,7 @@ def main():
         "complete-material-native",
         "material-recovery-native",
         "material-registration-native",
+        "material-scope-review-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -299,6 +306,7 @@ def main():
                 "complete-material-native",
                 "material-recovery-native",
                 "material-registration-native",
+                "material-scope-review-native",
             }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
@@ -318,6 +326,9 @@ def main():
                 if suite == "material-registration-native":
                     environment["FUSION_MATERIAL_REGISTRATION_PG"] = "1"
                     environment["FUSION_MATERIAL_REGISTRATION_EVIDENCE"] = "/evidence"
+                if suite == "material-scope-review-native":
+                    environment["FUSION_MATERIAL_SCOPE_REVIEW_PG"] = "1"
+                    environment["FUSION_MATERIAL_SCOPE_REVIEW_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"

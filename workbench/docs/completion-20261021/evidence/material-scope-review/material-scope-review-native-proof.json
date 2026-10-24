@@ -1,0 +1,18 @@
+{
+  "scope_review_digest": "af8868c7d5c2ca0c4b6f5617125f46ae35e31cf9db07e5b8a0e1b0641ec4cb41",
+  "scope_review_method_digest": "766308c7ce0e94527f1c0857534c97a2f5fd085d37ec4d49eade2f007f60b4c8",
+  "context_digest": "987351e406dee096dd11900a9a597109d285b25033cca2adb7e941bc97a793b8",
+  "document_rows": 2,
+  "part_rows": 4,
+  "inventory_requirements": 5,
+  "review_items": 15,
+  "selected_rule_sources": 3,
+  "selected_rule_bands": 2,
+  "actual_loopback_gets": 2,
+  "synthetic_content": true,
+  "all_items_unreviewed": true,
+  "input_authority_granted": false,
+  "native_binding_registered": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

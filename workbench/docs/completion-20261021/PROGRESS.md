@@ -6,6 +6,8 @@
 
 操作入口见 [启动与操作验收](START-HERE.md)。
 
+[完整材料必要范围核验清单](material-scope-review-acceptance.md)已消费全部两包／声明章节／完整inventory，非评分要求、未选后代、原排除与缺口保留；四类全局必核及逐主体事项全部未审核，字节齐全不授语义资格。61 Linux／46 Windows（重叠）、五文件格式与一实现Linux目标类型／安全门通过；原生2文档／4章节／5要求／15事项、三份依据与两档位完整，深层路径与commercial类别反例覆盖。七输入及11证据核Git，所有旧方法／记录保持，无新SQL／ACL／HTTP。5188为1219输入／68资源、三服务健康、业务与付费0，正常库登记schema／核验角色0、BASE37／design136保持，独立fusion库／LOGIN／核验组0、检查／渲染停止，正常Word保留。下一项独立审核决定、主体／证据绑定与正向登记，随后发送CAS／lease、token／价格／费用及正式Worker。
+
 [原生待核验材料登记](material-registration-acceptance.md)已实现先固定私有命令、独立LOGIN／两窄RPC、实际时间／ID与不可变待核验记录；结果不确定时按同一固定命令查回／重放，四连接并发只一份。190 Linux／123 Windows（重叠）、五文件格式与一实现Linux目标类型／安全门通过；跨LOGIN／内容／主体／摘要、直接表权限、函数改变、PUBLIC过权及非法结果回滚反例通过。八输入及11证据核Git，所有旧方法与记录保持，可选登记权限只在全新独立检查库。5188为1217输入／68资源、三服务健康；正常库登记schema／核验角色0、BASE37／design136保持，独立fusion数据库／LOGIN／核验组0、检查／渲染停止，正常Word保留。native_record_identity_verified只核记录身份，状态固定待核验、binding／必要范围／输入／执行仍false；下一项独立必要范围与内容核验决定，再接发送CAS／lease、token／价格／费用及Worker。
 
 [准确材料原生恢复](material-recovery-acceptance.md)已完成私有封套／原观察独立保存、真实关闭重开、三个原生目的端口及全部原件重读；原context字节／摘要／时点及/3请求字节完全保持，新观察另存。146 Linux／96 Windows（重叠）、五文件格式与一实现Linux目标类型／安全门通过；9项原生包含撤回／revision／关闭／损坏／末件变化／取消及冻结页不可变保护，读取投影故障单独注入，未关闭触发器。七输入及15证据核Git，所有旧方法与记录保持，无新SQL／ACL／HTTP。5188为1214输入／68资源、三服务健康、业务／付费0，独立库／LOGIN／能力组0且检查／渲染停止，正常Word保留。恢复观察不授原生binding／必要范围／输入／执行资格；下一项独立原生登记与必要范围，再接CAS／lease、token／价格／费用和正式Worker。
