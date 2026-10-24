@@ -1,0 +1,19 @@
+{
+  "checked_findings_digest": "21e3ace606163764cfbd4509bc7672c96bf3631d7b2569124fda6815e2783e87",
+  "findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+  "findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03",
+  "findings_commit_digest": "49f42bc710e47416f5045b2053d47c83c343467a50fa2cad42ac95206f46367b",
+  "private_store_closed_and_reopened": true,
+  "review_digest": "85e328b1d3833d1d5114764619b561a986d9082cb07c61f6e7e57c5dd143c15b",
+  "context_digest": "16c6f261b7fc110c34aa549a7f3f70a0e1b66fbe568623b121c78f244f655e04",
+  "finding_count": 15,
+  "selected_rule_citations": 3,
+  "actual_loopback_gets": 2,
+  "synthetic_review_claims": true,
+  "actual_human_review": false,
+  "reviewer_identity_verified": false,
+  "necessary_scope_verified": false,
+  "input_authority_granted": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

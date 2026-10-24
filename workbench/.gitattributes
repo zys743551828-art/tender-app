@@ -146,4 +146,9 @@
 /packages/contracts/package-material-cost.md text eol=lf
 /tests/test_package_material_cost*.py text eol=lf
 /docs/completion-20261021/evidence/material-cost/** -text
+/packages/model_governance/package_material_scope_findings.py text eol=lf
+/packages/model_governance/package_scope_findings_store.py text eol=lf
+/packages/contracts/package-material-scope-findings.md text eol=lf
+/tests/test_package_material_scope_findings*.py text eol=lf
+/docs/completion-20261021/evidence/material-scope-findings/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text

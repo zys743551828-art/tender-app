@@ -1,0 +1,206 @@
+{
+  "scope": "complete evidence-bound scope review claims and private persistence; no reviewer authority",
+  "tests": {
+    "linux_passed": 83,
+    "linux_seconds": 14.257,
+    "linux_by_module": {
+      "tests.test_package_material_scope_findings_pg": 1,
+      "tests.test_package_material_scope_findings": 46,
+      "tests.test_provider_error_isolation": 24,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 70,
+    "host_seconds": 11.385,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "2517332d469f00fb19a13d92a6468a2ac765bbd4826d630c89a9dbaf253088b7",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "8edd296d401250675475dca24b9fb8c418b152f822fd52e33e3d101b0001132b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-material-scope-findings.md",
+      "sha256": "615d516ea19b185b3e184d652dbc2e40ba65d2c01e2cda204cf340d2abf4d8ff",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_material_scope_findings.py",
+      "sha256": "9a8c83c524c61896617660940081d29033c204e53b5e2fcde6142ad2dccac996",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_scope_findings_store.py",
+      "sha256": "b37e562cf5b776965db3edf00a7e820253c6bc46f402866f57e1285d1d547516",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_scope_findings.py",
+      "sha256": "3a754d2c5a97e266ba024c145e0267bcf8b55bb3b0eb6a2d6841e982034c7a34",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_scope_findings_pg.py",
+      "sha256": "cd1eb4c3d2b142a3ed6c033da3e9b32cd9373d22a20be5d4532239cb82e3d96f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "e002adf4f67e9bd259f0390daa735575c8f53320ecb98dbae669d447ff068475",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+    "pending_material_registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+    "material_scope_review_method_digest": "766308c7ce0e94527f1c0857534c97a2f5fd085d37ec4d49eade2f007f60b4c8",
+    "material_cost_method_digest": "74e4fa0930751cca9090b085e5cd79295c925fcd9b44e5819d8a8d1ba158df85",
+    "material_scope_findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+    "scope_findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03"
+  },
+  "native_scope_findings_proof": {
+    "checked_findings_digest": "21e3ace606163764cfbd4509bc7672c96bf3631d7b2569124fda6815e2783e87",
+    "findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+    "findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03",
+    "findings_commit_digest": "49f42bc710e47416f5045b2053d47c83c343467a50fa2cad42ac95206f46367b",
+    "private_store_closed_and_reopened": true,
+    "review_digest": "85e328b1d3833d1d5114764619b561a986d9082cb07c61f6e7e57c5dd143c15b",
+    "context_digest": "16c6f261b7fc110c34aa549a7f3f70a0e1b66fbe568623b121c78f244f655e04",
+    "finding_count": 15,
+    "selected_rule_citations": 3,
+    "actual_loopback_gets": 2,
+    "synthetic_review_claims": true,
+    "actual_human_review": false,
+    "reviewer_identity_verified": false,
+    "necessary_scope_verified": false,
+    "input_authority_granted": false,
+    "provider_attempts": 0,
+    "body_exported": false
+  },
+  "files": {
+    "material-scope-findings-native-proof.json": "b10cc3e99a3303ca43f6b4b7071ac1a1f90c56a3813890aa91078f0b4f099509",
+    "linux-final.log": "d9dc5a7a9822909e8aacfc54516e89d5aa6a0ea2baccb716adb65b8b43165234",
+    "linux-final.xml": "f6dddfa8af9e9e57648be8948098e5040ca3a2d996232ce19ffac6c650744757",
+    "host-final.log": "2776b846da5e39d7aa18f16755f88e7ce48b60068c961fac1252392669b5702e",
+    "host-final.xml": "303fd5a5e553ba92f398f2731ea2fa71035f05d22a522c9cc2fe68dce1f7600d",
+    "python-final.log": "95438f4f06aa8282e22bcd1d0564dcb630a0f3d7d904e08125c21db7fbf099ea",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "business-boundary.json": "e9f47c346e9c8aa594021e2ec92653a68cb62034fd45b45b7406c471b066a31c",
+    "http-runtime.json": "ebbf9a2e52939d15059ca0ae71e978cc0ca74990d604b94a80e31374c1e3fb9b",
+    "method-boundaries.json": "d3994375ff8616f032570b8e3fe4766e50b3ddb49ef040c44ad2d1e823326705"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136,
+    "registration_schemas": 0
+  },
+  "runtime_inputs": 1224,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants_in_business_database": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}
