@@ -1,0 +1,10 @@
+# Optional trusted-host checks only. Restore base Compose after the suite.
+services:
+  checks-postgres:
+    ports: ["127.0.0.1::5432"]
+    networks:
+      core: {}
+      host-checks: {}
+networks:
+  host-checks:
+    driver: bridge

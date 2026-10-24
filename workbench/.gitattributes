@@ -157,3 +157,9 @@
 /packages/contracts/package-scope-review-issuers.md text eol=lf
 /tests/test_scope_review_issuers*.py text eol=lf
 /docs/completion-20261021/evidence/scope-review-issuers/** -text
+/deploy/fusion_material_derivation.py text eol=lf
+/deploy/fusion_material_checks.py text eol=lf
+/deploy/compose.fusion.host-checks.yaml text eol=lf
+/tests/test_fusion_material_derivation*.py text eol=lf
+/packages/contracts/fusion-material-derivation.md text eol=lf
+/docs/completion-20261021/evidence/material-derivation/** -text
