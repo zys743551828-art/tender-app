@@ -47,6 +47,7 @@ SYSTEM_KEYS = {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "LANG", "LC_ALL", 
         "packages.model_governance.package_native_material_recovery",
         "packages.model_governance.package_native_evidence_registration",
         "packages.model_governance.package_native_evidence_issuers",
+        "packages.model_governance.package_native_current_review",
     ],
 )
 def test_purpose_import_never_enters_business_runtime_or_reads_env(module):

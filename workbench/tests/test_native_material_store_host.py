@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
+from psycopg.pq import TransactionStatus
 from test_fusion_context_derivation_native import collect, freeze, runtime
 from test_native_evidence_issuers_pg import SIGNER, assign, database
 from test_package_current_material_pg import api, exact, pdf_data, requirements, saved, world
@@ -16,6 +17,7 @@ from test_package_material_scope_findings import checked, draft_for
 
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import package_material_scope_review as review
+from packages.model_governance import package_native_current_review as joint
 from packages.model_governance import package_native_evidence_issuers as issuer
 from packages.model_governance import package_native_evidence_registration as registration
 from packages.model_governance import package_native_material_recovery as native_recovery
@@ -265,3 +267,74 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
                     + "\n",
                     encoding="utf-8",
                 )
+                if os.environ.get("FUSION_NATIVE_CURRENT_REVIEW_HOST") == "1":
+                    connections = [
+                        w["database"][key]
+                        for key in (
+                            "native_registrar",
+                            "material_reader",
+                            "scope_verifier",
+                            "original_verifier",
+                            "parse_verifier",
+                            "native_issuer_reader",
+                        )
+                    ]
+
+                    def idle():
+                        assert all(
+                            c.info.transaction_status == TransactionStatus.IDLE for c in connections
+                        )
+
+                    state["callback"] = idle
+                    try:
+                        combined = asyncio.run(
+                            joint.observe(
+                                *connections,
+                                registration_command_id=registration_command,
+                                expected_registration_packet_digest=document["packet_digest"],
+                                expected_registration_digest=registered.metadata["digest"],
+                                issuer_command_id=issuer_command,
+                                expected_issuer_reference_digest=digest(
+                                    attested.metadata["document"]["reference"]
+                                ),
+                                expected_issuer_digest=attested.metadata["digest"],
+                                expected_context_digest=frozen.metadata["digest"],
+                                expected_method_digest=joint.method_digest(),
+                                bid_id=frozen.metadata["bid_id"],
+                                scope_id=frozen.metadata["scope_id"],
+                                expected_scope_digest=frozen.metadata["scope_digest"],
+                                profile="development_s3",
+                                url_for_locator=url,
+                            )
+                        )
+                    finally:
+                        state["callback"] = None
+                    assert canonical(combined.context.metadata) == canonical(frozen.metadata)
+                    assert canonical(combined.findings.metadata) == canonical(report.metadata)
+                    assert combined.metadata["status"] == "synthetic_review_only"
+                    assert state["attempts"] == state["idle_checks"] == 8
+                    assert combined.metadata["input_authority_granted"] is False
+                    (directory / "host-native-current-review-proof.json").write_text(
+                        json.dumps(
+                            {
+                                "joint_method_digest": joint.method_digest(),
+                                "observation": combined.metadata,
+                                "actual_loopback_gets_total": 8,
+                                "joint_recovery_loopback_gets": 2,
+                                "actual_prior_fresh_compose_sessions": 7,
+                                "physical_pages": 4,
+                                "frozen_details": 1,
+                                "independent_connections_idle_during_http": 6,
+                                "actual_derivation_store_registration_issuer_and_current_joint_review": True,
+                                "exact_context_report_and_registration_preserved": True,
+                                "synthetic_material_and_issuer_configuration": True,
+                                "actual_human_review": False,
+                                "input_authority_granted": False,
+                                "provider_attempts": 0,
+                                "body_exported": False,
+                            },
+                            indent=2,
+                        )
+                        + "\n",
+                        encoding="utf-8",
+                    )

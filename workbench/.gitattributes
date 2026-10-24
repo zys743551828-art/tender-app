@@ -190,3 +190,7 @@
 /tests/test_native_evidence_issuers*.py text eol=lf
 /packages/contracts/package-native-evidence-issuers.md text eol=lf
 /docs/completion-20261021/evidence/native-evidence-issuers/** -text
+/packages/model_governance/package_native_current_review.py text eol=lf
+/tests/test_native_current_review*.py text eol=lf
+/packages/contracts/package-native-current-review.md text eol=lf
+/docs/completion-20261021/evidence/native-current-review/** -text
