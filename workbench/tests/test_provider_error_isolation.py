@@ -23,6 +23,8 @@ SYSTEM_KEYS = {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "LANG", "LC_ALL", 
         "packages.domain.providers.original_bytes",
         "packages.model_governance.package_current_original",
         "packages.model_governance.package_current_original_set",
+        "packages.model_governance.package_current_parse_material",
+        "packages.model_governance.package_current_material",
     ],
 )
 def test_purpose_import_never_enters_business_runtime_or_reads_env(module):

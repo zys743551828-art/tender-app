@@ -1,0 +1,227 @@
+{
+  "observation": {
+    "version": "package-current-material-observation/1",
+    "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+    "scope_id": "c0beb385-f0ab-489c-a0f6-ef83d5f812c5",
+    "scope_digest": "484620237ac9a91b8287577b8db5249e639204df5653ad39393c049f102c352d",
+    "method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "material_digest": "609636056b0a74ce9520aba127ec3188c76e99b09d60a2a9493c6981c6969043",
+    "original_set_digest": "3ce3620c51c3136569e6a0c3e8784260c8636fb4de22b3b0c21573abfb957928",
+    "initial_parse_observation": {
+      "version": "package-current-parse-material/1",
+      "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+      "observed_at": "2026-10-24T02:05:26.586636+00:00",
+      "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+      "documents_digest": "654372b281f641f384dbdca3c5fb00419ff97187cc1afd619f1f0049171d8d8f",
+      "counts": {
+        "pages": 4,
+        "blocks": 6,
+        "text_bytes": 166,
+        "metadata_bytes": 2460
+      },
+      "graph": {
+        "roots": [
+          "3954ea94-f835-547b-bfbe-b731cf4e4215",
+          "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+          "53b15c9a-113e-5d3f-8cb7-fa850a4c673d",
+          "74294a93-6b0b-5c83-aadc-523ab8e96356"
+        ],
+        "nodes": [
+          {
+            "id": "3954ea94-f835-547b-bfbe-b731cf4e4215",
+            "document_version_id": "55a3b709-1d2a-452a-b0d5-cb595d232914",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.045920+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.045920+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+            "document_version_id": "14ac0a52-5b54-4bc1-8ca5-55616c44a805",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.020651+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.020651+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "53b15c9a-113e-5d3f-8cb7-fa850a4c673d",
+            "document_version_id": "55a3b709-1d2a-452a-b0d5-cb595d232914",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.045920+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.045920+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "74294a93-6b0b-5c83-aadc-523ab8e96356",
+            "document_version_id": "14ac0a52-5b54-4bc1-8ca5-55616c44a805",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.020651+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.020651+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          }
+        ],
+        "edges": [
+          [
+            "3954ea94-f835-547b-bfbe-b731cf4e4215",
+            "53b15c9a-113e-5d3f-8cb7-fa850a4c673d"
+          ],
+          [
+            "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+            "74294a93-6b0b-5c83-aadc-523ab8e96356"
+          ]
+        ]
+      },
+      "native_parse_content_reverified": true,
+      "original_bytes_reverified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "885cd5fc784946c878b89f7f3c182d6a3f667e44bc41b1ad312ee8d11ef9e5af"
+    },
+    "final_parse_observation": {
+      "version": "package-current-parse-material/1",
+      "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+      "observed_at": "2026-10-24T02:05:26.790831+00:00",
+      "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+      "documents_digest": "654372b281f641f384dbdca3c5fb00419ff97187cc1afd619f1f0049171d8d8f",
+      "counts": {
+        "pages": 4,
+        "blocks": 6,
+        "text_bytes": 166,
+        "metadata_bytes": 2460
+      },
+      "graph": {
+        "roots": [
+          "3954ea94-f835-547b-bfbe-b731cf4e4215",
+          "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+          "53b15c9a-113e-5d3f-8cb7-fa850a4c673d",
+          "74294a93-6b0b-5c83-aadc-523ab8e96356"
+        ],
+        "nodes": [
+          {
+            "id": "3954ea94-f835-547b-bfbe-b731cf4e4215",
+            "document_version_id": "55a3b709-1d2a-452a-b0d5-cb595d232914",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.045920+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.045920+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+            "document_version_id": "14ac0a52-5b54-4bc1-8ca5-55616c44a805",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.020651+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.020651+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "53b15c9a-113e-5d3f-8cb7-fa850a4c673d",
+            "document_version_id": "55a3b709-1d2a-452a-b0d5-cb595d232914",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.045920+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.045920+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "74294a93-6b0b-5c83-aadc-523ab8e96356",
+            "document_version_id": "14ac0a52-5b54-4bc1-8ca5-55616c44a805",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T02:05:26.020651+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T02:05:26.020651+00:00",
+            "valid_until": null,
+            "bid_id": "02990b50-149e-44b8-95c2-f6604c4a79b0",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          }
+        ],
+        "edges": [
+          [
+            "3954ea94-f835-547b-bfbe-b731cf4e4215",
+            "53b15c9a-113e-5d3f-8cb7-fa850a4c673d"
+          ],
+          [
+            "3e08fb2a-7f19-57e5-b49a-24caa6d11efa",
+            "74294a93-6b0b-5c83-aadc-523ab8e96356"
+          ]
+        ]
+      },
+      "native_parse_content_reverified": true,
+      "original_bytes_reverified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "63fd4c59e29650c2e0dfe1f74eb0b4fa03e6353ab80db62947c644e9f0002deb"
+    },
+    "final_scope_observation_digest": "aa34f81b2d7681aab8e0c087af9bd7ba4cd434036a7c6869fc1f0ba284bb99b2",
+    "document_count": 2,
+    "physical_page_count": 4,
+    "asset_bytes": 59224,
+    "asset_pixels": 7200000,
+    "native_parse_and_original_material_observed": true,
+    "complete_frozen_declarations_retained": true,
+    "renderer_boundary_verified": false,
+    "visual_readability_verified": false,
+    "necessary_scope_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "fe89d591300376b65b00ca9f4a1d099b74453f40102677a15f0a34306b1dcb29"
+  },
+  "synthetic_content": true,
+  "in_process_renderer_for_mechanism_test": true,
+  "wire_gets": 2,
+  "preserved_rules": 4,
+  "preserved_multi_source_evidence": 3,
+  "preserved_bands": 2,
+  "preserved_excluded_rules": 1,
+  "body_and_locator_exported": false,
+  "real_oss_or_s3_reads": 0,
+  "formal_binding_registered": false
+}

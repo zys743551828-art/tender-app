@@ -1,0 +1,36 @@
+E
+==================================== ERRORS ====================================
+_ ERROR at setup of test_native_full_material_preserves_multi_source_bands_exclusions_and_geometry _
+
+requirements = {'actor': 'e9185f68-8f3f-401a-aa09-cf18d88fb7f4', 'app': <apps.api.main.WorkbenchAPI object at 0x73d872156120>, 'base'...i/v1/bids/903c5914-5e70-4714-b1d2-2d88e1437e09/packages', 'body_evidence': 'ec56a5e8-5646-4e0e-81db-676f0ef13a0d', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73d871997200>
+
+    @pytest.fixture
+    def exact(requirements, monkeypatch):
+        w = base_exact.__wrapped__(requirements, monkeypatch)
+        owner = w["database"]["owner"]
+        authority = w["inventory"]["manifest"]["authority_revision_id"]
+        evidence = [
+            row["id"]
+            for row in owner.execute(
+                "SELECT e.id::text FROM design.evidence_blocks e JOIN design.bid_package_members m ON m.parse_run_id=e.parse_id WHERE m.revision_id=%s ORDER BY e.physical_page,e.ordinal",
+                (authority,),
+            ).fetchall()
+        ]
+>       assert len(evidence) == 2
+E       AssertionError: assert 3 == 2
+E        +  where 3 = len(['ab499b58-853f-44b7-8f6d-6cead1497a8d', '1708a098-05e9-4f36-98bc-8c3c6a0d275d', '58dcace6-6cd3-4920-8e39-6f9d3e75ac00'])
+
+tests/test_package_current_material_pg.py:110: AssertionError
+=============================== warnings summary ===============================
+tests/test_package_current_material_pg.py::test_native_full_material_preserves_multi_source_bands_exclusions_and_geometry
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- generated xml file: /evidence/current-material-native.xml -----------
+=========================== short test summary info ============================
+ERROR tests/test_package_current_material_pg.py::test_native_full_material_preserves_multi_source_bands_exclusions_and_geometry
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 warning, 1 error in 4.66s
+{"suite": "current-material-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

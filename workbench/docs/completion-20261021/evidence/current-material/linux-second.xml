@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="4.179" timestamp="2026-10-24T02:04:34.554260+00:00" hostname="1c9c5d3240d3"><testcase classname="tests.test_package_current_material_pg" name="test_native_full_material_preserves_multi_source_bands_exclusions_and_geometry" time="3.277"><error message="failed on setup with &quot;AssertionError: {&quot;code&quot;:&quot;REVISION_CONFLICT&quot;,&quot;message&quot;:&quot;要求清单已有变化，请保留选择并核对当前清单&quot;,&quot;request_id&quot;:&quot;7c94b006-e5aa-4d96-9e59-c2b4cc0ece76&quot;,&quot;retryable&quot;:false,&quot;details&quot;:{}}&#10;assert 412 == 201&#10; +  where 412 = &lt;Response [412 Precondition Failed]&gt;.status_code&quot;">requirements = {'actor': 'b42d1900-cd92-461d-ae70-c72a278a727f', 'app': &lt;apps.api.main.WorkbenchAPI object at 0x737fa97413d0&gt;, 'base'...i/v1/bids/bf4bc95b-b8ab-49ed-8972-8ec812acb16b/packages', 'body_evidence': '6cc30e65-c31e-434d-b4a4-84b7f8a11020', ...}
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x737fa8f2e8d0&gt;
+
+    @pytest.fixture
+    def exact(requirements, monkeypatch):
+        w = base_exact.__wrapped__(requirements, monkeypatch)
+        owner = w["database"]["owner"]
+        authority = w["inventory"]["manifest"]["authority_revision_id"]
+        evidence = [
+            row["id"]
+            for row in owner.execute(
+                "SELECT e.id::text FROM design.evidence_blocks e JOIN design.bid_package_members m ON m.parse_run_id=e.parse_id WHERE m.revision_id=%s ORDER BY e.physical_page,e.ordinal",
+                (authority,),
+            ).fetchall()
+        ]
+        assert len(evidence) == 3
+        rule = str(uuid4())
+        owner.execute(
+            "INSERT INTO design.rule_items(id,bid_id,rule_set_id,kind,statement,conditions,exceptions,max_points,evidence_ids,bands) VALUES(%s,%s,%s,'scoring','Synthetic multi-source rule',%s,%s,10,%s,%s)",
+            (
+                rule,
+                w["scope"].bid_id,
+                w["inventory_body"]["rule_set_id"],
+                Jsonb(["condition A", "condition B"]),
+                Jsonb(["exception A", "exception B"]),
+                evidence,
+                Jsonb(
+                    [
+                        {"label": "complete", "description": "all required material", "points": "10"},
+                        {"label": "partial", "description": "partial material", "points": "5"},
+                    ]
+                ),
+            ),
+        )
+        w["inventory_body"]["mappings"].append(
+            {
+                "rule_id": rule,
+                "categories": ["technical"],
+                "target_part_ids": ["tech", "appendix/table"],
+                "minimum_count": None,
+                "applicability": "applicable",
+                "applicability_evidence_ids": [],
+                "valid_at": None,
+                "checks": [],
+                "reason": "Synthetic multiple exact authority sources",
+                "basis_evidence_ids": evidence,
+            }
+        )
+        response = append_inventory(w)
+&gt;       assert response.status_code == 201, response.text
+E       AssertionError: {"code":"REVISION_CONFLICT","message":"要求清单已有变化，请保留选择并核对当前清单","request_id":"7c94b006-e5aa-4d96-9e59-c2b4cc0ece76","retryable":false,"details":{}}
+E       assert 412 == 201
+E        +  where 412 = &lt;Response [412 Precondition Failed]&gt;.status_code
+
+tests/test_package_current_material_pg.py:144: AssertionError</error></testcase></testsuite></testsuites>

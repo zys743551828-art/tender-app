@@ -1,0 +1,180 @@
+{
+  "scope": "complete native parse and rich material projection; separate exact-input host Compose page derivation",
+  "tests": {
+    "linux_passed": 77,
+    "linux_junit_seconds": 49.319,
+    "linux_by_module": {
+      "tests.test_package_current_material_pg": 17,
+      "tests.test_package_current_sources_pg": 37,
+      "tests.test_provider_error_isolation": 11,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 11,
+    "host_junit_seconds": 8.912,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "a2371f8bf4f90cdfa7469bb102124441532343b11b930a49d42e05f3b1995b9e",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "b3782d4dabb698f2175f983bff3872cd63df30efd56a94fc216c29d6af3dcbef",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_current_material.py",
+      "sha256": "518f201b30ce2fc961d2eedb12fa55d06cb3954016bcaf462e39be0ebbc9a02f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-material.md",
+      "sha256": "d00b47ea2619d08708305c2655646b9b59d6e247eb3f55c6ec3fadb8efb92c21",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_material.py",
+      "sha256": "1ba7ab9b8f1a7be90a4b37c978defc9d6fae0c18b52194f9377a0867260864ba",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_parse_material.py",
+      "sha256": "1a102b3688705bff63445d17befa8dc5acff2cc56e22a5965b22926a363507bb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_material_pg.py",
+      "sha256": "a034f32e008f08283102a13b8562e1f685f83953f5b7500c20fb88eda1f432a5",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "908c7298fee1bbd3f2e0e8192df3a3c2864d6f616df49dbf8d8b156fe4a776a6",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true
+  },
+  "named_compose_sessions": 3,
+  "physical_pages": 4,
+  "synthetic_parse_fixtures_not_real_ocr_quality": true,
+  "in_process_native_chain_and_separate_container_acceptance": true,
+  "database_rechecked_after_container_render": false,
+  "synthetic_page_images_actually_viewed": 2,
+  "real_oss_or_s3_reads": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "public_http_api_changed": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "runtime_inputs": 1202,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "current_material_capability_roles": 0
+  },
+  "normal_business_boundary": {
+    "new_locator_schemas": 0,
+    "verification_roles": 0,
+    "design_tables": 136
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "427ee65176dc279f83d7e9e740d12c02bc8114b62f2a4bb7057bd998a09f320f",
+    "linux-second.log": "295ba2b987c1873a2be4f92491211888eb5297dee846087b9c44547192c43b75",
+    "linux-second.xml": "687dc47bf67d7220553da03e977a441b34789cce3219c9e9dcbe0cf93046d5b7",
+    "linux-final.log": "d5892db1a404c2e1e9a7813d5457864127410d685af7e176031bb1df0cc24456",
+    "linux-final.xml": "e9ebe6935c4e515413d9ae70daa455d1f01c9ffe69a782efab7b7b05ab4bb033",
+    "host-final.log": "3eef354e31a298e925871b3947e2b51b9837f14ba55aff53e643a34b3c5397ed",
+    "host-final.xml": "549400aad2403dc2b54814658a7018f6a5aff3a55b76802d8d81c4dcd92d0ac6",
+    "python-final.log": "52bf68c14fcce70a8ffc71dae49542f4b59c0c0c650707477f129488151fa39a",
+    "current-material-native-proof.json": "5e88a5f5887808c44cd86fedae282d96fddcd375ad5fa011c5530314e07e0f37",
+    "isolated-render-proof.json": "b6fe67eb8b246db9b08407bb7abb5a5b144f53477f9f10336d146613b36ae75f",
+    "checks-cleanup.json": "38a2771e97c29a1b7207ed3d4920e9339cc4ccc487ebd42cc809dbf470b88ad4",
+    "business-boundary.json": "c388f8c30b0d223d5757ef81fa4682f1318c026e723a41903aa749defa4774ce",
+    "http-runtime.json": "b4bb4a92cdef0f54d576880cc59693f6e5bd441ca2bdad696dff3077df2c3487",
+    "method-boundaries.json": "51cc56f86bfdaab2299300dfa4882b2ee78436efeb3b2b40eea1e44171ec5dd1",
+    "synthetic-current-material-render-plan.json": "67303a0d37a77157836d0bf8121f002532a0af5ea71e42c4602561318f1dbfc3",
+    "isolated-qa/document-1-page-1.png": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+    "isolated-qa/document-1-page-2.png": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2"
+  }
+}

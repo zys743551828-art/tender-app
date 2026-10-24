@@ -1,0 +1,66 @@
+{
+  "native_observation_digest": "fe89d591300376b65b00ca9f4a1d099b74453f40102677a15f0a34306b1dcb29",
+  "synthetic_content": true,
+  "documents": [
+    {
+      "document_version_id": "14ac0a52-5b54-4bc1-8ca5-55616c44a805",
+      "source_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+      "source_byte_size": 1814,
+      "parse_run_id": "fe34925b-000d-482e-a80f-f3a1f20f0e93",
+      "parse_digest": "9e2b9694285f45dfbc1a28aa856350739caf383d9ba56d18e4d93895bb695d35",
+      "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "page_count": 2,
+      "pages": [
+        {
+          "physical_page": 1,
+          "printed_label": null,
+          "width": "400",
+          "height": "500",
+          "rotation": 0,
+          "quality": "usable",
+          "gaps": "[]"
+        },
+        {
+          "physical_page": 2,
+          "printed_label": null,
+          "width": "400",
+          "height": "500",
+          "rotation": 0,
+          "quality": "usable",
+          "gaps": "[]"
+        }
+      ]
+    },
+    {
+      "document_version_id": "55a3b709-1d2a-452a-b0d5-cb595d232914",
+      "source_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+      "source_byte_size": 1814,
+      "parse_run_id": "1d497ea8-8875-4334-8761-c4a4065af603",
+      "parse_digest": "f3503032ba57035384cde12e628749ccc6bad307f918954f4d9db96554abad57",
+      "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "page_count": 2,
+      "pages": [
+        {
+          "physical_page": 1,
+          "printed_label": null,
+          "width": "400",
+          "height": "500",
+          "rotation": 0,
+          "quality": "usable",
+          "gaps": "[]"
+        },
+        {
+          "physical_page": 2,
+          "printed_label": null,
+          "width": "400",
+          "height": "500",
+          "rotation": 0,
+          "quality": "usable",
+          "gaps": "[]"
+        }
+      ]
+    }
+  ]
+}

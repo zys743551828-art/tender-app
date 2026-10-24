@@ -170,6 +170,12 @@ SUITES["current-original-set-native"] = [
     "tests/test_package_current_original_set_pg.py",
     *SUITES["original-get-pure"],
 ]
+SUITES["current-material-native"] = [
+    "tests/test_package_current_material_pg.py",
+    "tests/test_package_current_sources_pg.py",
+    "tests/test_provider_error_isolation.py",
+    "tests/test_fusion_compose.py",
+]
 
 
 def main():
@@ -216,6 +222,7 @@ def main():
         "read-purpose-native",
         "current-original-native",
         "current-original-set-native",
+        "current-material-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -249,20 +256,27 @@ def main():
             environment["FUSION_REQUIREMENTS_ADMIN_DSN"] = check_dsn
             if suite == "technical-scope-api":
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
-            if suite in {"current-source-native", "read-purpose-native"}:
+            if suite in {"current-source-native", "read-purpose-native", "current-material-native"}:
                 environment["FUSION_CURRENT_SOURCE_PG"] = "1"
                 environment["FUSION_CURRENT_SOURCE_EVIDENCE"] = "/evidence"
             if suite in {"current-scope-native", "read-purpose-native"}:
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_EVIDENCE"] = "/evidence"
-            if suite in {"current-original-native", "current-original-set-native"}:
+            if suite in {
+                "current-original-native",
+                "current-original-set-native",
+                "current-material-native",
+            }:
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_ORIGINAL_PG"] = "1"
                 environment["FUSION_CURRENT_ORIGINAL_EVIDENCE"] = "/evidence"
                 if suite == "current-original-set-native":
                     environment["FUSION_CURRENT_ORIGINAL_SET_PG"] = "1"
+                if suite == "current-material-native":
+                    environment["FUSION_CURRENT_MATERIAL_PG"] = "1"
+                    environment["FUSION_CURRENT_MATERIAL_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"

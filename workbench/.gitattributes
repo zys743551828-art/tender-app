@@ -39,6 +39,10 @@
 /packages/model_governance/package_current_original_set.py text eol=lf
 /packages/contracts/package-current-original-set.md text eol=lf
 /tests/test_package_current_original_set_pg.py text eol=lf
+/packages/model_governance/package_current_parse_material.py text eol=lf
+/packages/model_governance/package_current_material.py text eol=lf
+/packages/contracts/package-current-material.md text eol=lf
+/tests/test_package_current_material_pg.py text eol=lf
 /packages/model_governance/read_purpose.py text eol=lf
 /packages/contracts/package-current-scope.md text eol=lf
 /tests/test_package_current_scope_pg.py text eol=lf
@@ -108,4 +112,5 @@
 /docs/completion-20261021/evidence/original-get/** -text
 /docs/completion-20261021/evidence/current-original/** -text
 /docs/completion-20261021/evidence/current-original-set/** -text
+/docs/completion-20261021/evidence/current-material/** -text
 /docs/completion-20261021/evidence/proxy-dns/** -text
