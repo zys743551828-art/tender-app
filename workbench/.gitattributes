@@ -180,3 +180,8 @@
 /tests/test_native_material_recovery*.py text eol=lf
 /packages/contracts/package-native-evidence-recovery.md text eol=lf
 /docs/completion-20261021/evidence/native-material-recovery/** -text
+/packages/model_governance/package_native_evidence_registration.py text eol=lf
+/deploy/sql/package-native-evidence-registration.sql text eol=lf
+/tests/test_native_evidence_registration*.py text eol=lf
+/packages/contracts/package-native-evidence-registration.md text eol=lf
+/docs/completion-20261021/evidence/native-evidence-registration/** -text

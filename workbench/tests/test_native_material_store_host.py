@@ -9,13 +9,14 @@ from uuid import uuid4
 
 import pytest
 from test_fusion_context_derivation_native import collect, freeze, runtime
-from test_native_material_store_pg import database
+from test_native_evidence_registration_pg import database
 from test_package_current_material_pg import api, exact, pdf_data, requirements, saved, world
 from test_package_current_original_set_pg import wire
 from test_package_material_scope_findings import checked, draft_for
 
 from packages.domain.review_identity import canonical, digest
 from packages.model_governance import package_material_scope_review as review
+from packages.model_governance import package_native_evidence_registration as registration
 from packages.model_governance import package_native_material_recovery as native_recovery
 from packages.model_governance import package_native_material_store as store
 
@@ -153,3 +154,53 @@ def test_actual_context_derivation_full_report_and_png_reopen_in_native_private_
             + "\n",
             encoding="utf-8",
         )
+        if os.environ.get("FUSION_NATIVE_EVIDENCE_REGISTRATION_HOST") == "1":
+            registration_command = str(uuid4())
+            registered = registration.record(
+                w["database"]["native_registrar"],
+                restored,
+                command_id=registration_command,
+                expected_context_digest=frozen.metadata["digest"],
+                expected_storage_record_digest=record.metadata["digest"],
+                expected_recovery_observation_digest=restored.metadata["digest"],
+                expected_method_digest=registration.method_digest(),
+            )
+            with w["database"]["native_registrar_factory"]() as independent:
+                found = registration.read(
+                    independent,
+                    bid_id=frozen.metadata["bid_id"],
+                    command_id=registration_command,
+                    expected_packet_digest=digest(registered.metadata["document"]["packet"]),
+                    expected_method_digest=registration.method_digest(),
+                )
+            assert found.metadata == registered.metadata
+            document = found.metadata["document"]
+            assert document["version"] == "package-native-material-registration/2"
+            assert not any(document[k] for k in registration.FALSE_FIELDS)
+            assert not any("commit" in k for k in document["packet"])
+            assert canonical(restored.context.metadata) == canonical(frozen.metadata)
+            assert state["attempts"] == state["idle_checks"] == 6
+            (directory / "host-native-evidence-registration-proof.json").write_text(
+                json.dumps(
+                    {
+                        "registration_method_digest": registration.method_digest(),
+                        "record": registered.metadata,
+                        "actual_loopback_gets_total": 6,
+                        "actual_prior_fresh_compose_sessions": 7,
+                        "physical_pages": 4,
+                        "frozen_details": 1,
+                        "actual_derivation_store_and_current_recovery_before_registration": True,
+                        "unknown_result_lookup_after_independent_reopen": True,
+                        "old_cas_commit_fields_fabricated": False,
+                        "exact_context_bytes_preserved": True,
+                        "synthetic_material_and_review_claims": True,
+                        "actual_human_review": False,
+                        "input_authority_granted": False,
+                        "provider_attempts": 0,
+                        "body_exported": False,
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )

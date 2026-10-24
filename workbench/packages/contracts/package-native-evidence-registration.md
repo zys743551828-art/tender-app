@@ -1,0 +1,9 @@
+# 原生完整证据的待核验登记v2
+
+专用purpose连接使用record_native／read_native，固定准确原生存储与当前恢复根；旧文件CAS登记v1保留原义、原SQL与记录不改。新packet不接受recovery_commit_digest等v1文件提交字段，记录版本package-native-material-registration/2、packet版本package-native-material-registration-packet/2，状态仍awaiting_independent_verification。
+
+packet闭合为context／context方法、原生storage record ID／摘要／packet摘要、本次native recovery方法／观察摘要、原取得观察／material／findings／derivation根及registration方法。完整恢复观察一并保存，服务器重算摘要并核全部对应关系，实际原生存储对象提供context绑定；恢复观察的存储命令号须指向同一原生记录，“全部确认／要求改动”须与已存完整报告一致。不能靠自报摘要造出不存在的原生证据。登记不重新GET，也不替代当前来源与独立审核，所有资格位false。
+
+调用方须事先持久固定command和准确根，端口不临时生成逻辑命令。原生ID／时间／主体由服务器生成，记录和恢复观察同事务不可变；结果未知可按bid／command／packet摘要查回，准确重放不改旧事实，同命令其他内容／版本／主体冲突。读取要求本LOGIN、独立固定根，不能借v2读取其他用途记录。
+
+v2复用既有records身份，可作为审核case的准确registration外键，但不意味着旧v1证据格式或资格相同；旧v1读取者不会将v2当旧协议通过。新增独立组不继承旧组，无表权限或其他schema USAGE；源方法审查经系统目录，不放宽权限。只安装全新独立检查库，无BASE／业务库／HTTP／UI变化。后续原生输入资格须绑定经配置的可信程序、实际审核主体及当前来源，不能仅凭登记状态或字段自行授信。

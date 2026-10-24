@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/native-material-recovery"
+LOCAL = ROOT / ".local/native-evidence-registration"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -42,6 +42,7 @@ GROUPS = (
     "tender_scope_review_verify",
     "tender_material_store_write",
     "tender_material_store_read",
+    "tender_native_material_registration",
 )
 COMPOSE = [
     "docker",
@@ -140,6 +141,7 @@ def main():
                 "FUSION_NATIVE_MATERIAL_STORE_HOST": "1",
                 "FUSION_NATIVE_MATERIAL_STORE_HOST_EVIDENCE": str(LOCAL),
                 "FUSION_NATIVE_MATERIAL_RECOVERY_HOST": "1",
+                "FUSION_NATIVE_EVIDENCE_REGISTRATION_HOST": "1",
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -157,7 +159,7 @@ def main():
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/native-material-recovery/host-native-final.xml",
+                "--junitxml=.local/native-evidence-registration/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,
