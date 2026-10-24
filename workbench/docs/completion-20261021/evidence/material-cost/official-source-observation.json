@@ -1,0 +1,37 @@
+{
+  "version": "public-provider-source-observation/1",
+  "observed_at": "2026-10-24T04:00:29Z",
+  "provider_id": "deepseek",
+  "sources": [
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "model_alias": "deepseek-flash",
+      "documented_version": "DeepSeek-V4.1-Flash-1017",
+      "currency": "USD",
+      "minor_per_unit": 1000000,
+      "peak_cache_miss_input_per_million_minor": 300000,
+      "peak_output_per_million_minor": 1200000,
+      "supplier_reserves_price_changes": true
+    },
+    {
+      "url": "https://api-docs.deepseek.com/api/list-models/",
+      "documented_example_context_window": 1048576,
+      "documented_example_max_output_tokens": 393216,
+      "live_authenticated_catalog_read": false
+    },
+    {
+      "url": "https://api-docs.deepseek.com/guides/vision/",
+      "documented_image_token_upper": 1024,
+      "original_detail_does_not_prove_readability": true
+    },
+    {
+      "url": "https://api-docs.deepseek.com/quick_start/token_usage/",
+      "character_ratio_is_approximate": true,
+      "actual_usage_is_returned_by_provider": true
+    }
+  ],
+  "raw_page_bytes_archived": false,
+  "extracted_facts_not_source_signature": true,
+  "pricing_profile_enabled": false,
+  "supplier_contract_confirmed": false
+}
