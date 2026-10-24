@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/verification-commands"
+LOCAL = ROOT / ".local/verification-program"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -46,6 +46,7 @@ GROUPS = (
     "tender_native_evidence_issuer",
     "tender_native_evidence_verify",
     "tender_material_verification_commands",
+    "tender_material_verification_program",
 )
 COMPOSE = [
     "docker",
@@ -149,6 +150,7 @@ def main():
                 "FUSION_NATIVE_CURRENT_REVIEW_HOST": "1",
                 "FUSION_VERIFIED_MATERIAL_HOST": "1",
                 "FUSION_VERIFICATION_COMMANDS_HOST": "1",
+                "FUSION_VERIFICATION_PROGRAM_HOST": "1",
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -162,11 +164,12 @@ def main():
                 "tests/test_fusion_material_derivation_native.py",
                 "tests/test_fusion_context_derivation_native.py",
                 "tests/test_native_material_store_host.py",
+                "tests/test_verification_program_host.py",
                 "-q",
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/verification-commands/host-native-final.xml",
+                "--junitxml=.local/verification-program/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,
