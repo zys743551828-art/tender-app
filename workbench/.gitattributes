@@ -163,3 +163,7 @@
 /tests/test_fusion_material_derivation*.py text eol=lf
 /packages/contracts/fusion-material-derivation.md text eol=lf
 /docs/completion-20261021/evidence/material-derivation/** -text
+/packages/model_governance/package_current_scope_review.py text eol=lf
+/packages/contracts/package-current-scope-review.md text eol=lf
+/tests/test_current_scope_review*.py text eol=lf
+/docs/completion-20261021/evidence/current-scope-review/** -text
