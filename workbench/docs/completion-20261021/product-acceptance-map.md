@@ -30,7 +30,7 @@ F06-02的[当前包与范围原生事实](current-scope-acceptance.md)通过37�
 
 F06-02独立来源／范围端口的[共用只读权限审计](read-purpose-acceptance.md)通过76项Linux及6项Windows（重叠），包含继承组拥有RPC必须拒绝。两种观察方法绑定共用源码，原生读取体／SQL、旧回执及原页／图文／特征方法保持；对象字节、必要范围及原生核验binding继续。
 
-F06-02的[无新增权限GET字节传输](original-get-acceptance.md)通过54项Linux／42项Windows及真实回环TCP证据（重叠），只授完整字节与预期长度／摘要匹配，不授native权限或输入权威。新增locator RPC／角色继承被自动审批拒绝、未实施；需要[单独权限许可](original-locator-permission-review.md)，再接原件权限、必要范围和正式核验binding。
+F06-02的[受限原件定位及实际字节读取](current-original-acceptance.md)按用户明确许可在全新独立库验证，104项Linux／43项Windows（重叠）及真实回环链通过。固定组／窄RPC／完整来源闭包和异常隐私已验；定位与字节分别证明对应事实，不授必要范围、输入权威、历史或执行资格，无正式binding。所有既有方法及旧记录保持，正常业务库无定位角色／schema；独立库／LOGIN／能力组清理，完整当前材料投影、必要范围及正式核验登记继续。
 
 项目列表和概览已接[整包目录摘要](project-summary-acceptance.md)：同一只读批量接口、包head成员及未冻结解析计数，失败／串项目／晚到不冒已核对状态。F12-06仅此段有新证据；六级风险动作、确切当前风险／预测和完整视觉仍未完成。
 

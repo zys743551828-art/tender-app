@@ -161,6 +161,11 @@ SUITES["original-get-pure"] = [
     "tests/test_provider_error_isolation.py",
     "tests/test_fusion_compose.py",
 ]
+SUITES["current-original-native"] = [
+    "tests/test_package_current_original_pg.py",
+    "tests/test_package_current_scope_pg.py",
+    *SUITES["original-get-pure"],
+]
 
 
 def main():
@@ -205,6 +210,7 @@ def main():
         "current-source-native",
         "current-scope-native",
         "read-purpose-native",
+        "current-original-native",
         "history-dispatch",
         "project-summaries",
         "package-next-actions",
@@ -245,6 +251,11 @@ def main():
                 environment["FUSION_CURRENT_SCOPE_PG"] = "1"
                 environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
                 environment["FUSION_CURRENT_SCOPE_EVIDENCE"] = "/evidence"
+            if suite == "current-original-native":
+                environment["FUSION_TECHNICAL_SCOPE_PG"] = "1"
+                environment["FUSION_CURRENT_SCOPE_PG"] = "1"
+                environment["FUSION_CURRENT_ORIGINAL_PG"] = "1"
+                environment["FUSION_CURRENT_ORIGINAL_EVIDENCE"] = "/evidence"
             if suite == "history-dispatch":
                 environment["FUSION_PACKAGE_HISTORY_DISPATCH_PG"] = "1"
                 environment["FUSION_HISTORY_DISPATCH_EVIDENCE"] = "/evidence"

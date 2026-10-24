@@ -1,0 +1,54 @@
+{
+  "actual_login": "fusion_current_original_verify",
+  "locator_observation": {
+    "bid_id": "e5fd95f0-624e-46ac-b21c-2ac85f3897f3",
+    "version": "package-current-original-locator/1",
+    "scope_id": "0b2950cf-c6b1-4c35-9c4a-2d8543c91425",
+    "media_type": "application/pdf",
+    "observed_at": "2026-10-24T01:38:33.483862+00:00",
+    "scope_digest": "3c6ed5c7393259875df6133e0ffc3f609f50eb4cc3b7dc5fe0d2ae3cffcfdd71",
+    "source_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+    "source_byte_size": 61,
+    "document_version_id": "17980b78-e209-4c14-8636-1603dc2b3dd5",
+    "execution_authorized": false,
+    "source_snapshot_digest": "a9543dbf4d785d7dd6cb86c7062952af08bb075cf0799d05870196c2f15970aa",
+    "input_authority_granted": false,
+    "necessary_scope_verified": false,
+    "original_bytes_reverified": false,
+    "historical_existence_verified": false,
+    "native_current_original_locator_checked": true,
+    "method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "locator_digest": "8d501132942afe503e06cfd3f481f294984bdb37fe18a0c94f47fd7e3bfb8afc",
+    "digest": "53e36360e1172a6e8545e74849c6de71eff5f6673bb3a20d5a60bb64c9a710b8"
+  },
+  "byte_receipt": {
+    "version": "package-original-get-receipt/1",
+    "request_digest": "5a1e6b5e449226eed9469f571e34db8435a29b07893af7042f2071028b41b74a",
+    "method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "bid_id": "e5fd95f0-624e-46ac-b21c-2ac85f3897f3",
+    "scope_id": "0b2950cf-c6b1-4c35-9c4a-2d8543c91425",
+    "scope_digest": "3c6ed5c7393259875df6133e0ffc3f609f50eb4cc3b7dc5fe0d2ae3cffcfdd71",
+    "document_version_id": "17980b78-e209-4c14-8636-1603dc2b3dd5",
+    "source_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+    "source_byte_size": 61,
+    "actual_http_attempts": 1,
+    "complete_requested_bytes_verified": true,
+    "native_permission_verified": false,
+    "necessary_scope_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "0e30899f903910c5aa4c8873f6696c4af3af2ec8044dd4ab48920f5001aeab46"
+  },
+  "wire": [
+    {
+      "method": "GET",
+      "accept_encoding": "identity"
+    }
+  ],
+  "synthetic_content": true,
+  "real_oss_or_s3_reads": 0,
+  "formal_binding_registered": false
+}
