@@ -1,0 +1,88 @@
+{
+  "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+  "record": {
+    "digest": "4b96869c3fb1798274667372a12dea17102d859bd4c5418109502f079682e11d",
+    "document": {
+      "bid_id": "e296e105-1b5f-44db-a102-795dc41a56b8",
+      "packet": {
+        "version": "package-native-material-store-packet/1",
+        "image_objects": [
+          {
+            "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+            "asset_id": "0593a70762a0c927d2b6391593cd2c2efacf0743327bc440e4af8fa9fb7433ee",
+            "byte_size": 14996
+          },
+          {
+            "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+            "asset_id": "2a49c3fda6d557fae113ac5a865f899f758a2d88a84c7608c7401abe6885afa2",
+            "byte_size": 14996
+          },
+          {
+            "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+            "asset_id": "95c48b638aca76632b115d7ea6cbc33df2051c59b199872cdde2c7c57b59521d",
+            "byte_size": 14616
+          },
+          {
+            "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+            "asset_id": "eedda229b69ece17bdb17dae2d87338ae4e1e205d56c475685a28a25e4ae758a",
+            "byte_size": 14616
+          }
+        ],
+        "review_digest": "ab111892e841bbd33862b03027c0915db9eed1cc0f58e769df403c8f9ee4286d",
+        "context_digest": "96a3298893aaaf0f68a4d30963fe7f5188a68e8e303860bce4b240a57fc9abfc",
+        "context_object": {
+          "sha256": "c7f214d4c6b2f1db3b7c16a10ea49a73151113dbf8b0075595c4e5a6217ac2e9",
+          "byte_size": 62563
+        },
+        "findings_digest": "b73b516a01f1b7302ef833b2748d9a364802dde1fe50f35fa6d9579fdcefb5eb",
+        "findings_object": {
+          "sha256": "8050d99b28c5f88ead8632c9343c045cc9a093d7f3ff48fc1902ee1cfab14a20",
+          "byte_size": 10976
+        },
+        "derivation_object": {
+          "sha256": "a550a9a8bc6bc245e2dd9c96cc09f7ac4442a7f16b84880b634932b03c4d157f",
+          "byte_size": 16792
+        },
+        "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+        "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+        "source_observation_digest": "08bf64d5d554437cfc372f2856d8460916c9779a847af2ebac248f4061b8aba6",
+        "source_observation_object": {
+          "sha256": "8d619613fd42762e6ef01bbe9e8d631b83d35e32a182b8f2a8ce877314e4e805",
+          "byte_size": 7250
+        },
+        "derivation_observation_digest": "aafaa6e2f496d683f653221ef8a524ac428a761c5f180defec08d5bcee8e4230"
+      },
+      "status": "private_evidence_stored",
+      "version": "package-native-material-store-record/1",
+      "scope_id": "2e9394e9-c2aa-4098-92a2-dbb26733b60b",
+      "record_id": "db78a18d-a790-43cf-ac48-31b7579f9fa9",
+      "command_id": "73adec62-4876-433a-acd1-903691fa2dc2",
+      "recorded_at": "2026-10-24T06:28:14.615075Z",
+      "recorded_by": "fusion_material_store_writer",
+      "scope_digest": "a42af288fe5eb87c8139c6c163965bc9b2a5b30cf5045f02c97a71ef25e5bd07",
+      "packet_digest": "fc7352f07aaa9c109a64ab0400a9672dfce929a7965755458448b3cd5071f1b8",
+      "execution_authorized": false,
+      "input_authority_granted": false,
+      "native_binding_verified": false,
+      "necessary_scope_verified": false,
+      "historical_existence_verified": false
+    },
+    "native_record_identity_verified": true
+  },
+  "object_count": 6,
+  "asset_count": 4,
+  "physical_pages": 4,
+  "actual_loopback_gets": 2,
+  "exact_context_source_derivation_report_and_png_bytes_recovered": true,
+  "independent_writer_and_reader_logins": true,
+  "reader_closed_and_reopened": true,
+  "unknown_result_lookup_by_fixed_command": true,
+  "same_command_replay_same_record": true,
+  "synthetic_material": true,
+  "synthetic_derivation_claims": true,
+  "actual_renderer_used_in_this_store_test": false,
+  "actual_human_review": false,
+  "input_authority_granted": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

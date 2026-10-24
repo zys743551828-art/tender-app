@@ -1,0 +1,11 @@
+........................................................................ [ 92%]
+......                                                                   [100%]
+=============================== warnings summary ===============================
+tests/test_native_material_store_pg.py::test_actual_native_private_write_independent_reopen_and_full_byte_recovery
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------- generated xml file: /evidence/native-material-store.xml ------------
+78 passed, 1 warning in 89.07s (0:01:29)
+{"suite": "native-material-store", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

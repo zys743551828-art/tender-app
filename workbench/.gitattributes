@@ -171,3 +171,8 @@
 /tests/test_fusion_context_derivation*.py text eol=lf
 /packages/contracts/fusion-context-derivation.md text eol=lf
 /docs/completion-20261021/evidence/context-derivation/** -text
+/packages/model_governance/package_native_material_store.py text eol=lf
+/deploy/sql/package-native-material-store.sql text eol=lf
+/tests/test_native_material_store*.py text eol=lf
+/packages/contracts/package-native-material-store.md text eol=lf
+/docs/completion-20261021/evidence/native-material-store/** -text

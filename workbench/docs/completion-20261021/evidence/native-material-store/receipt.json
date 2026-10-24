@@ -1,0 +1,401 @@
+{
+  "scope": "independent native private storage of exact context, observations, full findings and all images; no input authority",
+  "tests": {
+    "linux_passed": 78,
+    "linux_seconds": 89.074,
+    "linux_by_module": {
+      "tests.test_native_material_store_pg": 27,
+      "tests.test_native_material_store": 9,
+      "tests.test_provider_error_isolation": 30,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 39,
+    "host_seconds": 10.939,
+    "counts_overlap": true
+  },
+  "native_host_tests": {
+    "passed": 11,
+    "seconds": 182.612,
+    "counts_distinct_from_pure_suites": true
+  },
+  "host_bridge_cleanup": {
+    "host_port_removed": true,
+    "temporary_bridge_removed": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "10593623bcca460fe832a5fe58ca355af5db3e518e539225b4c2ff032301bdfa",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "cd4d4197ad7d8010d5def6d2d407a5fad53d35aa3e40ef96435f132bbfe90943",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_material_checks.py",
+      "sha256": "5b5879655a4f49fa7835b79a5636e66bd620ee8904ad6ce778aa09301dbef185",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-native-material-store.sql",
+      "sha256": "8a6ae1d2cc387e8dc308331b3b4ee1d73c5b00b8cc13dd82999e9dc46b4022f4",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-native-material-store.md",
+      "sha256": "c39c729fade05fb0dbbe94a3a5b98113ac541bec970078520c2802e2c22ead72",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_native_material_store.py",
+      "sha256": "3d97c6f9cabb1c3d00d63595da83a1a136c81f25379edfbdb0af676228963eba",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_native_material_store.py",
+      "sha256": "b2bb2bf847beb41abaf06218d15c45b6c7fe6e2f929578d7f374d7bcdbd09566",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_native_material_store_host.py",
+      "sha256": "01dded2ba43a5fbbe0e0415ef243ab6ed65a77435e4f36947c6db3bbf924dc80",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_native_material_store_pg.py",
+      "sha256": "bb6a38acfe73597e5cc259161cf3187557c84b2699c299d0055a46b48a956fe6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "484d7b22e2ce53db9f0e0c88f7bb4983de2481920801ea48e7aa145835a8271e",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+    "pending_material_registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+    "material_scope_review_method_digest": "766308c7ce0e94527f1c0857534c97a2f5fd085d37ec4d49eade2f007f60b4c8",
+    "material_cost_method_digest": "74e4fa0930751cca9090b085e5cd79295c925fcd9b44e5819d8a8d1ba158df85",
+    "material_scope_findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+    "scope_findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03",
+    "scope_review_issuer_method_digest": "32a54db484f2ca11cf9d44b0705b2c9a71863974cbfcf3255620e87b5fa69fa6",
+    "material_derivation_controller_method_digest": "06fa2fe5893f82bb8251c3a37a32cd577c4c0e6a13e9c9c478a7979ba5de1800",
+    "current_scope_review_method_digest": "f8248ce26cb5d3697128f96318b16d85d053736bd3868926a6e0a4ae333d2323",
+    "context_derivation_method_digest": "3050bb3cbe9d0390e9b9092b76234be3f39896f06a13d07ab78ecd4ac119ccdb",
+    "native_material_store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794"
+  },
+  "native_material_store_proof": {
+    "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+    "record": {
+      "digest": "4b96869c3fb1798274667372a12dea17102d859bd4c5418109502f079682e11d",
+      "document": {
+        "bid_id": "e296e105-1b5f-44db-a102-795dc41a56b8",
+        "packet": {
+          "version": "package-native-material-store-packet/1",
+          "image_objects": [
+            {
+              "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+              "asset_id": "0593a70762a0c927d2b6391593cd2c2efacf0743327bc440e4af8fa9fb7433ee",
+              "byte_size": 14996
+            },
+            {
+              "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+              "asset_id": "2a49c3fda6d557fae113ac5a865f899f758a2d88a84c7608c7401abe6885afa2",
+              "byte_size": 14996
+            },
+            {
+              "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+              "asset_id": "95c48b638aca76632b115d7ea6cbc33df2051c59b199872cdde2c7c57b59521d",
+              "byte_size": 14616
+            },
+            {
+              "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+              "asset_id": "eedda229b69ece17bdb17dae2d87338ae4e1e205d56c475685a28a25e4ae758a",
+              "byte_size": 14616
+            }
+          ],
+          "review_digest": "ab111892e841bbd33862b03027c0915db9eed1cc0f58e769df403c8f9ee4286d",
+          "context_digest": "96a3298893aaaf0f68a4d30963fe7f5188a68e8e303860bce4b240a57fc9abfc",
+          "context_object": {
+            "sha256": "c7f214d4c6b2f1db3b7c16a10ea49a73151113dbf8b0075595c4e5a6217ac2e9",
+            "byte_size": 62563
+          },
+          "findings_digest": "b73b516a01f1b7302ef833b2748d9a364802dde1fe50f35fa6d9579fdcefb5eb",
+          "findings_object": {
+            "sha256": "8050d99b28c5f88ead8632c9343c045cc9a093d7f3ff48fc1902ee1cfab14a20",
+            "byte_size": 10976
+          },
+          "derivation_object": {
+            "sha256": "a550a9a8bc6bc245e2dd9c96cc09f7ac4442a7f16b84880b634932b03c4d157f",
+            "byte_size": 16792
+          },
+          "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+          "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+          "source_observation_digest": "08bf64d5d554437cfc372f2856d8460916c9779a847af2ebac248f4061b8aba6",
+          "source_observation_object": {
+            "sha256": "8d619613fd42762e6ef01bbe9e8d631b83d35e32a182b8f2a8ce877314e4e805",
+            "byte_size": 7250
+          },
+          "derivation_observation_digest": "aafaa6e2f496d683f653221ef8a524ac428a761c5f180defec08d5bcee8e4230"
+        },
+        "status": "private_evidence_stored",
+        "version": "package-native-material-store-record/1",
+        "scope_id": "2e9394e9-c2aa-4098-92a2-dbb26733b60b",
+        "record_id": "db78a18d-a790-43cf-ac48-31b7579f9fa9",
+        "command_id": "73adec62-4876-433a-acd1-903691fa2dc2",
+        "recorded_at": "2026-10-24T06:28:14.615075Z",
+        "recorded_by": "fusion_material_store_writer",
+        "scope_digest": "a42af288fe5eb87c8139c6c163965bc9b2a5b30cf5045f02c97a71ef25e5bd07",
+        "packet_digest": "fc7352f07aaa9c109a64ab0400a9672dfce929a7965755458448b3cd5071f1b8",
+        "execution_authorized": false,
+        "input_authority_granted": false,
+        "native_binding_verified": false,
+        "necessary_scope_verified": false,
+        "historical_existence_verified": false
+      },
+      "native_record_identity_verified": true
+    },
+    "object_count": 6,
+    "asset_count": 4,
+    "physical_pages": 4,
+    "actual_loopback_gets": 2,
+    "exact_context_source_derivation_report_and_png_bytes_recovered": true,
+    "independent_writer_and_reader_logins": true,
+    "reader_closed_and_reopened": true,
+    "unknown_result_lookup_by_fixed_command": true,
+    "same_command_replay_same_record": true,
+    "synthetic_material": true,
+    "synthetic_derivation_claims": true,
+    "actual_renderer_used_in_this_store_test": false,
+    "actual_human_review": false,
+    "input_authority_granted": false,
+    "provider_attempts": 0,
+    "body_exported": false
+  },
+  "host_native_material_store_proof": {
+    "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+    "producer_method_digest": "3050bb3cbe9d0390e9b9092b76234be3f39896f06a13d07ab78ecd4ac119ccdb",
+    "record": {
+      "digest": "de8977840c2d75cbe81c34a4ba2221aeffd2202ae5397a94fcf230965448f073",
+      "document": {
+        "bid_id": "b15682ab-8b4f-4f2b-a51a-de9fdce9e4b2",
+        "packet": {
+          "version": "package-native-material-store-packet/1",
+          "image_objects": [
+            {
+              "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+              "asset_id": "0a80a61777170b485180f617670107e0a1ebb4b8a3d279956ee7a858a04ce098",
+              "byte_size": 14996
+            },
+            {
+              "sha256": "c720020fa2df96668f1cefc7d8e73860eed976e65cca3e86c9f7fe28ff440ba2",
+              "asset_id": "6511584dec936e63be300fcc74bb219fe794ad38d9cca43e34af178567e5274f",
+              "byte_size": 14996
+            },
+            {
+              "sha256": "7d0bf21c252076325026c0bac6a6963a90305b51b1b1a257ef7e600f7f4f20f3",
+              "asset_id": "95f0c2761bf772b5a8c093f2767251d1ab9e90105f926ff1c541842fcfe8b35e",
+              "byte_size": 424
+            },
+            {
+              "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+              "asset_id": "9a8c0027fd3c7383fb58f1e728b6370ba72324dfd900c3ebd5555bb591607e6a",
+              "byte_size": 14616
+            },
+            {
+              "sha256": "1850ab308eff86695e6639efbecdf8726eed78ceebb2903ac97e22ea8a3c60cc",
+              "asset_id": "e98b1efa0252e9a9687a1ec6a1772ed363306acf618dcd1a879b523bf7693b2d",
+              "byte_size": 14616
+            }
+          ],
+          "review_digest": "cca5832cdf4e755f7bfa9731819b7f66b1f4467fb3531b43f00f15cde260fd5c",
+          "context_digest": "69fdedfe7f1547a06dc4cb77230c9da4821512fc6d6e2d1b6459c3a1a7d6dc7f",
+          "context_object": {
+            "sha256": "fbed18e92e1f84fe65272101bf1099bd8cb0c446d0817be6ae49a32520943a82",
+            "byte_size": 63730
+          },
+          "findings_digest": "f65f14c7a0ffb73ea7ce1e1b010efd88eef8fe6bb2539429385c930633e96f96",
+          "findings_object": {
+            "sha256": "b0ef8a7c7bbae997d568e811de950fa53b3244a8fefcce6104f61b08562ef3ff",
+            "byte_size": 11043
+          },
+          "derivation_object": {
+            "sha256": "78ccf12abe75f9f731ec34a7bf4cd47ab633c620dc7306289c35a19d4015bb9e",
+            "byte_size": 17444
+          },
+          "store_method_digest": "6c556dc0d018405727a291a84de262e47f67b473f4da9d656085ecd7a5d97794",
+          "context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+          "source_observation_digest": "9370dad95c1b6f4254ce536154814187c9efb62cb667e422d44a235a4c61a6e0",
+          "source_observation_object": {
+            "sha256": "12835622ef0a64a626d91fdb84a6234b669e0164662d32bb83dd4a0c1dc32ff4",
+            "byte_size": 7250
+          },
+          "derivation_observation_digest": "4d6510e6d307d7dffdc5a35c0d5c2f1fa31aca84db66f4f37cbbc5e74f47bf84"
+        },
+        "status": "private_evidence_stored",
+        "version": "package-native-material-store-record/1",
+        "scope_id": "73dd22f4-24a9-4719-9257-292df0c8bf69",
+        "record_id": "2a9e13ac-ac2c-426f-af9f-dbcdf66e8980",
+        "command_id": "e01e55f4-c7d7-49e1-8b37-efa48a325191",
+        "recorded_at": "2026-10-24T06:26:37.373051Z",
+        "recorded_by": "fusion_material_store_writer",
+        "scope_digest": "4f3ab10917cb49268e35a1e19e83733533de6727d7b0509da9998e31e5fe6468",
+        "packet_digest": "4d24edf80805cc6f469f01c908d98bdf893ce17f3ef4ce3ea0249a454e93a3d4",
+        "execution_authorized": false,
+        "input_authority_granted": false,
+        "native_binding_verified": false,
+        "necessary_scope_verified": false,
+        "historical_existence_verified": false
+      },
+      "native_record_identity_verified": true
+    },
+    "object_count": 7,
+    "asset_count": 5,
+    "actual_loopback_gets": 4,
+    "actual_fresh_compose_sessions": 7,
+    "physical_pages": 4,
+    "frozen_details": 1,
+    "actual_renderer_used": true,
+    "exact_context_derivation_report_and_png_bytes_recovered_after_reopen": true,
+    "private_native_byte_store_verified": true,
+    "windows_private_acl_backend_installed": false,
+    "synthetic_material": true,
+    "synthetic_review_claims": true,
+    "actual_human_review": false,
+    "input_authority_granted": false,
+    "provider_attempts": 0,
+    "body_exported": false
+  },
+  "files": {
+    "native-material-store-proof.json": "9c4578a1dfd946ff58c752fdba2994044aa22bf3ba2573074565ae3aaf408c8f",
+    "host-native-material-store-proof.json": "5241eea15d949c82601954a97306340cb638f2f80c8e6d2a5a67259145fac14d",
+    "material-derivation-native-proof.json": "7f776e59b7b3032d110f6df89311f8c3b9917d1512978297a0b05b630217d6de",
+    "context-derivation-native-proof.json": "7b90bfb5726bf9c881e7d76b485820f694a40630d0e83e507e525d577a5378f5",
+    "linux-final.log": "d7c501fc9719d2d356bd294f6fb17f05deb1912f4a6295f4a53239d5e0d102fc",
+    "linux-final.xml": "411ab49237f95423f279fc799bf28d7b7e9fe77cec4e93f8984a178c5bbf70f0",
+    "host-final.log": "b4c9353410ff4dc1faa66dcf3b03a327cd53da52c36cfaed13c6ffd8039c1e23",
+    "host-final.xml": "b54cde9137976c449420f2c1dade43c0e71a087941de032138ae1b760649de92",
+    "host-native-final.log": "7c21d90765d213838683d17570d5a847d11bd0d6c333e46c6dc43fda15ecea83",
+    "host-native-final.xml": "2760969e34f03f30c083a2e8c4bae9805c422355eb0db7307bcfdccbf56cf6c6",
+    "python-final.log": "10552c0b781c72d0503f362528a94472109b62576c766ac5b191b4c80c7bee68",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "host-bridge-cleanup.json": "1b30cfa1c191f4130cde175212d8fbd12699a291511c27a6f13e49bba065678c",
+    "business-boundary.json": "3ff05964caae6db602d4b177c154ea962b4e36f5a5e6530960177de65ea712e5",
+    "http-runtime.json": "6571d239238c801f22261a8307b578d6c179e71569370225548c6c2efa8a95ad",
+    "method-boundaries.json": "b934a31cba1fa86cbd70d9ec2d794950c0e1955fa26e1de410b42f7a6c57c0d9"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136,
+    "registration_schemas": 0,
+    "issuer_schemas": 0,
+    "material_store_schemas": 0
+  },
+  "runtime_inputs": 1238,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants_in_business_database": false,
+  "new_database_grants_in_isolated_checks_only": true,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}

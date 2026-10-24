@@ -15,7 +15,7 @@ import psycopg
 from psycopg.conninfo import make_conninfo
 
 ROOT = Path(__file__).resolve().parents[1]
-LOCAL = ROOT / ".local/context-derivation"
+LOCAL = ROOT / ".local/native-material-store"
 SYSTEM_ENVIRONMENT = frozenset(
     {
         "PATH",
@@ -40,6 +40,8 @@ GROUPS = (
     "tender_material_registration",
     "tender_scope_review_issuer",
     "tender_scope_review_verify",
+    "tender_material_store_write",
+    "tender_material_store_read",
 )
 COMPOSE = [
     "docker",
@@ -135,6 +137,8 @@ def main():
                 "FUSION_MATERIAL_DERIVATION_EVIDENCE": str(LOCAL),
                 "FUSION_CONTEXT_DERIVATION_NATIVE": "1",
                 "FUSION_CONTEXT_DERIVATION_EVIDENCE": str(LOCAL),
+                "FUSION_NATIVE_MATERIAL_STORE_HOST": "1",
+                "FUSION_NATIVE_MATERIAL_STORE_HOST_EVIDENCE": str(LOCAL),
                 "FUSION_REQUIREMENTS_ADMIN_DSN": dsn,
             }
         )
@@ -147,11 +151,12 @@ def main():
                 "pytest",
                 "tests/test_fusion_material_derivation_native.py",
                 "tests/test_fusion_context_derivation_native.py",
+                "tests/test_native_material_store_host.py",
                 "-q",
                 "-x",
                 "-p",
                 "no:cacheprovider",
-                "--junitxml=.local/context-derivation/native-final.xml",
+                "--junitxml=.local/native-material-store/host-native-final.xml",
             ],
             cwd=ROOT,
             env=env,
