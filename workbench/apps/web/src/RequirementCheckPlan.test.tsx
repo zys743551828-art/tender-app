@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
@@ -181,10 +181,11 @@ async function fill() {
   await userEvent.click(
     screen.getByRole("checkbox", { name: /文件 1 · 分册 1/ }),
   );
-  await userEvent.type(
-    screen.getByLabelText("要求 1 人工映射理由（最多200字）"),
-    "明确人工检查范围",
-  );
+  // These are whole form-value checks, not per-key behavior. Avoid leaving a
+  // timed-out typing loop able to send its remaining keys to the next test.
+  const reason = screen.getByLabelText("要求 1 人工映射理由（最多200字）");
+  fireEvent.change(reason, { target: { value: "明确人工检查范围" } });
+  expect(reason).toHaveValue("明确人工检查范围");
   await waitFor(() =>
     expect(
       screen.getByRole("checkbox", { name: "要求 1 采用依据 1" }),
@@ -211,10 +212,9 @@ it("requires explicit target, reason and evidence even after a rule is enabled",
   await userEvent.click(
     screen.getByRole("checkbox", { name: /文件 1 · 分册 1/ }),
   );
-  await userEvent.type(
-    screen.getByLabelText("要求 1 人工映射理由（最多200字）"),
-    "仅人工理由还不够",
-  );
+  fireEvent.change(screen.getByLabelText("要求 1 人工映射理由（最多200字）"), {
+    target: { value: "仅人工理由还不够" },
+  });
   expect(
     screen.getByRole("checkbox", { name: "要求 1 采用依据 1" }),
   ).not.toBeChecked();
@@ -247,7 +247,9 @@ it("preserves unknown as null and explicit zero as zero with quantity check", as
   await userEvent.click(
     screen.getByRole("checkbox", { name: "要求 1 数量未知" }),
   );
-  await userEvent.type(screen.getByLabelText("要求 1 最小数量"), "0");
+  fireEvent.change(screen.getByLabelText("要求 1 最小数量"), {
+    target: { value: "0" },
+  });
   await waitFor(() => expect(w.last()?.valid).toBe(true));
   expect(w.last()?.mappings[0]).toMatchObject({
     minimum_count: 0,
@@ -267,7 +269,9 @@ it.each(["-1", "9007199254740992"])(
     await userEvent.click(
       screen.getByRole("checkbox", { name: "要求 1 数量未知" }),
     );
-    await userEvent.type(screen.getByLabelText("要求 1 最小数量"), value);
+    fireEvent.change(screen.getByLabelText("要求 1 最小数量"), {
+      target: { value },
+    });
     await waitFor(() => expect(w.last()?.valid).toBe(false));
   },
 );
@@ -412,13 +416,11 @@ it("requires a real explicit-offset timestamp and retains blank as unknown", asy
   const w = setup();
   await fill();
   const at = screen.getByLabelText("要求 1 有效时点（可留空，填写须有时区）");
-  await userEvent.type(at, "2026-10-19T08:00:00");
+  fireEvent.change(at, { target: { value: "2026-10-19T08:00:00" } });
   await waitFor(() => expect(w.last()?.valid).toBe(false));
-  await userEvent.clear(at);
-  await userEvent.type(at, "2026-02-30T08:00:00+08:00");
+  fireEvent.change(at, { target: { value: "2026-02-30T08:00:00+08:00" } });
   await waitFor(() => expect(w.last()?.valid).toBe(false));
-  await userEvent.clear(at);
-  await userEvent.type(at, "2026-10-19T08:00:00+08:00");
+  fireEvent.change(at, { target: { value: "2026-10-19T08:00:00+08:00" } });
   await waitFor(() => expect(w.last()?.valid).toBe(true));
   expect(w.last()?.mappings[0].valid_at).toBe("2026-10-19T08:00:00+08:00");
 });

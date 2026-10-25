@@ -73,7 +73,9 @@ def test_environment() -> dict[str, str]:
     }
 
 
-def postgres_environment(*, disposable: bool) -> dict[str, str]:
+def postgres_environment(
+    *, disposable: bool, initialize_groups: bool = True, require_tcp_password: bool = False
+) -> dict[str, str]:
     import psycopg
     from psycopg import sql
     from psycopg.conninfo import conninfo_to_dict, make_conninfo
@@ -100,11 +102,21 @@ def postgres_environment(*, disposable: bool) -> dict[str, str]:
         "dbname"
     ) != "postgres":
         raise ValueError("CI_POSTGRES_REQUIRES_EXPLICIT_LOCAL_POSTGRES_DATABASE")
-    dsn = make_conninfo(dsn, options="-c jit=off")
+    if require_tcp_password and (host != "127.0.0.1" or not fields.get("password")):
+        raise ValueError("CI_CANDIDATE_REQUIRES_EXPLICIT_LOOPBACK_PASSWORD_AUTH")
+    if require_tcp_password:
+        # Fresh bootstrap derives query-free identity URIs. Preserve that exact
+        # identity: libpq options cannot be carried through or silently removed.
+        if fields.keys() - {"host", "port", "user", "password", "dbname"}:
+            raise ValueError("CI_CANDIDATE_REQUIRES_EXACT_CONNECTION_IDENTITY")
+        dsn = make_conninfo(dsn)
+    else:
+        dsn = make_conninfo(dsn, options="-c jit=off")
     with psycopg.connect(dsn, autocommit=True) as connection:
         if connection.info.server_version // 10000 != 17:
             raise ValueError("CI_POSTGRES_17_REQUIRED")
-        for group in PG_GROUPS:
+        groups = PG_GROUPS if initialize_groups else ()
+        for group in groups:
             row = connection.execute(
                 "SELECT rolcanlogin,rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls "
                 "FROM pg_roles WHERE rolname=%s",
@@ -130,6 +142,13 @@ def suite_files(suite: str) -> list[str]:
             "tests/test_authoring_exact_builds_pg.py",
             "tests/test_authoring_exact_text_edits_pg.py",
         ]
+    if suite == "scoring":
+        return [
+            "tests/test_material_request_preflight_pg.py",
+            "tests/test_material_execution_attempts_pg.py",
+        ]
+    if suite == "candidate":
+        return ["tests/test_authoring_candidate_pg.py"]
     # Reuse the existing suite definitions; no integration test is counted as
     # covered by the unit job just because its environment-gated test was skipped.
     from deploy.fusion_checks import SUITES
@@ -145,7 +164,7 @@ def suite_files(suite: str) -> list[str]:
             )
             for name in SUITES[group]
         )
-    ) + ["tests/test_material_request_preflight_pg.py"]
+    )
 
 
 def write_summary(summary: dict, directory: Path, label: str) -> None:
@@ -169,7 +188,9 @@ def write_summary(summary: dict, directory: Path, label: str) -> None:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--suite", choices=("unit", "postgres", "authoring"), required=True)
+    parser.add_argument(
+        "--suite", choices=("unit", "postgres", "authoring", "scoring", "candidate"), required=True
+    )
     parser.add_argument("--report-dir", type=Path)
     parser.add_argument("--disposable-postgres", action="store_true")
     parser.add_argument(
@@ -187,10 +208,20 @@ def main(argv=None) -> int:
     environment = (
         test_environment()
         if args.suite == "unit"
-        else postgres_environment(disposable=args.disposable_postgres)
+        else postgres_environment(
+            disposable=args.disposable_postgres,
+            initialize_groups=args.suite != "candidate",
+            require_tcp_password=args.suite == "candidate",
+        )
     )
-    if args.suite == "postgres":
+    if args.suite == "scoring":
         environment["FUSION_MATERIAL_REQUEST_PREFLIGHT_PG"] = "1"
+        environment["FUSION_MATERIAL_EXECUTION_PG"] = "1"
+    elif args.suite == "candidate":
+        environment["FUSION_AUTHORING_CANDIDATE_ADMIN_DSN"] = environment.pop(
+            "FUSION_REQUIREMENTS_ADMIN_DSN"
+        )
+        environment["FUSION_AUTHORING_CANDIDATE_PG"] = "1"
     with ExitStack() as services:
         if args.suite == "authoring":
             from deploy.ci_object_store import temporary_object_store

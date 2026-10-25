@@ -38,7 +38,17 @@ it("reads the original exact matrix without a command, cancellation or opinion f
       onClose={vi.fn()}
     />,
   );
-  await screen.findByRole("region", { name: "整包范围核查结果" });
+  // The three exact reads and their asynchronous SHA-256 checks must finish
+  // before the original matrix can be shown, including in a cold test worker.
+  await screen.findByRole(
+    "region",
+    { name: "整包范围核查结果" },
+    { timeout: 5000 },
+  );
+  expect(
+    screen.queryByText("正在核对原冻结输入、执行准备与核查结果…"),
+  ).not.toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(3);
   expect(
     fetchMock.mock.calls.every(
       ([, options]) => !options?.method || options.method === "GET",
