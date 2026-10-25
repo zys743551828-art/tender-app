@@ -261,6 +261,7 @@ def bootstrap(
     base_profile,
     name,
     extensions=(),
+    expected_sql_plan=None,
     model_purposes=False,
     model_score_purpose=False,
     assistant_budget_admin=False,
@@ -272,6 +273,10 @@ def bootstrap(
     if not re.fullmatch(r"[a-z][a-z0-9_]{0,23}", name):
         raise BootstrapError("INVALID_FRESH_ENVIRONMENT_NAME")
     plan = sql_plan(extensions)
+    if expected_sql_plan is not None and tuple((item.path, item.sha256) for item in plan) != tuple(
+        expected_sql_plan
+    ):
+        raise BootstrapError("REVIEWED_SQL_PLAN_MISMATCH")
     planned_paths = {p.path for p in plan}
     if (
         model_purposes or model_score_purpose

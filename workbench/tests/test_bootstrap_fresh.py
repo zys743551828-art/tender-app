@@ -7,6 +7,19 @@ import pytest
 from deploy import bootstrap_fresh as fresh
 
 
+@pytest.fixture
+def isolated_repository(tmp_path, monkeypatch):
+    # These guards must not depend on or create a developer checkout's .local.
+    # Keep the actual reviewed SQL bytes and all production permission checks.
+    repository = fresh.ROOT
+    for relative in fresh.BASE_SQL:
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((repository / relative).read_bytes())
+    monkeypatch.setattr(fresh, "ROOT", tmp_path)
+    return tmp_path
+
+
 def test_all_reviewed_extensions_are_validated_before_any_database_connection(monkeypatch):
     def forbidden(*args, **kwargs):
         pytest.fail("must reject extension bytes before connecting or creating")
@@ -83,11 +96,11 @@ def test_immutable_execution_plan_does_not_reread_changed_sql(tmp_path, monkeypa
 
 @pytest.mark.parametrize("missing", [True, False])
 def test_missing_capability_or_existing_database_never_creates_or_grants(
-    tmp_path, monkeypatch, missing
+    isolated_repository, monkeypatch, missing
 ):
     from uuid import uuid4
 
-    profile = tmp_path / "base.env"
+    profile = isolated_repository / "base.env"
     profile.write_text(
         "OWNER_DATABASE_DSN=postgresql://synthetic:synthetic@127.0.0.1:1/postgres\nOBJECT_STORE_PREFIX=synthetic/\n"
     )
@@ -158,13 +171,13 @@ def test_check_origin_rejects_remote_or_credentialed_or_path_origin(origin):
     ],
 )
 def test_query_and_fragment_overrides_are_rejected_before_any_connect(
-    tmp_path, monkeypatch, suffix
+    isolated_repository, monkeypatch, suffix
 ):
     def forbidden(*args, **kwargs):
         pytest.fail("unsafe URI must never reach libpq connect")
 
     monkeypatch.setattr(fresh.psycopg, "connect", forbidden)
-    profile = tmp_path / "base.env"
+    profile = isolated_repository / "base.env"
     fresh.write_private(
         profile,
         {
@@ -174,6 +187,31 @@ def test_query_and_fragment_overrides_are_rejected_before_any_connect(
     )
     with pytest.raises(fresh.BootstrapError, match="WITHOUT_QUERY"):
         fresh.bootstrap(base_profile=profile, name="query_guard")
+
+
+def test_existing_unsafe_private_directory_is_rejected_without_repair_or_connection(
+    isolated_repository, monkeypatch
+):
+    directory = isolated_repository / ".local"
+    directory.mkdir()
+    directory.chmod(0o755)
+    profile = isolated_repository / "base.env"
+    fresh.write_private(
+        profile,
+        {
+            "OWNER_DATABASE_DSN": "postgresql://synthetic:synthetic@127.0.0.1:1/postgres",
+            "OBJECT_STORE_PREFIX": "synthetic/",
+        },
+    )
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("unsafe private directory must never connect or mutate a database")
+
+    monkeypatch.setattr(fresh.psycopg, "connect", forbidden)
+    with pytest.raises(fresh.BootstrapError, match="PRIVATE_DIRECTORY_PERMISSIONS"):
+        fresh.bootstrap(base_profile=profile, name="permission_guard")
+    assert directory.stat().st_mode & 0o777 == 0o755
+    assert list(directory.iterdir()) == []
 
 
 @pytest.mark.parametrize(
