@@ -52,6 +52,11 @@ import { parseWorkspacePage } from "./workspaceTypes";
 import type { WorkspacePage } from "./workspaceTypes";
 import { PackageOverviewNextStep } from "./PackageOverviewNextStep";
 import { ProjectWorkSummary } from "./ProjectWorkSummary";
+const ProjectSelectedReviewSummary = lazy(() =>
+  import("./ProjectSelectedReviewSummary").then((module) => ({
+    default: module.ProjectSelectedReviewSummary,
+  })),
+);
 import { PackageNavigationWorkspace } from "./PackageNavigationWorkspace";
 import type { PackageNavigationTarget } from "./packageNavigation";
 import type { WorkContextPosition } from "./workContextNavigation";
@@ -339,8 +344,12 @@ export function ProjectWorkspace({
           {page === "overview" && (
             <Overview
               bid={bid}
+              memberId={memberId}
               onNavigate={onNavigate}
               onOpenPackage={onOpenPackage ?? (() => onNavigate("packages"))}
+              onOpenWorkContext={
+                onOpenWorkContext ?? (() => onNavigate("work-context"))
+              }
             />
           )}
           {page === "packages" && (
@@ -483,12 +492,16 @@ export function ProjectWorkspace({
 
 function Overview({
   bid,
+  memberId,
   onNavigate,
   onOpenPackage,
+  onOpenWorkContext,
 }: {
   bid: Bid;
+  memberId: string;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
   onOpenPackage: (target: PackageNavigationTarget | null) => void;
+  onOpenWorkContext: (position: WorkContextPosition) => void;
 }) {
   const materials = useResource<MaterialView>(
     `/bids/${bid.id}/materials`,
@@ -499,6 +512,15 @@ function Overview({
   return (
     <div>
       <ProjectWorkSummary bidId={bid.id} onNavigate={onNavigate} />
+      <Suspense fallback={<Loading text="正在打开核查概况…" />}>
+        <ProjectSelectedReviewSummary
+          bidId={bid.id}
+          memberId={memberId}
+          onOpenRecord={onOpenWorkContext}
+          onOpenPackage={onOpenPackage}
+          onOpenRules={() => onNavigate("rules")}
+        />
+      </Suspense>
       <PackageOverviewNextStep
         bidId={bid.id}
         onOpen={onOpenPackage}
