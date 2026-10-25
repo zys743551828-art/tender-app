@@ -4,20 +4,16 @@ import json
 import os
 import subprocess
 import sys
-from pathlib import Path
 from types import ModuleType
 
 import pytest
+from archived_recovery_inputs import BASELINE, required_archive
 
 from deploy.application_recovery import binding, cluster, security
 
-BASELINE = Path(
-    "/workspace/tender-docs/04-验证与测试/application-recovery-development-checks/protocol-02/baseline-inputs.json"
-)
-
 
 def backend():
-    return cluster.validate_inputs(BASELINE)[0]["backend"]
+    return cluster.validate_inputs(required_archive(BASELINE))[0]["backend"]
 
 
 def test_preloaded_live_provider_cannot_be_rebound_by_path_order():

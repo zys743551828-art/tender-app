@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
+from archived_recovery_inputs import DOMAIN_SQL, required_archive
 
 from deploy.application_recovery import fixture, seed_retry
 from deploy.application_recovery import security as s
@@ -35,9 +36,7 @@ def test_seed_covers_current_required_columns_and_records_all_keys_before_put(
     connection.__exit__ = Mock(return_value=False)
     monkeypatch.setattr(fixture.psycopg, "connect", lambda *args, **kwargs: connection)
     monkeypatch.setattr(s, "connection_dsn", lambda *args: "synthetic-only")
-    schema = Path(
-        "/workspace/tender-docs/04-验证与测试/historical-input-initialization-checks/candidate02/sql-inputs/packages/contracts/sql/domain.sql"
-    ).read_text()
+    schema = required_archive(DOMAIN_SQL).read_text()
     current_required = set(
         re.findall(r"ALTER TABLE review_inputs ADD COLUMN (\w+) [^;]*NOT NULL", schema)
     )
