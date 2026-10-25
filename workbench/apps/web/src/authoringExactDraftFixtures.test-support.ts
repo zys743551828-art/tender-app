@@ -52,6 +52,19 @@ export async function exactDraftLayoutFixture(buildAvailable = false) {
       window.location.href,
     ).pathname.replace(/^\/api\/v1/, "");
     reads.push(path);
+    if (path === "/authoring/exact-text-edit-capabilities")
+      return new Response(
+        JSON.stringify({
+          protocol: "authoring-exact-text-edit-capabilities/1",
+          available: false,
+          supported_content: "plain_text_stable_node",
+          preserves_source_refs: true,
+          preserves_rule_ids: true,
+          ordinary_edit_available: false,
+          blocking_reasons: ["AUTHORING_EXACT_TEXT_EDIT_NOT_CONFIGURED"],
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      );
     if (
       (!options.method || options.method === "GET") &&
       [

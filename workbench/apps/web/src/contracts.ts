@@ -1013,6 +1013,43 @@ export type AuthoringExactRevisionView = {
   digest: string;
 };
 
+export type AuthoringExactManualRevisionView = {
+  manifest: AuthoringExactManualRevisionManifest;
+  digest: string;
+};
+
+export type AuthoringExactTextEditCapabilities = {
+  protocol: "authoring-exact-text-edit-capabilities/1";
+  available: boolean;
+  supported_content: "plain_text_stable_node";
+  preserves_source_refs: true;
+  preserves_rule_ids: true;
+  ordinary_edit_available: false;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactTextEditRequest = {
+  base_draft_revision: number;
+  section_revision_id: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text: string;
+  reason: string;
+};
+
+export type AuthoringExactTextEditResult = {
+  protocol: "authoring-exact-text-edit-result/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  parent_section_revision_id: string;
+  section_revision_id: string;
+  section_digest: string;
+  qualification: AuthoringExactManualRevisionView;
+};
+
 export type AuthoringExactSectionBinding = {
   section_id: string;
   section_revision_id: string;
@@ -9100,6 +9137,31 @@ export type AuthoringExactRevisionManifest = {
   content_correctness_certified: false;
 };
 
+export type AuthoringExactManualRevisionManifest = {
+  protocol: "authoring-exact-manual-revision/1";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactTextEditOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactTextEditMethod;
+  method_digest: string;
+  candidate_adopted: false;
+  content_correctness_certified: false;
+};
+
 export type PackageContext = {
   target: PackageReference;
   authority: PackageReference;
@@ -10940,6 +11002,27 @@ export type AuthoringExactRevisionMethod = {
   source_sha256: { [key: string]: string };
 };
 
+export type AuthoringExactTextEditOrigin = {
+  kind: "manual_text_edit";
+  parent_qualification_id: string;
+  parent_qualification_digest: string;
+  root_qualification_id: string;
+  root_qualification_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text_digest: string;
+  reason: string;
+};
+
+export type AuthoringExactTextEditMethod = {
+  protocol: "authoring-exact-text-edit-policy/1";
+  supported_content: "plain_text_stable_node";
+  source_sha256: { [key: string]: string };
+};
+
 export type PackageReference = {
   package_id: string;
   revision_id: string;
@@ -12143,6 +12226,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/authoring/exact-revision-capabilities",
   "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
+  "GET /api/v1/authoring/exact-text-edit-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
   "GET /api/v1/bids/{bid_id}/authoring/input-catalog/draft-snapshots/{snapshot_id}/sections/{section_id}/nodes",
   "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets",

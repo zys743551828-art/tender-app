@@ -47,6 +47,7 @@ const memberCommandKinds = [
   "word-retry",
   "authoring-template",
   "authoring-package-capture",
+  "authoring-exact-text-edit",
 ] as const;
 const memberCommands: ReadonlySet<string> = new Set(memberCommandKinds);
 
