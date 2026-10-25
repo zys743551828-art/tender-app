@@ -4,13 +4,14 @@
 
 新增 `.github/workflows/workbench-ci.yml`，对 `main`、`fusion/bid-workbench` 的相关 push，以及面向这两个分支的 PR 运行，草稿 PR 同样检查；也支持手动触发。初版还监听 `work/**` push，后续去掉该重复入口：工作分支已有 PR 时，每次阶段提交由 PR synchronize 执行完整检查，避免同一提交同时排队两套重型任务。工作流只申请 `contents: read`，checkout 不保留凭据；所有第三方 Actions 均使用核对过官方引用的提交 SHA。
 
-六个独立检查项：
+七个独立检查项：
 
 | 检查项 | 内容 | 覆盖边界 |
 | --- | --- | --- |
 | 后端质量与默认测试 | Python 3.12、原锁依赖一致性、Ruff、格式、mypy、Bandit、全目录 pytest | 外部环境测试沿用显式开关，逐项记录跳过及原因 |
 | PostgreSQL 17 非 owner API | 临时 pgvector/PG17 服务，运行既有要求、范围核查、项目摘要、主要动作套件 | 必须有真实测试并且零跳过；仅合成数据，无业务库、供应商或模型调用 |
-| 评分请求与费用账本 | 独立 PG17 串行执行正式请求预检、执行尝试与费用结算原生套件 | 保持实际非 owner 权限、5 秒 statement 限制及 120 秒 lease；零跳过，不混入尚未完成的消息分发阶段 |
+| 评分请求与费用账本 | 独立 PG17 串行执行正式请求预检、执行尝试与费用结算原生套件 | 保持实际非 owner 权限、5 秒 statement 限制及 120 秒 lease；零跳过 |
+| 评分消息分发 | 独立 PG17 与 Kafka 4.1.2，验证原始 outbox、专属 relay／consumer、lease 与真实消息重复交付 | 必须实际启用 Kafka 用例且零跳过；模型响应为合成夹具，生产资格门禁保持拒绝未验收用途 |
 | 全新候选装配 | 独立空 PG17，通过真实 SCRAM 密码登录验证全新建库、DDL 和 API／Worker 权限 | 不预建能力组；验证独立服务身份的实际权限，零跳过；无需对象存储 |
 | 固定来源编辑与 Word 导出 | 独立 PG17 与临时 S3，执行固定来源版本、构建和人工文本编辑三个原生套件 | 真实数据库／对象存储与进程内原生 API／Worker 路径；模型响应和业务内容为显式合成夹具，零跳过 |
 | 前端 | Node 24、npm ci、格式、lint、TypeScript、完整 Vitest、生产构建和真实 Chromium 检查 | 概览与固定来源编辑各测桌面／手机与明暗主题四组合；浏览器业务响应为显式合成数据，不冒充真实业务或用户验收 |
@@ -24,6 +25,8 @@
 PostgreSQL 检查仅接受明确指定的本地 TCP／Unix socket、端口、用户、`postgres` 管理库及 PG17，且必须传 `--disposable-postgres`。libpq 的 `hostaddr`／`service` 参数或对应环境覆盖会被拒绝，不能绕过显式本地目标。常规原生检查只创建所需 NOLOGIN 能力组；已有组的权限异常会拒绝。候选装配检查要求显式 `127.0.0.1` TCP 密码连接与独立空集群，保留能力组尚未存在的前置条件；对应 Actions 服务强制 SCRAM 验证。候选 DSN 只接受五个身份字段，不注入或丢弃额外 libpq 参数，保持全新引导的精确身份 URI 校验。原生 fixture 自行创建临时数据库与非 owner 服务登录，测试结束清理。管理连接不会被用于替代业务身份。其余原生套件的 JIT 只通过检查 DSN 的会话参数关闭。
 
 作者检查使用 `deploy/ci_object_store.py` 启动 SeaweedFS 4.48。下载归档须通过固定 SHA-256 校验：`4a7d108384d044d95212d1342cdda9533fa55842c1c9b41f606ca3c8a9561124`。所有端口只绑定 `127.0.0.1`；每次创建临时目录、随机凭据和专用存储桶。测试的应用凭据仅能读写该桶，创建桶用的管理凭据不会交给测试进程。正常退出和异常退出都会停止服务并删除临时数据；留存服务日志前移除本次凭据。原生测试使用简短 traceback，避免展开包含测试 DSN 的完整 fixture。
+
+分发检查使用 `deploy/ci_kafka.py` 和 Java 17 启动全新 KRaft 单节点。工作流下载 [Apache 官方 Kafka 4.1.2 归档](https://archive.apache.org/dist/kafka/4.1.2/kafka_2.13-4.1.2.tgz)，在解压前验证官方固定 SHA-512：`78ac6e488b1071122f9608dfdb363f6fe50e1dbbc492347002c0398dfbf77e0d8caa5bf794c5937379721004dfe92025937d238b0faf4eb715529417fd43b491`。helper 进一步检查预期版本文件和非符号链接启动程序；每轮使用独立 700 目录、新 cluster ID、600 配置与两个随机 loopback 端口。broker／controller 均只监听并宣告 `127.0.0.1`，禁用远程 JMX 与自动建 topic，启动后再次核对真实 broker metadata。正常返回、启动失败或测试异常均只停止本轮进程，必要时在有限等待后强制结束；保存服务日志后删除临时数据，不调用全局按进程名停止服务的脚本。专属 suite 自行创建固定测试 topic 与随机消费组，整个专用 broker 的销毁清除其测试消息。
 
 浏览器检查将 Playwright 1.51.1 安装到 runner 临时目录，与应用的 npm 锁依赖分开，并使用对应的 Chromium。`check-project-review-summary-browser.mjs` 记录源码 SHA-256、1280／390 像素宽度下的明暗主题结果和截图；校验显式选择、精确导航、失效后禁用旧动作、只读请求及无横向溢出。`check-exact-text-edit-browser.mjs` 使用同样四组合，验证填写文本与理由、明确确认、丢失 ACK 后整页重载保持原请求且不自动 POST、显式重试保留原请求体／If-Match／幂等键，以及导航保护。两组证据都包含在前端 artifact 中。
 
@@ -57,6 +60,14 @@ PostgreSQL 检查仅接受明确指定的本地 TCP／Unix socket、端口、用
 
 该命令自行创建并关闭本轮 S3 服务，无需配置任何现有对象存储或模型密钥。
 
+消息分发使用另一套专用 PG17、Java 17，以及经过上述 SHA-512 校验并解压的 Kafka 目录：
+
+```sh
+.venv/bin/python deploy/ci_checks.py --suite dispatch --disposable-postgres --kafka-home /absolute/path/to/kafka_2.13-4.1.2
+```
+
+如果系统默认 Java 不是 17，可显式设置 `JAVA_HOME`；该值只传给隔离 Kafka 服务。命令内部设置原生分发开关和新 broker 地址，测试进程不会继承既有 Kafka／业务／供应商环境。无需启动或配置用户已有的 broker。
+
 默认报告在 `.local/ci/<suite>/`，不提交运行凭据。不要将该检查配置指向现有业务环境。旧固定历史包的可选验收边界见 [测试可复现性](test-portability.md)。
 
 ## 本轮验证记录
@@ -64,11 +75,14 @@ PostgreSQL 检查仅接受明确指定的本地 TCP／Unix socket、端口、用
 - 原 Python 锁与额外文档处理检查依赖安装成功，`pip check` 通过；npm ci 成功，未改依赖版本或锁文件。
 - 包含本轮作者、概览和 CI 完成源码的独立快照通过全域 Ruff、**1046 文件格式、661 实现文件 mypy** 和 Bandit。源码、前端构建、两份 OCR 词典与中文字体均为实际文件并保存 SHA-256，只有安装好的依赖复用；并发中的后续评分执行草稿未混入此快照。
 - 新 CI 入口的 **16 项回归通过**；包含失败／错误／跳过统计、拒绝空报告、拒绝旧报告替代崩溃、拒绝 PostgreSQL／作者原生套件假绿、环境凭据隔离、远端数据库与 libpq 路由覆盖拒绝，以及显式旧档案缺失失败。最后增加的 4 项路由反例另做定向回归；CI 入口与引导安全测试最终合跑 **64 项全部通过，0.72 秒**。入口 Ruff、mypy 和 Bandit 通过，显式临时 PG17 的正向连接仍通过。
-- 后续独立评分／候选 job 的入口接线回归扩展到 **25 项，全部通过，0.68 秒**；覆盖对应开关、候选 DSN 映射及不预建能力组、拒绝 socket 代替候选密码验证，以及每个原生套件出现跳过时失败。候选环境捕获回归实际调用生产 `bootstrap_fresh.identity_dsn`，验证无额外 `options` 破坏身份派生；另明确拒绝额外 `options`／`application_name`／`connect_timeout`，未放宽引导 guard。新工作流通过 actionlint，修改入口通过 Ruff、格式、mypy 和 Bandit。两个新增 job 的原生执行结果需由后续提交对应的 Actions 核验，不能把入口回归当作原生验收。
+- 后续独立评分／候选 job 的入口接线回归扩展到 **25 项，全部通过，0.68 秒**；覆盖对应开关、候选 DSN 映射及不预建能力组、拒绝 socket 代替候选密码验证，以及每个原生套件出现跳过时失败。候选环境捕获回归实际调用生产 `bootstrap_fresh.identity_dsn`，验证无额外 `options` 破坏身份派生；另明确拒绝额外 `options`／`application_name`／`connect_timeout`，未放宽引导 guard。新工作流通过 actionlint，修改入口通过 Ruff、格式、mypy 和 Bandit。两个新增 job 的实际原生执行结果见后续 Actions 记录，入口回归本身不算原生验收。
+- 分发入口与 Kafka 生命周期守卫组合 **35 项通过，0.47 秒**：包含缺服务参数、原生跳过必须失败、旧服务日志清除、版本文件缺失／启动程序符号链接拒绝、非预期 broker metadata 拒绝，以及启动失败／测试失败／优雅退出超时时只清理本轮进程与临时目录、保留日志。额外检查既有 Kafka 地址、JVM 参数和 `BASH_ENV` 不会随宿主环境进入测试。修改入口与 helper 通过 Ruff、格式、mypy、Bandit，新增工作流通过 actionlint。
 - 引导安全测试 **48 项通过，0.55 秒**。干净副本揭示 8 例意外依赖宿主 `.local` 权限，现改为独立目录并复制真实审核 SQL 字节；新增已有 755 私有目录必须拒绝、不得修复权限或连接数据库的反例。生产权限检查保持原样。此修复随候选装配阶段提交 `9db306cd3e152a85856efc6632ae1dd465a6a53f` 发布。
 - 官方 `actionlint` v1.7.12 通过工作流语义检查。验证工具归档 SHA-256 为 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`，按官方 release 元数据核对后使用。
 - 真实本地解析与 HTTP 解析组合 **17 项通过、0 跳过，11.41 秒**。本机缺少的词典按既有 manifest 哈希下载，合成测试使用官方 Noto CJK 字体，未修改解析方法身份或放宽验证。
 - 临时 S3 引导已实测对象写入／读回、应用凭据拒绝创建其他存储桶（HTTP 403），以及退出后服务端口关闭。
+- 新 Kafka helper 实际生命周期验证 **10.45 秒通过**：700 私有目录、600 配置、loopback broker metadata、幂等 producer 的真实 ACK、精确消息读回、同步 offset commit 均完成；退出后本轮 Java 进程已回收、监听关闭、私有数据目录删除、服务日志保留。官方两个启动脚本均使用 `exec`，当前调用不带 daemon 参数；进程句柄对应最终 Java。用于评分阶段的前一独立手动 Kafka 实例也在使用者释放后，核对 PID 启动身份与配置再停止，两个原端口均已关闭。
+- 分发阶段独立 PG17＋真实 Kafka 全套 **13 项通过、0 跳过，357.67 秒**；随后加强真实 offset commit ACK 丢失与 seek 重放的两个 Kafka 用例另行通过（47.72 秒），不将这次重复执行计为额外独立用例。该阶段的协议 41 项通过，具体业务机制与生产资格边界见评分分发记录。新增 CI dispatch job 的整套执行仍需其对应提交的 Actions 核验。
 
 | 实际运行 | 通过 | 跳过 | 失败／错误 | 耗时 |
 | --- | ---: | ---: | ---: | --- |
@@ -110,5 +124,18 @@ PostgreSQL 检查仅接受明确指定的本地 TCP／Unix socket、端口、用
 | [非 owner PG 121204563067](https://github.com/zys743551828-art/tender-app/actions/runs/40205210399/job/121204563067) | 成功；337 通过／0 跳过，889.03 秒；1 条既有警告保留 |
 
 后端失败保留了正确的生产目录 owner 检查。测试仅在目标临时目录上明确模拟 owner，真实文件与权限 IO 保留，并新增空目录／已初始化目录的非 root owner 均须拒绝且不得修权限的两个反例。该文件本地 9 项通过（0.27 秒），Ruff／格式通过。本地尝试普通 UID 复验受工作区依赖不可读限制，未执行，也未改变依赖权限；下一次真实 GitHub 普通用户 runner 将验证该修复。上述 run 因此不能写成整体成功。
+
+## 后续 GitHub Actions 实际结果
+
+提交 `29daf782bac9a55c70c2af9bcfc6a99662a2c4df` 的 [PR run 40206884632](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632) 只触发一套检查，未再重复触发工作分支 push。它验证 GitHub 为 PR 生成的合并提交 `674eb6c6ff7a7d959fb0b2bf9350651b48dab747`。以下为分发 CI 阶段冻结时已经完成的结果：
+
+| Job | 已核对结果 |
+| --- | --- |
+| [后端默认 121209689790](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689790) | 成功；3669 通过／2358 跳过／0 失败，245.13 秒；5 条既有警告保留。普通用户 runner 上原目录权限单元测试修复已实际验证 |
+| [前端 121209689757](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689757) | 成功；183 文件／1816 项全部通过，268.12 秒；构建 5.63 秒，概览与固定来源编辑的 Chromium 各 4 组合全部通过 |
+| [评分预检与账本 121209689761](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689761) | 成功；20 通过／0 跳过，387.85 秒；1 条既有警告保留 |
+| [全新候选装配 121209689616](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689616) | 成功；14 通过／0 跳过，6.32 秒；独立 SCRAM 身份与候选 DSN 接线已实际验证 |
+| [非 owner PG 121209689838](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689838) | 后续阶段提交触发并发策略取消，原生测试步骤未完成，不产生本次通过结论 |
+| [固定来源 PG＋S3 121209689863](https://github.com/zys743551828-art/tender-app/actions/runs/40206884632/job/121209689863) | 后续阶段提交触发并发策略取消，原生测试步骤未完成，不产生本次通过结论 |
 
 构建仍有既有大 chunk 提示；原锁中 pypdfium2 4.30.1 的上游撤回警告也保留，后续升级需独立核对解析方法与历史身份，未在本阶段擅自更换。

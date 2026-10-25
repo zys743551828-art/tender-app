@@ -149,6 +149,8 @@ def suite_files(suite: str) -> list[str]:
         ]
     if suite == "candidate":
         return ["tests/test_authoring_candidate_pg.py"]
+    if suite == "dispatch":
+        return ["tests/test_material_execution_dispatch_pg.py"]
     # Reuse the existing suite definitions; no integration test is counted as
     # covered by the unit job just because its environment-gated test was skipped.
     from deploy.fusion_checks import SUITES
@@ -189,21 +191,30 @@ def write_summary(summary: dict, directory: Path, label: str) -> None:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--suite", choices=("unit", "postgres", "authoring", "scoring", "candidate"), required=True
+        "--suite",
+        choices=("unit", "postgres", "authoring", "scoring", "candidate", "dispatch"),
+        required=True,
     )
     parser.add_argument("--report-dir", type=Path)
     parser.add_argument("--disposable-postgres", action="store_true")
     parser.add_argument(
         "--weed", type=Path, help="Verified SeaweedFS binary; required for authoring"
     )
+    parser.add_argument(
+        "--kafka-home",
+        type=Path,
+        help="Verified Kafka 4.1.2 release directory; required for dispatch",
+    )
     args = parser.parse_args(argv)
     if args.suite == "authoring" and args.weed is None:
         parser.error("authoring requires --weed pointing to the verified SeaweedFS binary")
+    if args.suite == "dispatch" and args.kafka_home is None:
+        parser.error("dispatch requires --kafka-home pointing to the verified Kafka 4.1.2 release")
     directory = (args.report_dir or ROOT / ".local" / "ci" / args.suite).resolve()
     directory.mkdir(parents=True, exist_ok=True)
     report = directory / "junit.xml"
     # A crashed run must not leave previous successful evidence at this location.
-    for name in ("junit.xml", "summary.json", "summary.md", "s3.log"):
+    for name in ("junit.xml", "summary.json", "summary.md", "s3.log", "kafka.log"):
         (directory / name).unlink(missing_ok=True)
     environment = (
         test_environment()
@@ -223,6 +234,18 @@ def main(argv=None) -> int:
         )
         environment["FUSION_AUTHORING_CANDIDATE_PG"] = "1"
     with ExitStack() as services:
+        if args.suite == "dispatch":
+            from deploy.ci_kafka import temporary_kafka
+
+            service_environment = test_environment()
+            if java_home := os.environ.get("JAVA_HOME"):
+                service_environment["JAVA_HOME"] = java_home
+            environment["FUSION_MATERIAL_DISPATCH_PG"] = "1"
+            environment.update(
+                services.enter_context(
+                    temporary_kafka(args.kafka_home, service_environment, directory / "kafka.log")
+                )
+            )
         if args.suite == "authoring":
             from deploy.ci_object_store import temporary_object_store
 

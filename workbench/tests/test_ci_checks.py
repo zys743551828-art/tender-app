@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 from archived_recovery_inputs import required_archive
 
-from deploy import bootstrap_fresh, ci_checks, ci_object_store
+from deploy import bootstrap_fresh, ci_checks, ci_kafka, ci_object_store
 
 
 def test_junit_preserves_pass_fail_error_and_skip_reasons(tmp_path):
@@ -47,7 +47,7 @@ def test_empty_or_unrelated_report_cannot_be_a_success(tmp_path, body):
         "<testcase><failure/></testcase>",
     ],
 )
-@pytest.mark.parametrize("suite", ["postgres", "authoring", "scoring", "candidate"])
+@pytest.mark.parametrize("suite", ["postgres", "authoring", "scoring", "candidate", "dispatch"])
 def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
     tmp_path, monkeypatch, body, suite
 ):
@@ -58,6 +58,11 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
 
     monkeypatch.setattr(ci_checks, "postgres_environment", environment)
     monkeypatch.setattr(ci_object_store, "temporary_object_store", lambda *_: nullcontext({}))
+    monkeypatch.setattr(
+        ci_kafka,
+        "temporary_kafka",
+        lambda *_: nullcontext({"FUSION_MATERIAL_DISPATCH_KAFKA_BOOTSTRAP": "127.0.0.1:19092"}),
+    )
     monkeypatch.setattr(ci_checks, "suite_files", lambda _: ["synthetic.py"])
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
 
@@ -69,6 +74,9 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
             assert kwargs["env"]["FUSION_AUTHORING_CANDIDATE_PG"] == "1"
             assert kwargs["env"]["FUSION_AUTHORING_CANDIDATE_ADMIN_DSN"] == "synthetic-bootstrap"
             assert "FUSION_REQUIREMENTS_ADMIN_DSN" not in kwargs["env"]
+        elif suite == "dispatch":
+            assert kwargs["env"]["FUSION_MATERIAL_DISPATCH_PG"] == "1"
+            assert kwargs["env"]["FUSION_MATERIAL_DISPATCH_KAFKA_BOOTSTRAP"] == "127.0.0.1:19092"
         (tmp_path / "junit.xml").write_text("<testsuite>" + body + "</testsuite>")
         return SimpleNamespace(returncode=0)
 
@@ -83,30 +91,34 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
                 str(tmp_path),
                 "--weed",
                 "synthetic-unused-binary",
+                "--kafka-home",
+                "synthetic-unused-release",
             ]
         )
         == 1
     )
 
 
-def test_authoring_requires_explicit_verified_service_binary_before_connecting(monkeypatch):
+@pytest.mark.parametrize("suite", ["authoring", "dispatch"])
+def test_native_requires_explicit_verified_service_binary_before_connecting(monkeypatch, suite):
     def forbidden(**_):
         raise AssertionError("must validate arguments before connecting to PostgreSQL")
 
     monkeypatch.setattr(ci_checks, "postgres_environment", forbidden)
     with pytest.raises(SystemExit) as error:
-        ci_checks.main(["--suite", "authoring", "--disposable-postgres"])
+        ci_checks.main(["--suite", suite, "--disposable-postgres"])
     assert error.value.code == 2
 
 
 def test_stale_report_cannot_replace_a_crashed_run(tmp_path, monkeypatch):
     (tmp_path / "junit.xml").write_text('<testsuite><testcase name="stale pass"/></testsuite>')
-    for name in ("summary.json", "summary.md", "s3.log"):
+    for name in ("summary.json", "summary.md", "s3.log", "kafka.log"):
         (tmp_path / name).write_text("stale successful evidence")
     monkeypatch.setattr(ci_checks.subprocess, "run", lambda *_, **__: SimpleNamespace(returncode=2))
     assert ci_checks.main(["--suite", "unit", "--report-dir", str(tmp_path)]) == 2
     assert not any(
-        (tmp_path / name).exists() for name in ("junit.xml", "summary.json", "summary.md", "s3.log")
+        (tmp_path / name).exists()
+        for name in ("junit.xml", "summary.json", "summary.md", "s3.log", "kafka.log")
     )
 
 
@@ -117,6 +129,10 @@ def test_test_child_does_not_inherit_service_or_paid_provider_credentials(monkey
         "DEEPSEEK_API_KEY",
         "OPENAI_API_KEY",
         "OBJECT_STORE_SECRET_KEY",
+        "KAFKA_BOOTSTRAP_SERVERS",
+        "FUSION_MATERIAL_DISPATCH_KAFKA_BOOTSTRAP",
+        "KAFKA_OPTS",
+        "BASH_ENV",
         "WORKBENCH_ENV_FILE",
     ):
         monkeypatch.setenv(name, "private-host-value")
