@@ -370,7 +370,7 @@ export function ExactAuthoringTextEdit({
             {editing.section.content.attrs.rule_ids.length}{" "}
             条规则关联。此操作不改变章节顺序、格式或引用。
           </p>
-          <label>
+          <label className="checkbox-label">
             <input
               type="checkbox"
               checked={confirmed}

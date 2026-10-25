@@ -49,10 +49,13 @@
 | 前端协议/恢复/表单 | 新增 23 项通过，覆盖原生响应验证、篡改后重新计算摘要仍拒绝、操作前无 POST、显式确认、丢失 ACK 后原请求重放、账户/卸载/记录变化后的晚到响应、损坏记录保留、明确冲突重新核对 |
 | 现有固定来源 UI 回归 | `AuthoringExactDraft.test.tsx` 与 `authoringExactBuildNative.test.tsx` 共 3 项通过；普通编辑保护、章节导航和原 B4 构建请求未改变 |
 | 静态检查 | 改动 Python Ruff lint/format、mypy（5 个产品源文件）及 Bandit 通过；改动前端 ESLint/Prettier 与 TypeScript typecheck 通过 |
+| 真实 Chromium 与刷新恢复 | 桌面 1280×1000／手机 390×844、明暗主题四组合通过：真实填写、勾选前阻止发送、丢失 ACK 后整页刷新保留原请求、刷新不自动 POST、明确重试的正文／If-Match／操作键完全相同，成功后释放导航保护 |
 
 DOCX 验证读取实际 S3 输出，并检查 `word/document.xml` 中包含第二次人工修改的准确文字；这证明保存内容、来源资格和真实构建链路贯通。它不代表招标业务正确性、模型质量或人工排版观感通过。
 
 CI agent 同时把 B3/B4/B5 原生文件纳入可重建的专用 authoring 检查路径；完整统一 CI、构建和浏览器验收结果由本轮总验收记录统一记录。
+
+真实浏览器脚本为 `apps/web/scripts/check-exact-text-edit-browser.mjs`，使用 Playwright 1.51.1／Chromium 134.0.6998.35。它消费前述原生 HTTP fixture 并重放合成响应，不向真实业务服务提交修改；原生数据库与 S3 证明来自独立集成套件。四组回执包含实际参与打包的源码 SHA256，首末核对一致；编辑与恢复截图供视觉复核，CI 保存全部产物。视觉复核发现确认框未使用统一样式，已复用现有 `checkbox-label`，并再次运行四组合；未新增业务行为。
 
 ## 仍明确受限的范围
 
