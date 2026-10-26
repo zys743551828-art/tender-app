@@ -15,7 +15,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET  # nosec B405
 
 from packages.authoring import generated_verification as legacy
-from packages.authoring import rich_docx, rich_images, structured_docx
+from packages.authoring import rich_captions, rich_docx, rich_images, structured_docx
 from packages.authoring.build import W
 from packages.domain.runtime import sha
 
@@ -172,8 +172,10 @@ def verify_container(source, image_materials, *, page_number):
             identity in bookmarks
             or not isinstance(identity, str)
             or not identity.isdecimal()
-            or not 1 <= int(identity) <= 500
-            or not re.fullmatch(r"sec_[0-9a-f]{32}", name)
+            or not (
+                (1 <= int(identity) <= 500 and re.fullmatch(r"sec_[0-9a-f]{32}", name))
+                or (501 <= int(identity) <= 1500 and re.fullmatch(r"cap_[0-9a-f]{32}", name))
+            )
             or list(item)
         ):
             legacy.blocked("章节书签必须是唯一稳定的内部UUID锚点")
@@ -184,9 +186,42 @@ def verify_container(source, image_materials, *, page_number):
         len(set(bookmarks.values())) != len(bookmarks)
         or len(ends) != len(set(ends))
         or set(ends) != set(bookmarks)
-        or not set(links) <= set(bookmarks.values())
+        or not set(links) <= {name for name in bookmarks.values() if name.startswith("sec_")}
     ):
         legacy.blocked("内部目录链接或章节书签配对不完整")
+    body = original.find("{" + W + "}body")
+    children = list(body) if body is not None else []
+    checked_captions = set()
+    for index, paragraph in enumerate(children):
+        starts = [
+            item
+            for item in paragraph.iter("{" + W + "}bookmarkStart")
+            if item.get("{" + W + "}name", "").startswith("cap_")
+        ]
+        if not starts:
+            continue
+        direct = list(paragraph)
+        start = starts[0]
+        identity = start.get("{" + W + "}id")
+        if (
+            paragraph.tag != "{" + W + "}p"
+            or len(starts) != 1
+            or start not in direct
+            or index == 0
+            or not (
+                children[index - 1].tag == "{" + W + "}tbl"
+                or list(children[index - 1].iter("{" + W + "}drawing"))
+            )
+            or direct[-1].tag != "{" + W + "}bookmarkEnd"
+            or direct[-1].get("{" + W + "}id") != identity
+            or direct.index(start) != int(direct[0].tag == "{" + W + "}pPr")
+            or any(item.tag != "{" + W + "}r" for item in direct[direct.index(start) + 1 : -1])
+            or not "".join(item.text or "" for item in paragraph.iter("{" + W + "}t"))
+        ):
+            legacy.blocked("图注书签必须完整包围紧随图表的独立文字段落")
+        checked_captions.add(identity)
+    if checked_captions != {key for key, name in bookmarks.items() if name.startswith("cap_")}:
+        legacy.blocked("图注书签不在固定段落位置")
     sanitized = deepcopy(original)
     for parent in list(sanitized.iter()):
         for child in list(parent):
@@ -276,6 +311,7 @@ def manifest(source, snapshot, materials, *, pagination=None):
         ),
         "source_docx_digest": sha(source),
         "navigation_entries_digest": sha(entries),
+        "caption_entries_digest": sha(rich_captions.entries(snapshot)),
         "pagination": {
             "mode": pagination["mode"] if pagination else "continuous",
             "toc_start_pages": {item["node_id"]: item["expected_start_page"] for item in entries},

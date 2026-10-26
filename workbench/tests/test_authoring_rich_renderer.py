@@ -109,7 +109,7 @@ def test_rich_admission_is_exact_and_external_word_still_blocks_PAGE(rich_input)
     )
     assert (
         len(list(prepared["roots"]["word/document.xml"].iter("{" + rich_docx.W + "}bookmarkStart")))
-        == 1
+        == 3
     )
     assert inspect_docx(source)["conversion_eligible"] is False
 

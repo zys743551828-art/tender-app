@@ -16,6 +16,7 @@ from xml.etree import ElementTree as ET  # nosec B405
 from packages.authoring import (
     build,
     generated_docx,
+    rich_captions,
     rich_content,
     rich_images,
     rich_ooxml,
@@ -31,7 +32,7 @@ CT = "http://schemas.openxmlformats.org/package/2006/content-types"
 WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture"
-PROTOCOL = "authoring-generated-rich/3"
+PROTOCOL = "authoring-generated-rich/4"
 
 
 def identity():
@@ -42,7 +43,7 @@ def identity():
         "text_generator": generated_docx.generator_identity(),
         "sources": {
             Path(str(module.__file__)).name: sha(Path(str(module.__file__)).read_bytes())
-            for module in [rich_content, rich_images, rich_ooxml, page_navigation]
+            for module in [rich_content, rich_images, rich_ooxml, page_navigation, rich_captions]
         },
         "producer_digest": sha(Path(__file__).read_bytes()),
         "schema_digest": rich_content.SCHEMA_DIGEST,
@@ -236,6 +237,9 @@ def assemble(snapshot, image_materials, *, pagination=None):
     available_height = 16838 - config["margin_top_twips"] - config["margin_bottom_twips"]
     projected = deepcopy(snapshot)
     replacements = {}
+    caption_entries = rich_captions.entries(snapshot)
+    captions = {(item["section_index"], item["block_index"]): item for item in caption_entries}
+    replacement_captions = {}
     required = set()
     materials = {}
     decoded_pixels, decoded_digests = 0, set()
@@ -255,7 +259,7 @@ def assemble(snapshot, image_materials, *, pagination=None):
                     422,
                 )
         materials[key] = material
-    for section in projected["sections"]:
+    for section_index, section in enumerate(projected["sections"]):
         rich_content.validate_content(
             section,
             available_width_twips=available,
@@ -270,6 +274,8 @@ def assemble(snapshot, image_materials, *, pagination=None):
                     "AUTHORING_RICH_MARKER_COLLISION", "内容定位重复，请检查节点ID", 409
                 )
             replacements[marker] = block
+            if (section_index, index) in captions:
+                replacement_captions[marker] = captions[(section_index, index)]
             if block["type"] == "image":
                 attrs = block["attrs"]
                 required.add(
@@ -382,7 +388,20 @@ def assemble(snapshot, image_materials, *, pagination=None):
         body.remove(paragraph)
         body.insert(position, actual)
         if block["attrs"]["caption"]:
-            body.insert(position + 1, structured_docx.paragraph(block["attrs"]["caption"]))
+            entry = replacement_captions[marker]
+            caption = structured_docx.paragraph(entry["text"])
+            caption.insert(
+                1 if caption.find("{" + W + "}pPr") is not None else 0,
+                ET.Element(
+                    "{" + W + "}bookmarkStart",
+                    {
+                        "{" + W + "}id": str(entry["bookmark_id"]),
+                        "{" + W + "}name": entry["anchor"],
+                    },
+                ),
+            )
+            element(caption, "bookmarkEnd", id=entry["bookmark_id"])
+            body.insert(position + 1, caption)
     if emitted != set(replacements):
         raise DomainError(
             "AUTHORING_RICH_MARKER_MISSING", "未完整生成表图，不能保存为空白产物", 409

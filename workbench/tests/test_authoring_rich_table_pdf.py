@@ -325,7 +325,7 @@ def test_rich_inspection_uses_measured_table_proof_and_keeps_other_gaps():
     assert "AUTHORING_TABLE_PDF_GEOMETRY_UNVERIFIED" not in result["gaps"]
     # This synthetic PDF has no real DOCX conversion, generated title, footer or TOC.
     assert result["gaps"] and "AUTHORING_COMPLETE_BODY_TEXT_UNVERIFIED" in result["gaps"]
-    assert profile["identity"]["protocol"] == "authoring-rich-sandbox/4"
+    assert profile["identity"]["protocol"] == "authoring-rich-sandbox/5"
     assert profile["identity"]["table_inspector"] == rich_table_pdf.identity()
 
 
@@ -341,7 +341,7 @@ def test_old_rich_or_changed_inspector_profile_requires_fresh_qualification(chan
     )
     profile = rich_renderer.profile_for(base)
     if change == "old_protocol":
-        profile["identity"]["protocol"] = "authoring-rich-sandbox/3"
+        profile["identity"]["protocol"] = "authoring-rich-sandbox/4"
     elif change == "missing_inspector":
         del profile["identity"]["table_inspector"]
     else:

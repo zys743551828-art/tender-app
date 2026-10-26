@@ -15,6 +15,7 @@ import pypdfium2
 from packages.authoring import generated_renderer as text_renderer
 from packages.authoring import (
     page_navigation,
+    rich_captions,
     rich_docx,
     rich_pdf,
     rich_table_pdf,
@@ -25,7 +26,7 @@ from packages.domain.runtime import DomainError, sha
 sandbox = text_renderer.sandbox
 failure = text_renderer.failure
 expected_body = text_renderer.expected_body
-PROTOCOL = "authoring-rich-sandbox/4"
+PROTOCOL = "authoring-rich-sandbox/5"
 MAX_LAYOUT_PASSES = 3
 
 
@@ -51,6 +52,7 @@ def profile_for(base):
         "image_layout_policy": "frozen_order_by_page_and_disjoint_vertical_inline_placements_v1",
         "image_position_epsilon_pt": rich_pdf.POSITION_EPSILON,
         "image_section_policy": "measured_chapter_start_to_next_preorder_heading_v1",
+        "caption_policy": rich_captions.PROTOCOL,
         "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
@@ -105,6 +107,9 @@ def inspect_pdf(data, prepared):
         data, prepared["snapshot"], prepared["roots"], prepared["config"]
     )
     image_sections = rich_pdf.inspect_image_sections(prepared["snapshot"], images, navigation)
+    caption_gaps = (
+        ["AUTHORING_CAPTION_PDF_UNVERIFIED"] if rich_captions.entries(prepared["snapshot"]) else []
+    )
     return body | {
         "gaps": list(
             dict.fromkeys(
@@ -113,6 +118,7 @@ def inspect_pdf(data, prepared):
                 + navigation["gaps"]
                 + tables["gaps"]
                 + image_sections["gaps"]
+                + caption_gaps
             )
         ),
         "raster_correspondence": images,
