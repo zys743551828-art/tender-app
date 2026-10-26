@@ -136,11 +136,12 @@ def numbering(*, start=1, label=None, fmt="decimal"):
     )
 
 
-def merged_table(*, continuation="", first_width=1800):
+def merged_table(*, continuation="", first_width=1800, repeat=False):
     return (
         '<w:tbl><w:tblPr><w:tblLayout w:type="fixed"/><w:tblCaption w:val="工程量表"/></w:tblPr>'
         f'<w:tblGrid><w:gridCol w:w="{first_width}"/><w:gridCol w:w="2100"/><w:gridCol w:w="900"/></w:tblGrid>'
-        '<w:tr><w:trPr><w:tblHeader/></w:trPr><w:tc><w:tcPr><w:gridSpan w:val="2"/><w:vMerge w:val="restart"/></w:tcPr>'
+        + ("<w:tr><w:trPr><w:tblHeader/></w:trPr>" if repeat else "<w:tr>")
+        + '<w:tc><w:tcPr><w:gridSpan w:val="2"/><w:vMerge w:val="restart"/></w:tcPr>'
         + paragraph("合并单元格 120")
         + "</w:tc><w:tc><w:tcPr/>"
         + paragraph("工期")
@@ -294,7 +295,7 @@ def test_actual_table_grid_combined_spans_widths_header_caption_and_cell_text():
         "id": "ignored",
         "colspan": 2,
         "rowspan": 2,
-        "header": True,
+        "header": False,
     }
     assert len(table["content"][1]["content"]) == 1
     assert grid["grid"][0][0] is grid["grid"][1][1]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from packages.authoring.docx_import_support import (
     REVISION_TAGS,
@@ -13,11 +13,12 @@ from packages.authoring.docx_import_support import (
     integer,
     is_word,
     local,
+    namespace,
     on,
     paths,
     value,
 )
-from packages.authoring.rich_content import table_grid
+from packages.authoring.rich_content import SCHEMA, table_grid
 from packages.domain.runtime import DomainError
 
 
@@ -79,21 +80,38 @@ def table(ctx, source, path):
         "attrs": {"id": ctx.node_id(path), "column_widths_twips": widths, "caption": caption},
         "content": [],
     }
+    repeated_rows = []
     previous: list[Any] = [None] * len(widths)
     for row_index, source_row in enumerate(rows):
         row_path = f"{path}/tr[{row_index + 1}]"
         row_properties = child(source_row, "trPr")
-        header = child(row_properties, "tblHeader")
-        row_header = header is not None and on(header)
-        if row_header:
-            ctx.issue(
-                "TABLE_HEADER_REPEAT_NOT_IMPORTED",
-                "warning",
-                row_path,
-                "保留表头单元格身份；原Word跨页重复表头规则不进入当前编辑结构",
+        headers = children(row_properties, "tblHeader")
+        if (
+            len(children(source_row, "trPr")) > 1
+            or len(headers) > 1
+            or any(
+                list(header)
+                or any(key not in {"{" + namespace(header.tag) + "}val"} for key in header.attrib)
+                for header in headers
             )
+        ):
+            ctx.issue(
+                "TABLE_HEADER_REPEAT_UNSUPPORTED",
+                "blocker",
+                row_path,
+                "重复表头声明含歧义或未知结构",
+            )
+            return None
+        row_header = bool(headers) and on(headers[0])
+        if row_header:
+            repeated_rows.append(row_index)
         for prop in row_properties if row_properties is not None else []:
             name = local(prop.tag)
+            if name == "tblHeader" and not is_word(prop):
+                ctx.issue(
+                    "TABLE_HEADER_REPEAT_UNSUPPORTED", "blocker", row_path, "表头命名空间不受支持"
+                )
+                return None
             if name in {"gridBefore", "gridAfter"} and attr(prop, "val", "0") != "0":
                 ctx.issue(
                     "TABLE_GRID_GAP_UNSUPPORTED",
@@ -253,9 +271,21 @@ def table(ctx, source, path):
             return None
         output["content"].append(row)
         previous = current
+    if repeated_rows:
+        if repeated_rows != [0]:
+            ctx.issue(
+                "TABLE_HEADER_REPEAT_UNSUPPORTED", "blocker", path, "仅支持明确声明的首行重复表头"
+            )
+            return None
+        output["attrs"]["pagination"] = dict(cast(dict[str, Any], SCHEMA["table_pagination"]))
     try:
         table_grid(output)
     except DomainError:
-        ctx.issue("TABLE_GRID_INVALID", "blocker", path, "转换后表格未通过现有严格网格校验")
+        ctx.issue(
+            "TABLE_HEADER_REPEAT_UNSUPPORTED" if repeated_rows else "TABLE_GRID_INVALID",
+            "blocker",
+            path,
+            "转换后表格未通过现有严格网格及分页校验",
+        )
         return None
     return output

@@ -93,6 +93,7 @@ def method_identity():
             "decimal_from_1_and_bullet_lists_up_to_5_levels",
             "explicit_table_grid_horizontal_and_vertical_spans",
             "table_header_rows_and_caption",
+            "explicit_single_repeated_header_unmerged_2_to_12_rows",
             "embedded_untransformed_inline_png_jpeg",
         ],
         "layout_policy": "editable_subset_explicit_losses_original_retained",
