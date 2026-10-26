@@ -29,7 +29,7 @@ def unused_ports(count: int) -> list[int]:
 
 @contextmanager
 def temporary_object_store(
-    weed: Path, environment: dict[str, str], log_path: Path
+    weed: Path, environment: dict[str, str], log_path: Path, *, recovery: bool = False
 ) -> Iterator[dict[str, str]]:
     """Start only the given locally verified binary and destroy this service on exit."""
     weed = weed.resolve(strict=True)
@@ -37,7 +37,7 @@ def temporary_object_store(
         raise ValueError("CI_SEAWEED_BINARY_REQUIRED")
     credentials = {
         name: {"accessKey": secrets.token_hex(16), "secretKey": secrets.token_urlsafe(40)}
-        for name in ("admin", "app")
+        for name in (("admin", "app", "recovery_reader") if recovery else ("admin", "app"))
     }
     bucket = "tender-ci-authoring-" + secrets.token_hex(8)
     master, master_grpc, volume, volume_grpc, filer, filer_grpc, s3, s3_grpc = unused_ports(8)
@@ -62,6 +62,17 @@ def temporary_object_store(
                             ],
                         },
                     ]
+                    + (
+                        [
+                            {
+                                "name": "ci-offline-recovery-reader",
+                                "credentials": [credentials["recovery_reader"]],
+                                "actions": ["Read"],
+                            }
+                        ]
+                        if recovery
+                        else []
+                    )
                 }
             ),
             encoding="utf-8",
@@ -78,7 +89,7 @@ def temporary_object_store(
             f"-master.port.grpc={master_grpc}",
             "-master.telemetry=false",
             "-master.volumeSizeLimitMB=128",
-            "-volume.max=4",
+            "-volume.max=" + ("32" if recovery else "4"),
             f"-volume.port={volume}",
             f"-volume.port.grpc={volume_grpc}",
             "-filer",
@@ -130,7 +141,7 @@ def temporary_object_store(
                             raise RuntimeError("CI_OBJECT_STORE_NOT_READY") from None
                         time.sleep(0.2)
                 admin.create_bucket(Bucket=bucket)
-                yield {
+                values = {
                     "OBJECT_STORE_BACKEND": "s3",
                     "OBJECT_STORE_ENDPOINT": endpoint,
                     "OBJECT_STORE_REGION": "us-east-1",
@@ -138,6 +149,24 @@ def temporary_object_store(
                     "OBJECT_STORE_ACCESS_KEY": credentials["app"]["accessKey"],
                     "OBJECT_STORE_SECRET_KEY": credentials["app"]["secretKey"],
                 }
+                if recovery:
+                    values.update(
+                        {
+                            "FUSION_EXTENDED_RECOVERY_S3_ADMIN_ACCESS_KEY": credentials["admin"][
+                                "accessKey"
+                            ],
+                            "FUSION_EXTENDED_RECOVERY_S3_ADMIN_SECRET_KEY": credentials["admin"][
+                                "secretKey"
+                            ],
+                            "FUSION_EXTENDED_RECOVERY_S3_READER_ACCESS_KEY": credentials[
+                                "recovery_reader"
+                            ]["accessKey"],
+                            "FUSION_EXTENDED_RECOVERY_S3_READER_SECRET_KEY": credentials[
+                                "recovery_reader"
+                            ]["secretKey"],
+                        }
+                    )
+                yield values
             finally:
                 if process.poll() is None:
                     process.terminate()
