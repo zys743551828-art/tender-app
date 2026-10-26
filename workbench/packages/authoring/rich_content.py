@@ -13,13 +13,19 @@ from packages.authoring.content import SCHEMA as TEXT_SCHEMA
 from packages.authoring.content import validate_text_content as validate_text
 from packages.domain.runtime import DomainError, sha
 
-SCHEMA = {
+LEGACY_SCHEMA = {
     "version": 2,
     "text_schema": TEXT_SCHEMA,
     "block_nodes": ["table", "image"],
     "table_nodes": ["tableRow", "tableCell"],
     "image_identity": ["asset_id", "asset_revision", "asset_version_id"],
     "limits": {"rows": 200, "columns": 100, "cells": 10000, "nodes": 10000},
+}
+LEGACY_SCHEMA_DIGEST = sha(LEGACY_SCHEMA)
+SCHEMA = LEGACY_SCHEMA | {
+    "version": 3,
+    "previous_schema_digest": LEGACY_SCHEMA_DIGEST,
+    "table_pagination": {"protocol": "authoring-table-pagination/1", "repeat_header_rows": 1},
 }
 SCHEMA_DIGEST = sha(SCHEMA)
 
@@ -61,7 +67,18 @@ def table_grid(table, *, available_width_twips=None):
     Fully covered continuation rows may have no cells. Every other missing cell,
     overlap, crossing span, orphan column and dangling rowspan is rejected.
     """
-    exact_node(table, "table", {"id", "column_widths_twips", "caption"})
+    attrs = table.get("attrs", {}) if isinstance(table, dict) else {}
+    declared = isinstance(attrs, dict) and "pagination" in attrs
+    exact_node(
+        table,
+        "table",
+        {"id", "column_widths_twips", "caption"} | ({"pagination"} if declared else set()),
+    )
+    if declared and (
+        attrs["pagination"] != SCHEMA["table_pagination"]
+        or type(attrs["pagination"].get("repeat_header_rows")) is not int
+    ):
+        invalid("重复表头必须显式声明受支持的协议和一行表头")
     widths = table["attrs"]["column_widths_twips"]
     if not isinstance(widths, list) or not 1 <= len(widths) <= 100:
         invalid()
@@ -106,6 +123,20 @@ def table_grid(table, *, available_width_twips=None):
             x = right
         if any(item is None for item in grid[y]):
             invalid("表格存在未填满网格，请补全单元格或修正合并范围")
+    if declared and (
+        not 2 <= len(rows) <= 12
+        or any(
+            c["cell"]["attrs"]["colspan"] != 1 or c["cell"]["attrs"]["rowspan"] != 1
+            for c in origins
+        )
+        or any(
+            not c["cell"]["attrs"]["header"]
+            or any(p["type"] != "paragraph" for p in c["cell"]["content"])
+            for c in origins
+            if c["row"] == 0
+        )
+    ):
+        invalid("重复表头仅支持2至12行非合并表格，首行必须全为仅含段落的表头单元格")
     return {"grid": grid, "origins": origins, "column_widths_twips": widths}
 
 

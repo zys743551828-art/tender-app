@@ -1,4 +1,4 @@
-"""Bounded two-page, nonmerged, nonrepeating-header table continuation policy."""
+"""Bounded two-page, nonmerged, explicit-header table continuation policy."""
 
 MAX_ROWS = 12
 PAGE_EDGE_SLACK = 72
@@ -12,22 +12,34 @@ def variants(table):
         for cell in table["cells"]
     ):
         return
-    signatures = [
-        tuple(cell["text"] for cell in table["cells"] if cell["row"] == row)
-        for row in range(table["rows"])
-    ]
+    by_row: list[list[dict]] = [[] for _ in range(table["rows"])]
+    for cell in table["cells"]:
+        by_row[cell["row"]].append(cell)
+    signatures = [tuple(cell["text"] for cell in cells) for cells in by_row]
     # Identical rows cannot independently prove which original row was continued.
     if len(set(signatures)) != len(signatures):
         return
     for split in range(1, table["rows"]):
         for start, end in ((0, split), (split, table["rows"])):
+            # Retain an orphan first-page header as rejection evidence, but never
+            # confuse a full single-page table with a repeated-header suffix.
+            if start == 1 and table.get("repeat_header"):
+                continue
+            source_indices = list(range(start, end))
+            if start and table.get("repeat_header"):
+                source_indices.insert(0, 0)
             yield table | {
-                "rows": end - start,
+                "rows": len(source_indices),
                 "source_rows": [start, end],
                 "cells": [
-                    cell | {"row": cell["row"] - start}
-                    for cell in table["cells"]
-                    if start <= cell["row"] < end
+                    cell
+                    | {
+                        "row": local_row,
+                        "source_row": source_row,
+                        "repeated_header": bool(start and source_row == 0),
+                    }
+                    for local_row, source_row in enumerate(source_indices)
+                    for cell in by_row[source_row]
                 ],
             }
 
@@ -58,7 +70,8 @@ def assemble(table, fragments, tolerance):
         return None
     first, last = sorted(fragments, key=lambda part: part["physical_page"])
     if not (
-        first["source_rows"][0] == 0
+        (not table.get("repeat_header") or first["source_rows"][1] >= 2)
+        and first["source_rows"][0] == 0
         and first["source_rows"][1] == last["source_rows"][0]
         and last["source_rows"][1] == table["rows"]
         and last["physical_page"] == first["physical_page"] + 1
@@ -79,6 +92,7 @@ def assemble(table, fragments, tolerance):
             cell | {"physical_page": part["physical_page"]}
             for part in (first, last)
             for cell in part["cells"]
+            if not cell.get("repeated_header")
         ],
     }
 

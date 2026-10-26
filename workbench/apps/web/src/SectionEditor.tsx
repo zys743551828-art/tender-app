@@ -25,6 +25,7 @@ import { ErrorNotice } from "./components";
 import {
   authoringText as editorText,
   hasRichContent,
+  previousRichDigest,
   readAuthoringContent,
   serializeAuthoringContent,
   serializeAuthoringNode,
@@ -96,6 +97,7 @@ export const SectionEditor = forwardRef<
         ![
           props.capabilities.schema_digest,
           props.richCapabilities?.schema_digest,
+          previousRichDigest(props.richCapabilities),
         ].includes(section.data.schema_digest)
       )
         throw new Error(
@@ -219,9 +221,11 @@ const SectionBody = forwardRef<
   const queue = useSaveQueue<EditorDocument>(
     async (content) => {
       if (
-        ![capabilities.schema_digest, richCapabilities?.schema_digest].includes(
-          head.current.section.schema_digest,
-        )
+        ![
+          capabilities.schema_digest,
+          richCapabilities?.schema_digest,
+          previousRichDigest(richCapabilities),
+        ].includes(head.current.section.schema_digest)
       )
         throw new Error(
           "编辑格式已更新，未覆盖本地内容。请保留副本并重新核对当前章节。",
@@ -280,6 +284,7 @@ const SectionBody = forwardRef<
           ![
             capabilities.schema_digest,
             richCapabilities?.schema_digest,
+            previousRichDigest(richCapabilities),
           ].includes(current.data.schema_digest) ||
           !readAuthoringContent(current.data.content, !!richCapabilities).eq(
             readAuthoringContent(content, !!richCapabilities),

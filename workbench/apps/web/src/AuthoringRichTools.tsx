@@ -37,6 +37,7 @@ export function AuthoringRichTools({
   const [width, setWidth] = useState(14),
     [caption, setCaption] = useState("");
   const [header, setHeader] = useState(true);
+  const [repeatHeader, setRepeatHeader] = useState(false);
   const [selectedTable, setSelectedTable] = useState("");
   const [firstRow, setFirstRow] = useState(1),
     [firstColumn, setFirstColumn] = useState(1);
@@ -71,6 +72,7 @@ export function AuthoringRichTools({
         Math.round(width * 567),
         caption,
         header,
+        repeatHeader,
       );
       apply({ ...document, content: [...document.content, table] });
       setSelectedTable(table.attrs.id);
@@ -174,6 +176,14 @@ export function AuthoringRichTools({
                 onChange={(event) => setHeader(event.target.checked)}
               />
               首行作为表头
+            </label>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={repeatHeader}
+                onChange={(event) => setRepeatHeader(event.target.checked)}
+              />
+              跨页重复首行表头（2–12行、无合并单元格；PDF仍需验证）
             </label>
             <button
               type="button"

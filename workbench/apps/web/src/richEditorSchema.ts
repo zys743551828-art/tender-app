@@ -1,6 +1,6 @@
 import { Schema } from "prosemirror-model";
 import type { Node as EditorNode } from "prosemirror-model";
-import type { SectionView } from "./contracts";
+import type { SectionView, AuthoringRichCapabilities } from "./contracts";
 import { editorSchema } from "./editorSchema";
 
 export type EditorDocument = SectionView["content"];
@@ -31,6 +31,7 @@ export const richEditorSchema = new Schema({
       attrs: {
         id: { default: null },
         column_widths_twips: { default: [] },
+        pagination: { default: null },
         caption: { default: "" },
       },
       toDOM: (node) => [
@@ -195,7 +196,12 @@ export function validateEditableContent(
       kind === "heading"
         ? ["id", "level"]
         : kind === "table"
-          ? ["id", "column_widths_twips", "caption"]
+          ? [
+              "id",
+              "column_widths_twips",
+              "caption",
+              ...("pagination" in attrs ? ["pagination"] : []),
+            ]
           : kind === "tableCell"
             ? ["id", "colspan", "rowspan", "header"]
             : kind === "image"
@@ -269,6 +275,33 @@ function validateGrid(table: RecordValue) {
     attrs.caption.length > 1000
   )
     invalid();
+  if ("pagination" in attrs) {
+    const pagination = attrs.pagination;
+    if (
+      !record(pagination) ||
+      !exact(pagination, ["protocol", "repeat_header_rows"]) ||
+      pagination.protocol !== "authoring-table-pagination/1" ||
+      pagination.repeat_header_rows !== 1 ||
+      rows.length < 2 ||
+      rows.length > 12
+    )
+      invalid();
+    rows.forEach((row, y) =>
+      (row.content as RecordValue[]).forEach((cell) => {
+        const cellAttrs = cell.attrs as RecordValue;
+        if (
+          cellAttrs.colspan !== 1 ||
+          cellAttrs.rowspan !== 1 ||
+          (y === 0 &&
+            (cellAttrs.header !== true ||
+              (cell.content as RecordValue[]).some(
+                (block) => block.type !== "paragraph",
+              )))
+        )
+          invalid();
+      }),
+    );
+  }
   const grid = Array.from({ length: rows.length }, () =>
     Array.from({ length: widths.length }, () => false),
   );
@@ -301,6 +334,11 @@ export function readAuthoringContent(
 }
 export function serializeAuthoringNode(node: EditorNode): unknown {
   const value = node.toJSON() as RecordValue;
+  if (
+    node.type.name === "table" &&
+    (value.attrs as RecordValue).pagination === null
+  )
+    delete (value.attrs as RecordValue).pagination;
   if (!["text", "hardBreak", "image"].includes(node.type.name)) {
     const children: unknown[] = [];
     node.forEach((child) => children.push(serializeAuthoringNode(child)));
@@ -326,4 +364,19 @@ export function authoringText(content: unknown) {
   } catch {
     return "章节结构无法完整读取，请保留原内容并重新核对。";
   }
+}
+
+/** Previous immutable sections remain readable; saves use the current capability digest. */
+export function previousRichDigest(
+  capabilities?: AuthoringRichCapabilities,
+): string | undefined {
+  const schema = capabilities?.schema;
+  if (
+    !record(schema) ||
+    schema.version !== 3 ||
+    typeof schema.previous_schema_digest !== "string" ||
+    !/^[a-f0-9]{64}$/.test(schema.previous_schema_digest)
+  )
+    return undefined;
+  return schema.previous_schema_digest;
 }

@@ -32,7 +32,7 @@ CT = "http://schemas.openxmlformats.org/package/2006/content-types"
 WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 PIC = "http://schemas.openxmlformats.org/drawingml/2006/picture"
-PROTOCOL = "authoring-generated-rich/4"
+PROTOCOL = "authoring-generated-rich/5"
 
 
 def identity():

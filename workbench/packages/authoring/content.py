@@ -141,9 +141,19 @@ def schema_digest_for(content):
 def validate_for_schema(content, digest):
     if digest == SCHEMA_DIGEST:
         return validate_text_content(content)
+    from packages.authoring.rich_content import LEGACY_SCHEMA_DIGEST
     from packages.authoring.rich_content import SCHEMA_DIGEST as RICH_DIGEST
     from packages.authoring.rich_content import validate_content as validate_rich
 
+    if digest == LEGACY_SCHEMA_DIGEST:
+        result = validate_rich(content)
+        if any(
+            "pagination" in block.get("attrs", {})
+            for block in content["content"]
+            if block["type"] == "table"
+        ):
+            raise DomainError("SECTION_SCHEMA_UNSUPPORTED", "重复表头需要新的章节格式版本", 422)
+        return result
     if digest == RICH_DIGEST:
         return validate_rich(content)
     raise DomainError("SECTION_SCHEMA_UNSUPPORTED", "章节格式版本不受支持", 422)

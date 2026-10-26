@@ -24,7 +24,7 @@ from packages.authoring import rich_table_continuations as continuation
 from packages.authoring.build import W
 from packages.domain.runtime import sha
 
-PROTOCOL = "authoring-PDF-table-correspondence/2"
+PROTOCOL = "authoring-PDF-table-correspondence/3"
 MAX_BYTES = 50 * 1024 * 1024
 MAX_PAGES = 1000
 MAX_TABLES = 500
@@ -99,6 +99,7 @@ def _expected(snapshot, roots):
                 "node_id": block["attrs"]["id"],
                 "widths": [value / 20 for value in checked["column_widths_twips"]],
                 "rows": len(checked["grid"]),
+                "repeat_header": "pagination" in block["attrs"],
                 "cells": expected,
             }
         )
@@ -638,7 +639,15 @@ def inspect_tables(data, snapshot, roots, style):
                                     "cells": [
                                         {
                                             "node_id": cell["cell"]["attrs"]["id"],
-                                            "row": cell["row"] + table.get("source_rows", [0])[0],
+                                            "row": cell.get(
+                                                "source_row",
+                                                cell["row"] + table.get("source_rows", [0])[0],
+                                            ),
+                                            **(
+                                                {"repeated_header": True}
+                                                if cell.get("repeated_header")
+                                                else {}
+                                            ),
                                             "column": cell["column"],
                                             "rowspan": cell["cell"]["attrs"]["rowspan"],
                                             "colspan": cell["cell"]["attrs"]["colspan"],

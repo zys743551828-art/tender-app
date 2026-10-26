@@ -22,6 +22,8 @@ def write_table(table, write_blocks, *, available_width_twips):
         element(column_grid, "gridCol", w=width)
     for y, row in enumerate(grid):
         output_row = element(result, "tr")
+        if y == 0 and "pagination" in table["attrs"]:
+            element(element(output_row, "trPr"), "tblHeader", val="1")
         x = 0
         while x < len(widths):
             origin = row[x]

@@ -29,10 +29,10 @@ def table(rows=4, header=False):
     return value
 
 
-def pages(block, *, split=2, attack=None):
+def pages(block, *, split=2, attack=None, repeat_header=False):
     first, last = copy.deepcopy(block), copy.deepcopy(block)
     first["content"], last["content"] = first["content"][:split], last["content"][split:]
-    if attack == "repeat_header":
+    if attack == "repeat_header" or repeat_header:
         last["content"].insert(0, copy.deepcopy(block["content"][0]))
     if attack == "missing":
         last["content"].pop()

@@ -9676,6 +9676,10 @@ export type AuthoringRichTable = {
     id: string;
     column_widths_twips: number[];
     caption: string;
+    pagination?: {
+      protocol: "authoring-table-pagination/1";
+      repeat_header_rows: 1;
+    };
   };
   content: AuthoringRichRow[];
 };
@@ -11251,6 +11255,10 @@ export type AuthoringHistoryAuthoringRichTable = {
     id: string;
     column_widths_twips: number[];
     caption: string;
+    pagination?: {
+      protocol: "authoring-table-pagination/1";
+      repeat_header_rows: 1;
+    };
   };
   content: AuthoringHistoryAuthoringRichRow[];
 };
@@ -11371,6 +11379,10 @@ export type WorkContextReadOnlyAuthoringRichTable = {
     id: string;
     column_widths_twips: number[];
     caption: string;
+    pagination?: {
+      protocol: "authoring-table-pagination/1";
+      repeat_header_rows: 1;
+    };
   };
   content: WorkContextReadOnlyAuthoringRichRow[];
 };

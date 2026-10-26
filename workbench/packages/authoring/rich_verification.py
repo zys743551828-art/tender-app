@@ -40,6 +40,8 @@ TABLE = {
     "tblGrid": set(),
     "gridCol": {"w"},
     "tr": set(),
+    "trPr": set(),
+    "tblHeader": {"val"},
     "tc": set(),
     "tcPr": set(),
     "tcW": {"w", "type"},
@@ -165,6 +167,31 @@ def verify_container(source, image_materials, *, page_number):
             legacy.blocked("表图文字不得藏在非文字节点")
         if item.tail and item.tail.strip():
             legacy.blocked("表图不得含隐藏尾随文本")
+    allowed_header_nodes: set[ET.Element] = set()
+    for table in original.iter("{" + W + "}tbl"):
+        rows = table.findall("{" + W + "}tr")
+        for index, row in enumerate(rows):
+            properties = row.findall("{" + W + "}trPr")
+            if properties:
+                prop = properties[0]
+                if (
+                    index != 0
+                    or len(properties) != 1
+                    or row[0] is not prop
+                    or prop.attrib
+                    or len(prop) != 1
+                    or prop[0].tag != "{" + W + "}tblHeader"
+                    or prop[0].attrib != {"{" + W + "}val": "1"}
+                    or len(prop[0])
+                ):
+                    legacy.blocked("重复表头必须是首行的唯一固定声明")
+                allowed_header_nodes.update((prop, prop[0]))
+    if any(
+        item not in allowed_header_nodes
+        for item in original.iter()
+        if item.tag in {"{" + W + "}trPr", "{" + W + "}tblHeader"}
+    ):
+        legacy.blocked("重复表头声明位置不合法")
     bookmarks, ends, links = {}, [], []
     for item in original.iter("{" + W + "}bookmarkStart"):
         identity, name = item.get("{" + W + "}id"), item.get("{" + W + "}name", "")

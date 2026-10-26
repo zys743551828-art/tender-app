@@ -45,6 +45,7 @@ export function createTable(
   width: number,
   caption: string,
   header: boolean,
+  repeatHeader = false,
 ): AuthoringRichTable {
   if (
     !Number.isSafeInteger(rows) ||
@@ -67,7 +68,19 @@ export function createTable(
   );
   const table: AuthoringRichTable = {
     type: "table",
-    attrs: { id: crypto.randomUUID(), column_widths_twips: widths, caption },
+    attrs: {
+      id: crypto.randomUUID(),
+      column_widths_twips: widths,
+      caption,
+      ...(repeatHeader
+        ? {
+            pagination: {
+              protocol: "authoring-table-pagination/1" as const,
+              repeat_header_rows: 1 as const,
+            },
+          }
+        : {}),
+    },
     content: Array.from({ length: rows }, (_, index) => ({
       type: "tableRow",
       attrs: { id: crypto.randomUUID() },

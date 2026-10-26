@@ -65,3 +65,40 @@ it.each(["overlap", "hole", "overflow"])(
     expect(() => tableGrid(table)).toThrow("章节结构无法完整核对");
   },
 );
+
+it("重复表头必须显式声明且保留序列化身份", () => {
+  const ordinary = createTable(3, 2, 5000, "", true);
+  const repeating = createTable(3, 2, 5000, "", true, true);
+  const document = (table: typeof repeating) => ({
+    type: "doc",
+    attrs: { title: "表格", ordinal: 0, rule_ids: [], source_refs: [] },
+    content: [table],
+  });
+  expect(ordinary.attrs).not.toHaveProperty("pagination");
+  expect(repeating.attrs.pagination).toEqual({
+    protocol: "authoring-table-pagination/1",
+    repeat_header_rows: 1,
+  });
+  for (const table of [ordinary, repeating]) {
+    expect(
+      serializeAuthoringContent(richEditorSchema.nodeFromJSON(document(table))),
+    ).toEqual(document(table));
+  }
+  expect(() => createTable(3, 2, 5000, "", false, true)).toThrow();
+  expect(() => createTable(1, 2, 5000, "", true, true)).toThrow();
+  expect(() => createTable(13, 2, 5000, "", true, true)).toThrow();
+  expect(() => mergeTable(repeating, 1, 1, 1, 2)).toThrow();
+  for (const pagination of [
+    null,
+    {},
+    { protocol: "authoring-table-pagination/1", repeat_header_rows: true },
+    { ...repeating.attrs.pagination, extra: true },
+  ]) {
+    expect(() =>
+      validateEditableContent({
+        ...document(repeating),
+        content: [{ ...repeating, attrs: { ...repeating.attrs, pagination } }],
+      }),
+    ).toThrow();
+  }
+});

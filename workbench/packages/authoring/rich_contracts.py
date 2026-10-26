@@ -132,6 +132,13 @@ def extend_openapi(actual):
             },
         }
     )
+    table_attrs = schemas["AuthoringRichTable"]["properties"]["attrs"]
+    table_attrs["properties"]["pagination"] = obj(
+        {
+            "protocol": {"const": "authoring-table-pagination/1"},
+            "repeat_header_rows": {"type": "integer", "const": 1},
+        }
+    )
     schemas["AuthoringRichDocument"] = deepcopy(schemas["AuthoringDocument"])
     schemas["AuthoringRichDocument"]["properties"]["content"] = arr(
         {"oneOf": [ref("AuthoringBlock"), ref("AuthoringRichTable"), ref("AuthoringRichImage")]}

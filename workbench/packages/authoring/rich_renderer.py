@@ -20,6 +20,7 @@ from packages.authoring import (
     rich_docx,
     rich_layout,
     rich_pdf,
+    rich_repeated_headers,
     rich_table_pdf,
     rich_verification,
 )
@@ -28,7 +29,7 @@ from packages.domain.runtime import DomainError, sha
 sandbox = text_renderer.sandbox
 failure = text_renderer.failure
 expected_body = text_renderer.expected_body
-PROTOCOL = "authoring-rich-sandbox/6"
+PROTOCOL = "authoring-rich-sandbox/7"
 MAX_LAYOUT_PASSES = 3
 
 
@@ -44,6 +45,7 @@ def profile_for(base):
         "raster_inspector_digest": sha(Path(rich_pdf.__file__).read_bytes()),
         "navigation_inspector_digest": sha(Path(page_navigation.__file__).read_bytes()),
         "table_inspector": rich_table_pdf.identity(),
+        "repeated_header_inspector_digest": sha(Path(rich_repeated_headers.__file__).read_bytes()),
         "dynamic_field_policy": "one_canonical_footer_PAGE_only",
         "navigation_policy": "stable_internal_bookmarks_and_TOC_hyperlinks_only",
         "correspondence_policy": "full_text_digits_geometry_opaque_raster_isolated_PDFium_all_pixels_direct_dest_TOC_v2",
@@ -57,7 +59,7 @@ def profile_for(base):
         "caption_policy": rich_captions.PROTOCOL,
         "caption_inspector_digest": sha(Path(rich_caption_pdf.__file__).read_bytes()),
         "layout_inspector_digest": sha(Path(rich_layout.__file__).read_bytes()),
-        "table_layout_policy": "measured_grid_with_bounded_two_page_nonmerged_continuation_v2",
+        "table_layout_policy": "measured_grid_with_explicit_one_row_repeated_header_v3",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
 
@@ -96,7 +98,6 @@ def prepare(source, snapshot, materials, manifest, profile, *, pagination=None):
 
 
 def inspect_pdf(data, prepared):
-    body = text_renderer.inspect_pdf(data, prepared)
     images = rich_pdf.inspect_images(
         data, prepared["snapshot"], prepared["materials"], prepared["config"]
     )
@@ -109,6 +110,12 @@ def inspect_pdf(data, prepared):
     )
     tables = rich_table_pdf.inspect_tables(
         data, prepared["snapshot"], prepared["roots"], prepared["config"]
+    )
+    body = text_renderer.inspect_pdf(
+        data, prepared | {"roots": rich_repeated_headers.body_roots(prepared["roots"], tables)}
+    )
+    body["frozen_source_body_digest"] = sha(
+        text_renderer.normalize(expected_body(prepared["roots"]))
     )
     image_sections = rich_pdf.inspect_image_sections(prepared["snapshot"], images, navigation)
     captions = rich_caption_pdf.inspect_captions(
