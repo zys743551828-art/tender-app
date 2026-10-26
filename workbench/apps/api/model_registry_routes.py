@@ -8,9 +8,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from apps.api.auth import auth
+from apps.api.model_registration_composition import service as registration_service
 from packages.domain.runtime import Command, DomainError, clean, connection
 from packages.model_governance import registry
 from packages.model_governance.repository import match
+from packages.model_registration.application import Register
 
 router = APIRouter(prefix="/api/v1/model-registry", tags=["model-registry"])
 Lane = Literal["shadow", "business"]
@@ -102,48 +104,23 @@ def model_preview(training_job_id: UUID, request: Request):
 def register_model(request: Request, body: RegisterModelRequest):
     actor = auth(request, True)
     _headers(request)
-    value = body.model_dump(mode="json")
-    with connection() as c:
-        preview, tag = registry.preview(c, body.training_job_id)
-        old = c.execute(
-            "SELECT response FROM commands WHERE actor_id=%s AND command_kind='register-score-model' AND target_id=%s AND idempotency_key=%s",
-            (actor["member_id"], body.training_job_id, request.headers.get("idempotency-key")),
-        ).fetchone()
-        if old and old["response"]:
-            cmd = _command(c, request, actor, "register-score-model", body.training_job_id, value)
-            # Rechecking preview above proves the same frozen sources still qualify for new use.
-            return _result(cmd.replay, True)
-        match(request.headers.get("if-match"), tag)
-    staged = registry.stage(preview["document"])
-    with connection() as c:
-        # Before command locks, repeat full source scope and current generation validation.
-        latest, latest_tag = registry.preview(c, body.training_job_id)
-        cmd = _command(c, request, actor, "register-score-model", body.training_job_id, value)
-        if cmd.replay:
-            return _result(cmd.replay, True)
-        result, result_tag = registry.publish(
-            c,
-            actor=actor["member_id"],
-            training_job_id=body.training_job_id,
-            document=latest["document"],
-            staged=staged,
-            condition=request.headers.get("if-match"),
-            reason=body.reason,
-            command=cmd.id,
+    outcome = registration_service(connection).register(
+        Register(
+            actor["member_id"],
+            body.training_job_id,
+            body.reason,
+            body.model_dump(mode="json"),
+            request.headers.get("if-match"),
+            request.headers.get("idempotency-key"),
         )
-        # publish also compares the staged original document with the freshly derived document.
-        match(latest_tag, tag)
-        return _result(cmd.finish(result, 201, {"ETag": result_tag}))
+    )
+    return _result(outcome.result, outcome.replayed)
 
 
 @router.get("/models/{model_id}")
 def get_model(model_id: UUID, request: Request):
     auth(request)
-    with connection() as c:
-        stored = registry.blob(c, model_id)
-    registry.read(stored)  # actual bytes checked outside every SQL transaction
-    with connection() as c:
-        value, tag = registry.view(c, model_id)
+    value, tag = registration_service(connection).read(model_id)
     return _reply(value, tag)
 
 
