@@ -22,7 +22,9 @@ from packages.authoring import (
 )
 
 
-def specimen(*, kind="image", count=1, attack=None, multiline=False, navigation=False):
+def specimen(
+    *, kind="image", count=1, attack=None, multiline=False, navigation=False, continuation=False
+):
     snapshot = generated_cases.snapshot.__wrapped__()
     if navigation:
         snapshot["sections"][0]["attrs"]["title"] = "Alpha"
@@ -33,8 +35,13 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False, navigation=
             block = rich_cases.table(
                 rich_cases.row(rich_cases.cell(), rich_cases.cell(), rich_cases.cell())
             )
-            for cell in block["content"][0]["content"]:
-                cell["content"] = [rich_cases.paragraph(str(120 + index))]
+            if continuation:
+                block["content"].append(
+                    rich_cases.row(rich_cases.cell(), rich_cases.cell(), rich_cases.cell())
+                )
+            for row_index, row in enumerate(block["content"]):
+                for cell in row["content"]:
+                    cell["content"] = [rich_cases.paragraph(str(120 + index + row_index))]
         else:
             raw = io.BytesIO()
             with Image.new("RGB", (40, 30), "red") as pixels:
@@ -88,7 +95,7 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False, navigation=
     streams = [[], []]
     names = []
     annots = []
-    body_page = 1 if navigation and attack != "on_toc" else 0
+    body_page = 1 if continuation or (navigation and attack != "on_toc") else 0
     if navigation:
         nav = rich_docx.navigation_entries(snapshot)[0]
         names.append(f"({nav['anchor']}) [{pages[1]} 0 R /XYZ 72 770 0]")
@@ -107,23 +114,35 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False, navigation=
         top = 700 if attack == "mixed_parallel" else 700 - position * 220
         left = 240 if attack == "mixed_parallel" and block_kind == "table" else 72
         bottom = top - (90 if block_kind == "image" else 40)
+        if continuation:
+            top, bottom = 770, 730
         if block_kind == "image":
             streams[body_page].append(f"q 120 0 0 90 72 {bottom} cm /Im Do Q")
         else:
-            streams[body_page].extend(
-                [
-                    f"0 G 0.5 w {left} {bottom} m {left + 270} {bottom} l S",
-                    f"{left} {top} m {left + 270} {top} l S",
-                ]
+            placements = (
+                [(0, 112, 72, 120), (1, top, bottom, 121)]
+                if continuation
+                else [(body_page, top, bottom, 120 + index)]
             )
-            for x in [left, left + 90, left + 180, left + 270]:
-                streams[body_page].append(f"{x} {bottom} m {x} {top} l S")
-            for x in [left + 5, left + 95, left + 185]:
-                streams[body_page].append(f"BT /F1 10 Tf {x} {top - 18} Td ({120 + index}) Tj ET")
+            for part_page, part_top, part_bottom, label in placements:
+                streams[part_page].extend(
+                    [
+                        f"0 G 0.5 w {left} {part_bottom} m {left + 270} {part_bottom} l S",
+                        f"{left} {part_top} m {left + 270} {part_top} l S",
+                    ]
+                )
+                for x in [left, left + 90, left + 180, left + 270]:
+                    streams[part_page].append(f"{x} {part_bottom} m {x} {part_top} l S")
+                for x in [left + 5, left + 95, left + 185]:
+                    streams[part_page].append(
+                        f"BT /F1 10 Tf {x} {part_top - 18} Td ({label}) Tj ET"
+                    )
         baseline = bottom - (80 if attack == "far" else 20)
         if attack == "above":
             baseline = top + 20
         page = 1 if attack == "other_page" else body_page
+        if attack == "caption_on_first_fragment":
+            page, baseline = 0, 52
         text = "Figure 12" if attack == "digit" else "Figure 120"
         commands = (
             [("Figure", baseline), ("120", baseline - 16)] if multiline else [(text, baseline)]
@@ -234,3 +253,16 @@ def test_combined_inspector_keeps_unrelated_body_navigation_gaps():
     assert proof["caption_correspondence"]["coverage"] == "complete"
     assert "AUTHORING_CAPTION_PDF_UNVERIFIED" not in proof["gaps"]
     assert "AUTHORING_COMPLETE_BODY_TEXT_UNVERIFIED" in proof["gaps"]
+
+
+@pytest.mark.parametrize("attack", [None, "caption_on_first_fragment"])
+def test_continued_table_caption_belongs_after_final_measured_fragment(attack):
+    data, snapshot, materials, roots = specimen(kind="table", continuation=True, attack=attack)
+    images = rich_pdf.inspect_images(data, snapshot, materials, templates.DEFAULT_STYLE)
+    tables = rich_table_pdf.inspect_tables(data, snapshot, roots, templates.DEFAULT_STYLE)
+    assert tables["coverage"] == "complete", tables
+    assert len(tables["tables"][0]["fragments"]) == 2
+    proof = rich_caption_pdf.inspect_captions(
+        data, snapshot, images, tables, templates.DEFAULT_STYLE
+    )
+    assert proof["coverage"] == ("partial" if attack else "complete"), proof

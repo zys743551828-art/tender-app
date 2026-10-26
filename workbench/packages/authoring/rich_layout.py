@@ -4,7 +4,7 @@ from typing import Any
 
 from packages.authoring import structure_model
 
-PROTOCOL = "authoring-PDF-rich-layout/1"
+PROTOCOL = "authoring-PDF-rich-layout/2"
 POSITION_EPSILON = 0.001
 
 
@@ -35,14 +35,15 @@ def inspect_layout(snapshot, images, tables, navigation):
                     "coverage": "partial",
                     "gaps": ["AUTHORING_RICH_OBJECT_LAYOUT_UNVERIFIED"],
                 }
-            result["objects"].append(
-                {
-                    "kind": kind,
-                    "node_id": block["attrs"]["id"],
-                    "section_index": section_index,
-                    **{key: records[index][key] for key in ("physical_page", "bbox")},
-                }
-            )
+            for part in records[index].get("fragments", [records[index]]):
+                result["objects"].append(
+                    {
+                        "kind": kind,
+                        "node_id": block["attrs"]["id"],
+                        "section_index": section_index,
+                        **{key: part[key] for key in ("physical_page", "bbox")},
+                    }
+                )
     if not result["objects"]:
         return result
     for previous, current in zip(result["objects"], result["objects"][1:], strict=False):

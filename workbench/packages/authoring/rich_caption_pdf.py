@@ -17,7 +17,7 @@ from packages.authoring import page_navigation, rich_captions
 from packages.authoring import rich_table_pdf as geometry
 from packages.domain.runtime import sha
 
-PROTOCOL = "authoring-PDF-caption-correspondence/1"
+PROTOCOL = "authoring-PDF-caption-correspondence/2"
 MAX_NAMES = 2000
 MAX_WORK = 5_000_000
 MAX_PIXELS = 64_000_000
@@ -135,7 +135,9 @@ def inspect_captions(data, snapshot, images, tables, style):
                 or records[index]["node_id"] != block["attrs"]["id"]
             ):
                 return result | {"gaps": ["AUTHORING_CAPTION_OBJECT_UNVERIFIED"]}
-            origins[(section_index, block_index)] = records[index]
+            origins[(section_index, block_index)] = records[index].get(
+                "fragments", [records[index]]
+            )[-1]
     document = None
     budget = [0]
     try:

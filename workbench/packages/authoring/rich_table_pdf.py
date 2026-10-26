@@ -1,8 +1,8 @@
-"""Measured, bounded single-page native-table correspondence for owned PDFs.
+"""Measured single-page and restricted two-page native-table correspondence.
 
 The inspector grants no renderer, submission, or source qualification. It accepts
 only a complete visible black grid, exact frozen cell text and expected cell
-backgrounds. Split tables, unobservable row boundaries, complex PDF graphics and
+backgrounds. Unsupported splits, unobservable row boundaries, complex PDF graphics and
 ambiguous occurrences remain partial rather than inheriting DOCX qualification.
 """
 
@@ -20,10 +20,11 @@ import pypdfium2.raw as raw
 from PIL import Image, ImageChops
 
 from packages.authoring import generated_renderer, rich_content
+from packages.authoring import rich_table_continuations as continuation
 from packages.authoring.build import W
 from packages.domain.runtime import sha
 
-PROTOCOL = "authoring-PDF-table-correspondence/1"
+PROTOCOL = "authoring-PDF-table-correspondence/2"
 MAX_BYTES = 50 * 1024 * 1024
 MAX_PAGES = 1000
 MAX_TABLES = 500
@@ -46,7 +47,10 @@ def identity():
         "pdfium_wrapper": str(pdfium.PYPDFIUM_INFO),
         "pdfium_build": str(pdfium.PDFIUM_INFO),
         "pillow_version": PIL.__version__,
-        "scope": "single_page_observable_rows_exact_grid_cell_text_and_isolated_raster",
+        "scope": "single_page_or_bounded_two_page_exact_rows_and_isolated_raster",
+        "continuation_policy_digest": sha(Path(continuation.__file__).read_bytes()),
+        "continuation_max_rows": continuation.MAX_ROWS,
+        "continuation_page_edge_slack_pt": continuation.PAGE_EDGE_SLACK,
         "render_scale": SCALE,
         "max_render_pixels": MAX_RENDER_PIXELS,
         "max_candidates": MAX_CANDIDATES,
@@ -536,6 +540,7 @@ def inspect_tables(data, snapshot, roots, style):
     if not isinstance(data, bytes) or not 0 < len(data) <= MAX_BYTES:
         return result | {"gaps": ["AUTHORING_TABLE_PDF_BYTES_INVALID"]}
     matches: list[list[dict]] = [[] for _ in expected]
+    fragments: list[list[dict]] = [[] for _ in expected]
     budget, total_chars = {"candidates": 0, "work_units": 0}, 0
     try:
         document = pdfium.PdfDocument(data)
@@ -559,47 +564,92 @@ def inspect_tables(data, snapshot, roots, style):
                 total_chars += count
                 if total_chars > MAX_TOTAL_CHARS:
                     raise ValueError("TABLE_TOTAL_CHARACTER_LIMIT")
-                for index, table in enumerate(expected):
-                    for candidate in _geometry(table, lines, budget):
-                        left, bottom, right, top = candidate["bbox"]
-                        if (
-                            unsupported
-                            or left < style["margin_left_twips"] / 20 - 1
-                            or right > width - style["margin_right_twips"] / 20 + 1
-                            or bottom < style["margin_bottom_twips"] / 20 - 1
-                            or top > height - style["margin_top_twips"] / 20 + 1
-                        ):
-                            continue
-                        if not _cell_text(candidate, characters, budget):
-                            continue
-                        if actual is None:
-                            area = 2 * math.ceil(width * SCALE) * math.ceil(height * SCALE)
-                            if result["render_pixels"] + area > MAX_RENDER_PIXELS:
-                                raise ValueError("TABLE_RASTER_LIMIT")
-                            result["render_pixels"] += area
-                            actual, text_layer = _rasters(document, page, page_index)
-                        if not _visible(candidate, actual, text_layer, height):
-                            continue
-                        matches[index].append(
-                            {
-                                "node_id": table["node_id"],
-                                "physical_page": page_index + 1,
-                                "bbox": list(candidate["bbox"]),
-                                "cells": [
-                                    {
-                                        "node_id": cell["cell"]["attrs"]["id"],
-                                        "row": cell["row"],
-                                        "column": cell["column"],
-                                        "rowspan": cell["cell"]["attrs"]["rowspan"],
-                                        "colspan": cell["cell"]["attrs"]["colspan"],
-                                        "bbox": list(cell["bbox"]),
-                                        "text_digest": sha(cell["text"]),
-                                        "character_count": len(cell["text"]),
-                                    }
-                                    for cell in candidate["cells"]
-                                ],
-                            }
-                        )
+                for index, original in enumerate(expected):
+                    if 2 <= original["rows"] <= continuation.MAX_ROWS:
+                        _work(budget, 2 * original["rows"] * len(original["cells"]))
+                    for table in continuation.variants(original):
+                        for candidate in _geometry(table, lines, budget):
+                            if "source_rows" in table:
+                                _work(budget, len(lines) + len(characters))
+                            if "source_rows" in table and not (
+                                continuation.maximal(candidate, lines, POSITION_TOLERANCE)
+                                and continuation.edge_allowed(candidate, table, height, style)
+                                and continuation.clear_edge_text(
+                                    candidate, table, characters, height, style
+                                )
+                            ):
+                                continue
+                            left, bottom, right, top = candidate["bbox"]
+                            if (
+                                unsupported
+                                or left < style["margin_left_twips"] / 20 - 1
+                                or right > width - style["margin_right_twips"] / 20 + 1
+                                or bottom < style["margin_bottom_twips"] / 20 - 1
+                                or top > height - style["margin_top_twips"] / 20 + 1
+                            ):
+                                continue
+                            if not _cell_text(candidate, characters, budget):
+                                continue
+                            if actual is None:
+                                area = 2 * math.ceil(width * SCALE) * math.ceil(height * SCALE)
+                                if result["render_pixels"] + area > MAX_RENDER_PIXELS:
+                                    raise ValueError("TABLE_RASTER_LIMIT")
+                                result["render_pixels"] += area
+                                actual, text_layer = _rasters(document, page, page_index)
+                            if not _visible(candidate, actual, text_layer, height):
+                                continue
+                            if "source_rows" in table:
+                                low, high = continuation.edge_band(candidate, table, height, style)
+                                if low < high:
+                                    box = (
+                                        math.ceil(style["margin_left_twips"] / 20 * SCALE),
+                                        math.ceil((height - high) * SCALE),
+                                        math.floor(
+                                            (width - style["margin_right_twips"] / 20) * SCALE
+                                        ),
+                                        math.floor((height - low) * SCALE),
+                                    )
+                                    if box[2] > box[0] and box[3] > box[1]:
+                                        _work(
+                                            budget,
+                                            max(0, box[2] - box[0]) * max(0, box[3] - box[1]),
+                                        )
+                                        band = actual.crop(box)
+                                        try:
+                                            if any(
+                                                minimum < 252 for minimum, _ in band.getextrema()
+                                            ):
+                                                continue
+                                        finally:
+                                            band.close()
+                            (fragments if "source_rows" in table else matches)[index].append(
+                                {
+                                    "node_id": table["node_id"],
+                                    **(
+                                        {
+                                            "source_rows": table["source_rows"],
+                                            "page_size": [width, height],
+                                        }
+                                        if "source_rows" in table
+                                        else {}
+                                    ),
+                                    "physical_page": page_index + 1,
+                                    "bbox": list(candidate["bbox"]),
+                                    "cells": [
+                                        {
+                                            "node_id": cell["cell"]["attrs"]["id"],
+                                            "row": cell["row"] + table.get("source_rows", [0])[0],
+                                            "column": cell["column"],
+                                            "rowspan": cell["cell"]["attrs"]["rowspan"],
+                                            "colspan": cell["cell"]["attrs"]["colspan"],
+                                            "bbox": list(cell["bbox"]),
+                                            "text_digest": sha(cell["text"]),
+                                            "character_count": len(cell["text"]),
+                                        }
+                                        for cell in candidate["cells"]
+                                    ],
+                                }
+                            )
             except (pdfium.PdfiumError, ValueError, OverflowError, OSError):
                 gaps.append("AUTHORING_TABLE_INSPECTION_INCOMPLETE")
                 break
@@ -609,20 +659,28 @@ def inspect_tables(data, snapshot, roots, style):
                 if text_layer is not None:
                     text_layer.close()
                 page.close()
+        for index, parts in enumerate(fragments):
+            if parts:
+                combined = continuation.assemble(expected[index], parts, POSITION_TOLERANCE)
+                if combined is None:
+                    gaps.append("AUTHORING_TABLE_CONTINUATION_UNVERIFIED")
+                else:
+                    matches[index].append(combined)
         rows = [items[0] for items in matches if len(items) == 1]
         if len(rows) != len(expected):
             gaps.append("AUTHORING_TABLE_PDF_GEOMETRY_UNVERIFIED")
         if any(len(items) > 1 for items in matches):
             gaps.append("AUTHORING_TABLE_MATCH_AMBIGUOUS")
+        placements = [part for row in rows for part in row.get("fragments", [row])]
         previous = None
-        for row in rows:
+        for row in placements:
             left, bottom, right, top = row["bbox"]
             order = (row["physical_page"], -top, left)
             if previous is not None and order <= previous:
                 gaps.append("AUTHORING_TABLE_ORDER_OR_REUSE_UNVERIFIED")
             previous = order
-        for index, row in enumerate(rows):
-            for other in rows[index + 1 :]:
+        for index, row in enumerate(placements):
+            for other in placements[index + 1 :]:
                 a, b, c, d = row["bbox"]
                 e, f, g, h = other["bbox"]
                 if (
