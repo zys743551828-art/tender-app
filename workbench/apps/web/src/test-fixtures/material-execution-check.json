@@ -254,10 +254,10 @@
         "message": "材料封印和报价引用尚未通过独立用途复验，不能由输入编号授予资格。"
       },
       {
-        "id": "f0ae887acb60e5cda95da7e06fef88f181d8399148e89cd6d5bb6c34dd58fadb",
+        "id": "18c49a7044455b1516ae33740fdbc90d192d90ba1b706c748ac2a061b14b751f",
         "code": "LIVE_QUALIFICATION_UNAVAILABLE",
         "subject": null,
-        "message": "资格证据登记审核已提供，原生接受、预算与发送资格复验尚未接通。"
+        "message": "原生准备任务接受已接通；真实账户发送适配尚未完成，真实调用关闭。"
       },
       {
         "id": "ae33c2bb983829dda3f2b4181296f68c84d04093fe74649956914db8680f73d4",
@@ -267,7 +267,7 @@
       }
     ]
   },
-  "etag": "\"package-material-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:c7c711be4a0b1b169d9705da8a05104af0d8fb6a60f6bf5dc852b91f7d8a92da\"",
+  "etag": "\"package-material-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:80a339a2060cffd0d484664f8ff59c57f71d241212b6cda6c1eb42d16bbec62d\"",
   "request": {
     "version": "package-material-execution-check/1",
     "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",

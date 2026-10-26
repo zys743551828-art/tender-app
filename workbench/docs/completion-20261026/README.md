@@ -88,3 +88,7 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 ## 资格证据登记审核检查点
 
 用户已批准证据治理方案；[阶段一登记审核 API/UI](material-qualification-review.md)落地，接受/预算/发送接线仍待编码，人工批准不等于执行或真实精度资格。
+
+## 获批资格原生接受检查点
+
+[固定申请、原生任务/outbox 接受与预算授权边界](material-qualified-acceptance.md)已编码；真实账户 sender 仍待版本化适配，默认调用关闭。

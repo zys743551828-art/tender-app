@@ -12838,6 +12838,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/material-qualifications/{qualification_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/material-qualifications",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/material-qualifications/{qualification_id}/decisions",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/material-qualified-jobs",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}/material-qualified-jobs/{intent_id}",
   "GET /api/v1/bids/{bid_id}/pricing-context",
   "GET /api/v1/bids/{bid_id}/pricing-formula-sources",
   "POST /api/v1/bids/{bid_id}/pricing-formulas",

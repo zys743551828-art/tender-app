@@ -1,3 +1,4 @@
+import { QualifiedMaterialJob } from "./QualifiedMaterialJob";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { ErrorNotice } from "./components";
@@ -154,8 +155,15 @@ function Review({
     <section aria-label="模型资格证据审核">
       <h4>模型资格证据登记与审核</h4>
       <p>
-        审核价格、能力和验证记录。审核通过不等于准确性验收，也不启用模型调用；原生接受与发送接线尚未完成。
+        审核价格、能力和验证记录。审核通过不等于准确性验收，也不启用模型调用；准备任务可按固定申请登记，真实发送仍关闭。
       </p>
+      <QualifiedMaterialJob
+        base={base}
+        scopeId={scopeId}
+        scopeDigest={scopeDigest}
+        memberId={memberId}
+        qualification={view?.data ?? null}
+      />
       <ErrorNotice error={error} />
       <label>
         资格协议 JSON
