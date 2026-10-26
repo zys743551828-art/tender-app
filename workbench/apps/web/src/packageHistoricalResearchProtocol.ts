@@ -625,6 +625,23 @@ async function resultDocument(value: HistoryResult) {
       if (interval.radius !== null) number(interval.radius, 0, 100);
     }
   } else {
+    if (value.feature_final_evaluation) {
+      const feature = value.feature_final_evaluation;
+      check(
+        feature.cohort_id === value.cohort_id &&
+          feature.origin === value.origin &&
+          feature.membership_digest === value.membership_digest &&
+          feature.labels_digest === value.labels_digest,
+      );
+      report(feature.report);
+      check(
+        feature.report.denominator === value.report.denominator &&
+          feature.report.counts.rejected === value.report.counts.rejected &&
+          feature.report.counts.unlabeled === value.report.counts.unlabeled &&
+          feature.report.counts.succeeded + feature.report.counts.failed ===
+            value.report.counts.succeeded + value.report.counts.failed,
+      );
+    }
     report(value.report);
     report(value.official_source_subset.report);
     check(value.official_source_subset.origin === value.origin);

@@ -401,7 +401,7 @@ export function HistoryJobResult({
             <section aria-label="特征研究候选">
               <h4>完整材料六特征岭回归候选</h4>
               <p className="notice warning">
-                候选最终测试消费尚未接通，不代表正式预测或真实效果通过。
+                此训练记录不包含最终测试，请查看独立评估任务。研究候选不代表正式预测或真实效果通过。
               </p>
               <p>
                 拟合组 {result.complete_feature_training.groups.fit}；开发组{" "}
@@ -493,9 +493,37 @@ export function HistoryJobResult({
       ) : (
         <>
           <h4>独立最终评估记录</h4>
-          <p className="small-note">
-            此评估使用已冻结的常数基线，不评价特征研究候选。
-          </p>
+          {result.feature_final_evaluation ? (
+            <section aria-label="冻结特征候选独立评价">
+              <h4>冻结特征候选独立评价</h4>
+              <p className="small-note">
+                以下结果来自曝光前冻结的特征候选；未重新拟合或选择模型。研究机制结果不代表真实精度通过，正式预测资格仍未取得。
+              </p>
+              <Metrics
+                report={result.feature_final_evaluation.report}
+                title="特征候选最终评估记录"
+              />
+              <HistoryIdentity
+                values={{
+                  特征候选摘要:
+                    result.feature_final_evaluation.candidate_digest,
+                  特征模型摘要: result.feature_final_evaluation.model_digest,
+                  特征预测摘要:
+                    result.feature_final_evaluation.predictions_digest,
+                  冻结输入摘要: result.feature_final_evaluation.input_digest,
+                  曝光记录: result.feature_final_evaluation.exposure_id,
+                  特征评价方法: result.feature_final_evaluation.method_digest,
+                }}
+              />
+              <p className="small-note">
+                以下另列原常数基线，使用相同 final 标签与原始分母。
+              </p>
+            </section>
+          ) : (
+            <p className="small-note">
+              此评估使用已冻结的常数基线，不评价特征研究候选。
+            </p>
+          )}
           <p>
             原选择 {result.selection_denominator.selected_submissions} 份；排除{" "}
             {result.selection_denominator.excluded_submissions}{" "}
@@ -508,7 +536,9 @@ export function HistoryJobResult({
             title="有证据核对的官方来源子集"
           />
           <p className="small-note">
-            排名、入围概率、评委分歧和同输入独立复跑稳定性均未取得相应标签或实验。正式质量验收、完整三评特征、事前业务认证及观察发布仍未完成。
+            排名、入围概率、评委分歧和同输入独立复跑稳定性均未取得相应标签或实验。正式质量验收、事前业务认证及观察发布仍未完成。
+            {!result.feature_final_evaluation &&
+              "本常数基线未消费完整三评特征。"}
           </p>
         </>
       )}

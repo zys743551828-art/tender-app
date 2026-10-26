@@ -794,6 +794,115 @@ export type PackageHistoricalJobView = {
             ];
             provider_requests: 0;
             paid_calls: 0;
+            feature_final_evaluation?: {
+              version: "package-history-feature-evaluation/1";
+              cohort_id: string;
+              origin: "synthetic" | "external_evidence";
+              membership_digest: string;
+              method_digest: string;
+              freeze_method_digest: string;
+              candidate_digest: string;
+              model_digest: string;
+              predictions_digest: string;
+              labels_digest: string;
+              input_digest: string;
+              exposure_id: string;
+              report: {
+                denominator: number;
+                independent_groups: number;
+                projects: number;
+                counts: {
+                  succeeded: number;
+                  failed: number;
+                  rejected: number;
+                  unlabeled: number;
+                };
+                success_coverage: string | null;
+                sample_mae: string | null;
+                project_mae: string | null;
+                original_scale_project_mae: string | null;
+                p90_absolute_error: string | null;
+                project_within_three: string | null;
+                project_bias: string | null;
+                intervals: {
+                  "0.8":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                  "0.9":
+                    | {
+                        coverage: string;
+                        width: string;
+                      }
+                    | {
+                        coverage: null;
+                        width: null;
+                        reason: "interval_or_labeled_predictions_unavailable";
+                      };
+                };
+                paired_baselines: {
+                  mean?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                  median?:
+                    | {
+                        gain: string;
+                        paired_count: number;
+                        group_bootstrap_gain_95: string[] | null;
+                      }
+                    | {
+                        gain: null;
+                        reason: "paired_baseline_missing";
+                      };
+                };
+                group_bootstrap_project_mae_95: string[] | null;
+                stability_range_p90: null;
+                strata: {
+                  method: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  maximum: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                  engineering_type: {
+                    [key: string]: {
+                      count: number;
+                      project_mae: string | null;
+                    };
+                  };
+                };
+                unavailable_statistics: [
+                  "ranking_without_ranking_labels",
+                  "shortlist_probability_without_labels",
+                  "judge_disagreement_without_judge_labels",
+                  "whole_round_stability_without_independent_repeat_predictions",
+                ];
+              };
+              research_only: true;
+              formal_prediction: null;
+              acceptance_decision: "unavailable";
+              provider_requests: 0;
+              paid_calls: 0;
+            };
           }
       )
     | null;

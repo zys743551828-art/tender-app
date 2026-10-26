@@ -1,6 +1,6 @@
 # Final 特征预测冻结协议
 
-实现范围是无标签 final 输入与预测冻结，研究用途。独立评价尚未实现，正式预测不可用。实施与验证边界见[阶段记录](../../docs/completion-20261026/feature-final-freeze.md)。这里不修改冻结 SQL/OpenAPI 主快照。
+此协议的范围是无标签 final 输入与预测冻结，研究用途。独立评价由[单独协议](package-feature-evaluation.md)消费，正式预测仍不可用。实施与验证边界见[阶段记录](../../docs/completion-20261026/feature-final-freeze.md)。这里不修改冻结 SQL/OpenAPI 主快照。
 
 ## 输入与引用
 

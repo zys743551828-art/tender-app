@@ -2997,6 +2997,545 @@ export const historySchemas: Record<string, unknown> = {
                   paid_calls: {
                     const: 0,
                   },
+                  feature_final_evaluation: {
+                    type: "object",
+                    additionalProperties: false,
+                    properties: {
+                      version: {
+                        const: "package-history-feature-evaluation/1",
+                      },
+                      cohort_id: {
+                        type: "string",
+                        format: "uuid",
+                      },
+                      origin: {
+                        enum: ["synthetic", "external_evidence"],
+                      },
+                      membership_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      method_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      freeze_method_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      candidate_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      model_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      predictions_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      labels_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      input_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      exposure_id: {
+                        type: "string",
+                        format: "uuid",
+                      },
+                      report: {
+                        type: "object",
+                        additionalProperties: false,
+                        properties: {
+                          denominator: {
+                            type: "integer",
+                            minimum: 0,
+                          },
+                          independent_groups: {
+                            type: "integer",
+                            minimum: 0,
+                          },
+                          projects: {
+                            type: "integer",
+                            minimum: 0,
+                          },
+                          counts: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              succeeded: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              failed: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              rejected: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              unlabeled: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                            },
+                            required: [
+                              "succeeded",
+                              "failed",
+                              "rejected",
+                              "unlabeled",
+                            ],
+                          },
+                          success_coverage: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          sample_mae: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          project_mae: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          original_scale_project_mae: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          p90_absolute_error: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          project_within_three: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          project_bias: {
+                            anyOf: [
+                              {
+                                type: "string",
+                                pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          intervals: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              "0.8": {
+                                oneOf: [
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      coverage: {
+                                        type: "string",
+                                        pattern:
+                                          "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                      width: {
+                                        type: "string",
+                                        pattern:
+                                          "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                    },
+                                    required: ["coverage", "width"],
+                                  },
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      coverage: {
+                                        type: "null",
+                                      },
+                                      width: {
+                                        type: "null",
+                                      },
+                                      reason: {
+                                        const:
+                                          "interval_or_labeled_predictions_unavailable",
+                                      },
+                                    },
+                                    required: ["coverage", "width", "reason"],
+                                  },
+                                ],
+                              },
+                              "0.9": {
+                                oneOf: [
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      coverage: {
+                                        type: "string",
+                                        pattern:
+                                          "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                      width: {
+                                        type: "string",
+                                        pattern:
+                                          "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                    },
+                                    required: ["coverage", "width"],
+                                  },
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      coverage: {
+                                        type: "null",
+                                      },
+                                      width: {
+                                        type: "null",
+                                      },
+                                      reason: {
+                                        const:
+                                          "interval_or_labeled_predictions_unavailable",
+                                      },
+                                    },
+                                    required: ["coverage", "width", "reason"],
+                                  },
+                                ],
+                              },
+                            },
+                            required: ["0.8", "0.9"],
+                          },
+                          paired_baselines: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              mean: {
+                                oneOf: [
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      gain: {
+                                        type: "string",
+                                        pattern:
+                                          "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                      paired_count: {
+                                        type: "integer",
+                                        minimum: 0,
+                                      },
+                                      group_bootstrap_gain_95: {
+                                        anyOf: [
+                                          {
+                                            type: "array",
+                                            items: {
+                                              type: "string",
+                                              pattern:
+                                                "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                            },
+                                            minItems: 2,
+                                            maxItems: 2,
+                                          },
+                                          {
+                                            type: "null",
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      "gain",
+                                      "paired_count",
+                                      "group_bootstrap_gain_95",
+                                    ],
+                                  },
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      gain: {
+                                        type: "null",
+                                      },
+                                      reason: {
+                                        const: "paired_baseline_missing",
+                                      },
+                                    },
+                                    required: ["gain", "reason"],
+                                  },
+                                ],
+                              },
+                              median: {
+                                oneOf: [
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      gain: {
+                                        type: "string",
+                                        pattern:
+                                          "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                      },
+                                      paired_count: {
+                                        type: "integer",
+                                        minimum: 0,
+                                      },
+                                      group_bootstrap_gain_95: {
+                                        anyOf: [
+                                          {
+                                            type: "array",
+                                            items: {
+                                              type: "string",
+                                              pattern:
+                                                "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                            },
+                                            minItems: 2,
+                                            maxItems: 2,
+                                          },
+                                          {
+                                            type: "null",
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      "gain",
+                                      "paired_count",
+                                      "group_bootstrap_gain_95",
+                                    ],
+                                  },
+                                  {
+                                    type: "object",
+                                    additionalProperties: false,
+                                    properties: {
+                                      gain: {
+                                        type: "null",
+                                      },
+                                      reason: {
+                                        const: "paired_baseline_missing",
+                                      },
+                                    },
+                                    required: ["gain", "reason"],
+                                  },
+                                ],
+                              },
+                            },
+                            required: [],
+                          },
+                          group_bootstrap_project_mae_95: {
+                            anyOf: [
+                              {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                },
+                                minItems: 2,
+                                maxItems: 2,
+                              },
+                              {
+                                type: "null",
+                              },
+                            ],
+                          },
+                          stability_range_p90: {
+                            type: "null",
+                          },
+                          strata: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              method: {
+                                type: "object",
+                                additionalProperties: {
+                                  type: "object",
+                                  additionalProperties: false,
+                                  properties: {
+                                    count: {
+                                      type: "integer",
+                                      minimum: 0,
+                                    },
+                                    project_mae: {
+                                      anyOf: [
+                                        {
+                                          type: "string",
+                                          pattern:
+                                            "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                        },
+                                        {
+                                          type: "null",
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: ["count", "project_mae"],
+                                },
+                              },
+                              maximum: {
+                                type: "object",
+                                additionalProperties: {
+                                  type: "object",
+                                  additionalProperties: false,
+                                  properties: {
+                                    count: {
+                                      type: "integer",
+                                      minimum: 0,
+                                    },
+                                    project_mae: {
+                                      anyOf: [
+                                        {
+                                          type: "string",
+                                          pattern:
+                                            "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                        },
+                                        {
+                                          type: "null",
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: ["count", "project_mae"],
+                                },
+                              },
+                              engineering_type: {
+                                type: "object",
+                                additionalProperties: {
+                                  type: "object",
+                                  additionalProperties: false,
+                                  properties: {
+                                    count: {
+                                      type: "integer",
+                                      minimum: 0,
+                                    },
+                                    project_mae: {
+                                      anyOf: [
+                                        {
+                                          type: "string",
+                                          pattern:
+                                            "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                        },
+                                        {
+                                          type: "null",
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: ["count", "project_mae"],
+                                },
+                              },
+                            },
+                            required: ["method", "maximum", "engineering_type"],
+                          },
+                          unavailable_statistics: {
+                            const: [
+                              "ranking_without_ranking_labels",
+                              "shortlist_probability_without_labels",
+                              "judge_disagreement_without_judge_labels",
+                              "whole_round_stability_without_independent_repeat_predictions",
+                            ],
+                          },
+                        },
+                        required: [
+                          "denominator",
+                          "independent_groups",
+                          "projects",
+                          "counts",
+                          "success_coverage",
+                          "sample_mae",
+                          "project_mae",
+                          "original_scale_project_mae",
+                          "p90_absolute_error",
+                          "project_within_three",
+                          "project_bias",
+                          "intervals",
+                          "paired_baselines",
+                          "group_bootstrap_project_mae_95",
+                          "stability_range_p90",
+                          "strata",
+                          "unavailable_statistics",
+                        ],
+                      },
+                      research_only: {
+                        const: true,
+                      },
+                      formal_prediction: {
+                        type: "null",
+                      },
+                      acceptance_decision: {
+                        const: "unavailable",
+                      },
+                      provider_requests: {
+                        const: 0,
+                      },
+                      paid_calls: {
+                        const: 0,
+                      },
+                    },
+                    required: [
+                      "version",
+                      "cohort_id",
+                      "origin",
+                      "membership_digest",
+                      "method_digest",
+                      "freeze_method_digest",
+                      "candidate_digest",
+                      "model_digest",
+                      "predictions_digest",
+                      "labels_digest",
+                      "input_digest",
+                      "exposure_id",
+                      "report",
+                      "research_only",
+                      "formal_prediction",
+                      "acceptance_decision",
+                      "provider_requests",
+                      "paid_calls",
+                    ],
+                  },
                 },
                 required: [
                   "schema",

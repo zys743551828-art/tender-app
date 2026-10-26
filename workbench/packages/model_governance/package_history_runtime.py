@@ -214,6 +214,12 @@ def run(
                     else cpu.train(complete.training_export(bundle))
                 )
         else:
+            from packages.model_governance import package_feature_evaluation as feature_evaluation
+
+            if "feature_final_input" in lease:
+                feature_evaluation.validate(
+                    lease["feature_final_input"], lease.get("feature_final_frozen")
+                )
             with connection(purpose) as c:
                 c.execute(
                     "SELECT package_historical_research.open_final(%s,%s,%s,%s)", lease_arguments
@@ -225,7 +231,11 @@ def run(
                     "SELECT package_historical_research.read_final(%s,%s,%s,%s) AS value",
                     lease_arguments,
                 ).fetchone()["value"]
-            result = cpu.evaluate(bundle)
+            result = (
+                feature_evaluation.evaluate(bundle)
+                if "feature_final" in bundle
+                else cpu.evaluate(bundle)
+            )
         if failures:
             raise GovernanceError(
                 "PACKAGE_HISTORY_LEASE_LOST", "CPU lease renewal failed; result is not published"

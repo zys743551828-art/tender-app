@@ -91,5 +91,5 @@ it("shows an unavailable feature candidate separately from a usable baseline", (
   expect(screen.getByText("完整材料六特征岭回归候选")).toBeInTheDocument();
   expect(screen.getByText(/未生成候选模型或区间/)).toBeInTheDocument();
   expect(screen.getByText("CPU 基线训练结果")).toBeInTheDocument();
-  expect(screen.getByText(/候选最终测试消费尚未接通/)).toBeInTheDocument();
+  expect(screen.getByText(/此训练记录不包含最终测试/)).toBeInTheDocument();
 });

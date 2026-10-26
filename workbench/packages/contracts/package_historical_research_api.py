@@ -530,6 +530,34 @@ EVALUATION_RESULT = object_schema(
         "paid_calls": {"const": 0},
     }
 )
+FEATURE_EVALUATION = object_schema(
+    {
+        "version": {"const": "package-history-feature-evaluation/1"},
+        "cohort_id": UUID_SCHEMA,
+        "origin": ORIGIN,
+        **dict.fromkeys(
+            [
+                "membership_digest",
+                "method_digest",
+                "freeze_method_digest",
+                "candidate_digest",
+                "model_digest",
+                "predictions_digest",
+                "labels_digest",
+                "input_digest",
+            ],
+            SHA,
+        ),
+        "exposure_id": UUID_SCHEMA,
+        "report": REPORT,
+        "research_only": {"const": True},
+        "formal_prediction": NULL,
+        "acceptance_decision": {"const": "unavailable"},
+        "provider_requests": {"const": 0},
+        "paid_calls": {"const": 0},
+    }
+)
+EVALUATION_RESULT["properties"]["feature_final_evaluation"] = FEATURE_EVALUATION
 SCHEMAS = {
     "PackageHistoricalAdmissionContext": CONTEXT,
     "PackageHistoricalAdmission": ADMISSION,
