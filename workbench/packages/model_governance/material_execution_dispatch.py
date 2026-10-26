@@ -48,7 +48,9 @@ BLOCKERS = (
 FALSE_FIELDS = frozenset(
     {"production_send_authorized", "formal_prediction_eligible", "automatic_model_retry"}
 )
-TERMINAL = frozenset({"blocked", "mechanism_completed", "billing_unresolved"})
+TERMINAL = frozenset(
+    {"blocked", "mechanism_completed", "qualified_completed", "billing_unresolved"}
+)
 FAILURES = frozenset(
     {
         "NONE",
@@ -290,13 +292,19 @@ def _lease(value):
     d = _envelope(value)
     if (
         set(d) != LEASE_FIELDS
-        or d["version"] != "material-dispatch-lease/1"
+        or d["version"]
+        != (
+            "material-dispatch-lease/2"
+            if d["mode"] == "qualified_live"
+            else "material-dispatch-lease/1"
+        )
         or d["purpose"] not in GROUPS
         or type(d["generation"]) is not int
         or d["generation"] != 1
-        or d["mode"] not in {"production_admission", "synthetic_mechanism"}
+        or d["mode"] not in {"production_admission", "synthetic_mechanism", "qualified_live"}
         or d["origin"] not in {"current_prebid", "synthetic_mechanism"}
         or (d["mode"] == "synthetic_mechanism" and d["origin"] != "synthetic_mechanism")
+        or (d["mode"] == "qualified_live" and d["origin"] != "current_prebid")
         or any(d[k] is not False for k in FALSE_FIELDS)
         or any(not _integer(d[k], 1) for k in ("fence", "profile_head_revision", "recorded_by_oid"))
         or d["dispatch_method_digest"] != method_digest()
@@ -321,7 +329,12 @@ def _result(value, lease):
     d = _envelope(value)
     if (
         set(d) != RESULT_FIELDS
-        or d["version"] != "material-dispatch-result/1"
+        or d["version"]
+        != (
+            "material-dispatch-result/2"
+            if d["mode"] == "qualified_live"
+            else "material-dispatch-result/1"
+        )
         or any(
             d[k] != lease[k]
             for k in (
@@ -353,6 +366,12 @@ def _result(value, lease):
         fail("NATIVE_RESULT_INVALID")
     if d["state"] == "mechanism_completed" and (
         d["mode"] != "synthetic_mechanism"
+        or d["financial_state"] != "completed"
+        or not d["source_current"]
+    ):
+        fail("NATIVE_RESULT_INVALID")
+    if d["state"] == "qualified_completed" and (
+        d["mode"] != "qualified_live"
         or d["financial_state"] != "completed"
         or not d["source_current"]
     ):
@@ -512,7 +531,12 @@ def _leased(connection, observed, *, operation, expected_method_digest, failure=
                 fail("NATIVE_RESULT_INVALID")
             job = jobs._record(value["job"]).metadata["document"]
             if (
-                value["version"] != "material-dispatch-owned-job/1"
+                value["version"]
+                != (
+                    "material-dispatch-owned-job/2"
+                    if d["mode"] == "qualified_live"
+                    else "material-dispatch-owned-job/1"
+                )
                 or value["lease"] != observed.metadata["lease"]
                 or job["job_id"] != d["job_id"]
                 or value["job"]["digest"] != d["job_digest"]
@@ -520,7 +544,7 @@ def _leased(connection, observed, *, operation, expected_method_digest, failure=
                 or value["mode"] != d["mode"]
                 or value["production_send_authorized"] is not False
                 or value["financial_state"] not in execution.STATES | {None}
-                or value["blockers"] != list(BLOCKERS)
+                or value["blockers"] != ([] if d["mode"] == "qualified_live" else list(BLOCKERS))
             ):
                 fail("NATIVE_RESULT_INVALID")
             for key in ("preparation_profile_id", "store_command_id"):
@@ -532,9 +556,10 @@ def _leased(connection, observed, *, operation, expected_method_digest, failure=
                 _uuid(value["execution_profile_id"])
                 if not is_digest(value["execution_profile_digest"]):
                     fail("NATIVE_RESULT_INVALID")
-            elif (
-                value["execution_profile_digest"] is not None or d["mode"] == "synthetic_mechanism"
-            ):
+            elif value["execution_profile_digest"] is not None or d["mode"] in {
+                "synthetic_mechanism",
+                "qualified_live",
+            }:
                 fail("NATIVE_RESULT_INVALID")
             return OwnedJob(deepcopy(value))
         result = _observation(value, purpose)

@@ -92,3 +92,7 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 ## 获批资格原生接受检查点
 
 [固定申请、原生任务/outbox 接受与预算授权边界](material-qualified-acceptance.md)已编码；真实账户 sender 仍待版本化适配，默认调用关闭。
+
+## 默认关闭的获批 sender 检查点
+
+[版本化账户、发送前复读、一次发送与结算](material-live-sender.md)已接现有可调用 Worker consumer。部署启动器安全注入装配及权威费用 API/UI 仍待下一段，不宣称真实调用或原生数据库验收完成。

@@ -181,14 +181,20 @@ class SubmittedOutcome:
 def method_digest():
     return digest(
         {
-            "version": "material-execution-attempt-method/1",
+            "version": "material-execution-attempt-method/2",
             "source_digest": sha(Path(__file__).read_bytes()),
             "sql_source_digest": sha(SQL_FILE.read_bytes()),
+            "live_sender_source_digest": sha(
+                Path(__file__).with_name("material_live_sender.py").read_bytes()
+            ),
+            "qualification_audit_source_digest": sha(
+                Path(__file__).with_name("material_qualification_guard.py").read_bytes()
+            ),
             "preflight_method_digest": preflight.method_digest(),
             "serializer_digest": vision.serializer_digest(),
             "provider_source_digest": sha(Path(provider.__file__).read_bytes()),
             "audit_source_digest": sha(Path(audit.__file__).read_bytes()),
-            "execution_mode": "isolated_synthetic_mechanism",
+            "execution_modes": ["isolated_synthetic_mechanism", "qualified_live"],
             "formal_prediction_eligible": False,
         }
     )
@@ -212,6 +218,7 @@ def _functions():
         ("require_worker", "boolean", "execution_worker", False, "v", "void", False),
         ("current_context", "jsonb, uuid", "execution_context", False, "v", "jsonb", False),
         ("observation", "uuid, boolean", "execution_observation", False, "v", "jsonb", False),
+        ("live_send_current", "uuid", "execution_live_current", False, "v", "boolean", False),
         ("judgment_valid", "uuid, jsonb, text", "execution_judgment", False, "v", "boolean", False),
     )
     return tuple(audit.FunctionSpec(SQL_FILE, "material_execution", *spec) for spec in own) + tuple(
@@ -269,20 +276,38 @@ def _envelope(value):
 
 
 def _observation(value):
+    live_value = (
+        isinstance(value, dict)
+        and isinstance(value.get("attempt"), dict)
+        and isinstance(value["attempt"].get("document"), dict)
+        and value["attempt"]["document"].get("version") == "material-execution-attempt/2"
+    )
+    fields = {"attempt", "outcome", "reservation", "job_balance", "account_balance", "new_send"} | (
+        {"send_current"} if live_value else set()
+    )
     if (
         type(value) is not dict
-        or set(value)
-        != {"attempt", "outcome", "reservation", "job_balance", "account_balance", "new_send"}
+        or set(value) != fields
         or type(value["new_send"]) is not bool
+        or (live_value and type(value["send_current"]) is not bool)
     ):
         fail("NATIVE_RESULT_INVALID")
     d = _envelope(value["attempt"])
+    live = d.get("version") == "material-execution-attempt/2"
+    mode = "qualified_live" if live else "isolated_synthetic_mechanism"
+    attempt_fields = (
+        (ATTEMPT_FIELDS - {"mechanism_send_once_granted"}) | {"qualified_send_once_granted"}
+        if live
+        else set(ATTEMPT_FIELDS)
+    )
     if (
-        set(d) != ATTEMPT_FIELDS
-        or d["version"] != "material-execution-attempt/1"
-        or d["execution_mode"] != "isolated_synthetic_mechanism"
-        or any(d[k] is not False for k in FALSE_FIELDS)
-        or d["mechanism_send_once_granted"] is not True
+        set(d) != attempt_fields
+        or d["version"]
+        != ("material-execution-attempt/2" if live else "material-execution-attempt/1")
+        or d["execution_mode"] != mode
+        or d["execution_authorized"] is not live
+        or any(d[k] is not False for k in FALSE_FIELDS - {"execution_authorized"})
+        or d["qualified_send_once_granted" if live else "mechanism_send_once_granted"] is not True
         or type(d["attempt_number"]) is not int
         or d["attempt_number"] != 1
         or type(d["generation"]) is not int
@@ -339,11 +364,13 @@ def _observation(value):
         fail("NATIVE_RESULT_INVALID")
     reservation = _envelope(value["reservation"])
     if (
-        reservation.get("version") != "material-execution-reservation/1"
+        reservation.get("version")
+        != ("material-execution-reservation/2" if live else "material-execution-reservation/1")
         or reservation.get("job_id") != d["job_id"]
         or reservation.get("profile_id") != d["profile_id"]
-        or reservation.get("execution_mode") != "isolated_synthetic_mechanism"
-        or reservation.get("mechanism_fee_ledger_reserved") is not True
+        or reservation.get("execution_mode") != mode
+        or reservation.get("fee_ledger_reserved" if live else "mechanism_fee_ledger_reserved")
+        is not True
         or reservation.get("account_price_confirmed") is not False
         or reservation.get("formal_prediction_eligible") is not False
         or reservation.get("invoice_reconciled") is not False
@@ -373,12 +400,13 @@ def _observation(value):
         outcome = _envelope(value["outcome"])
         if (
             set(outcome) != OUTCOME_FIELDS
-            or outcome["version"] != "material-execution-outcome/1"
+            or outcome["version"]
+            != ("material-execution-outcome/2" if live else "material-execution-outcome/1")
             or outcome["attempt_id"] != d["attempt_id"]
             or outcome["request_digest"] != request.get("request_digest")
             or outcome["formal_prediction_eligible"] is not False
             or outcome["invoice_reconciled"] is not False
-            or outcome["execution_mode"] != "isolated_synthetic_mechanism"
+            or outcome["execution_mode"] != mode
             or not is_digest(outcome["raw_response_digest"])
             or outcome["billing_state"] not in {"usage_reported", "unknown"}
             or any(
@@ -766,6 +794,8 @@ async def execute_mechanism_attempt(
     if not granted.metadata["new_send"]:
         return granted
     d = granted.metadata["attempt"]["document"]
+    if d["execution_mode"] != "isolated_synthetic_mechanism":
+        fail("ISOLATED_TRANSPORT_REQUIRED")
     if d["request"] != request.receipt or d["rule_id"] != rule_id:
         submitted = _outcome(granted, failure="REQUEST_MISMATCH_BEFORE_SEND")
     elif datetime.now(timezone.utc) >= _time(d["send_until"]):

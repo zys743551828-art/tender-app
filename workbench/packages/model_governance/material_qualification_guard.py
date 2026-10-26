@@ -19,7 +19,7 @@ def audit(c):
         "p.prorettype::regtype::text AS returns,"
         "pg_has_role(current_user,p.proowner,'MEMBER') AS caller_owner,"
         "has_function_privilege(current_user,p.oid,'EXECUTE') AS caller_execute,"
-        "(SELECT proowner FROM pg_proc WHERE oid=to_regprocedure('material_judgment_job.start(uuid,text,uuid,text,uuid)')) AS native_owner "
+        "(SELECT f.proowner FROM pg_proc f JOIN pg_namespace ns ON ns.oid=f.pronamespace WHERE ns.nspname='material_judgment_job' AND f.proname='start' AND oidvectortypes(f.proargtypes)='uuid, text, uuid, text, uuid') AS native_owner "
         "FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang "
         "WHERE n.nspname='material_qualification' AND p.proname='enforce' AND p.pronargs=0"
     ).fetchone()
@@ -49,7 +49,7 @@ def audit(c):
     triggers = c.execute(
         "SELECT n.nspname,c.relname,t.tgname,t.tgtype,t.tgenabled,t.tgqual,t.tgnargs,c.relowner,p.proname,p.proowner "
         "FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_proc p ON p.oid=t.tgfoid "
-        "WHERE t.tgfoid=to_regprocedure('material_qualification.enforce()') AND NOT t.tgisinternal"
+        "JOIN pg_namespace fn ON fn.oid=p.pronamespace WHERE fn.nspname='material_qualification' AND p.proname='enforce' AND p.pronargs=0 AND NOT t.tgisinternal"
     ).fetchall()
     expected = {
         ("material_judgment_job", "jobs", "qualified_material_job", 5),

@@ -1,8 +1,8 @@
 """Dedicated material outbox relay and manually acknowledged Kafka consumer.
 
-Production admission precedes every material read, reservation and provider
-call. Only the separate, explicit synthetic lane assembles the existing native
-recovery, complete-input preflight and once-only financial execution pipeline.
+The legacy production-admission lane remains closed. Explicit process-owned
+qualified ports reuse native recovery, complete-input preflight and once-only
+financial execution; neither Kafka data nor an absent configuration enables them.
 """
 
 import asyncio
@@ -18,6 +18,7 @@ from psycopg.pq import TransactionStatus
 from packages.domain.review_identity import canonical
 from packages.model_governance import material_execution_attempts as execution
 from packages.model_governance import material_execution_dispatch as dispatch
+from packages.model_governance import material_live_sender as live
 from packages.model_governance import material_preparation_leases as preparation
 from packages.model_governance import material_request_preflight as preflight
 from packages.model_governance import package_technical_complete_vision as vision
@@ -44,6 +45,21 @@ class MechanismPorts:
     profile: str
     url_for_locator: Callable
     transport: httpx.MockTransport
+
+
+@dataclass(frozen=True, repr=False)
+class QualifiedPorts:
+    """Trusted host injection; never Kafka/API data or an environment auto-enable."""
+
+    preparation: Any
+    store: Any
+    scope: Any
+    original: Any
+    parse: Any
+    execution: Any
+    profile: str
+    url_for_locator: Callable
+    sender: live.Sender
 
 
 @dataclass(frozen=True, repr=False)
@@ -137,8 +153,12 @@ def relay_once(
     )
 
 
-def _validate_ports(connection, ports):
-    if type(ports) is not MechanismPorts or type(ports.transport) is not httpx.MockTransport:
+def _validate_ports(connection, ports, *, qualified=False):
+    if qualified:
+        if type(ports) is not QualifiedPorts or type(ports.sender) is not live.Sender:
+            dispatch.fail("CONFIGURATION_UNAVAILABLE")
+        live.validate(ports.sender, ports.sender.profile_id, ports.sender.profile_digest)
+    elif type(ports) is not MechanismPorts or type(ports.transport) is not httpx.MockTransport:
         dispatch.fail("ISOLATED_TRANSPORT_REQUIRED")
     connections = (
         connection,
@@ -166,7 +186,9 @@ def production_admission():
     dispatch.fail("LIVE_ADMISSION_CHANGED")
 
 
-async def deliver(connection, value, *, expected_method_digest, mechanism_ports=None):
+async def deliver(
+    connection, value, *, expected_method_digest, mechanism_ports=None, qualified_ports=None
+):
     """Run one ID-only delivery. Only durable terminal receipts permit Kafka ACK.
 
     An active delivery belongs to the original claimant. Another command does
@@ -189,7 +211,8 @@ async def deliver(connection, value, *, expected_method_digest, mechanism_ports=
             connection, observed, failure=failure, expected_method_digest=expected_method_digest
         )
         return DeliveryResult(completed, True)
-    if mechanism_ports is None:
+    selected = qualified_ports if d["mode"] == "qualified_live" else mechanism_ports
+    if selected is None:
         completed = dispatch.finish(
             connection,
             observed,
@@ -197,8 +220,8 @@ async def deliver(connection, value, *, expected_method_digest, mechanism_ports=
             expected_method_digest=expected_method_digest,
         )
         return DeliveryResult(completed, True)
-    _validate_ports(connection, mechanism_ports)
-    ports = mechanism_ports
+    _validate_ports(connection, selected, qualified=d["mode"] == "qualified_live")
+    ports = selected
     owned = dispatch.owned_job(connection, observed, expected_method_digest=expected_method_digest)
     source = owned.metadata
     if source["financial_state"] not in {None, "ready"} or not source["source_current"]:
@@ -252,7 +275,17 @@ async def deliver(connection, value, *, expected_method_digest, mechanism_ports=
                 command_id=str(uuid4()),
                 expected_method_digest=preparation.method_digest(),
             )
-            outcome = await execution.execute_mechanism_attempt(
+            sender = (
+                live.execute
+                if d["mode"] == "qualified_live"
+                else execution.execute_mechanism_attempt
+            )
+            settings = (
+                {"sender": ports.sender}
+                if type(ports) is QualifiedPorts
+                else {"transport": ports.transport}
+            )
+            outcome = await sender(
                 ports.preparation,
                 ports.execution,
                 bundle,
@@ -264,7 +297,7 @@ async def deliver(connection, value, *, expected_method_digest, mechanism_ports=
                 command_id=str(uuid4()),
                 expected_preflight_digest=checked.metadata["digest"],
                 expected_method_digest=execution.method_digest(),
-                transport=ports.transport,
+                **settings,
             )
             if outcome.metadata["job_balance"]["state"] != "ready":
                 break
@@ -284,7 +317,13 @@ async def deliver(connection, value, *, expected_method_digest, mechanism_ports=
 
 
 def consume_once(
-    connection, kafka_consumer, *, expected_method_digest, mechanism_ports=None, timeout=1
+    connection,
+    kafka_consumer,
+    *,
+    expected_method_digest,
+    mechanism_ports=None,
+    qualified_ports=None,
+    timeout=1,
 ):
     """Manually commit only after a terminal native result has committed."""
     if type(timeout) not in {int, float} or not 0 <= timeout <= 30:
@@ -312,6 +351,7 @@ def consume_once(
                 body,
                 expected_method_digest=expected_method_digest,
                 mechanism_ports=mechanism_ports,
+                qualified_ports=qualified_ports,
             )
         )
         if result.acknowledge:

@@ -1,4 +1,4 @@
--- Optional isolated mechanism lane. No live provider/account qualification is granted.
+-- Fresh optional ledger: isolated /1 and explicitly qualified /2. No qualification is granted by installation.
 BEGIN;
 CREATE SCHEMA material_execution;
 REVOKE ALL ON SCHEMA material_execution FROM PUBLIC;
@@ -6,7 +6,7 @@ CREATE ROLE tender_material_execution_worker NOLOGIN NOSUPERUSER NOCREATEDB NOCR
 CREATE TABLE material_execution.accounts(
  id uuid PRIMARY KEY,currency text NOT NULL CHECK(currency IN('USD','CNY')),
  limit_minor bigint NOT NULL CHECK(limit_minor BETWEEN 0 AND 9007199254740991),
- origin text NOT NULL CHECK(origin='synthetic_mechanism')
+ origin text NOT NULL CHECK(origin IN('synthetic_mechanism','current_prebid'))
 );
 CREATE TABLE material_execution.balances(
  account_id uuid PRIMARY KEY REFERENCES material_execution.accounts(id),
@@ -16,11 +16,11 @@ CREATE TABLE material_execution.balances(
 CREATE TABLE material_execution.profiles(
  id uuid PRIMARY KEY,worker_login name NOT NULL,worker_login_oid oid NOT NULL,
  preparation_profile_id uuid NOT NULL REFERENCES material_preparation.profiles(id),preparation_profile_digest design.sha256 NOT NULL,
- account_id uuid NOT NULL REFERENCES material_execution.accounts(id),origin text NOT NULL CHECK(origin='synthetic_mechanism'),
+ account_id uuid NOT NULL REFERENCES material_execution.accounts(id),origin text NOT NULL CHECK(origin IN('synthetic_mechanism','current_prebid')),
  execution_method_digest design.sha256 NOT NULL,execution_sql_method_digest design.sha256 NOT NULL,
  preflight_method_digest design.sha256 NOT NULL,serializer_digest design.sha256 NOT NULL,
  provider_profile_digest design.sha256 NOT NULL,judgment_method_digest design.sha256 NOT NULL,
- database_oid oid NOT NULL,database_name text NOT NULL CHECK(database_name ~ '^fusion_[a-z0-9_]+$'),
+ database_oid oid NOT NULL,database_name text NOT NULL CHECK(origin<>'synthetic_mechanism' OR database_name ~ '^fusion_[a-z0-9_]+$'),
  valid_from timestamptz NOT NULL,valid_until timestamptz NOT NULL,CHECK(valid_from<valid_until AND valid_until<=valid_from+interval '24 hours')
 );
 CREATE TABLE material_execution.profile_heads(
@@ -66,9 +66,9 @@ BEGIN
  INTO amount,description FROM unnest(ARRAY['material_execution.native_method_digest()','material_execution.require_worker(boolean)',
  'material_execution.current_context(jsonb,uuid)','material_execution.observation(uuid,boolean)','material_execution.judgment_valid(uuid,jsonb,text)',
  'material_execution.begin_attempt(jsonb,uuid,text,uuid,uuid,uuid)','material_execution.settle(uuid,uuid,jsonb,bytea,uuid)',
- 'material_execution.read(uuid)','material_execution.response(uuid,text)']) s(signature)
+ 'material_execution.read(uuid)','material_execution.response(uuid,text)','material_execution.live_send_current(uuid)']) s(signature)
  JOIN pg_proc p ON p.oid=to_regprocedure(s.signature) JOIN pg_language l ON l.oid=p.prolang;
- IF amount<>9 THEN RETURN NULL;END IF;
+ IF amount<>10 THEN RETURN NULL;END IF;
  RETURN encode(sha256(convert_to(design.package_canonical_json(description),'UTF8')),'hex');
 END;
 $execution_method$;
@@ -119,7 +119,7 @@ BEGIN
   AND h.profile_id=p.id AND h.enabled AND at>=p.valid_from AND at<p.valid_until
   AND p.database_name=current_database() AND p.database_oid=(SELECT oid FROM pg_database WHERE datname=current_database())
   AND p.execution_sql_method_digest::text=material_execution.native_method_digest()
-  AND p.origin='synthetic_mechanism' AND pp.origin=p.origin AND job.document->>'origin'=p.origin
+  AND p.origin IN('synthetic_mechanism','current_prebid') AND pp.origin=p.origin AND job.document->>'origin'=p.origin
   AND p.preparation_profile_digest::text=ctx->>'profile_digest'
   AND ph.profile_id=pp.id AND ph.enabled AND ph.revision=l.profile_head_revision
   AND at>=pp.valid_from AND at<pp.valid_until AND pp.database_name=current_database()
@@ -180,6 +180,32 @@ BEGIN
 END;
 $execution_context$;
 
+CREATE FUNCTION material_execution.live_send_current(target uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,material_execution,design,pg_temp SET TimeZone='UTC'
+AS $execution_live_current$
+DECLARE a material_execution.attempts;current_ok boolean;at timestamptz:=clock_timestamp();
+BEGIN
+ SELECT * INTO a FROM material_execution.attempts WHERE id=target;
+ IF a.id IS NULL OR a.document->>'execution_mode'<>'qualified_live' OR EXISTS(SELECT FROM material_execution.outcomes WHERE attempt_id=a.id)
+  OR at>=(a.document->>'send_until')::timestamptz OR to_regclass('material_qualification.acceptances') IS NULL THEN RETURN false;END IF;
+ IF material_execution.current_context(a.preflight,a.profile_id) IS NULL THEN RETURN false;END IF;
+ SELECT coalesce(h.revision=i.qualification_revision AND d.decision='approved'
+  AND r.digest=i.qualification_digest AND at>=(r.document->>'valid_from')::timestamptz AND at<(r.document->>'valid_until')::timestamptz
+  AND at>=(r.document#>>'{price,valid_from}')::timestamptz AND at<(r.document#>>'{price,valid_until}')::timestamptz
+  AND i.document->>'guard_digest'=(SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') FROM pg_proc WHERE oid=to_regprocedure('material_qualification.enforce()'))
+  AND EXISTS(SELECT FROM design.members WHERE id=i.actor_id AND active) AND EXISTS(SELECT FROM design.members WHERE id=d.actor_id AND active)
+  AND NOT EXISTS(SELECT FROM jsonb_each(r.document->'evidence') proof WHERE NOT EXISTS(
+    SELECT FROM design.document_versions v JOIN design.blobs b ON b.id=v.blob_id WHERE v.bid_id=i.bid_id AND v.id=(proof.value->>'document_version_id')::uuid AND b.digest::text=proof.value->>'digest')),false)
+ INTO current_ok FROM material_qualification.acceptances accepted
+ JOIN material_qualification.intents i ON i.id=accepted.intent_id
+ JOIN material_qualification.records r ON r.id=i.qualification_id
+ JOIN material_qualification.heads h ON h.record_id=r.id
+ JOIN material_qualification.decisions d ON d.id=h.decision_id AND d.record_id=r.id AND d.revision=h.revision
+ WHERE accepted.job_id=a.job_id;
+ RETURN coalesce(current_ok,false);
+END;
+$execution_live_current$;
+
 CREATE FUNCTION material_execution.observation(target uuid,new_send boolean)
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,material_execution,design,pg_temp SET TimeZone='UTC'
 AS $execution_observation$
@@ -193,7 +219,8 @@ BEGIN
  SELECT * INTO b FROM material_execution.balances WHERE account_id=r.account_id;
  RETURN jsonb_build_object('attempt',jsonb_build_object('document',a.document,'digest',a.digest::text),
   'outcome',CASE WHEN o.attempt_id IS NULL THEN NULL ELSE jsonb_build_object('document',o.document,'digest',o.digest::text) END,
-  'reservation',jsonb_build_object('document',r.document,'digest',r.digest::text),'job_balance',to_jsonb(j),'account_balance',to_jsonb(b),'new_send',new_send);
+  'reservation',jsonb_build_object('document',r.document,'digest',r.digest::text),'job_balance',to_jsonb(j),'account_balance',to_jsonb(b),'new_send',new_send)
+  ||CASE WHEN a.document->>'execution_mode'='qualified_live' THEN jsonb_build_object('send_current',material_execution.live_send_current(a.id)) ELSE '{}'::jsonb END;
 END;
 $execution_observation$;
 
@@ -233,7 +260,14 @@ BEGIN
  request_set:=encode(sha256(convert_to(design.package_canonical_json(checked->'requests'),'UTF8')),'hex');
  SELECT * INTO wallet FROM material_execution.accounts WHERE id=p.account_id;
  SELECT * INTO balance FROM material_execution.balances WHERE account_id=wallet.id FOR UPDATE;
- IF wallet.currency IS DISTINCT FROM job.document->>'currency' OR balance.account_id IS NULL THEN RAISE EXCEPTION 'MATERIAL_EXECUTION_ACCOUNT_UNAVAILABLE' USING ERRCODE='P0001';END IF;
+ IF wallet.origin IS DISTINCT FROM p.origin OR wallet.currency IS DISTINCT FROM job.document->>'currency' OR balance.account_id IS NULL THEN RAISE EXCEPTION 'MATERIAL_EXECUTION_ACCOUNT_UNAVAILABLE' USING ERRCODE='P0001';END IF;
+ IF p.origin='current_prebid' AND NOT EXISTS(
+  SELECT FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+  JOIN pg_proc f ON f.oid=t.tgfoid JOIN pg_namespace fn ON fn.oid=f.pronamespace
+  WHERE n.nspname='material_execution' AND c.relname='attempts' AND t.tgname='qualified_material_attempt'
+   AND t.tgtype=7 AND t.tgenabled='O' AND t.tgqual IS NULL AND t.tgnargs=0
+   AND fn.nspname='material_qualification' AND f.proname='enforce' AND f.prosecdef AND f.proowner=c.relowner
+ ) THEN RAISE EXCEPTION 'MATERIAL_EXECUTION_CURRENT_STATE_UNAVAILABLE' USING ERRCODE='P0001';END IF;
  SELECT * INTO reservation FROM material_execution.reservations WHERE job_id=job.id;
  at:=clock_timestamp();
  IF reservation.job_id IS NULL THEN
@@ -242,6 +276,7 @@ BEGIN
    'quote_digest',job.document->>'quote_digest','request_set_digest',request_set,'currency',wallet.currency,'reserved_minor',required,'per_call_reserved_minor',per_call,
    'execution_mode','isolated_synthetic_mechanism','execution_method_digest',p.execution_method_digest::text,'recorded_at',to_char(at,'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
    'mechanism_fee_ledger_reserved',true,'account_price_confirmed',false,'formal_prediction_eligible',false,'invoice_reconciled',false);
+  IF p.origin='current_prebid' THEN res:=(res-'mechanism_fee_ledger_reserved')||jsonb_build_object('version','material-execution-reservation/2','execution_mode','qualified_live','fee_ledger_reserved',true);END IF;
   checksum:=encode(sha256(convert_to(design.package_canonical_json(res),'UTF8')),'hex');
   INSERT INTO material_execution.reservations VALUES(job.id,p.id,wallet.id,request_set,res,checksum);
   INSERT INTO material_execution.job_balances VALUES(job.id,required,0,0,'ready');
@@ -265,6 +300,7 @@ BEGIN
   'recorded_by_oid',(SELECT oid::bigint FROM pg_roles WHERE rolname=session_user),'recorded_at',to_char(at,'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
   'mechanism_send_once_granted',true,'execution_authorized',false,'account_price_confirmed',false,'model_context_fit_proven',false,'visual_readability_verified',false,
   'automatic_retry',false,'atomic_snapshot_verified',false,'formal_prediction_eligible',false);
+ IF p.origin='current_prebid' THEN result:=(result-'mechanism_send_once_granted')||jsonb_build_object('version','material-execution-attempt/2','execution_mode','qualified_live','qualified_send_once_granted',true,'execution_authorized',true);END IF;
  checksum:=encode(sha256(convert_to(design.package_canonical_json(result),'UTF8')),'hex');
  INSERT INTO material_execution.attempts VALUES(identifier,command,job.id,slot.id,session_user,(SELECT oid FROM pg_roles WHERE rolname=session_user),(checked->>'lease_id')::uuid,p.id,token,checked,result,checksum);
  UPDATE material_execution.job_balances SET state='in_flight' WHERE job_id=job.id;
@@ -414,6 +450,7 @@ BEGIN
  result:=submitted||jsonb_build_object('version','material-execution-outcome/1','command_id',command::text,'estimated_fee_minor',fee::bigint,
   'fee_basis',CASE WHEN fee IS NULL THEN 'unresolved' ELSE 'usage_price_estimate' END,'source_current_at_settlement',current_ok,'duplicate_response',duplicate,
   'valid_slot',valid,'over_reservation',overrun,'state',state_name,'execution_mode','isolated_synthetic_mechanism','recorded_at',to_char(at,'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'));
+ IF a.document->>'execution_mode'='qualified_live' THEN result:=result||jsonb_build_object('version','material-execution-outcome/2','execution_mode','qualified_live');END IF;
  checksum:=encode(sha256(convert_to(design.package_canonical_json(result),'UTF8')),'hex');
  INSERT INTO material_execution.outcomes VALUES(a.id,command,submitted_sha,raw,result,checksum);
  IF fee IS NOT NULL THEN

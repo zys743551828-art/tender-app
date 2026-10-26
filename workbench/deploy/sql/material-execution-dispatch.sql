@@ -10,7 +10,7 @@ CREATE TABLE material_dispatch.profiles(
  job_profile_id uuid NOT NULL REFERENCES material_judgment_job.profiles(id),job_profile_digest design.sha256 NOT NULL,
  preparation_profile_id uuid NOT NULL REFERENCES material_preparation.profiles(id),preparation_profile_digest design.sha256 NOT NULL,
  execution_profile_id uuid REFERENCES material_execution.profiles(id),execution_profile_digest design.sha256,
- mode text NOT NULL CHECK(mode IN('production_admission','synthetic_mechanism')),
+ mode text NOT NULL CHECK(mode IN('production_admission','synthetic_mechanism','qualified_live')),
  origin text NOT NULL CHECK(origin IN('current_prebid','synthetic_mechanism')),
  lease_seconds integer NOT NULL CHECK(lease_seconds BETWEEN 1 AND 120),
  dispatch_method_digest design.sha256 NOT NULL,dispatch_sql_method_digest design.sha256 NOT NULL,
@@ -18,6 +18,7 @@ CREATE TABLE material_dispatch.profiles(
  CHECK(relay_login<>worker_login AND relay_login_oid<>worker_login_oid),
  CHECK(valid_from<valid_until AND valid_until<=valid_from+interval '24 hours'),
  CHECK((execution_profile_id IS NULL)=(execution_profile_digest IS NULL)),
+ CHECK(mode<>'qualified_live' OR (origin='current_prebid' AND execution_profile_id IS NOT NULL)),
  CHECK(mode<>'synthetic_mechanism' OR (origin='synthetic_mechanism' AND database_name ~ '^fusion_[a-z0-9_]+$' AND execution_profile_id IS NOT NULL))
 );
 CREATE TABLE material_dispatch.profile_heads(
@@ -33,7 +34,7 @@ CREATE TABLE material_dispatch.leases(
 CREATE TABLE material_dispatch.states(
  purpose text NOT NULL CHECK(purpose IN('relay','worker')),event_id uuid NOT NULL REFERENCES material_judgment_job.outbox(id),
  lease_id uuid NOT NULL REFERENCES material_dispatch.leases(id),fence bigint NOT NULL,lease_until timestamptz NOT NULL,
- state text NOT NULL CHECK(state IN('running','published','blocked','mechanism_completed','billing_unresolved')),
+ state text NOT NULL CHECK(state IN('running','published','blocked','mechanism_completed','qualified_completed','billing_unresolved')),
  PRIMARY KEY(purpose,event_id)
 );
 CREATE TABLE material_dispatch.results(
@@ -105,7 +106,7 @@ BEGIN
     OR(kind='worker' AND p.worker_login=session_user AND p.worker_login_oid=(SELECT oid FROM pg_roles WHERE rolname=session_user)))
   AND (p.mode='production_admission' OR (ep.id IS NOT NULL AND ep.preparation_profile_id=pp.id AND ep.preparation_profile_digest=p.preparation_profile_digest
     AND p.execution_profile_digest::text=encode(sha256(convert_to(design.package_canonical_json(to_jsonb(ep)),'UTF8')),'hex')
-    AND ep.worker_login NOT IN(p.relay_login,p.worker_login) AND ep.worker_login_oid NOT IN(p.relay_login_oid,p.worker_login_oid))),false) THEN RETURN NULL;END IF;
+    AND ep.origin=p.origin AND ep.worker_login NOT IN(p.relay_login,p.worker_login) AND ep.worker_login_oid NOT IN(p.relay_login_oid,p.worker_login_oid))),false) THEN RETURN NULL;END IF;
  RETURN jsonb_build_object('profile',to_jsonb(p),'profile_digest',encode(sha256(convert_to(design.package_canonical_json(to_jsonb(p)),'UTF8')),'hex'),'revision',h.revision);
 END;
 $dispatch_profile$;
@@ -173,6 +174,7 @@ BEGIN
   'message',material_dispatch.envelope(e.id),'dispatch_method_digest',p.dispatch_method_digest::text,'native_sql_method_digest',material_dispatch.native_method_digest(),
   'recorded_by',session_user::text,'recorded_by_oid',(SELECT oid::bigint FROM pg_roles WHERE rolname=session_user),'recorded_at',to_char(at,'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
   'production_send_authorized',false,'formal_prediction_eligible',false,'automatic_model_retry',false);
+ IF p.mode='qualified_live' THEN result:=result||jsonb_build_object('version','material-dispatch-lease/2');END IF;
  checksum:=encode(sha256(convert_to(design.package_canonical_json(result),'UTF8')),'hex');
  INSERT INTO material_dispatch.leases VALUES(identifier,command,e.id,p.id,kind,session_user,(SELECT oid FROM pg_roles WHERE rolname=session_user),next_fence,token,result,checksum);
  INSERT INTO material_dispatch.states VALUES(kind,e.id,identifier,next_fence,until_at,'running') ON CONFLICT(purpose,event_id) DO UPDATE SET lease_id=excluded.lease_id,fence=excluded.fence,lease_until=excluded.lease_until,state='running';
@@ -225,7 +227,7 @@ BEGIN
  -- A terminal receipt survives profile expiry/revocation: a lost Kafka offset
  -- ACK must remain observation-only, without reopening admission or the wallet.
  SELECT l.* INTO completed FROM material_dispatch.leases l JOIN material_dispatch.states s ON s.lease_id=l.id
-  WHERE s.purpose='worker' AND s.event_id=target_event AND s.state IN('blocked','mechanism_completed','billing_unresolved')
+  WHERE s.purpose='worker' AND s.event_id=target_event AND s.state IN('blocked','mechanism_completed','qualified_completed','billing_unresolved')
    AND l.actor=session_user AND l.actor_oid=(SELECT oid FROM pg_roles WHERE rolname=session_user);
  IF FOUND THEN RETURN material_dispatch.observation(completed.id,false);END IF;
  SELECT j.* INTO job FROM material_judgment_job.jobs j JOIN material_judgment_job.outbox e ON e.job_id=j.id WHERE e.id=target_event;
@@ -277,6 +279,7 @@ BEGIN
   'store_command_id',storage.command_id::text,'packet_digest',sealed.document->>'storage_packet_digest','storage_record_digest',sealed.document->>'storage_record_digest',
   'financial_state',financial.state,'mode',p.mode,'production_send_authorized',false,
   'blockers',jsonb_build_array('LIVE_ACCOUNT_PRICE_UNCONFIRMED','MODEL_CONTEXT_FIT_UNPROVEN','VISUAL_READABILITY_UNVERIFIED','LIVE_SENDER_UNQUALIFIED'));
+ IF p.mode='qualified_live' THEN result:=result||jsonb_build_object('version','material-dispatch-owned-job/2','blockers','[]'::jsonb);END IF;
  RETURN result;
 END;
 $dispatch_owned_job$;
@@ -308,7 +311,8 @@ BEGIN
  prepared:=material_preparation.current_context(job.id,p.preparation_profile_id);
  source_current:=coalesce(prepared->'job_current'='true'::jsonb,false);
  state_name:=CASE WHEN financial.state IN('unknown','in_flight') THEN 'billing_unresolved'
-  WHEN p.mode='synthetic_mechanism' AND financial.state='completed' AND source_current THEN 'mechanism_completed' ELSE 'blocked' END;
+  WHEN p.mode='synthetic_mechanism' AND financial.state='completed' AND source_current THEN 'mechanism_completed'
+  WHEN p.mode='qualified_live' AND financial.state='completed' AND source_current THEN 'qualified_completed' ELSE 'blocked' END;
  -- Terminal transport state cancels only this profile's current preparation
  -- lease in the same locked transaction. An old worker paused after heartbeat
  -- cannot acquire a fresh slot grant after terminal commit. Already committed
@@ -324,6 +328,7 @@ BEGIN
   'production_send_authorized',false,'formal_prediction_eligible',false,'automatic_model_retry',false,
   'blockers',CASE WHEN p.mode='production_admission' THEN jsonb_build_array('LIVE_ACCOUNT_PRICE_UNCONFIRMED','MODEL_CONTEXT_FIT_UNPROVEN','VISUAL_READABILITY_UNVERIFIED','LIVE_SENDER_UNQUALIFIED') ELSE '[]'::jsonb END,
   'recorded_by',session_user::text,'recorded_by_oid',(SELECT oid::bigint FROM pg_roles WHERE rolname=session_user),'recorded_at',to_char(clock_timestamp(),'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'));
+ IF p.mode='qualified_live' THEN result:=result||jsonb_build_object('version','material-dispatch-result/2');END IF;
  checksum:=encode(sha256(convert_to(design.package_canonical_json(result),'UTF8')),'hex');
  INSERT INTO material_dispatch.results VALUES(l.event_id,l.id,result,checksum);
  UPDATE material_dispatch.states SET state=state_name WHERE purpose='worker' AND event_id=l.event_id;
