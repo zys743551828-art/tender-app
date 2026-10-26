@@ -17,6 +17,8 @@
 1. **FR-002 正式预测业务消费的入口核对与接线**：研究拟合/冻结/独立评价已有实现，但 `apps/api/review_views.py` 仍固定 prediction unavailable，`apps/api/scoring_routes.py` 固定 numeric_prediction_available=false，`registry_contracts.py` 固定 formal_eligibility unavailable，正式 `/executions` readiness 也始终拒绝。需核对既有正式模型准入协议与这些旧/新入口职责，连接合格模型到业务预测消费；不得把材料获批执行当模型准确性资格，不自行设定阈值。当前不能仅以“缺数据”声称这条正向代码路径已实现。本轮不扩展。
 
 
+逐项 FR-001–013 和正式预测准入的具体阻塞证据见 [FR 对照与协议缺口](fr-audit.md)。FR-002 还影响 FR-009/011 的真实业务预测配对与 FR-013 的正式分数隐藏展示；不是新增独立增强。
+
 交付核对（不是新增代码项）：文档主仓与实现范围仍须协调，完整用户流程仍须按既定需求核对，不凭当前模块测试声称整项目完成。
 
 ## 有明确支持边界的可选增强
