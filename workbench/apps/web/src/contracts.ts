@@ -13026,6 +13026,8 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/package-model-certification/models/{model_id}/certificates",
   "GET /api/v1/package-model-certification/certificates/{certificate_id}",
   "POST /api/v1/package-model-certification/certificates/{certificate_id}/revoke",
+  "POST /api/v1/bids/{bid_id}/technical-scopes/{scope_id}/formal-predictions",
+  "GET /api/v1/bids/{bid_id}/technical-scopes/{scope_id}/formal-predictions/{command_id}",
   "POST /api/v1/package-business-shadow/models/{model_id}/evidence-binding",
   "POST /api/v1/package-business-shadow/actions",
   "GET /api/v1/scoring-capabilities",

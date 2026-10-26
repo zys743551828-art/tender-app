@@ -28,6 +28,8 @@ def test_package_metrics_do_not_borrow_a_successful_legacy_current_review(monkey
     at = datetime(2026, 10, 21, tzinfo=timezone.utc)
 
     def execute(statement, _params=None):
+        if "package_prediction.submission_pair" in statement:
+            return SimpleNamespace(fetchone=lambda: {"ready": False})
         if "clock_timestamp()" in statement:
             return SimpleNamespace(fetchone=lambda: {"t": at})
         if "FROM submission_heads" in statement:
@@ -80,7 +82,9 @@ def test_no_package_prediction_binding_can_be_created_from_legacy_producer_rows(
         is None
     )
     pairs, excluded = predictions.eligible_pairs(
-        None, [package()], as_of=datetime.now(timezone.utc)
+        SimpleNamespace(execute=lambda *_: SimpleNamespace(fetchone=lambda: {"ready": False})),
+        [package()],
+        as_of=datetime.now(timezone.utc),
     )
     assert not pairs and excluded == {"package_prediction_producer_unavailable": 1}
 

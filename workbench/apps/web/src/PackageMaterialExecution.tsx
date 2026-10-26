@@ -1,3 +1,4 @@
+import { PackageFormalPrediction } from "./PackageFormalPrediction";
 import { MaterialQualificationReview } from "./MaterialQualificationReview";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
@@ -158,6 +159,11 @@ function Workspace({
   return (
     <section aria-label="完整材料执行申请">
       <h4>完整材料执行申请</h4>
+      <PackageFormalPrediction
+        bidId={s.bid_id}
+        scopeId={saved.manifest.id}
+        memberId={memberId}
+      />
       <MaterialQualificationReview
         base={base}
         scopeId={saved.manifest.id}
