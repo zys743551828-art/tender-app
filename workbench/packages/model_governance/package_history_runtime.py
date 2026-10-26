@@ -100,7 +100,7 @@ def ingest(*, scope_id, submission_id, outcome_id, adapter_id, envelope):
     }
 
 
-def run(purpose, job_id, generation, *, complete_material=None):
+def run(purpose, job_id, generation, *, complete_material=None, feature_training_method=None):
     """Recover CPU work through its owned lease; final exposure commits first."""
     from packages.model_governance import package_history_cpu as cpu
 
@@ -108,6 +108,10 @@ def run(purpose, job_id, generation, *, complete_material=None):
         raise GovernanceError("PACKAGE_HISTORY_PURPOSE_INVALID", "Explicit CPU purpose required")
     if complete_material is not None and purpose != "train":
         raise GovernanceError("PACKAGE_HISTORY_COMPLETE_PURPOSE_DENIED", "Training purpose only")
+    if feature_training_method is not None and complete_material is None:
+        raise GovernanceError(
+            "PACKAGE_HISTORY_COMPLETE_FEATURE_INPUT_REQUIRED", "Complete native input required"
+        )
     owner = uuid4()
     with connection(purpose) as c:
         lease = c.execute(
@@ -147,11 +151,16 @@ def run(purpose, job_id, generation, *, complete_material=None):
                 ).fetchone()["value"]
             from packages.model_governance import package_history_complete as complete
 
-            result = (
-                complete.run(bundle, complete_material)
-                if complete_material is not None
-                else cpu.train(complete.training_export(bundle))
-            )
+            if feature_training_method is not None:
+                from packages.model_governance import package_feature_training_io as feature_io
+
+                result = feature_io.native_run(bundle, complete_material, feature_training_method)
+            else:
+                result = (
+                    complete.run(bundle, complete_material)
+                    if complete_material is not None
+                    else cpu.train(complete.training_export(bundle))
+                )
         else:
             with connection(purpose) as c:
                 c.execute(
@@ -174,7 +183,7 @@ def run(purpose, job_id, generation, *, complete_material=None):
                 "SELECT package_historical_research.finish_job(%s,%s,%s,%s,%s,%s)",
                 (*lease_arguments, Jsonb(result), digest(result)),
             )
-        return {
+        receipt = {
             "job_id": str(job_id),
             "state": "succeeded",
             "result_digest": digest(result),
@@ -183,6 +192,9 @@ def run(purpose, job_id, generation, *, complete_material=None):
             "provider_requests": 0,
             "paid_calls": 0,
         }
+        if feature_training_method is not None:
+            receipt["feature_candidate_status"] = result["complete_feature_training"]["status"]
+        return receipt
     finally:
         stopped.set()
         heartbeat.join(timeout=10)

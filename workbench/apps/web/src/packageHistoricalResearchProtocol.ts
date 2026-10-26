@@ -551,6 +551,54 @@ async function resultDocument(value: HistoryResult) {
           unique(rows.map((r) => r.input_digest)),
       );
     }
+    const candidate = value.complete_feature_training;
+    if (candidate) {
+      check(
+        !!value.complete_material_consumer &&
+          candidate.source_digest ===
+            value.complete_material_consumer?.reference_digest &&
+          candidate.origin === value.origin &&
+          candidate.membership_digest === value.membership_digest,
+      );
+      check(
+        candidate.groups.fit +
+          candidate.groups.development +
+          candidate.groups.calibration <=
+          (value.complete_material_consumer?.receipts.length ?? 0),
+      );
+      if (candidate.status === "research_candidate") {
+        check(
+          candidate.groups.fit >= 3 &&
+            candidate.groups.development >= 2 &&
+            candidate.groups.calibration >= 9,
+        );
+        check(
+          (await jsonDigest(candidate.model)) === candidate.model_digest &&
+            candidate.model.method_digest === candidate.method_digest &&
+            candidate.model.alpha === candidate.selection.selected_alpha,
+        );
+        candidate.model.means.forEach((v) => number(v, 0, 1));
+        candidate.model.scales.forEach((v) => number(v, 1e-12, 1));
+        candidate.model.coefficients.forEach((v) => number(v, -1e9, 1e9));
+        number(candidate.model.intercept, 0, 100);
+        const alphas = ["10", "1", "0.1"] as const;
+        const losses = candidate.selection.development_project_mae;
+        alphas.forEach((a) => number(losses[a], 0, 100));
+        const selected = alphas.reduce((best, a) =>
+          Number(losses[a]) < Number(losses[best]) ? a : best,
+        );
+        check(selected === candidate.selection.selected_alpha);
+        for (const [level, interval] of Object.entries(candidate.intervals)) {
+          check(
+            interval.groups === candidate.groups.calibration &&
+              interval.rank ===
+                Math.ceil((interval.groups + 1) * Number(level)) &&
+              interval.rank <= interval.groups,
+          );
+          number(interval.radius, 0, 100);
+        }
+      }
+    }
     check((await jsonDigest(value.model)) === value.model_digest);
     check(
       value.model.training_export_digest === value.training_export_digest &&
@@ -641,6 +689,22 @@ export async function validateHistoryJob(
               ),
             ),
         );
+      }
+      if (
+        value.result.schema === "package-history-training-result/1" &&
+        value.result.complete_feature_training
+      ) {
+        const candidate = value.result.complete_feature_training;
+        for (const purpose of ["fit", "development", "calibration"] as const) {
+          check(
+            candidate.groups[purpose] ===
+              new Set(
+                expectedCohort.members
+                  .filter((m) => m.purpose === purpose)
+                  .map((m) => m.group_id),
+              ).size,
+          );
+        }
       }
       if (value.result.schema === "package-history-independent-evaluation/1") {
         check(historySame(value.result.timing, expectedCohort.timing));

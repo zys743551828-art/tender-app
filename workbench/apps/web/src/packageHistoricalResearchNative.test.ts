@@ -676,3 +676,139 @@ it.each(["valid", "duplicate", "missing", "proof", "qualification", "extra"])(
     else await expect(check).rejects.toThrow();
   },
 );
+
+async function featureCandidateResult(available: boolean) {
+  const value = completeConsumerResult();
+  if (value.result?.schema !== "package-history-training-result/1")
+    throw new Error();
+  const base = {
+    version: "package-complete-feature-training/1" as const,
+    feature_schema: "package-complete-numeric-features/1" as const,
+    feature_names: [
+      "declared_band_fraction",
+      "modal_agreement",
+      "specificity_supported",
+      "validity_supported",
+      "consistency_supported",
+      "uncertain_fraction",
+    ] as [
+      "declared_band_fraction",
+      "modal_agreement",
+      "specificity_supported",
+      "validity_supported",
+      "consistency_supported",
+      "uncertain_fraction",
+    ],
+    origin: value.result.origin,
+    method_digest: "a".repeat(64),
+    membership_digest: value.result.membership_digest,
+    projection_digest: "d".repeat(64),
+    source_digest: value.result.complete_material_consumer!.reference_digest,
+    formal_prediction: null,
+    final_test_consumption: "not_implemented" as const,
+    native_binding_verified: false as const,
+    current_native_facts_rechecked: false as const,
+    input_authority_granted: false as const,
+    execution_authorized: false as const,
+    training_eligible: false as const,
+    metrics_eligible: false as const,
+    formal_prediction_eligible: false as const,
+  };
+  if (available) {
+    const receipt = value.result.complete_material_consumer!.receipts[0];
+    value.result.complete_material_consumer!.receipts = Array.from(
+      { length: 14 },
+      (_, i) => ({
+        ...receipt,
+        admission_id: `00000000-0000-0000-0000-${String(i + 1).padStart(12, "0")}`,
+        input_digest: (i + 1).toString(16).repeat(64),
+      }),
+    );
+    const model = {
+      version: "package-complete-ridge-model/1" as const,
+      feature_schema: base.feature_schema,
+      method_digest: base.method_digest,
+      alpha: "10" as const,
+      means: Array(6).fill("0.5") as string[],
+      scales: Array(6).fill("1") as string[],
+      coefficients: Array(6).fill("1") as string[],
+      intercept: "50",
+      training_digest: "e".repeat(64),
+    };
+    value.result.complete_feature_training = {
+      ...base,
+      status: "research_candidate",
+      unavailable_reasons: [],
+      groups: { fit: 3, development: 2, calibration: 9 },
+      model,
+      model_digest: await jsonDigest(model),
+      selection: {
+        selected_alpha: "10",
+        development_project_mae: { "10": "5", "1": "6", "0.1": "7" },
+        refit_with_development: false,
+      },
+      intervals: {
+        "0.8": { radius: "10", groups: 9, rank: 8 },
+        "0.9": { radius: "10", groups: 9, rank: 9 },
+      },
+      features_used_for_fit: true,
+    };
+  } else {
+    value.result.complete_feature_training = {
+      ...base,
+      status: "unavailable",
+      unavailable_reasons: ["insufficient_calibration_groups"],
+      groups: { fit: 2, development: 1, calibration: 0 },
+      model: null,
+      model_digest: null,
+      selection: null,
+      intervals: null,
+      features_used_for_fit: false,
+    };
+  }
+  return value;
+}
+
+it.each([
+  "available",
+  "unavailable",
+  "source",
+  "model",
+  "scale",
+  "selection",
+  "interval",
+  "formal",
+  "final",
+  "groups",
+])("validates versioned synthetic feature candidate: %s", async (attack) => {
+  const value = await featureCandidateResult(attack !== "unavailable");
+  if (value.result?.schema !== "package-history-training-result/1")
+    throw new Error();
+  const candidate = value.result.complete_feature_training!;
+  if (attack === "source") candidate.source_digest = "f".repeat(64);
+  if (attack === "formal")
+    Object.assign(candidate, { formal_prediction_eligible: true });
+  if (attack === "final")
+    Object.assign(candidate, { final_test_consumption: "validated" });
+  if (attack === "groups") candidate.groups.fit = 100;
+  if (candidate.status === "research_candidate") {
+    if (attack === "model") candidate.model_digest = "f".repeat(64);
+    if (attack === "scale") {
+      candidate.model.scales[0] = "0";
+      candidate.model_digest = await jsonDigest(candidate.model);
+    }
+    if (attack === "selection")
+      candidate.selection.development_project_mae["1"] = "0";
+    if (attack === "interval") candidate.intervals["0.9"].rank = 8;
+  }
+  value.result_digest = await jsonDigest(value.result);
+  const checked = validateHistoryJob(
+    value,
+    value.job_id,
+    await historyEtag("job-view", value.job_id, value),
+    attack === "unavailable" ? cohort : undefined,
+  );
+  if (["available", "unavailable"].includes(attack))
+    expect((await checked).result).toEqual(value.result);
+  else await expect(checked).rejects.toThrow();
+});

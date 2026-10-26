@@ -397,12 +397,49 @@ export function HistoryJobResult({
       </p>
       {result.schema === "package-history-training-result/1" ? (
         <>
+          {result.complete_feature_training && (
+            <section aria-label="特征研究候选">
+              <h4>完整材料六特征岭回归候选</h4>
+              <p className="notice warning">
+                候选最终测试消费尚未接通，不代表正式预测或真实效果通过。
+              </p>
+              <p>
+                拟合组 {result.complete_feature_training.groups.fit}；开发组{" "}
+                {result.complete_feature_training.groups.development}；校准组{" "}
+                {result.complete_feature_training.groups.calibration}。
+              </p>
+              {result.complete_feature_training.status ===
+              "research_candidate" ? (
+                <p>
+                  特征已参与候选拟合。开发集选定正则化参数 α：
+                  {result.complete_feature_training.selection.selected_alpha}
+                  。预处理仅使用拟合集，未用开发集重新拟合。
+                </p>
+              ) : (
+                <p>
+                  候选不可用：缺少足够独立组、有效数值档位或可变化的拟合特征。未生成候选模型或区间。
+                </p>
+              )}
+              <HistoryIdentity
+                values={{
+                  候选方法版本: result.complete_feature_training.version,
+                  候选方法摘要: result.complete_feature_training.method_digest,
+                  特征投影摘要:
+                    result.complete_feature_training.projection_digest,
+                }}
+              />
+            </section>
+          )}
           <h4>CPU 基线训练结果</h4>
           {result.complete_material_consumer && (
             <>
               <p className="notice warning">
                 已核对 {result.complete_material_consumer.receipts.length}{" "}
-                份完整材料。当前仍为常数基线，材料特征未参与拟合，不具备正式评分资格。
+                份完整材料。
+                {result.complete_feature_training?.status ===
+                "research_candidate"
+                  ? "以下常数基线仍按原方法；另存的特征候选未取得正式评分资格。"
+                  : "当前仍为常数基线，材料特征未参与拟合，不具备正式评分资格。"}
               </p>
               <HistoryIdentity
                 values={{
@@ -456,6 +493,9 @@ export function HistoryJobResult({
       ) : (
         <>
           <h4>独立最终评估记录</h4>
+          <p className="small-note">
+            此评估使用已冻结的常数基线，不评价特征研究候选。
+          </p>
           <p>
             原选择 {result.selection_denominator.selected_submissions} 份；排除{" "}
             {result.selection_denominator.excluded_submissions}{" "}

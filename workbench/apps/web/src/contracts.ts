@@ -460,6 +460,120 @@ export type PackageHistoricalJobView = {
               metrics_eligible: false;
               formal_prediction_eligible: false;
             };
+            complete_feature_training?:
+              | {
+                  version: "package-complete-feature-training/1";
+                  feature_schema: "package-complete-numeric-features/1";
+                  feature_names: [
+                    "declared_band_fraction",
+                    "modal_agreement",
+                    "specificity_supported",
+                    "validity_supported",
+                    "consistency_supported",
+                    "uncertain_fraction",
+                  ];
+                  origin: "synthetic" | "external_evidence";
+                  method_digest: string;
+                  membership_digest: string;
+                  projection_digest: string;
+                  source_digest: string;
+                  groups: {
+                    fit: number;
+                    development: number;
+                    calibration: number;
+                  };
+                  formal_prediction: null;
+                  final_test_consumption: "not_implemented";
+                  native_binding_verified: false;
+                  current_native_facts_rechecked: false;
+                  input_authority_granted: false;
+                  execution_authorized: false;
+                  training_eligible: false;
+                  metrics_eligible: false;
+                  formal_prediction_eligible: false;
+                  status: "research_candidate";
+                  unavailable_reasons: [];
+                  model: {
+                    version: "package-complete-ridge-model/1";
+                    feature_schema: "package-complete-numeric-features/1";
+                    method_digest: string;
+                    alpha: "10" | "1" | "0.1";
+                    means: string[];
+                    scales: string[];
+                    coefficients: string[];
+                    intercept: string;
+                    training_digest: string;
+                  };
+                  model_digest: string;
+                  features_used_for_fit: true;
+                  selection: {
+                    selected_alpha: "10" | "1" | "0.1";
+                    development_project_mae: {
+                      "10": string;
+                      "1": string;
+                      "0.1": string;
+                    };
+                    refit_with_development: false;
+                  };
+                  intervals: {
+                    "0.8": {
+                      radius: string;
+                      groups: number;
+                      rank: number;
+                    };
+                    "0.9": {
+                      radius: string;
+                      groups: number;
+                      rank: number;
+                    };
+                  };
+                }
+              | {
+                  version: "package-complete-feature-training/1";
+                  feature_schema: "package-complete-numeric-features/1";
+                  feature_names: [
+                    "declared_band_fraction",
+                    "modal_agreement",
+                    "specificity_supported",
+                    "validity_supported",
+                    "consistency_supported",
+                    "uncertain_fraction",
+                  ];
+                  origin: "synthetic" | "external_evidence";
+                  method_digest: string;
+                  membership_digest: string;
+                  projection_digest: string;
+                  source_digest: string;
+                  groups: {
+                    fit: number;
+                    development: number;
+                    calibration: number;
+                  };
+                  formal_prediction: null;
+                  final_test_consumption: "not_implemented";
+                  native_binding_verified: false;
+                  current_native_facts_rechecked: false;
+                  input_authority_granted: false;
+                  execution_authorized: false;
+                  training_eligible: false;
+                  metrics_eligible: false;
+                  formal_prediction_eligible: false;
+                  status: "unavailable";
+                  unavailable_reasons: (
+                    | "declared_numeric_band_scale_required"
+                    | "distinct_declared_numeric_bands_required"
+                    | "included_rules_required"
+                    | "insufficient_fit_groups"
+                    | "insufficient_development_groups"
+                    | "insufficient_calibration_groups"
+                    | "fit_features_have_no_variation"
+                  )[];
+                  model: null;
+                  model_digest: null;
+                  selection: null;
+                  intervals: null;
+                  features_used_for_fit: false;
+                };
           }
         | {
             schema: "package-history-independent-evaluation/1";

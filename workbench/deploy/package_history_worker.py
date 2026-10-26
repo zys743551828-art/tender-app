@@ -51,6 +51,7 @@ def arguments():
         choices=tuple(VARIABLES)
         + (
             "native-feature-method",
+            "feature-training-method",
             "feature-method",
             "feature-freeze",
             "feature-read",
@@ -95,6 +96,7 @@ def arguments():
     parser.add_argument("--complete-artifact-dir", type=Path)
     parser.add_argument("--expected-complete-reference-digest")
     parser.add_argument("--expected-complete-method-digest")
+    parser.add_argument("--expected-feature-training-method-digest")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
     feature_arguments = (
@@ -131,7 +133,12 @@ def arguments():
             parser.error(
                 "complete native inputs require one training job and all frozen references"
             )
-    if args.purpose == "native-feature-method":
+    if args.expected_feature_training_method_digest is not None and not (
+        (args.purpose == "train" and all(native_complete))
+        or args.purpose in {"complete-calibration-freeze", "complete-calibration-read"}
+    ):
+        parser.error("feature training requires complete native train or local calibration inputs")
+    if args.purpose in {"native-feature-method", "feature-training-method"}:
         if (
             any(v is not None for v in feature_arguments + calibration_args + native_complete)
             or any(evidence)
@@ -261,9 +268,10 @@ def arguments():
 
 def main():
     parser, args = arguments()
-    if args.purpose == "native-feature-method" or args.purpose.startswith(
-        ("feature-", "complete-feature-", "complete-calibration-")
-    ):
+    if args.purpose in {
+        "native-feature-method",
+        "feature-training-method",
+    } or args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run
 
@@ -300,6 +308,7 @@ def main():
             "complete_artifact_dir",
             "expected_complete_reference_digest",
             "expected_complete_method_digest",
+            "expected_feature_training_method_digest",
         ):
             value = getattr(args, field)
             if value is not None:
@@ -346,6 +355,7 @@ def main():
                     args.purpose,
                     args.job_id,
                     args.generation,
+                    feature_training_method=args.expected_feature_training_method_digest,
                     complete_material={
                         "references": args.complete_references,
                         "material_store": args.complete_material_store,

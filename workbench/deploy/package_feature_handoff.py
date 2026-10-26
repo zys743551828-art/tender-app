@@ -21,6 +21,7 @@ def run(args):
             args.purpose,
         ]
         for field in (
+            "expected_feature_training_method_digest",
             "selection",
             "labels",
             "result_dir",
@@ -57,7 +58,11 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose == "native-feature-method":
+        if args.purpose == "feature-training-method":
+            from packages.model_governance import package_feature_training as training
+
+            value = training.method() | {"provider_requests": 0, "paid_calls": 0}
+        elif args.purpose == "native-feature-method":
             from packages.model_governance import package_history_complete as complete
 
             value = {

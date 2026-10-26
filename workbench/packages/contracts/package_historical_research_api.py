@@ -322,6 +322,107 @@ COMPLETE_MATERIAL_CONSUMER = object_schema(
 # Closed keys and unavailable eligibility are preserved for the new receipt too.
 TRAINING_RESULT["properties"]["complete_material_consumer"] = COMPLETE_MATERIAL_CONSUMER
 
+FEATURE_NAMES = [
+    "declared_band_fraction",
+    "modal_agreement",
+    "specificity_supported",
+    "validity_supported",
+    "consistency_supported",
+    "uncertain_fraction",
+]
+FEATURE_RIDGE_MODEL = object_schema(
+    {
+        "version": {"const": "package-complete-ridge-model/1"},
+        "feature_schema": {"const": "package-complete-numeric-features/1"},
+        "method_digest": SHA,
+        "alpha": {"enum": ["10", "1", "0.1"]},
+        "means": array(NUMBER, minItems=6, maxItems=6),
+        "scales": array(NUMBER, minItems=6, maxItems=6),
+        "coefficients": array(SIGNED_NUMBER, minItems=6, maxItems=6),
+        "intercept": NUMBER,
+        "training_digest": SHA,
+    }
+)
+FEATURE_TRAINING_COMMON = {
+    "version": {"const": "package-complete-feature-training/1"},
+    "feature_schema": {"const": "package-complete-numeric-features/1"},
+    "feature_names": {"const": FEATURE_NAMES},
+    "origin": ORIGIN,
+    **dict.fromkeys(
+        ["method_digest", "membership_digest", "projection_digest", "source_digest"], SHA
+    ),
+    "groups": object_schema(dict.fromkeys(["fit", "development", "calibration"], COUNT)),
+    "formal_prediction": NULL,
+    "final_test_consumption": {"const": "not_implemented"},
+    **dict.fromkeys(
+        [
+            "native_binding_verified",
+            "current_native_facts_rechecked",
+            "input_authority_granted",
+            "execution_authorized",
+            "training_eligible",
+            "metrics_eligible",
+            "formal_prediction_eligible",
+        ],
+        {"const": False},
+    ),
+}
+FEATURE_TRAINING_RESULT = {
+    "oneOf": [
+        object_schema(
+            FEATURE_TRAINING_COMMON
+            | {
+                "status": {"const": "research_candidate"},
+                "unavailable_reasons": array({"type": "string"}, maxItems=0),
+                "model": FEATURE_RIDGE_MODEL,
+                "model_digest": SHA,
+                "features_used_for_fit": {"const": True},
+                "selection": object_schema(
+                    {
+                        "selected_alpha": {"enum": ["10", "1", "0.1"]},
+                        "development_project_mae": object_schema(
+                            dict.fromkeys(["10", "1", "0.1"], NUMBER)
+                        ),
+                        "refit_with_development": {"const": False},
+                    }
+                ),
+                "intervals": object_schema(
+                    {
+                        level: object_schema({"radius": NUMBER, "groups": COUNT, "rank": COUNT})
+                        for level in ("0.8", "0.9")
+                    }
+                ),
+            }
+        ),
+        object_schema(
+            FEATURE_TRAINING_COMMON
+            | {
+                "status": {"const": "unavailable"},
+                "unavailable_reasons": array(
+                    {
+                        "enum": [
+                            "declared_numeric_band_scale_required",
+                            "distinct_declared_numeric_bands_required",
+                            "included_rules_required",
+                            "insufficient_fit_groups",
+                            "insufficient_development_groups",
+                            "insufficient_calibration_groups",
+                            "fit_features_have_no_variation",
+                        ]
+                    },
+                    minItems=1,
+                ),
+                "model": NULL,
+                "model_digest": NULL,
+                "selection": NULL,
+                "intervals": NULL,
+                "features_used_for_fit": {"const": False},
+            }
+        ),
+    ]
+}
+TRAINING_RESULT["properties"]["complete_feature_training"] = FEATURE_TRAINING_RESULT
+
 INTERVAL_REPORT = {
     "oneOf": [
         object_schema({"coverage": NUMBER, "width": NUMBER}),

@@ -1521,6 +1521,434 @@ export const historySchemas: Record<string, unknown> = {
                       "formal_prediction_eligible",
                     ],
                   },
+                  complete_feature_training: {
+                    oneOf: [
+                      {
+                        type: "object",
+                        additionalProperties: false,
+                        properties: {
+                          version: {
+                            const: "package-complete-feature-training/1",
+                          },
+                          feature_schema: {
+                            const: "package-complete-numeric-features/1",
+                          },
+                          feature_names: {
+                            const: [
+                              "declared_band_fraction",
+                              "modal_agreement",
+                              "specificity_supported",
+                              "validity_supported",
+                              "consistency_supported",
+                              "uncertain_fraction",
+                            ],
+                          },
+                          origin: {
+                            enum: ["synthetic", "external_evidence"],
+                          },
+                          method_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          membership_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          projection_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          source_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          groups: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              fit: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              development: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              calibration: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                            },
+                            required: ["fit", "development", "calibration"],
+                          },
+                          formal_prediction: {
+                            type: "null",
+                          },
+                          final_test_consumption: {
+                            const: "not_implemented",
+                          },
+                          native_binding_verified: {
+                            const: false,
+                          },
+                          current_native_facts_rechecked: {
+                            const: false,
+                          },
+                          input_authority_granted: {
+                            const: false,
+                          },
+                          execution_authorized: {
+                            const: false,
+                          },
+                          training_eligible: {
+                            const: false,
+                          },
+                          metrics_eligible: {
+                            const: false,
+                          },
+                          formal_prediction_eligible: {
+                            const: false,
+                          },
+                          status: {
+                            const: "research_candidate",
+                          },
+                          unavailable_reasons: {
+                            type: "array",
+                            items: {
+                              type: "string",
+                            },
+                            maxItems: 0,
+                          },
+                          model: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              version: {
+                                const: "package-complete-ridge-model/1",
+                              },
+                              feature_schema: {
+                                const: "package-complete-numeric-features/1",
+                              },
+                              method_digest: {
+                                type: "string",
+                                pattern: "^[a-f0-9]{64}$",
+                              },
+                              alpha: {
+                                enum: ["10", "1", "0.1"],
+                              },
+                              means: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                },
+                                minItems: 6,
+                                maxItems: 6,
+                              },
+                              scales: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                },
+                                minItems: 6,
+                                maxItems: 6,
+                              },
+                              coefficients: {
+                                type: "array",
+                                items: {
+                                  type: "string",
+                                  pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                },
+                                minItems: 6,
+                                maxItems: 6,
+                              },
+                              intercept: {
+                                type: "string",
+                                pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                              },
+                              training_digest: {
+                                type: "string",
+                                pattern: "^[a-f0-9]{64}$",
+                              },
+                            },
+                            required: [
+                              "version",
+                              "feature_schema",
+                              "method_digest",
+                              "alpha",
+                              "means",
+                              "scales",
+                              "coefficients",
+                              "intercept",
+                              "training_digest",
+                            ],
+                          },
+                          model_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          features_used_for_fit: {
+                            const: true,
+                          },
+                          selection: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              selected_alpha: {
+                                enum: ["10", "1", "0.1"],
+                              },
+                              development_project_mae: {
+                                type: "object",
+                                additionalProperties: false,
+                                properties: {
+                                  "10": {
+                                    type: "string",
+                                    pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                  },
+                                  "1": {
+                                    type: "string",
+                                    pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                  },
+                                  "0.1": {
+                                    type: "string",
+                                    pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                  },
+                                },
+                                required: ["10", "1", "0.1"],
+                              },
+                              refit_with_development: {
+                                const: false,
+                              },
+                            },
+                            required: [
+                              "selected_alpha",
+                              "development_project_mae",
+                              "refit_with_development",
+                            ],
+                          },
+                          intervals: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              "0.8": {
+                                type: "object",
+                                additionalProperties: false,
+                                properties: {
+                                  radius: {
+                                    type: "string",
+                                    pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                  },
+                                  groups: {
+                                    type: "integer",
+                                    minimum: 0,
+                                  },
+                                  rank: {
+                                    type: "integer",
+                                    minimum: 0,
+                                  },
+                                },
+                                required: ["radius", "groups", "rank"],
+                              },
+                              "0.9": {
+                                type: "object",
+                                additionalProperties: false,
+                                properties: {
+                                  radius: {
+                                    type: "string",
+                                    pattern: "^(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+                                  },
+                                  groups: {
+                                    type: "integer",
+                                    minimum: 0,
+                                  },
+                                  rank: {
+                                    type: "integer",
+                                    minimum: 0,
+                                  },
+                                },
+                                required: ["radius", "groups", "rank"],
+                              },
+                            },
+                            required: ["0.8", "0.9"],
+                          },
+                        },
+                        required: [
+                          "version",
+                          "feature_schema",
+                          "feature_names",
+                          "origin",
+                          "method_digest",
+                          "membership_digest",
+                          "projection_digest",
+                          "source_digest",
+                          "groups",
+                          "formal_prediction",
+                          "final_test_consumption",
+                          "native_binding_verified",
+                          "current_native_facts_rechecked",
+                          "input_authority_granted",
+                          "execution_authorized",
+                          "training_eligible",
+                          "metrics_eligible",
+                          "formal_prediction_eligible",
+                          "status",
+                          "unavailable_reasons",
+                          "model",
+                          "model_digest",
+                          "features_used_for_fit",
+                          "selection",
+                          "intervals",
+                        ],
+                      },
+                      {
+                        type: "object",
+                        additionalProperties: false,
+                        properties: {
+                          version: {
+                            const: "package-complete-feature-training/1",
+                          },
+                          feature_schema: {
+                            const: "package-complete-numeric-features/1",
+                          },
+                          feature_names: {
+                            const: [
+                              "declared_band_fraction",
+                              "modal_agreement",
+                              "specificity_supported",
+                              "validity_supported",
+                              "consistency_supported",
+                              "uncertain_fraction",
+                            ],
+                          },
+                          origin: {
+                            enum: ["synthetic", "external_evidence"],
+                          },
+                          method_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          membership_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          projection_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          source_digest: {
+                            type: "string",
+                            pattern: "^[a-f0-9]{64}$",
+                          },
+                          groups: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              fit: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              development: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                              calibration: {
+                                type: "integer",
+                                minimum: 0,
+                              },
+                            },
+                            required: ["fit", "development", "calibration"],
+                          },
+                          formal_prediction: {
+                            type: "null",
+                          },
+                          final_test_consumption: {
+                            const: "not_implemented",
+                          },
+                          native_binding_verified: {
+                            const: false,
+                          },
+                          current_native_facts_rechecked: {
+                            const: false,
+                          },
+                          input_authority_granted: {
+                            const: false,
+                          },
+                          execution_authorized: {
+                            const: false,
+                          },
+                          training_eligible: {
+                            const: false,
+                          },
+                          metrics_eligible: {
+                            const: false,
+                          },
+                          formal_prediction_eligible: {
+                            const: false,
+                          },
+                          status: {
+                            const: "unavailable",
+                          },
+                          unavailable_reasons: {
+                            type: "array",
+                            items: {
+                              enum: [
+                                "declared_numeric_band_scale_required",
+                                "distinct_declared_numeric_bands_required",
+                                "included_rules_required",
+                                "insufficient_fit_groups",
+                                "insufficient_development_groups",
+                                "insufficient_calibration_groups",
+                                "fit_features_have_no_variation",
+                              ],
+                            },
+                            minItems: 1,
+                          },
+                          model: {
+                            type: "null",
+                          },
+                          model_digest: {
+                            type: "null",
+                          },
+                          selection: {
+                            type: "null",
+                          },
+                          intervals: {
+                            type: "null",
+                          },
+                          features_used_for_fit: {
+                            const: false,
+                          },
+                        },
+                        required: [
+                          "version",
+                          "feature_schema",
+                          "feature_names",
+                          "origin",
+                          "method_digest",
+                          "membership_digest",
+                          "projection_digest",
+                          "source_digest",
+                          "groups",
+                          "formal_prediction",
+                          "final_test_consumption",
+                          "native_binding_verified",
+                          "current_native_facts_rechecked",
+                          "input_authority_granted",
+                          "execution_authorized",
+                          "training_eligible",
+                          "metrics_eligible",
+                          "formal_prediction_eligible",
+                          "status",
+                          "unavailable_reasons",
+                          "model",
+                          "model_digest",
+                          "selection",
+                          "intervals",
+                          "features_used_for_fit",
+                        ],
+                      },
+                    ],
+                  },
                 },
                 required: [
                   "schema",
