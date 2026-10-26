@@ -186,6 +186,10 @@ def test_init_volume_with_nonroot_owner_is_rejected_without_repair(
 ):
     directory = tmp_path / "nonroot-state"
     directory.mkdir(mode=0o755)
+    # mkdir's requested mode is masked by the runner's umask (often 0077).
+    # Start with the exact nonprivate fixture mode so an illicit chmod(0700)
+    # during rejection remains observable on both local and CI runners.
+    directory.chmod(0o755)
     if initialized:
         (directory / "already-initialized").write_text("synthetic")
     directory_owner(monkeypatch, directory, 1001)
