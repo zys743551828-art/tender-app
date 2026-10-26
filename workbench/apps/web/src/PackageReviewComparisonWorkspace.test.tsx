@@ -186,3 +186,120 @@ it("stops paging after a changed human snapshot invalidates the cursor, keeping 
     ).not.toBeInTheDocument(),
   );
 });
+
+it("bulk reads and exports all verified rows while viewing the first page", async () => {
+  f = await packageReviewComparisonFixture(43);
+  fetchMock.mockImplementation(async (url: string) => {
+    const cursor = new URL(url, "https://example.test").searchParams.get(
+      "cursor",
+    );
+    return json(f.page(cursor ? Number(cursor.replace("synthetic-", "")) : 0));
+  });
+  const create = vi.fn<(blob: Blob) => string>(() => "blob:comparison-test");
+  const revoke = vi.fn();
+  vi.stubGlobal(
+    "URL",
+    class extends URL {
+      static createObjectURL = create;
+      static revokeObjectURL = revoke;
+    },
+  );
+  const click = vi
+    .spyOn(HTMLAnchorElement.prototype, "click")
+    .mockImplementation(() => {});
+  render(<Workspace {...props()} />);
+  await load();
+  const download = screen.getByRole("button", { name: "导出完整对比 JSON" });
+  expect(download).toBeDisabled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取全部剩余对比" }),
+  );
+  await waitFor(() => expect(download).toBeEnabled());
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  await userEvent.click(screen.getByRole("button", { name: "上一页对比" }));
+  await userEvent.click(screen.getByRole("button", { name: "上一页对比" }));
+  expect(screen.getAllByRole("article")).toHaveLength(20);
+  await userEvent.click(download);
+  const contents = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsText(create.mock.calls[0][0]);
+  });
+  const exported = JSON.parse(contents);
+  expect(exported.export_version).toBe("package-review-comparison-export/1");
+  expect(exported.comparison.items).toEqual([
+    ...f.page().items,
+    ...f.page(20).items,
+    ...f.page(40).items,
+  ]);
+  expect(exported.comparison.comparison_digest).toBe(
+    f.page().comparison_digest,
+  );
+  expect(exported.comparison).not.toHaveProperty("next_cursor");
+  expect(exported.notice).toContain("不判定风险已经解决");
+  expect(
+    (click.mock.instances[0] as unknown as HTMLAnchorElement).download,
+  ).toBe(
+    `package-review-comparison-${f.request.leftId}-${f.request.rightId}.json`,
+  );
+  await waitFor(() =>
+    expect(revoke).toHaveBeenCalledWith("blob:comparison-test"),
+  );
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+});
+it("blocks export and stops bulk reading when a continuation repeats rows", async () => {
+  render(<Workspace {...props()} />);
+  await load();
+  fetchMock.mockImplementationOnce(async () => json(f.page()));
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取全部剩余对比" }),
+  );
+  await screen.findByText(/此次对比不能继续翻页/);
+  expect(
+    screen.getByRole("button", { name: "导出完整对比 JSON" }),
+  ).toBeDisabled();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+it("discards pending bulk continuation when selected runs change", async () => {
+  render(<Workspace {...props()} />);
+  await load();
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取全部剩余对比" }),
+  );
+  await userEvent.click(screen.getByRole("button", { name: "交换左右两侧" }));
+  await act(async () => finish(json(f.page(20))));
+  expect(
+    screen.queryByRole("button", { name: "导出完整对比 JSON" }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryAllByRole("article")).toHaveLength(0);
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it("never enables export when the complete snapshot digest is forged", async () => {
+  fetchMock.mockImplementation(async (url: string) => {
+    const cursor = new URL(url, "https://example.test").searchParams.get(
+      "cursor",
+    );
+    return json({
+      ...f.page(cursor ? 20 : 0),
+      comparison_digest: "0".repeat(64),
+    });
+  });
+  render(<Workspace {...props()} />);
+  await load();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取全部剩余对比" }),
+  );
+  await screen.findByText(/此次对比不能继续翻页/);
+  expect(
+    screen.getByRole("button", { name: "导出完整对比 JSON" }),
+  ).toBeDisabled();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});

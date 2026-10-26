@@ -7,6 +7,7 @@ import type {
   PackageReviewRunView,
 } from "./contracts";
 import {
+  packageReviewComparisonHeader,
   packageReviewComparisonPath,
   packageReviewComparisonTotal,
   validateCompletePackageReviewComparison,
@@ -102,7 +103,7 @@ function ComparisonWorkspace({ memberId, bidId, currentRun }: Props) {
       );
     }
   }
-  async function read(first = true) {
+  async function read(first = true, all = false) {
     if (
       !active.current ||
       busy.current ||
@@ -110,9 +111,8 @@ function ComparisonWorkspace({ memberId, bidId, currentRun }: Props) {
     )
       return;
     const baseline = first ? undefined : pagesRef.current[0],
-      last = pagesRef.current.at(-1),
-      cursor = first ? null : last?.next_cursor;
-    if (!first && (!cursor || stale)) return;
+      initialCursor = first ? null : pagesRef.current.at(-1)?.next_cursor;
+    if (!first && (!initialCursor || stale)) return;
     if (first) reset();
     const request = ++ticket.current,
       query = { bidId, leftId: selection.leftId, rightId: selection.rightId };
@@ -120,48 +120,55 @@ function ComparisonWorkspace({ memberId, bidId, currentRun }: Props) {
     setReading(true);
     setError(null);
     try {
-      const { data } = await api<unknown>(
-        packageReviewComparisonPath(query, cursor),
-      );
-      const received = await validatePackageReviewComparisonPage(
-        data,
-        query,
-        20,
-        baseline,
-      );
-      if (!active.current || request !== ticket.current) return;
-      const collected = new Map(first ? [] : seenRows.current);
-      if (
-        !first &&
-        (received.items.some((row) => collected.has(row.requirement_id)) ||
-          (last &&
-            received.items[0].requirement_id <=
-              last.items[last.items.length - 1].requirement_id) ||
-          (received.next_cursor !== null &&
-            (received.next_cursor === cursor ||
-              seenCursors.current.has(received.next_cursor))))
-      )
-        throw new Error("对比页发生重复或顺序变化，请重新读取这两轮对比。");
-      received.items.forEach((row) => collected.set(row.requirement_id, row));
-      const total = packageReviewComparisonTotal(received);
-      if (
-        collected.size > total ||
-        (received.has_more && collected.size >= total)
-      )
-        throw new Error("对比条数或续页标记不一致，请重新读取。");
-      if (!received.has_more)
-        await validateCompletePackageReviewComparison(received, [
-          ...collected.values(),
-        ]);
-      if (!active.current || request !== ticket.current) return;
-      seenRows.current = collected;
-      if (received.next_cursor) seenCursors.current.add(received.next_cursor);
-      const updated = first ? [received] : [...pagesRef.current, received];
-      pagesRef.current = updated;
-      setPages(updated);
-      setPageIndex(updated.length - 1);
-      setComplete(!received.has_more);
-      setStale(false);
+      let more = false;
+      do {
+        const last = pagesRef.current.at(-1);
+        const cursor = first ? null : last?.next_cursor;
+        const { data } = await api<unknown>(
+          packageReviewComparisonPath(query, cursor),
+        );
+        const received = await validatePackageReviewComparisonPage(
+          data,
+          query,
+          20,
+          baseline,
+        );
+        if (!active.current || request !== ticket.current) return;
+        const collected = new Map(first ? [] : seenRows.current);
+        if (
+          !first &&
+          (received.items.some((row) => collected.has(row.requirement_id)) ||
+            (last &&
+              received.items[0].requirement_id <=
+                last.items[last.items.length - 1].requirement_id) ||
+            (received.next_cursor !== null &&
+              (received.next_cursor === cursor ||
+                seenCursors.current.has(received.next_cursor))))
+        )
+          throw new Error("对比页发生重复或顺序变化，请重新读取这两轮对比。");
+        received.items.forEach((row) => collected.set(row.requirement_id, row));
+        const total = packageReviewComparisonTotal(received);
+        if (
+          collected.size > total ||
+          (received.has_more && collected.size >= total)
+        )
+          throw new Error("对比条数或续页标记不一致，请重新读取。");
+        if (!received.has_more)
+          await validateCompletePackageReviewComparison(received, [
+            ...collected.values(),
+          ]);
+        if (!active.current || request !== ticket.current) return;
+        seenRows.current = collected;
+        if (received.next_cursor) seenCursors.current.add(received.next_cursor);
+        const updated = first ? [received] : [...pagesRef.current, received];
+        pagesRef.current = updated;
+        setPages(updated);
+        setPageIndex(updated.length - 1);
+        setComplete(!received.has_more);
+        setStale(false);
+        more = received.has_more;
+        first = false;
+      } while (all && more);
     } catch (failure) {
       if (active.current && request === ticket.current) {
         setError(failure);
@@ -176,6 +183,38 @@ function ComparisonWorkspace({ memberId, bidId, currentRun }: Props) {
         busy.current = false;
         setReading(false);
       }
+    }
+  }
+  function download() {
+    const baseline = pagesRef.current[0];
+    if (!active.current || busy.current || !complete || stale || !baseline)
+      return;
+    try {
+      const snapshot = {
+        export_version: "package-review-comparison-export/1",
+        notice:
+          "范围核查对比快照；不判定风险已经解决，不构成正式评分或提交许可。",
+        comparison: {
+          ...packageReviewComparisonHeader(baseline),
+          comparison_digest: baseline.comparison_digest,
+          items: [...seenRows.current.values()],
+        },
+      };
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(snapshot, null, 2)], {
+          type: "application/json",
+        }),
+      );
+      try {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `package-review-comparison-${selection.leftId}-${selection.rightId}.json`;
+        anchor.click();
+      } finally {
+        window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      }
+    } catch (failure) {
+      setError(failure);
     }
   }
   const page = pages[pageIndex],
@@ -256,6 +295,31 @@ function ComparisonWorkspace({ memberId, bidId, currentRun }: Props) {
           {reading ? "正在读取对比…" : "读取两轮对比"}
         </button>
       </div>
+      {pages.length > 0 && (
+        <div className="package-review__actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={reading || stale || complete}
+            onClick={() => void read(false, true)}
+          >
+            读取全部剩余对比
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={reading || stale || !complete}
+            onClick={download}
+          >
+            导出完整对比 JSON
+          </button>
+          <p className="muted" role="status">
+            已读取 {pages.reduce((count, item) => count + item.items.length, 0)}{" "}
+            / {packageReviewComparisonTotal(pages[0])} 条。
+            导出包含所有对比行与冻结身份；须完整读取并核对摘要，不只导出当前页。
+          </p>
+        </div>
+      )}
       {selection.leftId && selection.leftId === selection.rightId && (
         <p className="package-review__notice">请明确选择两条不同的核查运行。</p>
       )}
