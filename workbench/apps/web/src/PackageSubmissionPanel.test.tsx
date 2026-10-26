@@ -18,6 +18,7 @@ import type {
   SubmissionView,
 } from "./contracts";
 import { clearRecordedCommands } from "./recordedCommandStorage";
+import { submissionPreflightFixture } from "./packageSubmissionPreflightFixtures.test-support";
 import {
   packageSubmissionBase,
   submissionRunPath,
@@ -278,6 +279,50 @@ beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+it("在实际整包表单触发原件复核但不登记事实，重读检查清除旧回执", async () => {
+  const f = await submissionFixture(true);
+  const proof = await submissionPreflightFixture(false);
+  const s = await setup(f),
+    p = props();
+  s.server.onWrite = async (w) => {
+    expect(w.path).toBe(s.base + "/submission-preflight");
+    expect(w.headers.get("If-Match")).toBe(s.f.preview.bid_etag);
+    expect(w.body).toEqual({
+      selection: s.f.preview.selection_request,
+      input_digest: s.f.preview.input_digest,
+    });
+    return response(proof.result);
+  };
+  render(<PackageSubmissionPanel {...p} />);
+  await prepareForm(s.f);
+  expect(s.server.writes).toHaveLength(0);
+  await userEvent
+    .setup()
+    .click(screen.getByRole("button", { name: "核验所选整包原件" }));
+  await screen.findByText("本次原件核验已完成");
+  expect(s.server.writes).toHaveLength(1);
+  expect(s.server.records).toHaveLength(0);
+  expect(p.onSaved).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "标准登记不可用" })).toBeDisabled();
+  expect(
+    within(
+      screen.getByRole("region", { name: "原件与运行依据复核" }),
+    ).getByText("标准登记仍未获准。清单语义完整性与核查质量仍需证明。"),
+  ).toBeVisible();
+  await userEvent
+    .setup()
+    .click(screen.getByRole("button", { name: "读取所选整包的提交检查" }));
+  await waitFor(() =>
+    expect(screen.queryByText("本次原件核验已完成")).not.toBeInTheDocument(),
+  );
+  expect(s.server.writes).toHaveLength(1);
+  expect(s.server.records).toHaveLength(0);
+  expect(
+    await screen.findByLabelText("真实提交时间（ISO 格式，含时区）"),
+  ).toHaveValue(s.f.body.submitted_at);
+  expect(screen.queryByText("本次原件核验已完成")).not.toBeInTheDocument();
 });
 
 it("确切包四门检查后只能明确线下登记；保存前重读并使用原head条件", async () => {

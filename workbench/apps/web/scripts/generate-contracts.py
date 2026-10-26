@@ -281,6 +281,8 @@ wanted = [
     "PackageSubmissionSelection",
     "PackageSubmissionRequest",
     "PackageSubmissionPreview",
+    "PackageSubmissionPreflightRequest",
+    "PackageSubmissionPreflightView",
     "PackageSubmissionBindingView",
     "PackageSubmissionView",
     "PackageSubmissionAppliedView",

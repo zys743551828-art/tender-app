@@ -25,6 +25,12 @@ def service():
     return bid_package_submissions
 
 
+def preflight_service():
+    from packages.domain import package_submission_preflight
+
+    return package_submission_preflight
+
+
 @contextmanager
 def submission_errors():
     try:
@@ -55,6 +61,25 @@ def preview(bid_id: UUID, package_id: UUID, revision_id: UUID, r: Request, body:
                 c, tuple(map(str, (bid_id, package_id, revision_id))), body, bid_etag_fn=bid_etag
             )
             return JSONResponse(clean(result), headers={"Cache-Control": "private, no-store"})
+
+
+@router.post(BASE + "/submission-preflight")
+async def preflight(
+    bid_id: UUID, package_id: UUID, revision_id: UUID, r: Request, body: dict = Body(...)
+):
+    actor = await run_in_threadpool(auth, r, True)
+    with submission_errors():
+        validate("PackageSubmissionPreflightRequest", body)
+        result = await run_in_threadpool(
+            preflight_service().inspect,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            actor["member_id"],
+            body,
+            r.headers.get("if-match"),
+            bid_etag_fn=bid_etag,
+            final_auth=lambda: auth(r, True)["member_id"],
+        )
+        return JSONResponse(clean(result), headers={"Cache-Control": "private, no-store"})
 
 
 async def record(r, actor, scope, body, *, supersedes=None):

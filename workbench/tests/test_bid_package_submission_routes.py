@@ -69,6 +69,21 @@ def test_actual_package_paths_are_authenticated_and_shared_reads_have_disjoint_s
     }
 
 
+def test_preflight_route_requires_csrf_and_exact_etag_without_creating_a_command():
+    actual = implemented_openapi(app)
+    operation = actual["paths"][routes.BASE + "/submission-preflight"]["post"]
+    assert operation["operationId"] == "verifyPackageSubmissionOriginals"
+    assert operation["security"] == [{"SessionCookie": []}]
+    fields = {p["name"] for p in operation["parameters"] if p.get("required")}
+    assert {"Origin", "X-CSRF-Token", "If-Match"} <= fields
+    assert "Idempotency-Key" not in fields
+    assert "200" in operation["responses"] and "201" not in operation["responses"]
+    schemas = actual["components"]["schemas"]
+    assert schemas["PackageSubmissionPreflightView"]["properties"]["manifest"]["properties"][
+        "publication_authorized"
+    ] == {"const": False}
+
+
 @pytest.fixture
 def ports(monkeypatch):
     state = {"open": False, "auth": []}
@@ -112,6 +127,26 @@ def test_preview_is_exact_readonly_and_does_not_claim_an_original_byte_check(por
     assert result.headers["cache-control"] == "private, no-store"
     assert json.loads(result.body)["observed_only"] is True
     assert state["auth"] == [True] and not state["open"]
+
+
+def test_preflight_reauthenticates_after_off_transaction_original_io(ports, monkeypatch):
+    state, _ = ports
+    body = {"selection": selection(), "input_digest": "b" * 64}
+    request = SimpleNamespace(headers={"if-match": '"exact-current"'})
+
+    def inspect(scope, actor, received, condition, *, bid_etag_fn, final_auth):
+        assert not state["open"]
+        assert scope == tuple(map(str, IDS[:3]))
+        assert actor == ACTOR and received == body and condition == '"exact-current"'
+        assert bid_etag_fn is routes.bid_etag and final_auth() == ACTOR
+        return {"synthetic_originals": "verified_at_observation", "allowed": False}
+
+    monkeypatch.setattr(routes, "preflight_service", lambda: SimpleNamespace(inspect=inspect))
+    result = asyncio.run(routes.preflight(*IDS[:3], request, body))
+    assert result.status_code == 200
+    assert result.headers["cache-control"] == "private, no-store"
+    assert state["auth"] == [True, True]
+    assert "Idempotent-Replayed" not in result.headers
 
 
 @pytest.mark.parametrize("correction", [False, True])
@@ -158,7 +193,7 @@ def test_deferred_storage_rejection_never_appears_as_a_successful_ack(ports):
     assert failure.value.code == "PACKAGE_SUBMISSION_STORAGE_REJECTED"
 
 
-@pytest.mark.parametrize("method", ["preview", "register", "correct"])
+@pytest.mark.parametrize("method", ["preview", "preflight", "register", "correct"])
 def test_invalid_body_never_opens_database_or_object_storage(monkeypatch, method):
     monkeypatch.setattr(routes, "auth", lambda *_args: {"member_id": ACTOR})
     monkeypatch.setattr(routes, "connection", lambda: pytest.fail("Invalid input opened DB"))
@@ -168,5 +203,7 @@ def test_invalid_body_never_opens_database_or_object_storage(monkeypatch, method
             routes.preview(*IDS[:3], None, {"body_version_id": str(IDS[4])})
         elif method == "correct":
             asyncio.run(routes.correct(IDS[4], None, {}))
+        elif method == "preflight":
+            asyncio.run(routes.preflight(*IDS[:3], None, {}))
         else:
             asyncio.run(routes.register(*IDS[:3], None, {}))

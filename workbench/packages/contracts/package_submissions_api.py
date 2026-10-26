@@ -69,6 +69,84 @@ ORIGINAL = object_schema(
         },
     }
 )
+PREFLIGHT_REQUEST = object_schema({"selection": SELECTION, "input_digest": SHA})
+CODE = {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$", "maxLength": 200}
+CODES = {"type": "array", "items": CODE, "maxItems": 100, "uniqueItems": True}
+PREFLIGHT_RUNTIME = object_schema(
+    {
+        "state": {"enum": ["matched", "blocked", "not_selected"]},
+        "run_id": optional(UUID),
+        "selected_input_digest": optional(SHA),
+        "current_input_digest": optional(SHA),
+        "codes": CODES,
+    }
+)
+PREFLIGHT_CURRENT_INPUT = object_schema(
+    {
+        "state": {"enum": ["blocked", "unknown", "pass"]},
+        "codes": CODES,
+        "scope": {"const": "current_input_verified_observation"},
+        "metadata_observations_digest": optional(SHA),
+        "current_identity_digest": optional(SHA),
+        "original_verification": {"const": "verified_at_observation"},
+        "original_count": COUNT | {"minimum": 1, "maximum": 2000},
+        "originals_digest": SHA,
+        "physical_page_gaps": {
+            "type": "array",
+            "maxItems": 400000,
+            "items": object_schema(
+                {
+                    "role": {"enum": ["target", "authority"]},
+                    "member_id": {"type": "string"},
+                    "first_page": COUNT | {"minimum": 1},
+                    "last_page": COUNT | {"minimum": 1},
+                }
+            ),
+        },
+    }
+)
+PREFLIGHT_MANIFEST = object_schema(
+    {
+        "version": {"const": "package-submission-preflight/1"},
+        "kind": {"const": "verified_package_submission_observation"},
+        "subject": object_schema(
+            {
+                "kind": {"const": "bid_package"},
+                "bid_id": UUID,
+                "package_id": UUID,
+                "revision_id": UUID,
+                "package_digest": SHA,
+                "identity_digest": SHA,
+            }
+        ),
+        "selection_request": SELECTION,
+        "selection_digest": SHA,
+        "input_digest": SHA,
+        "actor_id": UUID,
+        "checked_at": TIME,
+        "bid_etag": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "policy_digest": SHA,
+        "metadata_gate_digest": SHA,
+        "review_runtime": PREFLIGHT_RUNTIME,
+        "originals": {"type": "array", "items": ORIGINAL, "minItems": 1, "maxItems": 2000},
+        "gates": object_schema(
+            {
+                "current_input": PREFLIGHT_CURRENT_INPUT,
+                "core_coverage": ref("PackageSubmissionGate_CoreCoverage"),
+                "mandatory_confirmation": ref("PackageSubmissionGate_MandatoryConfirmation"),
+                "known_blocking_risks": ref("PackageSubmissionGate_KnownBlockingRisks"),
+            }
+        ),
+        "state": {"enum": ["blocked", "unknown"]},
+        "allowed": {"const": False},
+        "inventory_complete": {"const": False},
+        "quality_status": {"const": "not_measured"},
+        "submission_eligible": {"const": False},
+        "publication_authorized": {"const": False},
+        "platform_submission_verified": {"const": False},
+        "limitations": CODES | {"minItems": 1, "maxItems": 10},
+    }
+)
 REQUEST = object_schema(
     {
         "kind": {"enum": ["standard", "offline_fact"]},
@@ -165,6 +243,10 @@ SCHEMAS = {
     "PackageSubmissionBindingView": object_schema({"manifest": BINDING, "digest": SHA}),
     "PackageSubmissionView": VIEW,
     "PackageSubmissionAppliedView": object_schema({"submission": VIEW, "command": COMMAND}),
+    "PackageSubmissionPreflightRequest": PREFLIGHT_REQUEST,
+    "PackageSubmissionPreflightView": object_schema(
+        {"manifest": PREFLIGHT_MANIFEST, "digest": SHA}
+    ),
     "PackageSubmissionPreview": object_schema(
         {
             "selection": FROZEN_SELECTION,
@@ -235,6 +317,12 @@ def extend_openapi(actual):
             "registerPackageSubmission",
         ),
         (
+            base + "/submission-preflight",
+            "PackageSubmissionPreflightRequest",
+            "PackageSubmissionPreflightView",
+            "verifyPackageSubmissionOriginals",
+        ),
+        (
             "/api/v1/submissions/{submission_id}/package-corrections",
             "PackageSubmissionRequest",
             "PackageSubmissionAppliedView",
@@ -250,7 +338,7 @@ def extend_openapi(actual):
             "required": True,
             "content": {"application/json": {"schema": ref(request)}},
         }
-        code = "200" if path.endswith("submission-preview") else "201"
+        code = "200" if path.endswith(("submission-preview", "submission-preflight")) else "201"
         response_definition = {
             "description": "Exact package submission observation or original immutable ACK",
             "content": {"application/json": {"schema": ref(response)}},
@@ -270,6 +358,8 @@ def extend_openapi(actual):
         names = ["Origin", "X-CSRF-Token"]
         if code == "201":
             names.extend(["Idempotency-Key", "If-Match"])
+        elif path.endswith("submission-preflight"):
+            names.append("If-Match")
         existing = {(p.get("in"), p.get("name")) for p in item.get("parameters", [])}
         item.setdefault("parameters", []).extend(
             {
