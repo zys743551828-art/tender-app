@@ -13,13 +13,19 @@ from uuid import uuid4
 import pypdfium2
 
 from packages.authoring import generated_renderer as text_renderer
-from packages.authoring import page_navigation, rich_docx, rich_pdf, rich_verification
+from packages.authoring import (
+    page_navigation,
+    rich_docx,
+    rich_pdf,
+    rich_table_pdf,
+    rich_verification,
+)
 from packages.domain.runtime import DomainError, sha
 
 sandbox = text_renderer.sandbox
 failure = text_renderer.failure
 expected_body = text_renderer.expected_body
-PROTOCOL = "authoring-rich-sandbox/3"
+PROTOCOL = "authoring-rich-sandbox/4"
 MAX_LAYOUT_PASSES = 3
 
 
@@ -34,6 +40,7 @@ def profile_for(base):
         "text_inspector_digest": sha(Path(text_renderer.__file__).read_bytes()),
         "raster_inspector_digest": sha(Path(rich_pdf.__file__).read_bytes()),
         "navigation_inspector_digest": sha(Path(page_navigation.__file__).read_bytes()),
+        "table_inspector": rich_table_pdf.identity(),
         "dynamic_field_policy": "one_canonical_footer_PAGE_only",
         "navigation_policy": "stable_internal_bookmarks_and_TOC_hyperlinks_only",
         "correspondence_policy": "full_text_digits_geometry_opaque_raster_isolated_PDFium_all_pixels_direct_dest_TOC_v2",
@@ -41,7 +48,7 @@ def profile_for(base):
         "max_image_placement_pixels": 32_000_000,
         "max_normalized_image_bytes": 64 * 1024 * 1024,
         "max_visibility_render_pixels": rich_pdf.MAX_VISIBILITY_RENDER_PIXELS,
-        "table_layout_policy": "native_grid_and_complete_cell_text_PDF_geometry_pending_partial",
+        "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
 
@@ -91,17 +98,16 @@ def inspect_pdf(data, prepared):
         mode=mode,
         style=prepared["config"],
     )
-    table_gaps = (
-        ["AUTHORING_TABLE_PDF_GEOMETRY_UNVERIFIED"]
-        if prepared["proof"]["native_table_count"]
-        else []
+    tables = rich_table_pdf.inspect_tables(
+        data, prepared["snapshot"], prepared["roots"], prepared["config"]
     )
     return body | {
         "gaps": list(
-            dict.fromkeys(body["gaps"] + images["gaps"] + navigation["gaps"] + table_gaps)
+            dict.fromkeys(body["gaps"] + images["gaps"] + navigation["gaps"] + tables["gaps"])
         ),
         "raster_correspondence": images,
         "navigation": navigation,
+        "table_correspondence": tables,
     }
 
 
