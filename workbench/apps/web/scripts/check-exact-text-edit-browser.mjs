@@ -182,6 +182,19 @@ try {
       await page
         .getByRole("button", { name: "查询并重试原文字修订" })
         .waitFor();
+      // The durable pending UI is rendered before send() finishes its async
+      // original-request verification. Visibility alone does not prove a POST
+      // has happened; wait for the lost-response attempt to settle as well.
+      await page.waitForFunction(() => {
+        const recovery = [...document.querySelectorAll("button")].find(
+          (button) => button.textContent === "查询并重试原文字修订",
+        );
+        return (
+          window.__editQA.calls.some((call) => call.method === "POST") &&
+          recovery &&
+          !recovery.disabled
+        );
+      });
       const first = await page.evaluate(() =>
         window.__editQA.calls.filter((call) => call.method === "POST"),
       );

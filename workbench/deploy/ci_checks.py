@@ -155,18 +155,18 @@ def suite_files(suite: str) -> list[str]:
     # covered by the unit job just because its environment-gated test was skipped.
     from deploy.fusion_checks import SUITES
 
-    return list(
-        dict.fromkeys(
-            name
-            for group in (
-                "requirements-api",
-                "scope-review-api",
-                "project-summaries",
-                "package-next-actions",
-            )
-            for name in SUITES[group]
+    files = [
+        name
+        for group in (
+            "requirements-api",
+            "scope-review-api",
+            "project-summaries",
+            "package-next-actions",
         )
-    )
+        for name in SUITES[group]
+    ]
+    files.append("tests/test_package_submission_preflight_pg.py")
+    return list(dict.fromkeys(files))
 
 
 def write_summary(summary: dict, directory: Path, label: str) -> None:
