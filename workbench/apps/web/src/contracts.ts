@@ -12993,6 +12993,8 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/model-governance/training-jobs",
   "GET /api/v1/model-governance/jobs/{job_id}",
   "POST /api/v1/model-governance/evaluations",
+  "POST /api/v1/model-admission/cohorts/{cohort_id}/protocol",
+  "GET /api/v1/model-admission/cohorts/{cohort_id}/protocol",
   "GET /api/v1/historical-proof/capabilities",
   "GET /api/v1/historical-proof/submissions/{submission_id}/context",
   "POST /api/v1/historical-proof/subjects",

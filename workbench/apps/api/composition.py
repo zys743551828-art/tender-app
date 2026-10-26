@@ -13,6 +13,7 @@ def mount(app):
     from apps.api.historical_input_routes import router as historical_input
     from apps.api.historical_routes import router as historical_proof
     from apps.api.lifecycle_routes import router as lifecycle
+    from apps.api.model_admission_routes import router as admission
     from apps.api.model_governance_routes import router as governance
     from apps.api.model_registry_routes import router as registry
     from apps.api.scoring_routes import router as scoring
@@ -30,6 +31,7 @@ def mount(app):
         lifecycle,
         task_drafts,
         governance,
+        admission,
         historical_proof,
         historical_input,
         registry,
