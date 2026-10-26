@@ -139,7 +139,10 @@ it("clears the displayed numeric snapshot before a failing report authority refr
   start();
   await screen.findByText(/正式预测：50/);
   mock.mockRejectedValueOnce(new Error("certificate revoked"));
-  fireEvent.click(screen.getByText("复验并查看预测报告"));
+  fireEvent.change(screen.getByLabelText("完成评审编号"), {
+    target: { value: certificate },
+  });
+  fireEvent.click(screen.getByText("复验统一报告"));
   expect(screen.queryByText(/正式预测：50/)).toBeNull();
   await screen.findByText(/certificate revoked/);
 });

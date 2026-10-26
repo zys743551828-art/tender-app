@@ -1,4 +1,4 @@
-import { PackagePredictionReport } from "./PackagePredictionReport";
+import { PackageUnifiedReport } from "./PackageUnifiedReport";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "./api";
 import { ErrorNotice } from "./components";
@@ -201,11 +201,10 @@ function Workspace(p: Props) {
         </p>
       )}
       {receipt && (receipt.state === "valid" || receipt.state === "hidden") && (
-        <PackagePredictionReport
+        <PackageUnifiedReport
           bidId={p.bidId}
           scopeId={p.scopeId}
           commandId={receipt.command_id}
-          certificateId={receipt.certificate_id}
           onRefresh={() => setSuppressNumbers(true)}
         />
       )}
