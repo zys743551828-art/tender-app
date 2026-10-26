@@ -529,3 +529,42 @@ def test_grants_or_dependency_method_drift_fail_closed(wire, monkeypatch, change
             start(w, args)
     finally:
         owner.execute(restore)
+
+
+def test_operator_command_registers_one_native_outbox_and_recovers(wire, monkeypatch):
+    from packages.model_governance import material_job_commands as commands
+
+    w, _, _ = wire
+    data, _, args = ready(wire, monkeypatch)
+    connection = w["database"]["job_submitter"]
+    cmd = {"version": commands.VERSION, "operation": "start", "arguments": args}
+    receipt = commands.execute(connection, cmd)
+    assert commands.execute(connection, cmd) == receipt
+    read = {
+        "version": commands.VERSION,
+        "operation": "read",
+        "arguments": {
+            "job_id": receipt["job_id"],
+            "expected_job_digest": receipt["job_digest"],
+            "expected_method_digest": args["expected_method_digest"],
+        },
+    }
+    assert commands.execute(connection, read)["current"]["software_preparation_current"]
+    job = start(w, args)
+    renewed = renew_again(wire, monkeypatch, data)
+    refresh = {
+        "version": commands.VERSION,
+        "operation": "refresh",
+        "arguments": refresh_args(job, renewed),
+    }
+    assert commands.execute(connection, refresh)["evidence_revision"] == 2
+    assert commands.execute(connection, read)["current"]["evidence_revision"] == 2
+    count = (
+        w["database"]["owner"]
+        .execute(
+            "SELECT count(*) AS n FROM material_judgment_job.outbox WHERE job_id=%s",
+            (receipt["job_id"],),
+        )
+        .fetchone()["n"]
+    )
+    assert count == 1 and receipt["model_requests"] == 0
