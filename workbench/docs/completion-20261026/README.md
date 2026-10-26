@@ -82,3 +82,5 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 - [Word 明确单行重复表头导入](word-repeat-import.md)：导入候选贯通现有分页协议及生成验证，复杂声明阻断。
 
 - [完整材料任务登记与恢复入口](material-job-entry.md)：既有原生 start/read/refresh 的隔离单次 CLI；正式资格权威仍缺，不冒充正式发送已接通。
+
+- [完整材料固定申请与持久受阻回执](material-execution-ui.md)：API/UI 与原命令账本恢复闭环；真实资格及接受执行分支仍未开放。

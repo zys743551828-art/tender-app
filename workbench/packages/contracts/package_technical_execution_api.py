@@ -57,6 +57,9 @@ def validate(name, value):
 
 
 def extend_openapi(actual):
+    from packages.contracts.package_material_execution_api import extend_openapi as extend_material
+
+    extend_material(actual)
     base = "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}"
     for suffix, method, operation_id in (
         ("/execution-context", "get", "getPackageTechnicalExecutionContext"),

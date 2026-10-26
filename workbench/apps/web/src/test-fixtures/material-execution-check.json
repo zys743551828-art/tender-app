@@ -1,0 +1,378 @@
+{
+  "context": {
+    "version": "package-material-execution-context/1",
+    "qualification": {
+      "version": "package-technical-scoring-context/1",
+      "purpose": "current_prebid",
+      "scope": {
+        "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+        "package_id": "4a8463bc-b331-4daa-8dfe-df69a534898c",
+        "revision_id": "937b7da7-4b60-4d4c-974b-cdd291f62cbe",
+        "inventory_id": "8d7f32cd-af00-4261-ae4a-7db49e3aa134",
+        "scope_id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+        "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b"
+      },
+      "basis": {
+        "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+        "package_digest": "81dd4b3d2434015a7b26d642049718c1f9e2a12ac07160ea883a7dd8a131c40b",
+        "identity_digest": "18f1e42944b41d4c0e3911d1f3669079c6456fd9e9c468d538ea061872a2e89b",
+        "rule_set_digest": "03d28946f5bf14bcc259bb79728aa9fdcb27382c2bb19b10be241bb1e795d040",
+        "authority_digest": "c3a90144e7196b3663fbee3922d077cb5602d929df2963a2bd1a1379169d6154",
+        "inventory_digest": "56c31072a9a153edc302d022c5216b7257caa2ad5f493d48d1d2bfd874dd50dc",
+        "authority_revision_id": "fed615ed-70bd-494e-bc6b-99a6e3873644"
+      },
+      "observed_at": "2026-10-21T05:55:38.371572-04:00",
+      "current_input": {
+        "state": "matched",
+        "stored_context_digest": "6ef622ae1c332fdb95b77d21016570d0ed78f44fcbbd4736313d3c5cdf455fa1",
+        "current_context_digest": "6ef622ae1c332fdb95b77d21016570d0ed78f44fcbbd4736313d3c5cdf455fa1",
+        "method_matches": true,
+        "original_bytes_reverified": false,
+        "reasons": []
+      },
+      "coverage": {
+        "gaps": [
+          {
+            "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+            "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+            "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+            "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+          },
+          {
+            "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+            "code": "VISUAL_COMPLETENESS_UNPROVEN",
+            "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+            "subject": null
+          },
+          {
+            "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+            "code": "REQUIRED_RANGE_UNPROVEN",
+            "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+            "subject": null
+          },
+          {
+            "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+            "code": "MODEL_EXECUTION_NOT_OPEN",
+            "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+            "subject": null
+          },
+          {
+            "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+            "code": "RULE_EXCLUDED_BY_DECLARATION",
+            "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+            "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+          }
+        ],
+        "state": "partial",
+        "all_part_count": 2,
+        "visual_coverage": "unproven",
+        "included_rule_count": 2,
+        "selected_part_count": 2,
+        "all_scoring_rule_count": 3,
+        "frozen_parse_member_count": 1,
+        "required_range_completeness": "unproven"
+      },
+      "denominator": {
+        "state": "unselected",
+        "scale_id": null,
+        "scale_digest": null,
+        "purpose": "current_prebid",
+        "technical_maximum": null,
+        "scale_description": null,
+        "aggregation": null,
+        "maximum_usable": false,
+        "aggregation_usable": false,
+        "evidence_refs": [],
+        "reasons": [
+          {
+            "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+            "code": "TECHNICAL_SCALE_NOT_SELECTED",
+            "subject": null,
+            "message": "尚未选择有据技术满分权威，满分保持未知。"
+          }
+        ]
+      },
+      "judgments": {
+        "required_valid_independent": 3,
+        "recorded_valid_independent": 0,
+        "producer_authority": "not_configured_for_exact_package",
+        "previous_answers_in_input": false,
+        "retries_count_as_independent": false,
+        "unknown_send_auto_retry": false,
+        "execution_enabled": false
+      },
+      "numeric_prediction": null,
+      "blockers": [
+        {
+          "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+          "code": "TECHNICAL_SCALE_NOT_SELECTED",
+          "subject": null,
+          "message": "尚未选择有据技术满分权威，满分保持未知。"
+        },
+        {
+          "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+          "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+          "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+          "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+        },
+        {
+          "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+          "code": "VISUAL_COMPLETENESS_UNPROVEN",
+          "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+          "subject": null
+        },
+        {
+          "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+          "code": "REQUIRED_RANGE_UNPROVEN",
+          "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+          "subject": null
+        },
+        {
+          "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+          "code": "MODEL_EXECUTION_NOT_OPEN",
+          "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+          "subject": null
+        },
+        {
+          "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+          "code": "RULE_EXCLUDED_BY_DECLARATION",
+          "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+          "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+        },
+        {
+          "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+          "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+          "subject": null,
+          "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+        },
+        {
+          "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+          "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+          "subject": null,
+          "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+        },
+        {
+          "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+          "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+          "subject": null,
+          "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+        }
+      ],
+      "official_label_access": "forbidden",
+      "inventory_complete": false,
+      "scoring_ready": false,
+      "formal_scoring_eligible": false,
+      "model_execution_enabled": false,
+      "training_eligible": false
+    },
+    "target": {
+      "profile": {
+        "version": "package-technical-complete-vision-profile/3",
+        "provider_id": "deepseek",
+        "endpoint": "https://api.deepseek.com/v1/chat/completions",
+        "model_alias": "deepseek-flash",
+        "expected_response_model": "deepseek-flash",
+        "maximum_body_bytes": 50331648,
+        "maximum_image_bytes": 33554432,
+        "maximum_images": 384,
+        "maximum_total_image_bytes": 67108864,
+        "maximum_dimension": 8192,
+        "many_images_threshold": 15,
+        "maximum_many_image_dimension": 4096,
+        "image_detail": "original",
+        "max_output_tokens": 4096,
+        "thinking": "disabled",
+        "temperature": 0,
+        "remote_images": false,
+        "automatic_retry": false,
+        "immutable_weights_verified": false
+      },
+      "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+      "serializer_digest": "d747d9a11243e6c932ef9a98671bc25404cb2e2159ad36f2a7761faca3e78bf6",
+      "judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254"
+    },
+    "execution_enabled": false,
+    "blockers": [
+      {
+        "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+        "code": "TECHNICAL_SCALE_NOT_SELECTED",
+        "subject": null,
+        "message": "尚未选择有据技术满分权威，满分保持未知。"
+      },
+      {
+        "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+        "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+        "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+        "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+      },
+      {
+        "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+        "code": "VISUAL_COMPLETENESS_UNPROVEN",
+        "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+        "subject": null
+      },
+      {
+        "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+        "code": "REQUIRED_RANGE_UNPROVEN",
+        "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+        "subject": null
+      },
+      {
+        "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+        "code": "MODEL_EXECUTION_NOT_OPEN",
+        "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+        "subject": null
+      },
+      {
+        "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+        "code": "RULE_EXCLUDED_BY_DECLARATION",
+        "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+        "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+      },
+      {
+        "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+        "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+        "subject": null,
+        "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+      },
+      {
+        "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+        "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+        "subject": null,
+        "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+      },
+      {
+        "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+        "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+        "subject": null,
+        "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+      },
+      {
+        "id": "1dcb28983daebc8c0a80fb9dc0c9c90be5efd9d3e21a98b0832966dd93fbcdba",
+        "code": "MATERIAL_REFERENCE_UNVERIFIED",
+        "subject": null,
+        "message": "材料封印和报价引用尚未通过独立用途复验，不能由输入编号授予资格。"
+      },
+      {
+        "id": "8c345d9cb95a150b46cfc82022f3295f7a9d347b8ae6516008b5dd1d7381f928",
+        "code": "LIVE_QUALIFICATION_UNAVAILABLE",
+        "subject": null,
+        "message": "真实账户、模型输入适配、视觉可读性和端口资格证据协议尚未确定。"
+      },
+      {
+        "id": "ae33c2bb983829dda3f2b4181296f68c84d04093fe74649956914db8680f73d4",
+        "code": "LIVE_COST_UNCONFIRMED",
+        "subject": null,
+        "message": "真实账户价格及费用状态未核验，未预留费用。"
+      }
+    ]
+  },
+  "etag": "\"package-material-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:6dbab65b34128e229c950b525c3ec4e8732ec6475ea6d883e3eb1c9f5c070161\"",
+  "request": {
+    "version": "package-material-execution-check/1",
+    "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
+    "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "serializer_digest": "d747d9a11243e6c932ef9a98671bc25404cb2e2159ad36f2a7761faca3e78bf6",
+    "judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "input_reference": null,
+    "budget_usd": "0"
+  },
+  "receipt": {
+    "version": "package-material-execution-receipt/1",
+    "command_id": "00000000-0000-0000-0000-000000002694",
+    "actor_id": "00000000-0000-0000-0000-000000002695",
+    "scope_id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+    "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
+    "request_digest": "7630c3aff0b3dce5c99b8298a4b59231695c03bbf0608abc138e2f3238bc2110",
+    "request": {
+      "version": "package-material-execution-check/1",
+      "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
+      "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+      "serializer_digest": "d747d9a11243e6c932ef9a98671bc25404cb2e2159ad36f2a7761faca3e78bf6",
+      "judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+      "input_reference": null,
+      "budget_usd": "0"
+    },
+    "observed_at": "2026-10-21T05:55:38.371572-04:00",
+    "state": "blocked",
+    "reference_status": "unverified",
+    "execution_authorized": false,
+    "jobs_created": 0,
+    "model_requests": 0,
+    "fee_reserved": false,
+    "blockers": [
+      {
+        "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+        "code": "TECHNICAL_SCALE_NOT_SELECTED",
+        "subject": null,
+        "message": "尚未选择有据技术满分权威，满分保持未知。"
+      },
+      {
+        "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+        "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+        "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+        "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+      },
+      {
+        "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+        "code": "VISUAL_COMPLETENESS_UNPROVEN",
+        "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+        "subject": null
+      },
+      {
+        "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+        "code": "REQUIRED_RANGE_UNPROVEN",
+        "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+        "subject": null
+      },
+      {
+        "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+        "code": "MODEL_EXECUTION_NOT_OPEN",
+        "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+        "subject": null
+      },
+      {
+        "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+        "code": "RULE_EXCLUDED_BY_DECLARATION",
+        "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+        "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+      },
+      {
+        "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+        "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+        "subject": null,
+        "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+      },
+      {
+        "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+        "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+        "subject": null,
+        "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+      },
+      {
+        "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+        "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+        "subject": null,
+        "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+      },
+      {
+        "id": "1dcb28983daebc8c0a80fb9dc0c9c90be5efd9d3e21a98b0832966dd93fbcdba",
+        "code": "MATERIAL_REFERENCE_UNVERIFIED",
+        "subject": null,
+        "message": "材料封印和报价引用尚未通过独立用途复验，不能由输入编号授予资格。"
+      },
+      {
+        "id": "8c345d9cb95a150b46cfc82022f3295f7a9d347b8ae6516008b5dd1d7381f928",
+        "code": "LIVE_QUALIFICATION_UNAVAILABLE",
+        "subject": null,
+        "message": "真实账户、模型输入适配、视觉可读性和端口资格证据协议尚未确定。"
+      },
+      {
+        "id": "ae33c2bb983829dda3f2b4181296f68c84d04093fe74649956914db8680f73d4",
+        "code": "LIVE_COST_UNCONFIRMED",
+        "subject": null,
+        "message": "真实账户价格及费用状态未核验，未预留费用。"
+      }
+    ]
+  }
+}

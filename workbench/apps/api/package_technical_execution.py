@@ -52,3 +52,44 @@ def create(
             body,
             r.headers.get("if-match"),
         )
+
+
+@router.get("/material-execution-context")
+def material_context(bid_id: UUID, package_id: UUID, revision_id: UUID, scope_id: UUID, r: Request):
+    from packages.model_governance import package_material_execution_check as material
+
+    auth(r)
+    with requirement_errors(), connection() as c:
+        value, tag = material.context(
+            c, tuple(map(str, (bid_id, package_id, revision_id))), str(scope_id)
+        )
+        return JSONResponse(value, headers={"Cache-Control": "private, no-store", "ETag": tag})
+
+
+@router.post("/material-execution-checks")
+def material_check(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    scope_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    from packages.model_governance import package_material_execution_check as material
+
+    actor = auth(r, True)["member_id"]
+    with requirement_errors(), connection() as c:
+        result, replay = material.check(
+            c,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            str(scope_id),
+            actor,
+            body,
+            r.headers.get("if-match"),
+            r.headers.get("idempotency-key"),
+        )
+        return JSONResponse(
+            result["body"],
+            status_code=result["status"],
+            headers=result["headers"] | {"Idempotent-Replayed": str(replay).lower()},
+        )

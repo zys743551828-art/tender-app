@@ -144,3 +144,38 @@ def test_base_only_execution_api_lists_actual_gaps_without_optional_sql_or_calls
             ).fetchone()["n"]
             == 0
         )
+
+
+def test_complete_material_refusal_is_durable_idempotent_and_csrf_protected(exact):
+    from uuid import uuid4
+
+    saved, path = frozen(exact)
+    context = exact["client"].get(path + "/material-execution-context")
+    assert context.status_code == 200, context.text
+    value = context.json()
+    body = {
+        "version": "package-material-execution-check/1",
+        "scope_digest": saved["digest"],
+        **{k: v for k, v in value["target"].items() if k != "profile"},
+        "input_reference": None,
+        "budget_usd": "0",
+    }
+    h = headers(exact, etag=context.headers["etag"])
+    h["Idempotency-Key"] = str(uuid4())
+    first = exact["client"].post(path + "/material-execution-checks", json=body, headers=h)
+    assert first.status_code == 200, first.text
+    assert first.json()["state"] == "blocked" and first.json()["jobs_created"] == 0
+    again = exact["client"].post(path + "/material-execution-checks", json=body, headers=h)
+    assert again.status_code == 200 and again.json() == first.json()
+    assert again.headers["Idempotent-Replayed"] == "true"
+    conflict = exact["client"].post(
+        path + "/material-execution-checks", json=body | {"budget_usd": "1"}, headers=h
+    )
+    assert conflict.status_code == 409
+    assert exact["client"].post(path + "/material-execution-checks", json=body).status_code == 403
+    with connection() as c:
+        row = c.execute(
+            "SELECT count(*) AS n FROM design.commands WHERE command_kind='check-package-material-execution' AND target_id=%s",
+            (saved["manifest"]["id"],),
+        ).fetchone()
+        assert row["n"] == 1

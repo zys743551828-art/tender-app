@@ -20,6 +20,7 @@ import {
 } from "./PackageTechnicalScopeSnapshot";
 import { technicalPartLabel } from "./packageTechnicalScopeLabels";
 import { PackageTechnicalEligibility } from "./PackageTechnicalEligibility";
+import { PackageMaterialExecution } from "./PackageMaterialExecution";
 import { PackageTechnicalExecution } from "./PackageTechnicalExecution";
 import {
   technicalContextPath,
@@ -534,6 +535,10 @@ function TechnicalScopeWorkspace({
             memberId={scope.memberId}
           />
           <PackageTechnicalExecution saved={command.result} />
+          <PackageMaterialExecution
+            saved={command.result}
+            memberId={scope.memberId}
+          />
         </div>
       )}
       {historyOpen && (
@@ -587,6 +592,10 @@ function TechnicalScopeWorkspace({
                 memberId={scope.memberId}
               />
               <PackageTechnicalExecution saved={historical} />
+              <PackageMaterialExecution
+                saved={historical}
+                memberId={scope.memberId}
+              />
             </>
           )}
         </section>
