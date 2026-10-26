@@ -128,3 +128,5 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 - [正式预测报告/Word 投影检查点](package-prediction-report.md)：复用原材料消费、Word writer 和原页查看器，隐藏/失效双复验；统一评审组合与任务自动推进仍未完成，不称全项目交付。
 
 - [四部分统一评审报告](unified-review-report.md)：同一冻结范围的核查、人工处置、预测和报价，统一 JSON/Word/UI 及最终复验；预测后台任务/自动推进仍需编码。
+
+- [FR-012 固定预测持久任务](prediction-tasks.md)：UI/API 授权、原 outbox/Worker 计算及 API 协调器复验发布；仍须将项目自动开始意图接入同范围认证选择。最新有限 FR 矩阵及出口检查见 [FR 审计](fr-audit.md)。

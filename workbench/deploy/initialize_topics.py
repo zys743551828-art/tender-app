@@ -24,7 +24,7 @@ def default_bootstrap():
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_POLICY = ROOT / "apps/worker/execution-policy-10.json"
+DEFAULT_POLICY = ROOT / "apps/worker/execution-policy-11.json"
 
 
 def topic_specifications(policy):

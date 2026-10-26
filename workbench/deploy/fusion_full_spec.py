@@ -15,7 +15,7 @@ from psycopg.conninfo import conninfo_to_dict
 from deploy import bootstrap_fresh as fresh
 
 VERSION = "fusion-full-local/1"
-POLICY = "apps/worker/execution-policy-10.json"
+POLICY = "apps/worker/execution-policy-11.json"
 EXTENSIONS = (
     "packages/word_intake/schema.sql",
     "packages/knowledge/sql/rag.sql",

@@ -38,6 +38,7 @@ ORDINARY_HANDLERS = (
     "prepare/1",
     "review/1",
     "package-review/1",
+    "package-prediction/1",
     "export/1",
     "report/1",
     "package-report/1",
@@ -56,7 +57,7 @@ LANE_HANDLERS = {
         "rag-index/1",
         "knowledge-index/1",
     ),
-    "review": ("prepare/1", "review/1", "package-review/1"),
+    "review": ("prepare/1", "review/1", "package-review/1", "package-prediction/1"),
     "export": ("export/1", "report/1", "package-report/1"),
     "comparison": ("comparison/1",),
     "assistant": ("assistant/1", "authoring-generate/1"),
@@ -72,7 +73,7 @@ def task_topic(handler):
         return "tender.task.export.v1"
     return (
         "tender.task.review.v1"
-        if handler in ("review/1", "prepare/1", "package-review/1")
+        if handler in ("review/1", "prepare/1", "package-review/1", "package-prediction/1")
         else "tender.task.document.v1"
     )
 
@@ -494,6 +495,10 @@ def finish(message, lease, outcome, error=None):
                 from apps.worker.review_handlers import publish as publish_review
 
                 output = publish_review(c, message, outcome)
+            elif message["handler_version"] == "package-prediction/1":
+                from packages.package_prediction_tasks.worker import publish as publish_prediction
+
+                output = publish_prediction(c, message, outcome)
             elif message["handler_version"] == "package-review/1":
                 from apps.worker.package_review_handlers import publish as publish_package_review
 
@@ -572,6 +577,10 @@ def renew(message, lease):
 
 
 def run_compute(message, lease):
+    if message["handler_version"] == "package-prediction/1":
+        from packages.package_prediction_tasks.worker import compute as compute_prediction
+
+        return compute_prediction(message, lease)
     if message["handler_version"] == "document-parse/1":
         from apps.worker.document_parse_handlers import compute as compute_document_parse
 

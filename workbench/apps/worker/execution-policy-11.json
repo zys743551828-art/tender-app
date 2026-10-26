@@ -1,0 +1,208 @@
+{
+  "scope": "当前固定任务执行协议11：在10基础上登记已授权固定预测计算，复用 review lane、租约和重试；Worker 不发布正式结果，API 复验后发布，默认不配置或启动。",
+  "operation_transitions": {
+    "queued": [
+      "running",
+      "cancel_requested",
+      "failed"
+    ],
+    "running": [
+      "succeeded",
+      "failed",
+      "cancel_requested"
+    ],
+    "cancel_requested": [
+      "cancelled"
+    ],
+    "succeeded": [],
+    "failed": [],
+    "cancelled": []
+  },
+  "step_identity": [
+    "operation_id",
+    "step_key",
+    "input_digest"
+  ],
+  "external_attempt_budget": 3,
+  "heartbeat_seconds": 30,
+  "stale_seconds": 120,
+  "publish_requires": [
+    "current_fence",
+    "operation_not_cancel_requested",
+    "matching_input_digest",
+    "sources_still_valid"
+  ],
+  "message_infrastructure": "kafka",
+  "worker_runtime": "python",
+  "python_client": "confluent-kafka",
+  "domain_event_topic": "tender.domain.events.v1",
+  "dead_letter_topic": "tender.task.dead-letter.v1",
+  "producer": {
+    "enable.idempotence": true,
+    "acks": "all"
+  },
+  "consumer": {
+    "enable.auto.commit": false,
+    "enable.auto.offset.store": false,
+    "max_inflight_per_partition": 1,
+    "offset_commit_after": [
+      "domain_commit",
+      "durable_retry_handoff",
+      "durable_failure_handoff"
+    ]
+  },
+  "retry_store": "postgresql_outbox.available_at",
+  "production_recovery_validated": false,
+  "consumer_lanes": {
+    "document": {
+      "topic": "tender.task.document.v1",
+      "group": "tender-document-worker-v1",
+      "handlers": [
+        "document/1",
+        "document/2",
+        "rag-index/1",
+        "knowledge-index/1",
+        "word-render/1",
+        "document-parse/1"
+      ],
+      "cli": "python -m apps.worker consume"
+    },
+    "review": {
+      "topic": "tender.task.review.v1",
+      "group": "tender-review-worker-v1",
+      "handlers": [
+        "prepare/1",
+        "review/1",
+        "package-review/1",
+        "package-prediction/1"
+      ],
+      "cli": "python -m apps.worker consume-review"
+    },
+    "export": {
+      "topic": "tender.task.export.v1",
+      "group": "tender-export-worker-v1",
+      "handlers": [
+        "export/1",
+        "report/1",
+        "package-report/1"
+      ],
+      "cli": "python -m apps.worker consume-export"
+    },
+    "comparison": {
+      "topic": "tender.task.comparison.v1",
+      "group": "tender-comparison-worker-v1",
+      "handlers": [
+        "comparison/1"
+      ],
+      "cli": "python -m apps.worker consume-comparison"
+    },
+    "assistant": {
+      "topic": "tender.task.assistant.v1",
+      "group": "tender-assistant-worker-v1",
+      "handlers": [
+        "assistant/1",
+        "authoring-generate/1"
+      ],
+      "cli": "python -m apps.worker consume-assistant"
+    }
+  },
+  "assistant_global": {
+    "topic": "tender.task.assistant-global.v1",
+    "group_configuration": "ASSISTANT_GLOBAL_CONSUMER_GROUP",
+    "relay_cli": "python -m packages.assistant.transport relay",
+    "consumer_cli": "python -m packages.assistant.transport worker",
+    "core_engine": false,
+    "requires_new_bounded_paid_authorization": true
+  },
+  "automatic_controllers": {
+    "tasks": "python -m packages.tasks.runner --once",
+    "assistant_materialization": "python -m packages.assistant.coordinator --once",
+    "can_enqueue_paid_intents": true,
+    "never_start_automatically_in_development": true
+  },
+  "consumer_lane_check": "Validate fixed handler allowlist before acquire or compute; reject misrouted payload without offset commit, including no-fee comparison lane.",
+  "paid_consumers_started": false,
+  "ordinary_handler_bindings": {
+    "document/1": "tender.task.document.v1",
+    "document/2": "tender.task.document.v1",
+    "rag-index/1": "tender.task.document.v1",
+    "knowledge-index/1": "tender.task.document.v1",
+    "prepare/1": "tender.task.review.v1",
+    "review/1": "tender.task.review.v1",
+    "export/1": "tender.task.export.v1",
+    "report/1": "tender.task.export.v1",
+    "comparison/1": "tender.task.comparison.v1",
+    "assistant/1": "tender.task.assistant.v1",
+    "authoring-generate/1": "tender.task.assistant.v1",
+    "word-render/1": "tender.task.document.v1",
+    "package-review/1": "tender.task.review.v1",
+    "package-report/1": "tender.task.export.v1",
+    "document-parse/1": "tender.task.document.v1",
+    "package-prediction/1": "tender.task.review.v1"
+  },
+  "topic_bindings": {
+    "document": {
+      "topic": "tender.task.document.v1",
+      "consumer_group": "tender-document-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "review": {
+      "topic": "tender.task.review.v1",
+      "consumer_group": "tender-review-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "export": {
+      "topic": "tender.task.export.v1",
+      "consumer_group": "tender-export-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "research": {
+      "topic": "tender.task.research.v1",
+      "consumer_group": "tender-research-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "assistant": {
+      "topic": "tender.task.assistant.v1",
+      "consumer_group": "tender-assistant-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "comparison": {
+      "topic": "tender.task.comparison.v1",
+      "consumer_group": "tender-comparison-worker-v1",
+      "partition_key": "operation_id:step_key"
+    },
+    "assistant_global": {
+      "topic": "tender.task.assistant-global.v1",
+      "consumer_group_configuration": "ASSISTANT_GLOBAL_CONSUMER_GROUP",
+      "partition_key": "global_run_id"
+    }
+  },
+  "all_topics": [
+    "tender.domain.events.v1",
+    "tender.task.assistant-global.v1",
+    "tender.task.assistant.v1",
+    "tender.task.comparison.v1",
+    "tender.task.dead-letter.v1",
+    "tender.task.document.v1",
+    "tender.task.export.v1",
+    "tender.task.research.v1",
+    "tender.task.review.v1"
+  ],
+  "historical_report_copy": {
+    "handler": "package-report/1",
+    "original_result_immutable": true,
+    "human_heads_captured_at_request": true,
+    "current_source_effectivity_revalidated": false,
+    "formal_scoring_eligible": false,
+    "submission_eligible": false
+  },
+  "independent_document_parse": {
+    "handler": "document-parse/1",
+    "step": "parse-document",
+    "paid_provider_calls": false,
+    "current_body_changed": false,
+    "automatically_started_review": false,
+    "physical_text_coverage": "partial",
+    "word_coverage_claimed": false
+  }
+}

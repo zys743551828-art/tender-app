@@ -19,6 +19,9 @@ STOP = threading.Event()
 
 
 def cycle(after=None, limit=50):
+    from packages.package_prediction_tasks.runtime import drain
+
+    drain(limit)
     with connection() as c:
         pending = sql.SQL(
             " OR EXISTS(SELECT FROM design.task_package_trigger_intents i "

@@ -33,6 +33,31 @@ function result(body: unknown, extra: object = {}) {
     headers: new Headers(),
   };
 }
+function queued(body: unknown, state = "published", extra: object = {}) {
+  return {
+    data: {
+      ...(body as object),
+      schema: "package-prediction/1",
+      actor_id: p.memberId,
+      bid_id: p.bidId,
+      scope_id: p.scopeId,
+      operation_id: certificate,
+      state,
+      prediction_ready: state === "published",
+      unified_report_state:
+        state === "published" ? "selection_required" : "prediction_pending",
+      provider_requests: 0,
+      ...extra,
+    },
+    etag: null,
+  };
+}
+function respond(path: string, body: unknown, extra: object = {}) {
+  const saved = body ?? JSON.parse(localStorage.getItem(key)!);
+  return path.endsWith("/prediction-tasks")
+    ? queued(saved)
+    : result(saved, extra);
+}
 function start() {
   fireEvent.change(screen.getByLabelText("认证编号"), {
     target: { value: certificate },
@@ -44,14 +69,14 @@ beforeEach(() => {
   localStorage.clear();
 });
 it("persists command before request and displays qualified result", async () => {
-  mock.mockImplementation(async (_, options) => {
+  mock.mockImplementation(async (path, options) => {
     expect(localStorage.getItem(key)).not.toBeNull();
-    return result(options?.body);
+    return respond(path, options?.body);
   });
   render(<PackageFormalPrediction {...p} />);
   start();
   expect(await screen.findByText(/正式预测：50/)).toBeTruthy();
-  expect(mock).toHaveBeenCalledTimes(1);
+  expect(mock).toHaveBeenCalledTimes(2);
 });
 it("lost ACK remount retries the identical command", async () => {
   mock.mockRejectedValueOnce(new Error("ACK lost"));
@@ -60,7 +85,9 @@ it("lost ACK remount retries the identical command", async () => {
   await screen.findByText(/ACK lost/);
   const first = mock.mock.calls[0][1]?.body;
   view.unmount();
-  mock.mockImplementation(async (_, options) => result(options?.body));
+  mock.mockImplementation(async (path, options) =>
+    respond(path, options?.body),
+  );
   render(<PackageFormalPrediction {...p} />);
   fireEvent.click(screen.getByText("恢复同一预测请求"));
   await screen.findByText(/正式预测：50/);
@@ -69,8 +96,8 @@ it("lost ACK remount retries the identical command", async () => {
 it.each(["stale", "hidden"])(
   "does not display value for %s history",
   async (state) => {
-    mock.mockImplementation(async (_, options) =>
-      result(options?.body, {
+    mock.mockImplementation(async (path, options) =>
+      respond(path, options?.body, {
         state,
         value: null,
         maximum: null,
@@ -90,8 +117,8 @@ it.each(["stale", "hidden"])(
   },
 );
 it("rejects a cross-scope ACK", async () => {
-  mock.mockImplementation(async (_, options) =>
-    result(options?.body, { scope_id: "other" }),
+  mock.mockImplementation(async (path, options) =>
+    respond(path, options?.body, { scope_id: "other" }),
   );
   render(<PackageFormalPrediction {...p} />);
   start();
@@ -99,7 +126,7 @@ it("rejects a cross-scope ACK", async () => {
   expect(screen.queryByText(/正式预测：50/)).toBeNull();
 });
 it("discards late result after selection switches", async () => {
-  let finish!: (v: ReturnType<typeof result>) => void;
+  let finish!: (v: ReturnType<typeof queued>) => void;
   mock.mockImplementation(
     () =>
       new Promise((resolve) => {
@@ -110,7 +137,7 @@ it("discards late result after selection switches", async () => {
   start();
   const body = mock.mock.calls[0][1]?.body;
   view.rerender(<PackageFormalPrediction {...p} scopeId="other" />);
-  await act(async () => finish(result(body)));
+  await act(async () => finish(queued(body)));
   expect(screen.queryByText(/正式预测：50/)).toBeNull();
 });
 it("fails closed on corrupted recovery state", () => {
@@ -134,7 +161,9 @@ it("allows correction after a first definite server rejection", async () => {
   );
 });
 it("clears the displayed numeric snapshot before a failing report authority refresh", async () => {
-  mock.mockImplementationOnce(async (_, options) => result(options?.body));
+  mock.mockImplementation(async (path, options) =>
+    respond(path, options?.body),
+  );
   render(<PackageFormalPrediction {...p} />);
   start();
   await screen.findByText(/正式预测：50/);
@@ -145,4 +174,50 @@ it("clears the displayed numeric snapshot before a failing report authority refr
   fireEvent.click(screen.getByText("复验统一报告"));
   expect(screen.queryByText(/正式预测：50/)).toBeNull();
   await screen.findByText(/certificate revoked/);
+});
+
+it("keeps queued/calculated/published distinct and resumes the durable publication", async () => {
+  mock.mockImplementationOnce(async (_, options) =>
+    queued(options?.body, "queued"),
+  );
+  render(<PackageFormalPrediction {...p} />);
+  start();
+  await screen.findByText(/持久预测任务：已排队/);
+  expect(screen.queryByText(/正式预测：50/)).toBeNull();
+  expect(mock).toHaveBeenCalledTimes(1);
+  const body = JSON.parse(localStorage.getItem(key)!);
+  mock.mockResolvedValueOnce(queued(body, "awaiting_publication"));
+  fireEvent.click(screen.getByText("刷新持久任务"));
+  await screen.findByText(/计算完成，等待资格复验发布/);
+  mock.mockResolvedValueOnce(queued(body));
+  mock.mockResolvedValueOnce(result(body));
+  fireEvent.click(screen.getByText("恢复资格复验与发布"));
+  await screen.findByText(/正式预测：50/);
+  expect(screen.getByText(/统一报告仍须选择同范围评审并复验/)).toBeTruthy();
+});
+it("cancels before publication without exposing a result", async () => {
+  mock.mockImplementationOnce(async (_, options) =>
+    queued(options?.body, "queued"),
+  );
+  render(<PackageFormalPrediction {...p} />);
+  start();
+  await screen.findByText(/持久预测任务：已排队/);
+  const body = JSON.parse(localStorage.getItem(key)!);
+  mock.mockResolvedValueOnce(queued(body, "cancelled"));
+  fireEvent.click(screen.getByText("取消尚未发布的预测"));
+  await screen.findByText(/持久预测任务：已取消/);
+  expect(screen.queryByText(/正式预测：50/)).toBeNull();
+  expect(localStorage.getItem(key)).not.toBeNull();
+});
+it("rejects a forged task readiness/foreign member ACK", async () => {
+  mock.mockImplementationOnce(async (_, options) =>
+    queued(options?.body, "queued", {
+      actor_id: "other",
+      prediction_ready: true,
+    }),
+  );
+  render(<PackageFormalPrediction {...p} />);
+  start();
+  await screen.findByText(/持久任务回执身份或状态异常/);
+  expect(screen.queryByText(/正式预测：50/)).toBeNull();
 });
