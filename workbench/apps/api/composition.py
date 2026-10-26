@@ -16,6 +16,7 @@ def mount(app):
     from apps.api.model_admission_routes import router as admission
     from apps.api.model_governance_routes import router as governance
     from apps.api.model_registry_routes import router as registry
+    from apps.api.package_model_registry_routes import router as package_registry
     from apps.api.scoring_routes import router as scoring
     from apps.api.task_draft_routes import router as task_drafts
     from apps.api.technical_scale_routes import router as technical_scale
@@ -35,6 +36,7 @@ def mount(app):
         historical_proof,
         historical_input,
         registry,
+        package_registry,
         scoring,
     )
     seen = {
