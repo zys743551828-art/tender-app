@@ -52,6 +52,9 @@ SOURCE_FILES = (
     "packages/authoring/rich_images.py",
     "packages/word_intake/inspection.py",
     "packages/domain/runtime.py",
+    "packages/platform_runtime/__init__.py",
+    "packages/platform_runtime/configuration.py",
+    "packages/platform_runtime/database.py",
 )
 DOCUMENT_PATH = "word/document.xml/body"
 

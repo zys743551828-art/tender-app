@@ -5,40 +5,27 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
-import os
-import shlex
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import UUID, uuid4
 
-import psycopg
 from jsonschema import Draft202012Validator, FormatChecker
-from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from packages.domain.errors import DomainError
+from packages.platform_runtime import configuration, database
 
 ROOT = Path(__file__).resolve().parents[2]
 FORMAT_CHECKER = FormatChecker()
 if not {"uri", "date-time", "uuid"} <= set(FORMAT_CHECKER.checkers):
     raise RuntimeError("协议format检查器不完整，请安装锁定后端依赖")
-for _line in (
-    (ROOT / ".env").read_text().splitlines()
-    if not os.environ.get("WORKBENCH_ENV_FILE") and (ROOT / ".env").exists()
-    else []
-):
-    if "=" in _line and not _line.lstrip().startswith("#"):
-        _key, _, _value = _line.partition("=")
-        _parts = shlex.split(_value, comments=True)
-        os.environ.setdefault(_key.strip(), _parts[0] if _parts else "")
+# Compatibility bootstrap: existing API/Worker import order and opt-out remain intact.
+# New application code can import platform_runtime without reading business configuration.
+configuration.bootstrap_legacy(ROOT)
 
 
 def required(name):
-    value = os.environ.get(name)
-    if not value:
-        raise RuntimeError(f"缺少配置 {name}")
-    return value
+    return configuration.required(name)
 
 
 def now():
@@ -97,12 +84,9 @@ def validate(name, body):
     return body
 
 
-@contextmanager
 def connection(worker=False):
-    key = "WORKER_DATABASE_DSN" if worker else "API_DATABASE_DSN"
-    with psycopg.connect(required(key), row_factory=dict_row) as conn:
-        conn.execute("SET LOCAL search_path=design,public")
-        yield conn
+    # Keep the established public entrypoint and runtime.required injection seam.
+    return database.transaction(worker, lookup=lambda name: required(name))
 
 
 def assert_role(worker=False):
