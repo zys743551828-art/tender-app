@@ -56,6 +56,9 @@ def arguments():
             "complete-feature-method",
             "complete-feature-freeze",
             "complete-feature-read",
+            "complete-calibration-method",
+            "complete-calibration-freeze",
+            "complete-calibration-read",
         ),
         required=True,
     )
@@ -80,6 +83,12 @@ def arguments():
     parser.add_argument("--material-store", type=Path)
     parser.add_argument("--source-commit")
     parser.add_argument("--expected-input-digest")
+    parser.add_argument("--selection", type=Path)
+    parser.add_argument("--labels", type=Path)
+    parser.add_argument("--result-dir", type=Path)
+    parser.add_argument("--expected-selection-digest")
+    parser.add_argument("--expected-labels-digest")
+    parser.add_argument("--expected-calibration-method-digest")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
     feature_arguments = (
@@ -96,7 +105,72 @@ def arguments():
         args.source_commit,
         args.expected_input_digest,
     )
-    if args.purpose.startswith(("feature-", "complete-feature-")):
+    calibration_args = (
+        args.selection,
+        args.labels,
+        args.result_dir,
+        args.expected_selection_digest,
+        args.expected_labels_digest,
+        args.expected_calibration_method_digest,
+    )
+    if args.purpose.startswith("complete-calibration-"):
+        if (
+            any(evidence)
+            or args.profile is not None
+            or args.job_id is not None
+            or args.generation != 1
+            or any(
+                v is not None
+                for v in (
+                    args.projection,
+                    args.origin,
+                    args.expected_projection_digest,
+                    args.expected_binding_digest,
+                    args.expected_feature_method_digest,
+                    args.expected_handoff_method_digest,
+                    args.source_commit,
+                    args.expected_input_digest,
+                )
+            )
+        ):
+            parser.error(
+                "calibration accepts no credentials, native grants or loose feature identity"
+            )
+        if args.purpose == "complete-calibration-method":
+            if any(v is not None for v in feature_arguments + calibration_args):
+                parser.error("method accepts no inputs")
+        else:
+            if not all((args.material_store, args.artifact_dir, args.result_dir, args.command_id)):
+                parser.error("calibration requires private CAS, feature index and result index")
+            if args.purpose == "complete-calibration-freeze":
+                if (
+                    not all(
+                        (
+                            args.selection,
+                            args.labels,
+                            args.expected_selection_digest,
+                            args.expected_labels_digest,
+                            args.expected_calibration_method_digest,
+                        )
+                    )
+                    or args.expected_artifact_digest is not None
+                ):
+                    parser.error("freeze requires separately pinned selection, labels and method")
+            elif args.expected_artifact_digest is None or any(
+                v is not None
+                for v in (
+                    args.selection,
+                    args.labels,
+                    args.expected_selection_digest,
+                    args.expected_labels_digest,
+                    args.expected_calibration_method_digest,
+                )
+            ):
+                parser.error("read requires only the pinned result artifact")
+        return parser, args
+    if any(v is not None for v in calibration_args):
+        parser.error("calibration inputs require a calibration purpose")
+    if args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
         if (
             any(evidence)
             or args.profile is not None
@@ -159,7 +233,7 @@ def arguments():
 
 def main():
     parser, args = arguments()
-    if args.purpose.startswith(("feature-", "complete-feature-")):
+    if args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run
 

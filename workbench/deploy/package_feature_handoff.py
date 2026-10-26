@@ -21,6 +21,12 @@ def run(args):
             args.purpose,
         ]
         for field in (
+            "selection",
+            "labels",
+            "result_dir",
+            "expected_selection_digest",
+            "expected_labels_digest",
+            "expected_calibration_method_digest",
             "material_store",
             "source_commit",
             "expected_input_digest",
@@ -51,7 +57,11 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose.startswith("complete-feature-"):
+        if args.purpose.startswith("complete-calibration-"):
+            from deploy.package_complete_calibration import execute
+
+            value = execute(args)
+        elif args.purpose.startswith("complete-feature-"):
             from deploy.package_complete_handoff import execute
 
             value = execute(args)
