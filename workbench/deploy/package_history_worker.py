@@ -48,7 +48,15 @@ def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--purpose",
-        choices=tuple(VARIABLES) + ("feature-method", "feature-freeze", "feature-read"),
+        choices=tuple(VARIABLES)
+        + (
+            "feature-method",
+            "feature-freeze",
+            "feature-read",
+            "complete-feature-method",
+            "complete-feature-freeze",
+            "complete-feature-read",
+        ),
         required=True,
     )
     parser.add_argument("--profile", type=Path)
@@ -69,6 +77,9 @@ def arguments():
     parser.add_argument("--expected-feature-method-digest")
     parser.add_argument("--expected-handoff-method-digest")
     parser.add_argument("--expected-artifact-digest")
+    parser.add_argument("--material-store", type=Path)
+    parser.add_argument("--source-commit")
+    parser.add_argument("--expected-input-digest")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
     feature_arguments = (
@@ -81,8 +92,11 @@ def arguments():
         args.expected_feature_method_digest,
         args.expected_handoff_method_digest,
         args.expected_artifact_digest,
+        args.material_store,
+        args.source_commit,
+        args.expected_input_digest,
     )
-    if args.purpose.startswith("feature-"):
+    if args.purpose.startswith(("feature-", "complete-feature-")):
         if (
             any(evidence)
             or args.profile is not None
@@ -90,7 +104,18 @@ def arguments():
             or args.generation != 1
         ):
             parser.error("feature handoff cannot accept credentials, native evidence or a CPU job")
-        if args.purpose == "feature-method":
+        complete = args.purpose.startswith("complete-")
+        mode = args.purpose.removeprefix("complete-")
+        if complete and (
+            args.projection is not None or args.expected_projection_digest is not None
+        ):
+            parser.error("complete material cannot be downgraded to a /2 projection")
+        if not complete and any(
+            v is not None
+            for v in (args.material_store, args.source_commit, args.expected_input_digest)
+        ):
+            parser.error("/2 projection modes cannot consume /3 material")
+        if mode == "feature-method":
             if any(value is not None for value in feature_arguments):
                 parser.error("feature-method accepts no material or artifact")
         elif not all(
@@ -98,7 +123,7 @@ def arguments():
                 args.artifact_dir,
                 args.command_id,
                 args.origin,
-                args.expected_projection_digest,
+                args.expected_input_digest if complete else args.expected_projection_digest,
                 args.expected_binding_digest,
                 args.expected_feature_method_digest,
                 args.expected_handoff_method_digest,
@@ -107,11 +132,15 @@ def arguments():
             parser.error(
                 "feature handoff requires exact command, origin and independent expected identities"
             )
-        elif args.purpose == "feature-freeze" and (
-            args.projection is None or args.expected_artifact_digest is not None
+        elif complete and not (args.material_store and args.source_commit):
+            parser.error(
+                "complete handoff requires an existing private CAS and pinned source commit"
+            )
+        elif mode == "feature-freeze" and (
+            (not complete and args.projection is None) or args.expected_artifact_digest is not None
         ):
             parser.error("feature-freeze requires only a private source projection")
-        elif args.purpose == "feature-read" and (
+        elif mode == "feature-read" and (
             args.projection is not None or args.expected_artifact_digest is None
         ):
             parser.error("feature-read requires the independently retained artifact digest")
@@ -130,7 +159,7 @@ def arguments():
 
 def main():
     parser, args = arguments()
-    if args.purpose.startswith("feature-"):
+    if args.purpose.startswith(("feature-", "complete-feature-")):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run
 

@@ -21,6 +21,9 @@ def run(args):
             args.purpose,
         ]
         for field in (
+            "material_store",
+            "source_commit",
+            "expected_input_digest",
             "artifact_dir",
             "command_id",
             "projection",
@@ -40,6 +43,7 @@ def run(args):
                     ]
                 )
         return subprocess.run(command, cwd=ROOT, env=ENV, check=False).returncode  # nosec B603
+    from packages.domain.providers.deepseek_vision import VisionProviderError
     from packages.model_governance import package_feature_handoff as handoff
     from packages.model_governance import package_technical_features as features
     from packages.model_governance.common import GovernanceError
@@ -47,7 +51,11 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose == "feature-method":
+        if args.purpose.startswith("complete-feature-"):
+            from deploy.package_complete_handoff import execute
+
+            value = execute(args)
+        elif args.purpose == "feature-method":
             value = {
                 "version": handoff.VERSION,
                 "feature_method_digest": features.method_digest(),
@@ -83,7 +91,15 @@ def run(args):
             json.dumps({"ok": False, "code": error.code, "provider_requests": 0, "paid_calls": 0})
         )
         return 2
-    except (OSError, TypeError, ValueError, KeyError, ArithmeticError, RecursionError):
+    except (
+        OSError,
+        TypeError,
+        ValueError,
+        KeyError,
+        ArithmeticError,
+        RecursionError,
+        VisionProviderError,
+    ):
         print(
             json.dumps(
                 {
