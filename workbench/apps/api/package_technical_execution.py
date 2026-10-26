@@ -7,7 +7,9 @@ from fastapi.responses import JSONResponse
 
 from apps.api.auth import auth
 from apps.api.bid_package_requirement_routes import requirement_errors
+from apps.api.material_jobs_composition import service as material_jobs_service
 from packages.domain.runtime import connection
+from packages.material_jobs.application import Target
 from packages.model_governance import package_scoring_readiness as readiness
 
 BASE = "/api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-scopes/{scope_id}"
@@ -177,32 +179,7 @@ def qualification_review(
 
 
 def _qualified_resume(scope, scope_id, actor, intent_id):
-    from packages.domain.errors import DomainError
-    from packages.model_governance import material_qualification_guard as guard
-    from packages.model_governance import material_qualified_job_transport as transport
-    from packages.model_governance import material_qualified_jobs as qualified
-
-    # The intent/Command transaction has committed. No API source, bid, review
-    # or ledger lock spans the independent-purpose native transaction.
-    with connection() as c:
-        row = qualified.intent(c, scope, scope_id, actor, intent_id)
-        value = qualified.observe(c, row)
-        if value["job"] is not None:
-            return value
-        try:
-            guard.audit(c)
-            if row["document"].get("guard_digest") != guard.method_digest():
-                qualified.policy.fail("GUARD_CHANGED", "原申请的资格守卫版本已变化", 409)
-            qualified.current(c, scope_id, row["document"]["request"])
-        except DomainError as error:
-            # Re-read after acquiring the review lock: a native commit may have
-            # won the race with a concurrent revocation or expiration.
-            return qualified.observe(c, row, pending_reason=error.code)
-        command = row["document"]["command"]
-    outcome = transport.submit(command)
-    with connection() as c:
-        row = qualified.intent(c, scope, scope_id, actor, intent_id)
-        return qualified.observe(c, row, pending_reason="NATIVE_" + outcome.upper())
+    return material_jobs_service(connection).resume(Target(scope, scope_id, actor), intent_id)
 
 
 @router.post("/material-qualified-jobs")
@@ -214,22 +191,12 @@ def qualified_job_request(
     r: Request,
     body: dict = Body(...),
 ):
-    from packages.model_governance import material_qualified_jobs as qualified
-
     actor = auth(r, True)["member_id"]
-    scope = tuple(map(str, (bid_id, package_id, revision_id)))
+    target = Target(tuple(map(str, (bid_id, package_id, revision_id))), str(scope_id), actor)
     with requirement_errors():
-        with connection() as c:
-            intent_id = qualified.prepare(
-                c,
-                scope,
-                str(scope_id),
-                actor,
-                body,
-                r.headers.get("if-match"),
-                r.headers.get("idempotency-key"),
-            )
-        value = _qualified_resume(scope, str(scope_id), actor, intent_id)
+        value = material_jobs_service(connection).request(
+            target, body, r.headers.get("if-match"), r.headers.get("idempotency-key")
+        )
         return JSONResponse(
             value,
             status_code=200 if value["job"] else 202,
@@ -241,19 +208,12 @@ def qualified_job_request(
 def qualified_job_read(
     bid_id: UUID, package_id: UUID, revision_id: UUID, scope_id: UUID, intent_id: UUID, r: Request
 ):
-    from packages.model_governance import material_qualified_jobs as qualified
-
     actor = auth(r)["member_id"]
-    with requirement_errors(), connection() as c:
-        row = qualified.intent(
-            c,
-            tuple(map(str, (bid_id, package_id, revision_id))),
-            str(scope_id),
-            actor,
-            str(intent_id),
-        )
+    target = Target(tuple(map(str, (bid_id, package_id, revision_id))), str(scope_id), actor)
+    with requirement_errors():
         return JSONResponse(
-            qualified.observe(c, row), headers={"Cache-Control": "private, no-store"}
+            material_jobs_service(connection).read(target, str(intent_id)),
+            headers={"Cache-Control": "private, no-store"},
         )
 
 
@@ -261,17 +221,10 @@ def qualified_job_read(
 def qualified_execution_state(
     bid_id: UUID, package_id: UUID, revision_id: UUID, scope_id: UUID, intent_id: UUID, r: Request
 ):
-    from packages.model_governance import material_execution_status as status
-    from packages.model_governance import material_qualified_jobs as qualified
-
     actor = auth(r)["member_id"]
-    with requirement_errors(), connection() as c:
-        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-        row = qualified.intent(
-            c,
-            tuple(map(str, (bid_id, package_id, revision_id))),
-            str(scope_id),
-            actor,
-            str(intent_id),
+    target = Target(tuple(map(str, (bid_id, package_id, revision_id))), str(scope_id), actor)
+    with requirement_errors():
+        return JSONResponse(
+            material_jobs_service(connection).execution_state(target, str(intent_id)),
+            headers={"Cache-Control": "private, no-store"},
         )
-        return JSONResponse(status.observe(c, row), headers={"Cache-Control": "private, no-store"})
