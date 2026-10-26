@@ -100,7 +100,15 @@ def ingest(*, scope_id, submission_id, outcome_id, adapter_id, envelope):
     }
 
 
-def run(purpose, job_id, generation, *, complete_material=None, feature_training_method=None):
+def run(
+    purpose,
+    job_id,
+    generation,
+    *,
+    complete_material=None,
+    feature_training_method=None,
+    final_material=None,
+):
     """Recover CPU work through its owned lease; final exposure commits first."""
     from packages.model_governance import package_history_cpu as cpu
 
@@ -112,6 +120,14 @@ def run(purpose, job_id, generation, *, complete_material=None, feature_training
         raise GovernanceError(
             "PACKAGE_HISTORY_COMPLETE_FEATURE_INPUT_REQUIRED", "Complete native input required"
         )
+    if final_material is not None and (
+        purpose != "evaluate"
+        or complete_material is not None
+        or feature_training_method is not None
+    ):
+        raise GovernanceError(
+            "PACKAGE_FEATURE_FINAL_PURPOSE_DENIED", "Dedicated prediction freeze only"
+        )
     owner = uuid4()
     with connection(purpose) as c:
         lease = c.execute(
@@ -119,7 +135,7 @@ def run(purpose, job_id, generation, *, complete_material=None, feature_training
             (job_id, generation, owner),
         ).fetchone()["value"]
     if lease["state"] == "succeeded":
-        if complete_material is not None:
+        if complete_material is not None or final_material is not None:
             raise GovernanceError(
                 "PACKAGE_HISTORY_COMPLETE_RESULT_ALREADY_FINISHED",
                 "Read the existing job result; no new material was checked",
@@ -143,6 +159,42 @@ def run(purpose, job_id, generation, *, complete_material=None, feature_training
     heartbeat = threading.Thread(target=renew, daemon=True)
     heartbeat.start()
     try:
+        if final_material is not None:
+            from packages.model_governance import package_feature_final as final
+
+            if "feature_final_input" not in lease:
+                raise GovernanceError(
+                    "PACKAGE_FEATURE_FINAL_NATIVE_INPUT_REQUIRED",
+                    "Fresh reviewed final extension required",
+                )
+            result = final.run(lease["feature_final_input"], final_material)
+            prior = lease.get("feature_final_frozen")
+            if prior is not None and prior != result:
+                raise GovernanceError(
+                    "PACKAGE_FEATURE_FINAL_REPLAY_CONFLICT", "Frozen predictions cannot change"
+                )
+            if failures:
+                raise GovernanceError("PACKAGE_HISTORY_LEASE_LOST", "Prediction lease lost")
+            stopped.set()
+            heartbeat.join(timeout=10)
+            with connection(purpose) as c:
+                c.execute(
+                    "SELECT package_historical_research.finish_job(%s,%s,%s,%s,%s,%s)",
+                    (*lease_arguments, Jsonb(result), digest(result)),
+                )
+            return {
+                "job_id": str(job_id),
+                "state": "predictions_frozen",
+                "predictions_digest": digest(result),
+                "candidate_digest": result["candidate_digest"],
+                "model_digest": result["model_digest"],
+                "replayed": prior is not None,
+                "evaluation_status": "not_implemented",
+                "research_only": True,
+                "formal_eligibility": "unavailable",
+                "provider_requests": 0,
+                "paid_calls": 0,
+            }
         if purpose == "train":
             with connection(purpose) as c:
                 bundle = c.execute(

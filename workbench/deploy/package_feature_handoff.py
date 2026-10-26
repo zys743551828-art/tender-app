@@ -58,7 +58,17 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose == "feature-training-method":
+        if args.purpose == "final-feature-method":
+            from packages.model_governance import package_feature_final as final
+
+            value = {
+                "version": final.VERSION,
+                "method_digest": final.method_digest(),
+                "evaluation_status": "not_implemented",
+                "provider_requests": 0,
+                "paid_calls": 0,
+            }
+        elif args.purpose == "feature-training-method":
             from packages.model_governance import package_feature_training as training
 
             value = training.method() | {"provider_requests": 0, "paid_calls": 0}

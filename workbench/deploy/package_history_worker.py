@@ -52,6 +52,7 @@ def arguments():
         + (
             "native-feature-method",
             "feature-training-method",
+            "final-feature-method",
             "feature-method",
             "feature-freeze",
             "feature-read",
@@ -97,6 +98,7 @@ def arguments():
     parser.add_argument("--expected-complete-reference-digest")
     parser.add_argument("--expected-complete-method-digest")
     parser.add_argument("--expected-feature-training-method-digest")
+    parser.add_argument("--freeze-final-feature-predictions", action="store_true")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
     feature_arguments = (
@@ -129,16 +131,27 @@ def arguments():
         args.expected_complete_method_digest,
     )
     if any(v is not None for v in native_complete):
-        if args.purpose != "train" or not all(native_complete):
+        if (
+            args.purpose != "train"
+            and not (args.purpose == "evaluate" and args.freeze_final_feature_predictions)
+        ) or not all(native_complete):
             parser.error(
                 "complete native inputs require one training job and all frozen references"
             )
+    if args.freeze_final_feature_predictions and (
+        args.purpose != "evaluate"
+        or not all(native_complete)
+        or args.expected_feature_training_method_digest is not None
+    ):
+        parser.error(
+            "final prediction freeze requires evaluate, complete references and final method digest"
+        )
     if args.expected_feature_training_method_digest is not None and not (
         (args.purpose == "train" and all(native_complete))
         or args.purpose in {"complete-calibration-freeze", "complete-calibration-read"}
     ):
         parser.error("feature training requires complete native train or local calibration inputs")
-    if args.purpose in {"native-feature-method", "feature-training-method"}:
+    if args.purpose in {"native-feature-method", "feature-training-method", "final-feature-method"}:
         if (
             any(v is not None for v in feature_arguments + calibration_args + native_complete)
             or any(evidence)
@@ -271,6 +284,7 @@ def main():
     if args.purpose in {
         "native-feature-method",
         "feature-training-method",
+        "final-feature-method",
     } or args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run
@@ -302,6 +316,8 @@ def main():
             ]
         else:
             command += ["--job-id", str(args.job_id), "--generation", str(args.generation)]
+        if args.freeze_final_feature_predictions:
+            command.append("--freeze-final-feature-predictions")
         for field in (
             "complete_references",
             "complete_material_store",
@@ -350,7 +366,20 @@ def main():
                 envelope=envelope,
             )
         else:
-            if args.complete_references is not None:
+            if args.freeze_final_feature_predictions:
+                value = runtime.run(
+                    args.purpose,
+                    args.job_id,
+                    args.generation,
+                    final_material={
+                        "references": args.complete_references,
+                        "material_store": args.complete_material_store,
+                        "artifact_dir": args.complete_artifact_dir,
+                        "reference_digest": args.expected_complete_reference_digest,
+                        "method_digest": args.expected_complete_method_digest,
+                    },
+                )
+            elif args.complete_references is not None:
                 value = runtime.run(
                     args.purpose,
                     args.job_id,
