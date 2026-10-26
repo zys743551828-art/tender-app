@@ -15,6 +15,7 @@ import pypdfium2
 from packages.authoring import generated_renderer as text_renderer
 from packages.authoring import (
     page_navigation,
+    rich_caption_pdf,
     rich_captions,
     rich_docx,
     rich_pdf,
@@ -53,6 +54,7 @@ def profile_for(base):
         "image_position_epsilon_pt": rich_pdf.POSITION_EPSILON,
         "image_section_policy": "measured_chapter_start_to_next_preorder_heading_v1",
         "caption_policy": rich_captions.PROTOCOL,
+        "caption_inspector_digest": sha(Path(rich_caption_pdf.__file__).read_bytes()),
         "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
@@ -107,8 +109,8 @@ def inspect_pdf(data, prepared):
         data, prepared["snapshot"], prepared["roots"], prepared["config"]
     )
     image_sections = rich_pdf.inspect_image_sections(prepared["snapshot"], images, navigation)
-    caption_gaps = (
-        ["AUTHORING_CAPTION_PDF_UNVERIFIED"] if rich_captions.entries(prepared["snapshot"]) else []
+    captions = rich_caption_pdf.inspect_captions(
+        data, prepared["snapshot"], images, tables, prepared["config"]
     )
     return body | {
         "gaps": list(
@@ -118,13 +120,14 @@ def inspect_pdf(data, prepared):
                 + navigation["gaps"]
                 + tables["gaps"]
                 + image_sections["gaps"]
-                + caption_gaps
+                + captions["gaps"]
             )
         ),
         "raster_correspondence": images,
         "navigation": navigation,
         "table_correspondence": tables,
         "image_section_correspondence": image_sections,
+        "caption_correspondence": captions,
     }
 
 
