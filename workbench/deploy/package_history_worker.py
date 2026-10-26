@@ -46,7 +46,11 @@ def environment(profile, purpose):
 
 def arguments():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--purpose", choices=tuple(VARIABLES), required=True)
+    parser.add_argument(
+        "--purpose",
+        choices=tuple(VARIABLES) + ("feature-method", "feature-freeze", "feature-read"),
+        required=True,
+    )
     parser.add_argument("--profile", type=Path)
     parser.add_argument("--scope-id", type=UUID)
     parser.add_argument("--submission-id", type=UUID)
@@ -56,8 +60,64 @@ def arguments():
     parser.add_argument("--job-id", type=UUID)
     parser.add_argument("--generation", type=int, default=1)
     parser.add_argument("--owned-child", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--artifact-dir", type=Path)
+    parser.add_argument("--command-id", type=UUID)
+    parser.add_argument("--projection", type=Path)
+    parser.add_argument("--origin", choices=("synthetic_mechanism", "unqualified_research"))
+    parser.add_argument("--expected-projection-digest")
+    parser.add_argument("--expected-binding-digest")
+    parser.add_argument("--expected-feature-method-digest")
+    parser.add_argument("--expected-handoff-method-digest")
+    parser.add_argument("--expected-artifact-digest")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
+    feature_arguments = (
+        args.artifact_dir,
+        args.command_id,
+        args.projection,
+        args.origin,
+        args.expected_projection_digest,
+        args.expected_binding_digest,
+        args.expected_feature_method_digest,
+        args.expected_handoff_method_digest,
+        args.expected_artifact_digest,
+    )
+    if args.purpose.startswith("feature-"):
+        if (
+            any(evidence)
+            or args.profile is not None
+            or args.job_id is not None
+            or args.generation != 1
+        ):
+            parser.error("feature handoff cannot accept credentials, native evidence or a CPU job")
+        if args.purpose == "feature-method":
+            if any(value is not None for value in feature_arguments):
+                parser.error("feature-method accepts no material or artifact")
+        elif not all(
+            (
+                args.artifact_dir,
+                args.command_id,
+                args.origin,
+                args.expected_projection_digest,
+                args.expected_binding_digest,
+                args.expected_feature_method_digest,
+                args.expected_handoff_method_digest,
+            )
+        ):
+            parser.error(
+                "feature handoff requires exact command, origin and independent expected identities"
+            )
+        elif args.purpose == "feature-freeze" and (
+            args.projection is None or args.expected_artifact_digest is not None
+        ):
+            parser.error("feature-freeze requires only a private source projection")
+        elif args.purpose == "feature-read" and (
+            args.projection is not None or args.expected_artifact_digest is None
+        ):
+            parser.error("feature-read requires the independently retained artifact digest")
+        return parser, args
+    if any(value is not None for value in feature_arguments):
+        parser.error("native history purposes do not accept feature artifacts")
     if args.purpose == "verify":
         if not all(evidence) or args.job_id is not None:
             parser.error(
@@ -70,6 +130,11 @@ def arguments():
 
 def main():
     parser, args = arguments()
+    if args.purpose.startswith("feature-"):
+        sys.path.insert(0, str(ROOT))
+        from deploy.package_feature_handoff import run
+
+        return run(args)
     if not args.owned_child:
         if args.profile is None:
             parser.error("--profile is required")

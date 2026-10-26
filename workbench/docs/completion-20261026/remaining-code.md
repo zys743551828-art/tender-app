@@ -4,13 +4,13 @@
 
 ## 已完成的本分支产品增量
 
-完整两轮核查快照 JSON 导出、固定来源同章多文字节点原子修订及丢 ACK 恢复、图注稳定锚点及 PDF 定位、图表混排／章节范围、受限两页续表、显式重复首行表头。其原生运行／真实业务资格并不随编码自动完成。
+完整两轮核查快照 JSON 导出、固定来源同章多文字节点原子修订及丢 ACK 恢复、图注稳定锚点及 PDF 定位、图表混排／章节范围、受限两页续表、显式重复首行表头、现有历史研究命令行的 `/2` 私有特征冻结／重读交接。后者保留非数值研究用途，未接入原生历史训练。其原生运行／真实业务资格并不随编码自动完成。
 
 ## 真正仍需编码与装配
 
 | 优先级 | 缺口及源码依据 | 可独立推进范围与边界 |
 | --- | --- | --- |
-| 1 | 整包三槽特征到历史校准的冻结交接。`package_complete_features.aggregate_rule` 已有完整材料 `/3` 三槽聚合，`package_technical_features` 已有 `/2` 结构化非数字特征；当前调用检索未发现业务运行／持久化消费者，`packages/contracts/package-technical-features.md` 与 `package-technical-complete-material.md` 也明确说明尚未连接正式 API／Worker／原生登记。不能误列为“特征尚未实现”。`package_history_cpu` 仅 mean/median 常数基线，明确列出 complete_package_three_judgment_features 缺口 | 下一阶段先核对既有 SQL 和材料权威接口，做版本化冻结特征导出／导入的小闭环，保留原始输入、方法、三槽／重试身份与研究用途；缺槽、未知调用、错范围、来源漂移必须拒绝。可用明确合成样本测试机制，不产出真实预测资格。线性拟合和校准还需独立分组／防泄漏／发布协议；不可借旧单正文训练器补零冒充 |
+| 1 | 整包三槽特征到历史校准的冻结交接。`package_complete_features.aggregate_rule` 已有完整材料 `/3` 三槽聚合，`package_technical_features` 已有 `/2` 结构化非数字特征；当前调用检索未发现业务运行／持久化消费者，`packages/contracts/package-technical-features.md` 与 `package-technical-complete-material.md` 也明确说明尚未连接正式 API／Worker／原生登记。不能误列为“特征尚未实现”。`package_history_cpu` 仅 mean/median 常数基线，明确列出 complete_package_three_judgment_features 缺口 | 已完成 `/2` 私有文件交接（[阶段记录](feature-handoff.md)）：原子发布、幂等、丢 ACK 恢复与重算读取。仍需 `/3` 完整材料及原始响应的版本化持久化交接，并在现有用途接口内审查原生登记装配；不能把 `/2` 包降级或冒充 `/3` 来源。原始输入、方法、三槽／重试身份与研究用途继续保留，缺槽、未知调用、错范围、来源漂移必须拒绝。可用明确合成样本测试机制，不产出真实预测资格。线性拟合和校准还需独立分组／防泄漏／发布协议；不可借旧单正文训练器补零冒充 |
 | 2 | 正式整包评分装配：`package_scoring_readiness.context` 明确缺完整范围权威、视觉权威、真实端口和方法认证；`request_execution` 保持拒绝。`package_scoring_producer` 与 `package_scoring_runtime` 只允许独立 mechanism_test 运行 | 已有预算、调用、租约和结果机制，不从零重写。后续需要把完整材料／视觉输入权威接入生产级用途协议并独立验收。当前禁止付费、生产库及新增权限；不能简单删除 blockers。先推进无副作用的冻结材料和特征交接，再单独评审正式执行装配 |
 | 3 | 复杂富内容格式：三页以上续表、多行重复表头、跨页合并格、拆页图注、横向并排图表 | 目前明确拒绝，不能取消边界伪装支持。相比继续扩大合成 PDF 支持，优先 1 的产品数据闭环；真实转换样例可用后按实际需求决定下一个格式，而不是无限增加假想布局 |
 | 4 | 外部 Word 重复表头无损导入 | `docx_import_tables` 仍保留表头样式并显式警告重复规则未导入。新结构化表格能力不自动扩展冻结导入协议；需独立版本化导入策略和反例 |
