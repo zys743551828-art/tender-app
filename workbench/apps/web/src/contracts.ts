@@ -1050,6 +1050,42 @@ export type AuthoringExactTextEditResult = {
   qualification: AuthoringExactManualRevisionView;
 };
 
+export type AuthoringExactMultiTextEditRequest = {
+  protocol: "authoring-exact-multi-text-edit/1";
+  base_draft_revision: number;
+  section_revision_id: string;
+  edits: AuthoringExactTextChange[];
+  reason: string;
+};
+
+export type AuthoringExactMultiTextEditResult = {
+  protocol: "authoring-exact-text-edit-result/2";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  parent_section_revision_id: string;
+  section_revision_id: string;
+  section_digest: string;
+  qualification: AuthoringExactMultiManualRevisionView;
+};
+
+export type AuthoringExactMultiTextEditCapabilities = {
+  protocol: "authoring-exact-text-edit-capabilities/2";
+  available: boolean;
+  supported_content: "plain_text_stable_nodes";
+  preserves_source_refs: true;
+  preserves_rule_ids: true;
+  ordinary_edit_available: false;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactMultiManualRevisionView = {
+  manifest: AuthoringExactMultiManualRevisionManifest;
+  digest: string;
+};
+
 export type AuthoringExactSectionBinding = {
   section_id: string;
   section_revision_id: string;
@@ -9275,6 +9311,37 @@ export type AuthoringExactManualRevisionManifest = {
   content_correctness_certified: false;
 };
 
+export type AuthoringExactTextChange = {
+  node_id: string;
+  before_node_digest: string;
+  replacement_text: string;
+};
+
+export type AuthoringExactMultiManualRevisionManifest = {
+  protocol: "authoring-exact-manual-revision/2";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactMultiTextEditOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactMultiTextEditMethod;
+  method_digest: string;
+  candidate_adopted: false;
+  content_correctness_certified: false;
+};
+
 export type PackageContext = {
   target: PackageReference;
   authority: PackageReference;
@@ -11247,6 +11314,25 @@ export type AuthoringExactTextEditMethod = {
   source_sha256: { [key: string]: string };
 };
 
+export type AuthoringExactMultiTextEditOrigin = {
+  kind: "manual_multi_text_edit";
+  parent_qualification_id: string;
+  parent_qualification_digest: string;
+  root_qualification_id: string;
+  root_qualification_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+  edits: AuthoringExactTextChangeOrigin[];
+  reason: string;
+};
+
+export type AuthoringExactMultiTextEditMethod = {
+  protocol: "authoring-exact-text-edit-policy/2";
+  supported_content: "plain_text_stable_nodes";
+  source_sha256: { [key: string]: string };
+};
+
 export type PackageReference = {
   package_id: string;
   revision_id: string;
@@ -11756,6 +11842,12 @@ export type AuthoringHistoryAuthoringRichRow = {
     id: string;
   };
   content: AuthoringHistoryAuthoringRichCell[];
+};
+
+export type AuthoringExactTextChangeOrigin = {
+  node_id: string;
+  before_node_digest: string;
+  replacement_text_digest: string;
 };
 
 export type FactSubject = {

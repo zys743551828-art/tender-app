@@ -13,6 +13,8 @@ from psycopg.types.json import Jsonb
 from packages.authoring.content import SCHEMA_DIGEST, validate_text_content
 from packages.authoring.exact_text_edit_contracts import (
     AuthoringExactManualRevisionView,
+    AuthoringExactMultiManualRevisionView,
+    AuthoringExactMultiTextEditRequest,
     AuthoringExactTextEditRequest,
 )
 from packages.domain.runtime import ROOT, DomainError, clean, fetch, sha, uid
@@ -24,8 +26,23 @@ def rejected(message="固定来源文字修订与原稿或请求不一致，未�
     raise DomainError("AUTHORING_EXACT_TEXT_EDIT_INVALID", message, 409)
 
 
-def policy():
-    paths = (
+def multi(request):
+    return request.get("protocol") == "authoring-exact-multi-text-edit/1"
+
+
+def parse_request(request):
+    model = AuthoringExactMultiTextEditRequest if multi(request) else AuthoringExactTextEditRequest
+    return clean(model.model_validate(request).model_dump(mode="json"))
+
+
+def multi_installed(c):
+    return c.execute(
+        "SELECT to_regprocedure('design.authoring_exact_check_multi_text_record(uuid)') IS NOT NULL AS ready"
+    ).fetchone()["ready"]
+
+
+def policy(is_multi=False):
+    paths: tuple[str, ...] = (
         "packages/authoring/exact_text_edits.py",
         "packages/authoring/exact_text_edit_service.py",
         "packages/authoring/exact_text_edit_contracts.py",
@@ -33,9 +50,13 @@ def policy():
         "packages/authoring/repository.py",
         "packages/contracts/sql/authoring-exact-text-edits.sql",
     )
+    if is_multi:
+        paths += ("packages/contracts/sql/authoring-exact-multi-text-edits.sql",)
     return {
-        "protocol": "authoring-exact-text-edit-policy/1",
-        "supported_content": "plain_text_stable_node",
+        "protocol": "authoring-exact-text-edit-policy/2"
+        if is_multi
+        else "authoring-exact-text-edit-policy/1",
+        "supported_content": "plain_text_stable_nodes" if is_multi else "plain_text_stable_node",
         "source_sha256": {name: sha((ROOT / name).read_bytes()) for name in paths},
     }
 
@@ -44,7 +65,23 @@ def materialize(original, request):
     """Reconstruct from server content; the request cannot carry any source metadata."""
     from packages.authoring.patches import replace_node
 
-    body = clean(AuthoringExactTextEditRequest.model_validate(request).model_dump(mode="json"))
+    body = parse_request(request)
+    if multi(body):
+        edits = body["edits"]
+        if len({edit["node_id"] for edit in edits}) != len(edits):
+            raise DomainError("INVALID_REQUEST", "同一节点不能重复修订", 422)
+        if sum(len(edit["replacement_text"]) for edit in edits) > 20000:
+            raise DomainError("INVALID_REQUEST", "本次修订文字合计不能超过20000字符", 422)
+        # Validate every node against the immutable parent before constructing a result.
+        common = {
+            key: body[key] for key in ("base_draft_revision", "section_revision_id", "reason")
+        }
+        for edit in edits:
+            materialize(original, {**common, **edit})
+        result = deepcopy(original)
+        for edit in edits:
+            result = materialize(result, {**common, **edit})
+        return result
     if not body["reason"].strip() or any(
         ord(ch) < 32 and ch not in "\t\n" for ch in body["reason"]
     ):
@@ -219,10 +256,14 @@ def bind(c, admission, parent, expected_content, content, schema_digest):
     else:
         root_id = p["origin"]["root_qualification_id"]
         root_digest = p["origin"]["root_qualification_digest"]
-    request, method = admission.before_action["request"], policy()
+    request = admission.before_action["request"]
+    is_multi = multi(request)
+    method = policy(is_multi)
     m = clean(
         {
-            "protocol": "authoring-exact-manual-revision/1",
+            "protocol": "authoring-exact-manual-revision/2"
+            if is_multi
+            else "authoring-exact-manual-revision/1",
             "id": admission.qualification_id,
             "bid_id": p["bid_id"],
             "draft_id": p["draft_id"],
@@ -237,7 +278,7 @@ def bind(c, admission, parent, expected_content, content, schema_digest):
             "parent_section_digest": p["section_digest"],
             "input": p["input"],
             "origin": {
-                "kind": "manual_text_edit",
+                "kind": "manual_multi_text_edit" if is_multi else "manual_text_edit",
                 "parent_qualification_id": p["id"],
                 "parent_qualification_digest": parent["digest"],
                 "root_qualification_id": root_id,
@@ -245,9 +286,24 @@ def bind(c, admission, parent, expected_content, content, schema_digest):
                 "command_id": admission.command_id,
                 "actor_id": admission.actor_id,
                 "before_action_digest": sha(admission.before_action),
-                "node_id": request["node_id"],
-                "before_node_digest": request["before_node_digest"],
-                "replacement_text_digest": sha(request["replacement_text"].encode()),
+                **(
+                    {
+                        "edits": [
+                            {
+                                "node_id": edit["node_id"],
+                                "before_node_digest": edit["before_node_digest"],
+                                "replacement_text_digest": sha(edit["replacement_text"].encode()),
+                            }
+                            for edit in request["edits"]
+                        ]
+                    }
+                    if is_multi
+                    else {
+                        "node_id": request["node_id"],
+                        "before_node_digest": request["before_node_digest"],
+                        "replacement_text_digest": sha(request["replacement_text"].encode()),
+                    }
+                ),
                 "reason": request["reason"],
             },
             "source_scope": "exact_package_context",
@@ -260,7 +316,8 @@ def bind(c, admission, parent, expected_content, content, schema_digest):
         }
     )
     value = {"manifest": m, "digest": sha(m)}
-    AuthoringExactManualRevisionView.model_validate(value)
+    model = AuthoringExactMultiManualRevisionView if is_multi else AuthoringExactManualRevisionView
+    model.model_validate(value)
     c.execute(
         "INSERT INTO design.authoring_exact_manual_revisions "
         "(id,bid_id,draft_id,section_id,section_revision_id,parent_revision_id,parent_qualification_id,"

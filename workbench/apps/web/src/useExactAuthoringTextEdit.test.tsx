@@ -218,3 +218,81 @@ it.each(["account", "unmount", "record"])(
     );
   },
 );
+
+it("recovers every batch item after a lost ACK with the original key, condition and frozen base", async () => {
+  const { syntheticMultiTextEdit } = await import(
+    "./authoringMultiTextEdit.test-support"
+  );
+  const f = await syntheticMultiTextEdit();
+  mocked.mockRejectedValueOnce(new ApiError("lost", 0, "NETWORK_ERROR"));
+  const first = renderHook(() => useExactAuthoringTextEdit(f.scope));
+  await act(async () => {
+    await first.result.current.run(
+      f.pending.base,
+      f.pending.body,
+      f.pending.etag,
+    );
+  });
+  expect(first.result.current.pending).toBe(true);
+  const original = mocked.mock.calls[0];
+  first.unmount();
+  mocked.mockResolvedValueOnce({ data: f.ack, etag: f.etag });
+  const restored = renderHook(() => useExactAuthoringTextEdit(f.scope));
+  expect(mocked).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    await restored.result.current.retry();
+  });
+  expect(mocked.mock.calls[1]).toEqual(original);
+  expect(restored.result.current.pending).toBe(false);
+  expect(sessionStorage.getItem(exactTextEditStorageKey(f.scope))).toBeNull();
+});
+
+it("retains the entire batch on CAS conflict and discards a late response after member switch", async () => {
+  const { syntheticMultiTextEdit } = await import(
+    "./authoringMultiTextEdit.test-support"
+  );
+  const f = await syntheticMultiTextEdit();
+  mocked.mockRejectedValueOnce(
+    new ApiError("changed", 412, "REVISION_CONFLICT"),
+  );
+  const first = renderHook(() => useExactAuthoringTextEdit(f.scope));
+  await act(async () => {
+    await first.result.current.run(
+      f.pending.base,
+      f.pending.body,
+      f.pending.etag,
+    );
+  });
+  expect(first.result.current.conflict).toBe(true);
+  expect(first.result.current.original?.body).toEqual(f.pending.body);
+  first.unmount();
+  sessionStorage.clear();
+  let finish!: (value: { data: unknown; etag: string }) => void;
+  mocked.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const hook = renderHook(
+    ({ selected }) => useExactAuthoringTextEdit(selected),
+    { initialProps: { selected: f.scope } },
+  );
+  let running!: Promise<unknown>;
+  act(() => {
+    running = hook.result.current.run(
+      f.pending.base,
+      f.pending.body,
+      f.pending.etag,
+    );
+  });
+  await waitFor(() => expect(mocked).toHaveBeenCalledTimes(2));
+  const saved = sessionStorage.getItem(exactTextEditStorageKey(f.scope));
+  hook.rerender({ selected: { ...f.scope, memberId: crypto.randomUUID() } });
+  await act(async () => {
+    finish({ data: f.ack, etag: f.etag });
+    await running;
+  });
+  expect(hook.result.current.pending).toBe(false);
+  expect(sessionStorage.getItem(exactTextEditStorageKey(f.scope))).toBe(saved);
+});

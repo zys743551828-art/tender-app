@@ -4,7 +4,7 @@ from uuid import UUID
 
 from packages.authoring import exact_builds, exact_sources, exact_text_edits, repository
 from packages.authoring.exact_text_edit_contracts import (
-    AuthoringExactTextEditRequest,
+    AuthoringExactMultiTextEditResult,
     AuthoringExactTextEditResult,
 )
 from packages.domain.runtime import DomainError, audit, clean, connection, fetch, match, sha
@@ -13,10 +13,13 @@ from packages.domain.work_access import begin
 
 def capabilities(c):
     ready = exact_text_edits.available(c)
+    is_multi = ready and exact_text_edits.multi_installed(c)
     return {
-        "protocol": "authoring-exact-text-edit-capabilities/1",
+        "protocol": "authoring-exact-text-edit-capabilities/2"
+        if is_multi
+        else "authoring-exact-text-edit-capabilities/1",
         "available": ready,
-        "supported_content": "plain_text_stable_node",
+        "supported_content": "plain_text_stable_nodes" if is_multi else "plain_text_stable_node",
         "preserves_source_refs": True,
         "preserves_rule_ids": True,
         "ordinary_edit_available": False,
@@ -42,7 +45,7 @@ def _replay(c, bid, draft, actor, key, body, condition):
         raise DomainError("COMMAND_INCOMPLETE", "原文字修订尚未取得完整回执", 409)
     stored = row["response"]
     value = stored.get("body", {})
-    AuthoringExactTextEditResult.model_validate(value)
+    result_model(body).model_validate(value)
     q = exact_sources.load(c, bid, UUID(value["section_revision_id"]))
     if (
         stored.get("status") != 200
@@ -62,6 +65,10 @@ def _replay(c, bid, draft, actor, key, body, condition):
 
 def _capture(c, bid, draft, body, condition):
     exact_text_edits.require_available(c)
+    if exact_text_edits.multi(body) and not exact_text_edits.multi_installed(c):
+        raise DomainError(
+            "AUTHORING_EXACT_TEXT_EDIT_NOT_CONFIGURED", "原子多节点修订扩展尚未安装", 503
+        )
     row = repository.lock_draft(c, bid, draft)
     match(condition, "draft", draft, row["revision"])
     if body["base_draft_revision"] != row["revision"]:
@@ -105,8 +112,16 @@ def _capture(c, bid, draft, body, condition):
     }
 
 
+def result_model(body):
+    return (
+        AuthoringExactMultiTextEditResult
+        if exact_text_edits.multi(body)
+        else AuthoringExactTextEditResult
+    )
+
+
 def save(actor, bid, draft, key, condition, request, *, final_auth):
-    body = clean(AuthoringExactTextEditRequest.model_validate(request).model_dump(mode="json"))
+    body = exact_text_edits.parse_request(request)
     if not key or not isinstance(key, str) or len(key) > 128:
         raise DomainError("IDEMPOTENCY_REQUIRED", "请提供有效的文字修订操作键", 428)
     actor, bid, draft = UUID(str(actor)), UUID(str(bid)), UUID(str(draft))
@@ -188,7 +203,9 @@ def save(actor, bid, draft, key, condition, request, *, final_auth):
         )
         result = clean(
             {
-                "protocol": "authoring-exact-text-edit-result/1",
+                "protocol": "authoring-exact-text-edit-result/2"
+                if exact_text_edits.multi(body)
+                else "authoring-exact-text-edit-result/1",
                 "bid_id": bid,
                 **saved,
                 "parent_section_revision_id": p["section_revision_id"],
@@ -197,7 +214,7 @@ def save(actor, bid, draft, key, condition, request, *, final_auth):
                 "qualification": derived,
             }
         )
-        AuthoringExactTextEditResult.model_validate(result)
+        result_model(body).model_validate(result)
         audit(
             c,
             actor,

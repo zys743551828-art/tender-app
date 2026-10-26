@@ -95,3 +95,77 @@ it("leaves editing unavailable when the installed capability is false", async ()
     mocked.mock.calls.filter(([, o]) => o?.method === "POST"),
   ).toHaveLength(0);
 });
+
+it("keeps two paragraph changes across selection and sends one atomic request after explicit confirmation", async () => {
+  const { syntheticMultiTextEdit } = await import(
+    "./authoringMultiTextEdit.test-support"
+  );
+  const f = await syntheticMultiTextEdit();
+  mocked.mockImplementation(async (path, options) => {
+    if (options?.method === "POST") return { data: f.ack, etag: f.etag };
+    if (path === "/authoring/exact-text-edit-capabilities")
+      return { data: f.capabilities, etag: null };
+    if (path.startsWith("/sections/"))
+      return { data: f.pending.base.section, etag: null };
+    return { data: f.pending.base.qualification, etag: null };
+  });
+  const saved = vi.fn().mockResolvedValue(undefined);
+  render(
+    <ExactAuthoringTextEdit
+      {...f.scope}
+      sectionId={f.pending.base.section.id}
+      status={f.pending.base.status}
+      etag={f.pending.etag}
+      disabled={false}
+      onSaved={saved}
+      onEditingChange={vi.fn()}
+    />,
+  );
+  const begin = screen.getByRole("button", { name: "修改本章固定来源文字" });
+  await waitFor(() => expect(begin).toBeEnabled());
+  await userEvent.click(begin);
+  await userEvent.clear(screen.getByLabelText("修改后的文字"));
+  await userEvent.type(
+    screen.getByLabelText("修改后的文字"),
+    "Synthetic change 0",
+  );
+  await userEvent.selectOptions(
+    screen.getByLabelText("修改段落或标题"),
+    "11111111-1111-4111-8111-111111111111",
+  );
+  await userEvent.clear(screen.getByLabelText("修改后的文字"));
+  await userEvent.type(
+    screen.getByLabelText("修改后的文字"),
+    "Synthetic change 1",
+  );
+  await userEvent.click(screen.getByText(/^待保存节点 2：/));
+  await userEvent.click(
+    screen.getByRole("button", { name: "撤销节点 2 的修改" }),
+  );
+  expect(screen.getByLabelText("修改后的文字")).toHaveValue(
+    "Synthetic second paragraph",
+  );
+  await userEvent.clear(screen.getByLabelText("修改后的文字"));
+  await userEvent.type(
+    screen.getByLabelText("修改后的文字"),
+    "Synthetic change 1",
+  );
+  await userEvent.type(
+    screen.getByLabelText("修订说明"),
+    f.pending.body.reason,
+  );
+  expect(
+    screen.getByRole("button", { name: "确认保存人工修订" }),
+  ).toBeDisabled();
+  await userEvent.click(screen.getByRole("checkbox"));
+  await userEvent.click(
+    screen.getByRole("button", { name: "确认保存人工修订" }),
+  );
+  await screen.findByText(/人工文字修订已保存为草稿修订/);
+  const posts = mocked.mock.calls.filter(
+    ([, options]) => options?.method === "POST",
+  );
+  expect(posts).toHaveLength(1);
+  expect(posts[0][1]?.body).toEqual(f.pending.body);
+  expect(saved).toHaveBeenCalledOnce();
+});

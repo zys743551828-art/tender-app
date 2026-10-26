@@ -13,8 +13,8 @@ import {
   type ExactTextEditBase,
   type ExactTextEditPending,
   type ExactTextEditScope,
+  type ExactTextEditRequest,
 } from "./authoringExactTextEditProtocol";
-import type { AuthoringExactTextEditRequest } from "./contracts";
 
 type Recovery = {
   version: 1;
@@ -58,7 +58,9 @@ function read(raw: string, scope: ExactTextEditScope): Recovery {
     typeof v.pending.etag !== "string" ||
     !object(v.pending.base) ||
     !object(v.pending.body) ||
-    typeof v.pending.body.replacement_text !== "string" ||
+    (v.pending.body.protocol === "authoring-exact-multi-text-edit/1"
+      ? !Array.isArray(v.pending.body.edits)
+      : typeof v.pending.body.replacement_text !== "string") ||
     typeof v.pending.body.reason !== "string"
   )
     throw damaged();
@@ -215,7 +217,7 @@ export function useExactAuthoringTextEdit(scope: ExactTextEditScope) {
   }
   async function run(
     base: ExactTextEditBase,
-    body: AuthoringExactTextEditRequest,
+    body: ExactTextEditRequest,
     etag: string,
   ) {
     if (!ready() || session.recovery) return null;

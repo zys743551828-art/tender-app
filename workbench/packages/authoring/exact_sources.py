@@ -284,7 +284,10 @@ def assert_ordinary_edit(c, bid, draft):
 def load(c, bid, revision):
     require_schema(c)
     from packages.authoring import exact_text_edits
-    from packages.authoring.exact_text_edit_contracts import AuthoringExactManualRevisionView
+    from packages.authoring.exact_text_edit_contracts import (
+        AuthoringExactManualRevisionView,
+        AuthoringExactMultiManualRevisionView,
+    )
 
     records = (
         "authoring_exact_revision_records"
@@ -301,6 +304,8 @@ def load(c, bid, revision):
     value = {"manifest": row["manifest"], "digest": row["digest"]}
     if row["manifest"].get("protocol") == "authoring-exact-manual-revision/1":
         AuthoringExactManualRevisionView.model_validate(value)
+    elif row["manifest"].get("protocol") == "authoring-exact-manual-revision/2":
+        AuthoringExactMultiManualRevisionView.model_validate(value)
     else:
         AuthoringExactRevisionView.model_validate(value)
     m = row["manifest"]

@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
-import type {
-  AuthoringDocument,
-  AuthoringExactDraftStatus,
-  AuthoringExactTextEditRequest,
-} from "./contracts";
+import type { AuthoringDocument, AuthoringExactDraftStatus } from "./contracts";
 import { ErrorNotice } from "./components";
 import { jsonDigest } from "./editorSchema";
 import {
   editableTextNodes,
+  textEditChanges,
+  type ExactTextEditRequest,
   readTextEditCapabilities,
   verifyTextEditBase,
   type ExactTextEditBase,
@@ -17,7 +15,17 @@ import {
 import { useExactAuthoringTextEdit } from "./useExactAuthoringTextEdit";
 import { useNavigationGuard } from "./navigationGuard";
 
-export function ExactAuthoringTextEdit({
+export function ExactAuthoringTextEdit(
+  props: Parameters<typeof ExactAuthoringTextEditor>[0],
+) {
+  return (
+    <ExactAuthoringTextEditor
+      key={`${props.memberId}:${props.bidId}:${props.draftId}:${props.sectionId ?? ""}`}
+      {...props}
+    />
+  );
+}
+function ExactAuthoringTextEditor({
   memberId,
   bidId,
   draftId,
@@ -40,12 +48,15 @@ export function ExactAuthoringTextEdit({
     identity: string;
     base: ExactTextEditBase | null;
     available: boolean;
+    multi: boolean;
   } | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [refresh, setRefresh] = useState(0);
   const [editing, setEditing] = useState<ExactTextEditBase | null>(null);
   const [nodeId, setNodeId] = useState("");
   const [replacement, setReplacement] = useState("");
+  const [texts, setTexts] = useState<Record<string, string>>({});
+  const [multi, setMulti] = useState(false);
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [savedMessage, setSavedMessage] = useState("");
@@ -87,7 +98,7 @@ export function ExactAuthoringTextEdit({
         const capability = readTextEditCapabilities(caps.data);
         if (!active) return;
         if (!capability.available) {
-          setLoaded({ identity, base: null, available: false });
+          setLoaded({ identity, base: null, available: false, multi: false });
           setError(null);
           return;
         }
@@ -106,6 +117,9 @@ export function ExactAuthoringTextEdit({
             identity,
             base: verified,
             available: capability.available,
+            multi:
+              capability.protocol ===
+              "authoring-exact-text-edit-capabilities/2",
           });
           setError(null);
         }
@@ -124,6 +138,16 @@ export function ExactAuthoringTextEdit({
     ? editableTextNodes(editing.section.content as AuthoringDocument)
     : [];
   const node = nodes.find((n) => n.id === nodeId);
+  const changes = Object.entries({
+    ...texts,
+    ...(nodeId ? { [nodeId]: replacement } : {}),
+  }).filter(([id, text]) => nodes.find((n) => n.id === id)?.text !== text);
+  const validChanges =
+    changes.length > 0 &&
+    changes.length <= (multi ? 20 : 1) &&
+    changes.every(([id]) => nodes.some((n) => n.id === id)) &&
+    changes.reduce((total, [, text]) => total + Array.from(text).length, 0) <=
+      20000;
   const canStart =
     !disabled &&
     available &&
@@ -158,14 +182,25 @@ export function ExactAuthoringTextEdit({
       return;
     setError(null);
     try {
-      const body: AuthoringExactTextEditRequest = {
+      if (!validChanges) return;
+      const edits = await Promise.all(
+        changes.map(async ([id, text]) => ({
+          node_id: id,
+          before_node_digest: await jsonDigest(
+            nodes.find((n) => n.id === id)!.node,
+          ),
+          replacement_text: text,
+        })),
+      );
+      const common = {
         base_draft_revision: editing.status.draft_revision,
         section_revision_id: editing.qualification.manifest.section_revision_id,
-        node_id: node.id,
-        before_node_digest: await jsonDigest(node.node),
-        replacement_text: replacement,
         reason,
       };
+      const body: ExactTextEditRequest =
+        edits.length === 1
+          ? { ...common, ...edits[0] }
+          : { ...common, protocol: "authoring-exact-multi-text-edit/1", edits };
       await completed(
         await command.run(
           editing,
@@ -192,6 +227,8 @@ export function ExactAuthoringTextEdit({
       return;
     }
     setEditing(base);
+    setMulti(!!loaded?.multi);
+    setTexts({});
     setNodeId(first.id);
     setReplacement(first.text);
     setReason("");
@@ -203,8 +240,15 @@ export function ExactAuthoringTextEdit({
     const old = await command.acknowledgeConflict(base);
     if (!old) return;
     setEditing(base);
-    setNodeId(old.node_id);
-    setReplacement(old.replacement_text);
+    const edits = textEditChanges(old);
+    setMulti("edits" in old);
+    setTexts(
+      Object.fromEntries(
+        edits.map((edit) => [edit.node_id, edit.replacement_text]),
+      ),
+    );
+    setNodeId(edits[0].node_id);
+    setReplacement(edits[0].replacement_text);
     setReason(old.reason);
     setConfirmed(false);
   }
@@ -212,7 +256,7 @@ export function ExactAuthoringTextEdit({
     <section className="panel" aria-label="固定来源文字修订">
       <h3>固定来源文字修订</h3>
       <p className="small-note">
-        可逐段修改现有纯文字段落或标题。每次确认会保存新修订，保留引用、规则和原稿，并记为人工修改；正文正确性仍需人工核对。
+        可修改现有纯文字段落或标题；服务支持时可在同章选择多个段落，一次原子保存新修订，保留引用、规则和原稿，并记为人工修改；正文正确性仍需人工核对。
       </p>
       <ErrorNotice error={error} onRetry={() => setRefresh((n) => n + 1)} />
       <ErrorNotice error={command.error} />
@@ -232,7 +276,9 @@ export function ExactAuthoringTextEdit({
               <textarea
                 readOnly
                 rows={4}
-                value={command.original.body.replacement_text}
+                value={textEditChanges(command.original.body)
+                  .map((edit) => `${edit.node_id}: ${edit.replacement_text}`)
+                  .join("\n\n")}
               />
             </label>
           )}
@@ -306,12 +352,14 @@ export function ExactAuthoringTextEdit({
                 command.pending ||
                 command.conflict ||
                 command.blocked ||
-                (!!node && replacement !== node.text)
+                (!multi && !!node && replacement !== node.text)
               }
               onChange={(event) => {
                 const selected = nodes.find((n) => n.id === event.target.value);
                 setNodeId(event.target.value);
-                setReplacement(selected?.text ?? "");
+                setReplacement(
+                  texts[event.target.value] ?? selected?.text ?? "",
+                );
                 setConfirmed(false);
               }}
             >
@@ -344,10 +392,63 @@ export function ExactAuthoringTextEdit({
               }
               onChange={(event) => {
                 setReplacement(event.target.value);
+                setTexts((previous) => ({
+                  ...previous,
+                  [nodeId]: event.target.value,
+                }));
                 setConfirmed(false);
               }}
             />
           </label>
+          {multi && (
+            <div>
+              <p role="status" className="small-note">
+                本次已修改 {changes.length} 个节点（最多 20 个，合计 20000
+                字符），切换段落保留修改；确认后全部成功或全部不改。
+              </p>
+              {changes.map(([id, text], index) => (
+                <details key={id}>
+                  <summary>
+                    待保存节点 {index + 1}：
+                    {nodes.find((n) => n.id === id)?.text.slice(0, 60) ||
+                      "原节点已不存在或为空"}
+                  </summary>
+                  <pre className="small-note">{text}</pre>
+                  <button
+                    type="button"
+                    className="button secondary"
+                    disabled={
+                      command.busy ||
+                      command.pending ||
+                      command.conflict ||
+                      command.blocked
+                    }
+                    onClick={() => {
+                      setTexts((previous) => {
+                        const next = { ...previous };
+                        delete next[id];
+                        return next;
+                      });
+                      if (nodeId === id) {
+                        const next = nodes.find((n) => n.id === id) ?? nodes[0];
+                        setNodeId(next?.id ?? "");
+                        setReplacement(
+                          next
+                            ? next.id === id
+                              ? next.text
+                              : (texts[next.id] ?? next.text)
+                            : "",
+                        );
+                      }
+                      setConfirmed(false);
+                    }}
+                  >
+                    撤销节点 {index + 1} 的修改
+                  </button>
+                </details>
+              ))}
+            </div>
+          )}
           <label>
             修订说明
             <input
@@ -391,7 +492,7 @@ export function ExactAuthoringTextEdit({
                 disabled ||
                 !confirmed ||
                 !node ||
-                node.text === replacement ||
+                !validChanges ||
                 !reason.trim() ||
                 Array.from(replacement).length > 20000 ||
                 command.busy ||

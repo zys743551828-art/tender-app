@@ -116,3 +116,79 @@ def test_text_length_is_bounded():
     body["replacement_text"] = "界" * 20001
     with pytest.raises(ValidationError):
         materialize(content, body)
+
+
+def batch_sample():
+    content, one = sample()
+    edits = [
+        {
+            "node_id": node["attrs"]["id"],
+            "before_node_digest": sha(node),
+            "replacement_text": f"Synthetic edited node {index}",
+        }
+        for index, node in enumerate(content["content"])
+    ]
+    body = {key: one[key] for key in ("base_draft_revision", "section_revision_id", "reason")}
+    return content, {**body, "protocol": "authoring-exact-multi-text-edit/1", "edits": edits}
+
+
+def test_batch_preserves_original_structure_and_all_source_metadata():
+    content, body = batch_sample()
+    original = deepcopy(content)
+    result = materialize(content, body)
+    assert content == original
+    assert result["attrs"] == original["attrs"]
+    for index, node in enumerate(result["content"]):
+        assert node["attrs"] == original["content"][index]["attrs"]
+        assert node["content"] == [
+            {"type": "text", "text": body["edits"][index]["replacement_text"]}
+        ]
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "duplicate",
+        "missing",
+        "stale",
+        "nochange",
+        "controls",
+        "marked",
+        "metadata",
+        "one",
+        "many",
+        "total",
+        "protocol",
+    ],
+)
+def test_batch_rejects_every_invalid_item_without_partial_changes(mutation):
+    content, body = batch_sample()
+    last = body["edits"][-1]
+    if mutation == "duplicate":
+        body["edits"][-1] = deepcopy(body["edits"][0])
+    elif mutation == "missing":
+        last["node_id"] = "foreign-or-missing-node"
+    elif mutation == "stale":
+        last["before_node_digest"] = "0" * 64
+    elif mutation == "nochange":
+        last["replacement_text"] = "Sibling title"
+    elif mutation == "controls":
+        last["replacement_text"] = "bad\x00"
+    elif mutation == "marked":
+        content["content"][-1]["content"][0]["marks"] = [{"type": "bold"}]
+        last["before_node_digest"] = sha(content["content"][-1])
+    elif mutation == "metadata":
+        last["source_refs"] = []
+    elif mutation == "one":
+        body["edits"] = body["edits"][:1]
+    elif mutation == "many":
+        body["edits"] *= 11
+    elif mutation == "total":
+        for edit in body["edits"]:
+            edit["replacement_text"] = "字" * 10001
+    else:
+        body["protocol"] = "authoring-exact-multi-text-edit/unknown"
+    original = deepcopy(content)
+    with pytest.raises((DomainError, ValidationError)):
+        materialize(content, body)
+    assert content == original

@@ -9,6 +9,10 @@ from packages.authoring import exact_revision_contracts as models
 from packages.authoring import exact_sources, exact_text_edit_service
 from packages.authoring.exact_text_edit_contracts import (
     AuthoringExactManualRevisionView,
+    AuthoringExactMultiManualRevisionView,
+    AuthoringExactMultiTextEditCapabilities,
+    AuthoringExactMultiTextEditRequest,
+    AuthoringExactMultiTextEditResult,
     AuthoringExactTextEditCapabilities,
     AuthoringExactTextEditRequest,
     AuthoringExactTextEditResult,
@@ -41,7 +45,9 @@ def draft_status(bid_id: UUID, draft_id: UUID, r: Request):
 
 @router.get(
     "/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
-    response_model=models.AuthoringExactRevisionView | AuthoringExactManualRevisionView,
+    response_model=models.AuthoringExactRevisionView
+    | AuthoringExactManualRevisionView
+    | AuthoringExactMultiManualRevisionView,
 )
 def qualification(bid_id: UUID, revision_id: UUID, r: Request):
     auth(r)
@@ -52,7 +58,7 @@ def qualification(bid_id: UUID, revision_id: UUID, r: Request):
 
 @router.get(
     "/authoring/exact-text-edit-capabilities",
-    response_model=AuthoringExactTextEditCapabilities,
+    response_model=AuthoringExactTextEditCapabilities | AuthoringExactMultiTextEditCapabilities,
 )
 def text_edit_capabilities(r: Request):
     auth(r)
@@ -62,9 +68,14 @@ def text_edit_capabilities(r: Request):
 
 @router.post(
     "/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
-    response_model=AuthoringExactTextEditResult,
+    response_model=AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
 )
-def edit_text(bid_id: UUID, draft_id: UUID, r: Request, body: AuthoringExactTextEditRequest):
+def edit_text(
+    bid_id: UUID,
+    draft_id: UUID,
+    r: Request,
+    body: AuthoringExactTextEditRequest | AuthoringExactMultiTextEditRequest,
+):
     from apps.api.authoring import response
 
     actor = auth(r, True)

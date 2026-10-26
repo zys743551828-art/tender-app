@@ -5,6 +5,10 @@ import type {
   AuthoringExactSectionBinding,
   AuthoringExactRevisionView,
   AuthoringExactManualRevisionView,
+  AuthoringExactMultiManualRevisionView,
+  AuthoringExactMultiTextEditRequest,
+  AuthoringExactMultiTextEditResult,
+  AuthoringExactMultiTextEditCapabilities,
   AuthoringExactTextEditRequest,
   AuthoringExactTextEditResult,
   AuthoringExactTextEditCapabilities,
@@ -28,14 +32,31 @@ export type ExactTextEditScope = {
 export type ExactTextEditBase = {
   status: AuthoringExactDraftStatus;
   section: SectionView;
-  qualification: AuthoringExactRevisionView | AuthoringExactManualRevisionView;
+  qualification:
+    | AuthoringExactRevisionView
+    | AuthoringExactManualRevisionView
+    | AuthoringExactMultiManualRevisionView;
 };
 export type ExactTextEditPending = {
   key: string;
   etag: string;
   base: ExactTextEditBase;
-  body: AuthoringExactTextEditRequest;
+  body: ExactTextEditRequest;
 };
+export type ExactTextEditRequest =
+  | AuthoringExactTextEditRequest
+  | AuthoringExactMultiTextEditRequest;
+export function textEditChanges(body: ExactTextEditRequest) {
+  return "edits" in body
+    ? body.edits
+    : [
+        {
+          node_id: body.node_id,
+          before_node_digest: body.before_node_digest,
+          replacement_text: body.replacement_text,
+        },
+      ];
+}
 function fail(): never {
   throw new Error(
     "文字修订的原稿、来源资格或回执无法核对，原请求与文字继续保留。",
@@ -47,7 +68,9 @@ const hasControls = (text: string) =>
   );
 export function readTextEditCapabilities(
   value: unknown,
-): AuthoringExactTextEditCapabilities {
+):
+  | AuthoringExactTextEditCapabilities
+  | AuthoringExactMultiTextEditCapabilities {
   if (
     !object(value) ||
     !exactKeys(value, [
@@ -59,9 +82,15 @@ export function readTextEditCapabilities(
       "ordinary_edit_available",
       "blocking_reasons",
     ]) ||
-    value.protocol !== "authoring-exact-text-edit-capabilities/1" ||
+    ![
+      "authoring-exact-text-edit-capabilities/1",
+      "authoring-exact-text-edit-capabilities/2",
+    ].includes(String(value.protocol)) ||
     typeof value.available !== "boolean" ||
-    value.supported_content !== "plain_text_stable_node" ||
+    value.supported_content !==
+      (value.protocol === "authoring-exact-text-edit-capabilities/2"
+        ? "plain_text_stable_nodes"
+        : "plain_text_stable_node") ||
     value.preserves_source_refs !== true ||
     value.preserves_rule_ids !== true ||
     value.ordinary_edit_available !== false ||
@@ -70,7 +99,9 @@ export function readTextEditCapabilities(
     (value.available && value.blocking_reasons.length !== 0)
   )
     fail();
-  return value as unknown as AuthoringExactTextEditCapabilities;
+  return value as unknown as
+    | AuthoringExactTextEditCapabilities
+    | AuthoringExactMultiTextEditCapabilities;
 }
 export function editableTextNodes(content: AuthoringDocument) {
   const found: { id: string; text: string; node: AuthoringNode }[] = [];
@@ -136,6 +167,7 @@ async function verifyQualification(
     ![
       "authoring-exact-revision/1",
       "authoring-exact-manual-revision/1",
+      "authoring-exact-manual-revision/2",
     ].includes(String(m.protocol)) ||
     m.id !== binding.qualification_id ||
     m.bid_id !== scope.bidId ||
@@ -164,7 +196,10 @@ async function verifyQualification(
     !sha(m.origin.before_action_digest) ||
     !object(m.method) ||
     !exactKeys(m.method, ["protocol", "supported_content", "source_sha256"]) ||
-    m.method.supported_content !== "plain_text_stable_node" ||
+    m.method.supported_content !==
+      (m.protocol === "authoring-exact-manual-revision/2"
+        ? "plain_text_stable_nodes"
+        : "plain_text_stable_node") ||
     !object(m.method.source_sha256) ||
     !Object.keys(m.method.source_sha256).length ||
     !Object.values(m.method.source_sha256).every(sha) ||
@@ -198,11 +233,10 @@ async function verifyQualification(
       ].every(sha)
     )
       fail();
-  } else if (
-    m.candidate_adopted !== false ||
-    m.origin.kind !== "manual_text_edit" ||
-    m.method.protocol !== "authoring-exact-text-edit-policy/1" ||
-    !exactKeys(m.origin, [
+  } else {
+    const batch = m.protocol === "authoring-exact-manual-revision/2";
+    const origin = m.origin;
+    const fields = [
       "kind",
       "parent_qualification_id",
       "parent_qualification_digest",
@@ -211,26 +245,59 @@ async function verifyQualification(
       "command_id",
       "actor_id",
       "before_action_digest",
-      "node_id",
-      "before_node_digest",
-      "replacement_text_digest",
       "reason",
-    ]) ||
-    ![m.origin.parent_qualification_id, m.origin.root_qualification_id].every(
-      uuid,
-    ) ||
-    ![
-      m.origin.parent_qualification_digest,
-      m.origin.root_qualification_digest,
-      m.origin.before_node_digest,
-      m.origin.replacement_text_digest,
-    ].every(sha) ||
-    typeof m.origin.node_id !== "string" ||
-    !m.origin.node_id ||
-    typeof m.origin.reason !== "string" ||
-    !m.origin.reason.trim()
-  )
-    fail();
+    ];
+    if (
+      m.candidate_adopted !== false ||
+      origin.kind !== (batch ? "manual_multi_text_edit" : "manual_text_edit") ||
+      m.method.protocol !==
+        (batch
+          ? "authoring-exact-text-edit-policy/2"
+          : "authoring-exact-text-edit-policy/1") ||
+      !exactKeys(origin, [
+        ...fields,
+        ...(batch
+          ? ["edits"]
+          : ["node_id", "before_node_digest", "replacement_text_digest"]),
+      ]) ||
+      ![origin.parent_qualification_id, origin.root_qualification_id].every(
+        uuid,
+      ) ||
+      ![
+        origin.parent_qualification_digest,
+        origin.root_qualification_digest,
+      ].every(sha) ||
+      typeof origin.reason !== "string" ||
+      !origin.reason.trim()
+    )
+      fail();
+    const edits = batch ? origin.edits : [origin];
+    if (
+      !Array.isArray(edits) ||
+      edits.length < (batch ? 2 : 1) ||
+      edits.length > 20
+    )
+      fail();
+    const ids = new Set<string>();
+    for (const edit of edits) {
+      if (
+        !object(edit) ||
+        (batch &&
+          !exactKeys(edit, [
+            "node_id",
+            "before_node_digest",
+            "replacement_text_digest",
+          ])) ||
+        typeof edit.node_id !== "string" ||
+        !edit.node_id ||
+        ids.has(edit.node_id) ||
+        !sha(edit.before_node_digest) ||
+        !sha(edit.replacement_text_digest)
+      )
+        fail();
+      ids.add(edit.node_id);
+    }
+  }
   return value as unknown as ExactTextEditBase["qualification"];
 }
 
@@ -295,52 +362,80 @@ export async function verifyTextEditPending(
     fail();
   const base = await verifyTextEditBase(value.base, scope),
     b = value.body;
+  const batch = b.protocol === "authoring-exact-multi-text-edit/1";
   if (
     !exactKeys(b, [
       "base_draft_revision",
       "section_revision_id",
-      "node_id",
-      "before_node_digest",
-      "replacement_text",
       "reason",
+      ...(batch
+        ? ["protocol", "edits"]
+        : ["node_id", "before_node_digest", "replacement_text"]),
     ]) ||
     b.base_draft_revision !== base.status.draft_revision ||
     b.section_revision_id !== base.qualification.manifest.section_revision_id ||
     value.etag !== `"draft:${scope.draftId}:${base.status.draft_revision}"` ||
-    typeof b.node_id !== "string" ||
-    !sha(b.before_node_digest) ||
-    typeof b.replacement_text !== "string" ||
-    Array.from(b.replacement_text).length > 20000 ||
-    hasControls(b.replacement_text) ||
     typeof b.reason !== "string" ||
     !b.reason.trim() ||
     Array.from(b.reason).length > 1000 ||
     hasControls(b.reason)
   )
     fail();
-  const node = editableTextNodes(
-    base.section.content as AuthoringDocument,
-  ).find((n) => n.id === b.node_id);
+  const edits = batch ? b.edits : [b];
   if (
-    !node ||
-    b.before_node_digest !== (await jsonDigest(node.node)) ||
-    node.text === b.replacement_text
+    !Array.isArray(edits) ||
+    edits.length < (batch ? 2 : 1) ||
+    edits.length > 20
   )
     fail();
+  const nodes = editableTextNodes(base.section.content as AuthoringDocument);
+  const ids = new Set<string>();
+  let length = 0;
+  for (const edit of edits) {
+    if (
+      !object(edit) ||
+      (batch &&
+        !exactKeys(edit, [
+          "node_id",
+          "before_node_digest",
+          "replacement_text",
+        ])) ||
+      typeof edit.node_id !== "string" ||
+      !edit.node_id ||
+      Array.from(edit.node_id).length > 128 ||
+      ids.has(edit.node_id) ||
+      !sha(edit.before_node_digest) ||
+      typeof edit.replacement_text !== "string" ||
+      hasControls(edit.replacement_text)
+    )
+      fail();
+    ids.add(edit.node_id);
+    length += Array.from(edit.replacement_text).length;
+    const matching = nodes.filter((n) => n.id === edit.node_id);
+    if (
+      length > 20000 ||
+      matching.length !== 1 ||
+      edit.before_node_digest !== (await jsonDigest(matching[0].node)) ||
+      matching[0].text === edit.replacement_text
+    )
+      fail();
+  }
   return { ...value, base } as unknown as ExactTextEditPending;
 }
 function replaced(
   base: ExactTextEditBase,
-  body: AuthoringExactTextEditRequest,
+  body: ExactTextEditRequest,
 ): AuthoringDocument {
   const content = structuredClone(base.section.content) as AuthoringDocument;
-  const node = editableTextNodes(content).find(
-    (n) => n.id === body.node_id,
-  )!.node;
-  if (node.type !== "paragraph" && node.type !== "heading") fail();
-  node.content = body.replacement_text
-    ? [{ type: "text", text: body.replacement_text }]
-    : [];
+  for (const edit of textEditChanges(body)) {
+    const node = editableTextNodes(content).find(
+      (n) => n.id === edit.node_id,
+    )!.node;
+    if (node.type !== "paragraph" && node.type !== "heading") fail();
+    node.content = edit.replacement_text
+      ? [{ type: "text", text: edit.replacement_text }]
+      : [];
+  }
   return content;
 }
 async function textDigest(text: string) {
@@ -357,7 +452,7 @@ export async function verifyTextEditACK(
   etag: string | null,
   pending: ExactTextEditPending,
   scope: ExactTextEditScope,
-): Promise<AuthoringExactTextEditResult> {
+): Promise<AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult> {
   const p = await verifyTextEditPending(pending, scope),
     parent = p.base.qualification,
     pm = parent.manifest;
@@ -375,7 +470,10 @@ export async function verifyTextEditACK(
       "section_digest",
       "qualification",
     ]) ||
-    value.protocol !== "authoring-exact-text-edit-result/1" ||
+    value.protocol !==
+      ("edits" in p.body
+        ? "authoring-exact-text-edit-result/2"
+        : "authoring-exact-text-edit-result/1") ||
     value.bid_id !== scope.bidId ||
     value.draft_id !== scope.draftId ||
     value.draft_revision !== p.body.base_draft_revision + 1 ||
@@ -412,7 +510,13 @@ export async function verifyTextEditACK(
     scope,
     newSection,
   );
-  if (q.manifest.protocol !== "authoring-exact-manual-revision/1") fail();
+  if (
+    q.manifest.protocol !==
+    ("edits" in p.body
+      ? "authoring-exact-manual-revision/2"
+      : "authoring-exact-manual-revision/1")
+  )
+    fail();
   const a = q.manifest,
     o = a.origin;
   const root =
@@ -433,9 +537,26 @@ export async function verifyTextEditACK(
     o.root_qualification_id !== root.id ||
     o.root_qualification_digest !== root.digest ||
     o.actor_id !== scope.memberId ||
-    o.node_id !== p.body.node_id ||
-    o.before_node_digest !== p.body.before_node_digest ||
-    o.replacement_text_digest !== (await textDigest(p.body.replacement_text)) ||
+    (await jsonDigest(
+      "edits" in o
+        ? o.edits
+        : [
+            {
+              node_id: o.node_id,
+              before_node_digest: o.before_node_digest,
+              replacement_text_digest: o.replacement_text_digest,
+            },
+          ],
+    )) !==
+      (await jsonDigest(
+        await Promise.all(
+          textEditChanges(p.body).map(async (edit) => ({
+            node_id: edit.node_id,
+            before_node_digest: edit.before_node_digest,
+            replacement_text_digest: await textDigest(edit.replacement_text),
+          })),
+        ),
+      )) ||
     o.reason !== p.body.reason ||
     o.before_action_digest !==
       (await jsonDigest({
@@ -445,5 +566,7 @@ export async function verifyTextEditACK(
       }))
   )
     fail();
-  return value as unknown as AuthoringExactTextEditResult;
+  return value as unknown as
+    | AuthoringExactTextEditResult
+    | AuthoringExactMultiTextEditResult;
 }
