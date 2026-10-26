@@ -49,6 +49,8 @@ def profile_for(base):
         "max_normalized_image_bytes": 64 * 1024 * 1024,
         "max_visibility_render_pixels": rich_pdf.MAX_VISIBILITY_RENDER_PIXELS,
         "image_layout_policy": "frozen_order_by_page_and_disjoint_vertical_inline_placements_v1",
+        "image_position_epsilon_pt": rich_pdf.POSITION_EPSILON,
+        "image_section_policy": "measured_chapter_start_to_next_preorder_heading_v1",
         "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
@@ -102,13 +104,21 @@ def inspect_pdf(data, prepared):
     tables = rich_table_pdf.inspect_tables(
         data, prepared["snapshot"], prepared["roots"], prepared["config"]
     )
+    image_sections = rich_pdf.inspect_image_sections(prepared["snapshot"], images, navigation)
     return body | {
         "gaps": list(
-            dict.fromkeys(body["gaps"] + images["gaps"] + navigation["gaps"] + tables["gaps"])
+            dict.fromkeys(
+                body["gaps"]
+                + images["gaps"]
+                + navigation["gaps"]
+                + tables["gaps"]
+                + image_sections["gaps"]
+            )
         ),
         "raster_correspondence": images,
         "navigation": navigation,
         "table_correspondence": tables,
+        "image_section_correspondence": image_sections,
     }
 
 

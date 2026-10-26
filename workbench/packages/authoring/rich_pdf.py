@@ -5,15 +5,20 @@ from __future__ import annotations
 import io
 import math
 from itertools import islice
+from typing import Any
 
 import pypdfium2 as pdfium
 from PIL import Image, ImageChops, ImageStat
 
-from packages.authoring import rich_images
+from packages.authoring import rich_images, structure_model
 from packages.domain.runtime import sha
 
 PROTOCOL = "authoring-PDF-raster-correspondence/2"
 MAX_VISIBILITY_RENDER_PIXELS = 64_000_000
+# PDFium object bounds use float32. At the accepted <=1500pt page extent,
+# independent matrix additions can differ by several ulps at a shared edge.
+# This is numerical slack (1/1000pt), not a layout/overlap allowance.
+POSITION_EPSILON = 0.001
 
 
 def _reading_order(image):
@@ -37,10 +42,70 @@ def _ordered(records, expected):
         previous["physical_page"] < current["physical_page"]
         or (
             previous["physical_page"] == current["physical_page"]
-            and previous["bbox"][1] >= current["bbox"][3]
+            and previous["bbox"][1] + POSITION_EPSILON >= current["bbox"][3]
         )
         for previous, current in zip(records, records[1:], strict=False)
     )
+
+
+def inspect_image_sections(snapshot, images, navigation):
+    """Join same-call measured image and navigation proofs, never client receipts.
+
+    Only distinct chapter-start pages provide unambiguous section bounds. Use
+    the next preorder heading, not subtree end_page: parent-owned content cannot
+    migrate into its child. Captions have no independently measured anchor here.
+    """
+    expected = [
+        (block["attrs"]["id"], index)
+        for index, section in enumerate(snapshot["sections"])
+        for block in section["content"]
+        if block["type"] == "image"
+    ]
+    result: dict[str, Any] = {
+        "protocol": "authoring-PDF-image-section-correspondence/1",
+        "coverage": "complete",
+        "gaps": [],
+        "images": [],
+    }
+    if not expected:
+        return result
+    nodes = structure_model.ordered(snapshot["authoring_structure"]["nodes"])
+    rows = navigation["entries"]
+    if (
+        images["coverage"] != "complete"
+        or navigation["navigation_coverage"] != "complete"
+        or navigation["mode"] != "chapter_start_new_page"
+        or len(nodes) != len(snapshot["sections"])
+        or [row["node_id"] for row in rows] != [node["section_id"] for node in nodes]
+        or [image["node_id"] for image in images["images"]] != [item[0] for item in expected]
+    ):
+        result.update(coverage="partial", gaps=["AUTHORING_IMAGE_SECTION_UNVERIFIED"])
+        return result
+    for (node_id, index), image in zip(expected, images["images"], strict=True):
+        row = rows[index]
+        start = row["start_page"]
+        end = (
+            rows[index + 1]["start_page"] - 1 if index + 1 < len(rows) else navigation["page_count"]
+        )
+        page = image["physical_page"]
+        # Navigation title bounds are rounded to 0.01pt. This accommodates that
+        # measurement precision, not a visible overlap with the chapter heading.
+        valid = start <= page <= end and (
+            page != start or image["bbox"][3] <= row["title_bbox"][1] + 0.01
+        )
+        result["images"].append(
+            {
+                "node_id": node_id,
+                "section_id": nodes[index]["section_id"],
+                "physical_page": page,
+                "section_start_page": start,
+                "section_content_end_page": end,
+                "matched": valid,
+            }
+        )
+        if not valid:
+            result.update(coverage="partial", gaps=["AUTHORING_IMAGE_SECTION_UNVERIFIED"])
+    return result
 
 
 def isolated_reference(pixels, width, height, bbox, box):

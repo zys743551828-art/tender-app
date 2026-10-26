@@ -122,6 +122,8 @@ def test_rich_admission_is_exact_and_external_word_still_blocks_PAGE(rich_input)
         ("max_image_placement_pixels", 32000001),
         ("image_layout_policy", "pixels_without_source_order"),
         ("raster_inspector_digest", "0" * 64),
+        ("image_position_epsilon_pt", 1),
+        ("image_section_policy", "trust_parent_subtree_pages"),
     ],
 )
 def test_even_rehashed_profile_policy_changes_fail_before_Docker(rich_input, field, value):
@@ -170,6 +172,8 @@ def test_combined_rich_inspection_preserves_actual_image_order_gap(rich_input):
     proof = rich_renderer.inspect_pdf(pdf, prepared)
     assert "AUTHORING_IMAGE_ORDER_UNVERIFIED" in proof["gaps"]
     assert proof["raster_correspondence"]["coverage"] == "partial"
+    assert "AUTHORING_IMAGE_SECTION_UNVERIFIED" in proof["gaps"]
+    assert proof["image_section_correspondence"]["coverage"] == "partial"
     # The synthetic image-only PDF cannot satisfy full text/navigation checks.
     assert set(proof["gaps"]) - {"AUTHORING_IMAGE_ORDER_UNVERIFIED"}
 
