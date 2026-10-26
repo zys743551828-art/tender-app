@@ -162,7 +162,18 @@ it("can replay an uncertain original save before fetching new context", async ()
   );
   fireEvent.click(screen.getByRole("button", { name: "恢复原技术范围请求" }));
   await screen.findByText("技术范围已保存，原件字节已在登记时核验。");
-  expect(mocked).toHaveBeenCalledTimes(1);
+  // The recovered ACK mounts the status reader; it must not refetch input context
+  // or replace the original write identity before recovering the saved scope.
+  expect(mocked).toHaveBeenCalledTimes(2);
+  expect(mocked.mock.calls[1][0]).toMatch(
+    /\/technical-scopes\/[^/]+\/prediction-pipeline$/,
+  );
+  expect(mocked.mock.calls[1][1]?.method).toBeUndefined();
+  expect(
+    mocked.mock.calls.some(([path]) =>
+      path.includes("technical-scope-context"),
+    ),
+  ).toBe(false);
   expect(mocked.mock.calls[0][1]).toEqual({
     method: "POST",
     body: f.pending.body,

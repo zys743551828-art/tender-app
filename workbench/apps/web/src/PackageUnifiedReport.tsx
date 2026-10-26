@@ -11,6 +11,7 @@ type Props = {
   scopeId: string;
   commandId: string;
   onRefresh?: () => void;
+  initialReviewId?: string;
 };
 type Report = {
   schema: string;
@@ -28,10 +29,15 @@ type Report = {
   }[];
 };
 export function PackageUnifiedReport(p: Props) {
-  return <View key={`${p.bidId}:${p.scopeId}:${p.commandId}`} {...p} />;
+  return (
+    <View
+      key={`${p.bidId}:${p.scopeId}:${p.commandId}:${p.initialReviewId ?? ""}`}
+      {...p}
+    />
+  );
 }
 function View(p: Props) {
-  const [review, setReview] = useState(""),
+  const [review, setReview] = useState(p.initialReviewId ?? ""),
     [simulation, setSimulation] = useState(""),
     [report, setReport] = useState<Report | null>(null),
     [busy, setBusy] = useState(false),

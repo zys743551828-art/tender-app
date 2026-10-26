@@ -19,8 +19,10 @@ STOP = threading.Event()
 
 
 def cycle(after=None, limit=50):
+    from packages.package_prediction_pipeline.runtime import drain as advance_predictions
     from packages.package_prediction_tasks.runtime import drain
 
+    advance_predictions(limit)
     drain(limit)
     with connection() as c:
         pending = sql.SQL(

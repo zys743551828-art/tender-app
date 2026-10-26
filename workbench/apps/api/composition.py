@@ -20,6 +20,7 @@ def mount(app):
     from apps.api.package_model_admission_routes import router as package_admission
     from apps.api.package_model_certification_routes import router as package_certification
     from apps.api.package_model_registry_routes import router as package_registry
+    from apps.api.package_prediction_pipeline_routes import router as prediction_pipeline
     from apps.api.package_prediction_report_routes import router as prediction_report
     from apps.api.package_prediction_routes import router as package_prediction
     from apps.api.package_prediction_task_routes import router as prediction_tasks
@@ -48,6 +49,7 @@ def mount(app):
         package_certification,
         package_prediction,
         prediction_tasks,
+        prediction_pipeline,
         prediction_report,
         unified_report,
         business_shadow,

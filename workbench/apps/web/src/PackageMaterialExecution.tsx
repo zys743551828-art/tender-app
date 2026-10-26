@@ -1,3 +1,4 @@
+import { PackagePredictionPipeline } from "./PackagePredictionPipeline";
 import { PackageFormalPrediction } from "./PackageFormalPrediction";
 import { MaterialQualificationReview } from "./MaterialQualificationReview";
 import { useEffect, useRef, useState } from "react";
@@ -159,6 +160,11 @@ function Workspace({
   return (
     <section aria-label="完整材料执行申请">
       <h4>完整材料执行申请</h4>
+      <PackagePredictionPipeline
+        bidId={s.bid_id}
+        scopeId={saved.manifest.id}
+        memberId={memberId}
+      />
       <PackageFormalPrediction
         bidId={s.bid_id}
         scopeId={saved.manifest.id}

@@ -17,6 +17,10 @@ vi.mock("./api", async (load) => ({
   api: vi.fn(),
   supportsApi: vi.fn(),
 }));
+// This suite isolates the material application commands; pipeline composition is tested separately.
+vi.mock("./PackagePredictionPipeline", () => ({
+  PackagePredictionPipeline: () => null,
+}));
 const mocked = vi.mocked(api),
   saved = raw.scope as unknown as PackageTechnicalScopeView,
   memberId = f.receipt.actor_id;
