@@ -1,3 +1,4 @@
+import { PackagePredictionReport } from "./PackagePredictionReport";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "./api";
 import { ErrorNotice } from "./components";
@@ -33,6 +34,7 @@ function Workspace(p: Props) {
   const [certificate, setCertificate] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [suppressNumbers, setSuppressNumbers] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState<unknown>(null),
     [corrupt, setCorrupt] = useState(false);
@@ -128,7 +130,10 @@ function Workspace(p: Props) {
             v.evaluation_project_mae !== null)
       )
         throw new Error("预测回执身份或展示状态异常。");
-      if (mounted.current && n === serial.current) setReceipt(v);
+      if (mounted.current && n === serial.current) {
+        setReceipt(v);
+        setSuppressNumbers(false);
+      }
     } catch (e) {
       if (mounted.current && n === serial.current) {
         setError(e);
@@ -183,7 +188,7 @@ function Workspace(p: Props) {
           尚无经当前资格复验的有效结果；请求失败或丢失回执时可恢复同一请求。
         </p>
       )}
-      {receipt?.state === "valid" && (
+      {receipt?.state === "valid" && !suppressNumbers && (
         <p role="status">
           正式预测：{receipt.value} / {receipt.maximum}
           （已校准，限当前认证绑定输入）
@@ -194,6 +199,15 @@ function Workspace(p: Props) {
           {receipt.training_groups?.calibration}；独立评估项目 MAE：
           {receipt.evaluation_project_mae}
         </p>
+      )}
+      {receipt && (receipt.state === "valid" || receipt.state === "hidden") && (
+        <PackagePredictionReport
+          bidId={p.bidId}
+          scopeId={p.scopeId}
+          commandId={receipt.command_id}
+          certificateId={receipt.certificate_id}
+          onRefresh={() => setSuppressNumbers(true)}
+        />
       )}
       {receipt?.state === "stale" && (
         <p role="status">历史结果已失效，不能作为当前正式预测。</p>

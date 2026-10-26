@@ -14,8 +14,16 @@ export default function PackageReviewEvidence({
   quote,
 }: {
   bidId: string;
-  document: PackageReviewDocument;
-  quote: PackageReviewQuote;
+  document: Pick<
+    PackageReviewDocument,
+    "document_version_id" | "parse_run_id" | "file_digest"
+  > &
+    Partial<PackageReviewDocument>;
+  quote: Pick<
+    PackageReviewQuote,
+    "evidence_id" | "document_version_id" | "physical_page" | "quote"
+  > &
+    Partial<PackageReviewQuote>;
 }) {
   const active = useRef(false),
     loading = useRef(false);

@@ -133,3 +133,13 @@ it("allows correction after a first definite server rejection", async () => {
     false,
   );
 });
+it("clears the displayed numeric snapshot before a failing report authority refresh", async () => {
+  mock.mockImplementationOnce(async (_, options) => result(options?.body));
+  render(<PackageFormalPrediction {...p} />);
+  start();
+  await screen.findByText(/正式预测：50/);
+  mock.mockRejectedValueOnce(new Error("certificate revoked"));
+  fireEvent.click(screen.getByText("复验并查看预测报告"));
+  expect(screen.queryByText(/正式预测：50/)).toBeNull();
+  await screen.findByText(/certificate revoked/);
+});
