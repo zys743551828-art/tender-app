@@ -18,6 +18,7 @@ import { SectionEditor } from "./SectionEditor";
 import { AuthoringBuilds } from "./AuthoringBuilds";
 import { AuthoringWordImport } from "./AuthoringWordImport";
 import { AuthoringGenerationBatch } from "./AuthoringGenerationBatch";
+import { ExactAuthoringTextEdit } from "./ExactAuthoringTextEdit";
 import type { SectionEditorHandle } from "./SectionEditor";
 import { useAuxiliaryFocus } from "./useAuxiliaryFocus";
 import { useElementWidth } from "./useElementWidth";
@@ -304,6 +305,7 @@ function DraftEditor({
   const [switching, setSwitching] = useState(false);
   const [building, setBuilding] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
+  const [manualEditing, setManualEditing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<unknown>(null);
@@ -340,7 +342,14 @@ function DraftEditor({
     ? selected!
     : view?.sections[0]?.id;
   async function choose(id: string) {
-    if (switching || building || importing || generating || structureBusy)
+    if (
+      switching ||
+      building ||
+      importing ||
+      generating ||
+      structureBusy ||
+      manualEditing
+    )
       return;
     if (id === sectionId) {
       continueWriting();
@@ -406,6 +415,36 @@ function DraftEditor({
       )}
       {view && current.etag && (
         <>
+          {exact.hasExact &&
+            supportsApi(
+              "POST",
+              `/bids/${bidId}/authoring/drafts/${draftId}/exact-text-edits`,
+            ) && (
+              <ExactAuthoringTextEdit
+                key={`${memberId}:${bidId}:${draftId}`}
+                memberId={memberId}
+                bidId={bidId}
+                draftId={draftId}
+                sectionId={sectionId}
+                status={exact.status ?? null}
+                etag={current.etag}
+                disabled={
+                  disabled ||
+                  switching ||
+                  building ||
+                  importing ||
+                  generating ||
+                  structureBusy ||
+                  exact.checking
+                }
+                onEditingChange={setManualEditing}
+                onSaved={async () => {
+                  await reloadHead();
+                  await exact.refresh();
+                  window.dispatchEvent(new Event("server-snapshot-change"));
+                }}
+              />
+            )}
           <div className="authoring-task-toolbar">
             <button
               className="button secondary"
@@ -461,7 +500,12 @@ function DraftEditor({
                 draftRevision={view.revision}
                 sectionId={sectionId}
                 disabled={
-                  disabled || switching || building || importing || generating
+                  disabled ||
+                  switching ||
+                  building ||
+                  importing ||
+                  generating ||
+                  manualEditing
                 }
                 readOnly={exact.ordinaryEditBlocked}
                 onChoose={choose}
@@ -499,7 +543,8 @@ function DraftEditor({
                     building ||
                     structureBusy ||
                     importing ||
-                    generating
+                    generating ||
+                    manualEditing
                   }
                   readOnly={exact.ordinaryEditBlocked}
                   onSaved={() => void reloadHead().catch(setError)}
@@ -526,7 +571,8 @@ function DraftEditor({
               switching ||
               building ||
               structureBusy ||
-              importing
+              importing ||
+              manualEditing
             }
             onChanged={reloadHead}
             onBusy={setGenerating}
@@ -554,7 +600,8 @@ function DraftEditor({
               switching ||
               building ||
               structureBusy ||
-              generating
+              generating ||
+              manualEditing
             }
             onChanged={reloadHead}
             onBusy={setImporting}
@@ -583,7 +630,8 @@ function DraftEditor({
             switching ||
             structureBusy ||
             importing ||
-            generating
+            generating ||
+            manualEditing
           }
           onPackages={onPackages}
           setBusy={setBuilding}

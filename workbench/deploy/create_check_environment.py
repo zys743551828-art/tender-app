@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
 from deploy.bootstrap_fresh import BootstrapError, bootstrap  # noqa: E402
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-init-file", type=Path, required=True)
     parser.add_argument("--name", required=True)
@@ -24,28 +24,42 @@ def main():
     )
     parser.add_argument("--extension-sql", type=Path)
     parser.add_argument("--extension-sha256")
+    parser.add_argument(
+        "--authoring-candidate",
+        type=Path,
+        help="Explicit B1–B5 plan from deploy.authoring_candidate; verifies the created API/Worker ACLs",
+    )
     parser.add_argument("--model-purposes", action="store_true")
     parser.add_argument("--kafka-bootstrap")
     parser.add_argument("--kafka-port", type=int)
     parser.add_argument("--compose-project")
     parser.add_argument("--app-origin")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if bool(args.extension_sql) != bool(args.extension_sha256):
         parser.error("extension requires an exact reviewed SQL SHA256")
     extensions = list(args.reviewed_sql)
     if args.extension_sql:
         extensions.append((str(args.extension_sql), args.extension_sha256))
+    if args.authoring_candidate and (extensions or args.model_purposes):
+        parser.error("authoring candidate cannot be combined with other SQL or model purposes")
     try:
-        result = bootstrap(
+        options = dict(
             base_profile=args.base_init_file,
             name=args.name,
-            extensions=extensions,
             model_purposes=args.model_purposes,
             kafka_bootstrap=args.kafka_bootstrap,
             kafka_port=args.kafka_port,
             compose_project=args.compose_project,
             app_origin=args.app_origin,
         )
+        if args.authoring_candidate:
+            from deploy import authoring_candidate
+
+            result = authoring_candidate.create(
+                authoring_candidate.load(args.authoring_candidate), **options
+            )
+        else:
+            result = bootstrap(extensions=extensions, **options)
         print(json.dumps(result, ensure_ascii=False))
     except Exception as error:
         # psycopg and provider exception text may contain connection credentials or raw SQL.

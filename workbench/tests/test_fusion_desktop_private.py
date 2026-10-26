@@ -1,6 +1,7 @@
 """POSIX setup file failures; ownership transfer is asserted, then tested in real Compose."""
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -147,12 +148,29 @@ def test_existing_admin_policy_and_other_secret_minimum_are_unchanged(tmp_path):
         )
 
 
+def directory_owner(monkeypatch, directory, uid):
+    """Model the container volume's owner while retaining real file modes and IO."""
+    original = Path.stat
+
+    def owned(path, *args, **kwargs):
+        information = original(path, *args, **kwargs)
+        if path != directory:
+            return information
+        fields = list(information)
+        fields[4] = uid
+        return os.stat_result(fields)
+
+    monkeypatch.setattr(Path, "stat", owned)
+
+
 def test_new_init_volume_is_private_but_existing_bad_permissions_are_not_repaired(
     tmp_path, monkeypatch
 ):
     directory = tmp_path / "state"
     directory.mkdir(mode=0o755)
-    # The unit process is root in the fixed Linux checks image.
+    # The deployed initializer receives a root-owned volume. Unit runners may
+    # have another UID; simulate only ownership, keeping actual chmod/read IO.
+    directory_owner(monkeypatch, directory, 0)
     private._initial_state(directory)
     assert directory.stat().st_mode & 0o777 == 0o700
     (directory / "already-initialized").write_text("synthetic")
@@ -160,3 +178,18 @@ def test_new_init_volume_is_private_but_existing_bad_permissions_are_not_repaire
     with pytest.raises(spec.ConfigurationError, match="DESKTOP_INIT_STATE_CHANGED"):
         private._initial_state(directory)
     assert directory.stat().st_mode & 0o777 == 0o755
+
+
+@pytest.mark.parametrize("initialized", (False, True))
+def test_init_volume_with_nonroot_owner_is_rejected_without_repair(
+    tmp_path, monkeypatch, initialized
+):
+    directory = tmp_path / "nonroot-state"
+    directory.mkdir(mode=0o755)
+    if initialized:
+        (directory / "already-initialized").write_text("synthetic")
+    directory_owner(monkeypatch, directory, 1001)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_INIT_STATE_REQUIRED"):
+        private._initial_state(directory)
+    assert directory.stat().st_mode & 0o777 == 0o755
+    assert bool(list(directory.iterdir())) is initialized

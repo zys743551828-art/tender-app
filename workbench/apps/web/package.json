@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
-    "contracts:generate": "python scripts/generate-contracts.py && prettier --write src/contracts.ts",
+    "contracts:generate": "python scripts/generate-contracts.py && prettier --write src/contracts.ts src/packageHistoricalResearchSchemas.ts",
     "predev": "node scripts/copy-pdf-resources.mjs",
     "prebuild": "node scripts/copy-pdf-resources.mjs",
     "postinstall": "node scripts/copy-pdf-resources.mjs"

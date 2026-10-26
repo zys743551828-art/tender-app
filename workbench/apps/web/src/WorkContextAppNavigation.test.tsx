@@ -64,7 +64,12 @@ it("restores the exact saved stage on a real project-home visit and browser back
   saveWorkspacePosition(f.scope.memberId, f.scope.bidId, route);
   history.replaceState({}, "", `/bids/${f.scope.bidId}`);
   render(<App />);
-  await screen.findByRole("button", { name: "阅读全文与目录" });
+  // A cold test worker must transform the lazy workspace before resolving it.
+  await screen.findByRole(
+    "button",
+    { name: "阅读全文与目录" },
+    { timeout: 5000 },
+  );
   expect(window.location.pathname + window.location.search).toBe(route);
   await user.click(screen.getByRole("radio", { name: "生成记录" }));
   await screen.findByText("尚未选择记录");

@@ -102,7 +102,7 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
             422,
         )
     if rich:
-        from packages.authoring import rich_build, rich_docx, rich_snapshots
+        from packages.authoring import rich_build, rich_docx, rich_renderer, rich_snapshots
         from packages.authoring.rich_schema import validate_build
 
         validate_build(body)
@@ -179,7 +179,7 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
             writer_digest=rich_build.writer_digest(),
             writer_kind="generated_rich/3",
             generator_identity=rich_docx.identity(),
-            render_protocol="authoring-rich-sandbox/3",
+            render_protocol=rich_renderer.PROTOCOL,
             authoring_images_digest=(snapshot.get("authoring_images") or {}).get("digest"),
             pagination_mode=body["pagination_mode"],
         )

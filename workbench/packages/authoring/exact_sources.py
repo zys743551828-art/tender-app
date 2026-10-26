@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from uuid import UUID
 
 import psycopg
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 from packages.authoring.exact_revision_contracts import (
@@ -33,9 +34,11 @@ class ExactAdoption:
 
 def check_adoption(c, admission, bid, draft, actor, body):
     from packages.assistant import actions
-    from packages.authoring import package_generation, package_proposals
+    from packages.authoring import exact_text_edits, package_generation, package_proposals
     from packages.authoring.package_job_authority import assert_job
 
+    if isinstance(admission, exact_text_edits.ExactManualEdit):
+        return exact_text_edits.check(c, admission, bid, draft, actor, body)
     if not isinstance(admission, ExactAdoption):
         raise DomainError("AUTHORING_EXACT_ADMISSION_INVALID", "采用准入必须来自实际候选", 409)
     require_apply(c)
@@ -78,6 +81,12 @@ def check_adoption(c, admission, bid, draft, actor, body):
 
 def append_adoption(c, admission, bid, draft, section, revision, content, actor, schema_digest):
     """Recheck all authority immediately before the shared section INSERT."""
+    from packages.authoring import exact_text_edits
+
+    if isinstance(admission, exact_text_edits.ExactManualEdit):
+        return exact_text_edits.append(
+            c, admission, bid, draft, section, revision, content, actor, schema_digest
+        )
     if not isinstance(admission, ExactAdoption):
         raise DomainError("AUTHORING_EXACT_ADMISSION_INVALID", "缺少实际采用准入", 409)
     return check_adoption(
@@ -101,8 +110,11 @@ def append_adoption(c, admission, bid, draft, section, revision, content, actor,
 
 
 def bind_adoption(c, admission, actual, job, content, schema_digest):
+    from packages.authoring import exact_text_edits
     from packages.authoring.package_proposals import policy
 
+    if isinstance(admission, exact_text_edits.ExactManualEdit):
+        return exact_text_edits.bind(c, admission, actual, job, content, schema_digest)
     target = job["input_manifest"]["plan"]["target"]
     method = policy()
     manifest = clean(
@@ -271,14 +283,26 @@ def assert_ordinary_edit(c, bid, draft):
 
 def load(c, bid, revision):
     require_schema(c)
+    from packages.authoring import exact_text_edits
+    from packages.authoring.exact_text_edit_contracts import AuthoringExactManualRevisionView
+
+    records = (
+        "authoring_exact_revision_records"
+        if exact_text_edits.installed(c)
+        else "authoring_exact_revisions"
+    )
     row = fetch(
         c,
-        "SELECT q.* FROM design.authoring_exact_revisions q "
-        "WHERE q.bid_id=%s AND q.section_revision_id=%s",
+        sql.SQL("SELECT q.* FROM {} q WHERE q.bid_id=%s AND q.section_revision_id=%s").format(
+            sql.Identifier("design", records)
+        ),
         (bid, revision),
     )
     value = {"manifest": row["manifest"], "digest": row["digest"]}
-    AuthoringExactRevisionView.model_validate(value)
+    if row["manifest"].get("protocol") == "authoring-exact-manual-revision/1":
+        AuthoringExactManualRevisionView.model_validate(value)
+    else:
+        AuthoringExactRevisionView.model_validate(value)
     m = row["manifest"]
     if (
         sha(m) != row["digest"]
@@ -320,9 +344,18 @@ def prepare_snapshot(c, bid, draft, sections):
     if not available(c):
         assert_ordinary_edit(c, bid, draft)
         return None
+    from packages.authoring import exact_text_edits
+
+    records = (
+        "authoring_exact_revision_records"
+        if exact_text_edits.installed(c)
+        else "authoring_exact_revisions"
+    )
     rows = c.execute(
-        "SELECT * FROM design.authoring_exact_revisions WHERE bid_id=%s AND draft_id=%s "
-        "AND section_revision_id=ANY(%s::uuid[])",
+        sql.SQL(
+            "SELECT * FROM {} WHERE bid_id=%s AND draft_id=%s "
+            "AND section_revision_id=ANY(%s::uuid[])"
+        ).format(sql.Identifier("design", records)),
         (bid, draft, [s["id"] for s in sections]),
     ).fetchall()
     by_id = {r["section_revision_id"]: r for r in rows}

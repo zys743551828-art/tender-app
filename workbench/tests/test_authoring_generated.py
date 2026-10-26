@@ -200,7 +200,10 @@ def test_generated_port_rejects_before_any_sandbox_or_model_call(snapshot, monke
     public = Path(
         os.environ.get(
             "AUTHORING_GENERATED_BASE_PROFILE_FIXTURE",
-            "/workspace/tender-docs/04-验证与测试/word-intake-development-checks/candidate-03/renderer-profile.json",
+            str(
+                Path(__file__).resolve().parents[1]
+                / "docs/authoring-rich-static-checks/word03-base-profile.json"
+            ),
         )
     )
     base = json.loads(public.read_text())
@@ -253,7 +256,10 @@ def test_prepare_positive_is_pure_and_preserves_body_digits(snapshot, monkeypatc
     public = Path(
         os.environ.get(
             "AUTHORING_GENERATED_BASE_PROFILE_FIXTURE",
-            "/workspace/tender-docs/04-验证与测试/word-intake-development-checks/candidate-03/renderer-profile.json",
+            str(
+                Path(__file__).resolve().parents[1]
+                / "docs/authoring-rich-static-checks/word03-base-profile.json"
+            ),
         )
     )
     profile = generated_renderer.profile_for(json.loads(public.read_text()))

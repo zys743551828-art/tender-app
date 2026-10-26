@@ -1013,6 +1013,43 @@ export type AuthoringExactRevisionView = {
   digest: string;
 };
 
+export type AuthoringExactManualRevisionView = {
+  manifest: AuthoringExactManualRevisionManifest;
+  digest: string;
+};
+
+export type AuthoringExactTextEditCapabilities = {
+  protocol: "authoring-exact-text-edit-capabilities/1";
+  available: boolean;
+  supported_content: "plain_text_stable_node";
+  preserves_source_refs: true;
+  preserves_rule_ids: true;
+  ordinary_edit_available: false;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactTextEditRequest = {
+  base_draft_revision: number;
+  section_revision_id: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text: string;
+  reason: string;
+};
+
+export type AuthoringExactTextEditResult = {
+  protocol: "authoring-exact-text-edit-result/1";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  parent_section_revision_id: string;
+  section_revision_id: string;
+  section_digest: string;
+  qualification: AuthoringExactManualRevisionView;
+};
+
 export type AuthoringExactSectionBinding = {
   section_id: string;
   section_revision_id: string;
@@ -7417,6 +7454,119 @@ export type PackageSubmissionPreview = {
   } | null;
 };
 
+export type PackageSubmissionPreflightRequest = {
+  selection: {
+    package_id: string;
+    revision_id: string;
+    package_digest: string;
+    inventory: {
+      id: string;
+      digest: string;
+    } | null;
+    coverage: {
+      id: string;
+      digest: string;
+    } | null;
+    review_run: {
+      id: string;
+      input_digest: string;
+      result_digest: string | null;
+    } | null;
+  };
+  input_digest: string;
+};
+
+export type PackageSubmissionPreflightView = {
+  manifest: {
+    version: "package-submission-preflight/1";
+    kind: "verified_package_submission_observation";
+    subject: {
+      kind: "bid_package";
+      bid_id: string;
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      identity_digest: string;
+    };
+    selection_request: {
+      package_id: string;
+      revision_id: string;
+      package_digest: string;
+      inventory: {
+        id: string;
+        digest: string;
+      } | null;
+      coverage: {
+        id: string;
+        digest: string;
+      } | null;
+      review_run: {
+        id: string;
+        input_digest: string;
+        result_digest: string | null;
+      } | null;
+    };
+    selection_digest: string;
+    input_digest: string;
+    actor_id: string;
+    checked_at: string;
+    bid_etag: string;
+    policy_digest: string;
+    metadata_gate_digest: string;
+    review_runtime: {
+      state: "matched" | "blocked" | "not_selected";
+      run_id: string | null;
+      selected_input_digest: string | null;
+      current_input_digest: string | null;
+      codes: string[];
+    };
+    originals: {
+      document_version_id: string;
+      digest: string;
+      byte_size: number;
+      media_type: string;
+      artifact_kind: string;
+      original_name: string;
+      roles: (
+        | "target"
+        | "authority"
+        | "submission_attachment"
+        | "source_ancestor"
+      )[];
+    }[];
+    gates: {
+      current_input: {
+        state: "blocked" | "unknown" | "pass";
+        codes: string[];
+        scope: "current_input_verified_observation";
+        metadata_observations_digest: string | null;
+        current_identity_digest: string | null;
+        original_verification: "verified_at_observation";
+        original_count: number;
+        originals_digest: string;
+        physical_page_gaps: {
+          role: "target" | "authority";
+          member_id: string;
+          first_page: number;
+          last_page: number;
+        }[];
+      };
+      core_coverage: PackageSubmissionGate_CoreCoverage;
+      mandatory_confirmation: PackageSubmissionGate_MandatoryConfirmation;
+      known_blocking_risks: PackageSubmissionGate_KnownBlockingRisks;
+    };
+    state: "blocked" | "unknown";
+    allowed: false;
+    inventory_complete: false;
+    quality_status: "not_measured";
+    submission_eligible: false;
+    publication_authorized: false;
+    platform_submission_verified: false;
+    limitations: string[];
+  };
+  digest: string;
+};
+
 export type PackageSubmissionBindingView = {
   manifest: {
     version: "package-submission-binding/1";
@@ -9100,6 +9250,31 @@ export type AuthoringExactRevisionManifest = {
   content_correctness_certified: false;
 };
 
+export type AuthoringExactManualRevisionManifest = {
+  protocol: "authoring-exact-manual-revision/1";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactTextEditOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactTextEditMethod;
+  method_digest: string;
+  candidate_adopted: false;
+  content_correctness_certified: false;
+};
+
 export type PackageContext = {
   target: PackageReference;
   authority: PackageReference;
@@ -10254,6 +10429,117 @@ export type SubmissionRiskSnapshot = {
   scope_note: string;
 };
 
+export type PackageSubmissionGate_CoreCoverage = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  inventory_proof_digest: string | null;
+  run_id: string | null;
+  active_core_count: number;
+  judged_core_count: number;
+  unknown_core_count: number;
+  unfavorable_core_count: number;
+  human_declared_count: number;
+  extraction_range_proven: boolean;
+  inventory_complete: false;
+  quality_status: "not_measured";
+  overall_coverage: "partial" | "unknown";
+};
+
+export type PackageSubmissionGate_MandatoryConfirmation = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "known_inventory_core_rules";
+  core_rule_count: number;
+  confirmed_count: number;
+  pending_rule_ids: string[];
+  inactive_rule_ids: string[];
+  needs_revalidation_rule_ids: string[];
+  decisions: {
+    rule_id: string;
+    rule_digest: string;
+    decision_id: string | null;
+    decision_digest: string | null;
+    decision: string | null;
+  }[];
+};
+
+export type PackageSubmissionGate_KnownBlockingRisks = {
+  state: "blocked" | "unknown" | "pass";
+  codes: string[];
+  scope: "whole_bid_known_history";
+  history_digest: string | null;
+  history_complete: boolean;
+  runs_read: number;
+  result_rows_read: number;
+  unknown_run_ids: string[];
+  blocked_count: number;
+  unknown_count: number;
+  risks: (
+    | {
+        kind: "package_core_requirement";
+        state: "blocked" | "unknown";
+        scope: {
+          bid_id: string;
+          package_id: string;
+          revision_id: string;
+          inventory_id: string;
+        };
+        run_id: string;
+        frozen_input_id: string;
+        execution_input_id: string;
+        result_digest: string;
+        row_digest: string;
+        requirement_id: string;
+        rule_digest: string;
+        rule_kind: "disqualification" | "mandatory";
+        verdict: "violated" | "not_found" | "unable_to_judge";
+        statement: string;
+        human_decision: {
+          id: string;
+          digest: string;
+          state: "confirmed" | "rejected" | "needs_review";
+          reason: string;
+        } | null;
+        resolution: "no_verified_package_recheck_resolution";
+      }
+    | {
+        kind: "legacy_finding";
+        state: "blocked";
+        finding: {
+          id: string;
+          bid_id: string;
+          origin_id: string;
+          review_id: string;
+          rule_id: string | null;
+          rule_kind:
+            | "mandatory"
+            | "disqualification"
+            | "scoring"
+            | "advisory"
+            | null;
+          severity: "critical" | "major" | "minor" | "info";
+          category:
+            | "disqualification"
+            | "response"
+            | "consistency"
+            | "scope"
+            | "improvement";
+          verdict:
+            | "satisfied"
+            | "violated"
+            | "not_found"
+            | "unable_to_judge"
+            | "not_applicable";
+          lifecycle: "open" | "deferred" | "dismissed";
+          statement: string;
+        };
+        finding_digest: string;
+        resolution: "no_verified_recheck_resolution";
+      }
+  )[];
+};
+
 export type HistoricalBidIdentitySnapshot =
   | {
       bidder_id: string;
@@ -10936,6 +11222,27 @@ export type AuthoringExactRevisionOrigin = {
 
 export type AuthoringExactRevisionMethod = {
   protocol: "authoring-exact-adoption-policy/1";
+  supported_content: "plain_text_stable_node";
+  source_sha256: { [key: string]: string };
+};
+
+export type AuthoringExactTextEditOrigin = {
+  kind: "manual_text_edit";
+  parent_qualification_id: string;
+  parent_qualification_digest: string;
+  root_qualification_id: string;
+  root_qualification_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text_digest: string;
+  reason: string;
+};
+
+export type AuthoringExactTextEditMethod = {
+  protocol: "authoring-exact-text-edit-policy/1";
   supported_content: "plain_text_stable_node";
   source_sha256: { [key: string]: string };
 };
@@ -11695,117 +12002,6 @@ export type PackageSubmissionGate_CurrentInput = {
   }[];
 };
 
-export type PackageSubmissionGate_CoreCoverage = {
-  state: "blocked" | "unknown" | "pass";
-  codes: string[];
-  scope: "known_inventory_core_rules";
-  inventory_proof_digest: string | null;
-  run_id: string | null;
-  active_core_count: number;
-  judged_core_count: number;
-  unknown_core_count: number;
-  unfavorable_core_count: number;
-  human_declared_count: number;
-  extraction_range_proven: boolean;
-  inventory_complete: false;
-  quality_status: "not_measured";
-  overall_coverage: "partial" | "unknown";
-};
-
-export type PackageSubmissionGate_MandatoryConfirmation = {
-  state: "blocked" | "unknown" | "pass";
-  codes: string[];
-  scope: "known_inventory_core_rules";
-  core_rule_count: number;
-  confirmed_count: number;
-  pending_rule_ids: string[];
-  inactive_rule_ids: string[];
-  needs_revalidation_rule_ids: string[];
-  decisions: {
-    rule_id: string;
-    rule_digest: string;
-    decision_id: string | null;
-    decision_digest: string | null;
-    decision: string | null;
-  }[];
-};
-
-export type PackageSubmissionGate_KnownBlockingRisks = {
-  state: "blocked" | "unknown" | "pass";
-  codes: string[];
-  scope: "whole_bid_known_history";
-  history_digest: string | null;
-  history_complete: boolean;
-  runs_read: number;
-  result_rows_read: number;
-  unknown_run_ids: string[];
-  blocked_count: number;
-  unknown_count: number;
-  risks: (
-    | {
-        kind: "package_core_requirement";
-        state: "blocked" | "unknown";
-        scope: {
-          bid_id: string;
-          package_id: string;
-          revision_id: string;
-          inventory_id: string;
-        };
-        run_id: string;
-        frozen_input_id: string;
-        execution_input_id: string;
-        result_digest: string;
-        row_digest: string;
-        requirement_id: string;
-        rule_digest: string;
-        rule_kind: "disqualification" | "mandatory";
-        verdict: "violated" | "not_found" | "unable_to_judge";
-        statement: string;
-        human_decision: {
-          id: string;
-          digest: string;
-          state: "confirmed" | "rejected" | "needs_review";
-          reason: string;
-        } | null;
-        resolution: "no_verified_package_recheck_resolution";
-      }
-    | {
-        kind: "legacy_finding";
-        state: "blocked";
-        finding: {
-          id: string;
-          bid_id: string;
-          origin_id: string;
-          review_id: string;
-          rule_id: string | null;
-          rule_kind:
-            | "mandatory"
-            | "disqualification"
-            | "scoring"
-            | "advisory"
-            | null;
-          severity: "critical" | "major" | "minor" | "info";
-          category:
-            | "disqualification"
-            | "response"
-            | "consistency"
-            | "scope"
-            | "improvement";
-          verdict:
-            | "satisfied"
-            | "violated"
-            | "not_found"
-            | "unable_to_judge"
-            | "not_applicable";
-          lifecycle: "open" | "deferred" | "dismissed";
-          statement: string;
-        };
-        finding_digest: string;
-        resolution: "no_verified_recheck_resolution";
-      }
-  )[];
-};
-
 export type AuthoringHistoryAuthoringText = {
   type: "text";
   text: string;
@@ -12143,6 +12339,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/authoring/exact-revision-capabilities",
   "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
+  "GET /api/v1/authoring/exact-text-edit-capabilities",
+  "POST /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
   "GET /api/v1/bids/{bid_id}/authoring/input-catalog/draft-snapshots/{snapshot_id}/sections/{section_id}/nodes",
   "GET /api/v1/bids/{bid_id}/authoring/input-catalog/fact-sets",
@@ -12408,6 +12606,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/rule-correction-evidence/{evidence_id}",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submission-preview",
+  "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submission-preflight",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/submissions",
   "POST /api/v1/submissions/{submission_id}/package-corrections",
   "GET /api/v1/technical-scale-capabilities",

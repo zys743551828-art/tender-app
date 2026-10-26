@@ -10,6 +10,7 @@ import type {
 import { ArtifactActions } from "./ArtifactActions";
 import { ErrorNotice } from "./components";
 import { PackageSubmissionGates } from "./PackageSubmissionGates";
+import { PackageSubmissionPreflight } from "./PackageSubmissionPreflight";
 import { PackageSubmissionSelection as SelectionEditor } from "./PackageSubmissionSelection";
 import { SubmissionDocumentChoices } from "./SubmissionDocuments";
 import { useSubmissionDocuments } from "./useSubmissionDocuments";
@@ -261,6 +262,14 @@ export function PackageSubmissionForm({
       <ErrorNotice error={error} />
       {preview && (
         <PackageSubmissionGates key={preview.gate.digest} gate={preview.gate} />
+      )}
+      {preview && (
+        <PackageSubmissionPreflight
+          key={`${scope.bidId}:${scope.memberId}:${preview.gate.digest}`}
+          scope={scope}
+          preview={preview}
+          disabled={disabled}
+        />
       )}
       {preview && (
         <>

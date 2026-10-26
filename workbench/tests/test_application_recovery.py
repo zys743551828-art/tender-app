@@ -2,11 +2,11 @@
 
 import asyncio
 import json
-from pathlib import Path
 from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from archived_recovery_inputs import BASELINE, required_archive
 
 from deploy.application_recovery import application, archive, assets, cluster, security
 
@@ -108,9 +108,7 @@ def test_unreviewed_baseline_cannot_supply_arbitrary_sql(tmp_path):
 
 
 def test_exact_reviewed_308_and_15_inputs():
-    baseline = Path(
-        "/workspace/tender-docs/04-验证与测试/application-recovery-development-checks/protocol-02/baseline-inputs.json"
-    )
+    baseline = required_archive(BASELINE)
     document, sql_bytes = cluster.validate_inputs(baseline)
     assert document["backend"]["file_count"] == 308
     assert len(sql_bytes) == 15
