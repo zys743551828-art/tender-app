@@ -18,6 +18,7 @@ def mount(app):
     from apps.api.model_registry_routes import router as registry
     from apps.api.package_business_shadow_routes import router as business_shadow
     from apps.api.package_model_admission_routes import router as package_admission
+    from apps.api.package_model_certification_routes import router as package_certification
     from apps.api.package_model_registry_routes import router as package_registry
     from apps.api.scoring_routes import router as scoring
     from apps.api.task_draft_routes import router as task_drafts
@@ -40,6 +41,7 @@ def mount(app):
         registry,
         package_registry,
         package_admission,
+        package_certification,
         business_shadow,
         scoring,
     )

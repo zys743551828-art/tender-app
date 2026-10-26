@@ -5,7 +5,7 @@
 | FR | 需求 | 当前源码证据 | 编码/验收结论 |
 |---|---|---|---|
 | 001 | 废标/否决检测与提交闸门 | `review_routes.py`、`bid_package_review_run_routes.py`、`bid_package_submission_routes.py` | 核心/整包评审及 preflight/提交代码已有；真实参考标注召回误报与整包正向提交未完整验收 |
-| 002 | 评分预测 | `scoring_producer.py`、`package_scoring_producer.py`、`package_feature_training.py`、`package_feature_final.py`、`package_feature_evaluation.py`、`registry.py`、`review_views.py` | **不完整**：研究拟合/冻结/独立评价及获批材料调用已有；正式 certification 签发、业务消费者与 UI 正向路径尚缺，未校准合计也不能通过硬改 unavailable 获得 |
+| 002 | 评分预测 | `scoring_producer.py`、`package_scoring_producer.py`、`package_feature_training.py`、`package_feature_final.py`、`package_feature_evaluation.py`、`registry.py`、`review_views.py` | **不完整**：研究拟合/冻结/独立评价及获批材料调用已有；认证生命周期已有代码（见最新阶段）；业务消费者与 UI 正向路径尚缺，未校准合计也不能通过硬改 unavailable 获得 |
 | 003 | 响应矩阵 | `review_routes.py` 的 `/reviews/{id}/matrix`、`review_views.py` | 有实现；真实正文与条款覆盖的用户验收未完成 |
 | 004 | 前后矛盾检测 | review producer/checks、`review_routes.py` findings、问题复核 | 有检测/发现/复核链路；真实性与漏报误报未验收 |
 | 005 | 范围残留检测 | 同上及 package scope review | 有范围核对链路；真实复杂材料未验收 |
@@ -54,3 +54,5 @@ FR-002 第五阶段：[/3 内部路由与实际回退动作](package-model-route
 认证前复核：现有 /3 观察和回退只生产 retrospective_internal 机制事件，真实用途线上证据生产入口/冻结版本绑定仍未实现。见[来源缺口复核](certification-source-gap.md)。因此 FR-002 不能仅以“还缺认证和预测两个接口”概括，更不能把合成正例当成真实权威；本次没有新增正向认证代码或验收结果。
 
 FR-002 真实用途来源生产代码更新：[默认关闭的业务镜像及 /3 冻结绑定](business-shadow-producer.md)已接通既有任务/发送/结算与观察/回退事件。真实线上与 PG 联合验收未运行，认证生命周期和正式预测消费仍待编码；FR001–013 其余结论保持。
+
+最新认证阶段：[签发/读取/过期/终态撤销](package-certification.md)直接消费现有 /3 事件和原生 final 报告，未实际签发真实认证。FR-002 的剩余必需代码收敛为正式预测持久化/API/UI 与关联投影；FR-001–013 其余验收边界不变。
