@@ -281,9 +281,9 @@ it("shows the actual package action comparison while adoption remains unavailabl
   expect(
     await screen.findByRole("button", { name: "此固定整包候选暂不可采纳" }),
   ).toBeDisabled();
-  expect(
-    await screen.findByRole("button", { name: "拒绝此提议" }),
-  ).toBeEnabled();
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "拒绝此提议" })).toBeEnabled(),
+  );
   await userEvent.click(await screen.findByText("查看具体文字增删"));
   expect(await screen.findByLabelText("拟修改后全文")).toHaveTextContent(
     "尚未采用",

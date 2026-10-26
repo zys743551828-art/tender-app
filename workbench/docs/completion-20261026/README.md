@@ -112,3 +112,5 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 [FR-002 业务门槛冻结阶段](admission-protocol.md)：无默认值、不可变回执及曝光前原生边界；尚不授予认证或正式预测资格。
 
 [FR-002 /3 登记与研究消费](package-model-registry.md)：独立版本 artifact、原生注册 API、实际完整材料复验推断和持久回执；未授予正式资格。
+
+[FR-002 /3 门槛与报告登记](package-admission-report.md)：明确新版冻结、原生 final 证据持久化及实际门槛消费者；不签发认证。
