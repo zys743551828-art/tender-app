@@ -53,6 +53,7 @@ def arguments():
             "native-feature-method",
             "feature-training-method",
             "final-feature-method",
+            "feature-dispatch-method",
             "feature-method",
             "feature-freeze",
             "feature-read",
@@ -151,7 +152,12 @@ def arguments():
         or args.purpose in {"complete-calibration-freeze", "complete-calibration-read"}
     ):
         parser.error("feature training requires complete native train or local calibration inputs")
-    if args.purpose in {"native-feature-method", "feature-training-method", "final-feature-method"}:
+    if args.purpose in {
+        "native-feature-method",
+        "feature-training-method",
+        "final-feature-method",
+        "feature-dispatch-method",
+    }:
         if (
             any(v is not None for v in feature_arguments + calibration_args + native_complete)
             or any(evidence)
@@ -285,6 +291,7 @@ def main():
         "native-feature-method",
         "feature-training-method",
         "final-feature-method",
+        "feature-dispatch-method",
     } or args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run

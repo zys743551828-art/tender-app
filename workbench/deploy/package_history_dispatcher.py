@@ -19,7 +19,11 @@ def arguments(argv=None):
     parser.add_argument("--cycles", type=int, default=1)
     parser.add_argument("--poll-seconds", type=int, default=5)
     parser.add_argument("--owned-child", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--feature-plan", type=Path)
+    parser.add_argument("--expected-feature-plan-digest")
     args = parser.parse_args(argv)
+    if (args.feature_plan is None) != (args.expected_feature_plan_digest is None):
+        parser.error("feature-plan and expected-feature-plan-digest are required together")
     if (
         not 1 <= args.batch_size <= 20
         or not 1 <= args.cycles <= 1_000_000
@@ -51,6 +55,13 @@ def main(argv=None):
             "--poll-seconds",
             str(args.poll_seconds),
         ]
+        if args.feature_plan is not None:
+            command += [
+                "--feature-plan",
+                str(args.feature_plan.absolute()),
+                "--expected-feature-plan-digest",
+                args.expected_feature_plan_digest,
+            ]
         try:
             isolated = environment(args.profile, args.purpose)
         except (OSError, TypeError, ValueError):
@@ -68,11 +79,20 @@ def main(argv=None):
         signal.signal(name, lambda _signal, _frame: stopped.set())
     cursor = None
     try:
+        feature_plan = None
+        if args.feature_plan is not None:
+            from packages.model_governance.package_feature_dispatch import load
+
+            feature_plan = load(args.feature_plan, args.expected_feature_plan_digest, args.purpose)
         for number in range(args.cycles):
             if stopped.is_set():
                 break
             cursor, result = dispatch.cycle(
-                args.purpose, after=cursor, limit=args.batch_size, stopped=stopped
+                args.purpose,
+                after=cursor,
+                limit=args.batch_size,
+                stopped=stopped,
+                **({"feature_plan": feature_plan} if feature_plan is not None else {}),
             )
             print(json.dumps({"ok": True, "result": result}), flush=True)
             if number + 1 < args.cycles and stopped.wait(args.poll_seconds):

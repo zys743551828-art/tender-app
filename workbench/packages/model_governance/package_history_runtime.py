@@ -108,6 +108,7 @@ def run(
     complete_material=None,
     feature_training_method=None,
     final_material=None,
+    dispatch_binding=None,
 ):
     """Recover CPU work through its owned lease; final exposure commits first."""
     from packages.model_governance import package_history_cpu as cpu
@@ -128,19 +129,51 @@ def run(
         raise GovernanceError(
             "PACKAGE_FEATURE_FINAL_PURPOSE_DENIED", "Dedicated prediction freeze only"
         )
+    if dispatch_binding is not None:
+        from packages.model_governance import package_feature_dispatch as feature_dispatch
+
+        feature_dispatch.validate_binding(dispatch_binding, purpose, job_id)
+        config = complete_material if purpose == "train" else final_material
+        if config is None or (
+            purpose == "train"
+            and feature_training_method != dispatch_binding["methods"]["training"]
+        ):
+            raise GovernanceError(
+                "PACKAGE_FEATURE_DISPATCH_CONFIGURATION_REQUIRED",
+                "Exact feature configuration required",
+            )
+        feature_dispatch.verify_reference(dispatch_binding, config)
     owner = uuid4()
     with connection(purpose) as c:
         lease = c.execute(
             "SELECT package_historical_research.claim_job(%s,%s,%s) AS value",
             (job_id, generation, owner),
         ).fetchone()["value"]
+    saved_binding = lease.get("dispatch_binding")
+    if saved_binding is not None and saved_binding != dispatch_binding:
+        raise GovernanceError(
+            "PACKAGE_FEATURE_DISPATCH_BINDING_CONFLICT",
+            "Existing native binding cannot change or be omitted",
+        )
+    if dispatch_binding is not None and (
+        "dispatch_binding" not in lease or (lease["state"] == "succeeded" and saved_binding is None)
+    ):
+        raise GovernanceError(
+            "PACKAGE_FEATURE_DISPATCH_BINDING_REQUIRED",
+            "Native binding extension and original bound result required",
+        )
     if lease["state"] == "succeeded":
-        if complete_material is not None or final_material is not None:
+        if dispatch_binding is None and (
+            complete_material is not None or final_material is not None
+        ):
             raise GovernanceError(
                 "PACKAGE_HISTORY_COMPLETE_RESULT_ALREADY_FINISHED",
                 "Read the existing job result; no new material was checked",
             )
-        return lease | {"provider_requests": 0, "paid_calls": 0}
+        return {k: v for k, v in lease.items() if k != "dispatch_binding"} | {
+            "provider_requests": 0,
+            "paid_calls": 0,
+        }
     lease_arguments = (job_id, lease["generation"], lease["fence"], owner)
     stopped = threading.Event()
     failures: list[BaseException] = []
@@ -159,7 +192,36 @@ def run(
     heartbeat = threading.Thread(target=renew, daemon=True)
     heartbeat.start()
     try:
-        if final_material is not None:
+        if dispatch_binding is not None and saved_binding is None:
+            with connection(purpose) as c:
+                c.execute(
+                    "SELECT package_historical_research.finish_job(%s,%s,%s,%s,%s,%s)",
+                    (*lease_arguments, Jsonb(dispatch_binding), digest(dispatch_binding)),
+                )
+        automatic_final_ready = False
+        if dispatch_binding is not None and purpose == "evaluate":
+            packet = lease.get("feature_final_input")
+            if not isinstance(packet, dict) or any(
+                packet.get(k) != dispatch_binding[k]
+                for k in ("cohort_id", "membership_digest", "candidate_digest")
+            ):
+                raise GovernanceError(
+                    "PACKAGE_FEATURE_DISPATCH_FINAL_IDENTITY_CHANGED",
+                    "Native final identity differs from the bound plan",
+                )
+            prior = lease.get("feature_final_frozen")
+            if prior is not None:
+                if (
+                    prior.get("reference_digest") != dispatch_binding["reference_digest"]
+                    or prior.get("method_digest") != dispatch_binding["methods"]["final"]
+                    or prior.get("candidate_digest") != dispatch_binding["candidate_digest"]
+                ):
+                    raise GovernanceError(
+                        "PACKAGE_FEATURE_DISPATCH_FROZEN_PREDICTIONS_CHANGED",
+                        "Frozen final predictions differ from the bound plan",
+                    )
+                automatic_final_ready = True
+        if final_material is not None and not automatic_final_ready:
             from packages.model_governance import package_feature_final as final
 
             if "feature_final_input" not in lease:

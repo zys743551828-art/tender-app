@@ -58,7 +58,16 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose == "final-feature-method":
+        if args.purpose == "feature-dispatch-method":
+            from packages.model_governance import package_feature_dispatch as dispatch
+
+            value = {
+                "version": dispatch.VERSION,
+                "methods": dispatch.methods(),
+                "provider_requests": 0,
+                "paid_calls": 0,
+            }
+        elif args.purpose == "final-feature-method":
             from packages.model_governance import package_feature_final as final
 
             value = {

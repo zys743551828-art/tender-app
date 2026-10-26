@@ -29,3 +29,11 @@ Python派发循环先严格核对闭合字段、UUID、精确时点、代次、�
 配置沿用原固定launcher：0600普通文件、非符号链接、只允许对应一个用途DSN；父进程以`python -I`启动固定子进程，仅传该DSN与固定locale／timezone。子进程不收到profile路径，不继承owner、API、另一个用途、存储或模型凭据。
 
 本能力无HTTP／UI／默认启动变化。默认预览不自动安装或运行；完整研究部署须明确安装SQL并分别启动train和evaluate进程。原手工执行入口继续有效。正式图文特征、受控模型发布、真实配对与目标环境交付分别验收，CPU mean／median机制不代表真实预测质量。
+
+## 固定特征计划的 opt-in 扩展
+
+`--feature-plan` 与 `--expected-feature-plan-digest` 必须同时提供。输入为 owner-only 私有版本化计划，方法/原引用固定后先绑定原生 job，再由已有材料消费者执行。原生最终任务只关联已绑定训练任务及同一方法集合，先冻结预测，后续轮次才走原曝光/评价，不接受调用方授权标记。未配置的任务不得回退到另一方法。
+
+计划版回执为 `package-history-dispatch-cycle/2`，保留原字段，增加 `plan_digest` 与 `staged`；outcomes 状态可为 completed/deferred/staged。无计划仍为 `/1`；默认启动不变。完整字段、恢复与原生未验收边界见[实现记录](../../docs/completion-20261026/feature-dispatch.md)。
+
+新增绑定 SQL 位于 feature-evaluation 之后、bridge 之前，原 discovery SQL 仍位于 bridge 之后；不新增 grant、不替换已封存方法或重新封存 guard。

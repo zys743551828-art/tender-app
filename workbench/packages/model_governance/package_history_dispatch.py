@@ -83,9 +83,14 @@ def _page(value, after, limit):
     return result
 
 
-def cycle(purpose, *, after=None, limit=5, stopped=None):
+def cycle(purpose, *, after=None, limit=5, stopped=None, feature_plan=None):
     """Advance even past a stale candidate; wrap on an empty page in the next cycle."""
     _arguments(purpose, after, limit)
+    if feature_plan is not None:
+        from packages.model_governance.package_feature_dispatch import Plan
+
+        if not isinstance(feature_plan, Plan) or feature_plan.purpose != purpose:
+            raise _invalid()
     with runtime.connection(purpose) as c:
         raw = c.execute(
             "SELECT package_historical_research.dispatch_candidates(%s,%s,%s,%s) AS value",
@@ -98,14 +103,23 @@ def cycle(purpose, *, after=None, limit=5, stopped=None):
         if stopped is not None and stopped.is_set():
             break
         try:
-            value = runtime.run(purpose, candidate.job_id, generation)
+            value = (
+                feature_plan.run(candidate.job_id, generation)
+                if feature_plan is not None
+                else runtime.run(purpose, candidate.job_id, generation)
+            )
             if (
                 not isinstance(value, dict)
                 or value.get("job_id") != str(candidate.job_id)
-                or value.get("state") != "succeeded"
+                or value.get("state")
+                not in (
+                    {"succeeded", "predictions_frozen"}
+                    if feature_plan is not None
+                    else {"succeeded"}
+                )
             ):
                 raise _invalid()
-            state = "completed"
+            state = "completed" if value["state"] == "succeeded" else "staged"
         except psycopg.Error as error:
             if error.sqlstate not in {"55000", "P0002", "23514"}:
                 raise
@@ -126,7 +140,17 @@ def cycle(purpose, *, after=None, limit=5, stopped=None):
     if not candidates:
         position = None
     return position, {
-        "schema": "package-history-dispatch-cycle/1",
+        "schema": "package-history-dispatch-cycle/2"
+        if feature_plan is not None
+        else "package-history-dispatch-cycle/1",
+        **(
+            {
+                "plan_digest": feature_plan.digest,
+                "staged": sum(item["state"] == "staged" for item in outcomes),
+            }
+            if feature_plan is not None
+            else {}
+        ),
         "purpose": purpose,
         "scanned": len(candidates),
         "attempted": len(outcomes),
