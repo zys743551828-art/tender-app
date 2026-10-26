@@ -22,11 +22,14 @@ from packages.authoring import (
 )
 
 
-def specimen(*, kind="image", count=1, attack=None, multiline=False):
+def specimen(*, kind="image", count=1, attack=None, multiline=False, navigation=False):
     snapshot = generated_cases.snapshot.__wrapped__()
+    if navigation:
+        snapshot["sections"][0]["attrs"]["title"] = "Alpha"
     blocks, materials = [], []
     for index in range(count):
-        if kind == "table":
+        block_kind = kind[index] if isinstance(kind, tuple) else kind
+        if block_kind == "table":
             block = rich_cases.table(
                 rich_cases.row(rich_cases.cell(), rich_cases.cell(), rich_cases.cell())
             )
@@ -84,23 +87,43 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False):
     pages = [add(b""), add(b"")]
     streams = [[], []]
     names = []
-    for index, entry in enumerate(entries):
-        top = 700 - index * 220
-        bottom = top - (90 if kind == "image" else 40)
-        if kind == "image":
-            streams[0].append(f"q 120 0 0 90 72 {bottom} cm /Im Do Q")
-        else:
-            streams[0].extend(
-                [f"0 G 0.5 w 72 {bottom} m 342 {bottom} l S", f"72 {top} m 342 {top} l S"]
+    annots = []
+    body_page = 1 if navigation and attack != "on_toc" else 0
+    if navigation:
+        nav = rich_docx.navigation_entries(snapshot)[0]
+        names.append(f"({nav['anchor']}) [{pages[1]} 0 R /XYZ 72 770 0]")
+        streams[0].extend(
+            [f"BT /F1 12 Tf 72 750 Td ({nav['title']}) Tj ET", "BT /F1 12 Tf 400 750 Td (2) Tj ET"]
+        )
+        streams[1].append(f"BT /F1 18 Tf 72 750 Td ({nav['title']}) Tj ET")
+        annots.append(
+            add(
+                f"<< /Type /Annot /Subtype /Link /Rect [72 744 330 762] /Border [0 0 0] /Dest [{pages[1]} 0 R /XYZ 72 770 0] >>"
             )
-            for x in [72, 162, 252, 342]:
-                streams[0].append(f"{x} {bottom} m {x} {top} l S")
-            for x in [77, 167, 257]:
-                streams[0].append(f"BT /F1 10 Tf {x} {top - 18} Td ({120 + index}) Tj ET")
+        )
+    for index, entry in enumerate(entries):
+        block_kind = blocks[index]["type"]
+        position = count - index - 1 if attack == "mixed_swap" else index
+        top = 700 if attack == "mixed_parallel" else 700 - position * 220
+        left = 240 if attack == "mixed_parallel" and block_kind == "table" else 72
+        bottom = top - (90 if block_kind == "image" else 40)
+        if block_kind == "image":
+            streams[body_page].append(f"q 120 0 0 90 72 {bottom} cm /Im Do Q")
+        else:
+            streams[body_page].extend(
+                [
+                    f"0 G 0.5 w {left} {bottom} m {left + 270} {bottom} l S",
+                    f"{left} {top} m {left + 270} {top} l S",
+                ]
+            )
+            for x in [left, left + 90, left + 180, left + 270]:
+                streams[body_page].append(f"{x} {bottom} m {x} {top} l S")
+            for x in [left + 5, left + 95, left + 185]:
+                streams[body_page].append(f"BT /F1 10 Tf {x} {top - 18} Td ({120 + index}) Tj ET")
         baseline = bottom - (80 if attack == "far" else 20)
         if attack == "above":
             baseline = top + 20
-        page = 1 if attack == "other_page" else 0
+        page = 1 if attack == "other_page" else body_page
         text = "Figure 12" if attack == "digit" else "Figure 120"
         commands = (
             [("Figure", baseline), ("120", baseline - 16)] if multiline else [(text, baseline)]
@@ -108,7 +131,7 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False):
         for label, y in commands:
             color = "1 g" if attack == "white" else "0 g"
             mode = "3 Tr" if attack == "hidden" else "0 Tr"
-            streams[page].append(f"BT {color} {mode} /F1 12 Tf 72 {y} Td ({label}) Tj ET")
+            streams[page].append(f"BT {color} {mode} /F1 12 Tf {left} {y} Td ({label}) Tj ET")
         if attack in {"cover", "black_cover"}:
             color = "1" if attack == "cover" else "0"
             streams[page].append(f"{color} g 72 {baseline - 3} 80 16 re f")
@@ -125,8 +148,9 @@ def specimen(*, kind="image", count=1, attack=None, multiline=False):
         content = add(
             b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n" + stream + b"\nendstream"
         )
+        annotations = " ".join(f"{value} 0 R" for value in annots) if index == 0 else ""
         objects[pages[index] - 1] = (
-            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 {font} 0 R >> /XObject << /Im {image} 0 R >> >> /Contents {content} 0 R >>".encode()
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 {font} 0 R >> /XObject << /Im {image} 0 R >> >> /Contents {content} 0 R /Annots [{annotations}] >>".encode()
         )
     objects[0] = (
         "<< /Type /Catalog /Pages 2 0 R /Names << /Dests << /Names ["

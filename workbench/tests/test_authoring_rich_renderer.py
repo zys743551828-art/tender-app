@@ -123,6 +123,7 @@ def test_rich_admission_is_exact_and_external_word_still_blocks_PAGE(rich_input)
         ("image_layout_policy", "pixels_without_source_order"),
         ("raster_inspector_digest", "0" * 64),
         ("caption_inspector_digest", "0" * 64),
+        ("layout_inspector_digest", "0" * 64),
         ("image_position_epsilon_pt", 1),
         ("image_section_policy", "trust_parent_subtree_pages"),
     ],

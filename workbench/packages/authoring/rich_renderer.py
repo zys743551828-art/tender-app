@@ -18,6 +18,7 @@ from packages.authoring import (
     rich_caption_pdf,
     rich_captions,
     rich_docx,
+    rich_layout,
     rich_pdf,
     rich_table_pdf,
     rich_verification,
@@ -55,6 +56,7 @@ def profile_for(base):
         "image_section_policy": "measured_chapter_start_to_next_preorder_heading_v1",
         "caption_policy": rich_captions.PROTOCOL,
         "caption_inspector_digest": sha(Path(rich_caption_pdf.__file__).read_bytes()),
+        "layout_inspector_digest": sha(Path(rich_layout.__file__).read_bytes()),
         "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}
@@ -112,6 +114,7 @@ def inspect_pdf(data, prepared):
     captions = rich_caption_pdf.inspect_captions(
         data, prepared["snapshot"], images, tables, prepared["config"]
     )
+    layout = rich_layout.inspect_layout(prepared["snapshot"], images, tables, navigation)
     return body | {
         "gaps": list(
             dict.fromkeys(
@@ -121,6 +124,7 @@ def inspect_pdf(data, prepared):
                 + tables["gaps"]
                 + image_sections["gaps"]
                 + captions["gaps"]
+                + layout["gaps"]
             )
         ),
         "raster_correspondence": images,
@@ -128,6 +132,7 @@ def inspect_pdf(data, prepared):
         "table_correspondence": tables,
         "image_section_correspondence": image_sections,
         "caption_correspondence": captions,
+        "rich_layout_correspondence": layout,
     }
 
 
