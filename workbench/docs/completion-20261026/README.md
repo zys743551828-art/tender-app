@@ -114,3 +114,5 @@ Final 预测冻结检查点最终后端 4128 通过、0 失败/错误、2404 跳
 [FR-002 /3 登记与研究消费](package-model-registry.md)：独立版本 artifact、原生注册 API、实际完整材料复验推断和持久回执；未授予正式资格。
 
 [FR-002 /3 门槛与报告登记](package-admission-report.md)：明确新版冻结、原生 final 证据持久化及实际门槛消费者；不签发认证。
+
+[FR-002 /3 内部观察检查点](package-model-observation.md)：原生身份与私有原件消费、双事务复验、持久摘要回执；回顾性机制不等于真实影子验收，回退与认证仍为后续代码。
