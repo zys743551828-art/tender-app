@@ -93,3 +93,84 @@ def material_check(
             status_code=result["status"],
             headers=result["headers"] | {"Idempotent-Replayed": str(replay).lower()},
         )
+
+
+@router.get("/material-qualifications/{qualification_id}")
+def qualification_read(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    scope_id: UUID,
+    qualification_id: UUID,
+    r: Request,
+):
+    from packages.model_governance import material_qualification_registry as registry
+
+    auth(r)
+    with requirement_errors(), connection() as c:
+        value, tag = registry.read(
+            c,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            str(scope_id),
+            str(qualification_id),
+        )
+        return JSONResponse(value, headers={"ETag": tag, "Cache-Control": "private, no-store"})
+
+
+@router.post("/material-qualifications")
+def qualification_register(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    scope_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    from packages.model_governance import material_qualification_registry as registry
+
+    actor = auth(r, True)["member_id"]
+    with requirement_errors(), connection() as c:
+        result, replay = registry.register(
+            c,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            str(scope_id),
+            actor,
+            body,
+            r.headers.get("idempotency-key"),
+        )
+        return JSONResponse(
+            result["body"],
+            status_code=result["status"],
+            headers=result["headers"] | {"Idempotent-Replayed": str(replay).lower()},
+        )
+
+
+@router.post("/material-qualifications/{qualification_id}/decisions")
+def qualification_review(
+    bid_id: UUID,
+    package_id: UUID,
+    revision_id: UUID,
+    scope_id: UUID,
+    qualification_id: UUID,
+    r: Request,
+    body: dict = Body(...),
+):
+    from packages.model_governance import material_qualification_registry as registry
+
+    actor = auth(r, True)["member_id"]
+    with requirement_errors(), connection() as c:
+        result, replay = registry.review(
+            c,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            str(scope_id),
+            str(qualification_id),
+            actor,
+            body,
+            r.headers.get("if-match"),
+            r.headers.get("idempotency-key"),
+        )
+        return JSONResponse(
+            result["body"],
+            status_code=result["status"],
+            headers=result["headers"] | {"Idempotent-Replayed": str(replay).lower()},
+        )

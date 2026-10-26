@@ -1,3 +1,4 @@
+import { MaterialQualificationReview } from "./MaterialQualificationReview";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError, supportsApi } from "./api";
 import type { PackageTechnicalScopeView } from "./contracts";
@@ -157,6 +158,12 @@ function Workspace({
   return (
     <section aria-label="完整材料执行申请">
       <h4>完整材料执行申请</h4>
+      <MaterialQualificationReview
+        base={base}
+        scopeId={saved.manifest.id}
+        scopeDigest={saved.digest}
+        memberId={memberId}
+      />
       <p>
         沿用 DeepSeek / deepseek-flash
         配置，不代表该型号能力已经验收。当前只能保存被阻止的申请回执，不会创建评分任务、预留费用或发送模型请求。
