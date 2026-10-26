@@ -167,6 +167,7 @@ def method_digest():
                 Path(__file__).with_name("material_execution_runtime.py").read_bytes()
             ),
             "launcher_source": sha((root / "deploy/material_execution_worker.py").read_bytes()),
+            "host_source": sha(Path(__file__).with_name("material_worker_host.py").read_bytes()),
             "execution_method": execution.method_digest(),
             "audit_source": sha(Path(audit.__file__).read_bytes()),
             "production_send_authorized": False,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import { MaterialExecutionStatus } from "./MaterialExecutionStatus";
 import { ErrorNotice } from "./components";
 import { jsonDigest } from "./editorSchema";
 import {
@@ -16,6 +17,7 @@ type Qualification = {
 };
 type Pending = { key: string; etag: string; body: Record<string, unknown> };
 type Receipt = {
+  request_digest: string;
   intent_id: string;
   state: string;
   pending_reason: string | null;
@@ -42,6 +44,9 @@ export function QualifiedMaterialJob({
   const [busy, setBusy] = useState(false),
     [corrupt, setCorrupt] = useState(false),
     [error, setError] = useState<unknown>(null);
+  const context = useRef(storage),
+    generation = useRef(0);
+  context.current = storage;
   const active = useRef(false),
     running = useRef(false);
   function valid(p: Pending) {
@@ -64,6 +69,13 @@ export function QualifiedMaterialJob({
   }
   useEffect(() => {
     active.current = true;
+    generation.current++;
+    running.current = false;
+    setReceipt(null);
+    setPending(null);
+    setBusy(false);
+    setCorrupt(false);
+    setError(null);
     try {
       const raw = sessionStorage.getItem(storage);
       if (raw) {
@@ -83,6 +95,8 @@ export function QualifiedMaterialJob({
   }, [storage]);
   async function send(old?: Pending) {
     if (running.current) return;
+    const requestContext = storage,
+      requestGeneration = generation.current;
     running.current = true;
     setBusy(true);
     setError(null);
@@ -137,19 +151,34 @@ export function QualifiedMaterialJob({
             v.job.generation === 1)
       )
         throw new Error("任务回执身份、原请求或权限声明不一致，保留原请求。");
-      if (active.current) setReceipt(v as Receipt);
+      if (
+        active.current &&
+        context.current === requestContext &&
+        generation.current === requestGeneration
+      )
+        setReceipt(v as Receipt);
     } catch (e) {
-      if (active.current) setError(e);
+      if (
+        active.current &&
+        context.current === requestContext &&
+        generation.current === requestGeneration
+      )
+        setError(e);
     } finally {
-      running.current = false;
-      if (active.current) setBusy(false);
+      if (
+        context.current === requestContext &&
+        generation.current === requestGeneration
+      ) {
+        running.current = false;
+        if (active.current) setBusy(false);
+      }
     }
   }
   return (
     <section aria-label="获批材料任务接受">
       <h5>登记原生材料准备任务</h5>
       <p>
-        使用获批资格和固定材料续验记录。任务接受不等于发送授权，费用状态未在此回执中读取；真实模型调用仍关闭。
+        使用获批资格和固定材料续验记录。任务接受不等于发送授权，费用状态未在此回执中读取；此入口不启用真实模型调用。
       </p>
       <ErrorNotice error={error} />
       <label>
@@ -198,6 +227,15 @@ export function QualifiedMaterialJob({
             <p>任务接受尚未确认：{receipt.pending_reason}</p>
           )}
           <p>本回执不授予发送、收费或准确性资格。</p>
+          <MaterialExecutionStatus
+            key={`${memberId}:${scopeId}:${receipt.intent_id}`}
+            base={base}
+            memberId={memberId}
+            scopeId={scopeId}
+            intentId={receipt.intent_id}
+            requestDigest={receipt.request_digest}
+            job={receipt.job}
+          />
         </div>
       )}
     </section>

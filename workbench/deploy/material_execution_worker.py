@@ -129,13 +129,40 @@ def _run(args):
             broker.close()
 
 
-def main():
+def main(*, injected_host=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", type=Path)
+    parser.add_argument("--qualified-config", type=Path)
     parser.add_argument("--purpose", choices=("relay", "worker"), required=True)
     parser.add_argument("--once", action="store_true")
     parser.add_argument("--owned-child", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.qualified_config is not None:
+        # No CLI-controlled imports, credential environment variables or fallback.
+        # A trusted embedding host supplies callbacks explicitly to main().
+        try:
+            if (
+                injected_host is None
+                or args.purpose != "worker"
+                or args.profile is not None
+                or args.owned_child
+            ):
+                raise ValueError("QUALIFIED_WORKER_DISABLED")
+            path = args.qualified_config
+            metadata = path.lstat()
+            if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > 16384:
+                raise ValueError("CONFIGURATION_INVALID")
+            sys.path.insert(0, str(ROOT))
+            from packages.model_governance import material_worker_host
+
+            config = material_worker_host.read_config(path)
+            if args.once and config.get("max_messages") != 1:
+                raise ValueError("ONCE_REQUIRES_ONE_MESSAGE")
+            report = material_worker_host.run(config, injected_host)
+        except Exception:
+            report = {"ok": False, "code": "QUALIFIED_WORKER_UNAVAILABLE"}
+        print(json.dumps(report), flush=True)
+        return 0 if report["ok"] else 2
     if args.owned_child:
         return _run(args)
     if args.profile is None:

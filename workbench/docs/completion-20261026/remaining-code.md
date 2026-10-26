@@ -12,8 +12,10 @@
 
 ## 当前产品必需的待编码/装配
 
-1. 安全宿主启动装配：账户/profile `/2`、默认关闭 DeepSeek sender、发送前原生复读及现有 Worker `QualifiedPorts` 消费入口已实现，见[阶段记录](material-live-sender.md)。现有部署 CLI 尚未装配这些 ports/安全凭据回调，仍需最小显式启动入口；不把可调用库接口算成部署闭环。
-2. 正式可用状态的 API/UI：现有入口提供准备任务接受/固定恢复和明确不授予发送的回执，费用仍为未读取。仍需展示成员限定的权威执行/费用状态，区分已知估算和未知总费用，不把任务接受当实际发送或未收费。
+本轮原有两项已接通：[安全宿主启动注入及权威执行/费用 API/UI](material-host-status.md)。实际运行依赖受控环境注入，不配置真实凭据或启动调用。
+
+1. **FR-002 正式预测业务消费的入口核对与接线**：研究拟合/冻结/独立评价已有实现，但 `apps/api/review_views.py` 仍固定 prediction unavailable，`apps/api/scoring_routes.py` 固定 numeric_prediction_available=false，`registry_contracts.py` 固定 formal_eligibility unavailable，正式 `/executions` readiness 也始终拒绝。需核对既有正式模型准入协议与这些旧/新入口职责，连接合格模型到业务预测消费；不得把材料获批执行当模型准确性资格，不自行设定阈值。当前不能仅以“缺数据”声称这条正向代码路径已实现。本轮不扩展。
+
 
 交付核对（不是新增代码项）：文档主仓与实现范围仍须协调，完整用户流程仍须按既定需求核对，不凭当前模块测试声称整项目完成。
 

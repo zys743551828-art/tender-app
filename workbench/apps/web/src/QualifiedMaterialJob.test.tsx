@@ -151,3 +151,19 @@ it("does not apply a late receipt to another member", async () => {
   expect(screen.queryByText(/原生准备任务已接受/)).not.toBeInTheDocument();
   expect(screen.queryByText("恢复原任务申请")).not.toBeInTheDocument();
 });
+
+it("drops late acceptance when member changes without a remount", async () => {
+  let resolve!: (value: Awaited<ReturnType<typeof result>>) => void;
+  mocked.mockReturnValueOnce(
+    new Promise((r) => {
+      resolve = r;
+    }),
+  );
+  const view = render(<QualifiedMaterialJob {...props} />);
+  fill();
+  fireEvent.click(screen.getByText("登记固定准备任务"));
+  const options = mocked.mock.calls[0][1]!;
+  view.rerender(<QualifiedMaterialJob {...props} memberId="other-member" />);
+  await act(async () => resolve(await result(options)));
+  expect(screen.queryByText(/原生准备任务已接受/)).not.toBeInTheDocument();
+});

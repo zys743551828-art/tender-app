@@ -396,3 +396,28 @@ def test_concurrent_revoke_serializes_before_grant_and_rolls_back_budget(wire, m
         "SELECT * FROM material_execution.balances WHERE account_id=%s", (lane["account_id"],)
     ).fetchone()
     assert balance["held_minor"] == balance["estimated_minor"] == 0
+
+
+@pytest.mark.parametrize("unknown", [False, True])
+def test_execution_status_view_tracks_settlement_after_revocation_without_capabilities(
+    wire, monkeypatch, unknown
+):
+    lane, owner, qualification, actor = qualified_lane(wire, monkeypatch)
+    kwargs = {"raw": b"unreadable response"} if unknown else {}
+    result = execute(lane, callback=lambda: revoke(owner, qualification, actor), **kwargs)
+    job_id = lane["job"].metadata["document"]["job_id"]
+    row = owner.execute(
+        "SELECT * FROM material_qualification.execution_status WHERE job_id=%s", (job_id,)
+    ).fetchone()
+    assert row["qualification_state"] == "revoked"
+    assert row["attempt_count"] == 1 and row["unsettled_count"] == 0
+    assert row["unknown_count"] == int(unknown)
+    assert row["known_estimated_minor"] == result.metadata["job_balance"]["estimated_minor"]
+    assert row["last_settled_at"] is not None
+    assert not {"send_token", "raw_response", "document", "price_policy"} & set(row)
+    assert owner.execute(
+        "SELECT has_table_privilege('tender_api','material_qualification.execution_status','SELECT') AS allowed"
+    ).fetchone()["allowed"]
+    assert not owner.execute(
+        "SELECT has_table_privilege('tender_api','material_execution.attempts','SELECT') AS allowed"
+    ).fetchone()["allowed"]

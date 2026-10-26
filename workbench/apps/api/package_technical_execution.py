@@ -255,3 +255,23 @@ def qualified_job_read(
         return JSONResponse(
             qualified.observe(c, row), headers={"Cache-Control": "private, no-store"}
         )
+
+
+@router.get("/material-qualified-jobs/{intent_id}/execution-state")
+def qualified_execution_state(
+    bid_id: UUID, package_id: UUID, revision_id: UUID, scope_id: UUID, intent_id: UUID, r: Request
+):
+    from packages.model_governance import material_execution_status as status
+    from packages.model_governance import material_qualified_jobs as qualified
+
+    actor = auth(r)["member_id"]
+    with requirement_errors(), connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        row = qualified.intent(
+            c,
+            tuple(map(str, (bid_id, package_id, revision_id))),
+            str(scope_id),
+            actor,
+            str(intent_id),
+        )
+        return JSONResponse(status.observe(c, row), headers={"Cache-Control": "private, no-store"})

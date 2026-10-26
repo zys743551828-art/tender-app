@@ -129,4 +129,34 @@ CREATE TRIGGER qualified_material_job AFTER INSERT ON material_judgment_job.jobs
 CREATE TRIGGER qualified_material_attempt BEFORE INSERT ON material_execution.attempts FOR EACH ROW EXECUTE FUNCTION material_qualification.enforce();
 GRANT SELECT,INSERT ON material_qualification.intents TO tender_api;
 GRANT SELECT ON material_qualification.acceptances TO tender_api;
+-- Read-only, redacted projection of existing ledgers; never a send capability.
+CREATE VIEW material_qualification.execution_status WITH (security_barrier=true) AS
+ SELECT i.id AS intent_id,i.actor_id,i.bid_id,i.scope_id,a.job_id,a.job_digest,
+ CASE WHEN d.decision='revoked' THEN 'revoked'
+      WHEN h.revision<>i.qualification_revision THEN 'changed'
+      WHEN d.decision<>'approved' OR d.decision IS NULL THEN 'not_approved'
+      WHEN clock_timestamp()<(r.document->>'valid_from')::timestamptz OR clock_timestamp()>=(r.document->>'valid_until')::timestamptz THEN 'expired'
+      ELSE 'approved' END AS qualification_state,
+ b.state AS execution_state,res.document->>'execution_mode' AS execution_mode,res.document->>'currency' AS currency,
+ (res.document->>'reserved_minor')::bigint AS reserved_minor,
+ b.held_minor,b.estimated_minor AS known_estimated_minor,b.released_minor,
+ coalesce(counts.attempt_count,0) AS attempt_count,coalesce(counts.unsettled_count,0) AS unsettled_count,
+ coalesce(counts.unknown_count,0) AS unknown_count,counts.last_settled_at,
+ clock_timestamp() AS observed_at
+ FROM material_qualification.intents i
+ JOIN material_qualification.records r ON r.id=i.qualification_id
+ LEFT JOIN material_qualification.heads h ON h.record_id=r.id
+ LEFT JOIN material_qualification.decisions d ON d.id=h.decision_id
+ LEFT JOIN material_qualification.acceptances a ON a.intent_id=i.id
+ LEFT JOIN material_execution.reservations res ON res.job_id=a.job_id
+ LEFT JOIN material_execution.job_balances b ON b.job_id=a.job_id
+ LEFT JOIN LATERAL (
+  SELECT count(*) AS attempt_count,count(*) FILTER(WHERE o.attempt_id IS NULL) AS unsettled_count,
+   count(*) FILTER(WHERE o.document->>'billing_state'='unknown') AS unknown_count,
+   max((o.document->>'recorded_at')::timestamptz) AS last_settled_at
+  FROM material_execution.attempts t LEFT JOIN material_execution.outcomes o ON o.attempt_id=t.id
+  WHERE t.job_id=a.job_id
+ ) counts ON true;
+REVOKE ALL ON material_qualification.execution_status FROM PUBLIC;
+GRANT SELECT ON material_qualification.execution_status TO tender_api;
 COMMIT;
