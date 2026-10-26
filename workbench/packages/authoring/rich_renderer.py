@@ -48,6 +48,7 @@ def profile_for(base):
         "max_image_placement_pixels": 32_000_000,
         "max_normalized_image_bytes": 64 * 1024 * 1024,
         "max_visibility_render_pixels": rich_pdf.MAX_VISIBILITY_RENDER_PIXELS,
+        "image_layout_policy": "frozen_order_by_page_and_disjoint_vertical_inline_placements_v1",
         "table_layout_policy": "measured_single_page_grid_spans_cell_text_isolated_visible_pixels_v1",
     }
     return {"identity": identity, "profile_digest": sha(identity)}

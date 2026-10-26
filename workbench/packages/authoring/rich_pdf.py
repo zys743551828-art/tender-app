@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import math
+from itertools import islice
 
 import pypdfium2 as pdfium
 from PIL import Image, ImageChops, ImageStat
@@ -11,8 +12,35 @@ from PIL import Image, ImageChops, ImageStat
 from packages.authoring import rich_images
 from packages.domain.runtime import sha
 
-PROTOCOL = "authoring-PDF-raster-correspondence/1"
+PROTOCOL = "authoring-PDF-raster-correspondence/2"
 MAX_VISIBILITY_RENDER_PIXELS = 64_000_000
+
+
+def _reading_order(image):
+    left, bottom, right, top = image.get_pos()
+    if not all(math.isfinite(value) for value in (left, bottom, right, top)):
+        return (math.inf, math.inf)
+    return (-top, left)
+
+
+def _ordered(records, expected):
+    """Owned DOCX images occupy separate inline paragraphs in one column.
+
+    Pixel identity alone cannot prove source order. Require distinct vertical
+    placements; overlapping/side-by-side drawings have no accepted reading order.
+    Repeated identical assets are assigned in geometry order, not paint order.
+    This does not establish placement relative to captions or chapter headings.
+    """
+    if [record.get("node_id") for record in records] != [item["node_id"] for item in expected]:
+        return False
+    return all(
+        previous["physical_page"] < current["physical_page"]
+        or (
+            previous["physical_page"] == current["physical_page"]
+            and previous["bbox"][1] >= current["bbox"][3]
+        )
+        for previous, current in zip(records, records[1:], strict=False)
+    )
 
 
 def isolated_reference(pixels, width, height, bbox, box):
@@ -126,7 +154,15 @@ def inspect_images(data, snapshot, materials, style):
             try:
                 width, height = page.get_size()
                 count = 0
-                for image in page.get_objects(filter=[pdfium.raw.FPDF_PAGEOBJ_IMAGE], max_depth=2):
+                # Bound collection before sorting. PDF paint order is unrelated
+                # to the inline paragraph order of the frozen source.
+                images = list(
+                    islice(
+                        page.get_objects(filter=[pdfium.raw.FPDF_PAGEOBJ_IMAGE], max_depth=2),
+                        501,
+                    )
+                )
+                for image in sorted(images, key=_reading_order):
                     count += 1
                     if len(records) >= 500 or count > 500:
                         gaps.append("AUTHORING_PDF_IMAGE_COUNT_UNVERIFIED")
@@ -267,6 +303,8 @@ def inspect_images(data, snapshot, materials, style):
                 item["pixels"].close()
     if len(matched) != len(expected) or len(records) != len(expected):
         gaps.append("AUTHORING_IMAGE_COUNT_OR_MATCH_UNVERIFIED")
+    if not _ordered(records, expected):
+        gaps.append("AUTHORING_IMAGE_ORDER_UNVERIFIED")
     return {
         "protocol": PROTOCOL,
         "coverage": "partial" if gaps else "complete",

@@ -11,6 +11,7 @@ import requests
 import test_authoring_generated as generated_cases
 import test_authoring_page_navigation as navigation_cases
 import test_authoring_rich as rich_cases
+import test_authoring_rich_image_order as image_order_cases
 
 from packages.authoring import (
     page_navigation,
@@ -119,6 +120,8 @@ def test_rich_admission_is_exact_and_external_word_still_blocks_PAGE(rich_input)
         ("max_layout_passes", 4),
         ("dynamic_field_policy", "allow_arbitrary_fields"),
         ("max_image_placement_pixels", 32000001),
+        ("image_layout_policy", "pixels_without_source_order"),
+        ("raster_inspector_digest", "0" * 64),
     ],
 )
 def test_even_rehashed_profile_policy_changes_fail_before_Docker(rich_input, field, value):
@@ -149,6 +152,26 @@ def test_same_labels_do_not_allow_foreign_DOCX_bytes(rich_input):
         mutated, snapshot, materials, manifest, profile, pagination=pagination
     )
     assert result["state"] == "failed" and not result["conversion_attempted"]
+
+
+def test_combined_rich_inspection_preserves_actual_image_order_gap(rich_input):
+    snapshot, _, profile, pagination, _ = rich_input
+    pdf, image_snapshot, materials = image_order_cases.specimen(swapped=True)
+    snapshot["sections"][0]["content"] = [
+        block for section in image_snapshot["sections"] for block in section["content"]
+    ]
+    for block in snapshot["sections"][0]["content"]:
+        block["attrs"].update(id=uuid4().hex, alt="offline image", caption="")
+    source = rich_docx.assemble(snapshot, materials, pagination=pagination)
+    manifest = rich_verification.manifest(source, snapshot, materials, pagination=pagination)
+    prepared = rich_renderer.prepare(
+        source, snapshot, materials, manifest, profile, pagination=pagination
+    )
+    proof = rich_renderer.inspect_pdf(pdf, prepared)
+    assert "AUTHORING_IMAGE_ORDER_UNVERIFIED" in proof["gaps"]
+    assert proof["raster_correspondence"]["coverage"] == "partial"
+    # The synthetic image-only PDF cannot satisfy full text/navigation checks.
+    assert set(proof["gaps"]) - {"AUTHORING_IMAGE_ORDER_UNVERIFIED"}
 
 
 def test_unconfigured_render_keeps_real_closed_DOCX_and_explicit_failure(rich_input):
