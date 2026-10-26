@@ -544,6 +544,13 @@ function report(value: EvaluationReport) {
 }
 async function resultDocument(value: HistoryResult) {
   if (value.schema === "package-history-training-result/1") {
+    if (value.complete_material_consumer) {
+      const rows = value.complete_material_consumer.receipts;
+      check(
+        unique(rows.map((r) => r.admission_id)) &&
+          unique(rows.map((r) => r.input_digest)),
+      );
+    }
     check((await jsonDigest(value.model)) === value.model_digest);
     check(
       value.model.training_export_digest === value.training_export_digest &&
@@ -616,6 +623,25 @@ export async function validateHistoryJob(
           value.result.membership_digest === expectedCohort.membership_digest &&
           value.result.origin === expectedCohort.origin,
       );
+      if (
+        value.result.schema === "package-history-training-result/1" &&
+        value.result.complete_material_consumer
+      ) {
+        const rows = value.result.complete_material_consumer.receipts;
+        const members = expectedCohort.members.filter((m) =>
+          ["fit", "development", "calibration"].includes(m.purpose),
+        );
+        check(
+          rows.length === members.length &&
+            rows.every((r) =>
+              members.some(
+                (m) =>
+                  m.admission_id === r.admission_id &&
+                  m.proof_id === r.proof_id,
+              ),
+            ),
+        );
+      }
       if (value.result.schema === "package-history-independent-evaluation/1") {
         check(historySame(value.result.timing, expectedCohort.timing));
         const members = expectedCohort.members;

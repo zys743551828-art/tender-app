@@ -100,12 +100,14 @@ def ingest(*, scope_id, submission_id, outcome_id, adapter_id, envelope):
     }
 
 
-def run(purpose, job_id, generation):
+def run(purpose, job_id, generation, *, complete_material=None):
     """Recover CPU work through its owned lease; final exposure commits first."""
     from packages.model_governance import package_history_cpu as cpu
 
     if purpose not in {"train", "evaluate"}:
         raise GovernanceError("PACKAGE_HISTORY_PURPOSE_INVALID", "Explicit CPU purpose required")
+    if complete_material is not None and purpose != "train":
+        raise GovernanceError("PACKAGE_HISTORY_COMPLETE_PURPOSE_DENIED", "Training purpose only")
     owner = uuid4()
     with connection(purpose) as c:
         lease = c.execute(
@@ -113,6 +115,11 @@ def run(purpose, job_id, generation):
             (job_id, generation, owner),
         ).fetchone()["value"]
     if lease["state"] == "succeeded":
+        if complete_material is not None:
+            raise GovernanceError(
+                "PACKAGE_HISTORY_COMPLETE_RESULT_ALREADY_FINISHED",
+                "Read the existing job result; no new material was checked",
+            )
         return lease | {"provider_requests": 0, "paid_calls": 0}
     lease_arguments = (job_id, lease["generation"], lease["fence"], owner)
     stopped = threading.Event()
@@ -138,7 +145,13 @@ def run(purpose, job_id, generation):
                     "SELECT package_historical_research.read_training(%s,%s,%s,%s) AS value",
                     lease_arguments,
                 ).fetchone()["value"]
-            result = cpu.train(bundle)
+            from packages.model_governance import package_history_complete as complete
+
+            result = (
+                complete.run(bundle, complete_material)
+                if complete_material is not None
+                else cpu.train(complete.training_export(bundle))
+            )
         else:
             with connection(purpose) as c:
                 c.execute(

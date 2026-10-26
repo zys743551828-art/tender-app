@@ -615,3 +615,64 @@ it("rejects a resealed cohort that removes the declared group root from a transi
     ),
   ).rejects.toThrow();
 });
+
+// Explicit synthetic extension; this is not a newly captured native PG result.
+function completeConsumerResult() {
+  const value = body<PackageHistoricalJobView>("train_succeeded");
+  if (value.result?.schema !== "package-history-training-result/1")
+    throw new Error();
+  value.result.complete_material_consumer = {
+    version: "package-history-complete-consumer/1",
+    method_digest: "a".repeat(64),
+    reference_digest: "b".repeat(64),
+    bindings_digest: "c".repeat(64),
+    receipts: cohort.members
+      .filter((m) => ["fit", "development", "calibration"].includes(m.purpose))
+      .map((m, i) => ({
+        admission_id: m.admission_id,
+        proof_id: m.proof_id,
+        context_digest: "a".repeat(64),
+        source_commit: "b".repeat(64),
+        artifact_digest: "c".repeat(64),
+        input_digest: String(i + 1).repeat(64),
+        features_digest: "d".repeat(64),
+      })),
+    features_used_for_fit: false,
+    formal_prediction: null,
+    native_binding_verified: false,
+    current_native_facts_rechecked: false,
+    input_authority_granted: false,
+    execution_authorized: false,
+    training_eligible: false,
+    metrics_eligible: false,
+    formal_prediction_eligible: false,
+  };
+  return value;
+}
+
+it.each(["valid", "duplicate", "missing", "proof", "qualification", "extra"])(
+  "checks synthetic complete-material extension: %s",
+  async (attack) => {
+    const value = completeConsumerResult();
+    if (value.result?.schema !== "package-history-training-result/1")
+      throw new Error();
+    const consumer = value.result.complete_material_consumer!;
+    if (attack === "duplicate")
+      consumer.receipts[1] = { ...consumer.receipts[0] };
+    if (attack === "missing") consumer.receipts.pop();
+    if (attack === "proof")
+      consumer.receipts[0].proof_id = "00000000-0000-0000-0000-000000000123";
+    if (attack === "qualification")
+      Object.assign(consumer, { training_eligible: true });
+    if (attack === "extra") Object.assign(consumer, { verified: true });
+    value.result_digest = await jsonDigest(value.result);
+    const check = validateHistoryJob(
+      value,
+      value.job_id,
+      await historyEtag("job-view", value.job_id, value),
+      cohort,
+    );
+    if (attack === "valid") expect((await check).result).toEqual(value.result);
+    else await expect(check).rejects.toThrow();
+  },
+);

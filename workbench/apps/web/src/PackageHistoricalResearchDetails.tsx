@@ -398,6 +398,23 @@ export function HistoryJobResult({
       {result.schema === "package-history-training-result/1" ? (
         <>
           <h4>CPU 基线训练结果</h4>
+          {result.complete_material_consumer && (
+            <>
+              <p className="notice warning">
+                已核对 {result.complete_material_consumer.receipts.length}{" "}
+                份完整材料。当前仍为常数基线，材料特征未参与拟合，不具备正式评分资格。
+              </p>
+              <HistoryIdentity
+                values={{
+                  材料引用摘要:
+                    result.complete_material_consumer.reference_digest,
+                  原生绑定摘要:
+                    result.complete_material_consumer.bindings_digest,
+                  消费方法摘要: result.complete_material_consumer.method_digest,
+                }}
+              />
+            </>
+          )}
           <dl className="package-history-facts">
             <div>
               <dt>开发集选择的方法</dt>

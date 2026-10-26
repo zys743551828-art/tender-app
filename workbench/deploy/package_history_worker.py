@@ -50,6 +50,7 @@ def arguments():
         "--purpose",
         choices=tuple(VARIABLES)
         + (
+            "native-feature-method",
             "feature-method",
             "feature-freeze",
             "feature-read",
@@ -89,6 +90,11 @@ def arguments():
     parser.add_argument("--expected-selection-digest")
     parser.add_argument("--expected-labels-digest")
     parser.add_argument("--expected-calibration-method-digest")
+    parser.add_argument("--complete-references", type=Path)
+    parser.add_argument("--complete-material-store", type=Path)
+    parser.add_argument("--complete-artifact-dir", type=Path)
+    parser.add_argument("--expected-complete-reference-digest")
+    parser.add_argument("--expected-complete-method-digest")
     args = parser.parse_args()
     evidence = (args.scope_id, args.submission_id, args.outcome_id, args.adapter_id, args.evidence)
     feature_arguments = (
@@ -113,6 +119,28 @@ def arguments():
         args.expected_labels_digest,
         args.expected_calibration_method_digest,
     )
+    native_complete = (
+        args.complete_references,
+        args.complete_material_store,
+        args.complete_artifact_dir,
+        args.expected_complete_reference_digest,
+        args.expected_complete_method_digest,
+    )
+    if any(v is not None for v in native_complete):
+        if args.purpose != "train" or not all(native_complete):
+            parser.error(
+                "complete native inputs require one training job and all frozen references"
+            )
+    if args.purpose == "native-feature-method":
+        if (
+            any(v is not None for v in feature_arguments + calibration_args + native_complete)
+            or any(evidence)
+            or args.profile is not None
+            or args.job_id is not None
+            or args.generation != 1
+        ):
+            parser.error("native-feature-method accepts no inputs or credentials")
+        return parser, args
     if args.purpose.startswith("complete-calibration-"):
         if (
             any(evidence)
@@ -233,7 +261,9 @@ def arguments():
 
 def main():
     parser, args = arguments()
-    if args.purpose.startswith(("feature-", "complete-feature-", "complete-calibration-")):
+    if args.purpose == "native-feature-method" or args.purpose.startswith(
+        ("feature-", "complete-feature-", "complete-calibration-")
+    ):
         sys.path.insert(0, str(ROOT))
         from deploy.package_feature_handoff import run
 
@@ -264,6 +294,19 @@ def main():
             ]
         else:
             command += ["--job-id", str(args.job_id), "--generation", str(args.generation)]
+        for field in (
+            "complete_references",
+            "complete_material_store",
+            "complete_artifact_dir",
+            "expected_complete_reference_digest",
+            "expected_complete_method_digest",
+        ):
+            value = getattr(args, field)
+            if value is not None:
+                command += [
+                    "--" + field.replace("_", "-"),
+                    str(value.absolute() if isinstance(value, Path) else value),
+                ]
         return subprocess.run(
             command, cwd=ROOT, env=environment(args.profile, args.purpose), check=False
         ).returncode  # nosec B603
@@ -298,7 +341,21 @@ def main():
                 envelope=envelope,
             )
         else:
-            value = runtime.run(args.purpose, args.job_id, args.generation)
+            if args.complete_references is not None:
+                value = runtime.run(
+                    args.purpose,
+                    args.job_id,
+                    args.generation,
+                    complete_material={
+                        "references": args.complete_references,
+                        "material_store": args.complete_material_store,
+                        "artifact_dir": args.complete_artifact_dir,
+                        "reference_digest": args.expected_complete_reference_digest,
+                        "method_digest": args.expected_complete_method_digest,
+                    },
+                )
+            else:
+                value = runtime.run(args.purpose, args.job_id, args.generation)
     except GovernanceError as error:
         print(
             json.dumps({"ok": False, "code": error.code, "provider_requests": 0, "paid_calls": 0})

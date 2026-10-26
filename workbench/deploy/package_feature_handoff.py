@@ -57,7 +57,16 @@ def run(args):
     try:
         if set(os.environ) - set(ENV):
             handoff.fail("ENVIRONMENT_NOT_ISOLATED")
-        if args.purpose.startswith("complete-calibration-"):
+        if args.purpose == "native-feature-method":
+            from packages.model_governance import package_history_complete as complete
+
+            value = {
+                "version": complete.VERSION,
+                "method_digest": complete.method_digest(),
+                "provider_requests": 0,
+                "paid_calls": 0,
+            }
+        elif args.purpose.startswith("complete-calibration-"):
             from deploy.package_complete_calibration import execute
 
             value = execute(args)

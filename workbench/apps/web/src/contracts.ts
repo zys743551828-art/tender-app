@@ -436,6 +436,30 @@ export type PackageHistoricalJobView = {
             formal_eligibility: "unavailable";
             provider_requests: 0;
             paid_calls: 0;
+            complete_material_consumer?: {
+              version: "package-history-complete-consumer/1";
+              method_digest: string;
+              reference_digest: string;
+              bindings_digest: string;
+              receipts: {
+                admission_id: string;
+                proof_id: string;
+                context_digest: string;
+                source_commit: string;
+                artifact_digest: string;
+                input_digest: string;
+                features_digest: string;
+              }[];
+              features_used_for_fit: false;
+              formal_prediction: null;
+              native_binding_verified: false;
+              current_native_facts_rechecked: false;
+              input_authority_granted: false;
+              execution_authorized: false;
+              training_eligible: false;
+              metrics_eligible: false;
+              formal_prediction_eligible: false;
+            };
           }
         | {
             schema: "package-history-independent-evaluation/1";

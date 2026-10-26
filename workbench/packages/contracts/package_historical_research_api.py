@@ -278,6 +278,50 @@ TRAINING_RESULT = object_schema(
         "paid_calls": {"const": 0},
     }
 )
+COMPLETE_MATERIAL_CONSUMER = object_schema(
+    {
+        "version": {"const": "package-history-complete-consumer/1"},
+        **dict.fromkeys(["method_digest", "reference_digest", "bindings_digest"], SHA),
+        "receipts": array(
+            object_schema(
+                {
+                    "admission_id": UUID_SCHEMA,
+                    "proof_id": UUID_SCHEMA,
+                    **dict.fromkeys(
+                        [
+                            "context_digest",
+                            "source_commit",
+                            "artifact_digest",
+                            "input_digest",
+                            "features_digest",
+                        ],
+                        SHA,
+                    ),
+                }
+            ),
+            minItems=1,
+            maxItems=64,
+        ),
+        "features_used_for_fit": {"const": False},
+        "formal_prediction": NULL,
+        **dict.fromkeys(
+            [
+                "native_binding_verified",
+                "current_native_facts_rechecked",
+                "input_authority_granted",
+                "execution_authorized",
+                "training_eligible",
+                "metrics_eligible",
+                "formal_prediction_eligible",
+            ],
+            {"const": False},
+        ),
+    }
+)
+# Optional versioned receipt; old constant-baseline responses remain unchanged.
+# Closed keys and unavailable eligibility are preserved for the new receipt too.
+TRAINING_RESULT["properties"]["complete_material_consumer"] = COMPLETE_MATERIAL_CONSUMER
+
 INTERVAL_REPORT = {
     "oneOf": [
         object_schema({"coverage": NUMBER, "width": NUMBER}),

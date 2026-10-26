@@ -1409,6 +1409,118 @@ export const historySchemas: Record<string, unknown> = {
                   paid_calls: {
                     const: 0,
                   },
+                  complete_material_consumer: {
+                    type: "object",
+                    additionalProperties: false,
+                    properties: {
+                      version: {
+                        const: "package-history-complete-consumer/1",
+                      },
+                      method_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      reference_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      bindings_digest: {
+                        type: "string",
+                        pattern: "^[a-f0-9]{64}$",
+                      },
+                      receipts: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          additionalProperties: false,
+                          properties: {
+                            admission_id: {
+                              type: "string",
+                              format: "uuid",
+                            },
+                            proof_id: {
+                              type: "string",
+                              format: "uuid",
+                            },
+                            context_digest: {
+                              type: "string",
+                              pattern: "^[a-f0-9]{64}$",
+                            },
+                            source_commit: {
+                              type: "string",
+                              pattern: "^[a-f0-9]{64}$",
+                            },
+                            artifact_digest: {
+                              type: "string",
+                              pattern: "^[a-f0-9]{64}$",
+                            },
+                            input_digest: {
+                              type: "string",
+                              pattern: "^[a-f0-9]{64}$",
+                            },
+                            features_digest: {
+                              type: "string",
+                              pattern: "^[a-f0-9]{64}$",
+                            },
+                          },
+                          required: [
+                            "admission_id",
+                            "proof_id",
+                            "context_digest",
+                            "source_commit",
+                            "artifact_digest",
+                            "input_digest",
+                            "features_digest",
+                          ],
+                        },
+                        minItems: 1,
+                        maxItems: 64,
+                      },
+                      features_used_for_fit: {
+                        const: false,
+                      },
+                      formal_prediction: {
+                        type: "null",
+                      },
+                      native_binding_verified: {
+                        const: false,
+                      },
+                      current_native_facts_rechecked: {
+                        const: false,
+                      },
+                      input_authority_granted: {
+                        const: false,
+                      },
+                      execution_authorized: {
+                        const: false,
+                      },
+                      training_eligible: {
+                        const: false,
+                      },
+                      metrics_eligible: {
+                        const: false,
+                      },
+                      formal_prediction_eligible: {
+                        const: false,
+                      },
+                    },
+                    required: [
+                      "version",
+                      "method_digest",
+                      "reference_digest",
+                      "bindings_digest",
+                      "receipts",
+                      "features_used_for_fit",
+                      "formal_prediction",
+                      "native_binding_verified",
+                      "current_native_facts_rechecked",
+                      "input_authority_granted",
+                      "execution_authorized",
+                      "training_eligible",
+                      "metrics_eligible",
+                      "formal_prediction_eligible",
+                    ],
+                  },
                 },
                 required: [
                   "schema",
