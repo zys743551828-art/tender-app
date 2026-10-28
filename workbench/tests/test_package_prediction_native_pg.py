@@ -471,3 +471,44 @@ engine.handle(json.loads(sys.stdin.read()))
         result = Objects().get(effects[0]["result"]["result_ref"])
         assert result["mode"] == "synthetic" and result["formal_eligibility"] == "unavailable"
         assert not result["certification_issued"]
+
+    api_child = r"""
+import json,sys
+from fastapi.testclient import TestClient
+from apps.api.main import app
+from packages.domain.runtime import connection
+from packages.package_prediction_tasks.application import Jobs
+from packages.package_prediction_tasks.native import Transactions
+from packages.package_prediction_tasks.storage import Objects
+value=json.loads(sys.stdin.read()); body=value['body']
+app.state.package_prediction_jobs=Jobs(Transactions(connection),Objects())
+path=f"/api/v1/bids/{body['bid']}/technical-scopes/{body['scope']}/prediction-tasks/{body['command']}"
+with TestClient(app) as client:
+    client.cookies.update(value['cookies'])
+    if value['advance']:
+        response=client.post(path+'/advance',json={},headers={'Origin':'http://identity-v2.test','X-CSRF-Token':value['csrf']})
+    else:
+        response=client.get(path)
+    assert response.status_code==200,response.text
+    print(json.dumps(response.json()))
+"""
+    payload = {"body": body, "cookies": dict(api["client"].cookies), "csrf": api["csrf"]}
+    recovered = []
+    for advance in (True, False):
+        completed = subprocess.run(
+            [sys.executable, "-c", api_child],
+            input=json.dumps(payload | {"advance": advance}),
+            text=True,
+            env=environment,
+            check=True,
+            capture_output=True,
+        )
+        recovered.append(json.loads(completed.stdout))
+    assert all(value["state"] == "blocked" and not value["prediction_ready"] for value in recovered)
+    assert recovered[0] == recovered[1]
+    assert (
+        api["database"]["owner"]
+        .execute("SELECT count(*) AS n FROM package_prediction.results")
+        .fetchone()["n"]
+        == 0
+    )
