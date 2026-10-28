@@ -1,4 +1,5 @@
 """Disposable native prediction SQL acceptance; never a real model certification."""
+# ruff: noqa: F811 -- shared pytest fixtures
 
 import os
 from pathlib import Path
@@ -6,6 +7,7 @@ from pathlib import Path
 import psycopg
 import pytest
 import test_package_history_pg as history
+from test_package_prediction_reports import cohort, material, mirror  # noqa: F401
 
 from deploy.extended_recovery import MATERIAL_SQL
 
@@ -390,3 +392,82 @@ def test_native_prediction_offline_restore_includes_private_refs(
                 c.execute(sql.SQL("DROP DATABASE {} WITH(FORCE)").format(sql.Identifier(target)))
         owner.execute(sql.SQL("DROP OWNED BY {}").format(sql.Identifier(reader)))
         owner.execute(sql.SQL("DROP ROLE {}").format(sql.Identifier(reader)))
+
+
+def test_real_worker_restart_preserves_private_computation(api, database, mirror, monkeypatch):
+    """Synthetic source computes in a fresh process; absent certification still blocks publish."""
+    import json
+    import subprocess
+    import sys
+    from uuid import uuid4
+
+    from packages.domain.review_identity import digest
+    from packages.domain.runtime import connection
+    from packages.package_model_certification.policy import method_digest as certificate_method
+    from packages.package_prediction.application import method_digest
+    from packages.package_prediction_tasks.application import HANDLER, task_method
+    from packages.package_prediction_tasks.native import Transaction
+    from packages.package_prediction_tasks.storage import Objects
+
+    if os.environ.get("FUSION_PREDICTION_NATIVE_TRANSPORT") != "1":
+        pytest.skip("real isolated services required")
+    root, index, material_packet = mirror
+    assert material_packet["source"]["mode"] == "synthetic"
+    body = {k: str(uuid4()) for k in ("scope", "certificate", "command")}
+    body.update(actor=api["actor"], bid=native_bid(api))
+    packet = {
+        "authority": {
+            "source": {
+                "current_source": material_packet["source"],
+                "model": material_packet["artifact"],
+            }
+        },
+        "reference": material_packet["reference"],
+    }
+    frozen = {
+        "schema": HANDLER,
+        "task_method": task_method(),
+        "body": body,
+        "packet": packet,
+        "prediction_method": method_digest(),
+        "certificate_method": certificate_method(),
+    }
+    reference = Objects().put(frozen)
+    with connection() as c:
+        queued = Transaction(c).enqueue(body, reference, digest(packet))
+        message = c.execute(
+            "SELECT payload FROM design.outbox WHERE operation_id=%s", (queued["operation_id"],)
+        ).fetchone()["payload"]
+    child = """
+import json,sys
+from apps.worker import engine
+from packages.package_model_live.producer import Executor
+from packages.package_prediction_tasks import worker
+worker.configure(Executor(sys.argv[1], sys.argv[2]))
+engine.handle(json.loads(sys.stdin.read()))
+"""
+    environment = os.environ | {"WORKER_DATABASE_DSN": database["worker_dsn"]}
+    for _ in range(2):
+        subprocess.run(
+            [sys.executable, "-c", child, str(root), str(index)],
+            input=json.dumps(message),
+            text=True,
+            env=environment,
+            check=True,
+            capture_output=True,
+        )
+    with connection() as c:
+        assert (
+            c.execute(
+                "SELECT state FROM design.operations WHERE id=%s", (queued["operation_id"],)
+            ).fetchone()["state"]
+            == "succeeded"
+        )
+        effects = c.execute(
+            "SELECT result FROM design.effect_receipts WHERE operation_id=%s AND effect_key='compute-package-prediction'",
+            (queued["operation_id"],),
+        ).fetchall()
+        assert len(effects) == 1
+        result = Objects().get(effects[0]["result"]["result_ref"])
+        assert result["mode"] == "synthetic" and result["formal_eligibility"] == "unavailable"
+        assert not result["certification_issued"]
