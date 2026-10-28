@@ -1,4 +1,6 @@
-> 当前工作交接请先读 [HANDOFF-20261017.md](HANDOFF-20261017.md)，并切换到`handoff/2026-10-17`分支。以下历史说明保留原范围。
+> 当前工作交接请先读 [HANDOFF-20261017.md](HANDOFF-20261017.md)，该记录对应`handoff/2026-10-17`历史分支。以下历史说明保留原范围。
+
+当前新增系统在 [workbench](workbench/README.md)，独立审查分支 `render-acceptance-20261026`。正式[需求与实现追溯](https://github.com/zys743551828-art/tender-docs/blob/docs/workbench-sync-20261028/02-业务与产品/实现追溯矩阵.md)及[运行说明](https://github.com/zys743551828-art/tender-docs/blob/docs/workbench-sync-20261028/05-技术与设计/工作台运行与验收.md)与代码同步。以下旧交接及 backend/frontend 是历史来源，不要求切回旧分支。
 
 # tender-app
 

@@ -1,6 +1,8 @@
 # AI投标工作台（当前开发检查点）
 
-当前开发使用 `fusion/bid-workbench`，以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/fusion/bid-workbench/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
+当前独立审查实现位于 `render-acceptance-20261026`；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/docs/workbench-sync-20261028/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/docs/workbench-sync-20261028/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/docs/workbench-sync-20261028/02-业务与产品/实现追溯矩阵.md)为长期维护入口。本次正式文档审查提交为 `tender-docs@8157400fec306fe6a9156b218a576c67b46a469a`，含隔离PG12项和机制152项复验回执。下文首切片与历史启动说明不描述完整当前功能；真实执行默认关闭，代码完成不等于环境/模型效果通过。
+
+融合目标分支为 `fusion/bid-workbench`（本次独立实现分支见上方），以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/fusion/bid-workbench/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
 
 请先阅读 [完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
 
