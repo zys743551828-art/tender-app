@@ -20,7 +20,12 @@ from botocore.exceptions import ClientError
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
-from deploy import authoring_candidate, bootstrap_fresh, completion_recovery
+from deploy import (
+    authoring_candidate,
+    bootstrap_fresh,
+    completion_recovery,
+    prediction_recovery_profile,
+)
 from deploy.application_recovery import archive as definitions
 from deploy.backups import generic, run
 
@@ -62,18 +67,23 @@ MATERIAL_SQL = (
 )
 
 
-def frozen_plan():
+def frozen_plan(*, prediction=False):
     previous = completion_recovery.frozen_plan()
     names = list(
         dict.fromkeys(
-            [*(i.path for i in previous), *authoring_candidate.OPTIONAL_SQL, *MATERIAL_SQL]
+            [
+                *(i.path for i in previous),
+                *authoring_candidate.OPTIONAL_SQL,
+                *MATERIAL_SQL,
+                *(prediction_recovery_profile.SQL if prediction else ()),
+            ]
         )
     )
     return tuple(bootstrap_fresh.reviewed_sql(run.ROOT / name) for name in names)
 
 
-def checked_plan(plan):
-    actual = frozen_plan()
+def checked_plan(plan, *, prediction=False):
+    actual = frozen_plan(prediction=prediction)
     if len(plan) != len(actual) or any(
         left.path != right.path or left.sha256 != right.sha256 or left.content != right.content
         for left, right in zip(plan, actual, strict=True)
@@ -166,10 +176,19 @@ def _role_evidence(c, owner):
 
 
 def snapshot(
-    values, output, plan, *, tool=run.pg_tool, container="explicit-local-pg17", after_snapshot=None
+    values,
+    output,
+    plan,
+    *,
+    tool=run.pg_tool,
+    container="explicit-local-pg17",
+    after_snapshot=None,
+    prediction=False,
+    object_client=None,
+    object_bucket=None,
 ):
     """Freeze rows, ACLs and definitions together; dump uses the same nonowner."""
-    checked_plan(plan)
+    checked_plan(plan, prediction=prediction)
     run.private_archive(output, existing=False)
     output.mkdir(mode=0o700)
     (output / "objects").mkdir(mode=0o700)
@@ -188,7 +207,10 @@ def snapshot(
         description = generic.catalog(c)
         if c.execute(
             "SELECT count(*) FROM unnest(%s::text[]) name WHERE to_regclass(name) IS NULL",
-            (list(REQUIRED_RELATIONS),),
+            (
+                list(REQUIRED_RELATIONS)
+                + list(prediction_recovery_profile.RELATIONS if prediction else ()),
+            ),
         ).fetchone() != (0,):
             raise run.BackupError("EXTENDED_RECOVERY_REQUIRED_RELATION_MISSING")
         tables = generic.inventory(c, description)
@@ -198,6 +220,7 @@ def snapshot(
         references = c.execute(
             "SELECT id::text,digest::text,object_key,byte_size,media_type FROM design.blobs ORDER BY id"
         ).fetchall()
+        private_refs = prediction_recovery_profile.private_references(c) if prediction else []
         if sum(r[3] for r in references) > run.MAX_ARCHIVE_BYTES:
             raise run.BackupError("ARCHIVE_OBJECT_BUDGET_EXCEEDED")
         with (output / "database.dump").open("xb") as dump:
@@ -209,6 +232,10 @@ def snapshot(
                 ["--format=custom", "--snapshot=" + snap, "--lock-wait-timeout=10s"],
                 stdout=dump,
             )
+    if prediction:
+        references += prediction_recovery_profile.object_rows(
+            private_refs, object_client, object_bucket, references
+        )
     manifest = {
         "format": generic.FORMAT,
         "source": {
@@ -233,7 +260,7 @@ def snapshot(
     _private_json(
         output / "extended.json",
         {
-            "format": FORMAT,
+            "format": prediction_recovery_profile.FORMAT if prediction else FORMAT,
             "database_manifest_sha256": generic.hash_file(output / "manifest.json"),
             "ordered_sql": completion_recovery.plan_receipt(plan),
             "definitions": detail,
@@ -261,11 +288,14 @@ def validate(directory):
         raise run.BackupError("EXTENDED_RECOVERY_MANIFEST_CHANGED")
     value = json.loads(raw)
     if (
-        value.get("format") != FORMAT
+        value.get("format") not in (FORMAT, prediction_recovery_profile.FORMAT)
         or value.get("database_manifest_sha256") != generic.hash_file(directory / "manifest.json")
         or value.get("full_application_restore_qualified") is not False
         or value.get("production_rpo_rto_qualified") is not False
-        or value.get("ordered_sql") != completion_recovery.plan_receipt(frozen_plan())
+        or value.get("ordered_sql")
+        != completion_recovery.plan_receipt(
+            frozen_plan(prediction=value.get("format") == prediction_recovery_profile.FORMAT)
+        )
     ):
         raise run.BackupError("EXTENDED_RECOVERY_BINDING_CHANGED")
     return database, value
@@ -452,7 +482,7 @@ def restore_database(values, directory, *, tool=run.pg_tool, container="explicit
         ):
             raise run.BackupError("EXTENDED_RECOVERY_RESTORED_ROWS_CHANGED")
     receipt = {
-        "format": FORMAT,
+        "format": extra["format"],
         "database": database,
         "status": "passed_extended_offline_database",
         "tables": len(manifest["tables"]),

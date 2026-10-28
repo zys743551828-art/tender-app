@@ -29,3 +29,5 @@
 最终后端全量：4518 passed、2424 skipped、0 failures/errors（673.49 秒）；初轮路由 19 passed，相关观察＋路由 47 passed，新增两个交错用例已纳入全量。前端 192 文件/1944 tests 通过；Ruff/format（1179 文件）、mypy（735 源文件）、Bandit 及前端 format/lint/typecheck 通过。初始测试夹具命名 Lint 问题已修复，无测试失败。既有观察源码/SQL、execution/dispatch/qualification/jobs 冻结方法摘要未变。
 
 前端 build 通过，保留既有 chunk-size 提示；无 HTTP/UI 契约变更。补丁 `/workspace/scratch/tender-package-route.patch`，日志/完整跳过原因/文件清单位于 `/workspace/scratch/tender-package-route-validation/`。新增原生 SQL 仍未执行，不能以 2424 项历史 skip 或模拟测试替代它的数据库验收。
+
+当前全新原生安装改用`package-model-route-v2.sql`，修复两处CASE解析歧义，显式native SQL版本/2纳入方法摘要；旧/1文件字节保留。本记录原先的机制通过不能作为原/1SQL安装通过证据。

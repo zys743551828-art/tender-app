@@ -11,6 +11,7 @@ from packages.package_model_registry import artifact
 from packages.storage.private_cas import sha
 
 VERSION = "package-internal-route-command/1"
+NATIVE_SQL_VERSION = "package-internal-route-sql/2"
 CONFIG = {
     "candidate_model_id",
     "candidate_artifact_digest",
@@ -23,10 +24,11 @@ CONFIG = {
 
 
 def method_digest():
-    sql = Path(__file__).resolve().parents[2] / "deploy/sql/package-model-route.sql"
+    sql = Path(__file__).resolve().parents[2] / "deploy/sql/package-model-route-v2.sql"
     return digest(
         {
             "version": VERSION,
+            "native_sql_version": NATIVE_SQL_VERSION,
             "application": sha(Path(__file__).read_bytes()),
             "sql": sha(sql.read_bytes()),
             "observation": execution.method_digest(),
