@@ -1,0 +1,168 @@
+{
+  "project": "tender-fusion-full-84f162c8966d",
+  "roles": {
+    "api": {
+      "role": "api",
+      "uid": 65532,
+      "profile_mode": "600",
+      "directory_mode": "700",
+      "ready": true,
+      "nonowner": true,
+      "design_table_count": 157,
+      "model_calls": 0,
+      "synthetic_projects": 1
+    },
+    "worker-document": {
+      "role": "worker",
+      "uid": 65532,
+      "profile_mode": "600",
+      "directory_mode": "700",
+      "ready": true,
+      "nonowner": true
+    },
+    "relay": {
+      "role": "relay",
+      "uid": 65532,
+      "profile_mode": "600",
+      "directory_mode": "700",
+      "ready": true,
+      "nonowner": true
+    },
+    "reconcile": {
+      "role": "reconcile",
+      "uid": 65532,
+      "profile_mode": "600",
+      "directory_mode": "700",
+      "ready": true,
+      "nonowner": true
+    },
+    "build-controller": {
+      "role": "controller",
+      "uid": 65532,
+      "profile_mode": "600",
+      "directory_mode": "700",
+      "ready": true,
+      "nonowner": true
+    }
+  },
+  "containers": {
+    "postgres": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {
+        "5432/tcp": null
+      },
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": false,
+      "private_operator_mount": false
+    },
+    "kafka": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {
+        "9092/tcp": null
+      },
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": false,
+      "private_operator_mount": false
+    },
+    "object-store": {
+      "running": true,
+      "health": null,
+      "published_ports": {
+        "18080/tcp": null,
+        "18888/tcp": null,
+        "19333/tcp": null,
+        "7333/tcp": null,
+        "8080/tcp": null,
+        "8333/tcp": null,
+        "8888/tcp": null,
+        "9333/tcp": null
+      },
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": false,
+      "private_operator_mount": false
+    },
+    "api": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "web": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {
+        "8080/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "5189"
+          }
+        ]
+      },
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": false,
+      "private_operator_mount": false
+    },
+    "worker-document": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "worker-export": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "worker-comparison": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "relay": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "reconcile": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "build-controller": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    },
+    "word-controller": {
+      "running": true,
+      "health": "healthy",
+      "published_ports": {},
+      "source_binds_readonly": true,
+      "runtime_profile_readonly": true,
+      "private_operator_mount": false
+    }
+  },
+  "default_services_running": 12,
+  "paid_or_automation_running": 0
+}

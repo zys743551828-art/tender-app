@@ -1,0 +1,172 @@
+{
+  "scope": "approved optional native locator and synthetic loopback byte integration in fresh independent DB",
+  "tests": {
+    "linux_passed": 104,
+    "linux_junit_seconds": 102.985,
+    "linux_by_module": {
+      "tests.test_package_current_original_pg": 28,
+      "tests.test_package_current_scope_pg": 21,
+      "tests.test_original_bytes": 35,
+      "tests.test_provider_error_isolation": 8,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 43,
+    "host_junit_seconds": 2.932,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "a57499e12c92b04c6cf2c081625458e50a59c826503bae8be2a103aea1770fe6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "01bc0fb648b811880b18f5bf2c450fadb399e625ad0bf9af953e72414c0a9202",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-current-original-runtime.sql",
+      "sha256": "346faa3561d9deefab7d2968d79a1d8692b5bbff1028408257e2f42ded7b6c93",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-original.md",
+      "sha256": "6bfe30b164bf7c1c78d01279e8e4e4fda5e96ff5216efa802c363fff6004b690",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_original.py",
+      "sha256": "30e7452065d6e6b56f4a14eb101fe327cdc6f6f553e535ffabd236afa2f13334",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_original_pg.py",
+      "sha256": "24a5003783eb653ff8e6952960b50964c71f59cef75e4c8a7a8ea472dd1748a5",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "aa81f5e56af0a5b0bca182d9b045f11ef9295a472ddff0721c68869049e031d2",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false
+  },
+  "authorization": {
+    "status": "explicit_user_approved",
+    "scope": "fresh independent tender-fusion Compose check database only",
+    "group": "tender_current_original_verify",
+    "inherited_group": "tender_current_scope_verify",
+    "rpc": "current_technical_original.locate(uuid,uuid,text,uuid,text)",
+    "business_database_installation_authorized": false,
+    "production_or_real_original_credentials": false,
+    "cleanup_required": true,
+    "scope_document_sha256": "88f00259426bcda91a57ab3c17f4f9700376f6f17d24be55d4b7af736af1b1a7"
+  },
+  "actual_http_bytes": 61,
+  "real_oss_or_s3_reads": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "public_http_api_changed": false,
+  "default_base_sql_files": 37,
+  "runtime_inputs": 1196,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "new_original_capability_roles": 0,
+    "scope_capability_roles": 0
+  },
+  "normal_business_boundary": {
+    "new_locator_schemas": 0,
+    "new_locator_roles": 0,
+    "design_tables": 136
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "481b18a03bf6f894ddf82c1f0640e54682131d3e0c17a12bd3ca661011a01fd4",
+    "linux-initial.xml": "209fe52f7c3557bb40c00145910b5da844e7997530317284509443b2fb65c865",
+    "linux-final.log": "2bff206e8adb0ce71af84d4c1c53ae6be82db3ee63c299fd49cae12de63b9a88",
+    "linux-final.xml": "605ca642c74d9f8eccb8748d01c9475a9f8e4cc20b6e3d4bb73f0eb236cc8fb0",
+    "host-final.log": "3cfb622d7fde9ca6c4c3114633d51d4c93eedcb5c695e93bf37fe243eadcfa85",
+    "host-final.xml": "923076b2e80cd2c2bfcfed038126722d05ace87d57b52df799e2bcd9794c1b9e",
+    "python-final.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "original-native-byte-proof.json": "43c33fe5760ab553ed7a5df4ddf6f927c3aaaefd65d96b2f320c4f3d86c4252c",
+    "checks-cleanup.json": "33aabf42052e4e82d18f78b85ae96cba69d80e46dbe0e47430cbf14076fabd85",
+    "business-boundary.json": "6d8e8186fb070dd8ca8483389ba1a5851b5f3bb0e01fa4d96575748f2a3677c6",
+    "http-runtime.json": "748cd0042b41bba2fb37fcf9776946ddc40ba896a4c4fcfed155a020fb6d3f37",
+    "method-boundaries.json": "dc915704a6276a3376c164aeec97d90ee4c7fa383dad48f9ba1dffa4e5ea1eb2",
+    "authorization-scope.json": "46e8f0a65b33e8ad522cf1e6e9a722b7e7fed124c9c5ac5e9d824bcc72aa815f"
+  }
+}

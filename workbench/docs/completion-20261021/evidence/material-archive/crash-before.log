@@ -1,0 +1,58 @@
+..........................F
+=================================== FAILURES ===================================
+_________ test_process_crash_after_atomic_publication_remains_readable _________
+
+root = PosixPath('/tmp/pytest-of-root/pytest-0/test_process_crash_after_atomi0/private')
+
+    def test_process_crash_after_atomic_publication_remains_readable(root):
+        source = Path(__file__).resolve().parents[1]
+        code = """import os,sys
+    sys.path.insert(0,sys.argv[1])
+    from packages.storage.private_cas import PrivateContentStore
+    with PrivateContentStore(sys.argv[2]) as store:
+        def crash_after(function):
+            def run(*a,**k):
+                function(*a,**k)
+                os._exit(74)
+            return run
+        os.link=crash_after(os.link)
+        os.rename=crash_after(os.rename)
+        store.put_object(b'synthetic published crash')
+    """
+        result = subprocess.run([sys.executable, "-I", "-c", code, str(source), str(root)], check=False, timeout=10)  # nosec B603
+        assert result.returncode == 74
+        with cas.PrivateContentStore(root) as store:
+            key = cas.sha(b"synthetic published crash")
+>           assert store.get_object(key) == b"synthetic published crash"
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_private_content_store.py:216: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+packages/storage/private_cas.py:46: in wrapped
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:244: in get_object
+    return self._get("objects", key, MAX_OBJECT_BYTES)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:254: in _get
+    return self._read(fd, key, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:168: in _read
+    _private(before, directory=False)
+packages/storage/private_cas.py:63: in _private
+    fail("PRIVATE_BOUNDARY_INVALID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+code = 'PRIVATE_BOUNDARY_INVALID'
+
+    def fail(code: str) -> NoReturn:
+>       raise PrivateStoreError("PRIVATE_STORE_" + code)
+E       packages.storage.private_cas.PrivateStoreError: PRIVATE_STORE_PRIVATE_BOUNDARY_INVALID
+
+packages/storage/private_cas.py:26: PrivateStoreError
+----------- generated xml file: /evidence/material-archive-pure.xml ------------
+=========================== short test summary info ============================
+FAILED tests/test_private_content_store.py::test_process_crash_after_atomic_publication_remains_readable
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 26 passed in 0.66s
+{"suite": "material-archive-pure", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

@@ -1,0 +1,978 @@
+{
+  "schema": "package-authoring-browser/1",
+  "passed": true,
+  "real_model_calls": 0,
+  "real_database_in_browser": false,
+  "transport": "Unchanged native B2/B3/B4 API proof captures with synthetic originals; exact draft guard, lost ACK/conflict injection and initial empty build history are explicitly synthetic; real product components and Chromium",
+  "source_sha256": {
+    "scripts/check-package-authoring-browser.mjs": "7a86f14c714506130058a34634a036452fd0ca06000b2e3f65ddad58fe295250",
+    "src/ArtifactActions.tsx": "1b6a6dc897251ece574de035825720f8ca8f7755f9533a6dc79260bd693d89ee",
+    "src/AssistantActionCard.tsx": "9d4b4a76340989f912afead6582a86a81283dc7a4360d8d6b4c2efb29a0b6e07",
+    "src/AssistantDrawer.css": "7e3a45f33d7929afba06fd1e6780664199c82eb02c93cbf9b508d27b0a945d4d",
+    "src/AssistantPatchComparison.tsx": "7447a9a9cb01254d78d4f17dcd784cfbbf371318080232a0ac2b6bbba3aa1b5b",
+    "src/AssistantReviewDetails.css": "80d9ab7b30f778381e1f498494fb22ff05621b57847b359903729249fae46053",
+    "src/AuthoringBuildResult.tsx": "0950e6003e83033882f12e76c2e5ea95f17df13d56c6e21cb5757eadf3b0c10d",
+    "src/AuthoringBuilds.tsx": "0a5c78be077563f7df19e74cdfaf75ff1476e8a0b3ac33f697a6d0c0c3e0e49a",
+    "src/AuthoringCaptureFacts.tsx": "ec64ef87f59a3373ff38d8f8029d87d4bc1552e3282bdc2f5347c4435e6d4a00",
+    "src/AuthoringCapturePackagePicker.tsx": "32e8f8dd1b1b5c11375dd2abcf8ddc80f5286fd3b02c22397b0e9aa3a171fae3",
+    "src/AuthoringFormatBindings.tsx": "946997551cc87c873292f078476281d22386761441fcf4df97bb2c64d9de8590",
+    "src/AuthoringGenerationBatch.css": "84b3efbad710cf6fd4bc3e8cbb52bada6b37d5cbd36bc532b6b51a4dbf45433e",
+    "src/AuthoringGenerationBatch.tsx": "128220a9ce37d8c8fcc69841ccd82b5d204732d7285795fe93f8f196c8d5b3d8",
+    "src/AuthoringGenerationCandidate.tsx": "ac62401baab7b6dcd54b3afeb25843621f4ff3a3a50a7c47f4c4ec7028a223f4",
+    "src/AuthoringGenerationForm.tsx": "d88ac988d5125804bacb2308abff4822db9c85f4868b351f8762229860628909",
+    "src/AuthoringHistory.tsx": "32dbcd8062239392b1a4e46d1c22fb0ee19221e8660856abd04853adf4a8caf2",
+    "src/AuthoringImagePicker.tsx": "883cbc883c6f846183efcdf8e8619aab8c6b76769fc3ed27ea08536c2e891fe6",
+    "src/AuthoringLayout.css": "ecad193a598375f8d0711b01687496a5239abf630d50bcbe0c270938ee60704e",
+    "src/AuthoringOutputAdoption.tsx": "5a0114f71c6933bb7a14dacb0133e21e6e8c5900f7898838a0bcf686a30052c8",
+    "src/AuthoringPackageCapture.css": "9ee256a5d615e14d5e449b598dc71affa154d7cbd9aa55b03a89a1ca3b834330",
+    "src/AuthoringPackageCapture.tsx": "8379f0265f69522c8c32a97151db05939d454a40fd0286f75683ead2fa2cbadd",
+    "src/AuthoringPanel.tsx": "d7930b4fc164b308dc747f8e470f2d8c6ef05c65b1332644f0f4c0ec46daef80",
+    "src/AuthoringPatchPreview.tsx": "032c98b96d66f457bed71ac443cc1fa0f78efe2b7d5d2064cb624cadf5b73204",
+    "src/AuthoringPlan.tsx": "20d7b51a207cd98e90ee528f0df6d19c957f0000cac4e53f8f735fe54a1eda81",
+    "src/AuthoringReferences.tsx": "5750fb775c67972fd0be241519cd02e99c67e4b8846156a22c1b65866f2144a1",
+    "src/AuthoringRichSnapshot.css": "cbdb03134d25aee4c1a1bdc17012d39a4a1da19faf56135d000fb0c572b05e99",
+    "src/AuthoringRichSnapshot.tsx": "b46c234491329c11894c1762fbf97b3e5d7f974eeb9abc43afb88e6fc5bae2f6",
+    "src/AuthoringRichTools.tsx": "c140e922f718789cec8e7c49a6a863cea7e45691573f6fc814fa44329841ef20",
+    "src/AuthoringStructure.tsx": "8efd16e7245ab782438b1b4319d56cefc91b3ec70c40949c6e492c25baa0f4f6",
+    "src/AuthoringTemplateEditor.tsx": "6e5c3153c1f64b2ac83588d80c1dfb479c0488b3d6fcf1c18462d9282bbd8262",
+    "src/AuthoringWordImport.css": "edf25d9b15659efa4ca41ea7405368141eceefd1b0a412af68fb7fcdd1448e1a",
+    "src/AuthoringWordImport.tsx": "6ee1b15ef88d5f4e94d453c72be4be8fff49592c170fdfa2780e57018e441e99",
+    "src/AuxiliaryResizeHandle.tsx": "f96da85a076488c29d4396d59bf0419e1baff1869f2c42c597dcd6a0ba59112c",
+    "src/DocumentParseOriginal.tsx": "52f3af49be3b5096c7d363ce642960a01fa487e76fbd10c93843b3a8ea7601db",
+    "src/DocumentParseProgress.tsx": "bc454ba90696e6751c875bb3aef3e5888a7d201e410b96d18a7338506d6af33a",
+    "src/DocumentParseWorkspace.css": "beb8fd2b48f609d947353aa084dd93dba49e63ccccf2609e7f8a4fcd9a4ad9a8",
+    "src/DocumentParseWorkspace.tsx": "5f8d370d14a9f4fbc870a0ef95f48b0456e1401d7a055da2344530980ca16845",
+    "src/DocumentRelationNotice.tsx": "df02434496e0e0b08450698f6592a718a954aa3ded67a0dd91c6cb3d685bdb6a",
+    "src/EditorToolsDisclosure.css": "6ea8bf052afc8636bb757e6a70cd2d2c6ff2c211b7b85c7dec6ee7701b83662f",
+    "src/EditorToolsDisclosure.tsx": "d547e408dc12cdf910d83e11fcece9f5f7ed85d911feb06a07f1166f88eabe5b",
+    "src/Evidence.tsx": "fed9e259014e2d4c42b485ff87552187f74ab983168b62fd5d8f780dfb5bbc92",
+    "src/EvidenceLinks.tsx": "6a70e2cbab9fdaf7bd9e90e8940ff42ceb3437ca11699745562f1e8bc72a6d36",
+    "src/ExactPackageTask.css": "e87aeddde8a74d6f1a8ba464974a14cc41d80b5261303c09af1b0babcb5c39d5",
+    "src/ExactPackageTaskDraftEditor.tsx": "0455fe835806285fd2114083a727d70399fbef21731db182f4f5f682fec48dd1",
+    "src/ExactPackageTaskRunControl.tsx": "d08c56351c1be57bfb05e5faab2233e62500f34affc79a540399b1f72691e4c8",
+    "src/ExactPackageTaskRunDetails.tsx": "c74bd919f2d9e02b2932526bbc887594cd9c57c19ff5e8fbe08072b1e0ece1b7",
+    "src/ExactPackageTaskScope.tsx": "a82aaf0ae60fcdc7feeab9dd286cf92c2a04ca61aefecc31c95e8f5a42f9ee10",
+    "src/ExactPackageTaskTemplateEditor.tsx": "dad2651e3cfd79ca1cb09bdb03e4ff81ff4d56868d69d8ec56a059f2759586d5",
+    "src/ExactPackageTaskTriggerFields.tsx": "f06a071aaf5852a7080c8de79e326ef0a987a8deb3ce9b76bddeb81294e820fa",
+    "src/PackageAuthoringActionControls.tsx": "4c28d9f2ecc1ed2f1124bb8cbcdaf2c4e3d3589f3fcd0750cd56195c17943891",
+    "src/PackageAuthoringInput.tsx": "ca0bfb9f366fd5a989966dcfd344c4297cc7e8f9e295f89e2e5e7cde9d538210",
+    "src/PackageAuthoringInputChooser.tsx": "ef83e66b521cdd30f658820f7873af5d06db0d352e78b6874eaacf7fc7fcd791",
+    "src/PackageAuthoringRunControl.tsx": "5b41f18807fa08c6a23cab824a75d823c98bb48b6659c7a2ed8bac62313e781a",
+    "src/PackageAuthoringTaskResult.tsx": "70d2c955da5530bce97e08d92104ca316d8ce5e43cb37c911796f449ebe21f3b",
+    "src/PackageAuthoringTemplateEditor.tsx": "9f6436b0dddba6ca234481abc7d3b74ed056061cee1f06f816bc5799f9970796",
+    "src/PackageReviewCancel.tsx": "c7623b4f3bbf4ea10187c9fa71f5ec9d53a9b4b2eecff50c7e63da0909ee99ea",
+    "src/PackageReviewComparisonView.tsx": "4dd46f88c857f2f137d3bcb92a54c06ff88a2b3b8ae693fdf6f17d938cac9ade",
+    "src/PackageReviewComparisonWorkspace.tsx": "c0a95ebf71f8888a6111244e57c8d61ece14bb91901987d4d33dc6462a990fdf",
+    "src/PackageReviewDecisionHistory.tsx": "0c2bdec59e6b8fef9039f13ecf1d2d0c684f140dc3309bee27546a23c0d0b1ad",
+    "src/PackageReviewEvidence.tsx": "7028d66cc2eb52066646689cfd09c5ab6246f32851372a08655e6ee04415446d",
+    "src/PackageReviewHumanDecisions.tsx": "0d6ebb807ec146dbda067d6296b313766f005af1f91b387471a66de45b97ef9c",
+    "src/PackageReviewInputDetails.tsx": "b99b1cb983aee92797c9bf28b863daa3037dda89c8abae5e3bd8ccaa490c50f8",
+    "src/PackageReviewOriginalRunDetails.tsx": "50ffbcf22e91ba81b28fbe78a5d51b44b9f653ca5abd5ee4d70394f880284eba",
+    "src/PackageReviewProgress.tsx": "a1d7a39a87e9536dc4f03212eb92ad0e6347460ca2a83bf75b8e3b58c55b2990",
+    "src/PackageReviewReport.tsx": "c863b27a15db96bb8e3eeceb97e7a4bbf37b56e573570ea091626d3fdd19aac4",
+    "src/PackageReviewReportCancel.tsx": "b01cc38d0cfd802228fe38ba227124a97be21dab080373c5b7578cfc936129df",
+    "src/PackageReviewReportDownload.tsx": "600358ca4bd878d28e2ff08f9453b207d3bdc0f5e79345ec397767aabfcc501a",
+    "src/PackageReviewReportExports.tsx": "cfe6f524e6d1f05cd90b37b616e2668580aa9c9d99be48ab0bf20604195015bf",
+    "src/PackageReviewReportProgress.tsx": "35c4f918f46a59710867e6e0b6d9eaf6fcf2b287549b06043b0cb25c3a2a502c",
+    "src/PdfPreview.tsx": "7e7648e1775b86c2eab23d4ae06c0a75583aed539b637ca9113907a78a8b7da5",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/ResourceState.tsx": "a269f3ff0bc41a6c82afad59a8860b25bedddc7fe11a45b65a79d18906149508",
+    "src/SectionEditor.tsx": "85396a93a5ecc9d46b43c116f67529615bd00f524ab50f917bc77f5ea276aa31",
+    "src/SourceEditor.tsx": "23943212f7451e2346cb603a3b80f4afd62d15b9f47d5cf6a80e1691006552cd",
+    "src/SourceSurface.css": "2589a12fbd6af0d9044383ac372e6b452cbaacd600f9d7db92d30de3e2453984",
+    "src/SourceSurface.tsx": "d19bf1db5e4e8656f26ecc5f9dbbed021cd9acd5d70e60eab0bec962ad7bc2d9",
+    "src/TaskAuthoringResultPanel.tsx": "5cf31c5108a351ac1f91ecccb822a53d5f63011807b42e1d3cbd971f1b6b0928",
+    "src/TaskDraftPanel.tsx": "f12872315ce3d44562430b46906dad6d6654111d7a8e76a0452c46c7c728b228",
+    "src/TaskRunCard.tsx": "cf93db5b673329a87586d8ecb4139f4ef9fb8c7f5cf689ff0259ae1b8a2fdbfa",
+    "src/TaskTemplateCard.tsx": "38123042f4f95fa9602d71c23f374bcd5ec2854621f146ca5d0bff20623cdb17",
+    "src/TaskTemplateEditor.tsx": "28074b04a9aea441d82247ffa81782e9782178400f0223396ee2d7d91cbde24b",
+    "src/TextChangePreview.css": "15c5018ee520a659c14de50543d0f8965a98e0eebcbb341f9aee9d061526ad8b",
+    "src/TextChangePreview.tsx": "aaa86fbd1cb68e8efdd678c8cd7e042d271f12de66936333a268f175728d4edf",
+    "src/WordImportRichPreview.tsx": "4fc5861382051f609690c9ac02631746ed3f4fb5badfe3e9d74ce1adf33de1c6",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/artifactNames.ts": "dc69a94280f5fe377d04c0d3f9d384fc9180bff4884bb8a503aa29332d06d621",
+    "src/assistantDock.ts": "af8b4011faf0ca6e9ee18285bbb4c5b1405eb00bf6339821b2854a20e48b7fa3",
+    "src/assistantState.ts": "01eba8c0b43e3840fe08a79edce5b2403da6d9dbb7a27f6cebd95b87dde8e93b",
+    "src/authoringAdoptionProtocol.ts": "851743d8cfe65df3bb401f7bd9be45766d55f85cf6db95962a3fa848b65977af",
+    "src/authoringBuildRecovery.ts": "0b9351a3ac92d1359ca6e102923ce5980ab5be7583884f7fde0ac7d7aa32f2fb",
+    "src/authoringCaptureCommandProtocol.ts": "c0c0abadffcdee16fc8e4e2cc5f38c539e42d683295c8716c183fbc3064638a5",
+    "src/authoringCaptureDirectoryProtocol.ts": "571d2f694e31906aaab59d0f0af7abcbf08e6d37cc15b04f9a4ad7a843375178",
+    "src/authoringCaptureForm.ts": "65b1496f6d78a8f801d494c398899e7d1e0f63a3c46b31d6ede83c01601bb73d",
+    "src/authoringExactDraftFixtures.test-support.ts": "9686e30620d397141ff76633fba85579ed799ed6e388a80342903eb009d93c29",
+    "src/authoringExactFixtures.test-support.ts": "7706833720ca80bd25ff9713fb09b61d8f4fba157dc5c2787007d42c8ed90270",
+    "src/authoringExactProtocol.ts": "155a12874ed9851b60c63625d822b6ef581486155af59bae868c0c0b591fdbf9",
+    "src/authoringGenerationBudget.ts": "d5dd73994d44f981352942890325f19b49dd408e4fdeed126c310e58dac6ae44",
+    "src/authoringGenerationFixtures.test-support.ts": "ab58b47532d12e86010fa3602773b8d33626b731686862a367ce4e781b599672",
+    "src/authoringGenerationProtocol.ts": "622b2a0d4a39b39a7e33b4a115edd5792d2612b837935669cfd9714abda05e52",
+    "src/authoringGenerationRecovery.ts": "24188a6df4c7a950df3a63183edcae145489d72bb618a7e07cb53e471363f2ff",
+    "src/authoringHistoryProtocol.ts": "108dc0730efd4ffe84fe89ad6379d5e96b6e360fbbe374819d447bce6ae7a245",
+    "src/authoringInputCatalogProtocol.ts": "b7e1d657dd06fea961d80a9087a6950e4ee8c5fc053088b4d91de936db2f6253",
+    "src/authoringLayoutFixtures.test-support.ts": "d09695d772f0b25f493bb8cb7d74af32b105735cb2ac819ecf56ad028df1cb77",
+    "src/authoringRich.css": "7c31cfbc7576c24d4b0b6174e0fcc456e0e79dba7196ad453e374d8c5aff3a42",
+    "src/authoringStructureState.ts": "2464b4ac349f267d489d577861b1f120358451927adde1ccc7167d6454eca9ba",
+    "src/authoringWordImportFixtures.test-support.ts": "f97b0c47ed658e10d4515957260a2c74453df050c5977fdba0f555eb5764b7ed",
+    "src/authoringWordImportProtocol.ts": "42c79dabc8dfc5e64e42227706e7a3d300798c48b6f17ed536dcb5a8211ff0f4",
+    "src/authoringWordImportRecovery.ts": "99189381e7f28559c1330d604147b80a457dad25c59da5d3d83a482e0e74dd18",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "9ddaa82dd3e8af5609b6d14d6b293fe00ea334d365f7df9c59f77ea28684d2da",
+    "src/dependencyPlanProtocol.ts": "7a739752d489d74cd9d316e1c73a26332159ac1cbae661b13869bbed10c12008",
+    "src/dependencyRequestLimits.ts": "6a253e5863e22cb594e6a0b749c586f7c2471d324ee9e195fd1ea168d5f4f3ce",
+    "src/documentParseProtocol.ts": "3aeb96edb08db605285585e3049545f926f8e68a08a8bcce82045fd956b9964b",
+    "src/documentParseRecovery.ts": "44810276af5a0b4a2f2f2d0139b1db17fcacad0a29b4a8da6f679fc39a86857d",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/editorStorage.ts": "d6f0abe5ad64fddce3549f5680042ce04f15439b68738eb3ee6cfad9a28ee2f5",
+    "src/executionInputRecovery.ts": "5e906fe6c7ece376bf4f208badd4b8e0d7e1b3512940e882f6a8bf3274252ddb",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/factScopeValidation.ts": "13564fcad9f5aec0c46c98572aac30d154578d6ed51cd0ead278ddc89cd35c8a",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/inputDependencyProtocol.ts": "5172faea11e2c69c348ad6eeaf83251c6044b04acd3c1867fee0a358ad843569",
+    "src/knowledgeStorage.ts": "ff26e5ce8414150e34c850c85fd00f96e96282206ce6d4f1f2fab555d433290c",
+    "src/navigationGuard.ts": "b58d04fef23cb3d7a39945fa449beb563098bf3b23e31c2f7ef3dd5692e3a4d9",
+    "src/operationStorage.ts": "c847beeae243d2369eb854e570ffc5501516648506ab0df17f352958ac153031",
+    "src/packageAuthoringFixtures.test-support.ts": "d44245bb920a7320f77d0bb4d3b0b52524cbe195d7d14acc676eafdcc1b6ba9d",
+    "src/packageAuthoringInputProtocol.ts": "a1166bd20937bc4b923090c4f0957cd23aabdd83d78100ba9a0ca8826fc0a19d",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageNavigation.ts": "bf734b6f2903b0fe7783e8a32fde7b7116ae36f086e68db04b3111b1788f3871",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewComparison.css": "90e6bead98e20077f8d67c92e4db3dcd840f084cb3eabf4faac082a745d25da5",
+    "src/packageReviewComparisonProtocol.ts": "3867d7b63d18079233f931bb0587be62d232026bba6fd5ff8b1292f75471a40e",
+    "src/packageReviewComparisonSelection.ts": "025a612f137fb3abdc27e1230ec1127c8fe9a7fd7e9ffa1b66cf31238e0e46b2",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/packageReviewDecisionProtocol.ts": "beea094ab3a5a2dd894ba371c0886f8e12e8dcadb9a954f9dd0aa011c50556f4",
+    "src/packageReviewDecisionRecovery.ts": "305d8bc9785e58af78a7b9cf33bcf6bf732973a66dd97b98ef5d420c39973818",
+    "src/packageReviewHistoricalRun.ts": "89bf36307b3bafe49d5ad19fd04a8f3abfdccfa86ed732a4d2a39cc83b0208fe",
+    "src/packageReviewInputProtocol.ts": "2a4e6f518e09ea213d140b98a8390469059180f5dab618c200c901112e4b368d",
+    "src/packageReviewProtocol.ts": "67dff999ece6e18718808bcb3f3006748cb12c09a1106d94b68715e862a9564d",
+    "src/packageReviewRecovery.ts": "9e5473c06389d2e0b6c36aec608851e8cf310688e59f0d7c27fa6b5a915266cc",
+    "src/packageReviewReportProtocol.ts": "07d9944146d18de3a98f0d93bd82c7cfa716ddaea672626840e977ed5c6a7e11",
+    "src/packageReviewReportRecovery.ts": "7011191b88022c88ba37535b7f8872e5e6921e381c0eb59e2341fca1e7c7c694",
+    "src/packageScopeGuard.ts": "65e23e1c54899ba58618a0448f613535f9ff163f5d00e1f7d80e11f8906fd695",
+    "src/packageTaskTemplateSelection.ts": "f55f2fa0643cef84aeec5b7c555c42c38eaf67814d93577a6d1f3d4fd62a2701",
+    "src/recordedCommandStorage.ts": "334a77ed8714b54bbdfc931eb2c994941e9d71a744b31da10cc0ae7da5617483",
+    "src/richEditorSchema.ts": "164e20e148f35441e064e66edfc1a7616c77ad91522b8dd290de5b396b8baf91",
+    "src/richTableTools.ts": "b7f2dc964cc6210d7b04491d2f012b200ffc65d606e8a30c6477520ff67defb3",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/taskAuthoringProtocol.ts": "eebfa9d22f3dfe7b4a36b6ffac3e0fcc5fd93f152083ee06a5187f6fec1d0b06",
+    "src/taskPackageAuthoringProtocol.ts": "732772935f5042f857dd7a285f1cc65b37e1d09a15befd2c152a87296c2f8be5",
+    "src/taskPackageProtocol.ts": "733c14c1623b0a3d873e772a1dbf0ca14d6979fed227f7002e37179ea85b9bf3",
+    "src/taskState.ts": "b036fd062c54d0243e1dd918d65388cdd1810b5e567d2dfbebb2abfbda5330e6",
+    "src/test-fixtures/authoring-exact-adoption-http.json": "8b83e9476e4b790c7fe6143d6de661045a301a97dbf98342287ceb3cfa232e69",
+    "src/test-fixtures/authoring-exact-build-http.json": "520fac9f118dde10a1f44f352d826b9b18e525e99d0d173f657b196e5dc1017c",
+    "src/test-fixtures/task-package-authoring-http.json": "51124be9dfd246b267dcdd9934fa82a7f6b2b61a7146b13dcdb96978157aae8a",
+    "src/textDifference.ts": "296a08eda16776af86853f6ffc4998c1cb1c3b01ef6771ee9aabbbd8fccb8d66",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/useAssistantDock.ts": "5794b62752da0f19acf434afc31b65e2336ce2ba7a8f00403351af3b99ed8c7a",
+    "src/useAssistantFeed.ts": "e2fb89d8e321355011753e358e55c0aeece67bf94f8851bb2dc4ab8deb3a018e",
+    "src/useAuthoringCaptureCommand.ts": "d769fdc25094ddbfee98353f270e1509f098b97e1650e86c3ac4867ebd3b2e2f",
+    "src/useAuthoringCaptureRead.ts": "3369263fd09ccb0f00a8ee131ba2beba8ff9a87623002c2dbef5fa3508a0467a",
+    "src/useAuthoringExactDraft.ts": "3ebd88ddc1cd2de4eb69e9956de828f3379cbcb40740771c4161db55c70eb407",
+    "src/useAuxiliaryFocus.ts": "2fe7445ff86a44012b19adbe0b2f629800fb04cae148fb2adc978f4eb4b1d0cf",
+    "src/useCommand.ts": "2351db8f66eb16ac61b67f3b4186d627be36d20c659eeb61f149c3f882f25d19",
+    "src/useDirectory.ts": "f7531554b60c0ac75e461ec3a568258b86be8e718f00eb871bfaf2b198247c37",
+    "src/useElementWidth.ts": "069541453b98b21ed37fb2e6221bee58b4a186d20606eb9e87fb97a48f3ec063",
+    "src/useExactAuthoringAction.ts": "3875b8b4f29e73ae2b1375e5d4defc70e5ed15ef6536e70118636fb943a1b7bb",
+    "src/usePackageReviewDecisions.ts": "4efb141a9bb9515535c0a13b6fc764a80af1e0f9b5a27cdc1d248ced1a9a8277",
+    "src/useRecordedCommand.ts": "42d68051c4d88b3c215aef4bc4b808ff8d780f6a8dcf013d33d96f8eae32019e",
+    "src/useResource.ts": "4e7fb2749ec79db360f4c365fcc886e0e5cd010c431c86d4cab3b2daabcf704b",
+    "src/useSaveQueue.ts": "3c7d33610e332cf4a58b56442b41e773c0b779fe41e532266bee4d915cd0487f",
+    "src/useTaskPackageCommand.ts": "1b6242c4cb2f2345cf2eb824ad7669a5404afd9b7ce4da0f8ee7a888739411e9",
+    "src/useTaskPage.ts": "89e377bc963203d578a49c2c9ac6e9d5787a1724cf3124b2cc34bd87518f278b",
+    "src/workContextAuthoringProtocol.ts": "7c69635e2729b0b20ad6326c8aad843dcc825373348ada32456a392f7e3f6a5c",
+    "src/workContextDirectoryProtocol.ts": "863b4aa7a705f845c6ca7eb181188e1a3e6e3358d34209bc8f013e6b6c74e8dd",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6",
+    "src/workspaceAuxiliary.ts": "e12542181c9c4bac5838211b1884b9ea2fc1f02558c8b66fa69dc2eadc14bdd8",
+    "src/workspaceAuxiliaryContext.ts": "f8c5dccb13ac72cf681e6528a678c7ab3402c2170ae25d6144cb44b76fa44c29",
+    "src/workspaceDockReservation.ts": "64457bc4aa96e830082e1a15dbb47e660dd5ce407093f75d987b77ae9f3c9205"
+  },
+  "checks": [
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "editor",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "lost-ack",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "run",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "result",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "action",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "draft",
+      "horizontal_overflow": false,
+      "writes": 3,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-action",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-conflict",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-draft",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-build",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-build-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-package",
+      "horizontal_overflow": false,
+      "writes": 2,
+      "accepted": 2,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "mode": "exact-package-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "editor",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "lost-ack",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "run",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "result",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "action",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "draft",
+      "horizontal_overflow": false,
+      "writes": 3,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-action",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-conflict",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-draft",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-build",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-build-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-package",
+      "horizontal_overflow": false,
+      "writes": 2,
+      "accepted": 2,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "mode": "exact-package-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "editor",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "lost-ack",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "run",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "result",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "action",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "draft",
+      "horizontal_overflow": false,
+      "writes": 3,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-action",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-conflict",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-draft",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-build",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-build-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-package",
+      "horizontal_overflow": false,
+      "writes": 2,
+      "accepted": 2,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "mode": "exact-package-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "editor",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "lost-ack",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "run",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "result",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "action",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "draft",
+      "horizontal_overflow": false,
+      "writes": 3,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-action",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-conflict",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-draft",
+      "horizontal_overflow": false,
+      "writes": 0,
+      "accepted": 0,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-build",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-build-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-package",
+      "horizontal_overflow": false,
+      "writes": 2,
+      "accepted": 2,
+      "javascript_errors": [],
+      "external_requests": []
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "mode": "exact-package-lost",
+      "horizontal_overflow": false,
+      "writes": 1,
+      "accepted": 1,
+      "javascript_errors": [],
+      "external_requests": []
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "editor-light-390.png",
+      "sha256": "620b6f0b87d13453de3af36dba258a2e68bab92cc4ea10a66830967ce59f6413"
+    },
+    {
+      "file": "lost-ack-light-390.png",
+      "sha256": "90f4f2615879759174f3c7dbdd30f212ce25fcdd76213d7060ebfd2e06dd4a26"
+    },
+    {
+      "file": "run-light-390.png",
+      "sha256": "f9289dc4e93c726f6191f56e659948a217909fe9179ae52273169a857e9393d7"
+    },
+    {
+      "file": "result-light-390.png",
+      "sha256": "da8446374b6cb468abc84a5b1da2654360f743dd2debc620b3c9168c80561a2b"
+    },
+    {
+      "file": "action-light-390.png",
+      "sha256": "1510704701257c3bc50b73dc62a355a9cb347eb147f5018c816b81d5f8f69b46"
+    },
+    {
+      "file": "draft-light-390.png",
+      "sha256": "cc902498290ec5c747c3c280650068cdc0ca4c2dc7631a13022f089219e0ed36"
+    },
+    {
+      "file": "exact-action-light-390.png",
+      "sha256": "b53ec8b76d751cdc30269248d0e82fab5db82f06504ac6b11e93c63ab47e71f2"
+    },
+    {
+      "file": "exact-lost-light-390.png",
+      "sha256": "54a39668dee455b58c5ca8ca068404304c74d6a044a26b8b245ee87396feed01"
+    },
+    {
+      "file": "exact-conflict-light-390.png",
+      "sha256": "65c244e0c57b2f8e97152f3fdeba882ecfcd7a53fc5fb6501af8b63e40664fdb"
+    },
+    {
+      "file": "exact-draft-light-390.png",
+      "sha256": "0415e8f5307dc8d3ff46fdd9f585b603c52898ed5d2ecb0c3537efd8b6d09cb7"
+    },
+    {
+      "file": "exact-build-light-390.png",
+      "sha256": "b5193e2d7f32af5eebb6c97640c73a3048a4e58f9c78e400183e590faa535df6"
+    },
+    {
+      "file": "exact-build-lost-light-390.png",
+      "sha256": "b5193e2d7f32af5eebb6c97640c73a3048a4e58f9c78e400183e590faa535df6"
+    },
+    {
+      "file": "exact-package-light-390.png",
+      "sha256": "a04bbff09ff213bc406ed3e2f1e44a2831f0b0b8b6df5c9bd4bd723cfbd87a5b"
+    },
+    {
+      "file": "exact-package-lost-light-390.png",
+      "sha256": "a04bbff09ff213bc406ed3e2f1e44a2831f0b0b8b6df5c9bd4bd723cfbd87a5b"
+    },
+    {
+      "file": "editor-dark-390.png",
+      "sha256": "8a69952450ceebb8c7d3a775bc2d2a77d4dd6be762eec66c6678cfee319de6b9"
+    },
+    {
+      "file": "lost-ack-dark-390.png",
+      "sha256": "8e481edfb4b735fdaae21e78ba4b7c8a881b766230aca589aab6396ebdf7517d"
+    },
+    {
+      "file": "run-dark-390.png",
+      "sha256": "149dc3b363b406ad5cb72e910be451f0270dfd71ba9b72813b2e654c84b980ee"
+    },
+    {
+      "file": "result-dark-390.png",
+      "sha256": "3d60b9b30c2726bf031644755ea3efce8e9df78454b24b4735cd9264225a70fb"
+    },
+    {
+      "file": "action-dark-390.png",
+      "sha256": "3bb9f9f35858c6f40c6e82f56ce9a3f400e11df778c00782066d826082bab72d"
+    },
+    {
+      "file": "draft-dark-390.png",
+      "sha256": "f48f2f77e3ee3311ce53b354bb144e3c14fc3be0cb2f73c941df921c4d8565d6"
+    },
+    {
+      "file": "exact-action-dark-390.png",
+      "sha256": "5a96039a0dd38f853f385c61d841c0b6d9ff43100ee30d2490f80cdb3fad9967"
+    },
+    {
+      "file": "exact-lost-dark-390.png",
+      "sha256": "e7470f36e1ce561105f6dae56d0c0e6a10322140ac8a545a43158f0a8e02eb38"
+    },
+    {
+      "file": "exact-conflict-dark-390.png",
+      "sha256": "90be283c3d2ff0de2d2a8dde4fb4ec7ca8d5fe7b3790e02b66e0ee65a53580c2"
+    },
+    {
+      "file": "exact-draft-dark-390.png",
+      "sha256": "620ecfb663a2a01b5ed3558d5ef4deef9faa451585168711ff78b1e998e86eb0"
+    },
+    {
+      "file": "exact-build-dark-390.png",
+      "sha256": "558810bc7e683e056a6b64535cc242f733a243b4f801b3e8db547df24168fa47"
+    },
+    {
+      "file": "exact-build-lost-dark-390.png",
+      "sha256": "558810bc7e683e056a6b64535cc242f733a243b4f801b3e8db547df24168fa47"
+    },
+    {
+      "file": "exact-package-dark-390.png",
+      "sha256": "c3c92314dc0d33902072468c27ce9ef5f81d5133151eb8a3f167a30ca4760a4f"
+    },
+    {
+      "file": "exact-package-lost-dark-390.png",
+      "sha256": "c3c92314dc0d33902072468c27ce9ef5f81d5133151eb8a3f167a30ca4760a4f"
+    },
+    {
+      "file": "editor-light-1280.png",
+      "sha256": "143b72523f108463beaa25f536e106aeece512ee04309b328e2e6972deec0cef"
+    },
+    {
+      "file": "lost-ack-light-1280.png",
+      "sha256": "d7aaa611336286f4f6b30565964c041b14e19f280bc664e00139c950ead4fb3b"
+    },
+    {
+      "file": "run-light-1280.png",
+      "sha256": "8dbb89473b1be1a2fb3e534003290e3fa2beee95cad858de19766a379293259e"
+    },
+    {
+      "file": "result-light-1280.png",
+      "sha256": "d19a149b6694a8930dbbb259adabd39576146b816bd2dc267fe7a652d37763b1"
+    },
+    {
+      "file": "action-light-1280.png",
+      "sha256": "df628a0c3fe47dfa7e2b93428a11856f9a98f9516ea6b4ace21f032ad67526c6"
+    },
+    {
+      "file": "draft-light-1280.png",
+      "sha256": "15ac382e576b1b4ba42a419e309ff7e20e4ad86299d1b5bbe2a4f5602abc3136"
+    },
+    {
+      "file": "exact-action-light-1280.png",
+      "sha256": "52c362007ef4038c62e4bd6d553547eef8a5a2a8f73c3911b19bc7da76eca185"
+    },
+    {
+      "file": "exact-lost-light-1280.png",
+      "sha256": "18d3778757d38b2647de768f13e93afde01242129e953d797de8b0a8f2bd432c"
+    },
+    {
+      "file": "exact-conflict-light-1280.png",
+      "sha256": "32f98ff697a23d6a93e207d557d0363de804dadc6766376dc29b74b367e1a80b"
+    },
+    {
+      "file": "exact-draft-light-1280.png",
+      "sha256": "30025a55903d6682a3765067951dce797c0184ce6c07e4b00a4f83817aafe094"
+    },
+    {
+      "file": "exact-build-light-1280.png",
+      "sha256": "b08bce1539ce66d5a37e48696d35513e1e043c8a1633afb92b10a69efa2358c1"
+    },
+    {
+      "file": "exact-build-lost-light-1280.png",
+      "sha256": "b08bce1539ce66d5a37e48696d35513e1e043c8a1633afb92b10a69efa2358c1"
+    },
+    {
+      "file": "exact-package-light-1280.png",
+      "sha256": "9c9feb398c84e9b28fc6a2643e926b04c60f858440884cb5eb00182f40cf704b"
+    },
+    {
+      "file": "exact-package-lost-light-1280.png",
+      "sha256": "d633c1f58fcc5b964324d366cb2c1a0994c97c0331901d16da3ea2b4020e2676"
+    },
+    {
+      "file": "editor-dark-1280.png",
+      "sha256": "b8fdae2d7e2e5c689d4fe93a7ff4b6fbb14a636426b928e09b1263512ee0aa36"
+    },
+    {
+      "file": "lost-ack-dark-1280.png",
+      "sha256": "f6797028bfa6935382ff1c0bdb313009cf6c898bab766501a230b5f5bd2463eb"
+    },
+    {
+      "file": "run-dark-1280.png",
+      "sha256": "851fed963e985cae8cc3854c6f8d6c5575194176672726d3e53939cc25b8b45a"
+    },
+    {
+      "file": "result-dark-1280.png",
+      "sha256": "6a6c8a6f9add889132c24ee26099105c657f07d1fe3f729c3db8cb80ec646870"
+    },
+    {
+      "file": "action-dark-1280.png",
+      "sha256": "56a6c8e1bc5de539ccdf170f0f8b09e08937e32ee104dcd40c36e67d2a172d87"
+    },
+    {
+      "file": "draft-dark-1280.png",
+      "sha256": "5800ab163383329158186126ab14ac67d3206f1237bba1f49eba99a5295e5c16"
+    },
+    {
+      "file": "exact-action-dark-1280.png",
+      "sha256": "895fd416b0c6a32fe964f6dbe107b31e3d4cb9067edb314691fea7c4c5c91e85"
+    },
+    {
+      "file": "exact-lost-dark-1280.png",
+      "sha256": "f4406fdbf4aa7ca8d64e72e9c47d2ce1ce33d85e574cb9dec403253c160a6a9c"
+    },
+    {
+      "file": "exact-conflict-dark-1280.png",
+      "sha256": "82c140ddcfcc0deded01f2974722239d88147611ec2e0e22ccff8e6756e95b35"
+    },
+    {
+      "file": "exact-draft-dark-1280.png",
+      "sha256": "49b1db18ecc21a905aa61e9cd460c13e329a742a4fab19d9b613b48cf8b696ef"
+    },
+    {
+      "file": "exact-build-dark-1280.png",
+      "sha256": "26a4ec624976ad22ef0aff6c8a3155a6f36f9f86b16c70d5c41868a11d067079"
+    },
+    {
+      "file": "exact-build-lost-dark-1280.png",
+      "sha256": "26a4ec624976ad22ef0aff6c8a3155a6f36f9f86b16c70d5c41868a11d067079"
+    },
+    {
+      "file": "exact-package-dark-1280.png",
+      "sha256": "349a5bca6555fbedb4073b6f19737544ceb485a13ca56b643ce9bc5aaa1b2175"
+    },
+    {
+      "file": "exact-package-lost-dark-1280.png",
+      "sha256": "9236468243a3d3cdd405bcec6804f16b7a721b6de187af652f9cd78209525e7c"
+    }
+  ],
+  "chromium": "156.0.8078.47"
+}

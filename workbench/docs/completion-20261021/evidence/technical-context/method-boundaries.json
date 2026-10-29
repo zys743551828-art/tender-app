@@ -1,0 +1,12 @@
+{
+  "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+  "context_method_digest": "ff50387b0836743225742e4748985546b82e91a8ed894c83c7c80862374323e6",
+  "vision_serializer_digest": "9376e108ac0b170b48d15699e703dce79f98f5dc416ba5829f8f0fb0e0bc05bc",
+  "judgment_method_digest": "fb22c363507701a93f7d5fc86a2294b8fd546e4293ebc00207de110b66b6ca47",
+  "input_and_dependent_serializer_methods_changed": true,
+  "judgment_and_feature_methods_unchanged": true,
+  "context_has_no_verification_digest_field": true,
+  "old_frozen_evidence_rewritten": false,
+  "independent_native_verification_installed": false,
+  "host_linux_method_equality_claimed": false
+}

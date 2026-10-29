@@ -1,0 +1,16 @@
+{
+  "production": [
+    "apps/api/main.py",
+    "apps/api/export_openapi.py",
+    "apps/api/composition.py",
+    "apps/api/composition_contracts.py"
+  ],
+  "checks": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy_production": "passed",
+    "mypy_owned_tests_follow_imports_silent": "passed",
+    "bandit_production": "passed"
+  },
+  "limitations": "Existing imported test modules are not covered by the isolated test mypy command; production imports checked normally."
+}

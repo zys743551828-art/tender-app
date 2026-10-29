@@ -1,0 +1,47 @@
+{
+  "candidates": [
+    {
+      "path": "/workspace/tender-workbench/docs/application-composition-development-checks/candidate-01.json",
+      "sha256": "32630d1d1e8572760cc9ca991ebd436caf7cf4f09f66e88c919777f1b2f20df3",
+      "all_input_bytes_match": true,
+      "counts": {
+        "sources": 399
+      }
+    },
+    {
+      "path": "/workspace/tender-docs/04-验证与测试/authoring-complete-development-checks/candidate-02/candidate.json",
+      "sha256": "5cb2bd6f9c205bace488158d3b9656222b3e9a54aa215d1c6bf2d834f11773e9",
+      "all_input_bytes_match": true,
+      "counts": {
+        "sources": 31,
+        "dependencies": 304
+      }
+    },
+    {
+      "path": "/workspace/tender-docs/04-验证与测试/research-backend-checks/technical-scale/candidate-01/technical-scale-candidate-01.json",
+      "sha256": "9ad9becd41065d334ff03246026da4f9a79f90db89a5aa0696b3a0ada01c6f62",
+      "all_input_bytes_match": true,
+      "counts": {
+        "sources": 10,
+        "reference_inputs": 235
+      }
+    },
+    {
+      "path": "/workspace/tender-docs/04-验证与测试/research-backend-checks/score-execution/candidate-01/score-execution-candidate-01.json",
+      "sha256": "32893b6df6fe1d6f0b5485bb3191aa8b4987fee8d690d4062b842d206ba3f9e7",
+      "all_input_bytes_match": true,
+      "counts": {
+        "sources": 12,
+        "reference_inputs": 98
+      }
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/word-mainflow-development-checks/candidate-01.json",
+      "sha256": "9b609a89975c31ab945aacbbe8f63639edd37d51b622ee92c788146270cd7168",
+      "all_input_bytes_match": true,
+      "counts": {
+        "sources": 335
+      }
+    }
+  ]
+}

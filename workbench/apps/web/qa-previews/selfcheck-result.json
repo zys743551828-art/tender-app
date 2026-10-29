@@ -1,0 +1,15 @@
+{
+  "scope": "frontend developer self-check; real browser/API/S3/Kafka; synthetic PDF; not independent QA or real-user trial",
+  "project_url": "http://127.0.0.1:5173/bids/881a8149-e19e-4423-9857-a37a5984c895/materials",
+  "upload_verified_committed": true,
+  "coverage_label": "解析范围不完整",
+  "pdf_canvas_nonwhite_pixels": 1206,
+  "physical_page_options": ["1", "2", "3"],
+  "blank_page_2_accessible": true,
+  "evidence_390px_no_overflow": true,
+  "project_390px_no_overflow": true,
+  "cookie_refresh_restores_project": true,
+  "browser_page_errors": [],
+  "download_filename": "three-page-evidence.pdf",
+  "download_sha256_matches_document": true
+}

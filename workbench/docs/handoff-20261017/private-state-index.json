@@ -1,0 +1,3575 @@
+{
+  "scope": "Metadata only. Private runtime/config/DB archives remain in original workspace; require secure transfer or reconfiguration. No contents or secrets uploaded. Live logs may append after this inventory; it is not a transactionally consistent runtime backup.",
+  "files": [
+    {
+      "local_path": ".local/qa-s3-identities.json",
+      "bytes": 246,
+      "sha256": "638a8dcb77c3e5aef02c806c2cf49a1f40340471a1a8bee1ce6273337b057493"
+    },
+    {
+      "local_path": ".local/assistant_ui01-test-members.json",
+      "bytes": 266,
+      "sha256": "5f00819286365d6c30cf3ea874a738eb16a2c40bbc92d765210eab3fb080c35c"
+    },
+    {
+      "local_path": ".local/providers.env",
+      "bytes": 454,
+      "sha256": "b0adc847200416f8ec0f78520a36babecded02734017112f2d7dbc6df15b6f95"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-model_evaluate.env",
+      "bytes": 192,
+      "sha256": "544c759e1916d2f047ce0529a7dfa867cfa845fc6358e34f0945bbdee9039223"
+    },
+    {
+      "local_path": ".local/technical_scale01-init.env",
+      "bytes": 2969,
+      "sha256": "070a0f886c33f6ce9615168f55e7d6a2939a3a329fd7a564628f8bd57599d0e2"
+    },
+    {
+      "local_path": ".local/word_mainflow03-checks.env",
+      "bytes": 2208,
+      "sha256": "0d7b2f874a984cb83250e30d4b61ad4dd7ba6dfc8776ec2742577cf3c4afbf9d"
+    },
+    {
+      "local_path": ".local/word_intake01-model_evaluate.env",
+      "bytes": 178,
+      "sha256": "0441fdb0e874ce49c28d89d0635439ef3b7a956f311f4fe8322f01633bc3f20f"
+    },
+    {
+      "local_path": ".local/technical_scale01-model_score.env",
+      "bytes": 180,
+      "sha256": "9cdd5e219de2a66feecdc98c81d34aec35f76eaae6f912ee5f3574588607ab49"
+    },
+    {
+      "local_path": ".local/qa-process-consume.pid",
+      "bytes": 6,
+      "sha256": "e179f352539f88756b693914453d9dd70481bf6388e39447007c80a433a0f391"
+    },
+    {
+      "local_path": ".local/workbench08-model_evaluate.env",
+      "bytes": 174,
+      "sha256": "059dbbd4f03bf50c1c672c60b4fcdd923e5fec3918a13cb3659215ddebfcaa84"
+    },
+    {
+      "local_path": ".local/workbench08-init.env",
+      "bytes": 2659,
+      "sha256": "3ec805f1c553fdcdf832b1fcdd73d332f13334eab829420dad38917345d00a05"
+    },
+    {
+      "local_path": ".local/qa-test-members.json",
+      "bytes": 242,
+      "sha256": "597a46048051fdf3a178c102f9437452f708e672547c651f31d9a89ab1a2ed91"
+    },
+    {
+      "local_path": ".local/workbench08-model_train.env",
+      "bytes": 168,
+      "sha256": "0a48cf005411f0c0ea4aa7e46ba14159fe294abeeeee3c5d115679ec6b5e333f"
+    },
+    {
+      "local_path": ".local/authoring_complete01-model_evaluate.env",
+      "bytes": 192,
+      "sha256": "841a4e2e6e8aad21b6a32fb00cbb3d3132713506bd5b8bcaf69b2dfb391b4131"
+    },
+    {
+      "local_path": ".local/score_denominator01-model_train.env",
+      "bytes": 184,
+      "sha256": "786ce42ed0cc7bd98649998d8aa10e045a6735140beeb0a23554b55e723e942b"
+    },
+    {
+      "local_path": ".local/external.env",
+      "bytes": 1767,
+      "sha256": "d2502005e719586e114c468319faa2e37105f22263cac92a355a388be706dd55"
+    },
+    {
+      "local_path": ".local/app_composition02-model_train.env",
+      "bytes": 180,
+      "sha256": "a7091f8e163c66a9732e1e07cc860824540076a18e3fbdc972fa2bf2e115b482"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-model_train.env",
+      "bytes": 186,
+      "sha256": "4e3213ad7805791d2745aa2064097b6856e0b4b20da4ab7aa7979f86021e6232"
+    },
+    {
+      "local_path": ".local/assistant_ui01-control.json",
+      "bytes": 100,
+      "sha256": "701b9cbcac6200a3910b8552705973b4c8ff6c3286e9d2e84627e9fef1565f17"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-init.env",
+      "bytes": 2776,
+      "sha256": "2a0f48349b410b76ee179c51d1b7edfcfaf4673710cd615423de520f7e5feaa4"
+    },
+    {
+      "local_path": ".local/external-test-members.json",
+      "bytes": 166,
+      "sha256": "f5d018bc57057fbcfeb54ae1bcbf32bbe3409e0187b65f38d009ba67322298f6"
+    },
+    {
+      "local_path": ".local/knowledge_rag-checks.env",
+      "bytes": 2252,
+      "sha256": "45f955fed4d17569bd51c104daab0a06afef18ea5ea6d8e3e35dafa4c8c0184f"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev01.json",
+      "bytes": 2359,
+      "sha256": "2104564fd14d40fee00e8a0ccaa4d3ab6908645c3a3e1117d95f0af7a3d4d780"
+    },
+    {
+      "local_path": ".local/assistant01-bootstrap-receipt.json",
+      "bytes": 2053,
+      "sha256": "af7e395fc409a99f637787e3401e9fd8c728a57f472c7767e6f0eb4d7d0fefb2"
+    },
+    {
+      "local_path": ".local/model_release01-model_train.env",
+      "bytes": 176,
+      "sha256": "52cdfd6250c5f7a51f86fd70c684bed2bb3b55263187057eb3431e39e66d5778"
+    },
+    {
+      "local_path": ".local/authoring_rich01-model_score.env",
+      "bytes": 178,
+      "sha256": "e39f9ddfbce8f885a14a19a0654a1d7ddb785d1456cdc273d8a2643e781c2462"
+    },
+    {
+      "local_path": ".local/model_release01-bootstrap-receipt.json",
+      "bytes": 2359,
+      "sha256": "2059eb46d3846bce077e506c7d7180dddb3aa72049de52681e271ce709900176"
+    },
+    {
+      "local_path": ".local/authoring_complete01-checks.env",
+      "bytes": 2196,
+      "sha256": "dadd7bf52d78ae998624aabe86f5e2ffa2e05570b153f9f5689d58c0fa7b1272"
+    },
+    {
+      "local_path": ".local/combined_delivery01-model_train.env",
+      "bytes": 184,
+      "sha256": "6637212fb34bc752a20cd37664ca8ed26294963ce983ac17382200fedd65e12e"
+    },
+    {
+      "local_path": ".local/word_mainflow03-runtime.env",
+      "bytes": 2155,
+      "sha256": "49047af94b054f214413d08a079ab7907dc2b583dd5517c3514a9d74e4d76f0a"
+    },
+    {
+      "local_path": ".local/app_composition01-model_train.env",
+      "bytes": 180,
+      "sha256": "febc0b54bb486749dfcacd0eb24a6f8437103f81b7d54a5ebfac4826757a7da7"
+    },
+    {
+      "local_path": ".local/assistant_ui01-fixture.json",
+      "bytes": 1262,
+      "sha256": "f18d28f8b7a30c862aa92e6fe3a43c1697291a2e5942da06344821a9c22a7668"
+    },
+    {
+      "local_path": ".local/score_execution01-checks.env",
+      "bytes": 2224,
+      "sha256": "49915b4a941afff266e5f7ef17576ff7aa1c6acfb09ce28cd936cc36335659c3"
+    },
+    {
+      "local_path": ".local/tender-workbench-combined01-kafka.override.json",
+      "bytes": 82,
+      "sha256": "4fbcaff1acf2f7107cef089fbabf6e64515e8e88e8107cf05e23f25c978383e6"
+    },
+    {
+      "local_path": ".local/model_governance-init.env",
+      "bytes": 2474,
+      "sha256": "2bd9ea8f0cdf0e9ea20defd71b295c3f91af257ab58435187733051718d0e69a"
+    },
+    {
+      "local_path": ".local/multipart-initialization-candidates.jsonl",
+      "bytes": 12361,
+      "sha256": "c6ea0d3a79dcc98b979481fc1d4b52a385f7ab4762b1f021795c3e23486f96a4"
+    },
+    {
+      "local_path": ".local/score_denominator01-init.env",
+      "bytes": 2999,
+      "sha256": "b298accb20121b5355a4d77968494eaa31d025e8abfd28980dcda2e8beef2339"
+    },
+    {
+      "local_path": ".local/score_execution02-model_train.env",
+      "bytes": 180,
+      "sha256": "b89268d306556d5b122a7f55246a21d4df7b12efac2555a6100608a65105860f"
+    },
+    {
+      "local_path": ".local/app_composition01-model_evaluate.env",
+      "bytes": 186,
+      "sha256": "eabb84537e411b322eeb55df769ac663d21977a8db2d3867d1e7010956f295c7"
+    },
+    {
+      "local_path": ".local/qa-persistence.json",
+      "bytes": 947,
+      "sha256": "5d4e643b3a62c9f6895b63e40feb1667de11853e6fa18e242a23a37b9d28a52e"
+    },
+    {
+      "local_path": ".local/authoring_complete01-init.env",
+      "bytes": 2776,
+      "sha256": "cb3d1f9e5c3c4fdb5bfb0cca38dc8ec0c595c50e3aafe709e87c42857e6407db"
+    },
+    {
+      "local_path": ".local/app_composition02-checks.env",
+      "bytes": 2224,
+      "sha256": "d3d677436cda8201ea8fc9b511b45b0d2addbbd362cc71b78a4e86aa4a805129"
+    },
+    {
+      "local_path": ".local/qa.env",
+      "bytes": 1319,
+      "sha256": "0fb89a609895cc0349b8ef7fe1d2b1236fa00e08483147e92658a3cb694fee2f"
+    },
+    {
+      "local_path": ".local/research03-init.env",
+      "bytes": 2420,
+      "sha256": "13d68179874b3447e0775fdf9977d69bfd15f1e2d7a325b658e6ea5c8341fb6b"
+    },
+    {
+      "local_path": ".local/external-release.env",
+      "bytes": 2229,
+      "sha256": "b5572d8afd3e7cb94ac9f4a81a81c541f44c397c961040d5f7f764a5839206ff"
+    },
+    {
+      "local_path": ".local/score_execution01-model_evaluate.env",
+      "bytes": 186,
+      "sha256": "e28b83a28800008a8c3460d73006f07f4637395e12e5aa1d0e1b4d656ad63742"
+    },
+    {
+      "local_path": ".local/workbench08-bootstrap-receipt.json",
+      "bytes": 3287,
+      "sha256": "eab85d30e5a70338751b057ed4c9d8d90a4c8bb7609dc1ec89378fa8f62ce51f"
+    },
+    {
+      "local_path": ".local/authoring_complete01-model_train.env",
+      "bytes": 186,
+      "sha256": "067ba961862e881e259f721a376a24f1f819cc4e4951c50dc7723fb62c62b136"
+    },
+    {
+      "local_path": ".local/task_drafts01-checks.env",
+      "bytes": 2192,
+      "sha256": "7b0f68c0d64ae5669b00d25541139cb3843f390edb52868cf8865e21ad1f08b5"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev03.json",
+      "bytes": 2359,
+      "sha256": "8004483dc5524a85244ec080b9337573392715e0086fd12beaa3d47f8ea443b7"
+    },
+    {
+      "local_path": ".local/word-bridge-runtime-preview02-profile.json",
+      "bytes": 2416,
+      "sha256": "8f97a6a660cf06a6d4fdaeb6ba6c0d1b5027124e2db416c1c223fdc15fea4528"
+    },
+    {
+      "local_path": ".local/workbench08-test-members.json",
+      "bytes": 272,
+      "sha256": "84039a4260b4778439163f271482562b12ac88637e77b107fd70322433b4bc9b"
+    },
+    {
+      "local_path": ".local/word_intake01-bootstrap-receipt.json",
+      "bytes": 3150,
+      "sha256": "1040594a1e2101553bf224234f744a1f881b62bbb98682363b39156c724a1a8c"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-runtime.env",
+      "bytes": 2209,
+      "sha256": "9fbec205d2448ee40fe892c99c7bc6f06c0ded55c9c88dff1c5a3c3231ef7782"
+    },
+    {
+      "local_path": ".local/qa-persistence.cookies",
+      "bytes": 222,
+      "sha256": "b67068de0a14a600a529dbebc748bb887d6075bfeba760c2d3ec580b7bb2a870"
+    },
+    {
+      "local_path": ".local/task_drafts01-init.env",
+      "bytes": 2729,
+      "sha256": "6b2e2037924a3ebd588d8e275905d94b21e65d6dd806d79a5c85e84df7d19347"
+    },
+    {
+      "local_path": ".local/app_composition01-checks.env",
+      "bytes": 2224,
+      "sha256": "33cf42eb0ea2d8534f58ae20403fe8044793203fa2b9453c897476a5b38773c7"
+    },
+    {
+      "local_path": ".local/word-bridge-runtime-preview01-profile.json",
+      "bytes": 2413,
+      "sha256": "37b4b70b547d50d0ab494955d5e483196f79a52d2882c51038ffb8e3af230c0d"
+    },
+    {
+      "local_path": ".local/app_composition01-model_score.env",
+      "bytes": 180,
+      "sha256": "2f9aec1a4b5478b72a14b6b8f8790ddcceca786c6e009b9c457a63c2433a0119"
+    },
+    {
+      "local_path": ".local/app_composition02-model_evaluate.env",
+      "bytes": 186,
+      "sha256": "a50b0d234d36b2f86e8ad4c6b73d7feb0cff157794437742f244bb750794bbed"
+    },
+    {
+      "local_path": ".local/knowledge_rag-init.env",
+      "bytes": 2447,
+      "sha256": "82a851d1e599eeeed3c6c43114553d5d4477b64270c4968e240c4f9fb6bf6936"
+    },
+    {
+      "local_path": ".local/workbench08-checks.env",
+      "bytes": 2124,
+      "sha256": "bd7616e6916e53d507296fbd11563283c7e82653e646a123fd9287265ead0db8"
+    },
+    {
+      "local_path": ".local/s3-identities.json",
+      "bytes": 246,
+      "sha256": "5f072189fdb6c231f0447f4ed173cf01f336732167e2a3c2bb391c94b75ae484"
+    },
+    {
+      "local_path": ".local/task_drafts01-runtime.env",
+      "bytes": 2139,
+      "sha256": "cb4f003b4ee97ae91c88cc06f0c41479825c6feb405745c858d17dd88ba28d64"
+    },
+    {
+      "local_path": ".local/word_mainflow02-checks.env",
+      "bytes": 2208,
+      "sha256": "8e86c331deab090ff15f472d40543bf3bec477e6a7bb9ee983aa9f53ea100f92"
+    },
+    {
+      "local_path": ".local/model_release01-checks.env",
+      "bytes": 2156,
+      "sha256": "fb136960c7a3605a2dedb0dd68bfe43fa19957be20d2c7f4063cf71bdd5c690f"
+    },
+    {
+      "local_path": ".local/score_denominator01-model_score.env",
+      "bytes": 184,
+      "sha256": "f2d8745cc3fd7c0cf3024108428c30c3b9a08744bdfb06ed5d1171cce69dd454"
+    },
+    {
+      "local_path": ".local/score_execution02-runtime.env",
+      "bytes": 2171,
+      "sha256": "c6d27e1c54b6d520c59722707a77a3a2e55cfe40d2652232007f7089051d730b"
+    },
+    {
+      "local_path": ".local/technical_scale01-model_train.env",
+      "bytes": 180,
+      "sha256": "1cf3c2b7b554476417c39f2708bb01c3746f57ae6024529ecb0e42675b10489a"
+    },
+    {
+      "local_path": ".local/word_intake01-model_train.env",
+      "bytes": 172,
+      "sha256": "e34032053e03eba8620cab60595c8741c8bace6e54b6995e53bcc2acc03d7e45"
+    },
+    {
+      "local_path": ".local/provider-chat-guard.json",
+      "bytes": 98,
+      "sha256": "fd50c9b69f1b64f172ef4eb54a0e00eeba7464d46a078955a4f9ed647d72aebb"
+    },
+    {
+      "local_path": ".local/model-governance.env",
+      "bytes": 2620,
+      "sha256": "90375997e7f2008353ae671e738b62112771c11bb71da687a439421a4bab561b"
+    },
+    {
+      "local_path": ".local/score_execution02-model_score.env",
+      "bytes": 180,
+      "sha256": "2820ed31913968d4105564ff3dbc9276a13e60a30bc60b30d3b566ec9c67e6be"
+    },
+    {
+      "local_path": ".local/assistant_ui01-fixture04final.json",
+      "bytes": 1268,
+      "sha256": "7fdb7666fc87ea0919fdcbd4c4a68ecee986127f13c8cb945b65dada1db33955"
+    },
+    {
+      "local_path": ".local/assistant01-checks.env",
+      "bytes": 2124,
+      "sha256": "ffa9808f04920aef4852521baab22753aac7dd0d262ddb61a7dd86d77a6686c4"
+    },
+    {
+      "local_path": ".local/combined_delivery01-review-fixture.json",
+      "bytes": 2163,
+      "sha256": "91a89ab57d47985660016119aa97cfc2355cb52c5b47a10ce802c7f2a7162a06"
+    },
+    {
+      "local_path": ".local/word_mainflow02-init.env",
+      "bytes": 2747,
+      "sha256": "5930e2999ef6ee3be31d2befb993020daf2f3d3cacc9ecb03d96ce0bda353162"
+    },
+    {
+      "local_path": ".local/authoring_complete01-bootstrap-receipt.json",
+      "bytes": 3536,
+      "sha256": "2201ac32d92f28a608c0ba134c97d33918adad74d8b6bbd7b22d0bafad1033c9"
+    },
+    {
+      "local_path": ".local/score_denominator01-checks.env",
+      "bytes": 2240,
+      "sha256": "c4dd306d1bedcc083c85e30e4a1e465a56f2c96dc07cfb20b756e4cd48ac49c6"
+    },
+    {
+      "local_path": ".local/model_release01-init.env",
+      "bytes": 2711,
+      "sha256": "f76f49ad535f63f1e7357ca25d7f1046a06a31721e8df20f147985eb131ac929"
+    },
+    {
+      "local_path": ".local/word_mainflow02-runtime.env",
+      "bytes": 2155,
+      "sha256": "148567b0095ff5943deec7df164fb754a706348dbbfa507ccf857067b7841c86"
+    },
+    {
+      "local_path": ".local/assistant_ui01-init.env",
+      "bytes": 2738,
+      "sha256": "e383c68dc61740deb0453af7aff65ccae79172f143d07818fa5dc54f9ce148eb"
+    },
+    {
+      "local_path": ".local/combined_delivery01-model_evaluate.env",
+      "bytes": 190,
+      "sha256": "66044cad7199f71b13830aff7105aa7303eba0185f11012f405d8eb050d8b816"
+    },
+    {
+      "local_path": ".local/assistant_ui01-fixture04.json",
+      "bytes": 1262,
+      "sha256": "c1bbbcffff27a2c3eabef651d311058449e058f0c073b6f8df302e4f3fa33efd"
+    },
+    {
+      "local_path": ".local/authoring-page-static01-profile.json",
+      "bytes": 3235,
+      "sha256": "745713a97e53dcc4351bac0383101af76c1b65ad5d060e0c43add5231700e815"
+    },
+    {
+      "local_path": ".local/historical_input01-model_train.env",
+      "bytes": 182,
+      "sha256": "87fd2d918010cfc0e90271611946b5a2aa4ef5d22581dc2b82d18c35799d27ab"
+    },
+    {
+      "local_path": ".local/rag-checks.env",
+      "bytes": 1908,
+      "sha256": "9d0efcc2f55f4a5b94450315baef76af680afaff5b7b7c69c2bcbb6d61decdd6"
+    },
+    {
+      "local_path": ".local/model_governance02-checks.env",
+      "bytes": 2292,
+      "sha256": "8880cc8a89cb389b3637160a5be4ef487959b75526e75cc5e4f6b6a5f54d3315"
+    },
+    {
+      "local_path": ".local/technical_scale01-runtime.env",
+      "bytes": 2171,
+      "sha256": "6855d54b84c8937aa3e5059bd13cd2d57cdb0b784a4dd41a8c9694c0659ac603"
+    },
+    {
+      "local_path": ".local/parsing.env",
+      "bytes": 193,
+      "sha256": "6c5866c75bc415b3d4b2b25c9838f3873dffc43d791fee62cc5f0ef011966555"
+    },
+    {
+      "local_path": ".local/authoring_rich01-model_evaluate.env",
+      "bytes": 184,
+      "sha256": "d15f8fddd5dd436e920cc045028ce9b1a5164832d8cb03adc834a5ef15bea19f"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev04.json",
+      "bytes": 2359,
+      "sha256": "bdbb3500ddc30bafd0a1263a0e2e6bb148ec0d61ae5b2464797aa4d3c7f7d4f5"
+    },
+    {
+      "local_path": ".local/score_execution01-runtime.env",
+      "bytes": 2171,
+      "sha256": "07daae110237c0a45bb0994dd1553dec1d5ccd5a3ef0aff9b7dad5e7242d62ff"
+    },
+    {
+      "local_path": ".local/score_denominator01-runtime.env",
+      "bytes": 2187,
+      "sha256": "114211b6a412494674b987dc0ce5084a8f2efabf4a167ab378ed8400a5306eec"
+    },
+    {
+      "local_path": ".local/qa-process-reconcile.pid",
+      "bytes": 6,
+      "sha256": "6b67c21f02c02dc03133771080ca0dafcdcf79aa54f6fcc62a90209fa864335a"
+    },
+    {
+      "local_path": ".local/authoring_rich01-runtime.env",
+      "bytes": 2163,
+      "sha256": "bb6ff56721f11bbb24636fb4fc687fbce87cae8b67c1e1d2adb0d6e1942d26bd"
+    },
+    {
+      "local_path": ".local/kafka-app02-server.properties",
+      "bytes": 737,
+      "sha256": "820e9326afc4900a6a45c0cb29fc482e5bbbabe88cfc34d969706a4b9b50befc"
+    },
+    {
+      "local_path": ".local/word_mainflow03-init.env",
+      "bytes": 2747,
+      "sha256": "c67e71a013b06b6222c54eaead78d3804a0c11777c34cbfccdacb24421cbd113"
+    },
+    {
+      "local_path": ".local/assistant01-init.env",
+      "bytes": 2317,
+      "sha256": "044fcb80381b58e0ee9caf9195ba838473e8499b36e5cd4d84fa13b4b07bbe08"
+    },
+    {
+      "local_path": ".local/combined_delivery01-test-members.json",
+      "bytes": 278,
+      "sha256": "835b91d36e794c38a6f04a8f1120304578df25cc92506ce6f6c19068c896790e"
+    },
+    {
+      "local_path": ".local/score_execution01-model_score.env",
+      "bytes": 180,
+      "sha256": "a0a797ad0174e36c2a060b6a8b2ee188c3163248b77d748581247a1abc9406eb"
+    },
+    {
+      "local_path": ".local/combined_delivery01-init.env",
+      "bytes": 2904,
+      "sha256": "6f123b0e777e2c03b1db5e6cbe8e761d126e1a97fe37c88b671a1ad389511b44"
+    },
+    {
+      "local_path": ".local/app_composition02-runtime.env",
+      "bytes": 2171,
+      "sha256": "beb747c940e7795d1577ecc8e9fb04babf53f50d5d5670c35a1827471d78eed9"
+    },
+    {
+      "local_path": ".local/kafka-app02-server.log",
+      "bytes": 155647,
+      "sha256": "0e64f4346c6ec7d9617a7bae51c87f9e63a39e97b18f1f4d46590e1a08dd8f2a"
+    },
+    {
+      "local_path": ".local/historical_input02-checks.env",
+      "bytes": 2180,
+      "sha256": "da54820acbd1f7120b46211fc659bcfd4b8fe25c20a36a64fee5501a437c509d"
+    },
+    {
+      "local_path": ".local/app_composition01-runtime.env",
+      "bytes": 2171,
+      "sha256": "e068b139873253f05f9df5bad789a280d43416b9ba862dbed48a493b49838f19"
+    },
+    {
+      "local_path": ".local/score_execution02-init.env",
+      "bytes": 2969,
+      "sha256": "d0fda854479ca82a321204d12d59d1e07249ed77d6d3ec76f477d5820590860e"
+    },
+    {
+      "local_path": ".local/score_denominator01-model_evaluate.env",
+      "bytes": 190,
+      "sha256": "1d24e8d481106f7bca4befa9812b45f5c3411de789956b44c1bf2efeb963eafa"
+    },
+    {
+      "local_path": ".local/assistant_ui01-checks.env",
+      "bytes": 2200,
+      "sha256": "330e7bbc10340461b28f27ac0f8b425ce45e5cf5f629b64e733ac571b07f86ba"
+    },
+    {
+      "local_path": ".local/authoring_rich01-checks.env",
+      "bytes": 2216,
+      "sha256": "d0f2ba70fcd2abf16f197ac5ae842efa56beb42aa1d5a90ad1174e6c3dd51f95"
+    },
+    {
+      "local_path": ".local/qa-process-api.pid",
+      "bytes": 6,
+      "sha256": "25281f29ea88c7c96d1de9a550cf94baa65c94304c9de4f6e50678e16b7d0a0e"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev02.json",
+      "bytes": 2359,
+      "sha256": "052064c9de0b1e56f25ad97f2441679e36f7f44001aecabb5798e88f387ceea2"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev06.json",
+      "bytes": 2359,
+      "sha256": "7faf2b4bf4a1099404b07d7bdcc6d8dc1f7d4bf6724a38fb87e7543bd24588da"
+    },
+    {
+      "local_path": ".local/workbench08-runtime.env",
+      "bytes": 2137,
+      "sha256": "d4792c4ddfbcc322f74a6726108c254dc9d7f4e978c875934b29982cc27b99c3"
+    },
+    {
+      "local_path": ".local/word_intake01-checks.env",
+      "bytes": 2140,
+      "sha256": "0c18ec3c42a79cc6e080d76b7c88102fc42b0811f0a158a1b60aae5d0ed4a77b"
+    },
+    {
+      "local_path": ".local/score_execution01-init.env",
+      "bytes": 2969,
+      "sha256": "bd41dc52a9ae958d36f2d1d7bea820c110adf9ba1e64c89ffaf62b7ed657ddb5"
+    },
+    {
+      "local_path": ".local/historical_input02-model_evaluate.env",
+      "bytes": 188,
+      "sha256": "e1215be014487c1e32b7d32a685df83b588bf537735e276def9e07a23eba1f72"
+    },
+    {
+      "local_path": ".local/qa-process-relay.pid",
+      "bytes": 6,
+      "sha256": "e6c474ecc2d3dbcf17ee2e273608756ef087d3239552454b02ab8858dc08019f"
+    },
+    {
+      "local_path": ".local/backend-checks.env",
+      "bytes": 1269,
+      "sha256": "60de491806ad96ccf4ad532bd6fdc82a1cf7dfcd7186b89c08b3f408a6d6be30"
+    },
+    {
+      "local_path": ".local/dev-access.json",
+      "bytes": 146,
+      "sha256": "174f6ef859bdf5f95202a1163dec05540e4c84ba2da85a873435cbbfacc6dc30"
+    },
+    {
+      "local_path": ".local/word-render-profile-dev05.json",
+      "bytes": 2359,
+      "sha256": "43d253195e39dfe330997483cb787be4f7d4f88415b7fb8acac249eafb6b3056"
+    },
+    {
+      "local_path": ".local/combined_delivery01-checks.env",
+      "bytes": 2329,
+      "sha256": "49f3d567b9ca6b129138c9f999af631205bc8bda5341a37397fcb7a15b492194"
+    },
+    {
+      "local_path": ".local/score_execution01-model_train.env",
+      "bytes": 180,
+      "sha256": "6b7e05497f047ade1f256a0dc477b359654c9d721a0d6ff745ef56060a9dbdd1"
+    },
+    {
+      "local_path": ".local/model_governance02-init.env",
+      "bytes": 2492,
+      "sha256": "4f95e62ce985d18d4957aabde85b6f5eac03d6504b499183c62a958e9a35fff9"
+    },
+    {
+      "local_path": ".local/model_release01-model_evaluate.env",
+      "bytes": 182,
+      "sha256": "e854e720d9cbd0cb30efa0ab8832eefcb2f59552b35b4a335883749bf16e8e41"
+    },
+    {
+      "local_path": ".local/authoring_rich01-model_train.env",
+      "bytes": 178,
+      "sha256": "630f5e01f84090d5efc3cbc1ac7f3d9c83a0c90354d02ef7d5a96b5789178144"
+    },
+    {
+      "local_path": ".local/assistant_ui01-runtime.env",
+      "bytes": 2043,
+      "sha256": "372f1172c7c5c3e37a5334af54618882cf92c79a6f33beb7725392986ee8574e"
+    },
+    {
+      "local_path": ".local/score_execution02-checks.env",
+      "bytes": 2224,
+      "sha256": "dd566a1ef5269a5194838510c649cc861b755ac4de90703a23789ae5ac340f17"
+    },
+    {
+      "local_path": ".local/technical_scale01-model_evaluate.env",
+      "bytes": 186,
+      "sha256": "e9dc820dbf62b79c73486483ea455478e7994d263d805602a9ce8e2c1726a32f"
+    },
+    {
+      "local_path": ".local/research03-checks.env",
+      "bytes": 2228,
+      "sha256": "44a7e503236dd4213f4bff6e283c7cc191c6f51b8978e87290952d77710269a2"
+    },
+    {
+      "local_path": ".local/app_composition02-model_score.env",
+      "bytes": 180,
+      "sha256": "99cc819654595d8e86cb91c2b1cd900289b939cb06b94413f9bb29ef95ef97d8"
+    },
+    {
+      "local_path": ".local/app_composition01-init.env",
+      "bytes": 2969,
+      "sha256": "be09884020ab40a7a514d608307d2129d15c4fc94652af02b2c449c19df970a2"
+    },
+    {
+      "local_path": ".local/assistant_ui01-fixture05.json",
+      "bytes": 1262,
+      "sha256": "8de855070737f3385af5a59536397b630e6b390973940927bb91846cba7634e8"
+    },
+    {
+      "local_path": ".local/authoring_rich01-init.env",
+      "bytes": 2954,
+      "sha256": "74f20cced791b51dcf8edbb5c66b7d328c45b79e03212d7dbac5a715eaa44d5c"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-bootstrap-receipt.json",
+      "bytes": 3082,
+      "sha256": "f33235c519ab75d0f80769936da99c0b76f3fafdcbf82de2b0694d0577a9d636"
+    },
+    {
+      "local_path": ".local/research-source-checks.env",
+      "bytes": 2098,
+      "sha256": "8e23c64868bbed7cc95cafd1c6d0130f6edb1f5c507174be29f7d9f7589b0052"
+    },
+    {
+      "local_path": ".local/delivery_protocols01-checks.env",
+      "bytes": 2196,
+      "sha256": "8ea8023c3767ab53b869a962a3ea98cc3143a7dc46ccbfa24343129da86e1f5d"
+    },
+    {
+      "local_path": ".local/historical_input01-model_evaluate.env",
+      "bytes": 188,
+      "sha256": "a17ebe378701b08608c8d27f492c1b6310c8c211fc00ede6c4bc1a163c57b641"
+    },
+    {
+      "local_path": ".local/historical_input02-bootstrap-receipt.json",
+      "bytes": 3364,
+      "sha256": "9cfe71ff18ded940dac08ed3fb942f82099a169b177cac4eea79a036ea1d93df"
+    },
+    {
+      "local_path": ".local/word_intake01-init.env",
+      "bytes": 2685,
+      "sha256": "41fda26a6ae68e90c5a244e507ff9c5329afe2c68ab0b5a37f140a64cb459d35"
+    },
+    {
+      "local_path": ".local/historical_input01-bootstrap-receipt.json",
+      "bytes": 3364,
+      "sha256": "5b33d8daa4ca01b6db576b3ecaf756cfbe5df5d1e5308564d44102d01e6f6d75"
+    },
+    {
+      "local_path": ".local/object-transfer-temporary-keys.jsonl",
+      "bytes": 97399,
+      "sha256": "8163eb8f205889bc968574f826001ba790c172b26cbbbf3129c2472f832ff36a"
+    },
+    {
+      "local_path": ".local/research-source-init.env",
+      "bytes": 2288,
+      "sha256": "dd792baa1ba8c50a804746dd25d86f61550b41db28810e0fb6cd331c8a2d1074"
+    },
+    {
+      "local_path": ".local/historical_input01-checks.env",
+      "bytes": 2180,
+      "sha256": "99813ccde1d2d78d1f6ff91eda38bf6871e91c8ed13a48902d90ed52661e9112"
+    },
+    {
+      "local_path": ".local/score_execution02-model_evaluate.env",
+      "bytes": 186,
+      "sha256": "032fbbf2a45c1dffdc15b972ceec4b3476c4289c78281bef7f762a75c36ba7b9"
+    },
+    {
+      "local_path": ".local/historical_input02-model_train.env",
+      "bytes": 182,
+      "sha256": "6549fcf111ae4b4c8b0718f286ca54e6c8742762662714eb9a9f0e1be7a1dba1"
+    },
+    {
+      "local_path": ".local/historical_input01-init.env",
+      "bytes": 2750,
+      "sha256": "631eb845a83f66eed68827acc568146efdbc72271fb43db7297f62f63586eacc"
+    },
+    {
+      "local_path": ".local/app_composition02-init.env",
+      "bytes": 2969,
+      "sha256": "a2d0c463bcfa8ba8e45cab677f5254ce4d0ac0ae1c51895bf4c2bcc2610e7215"
+    },
+    {
+      "local_path": ".local/technical_scale01-checks.env",
+      "bytes": 2224,
+      "sha256": "279272deb1148b7dcccf9734fe8f61a49620f4a61c11f8ec172e5827b2f94f45"
+    },
+    {
+      "local_path": ".local/historical_input02-init.env",
+      "bytes": 2750,
+      "sha256": "4fe3f4072afdb1a6b0a49c4a7e6e4933ef72c82dd27640c0041ed12ad3c01a0a"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/park-results.json",
+      "bytes": 2293,
+      "sha256": "3298939c6b0d7002b85e3ad5f735f9a810d88446339b6a7665171987ea80cce4"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/restore-plan.json",
+      "bytes": 1700,
+      "sha256": "c8398652bf4ac89e759a30ea2d9eaa60835af5ee9ce3ac1f23f12a4dde5e6bea"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/original-inspect.json",
+      "bytes": 9237,
+      "sha256": "c97cc22e41603225bca0322235df3fdb73ea5cfcac69c1f5a929934143aec8c5"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/bound-identities.json",
+      "bytes": 246,
+      "sha256": "5f072189fdb6c231f0447f4ed173cf01f336732167e2a3c2bb391c94b75ae484"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/original-volume.json",
+      "bytes": 504,
+      "sha256": "1b53f576575a467c9fcece4a920f560c07fee57a94a13d84e34cedb987798294"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/restore-create-payload.json",
+      "bytes": 5383,
+      "sha256": "ee036365b8324df1e438f2f4c49331e69c26530d72492a014770f3552d950d5a"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/container-rootfs.tar.gz",
+      "bytes": 65642837,
+      "sha256": "7d736be0f6bfe20aa94e9e5cd9d99be9542656565dc2a9db57ab141339225bf0"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/stopped-inspect.json",
+      "bytes": 8739,
+      "sha256": "d24c452bc8fadc77b877ef70f2b5eb275697127b923ae98d8479554f19879e8f"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/park-result.json",
+      "bytes": 1108,
+      "sha256": "467eb3946a937790f40dd601c5cb706dc3c7273e288fe1423df8d40df74be2fb"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-dev-object-store-1/resume-readback.json",
+      "bytes": 348,
+      "sha256": "83975bb91408b25f1846b5a0a302304beb14cc0f443ac3f89a04f0b49ced780d"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/original-inspect.json",
+      "bytes": 9243,
+      "sha256": "48dc39e20fa9ff1c87d7aa136494498b2b1d711bb6b0653d1436b716c7799f9c"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/bound-identities.json",
+      "bytes": 246,
+      "sha256": "638a8dcb77c3e5aef02c806c2cf49a1f40340471a1a8bee1ce6273337b057493"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/original-volume.json",
+      "bytes": 501,
+      "sha256": "c5e2c31f81ff3f0bc78a0e8a81a9841f65bd3fb2ac7ebf30cb97d5de977410e2"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/rootfs-diff.txt",
+      "bytes": 130,
+      "sha256": "8dc5e78cc2cd8b12f663e14e56dc172735b64525a31649ef80ac0f4e173008ca"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/restore-create-payload.json",
+      "bytes": 5390,
+      "sha256": "c9d247efb3528fbbd7b769b87c7137468d1f63f824e8277d063c7c01b313fda9"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/container-rootfs.tar.gz",
+      "bytes": 65642869,
+      "sha256": "af179e584b444c8e45c93ce5c59f9de42539f804466f220f9115e9f864c1f79f"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/stopped-inspect.json",
+      "bytes": 8744,
+      "sha256": "0ed2cdbabfe4c6d4764c9f24d19d0f2c51d588c9682c8adac228a396ed9cd2b0"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/park-result.json",
+      "bytes": 1104,
+      "sha256": "d709fe39451c5c601cf65632060c01509b7a7c4e10a5acbf1810710cfa09c55c"
+    },
+    {
+      "local_path": ".local/parked-early-object-stores01/tender-workbench-qa-object-store-1/resume-readback.json",
+      "bytes": 348,
+      "sha256": "efcc04c6def3b8a7326f9a1589ec1c99f1ca394ae6efc0ba58cbaee6b6307519"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/prepared.json",
+      "bytes": 7700,
+      "sha256": "b7d42e63224b744146e7e3f52393c3a21e6542f0e0c586cbb247e6642cf014bd"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/backups/run.py",
+      "bytes": 17696,
+      "sha256": "a64c40a64271c62210b072b95bfad69b123169e6b7808c00d51d181ae1497604"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/backups/generic.py",
+      "bytes": 18528,
+      "sha256": "5307f1cb06a8f1fcceabc7e66c3cc797110adc9ded4461af49b3192d6949021f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/archive.py",
+      "bytes": 17483,
+      "sha256": "47b1810034a6e4f205df7379dc699a9a92b7fe131e38842dde5a300e820f3ea6"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/seed_retry.py",
+      "bytes": 3730,
+      "sha256": "a94fff1dc29bc9908fba93b79daa25b2a4d93b8391bb928235cf3ad114a2a86c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/runtime_child.py",
+      "bytes": 1347,
+      "sha256": "5f3b0837f266caf80aa0e890b40316f69c75a3f8e554f63c299a97a9bcd96eff"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/security.py",
+      "bytes": 8901,
+      "sha256": "dd29109059060f463fbe9a69264bc9b0472bc2d0659baa3cdc536816d8d7fb8f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/binding.py",
+      "bytes": 5780,
+      "sha256": "7bef1c064ca49b9fa1d7230757dcf23bce6a015a093edff3805f3c4226a43a7d"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/application.py",
+      "bytes": 13879,
+      "sha256": "fad526efb5819653cd210d7b00924210dc5a2193948cd5fafbbfd4edea6901ec"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/definition_equivalence.py",
+      "bytes": 1111,
+      "sha256": "1581e1b04c75bf1c5225c893a153aabae7320e5002ddcbc640fd6127d916dcca"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/cluster.py",
+      "bytes": 17501,
+      "sha256": "23d9d55c03c4e1ad2f1488407a9a139949d6e4a9f43195ff1c6cb509e9462713"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/fixture.py",
+      "bytes": 13521,
+      "sha256": "9ed445eb82e84c9769bad68624f6bcfe33e062493832af91ef11f28ebb880bcf"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/probes.py",
+      "bytes": 2990,
+      "sha256": "502913ec58fab64549099712f632e8fe31f7d9c49778da3521004de0545a381e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/assets.py",
+      "bytes": 4346,
+      "sha256": "c2943d06b95101229a6a662ece9682ef003e56720f8ee381e2a7c16e2a549e5b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/__init__.py",
+      "bytes": 90,
+      "sha256": "e4d465414abbe571ccc96c65d27f7ab0e4352ad53dbfd876cdd4e2c3eefa92d5"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/deploy/application_recovery/__main__.py",
+      "bytes": 9221,
+      "sha256": "d4f45c5f50475a56e319d96a0299f0975a67a7e65b64dbf28d6862b8baeda192"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/database.dump",
+      "bytes": 852503,
+      "sha256": "6d568c5730a85cbf1dbf25406fd9fb1070cfc28b48c5b70acde5d87cb7ee3146"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/manifest.sha256",
+      "bytes": 64,
+      "sha256": "b583ab250f68c7d71465bfe56d2bc542238e8a1a60945886c1ea330d8c0936db"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/manifest.json",
+      "bytes": 999957,
+      "sha256": "ccacb97792be19b157748580a71b0c8e4f891e249556aa3d8dcad1511598358b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/3ab792a8-c6de-434e-acc0-b92a50ca2bb1.bin",
+      "bytes": 36,
+      "sha256": "efa9c6d25c1caea32fd571d41337af057f305059e94decd2f14eefd39d54c306"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/1b2e45e3-353f-4f5c-a9cb-7f3f1f9b6506.bin",
+      "bytes": 53,
+      "sha256": "38cdaf368344075a95b6ec10bd89e6a7abfd5278556305e5457562e9db01caee"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/d8056b89-9ceb-4b9c-9db0-fe25a62eee32.bin",
+      "bytes": 56,
+      "sha256": "595a130a587e3d01284a00ee14782d80d9175fcf6b82f8c589c32812a261a5e4"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/55256cda-6634-4edc-a2b8-86bc6be1a591.bin",
+      "bytes": 40,
+      "sha256": "82072b7bfc888d6bc5d7faac5fc50dfe2d4bd7edc32dbc183fb83ba6aa19163e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/b9370b3c-d941-42a8-bc28-b77cedc85010.bin",
+      "bytes": 43,
+      "sha256": "9803d3f74b11b0885a9672655b34cdcffb97d375b0d5a386316724f19682b43c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/784e0aad-0df5-4f5f-a085-22c6f098a461.bin",
+      "bytes": 43,
+      "sha256": "ea4e9101d0035f9e8b5285edc3997820f6f60c388b850afe987ee149624e255a"
+    },
+    {
+      "local_path": ".local/qa-recovery05-1909d6d8fc8440eeaab9316b4203370e/.local/backups/application/single-target-1909d6d8fc8440eeaab9316b4203370e/archive/objects/0b290532-d4dc-4f39-adc4-3e8e369d17d7.bin",
+      "bytes": 51,
+      "sha256": "4699b9216dcf63a3f04850f28237be3ad262db97060fc3c0261afbcda60071bc"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/prepared.json",
+      "bytes": 7700,
+      "sha256": "3ca8de5f3490ac1e204d6a6040003d21ebbd8b95d3d1cfc26bd5739a7a044a84"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/backups/run.py",
+      "bytes": 17696,
+      "sha256": "a64c40a64271c62210b072b95bfad69b123169e6b7808c00d51d181ae1497604"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/backups/generic.py",
+      "bytes": 18528,
+      "sha256": "5307f1cb06a8f1fcceabc7e66c3cc797110adc9ded4461af49b3192d6949021f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/archive.py",
+      "bytes": 17483,
+      "sha256": "47b1810034a6e4f205df7379dc699a9a92b7fe131e38842dde5a300e820f3ea6"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/seed_retry.py",
+      "bytes": 3730,
+      "sha256": "a94fff1dc29bc9908fba93b79daa25b2a4d93b8391bb928235cf3ad114a2a86c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/runtime_child.py",
+      "bytes": 1347,
+      "sha256": "5f3b0837f266caf80aa0e890b40316f69c75a3f8e554f63c299a97a9bcd96eff"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/security.py",
+      "bytes": 8901,
+      "sha256": "dd29109059060f463fbe9a69264bc9b0472bc2d0659baa3cdc536816d8d7fb8f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/binding.py",
+      "bytes": 5780,
+      "sha256": "7bef1c064ca49b9fa1d7230757dcf23bce6a015a093edff3805f3c4226a43a7d"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/application.py",
+      "bytes": 13879,
+      "sha256": "fad526efb5819653cd210d7b00924210dc5a2193948cd5fafbbfd4edea6901ec"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/definition_equivalence.py",
+      "bytes": 1111,
+      "sha256": "1581e1b04c75bf1c5225c893a153aabae7320e5002ddcbc640fd6127d916dcca"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/cluster.py",
+      "bytes": 17501,
+      "sha256": "23d9d55c03c4e1ad2f1488407a9a139949d6e4a9f43195ff1c6cb509e9462713"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/fixture.py",
+      "bytes": 13521,
+      "sha256": "9ed445eb82e84c9769bad68624f6bcfe33e062493832af91ef11f28ebb880bcf"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/probes.py",
+      "bytes": 2990,
+      "sha256": "502913ec58fab64549099712f632e8fe31f7d9c49778da3521004de0545a381e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/assets.py",
+      "bytes": 4346,
+      "sha256": "c2943d06b95101229a6a662ece9682ef003e56720f8ee381e2a7c16e2a549e5b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/__init__.py",
+      "bytes": 90,
+      "sha256": "e4d465414abbe571ccc96c65d27f7ab0e4352ad53dbfd876cdd4e2c3eefa92d5"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/deploy/application_recovery/__main__.py",
+      "bytes": 9221,
+      "sha256": "d4f45c5f50475a56e319d96a0299f0975a67a7e65b64dbf28d6862b8baeda192"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/database.dump",
+      "bytes": 852503,
+      "sha256": "6d568c5730a85cbf1dbf25406fd9fb1070cfc28b48c5b70acde5d87cb7ee3146"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/manifest.sha256",
+      "bytes": 64,
+      "sha256": "b583ab250f68c7d71465bfe56d2bc542238e8a1a60945886c1ea330d8c0936db"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/manifest.json",
+      "bytes": 999957,
+      "sha256": "ccacb97792be19b157748580a71b0c8e4f891e249556aa3d8dcad1511598358b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/3ab792a8-c6de-434e-acc0-b92a50ca2bb1.bin",
+      "bytes": 36,
+      "sha256": "efa9c6d25c1caea32fd571d41337af057f305059e94decd2f14eefd39d54c306"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/1b2e45e3-353f-4f5c-a9cb-7f3f1f9b6506.bin",
+      "bytes": 53,
+      "sha256": "38cdaf368344075a95b6ec10bd89e6a7abfd5278556305e5457562e9db01caee"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/d8056b89-9ceb-4b9c-9db0-fe25a62eee32.bin",
+      "bytes": 56,
+      "sha256": "595a130a587e3d01284a00ee14782d80d9175fcf6b82f8c589c32812a261a5e4"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/55256cda-6634-4edc-a2b8-86bc6be1a591.bin",
+      "bytes": 40,
+      "sha256": "82072b7bfc888d6bc5d7faac5fc50dfe2d4bd7edc32dbc183fb83ba6aa19163e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/b9370b3c-d941-42a8-bc28-b77cedc85010.bin",
+      "bytes": 43,
+      "sha256": "9803d3f74b11b0885a9672655b34cdcffb97d375b0d5a386316724f19682b43c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/784e0aad-0df5-4f5f-a085-22c6f098a461.bin",
+      "bytes": 43,
+      "sha256": "ea4e9101d0035f9e8b5285edc3997820f6f60c388b850afe987ee149624e255a"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/single-target-ea8eb4ed0a5945ac920e75620ea2717e/archive/objects/0b290532-d4dc-4f39-adc4-3e8e369d17d7.bin",
+      "bytes": 51,
+      "sha256": "4699b9216dcf63a3f04850f28237be3ad262db97060fc3c0261afbcda60071bc"
+    },
+    {
+      "local_path": ".local/qa-recovery05-ea8eb4ed0a5945ac920e75620ea2717e/.local/backups/application/db-only-abc9d774ce4846348bddcac10dcb57c4/prepared.json",
+      "bytes": 1361,
+      "sha256": "0c341fca67f90577e09b781df58ffc848eeb1127e55fbb74b8cf31f20548ccc2"
+    },
+    {
+      "local_path": ".local/backups/restore-diagnostic-private.txt",
+      "bytes": 463,
+      "sha256": "28f4b0267703128210194ae1c3985f2ed6344a6dcc7de495ad69ead3d2565e7b"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/database.dump",
+      "bytes": 383927,
+      "sha256": "73ee1a68b93e2d7905a3eda082f97de1cd9ca143c0dce011836ee39a90c485e7"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/manifest.sha256",
+      "bytes": 64,
+      "sha256": "b196707415dafd064dc1826cd1e41acb499676332cfa976ad61ef3fb321adf1f"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/manifest.json",
+      "bytes": 16155,
+      "sha256": "d13dee27eaef20c63f879fbcb8fa774e9e71868ed843259b5cc02b601dc86623"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/objects/274bbfa9-d577-4fa5-ad86-6f7f77a156ab.bin",
+      "bytes": 635,
+      "sha256": "cf608d052c714dc8ee3e6ece62b55a2b31eb2e3ba619317ee3d61f739e84f575"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/objects/690a65af-a385-4378-a868-b20bb79f4bd4.bin",
+      "bytes": 1320,
+      "sha256": "b5842284843d3d3769ceb7d2e9caf5e820f7388335f223f55cc7156da3c2c22a"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-01/objects/268be0e1-3f00-4702-ab21-3581971bc9f6.bin",
+      "bytes": 645,
+      "sha256": "b2afa5af67bb0b9e03a87e7043aec1136d7fc6a12c6f75811eec87d49ee2e437"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/restore-d9e937ace777459d99d599f83f37c05b.json",
+      "bytes": 591,
+      "sha256": "fd8662f8360a2bffa0e487f2bbdcfb8469b8db4dac4c33546f5a8c2c0c88af18"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/database.dump",
+      "bytes": 425976,
+      "sha256": "14d34215ace5125dc681de558d799f69be59f6e125bc016e0a37888d0aaf4ecd"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/manifest.sha256",
+      "bytes": 64,
+      "sha256": "02acd5243c62f889a45e4a40c503390b7fb34d00759a1094f47fd70fd700228e"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/manifest.json",
+      "bytes": 16155,
+      "sha256": "5b111b053b7d11fb8427a6b59bee127f97ad18b48e23327eb76eed03dcaabbca"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/objects/274bbfa9-d577-4fa5-ad86-6f7f77a156ab.bin",
+      "bytes": 635,
+      "sha256": "cf608d052c714dc8ee3e6ece62b55a2b31eb2e3ba619317ee3d61f739e84f575"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/objects/690a65af-a385-4378-a868-b20bb79f4bd4.bin",
+      "bytes": 1320,
+      "sha256": "b5842284843d3d3769ceb7d2e9caf5e820f7388335f223f55cc7156da3c2c22a"
+    },
+    {
+      "local_path": ".local/backups/external-release-drill-02/objects/268be0e1-3f00-4702-ab21-3581971bc9f6.bin",
+      "bytes": 645,
+      "sha256": "b2afa5af67bb0b9e03a87e7043aec1136d7fc6a12c6f75811eec87d49ee2e437"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/restore-86e87b0dcf984d41b72e7ff2e315fa5b.json",
+      "bytes": 971,
+      "sha256": "a35194e24add3b1963973eaaa949e56f1afac5ccfb590447c0340ee5e6ec1746"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/future-schema-proof.json",
+      "bytes": 1364,
+      "sha256": "21144f313e6797e37f8fc7ef7bf9dd70e09a3434e436d13fcb403a3d9736888f"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/database.dump",
+      "bytes": 385125,
+      "sha256": "66e33b6df5556f7cf2909200688e0d5e37b309e434726c8b84a154aca0dad288"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/manifest.sha256",
+      "bytes": 64,
+      "sha256": "639029624c6b564facc057f71ed37513110fd9a2f38262d75283834eadc366cd"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/attempt-86e87b0dcf984d41b72e7ff2e315fa5b.json",
+      "bytes": 154,
+      "sha256": "c6c65fd6d0b4501530b184d49be95f87304bb1e9298f0880e7942119d2a7210d"
+    },
+    {
+      "local_path": ".local/backups/future-schema-14ae7051b64b4111a1f751f6f1d602fa/manifest.json",
+      "bytes": 31356,
+      "sha256": "96c3a20b1f2d8d74d1f1f2fa71be4b18380795776d4132104983e6c7365c93c7"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/restore-1575af8684b040469ec2190589193bd8.json",
+      "bytes": 993,
+      "sha256": "5878d68b3011828c9e4458de74a7dabad449bef86ad885319773ee3e72a0d199"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/future-schema-proof.json",
+      "bytes": 1569,
+      "sha256": "e3898c7a11a12a7ddec4aa6eb45e08d1d35287c32a4da182568b4a6bfc8f209c"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/database.dump",
+      "bytes": 386862,
+      "sha256": "ea272d1daf7426640b80ccb6c90c76717b6cfcd7936a284c5f0e1f878019471a"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/manifest.sha256",
+      "bytes": 64,
+      "sha256": "9cafa6396c4bf87878a509d93b269f32cd65448058a75182f826b50752c3f4b9"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/manifest.json",
+      "bytes": 31679,
+      "sha256": "ac6ff18c08a950568e4830b9b0e033b24049a8109030762835ee759804475daa"
+    },
+    {
+      "local_path": ".local/backups/future-schema-a3a31e9f766941468a619d11b6741f75/attempt-1575af8684b040469ec2190589193bd8.json",
+      "bytes": 154,
+      "sha256": "7ab1dbd77e5bcc309020a56c37138e95feba9d5edc9fcd0dc7ed8aed7f974ecf"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/attempt-c6a05f074022484d83f3121b6bcf07c3.json",
+      "bytes": 154,
+      "sha256": "0f80d4e7a4e3aa044ce0272a216dce8e3e690aa40655fdbeb81adda72f2aec44"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/restore-c6a05f074022484d83f3121b6bcf07c3.json",
+      "bytes": 993,
+      "sha256": "222fdcaf7676840d00e352889165d562d1828c68b2b98747b72e90a4a94dda9f"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/future-schema-proof.json",
+      "bytes": 1569,
+      "sha256": "949b799e6fa521b1bbc133892c3be24e74dc5ec42364b00d1e825d95768f2c62"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/database.dump",
+      "bytes": 386862,
+      "sha256": "dd0e1e1c8f42148a71f567f16715fb60b23d56e667da57c468d6645c0fb7b381"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/manifest.sha256",
+      "bytes": 64,
+      "sha256": "4851100c79725f19d9175cd318b7c6c5e1cf6420aabc2da980eb23e6de20818e"
+    },
+    {
+      "local_path": ".local/backups/future-schema-bf88b5ac81d641b0b60788c90e4b16e3/manifest.json",
+      "bytes": 31679,
+      "sha256": "a503c2f1e57a461e30a46fa62b5e996218a76f9a3c556b3829e48086e3ae7671"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/concurrency-proof.json",
+      "bytes": 809,
+      "sha256": "0016738809cc7dfda92a0184c764971a6e681a238cbe016fe556b8586889edb5"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/restore-db1df2f8c5e74df8b633446ba65365e8.json",
+      "bytes": 657,
+      "sha256": "45b4dd605bf930d4cfa732c9dda1c0b7b4aaa958c4f1aa254740c1312566f364"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/database.dump",
+      "bytes": 427408,
+      "sha256": "599831bd24af951275409d302ee5446f2a8fba7a33bec519345c050e126c250a"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/manifest.sha256",
+      "bytes": 64,
+      "sha256": "08731ad856a5988fb3b6a2beacc4a916a7212d2ed2217d9a7f7cd0eed7c1f5c5"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/manifest.json",
+      "bytes": 16201,
+      "sha256": "78608e12ef61196512a97c519e1acbc05b9d093a371fa3148560a12ff7f037e4"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/objects/274bbfa9-d577-4fa5-ad86-6f7f77a156ab.bin",
+      "bytes": 635,
+      "sha256": "cf608d052c714dc8ee3e6ece62b55a2b31eb2e3ba619317ee3d61f739e84f575"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/objects/690a65af-a385-4378-a868-b20bb79f4bd4.bin",
+      "bytes": 1320,
+      "sha256": "b5842284843d3d3769ceb7d2e9caf5e820f7388335f223f55cc7156da3c2c22a"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-0b422d605ac341d28d9dad605d5c8954/objects/268be0e1-3f00-4702-ab21-3581971bc9f6.bin",
+      "bytes": 645,
+      "sha256": "b2afa5af67bb0b9e03a87e7043aec1136d7fc6a12c6f75811eec87d49ee2e437"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/attempt-2074be0689b643d3bf215963dc982505.json",
+      "bytes": 154,
+      "sha256": "58a28ca60ec97adb7e19f805d6ba73e9ce4c75222ad0dc2d84175278ee1e17fa"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/database.dump",
+      "bytes": 417227,
+      "sha256": "fac19f8ee8d6859e0b05e151662d0dbc3ee2d88cfe6a9750b9cfe0fe622c5597"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/restore-2074be0689b643d3bf215963dc982505.json",
+      "bytes": 1122,
+      "sha256": "70e553b91b8f367bfc30b9a395fa804f51fd0227ddf485bd8e9c4971796b4e23"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/manifest.sha256",
+      "bytes": 64,
+      "sha256": "85119e30d202ffcea7067ddae585d5f02780db41adcbae6a196749cc4a387201"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/manifest.json",
+      "bytes": 33447,
+      "sha256": "1e4f710ab8a3a721df3e7e3f4de92cfd0d017b17fdc5bb044e8adae0699f99ef"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/native-proof.json",
+      "bytes": 2735,
+      "sha256": "738750d0eae6bf0b7c3f7b1bd9544b494201bf66ed2b881143efd8cfc09dfe3f"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/objects/d65b7375-2070-44cc-92a9-c8f00352192a.bin",
+      "bytes": 524544,
+      "sha256": "c0b8d4f27c20ab43df0e24f8fc5dcac73d82031c322e15e4cc59645711b7367a"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/objects/7b4a7000-ce59-45a9-9211-dc0fb8bd7aa3.bin",
+      "bytes": 66,
+      "sha256": "4eef5c8ddb9969dfff04a37404ea5c8a66f42ad268c1e6f695cb025a3bba1709"
+    },
+    {
+      "local_path": ".local/backups/generic-native-04843840b3f94e04ac96ab948bcb8374/objects/1302554e-1c2d-4096-8eaa-342483bc84ff.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/concurrency-proof.json",
+      "bytes": 743,
+      "sha256": "a87443e8dc8c4e9ac2ac80eb0404452ea4d8f646d48ce85e802de934e7c1a72b"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/restore-8f23a5c078be41bdafdd33f195291cf5.json",
+      "bytes": 591,
+      "sha256": "474adbf8842efcb6dec99027a75eebcb158d03e6a8b2d8e62d17330f5d42d29e"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/database.dump",
+      "bytes": 427345,
+      "sha256": "7712e10c8acb260c70205742da8f506faf1bc008b3ce44825aa65b5b0f118270"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/manifest.sha256",
+      "bytes": 64,
+      "sha256": "20eacf779817e09bf78a2c9fb2e5e0b0776ec3061e01e76a9cdc6a392de43cd1"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/manifest.json",
+      "bytes": 16201,
+      "sha256": "011e8a307d0d94804d67e5fa2822923861dbd7f266eac986259b9c7a932849ff"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/objects/274bbfa9-d577-4fa5-ad86-6f7f77a156ab.bin",
+      "bytes": 635,
+      "sha256": "cf608d052c714dc8ee3e6ece62b55a2b31eb2e3ba619317ee3d61f739e84f575"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/objects/690a65af-a385-4378-a868-b20bb79f4bd4.bin",
+      "bytes": 1320,
+      "sha256": "b5842284843d3d3769ceb7d2e9caf5e820f7388335f223f55cc7156da3c2c22a"
+    },
+    {
+      "local_path": ".local/backups/snapshot-concurrency-a10627732a5a4376b5ffceff01b41325/objects/268be0e1-3f00-4702-ab21-3581971bc9f6.bin",
+      "bytes": 645,
+      "sha256": "b2afa5af67bb0b9e03a87e7043aec1136d7fc6a12c6f75811eec87d49ee2e437"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/restore-2713a73d606a4b1492ba8088f13d4cc9.json",
+      "bytes": 993,
+      "sha256": "2f288b8739f108c5e436355a7d212340f2775f596d268adbd06407e76932d4f6"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/future-schema-proof.json",
+      "bytes": 1569,
+      "sha256": "414bb85013becc61525f0a25e68c512ba0ea346f3faa92d929699915d866373f"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/database.dump",
+      "bytes": 386860,
+      "sha256": "d7d006ba0941bcfd18e74bdb9140b2749178db2b0399460e72fd8411135cd96e"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/manifest.sha256",
+      "bytes": 64,
+      "sha256": "44e59244191a393477dcb48d0c8ac925f98af4b0f9e54aed020ef530861654cb"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/attempt-2713a73d606a4b1492ba8088f13d4cc9.json",
+      "bytes": 154,
+      "sha256": "60dfe354ea5b7f05e7490f52b195421667a2ffc1cfea44b30ffbae06967164f2"
+    },
+    {
+      "local_path": ".local/backups/future-schema-192fb1fa705141ea9c1febdbcfa037bf/manifest.json",
+      "bytes": 31679,
+      "sha256": "d355c0a69e4d8a33e8bfc908e950c0e631ceb0fb3405b8b49a9b5fd410a0e49a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-continuation05-intent.json",
+      "bytes": 3263,
+      "sha256": "40a95a0150b3a3b643da8e9560e4936f8d9c49b49a70bf579c04d9cac212cb0f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/object-put-intent.json",
+      "bytes": 2519,
+      "sha256": "5f364ea722c70c24decb9dc8a837ed8a59e0979e90c770f0b98307a17fee3404"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/runtime-assets.json",
+      "bytes": 145334,
+      "sha256": "a5a4e37d2a74a065836c114c04f1ca08ce2e0b24178edf4b4dab10ca2d42d9ad"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/restore-verified.json",
+      "bytes": 1504,
+      "sha256": "5939e0712d40ffbe9c31589034e074641b1e513356e05b8f3355fd79ad948779"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-initialized.json",
+      "bytes": 2041,
+      "sha256": "0837fa905177e8a168bac92c48e8c4dda39ca2411f0838762843d7dc0de3cfd3"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-failure01-role-readonly-proof.json",
+      "bytes": 902,
+      "sha256": "ac664ddfd1f22f30e3da2da531c8e6d8e50f64a90b95deb53bad1a75de024d94"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-resume-intent.json",
+      "bytes": 653,
+      "sha256": "e71819ba9a4f2e75f88707f4387dc6cadacafa18e21886a57b0b7e45e87ce1fd"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-resumed-resource.json",
+      "bytes": 2054,
+      "sha256": "df612561a867677e9772afe20a9c016e76650e29301170b18cba59ea3629762f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/snapshot-module-origins.json",
+      "bytes": 1368,
+      "sha256": "8b348707da05876c7bc7d841c519e33fd29ca5988c87ea4cb71bbe1a2d2a586a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-container-removal-intent.json",
+      "bytes": 352,
+      "sha256": "5d7ff91f97b07f0208bf26f356d5f33f8db7221eb4bc8bcd2d8fa8ec379ae396"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-after-snapshot.json",
+      "bytes": 31620,
+      "sha256": "9cbc6992f52eca5def6f7e1c7fe58b02802c7fe032c02635300a327f01124a02"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-after-target-verified.json",
+      "bytes": 1297,
+      "sha256": "9ce0764e420aebc375723839cd5c43035355368f1c5bf2ce22347e85ebb80643"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-before-snapshot.json",
+      "bytes": 31620,
+      "sha256": "ab5f2670183fd32cd34ba79f95c0f7dc0ff8f5826bcb6c0a681abcc8b5ae5e24"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-module-origins.json",
+      "bytes": 1368,
+      "sha256": "8b348707da05876c7bc7d841c519e33fd29ca5988c87ea4cb71bbe1a2d2a586a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-container-removal-intent.json",
+      "bytes": 321,
+      "sha256": "21d7a5a13a3d67e80cb36c5e0b66ab3494c6d9d2bfd1e7dcef992541731014b8"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-origin.json",
+      "bytes": 386,
+      "sha256": "17cce2e1386a51eb6739d131d2cbf8b945706e285a911ba2f09a36595e9de9b0"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/member-credential.json",
+      "bytes": 265,
+      "sha256": "935da225fd23a456ec1123ca86f2be26db4dbdc929072718fa039e7b77dbacea"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-failure01.json",
+      "bytes": 325,
+      "sha256": "0cda15a7b496b0b11597938a352ac851d5edd9ebb411b130f78bdf2b4c1a054f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-objects.json",
+      "bytes": 529,
+      "sha256": "31dcd783a1902e53d868c7a09076551675ac983f14ebffec2549b76960f180bf"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-postgres-password",
+      "bytes": 43,
+      "sha256": "5f2fe6d005ec915b20a1abe73091e5773f5cbcdbb4c24208040ce4856316f58d"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-verification-removal-intent.json",
+      "bytes": 338,
+      "sha256": "d4d0801fac9e12e2ce945e85537c63dff4b9eca49327efe97f898537e6a56ebd"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-window-preflight.json",
+      "bytes": 230,
+      "sha256": "12e872e8194f9d3df282787e5484818c1e1564a6fa3ab74934678070c0c8571f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-after-target-permission-probes.json",
+      "bytes": 201,
+      "sha256": "fad881f47e50ff30dc52d7c3aac28d948e1e409d4b0f07001c62f0062b9f583f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/fixture.json",
+      "bytes": 3174,
+      "sha256": "13ae35ac8e031a28b00557b3c8ca13cf660ea17d1f511111fc03397d4412c675"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-before-stop-verified.json",
+      "bytes": 834,
+      "sha256": "79a76bbf45e28d08cd354ce5b393253d5954c3498edf19cfd64e8782358ccfb8"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-failure01-equivalence-diagnosis.json",
+      "bytes": 1401,
+      "sha256": "060223508dcb66d8e504b4921e643770407241f19332c693854616086a4d59d7"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target.json",
+      "bytes": 1934,
+      "sha256": "4de162d56acc2a3f64da704c53ce0c8f6859dc3d34dff8581d7a36f530f852ec"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-before-stop-verified.json",
+      "bytes": 1088,
+      "sha256": "e7dafe201b79218c717a40f49c7971767c559c2e5faf0fc6d718c9116d392745"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-definitions.json",
+      "bytes": 874285,
+      "sha256": "8fd7be6c5f1e5121dc42f512085abb75a258289e818a2273ddfdf7d607539cc9"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-failure01-diff-summary.json",
+      "bytes": 203,
+      "sha256": "7ae4a71ff2028bfab0adf98d45f21b73e5613995b9d8f6cdd6ceef33d4ea2a57"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-objects.json",
+      "bytes": 529,
+      "sha256": "b32154c2207b61d24be53f2ed3f518bc89eb773011f3fa4b984519bef775a50c"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-failure01-readback.json",
+      "bytes": 995391,
+      "sha256": "fcf1ace7664f50c2b7edc9d8594eb6c4b0dd6aaf59ef094d68eec3fe0355b709"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/serial-drill-cleanup.json",
+      "bytes": 862,
+      "sha256": "982b540428f1627b64fcafdbef4b1b7ea4eb398239fa940d888fe8e881c2932e"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-parked.json",
+      "bytes": 809,
+      "sha256": "56d652f0870fd7704a89a57b70bdc9e715050243a93a8e3ded9715dd471aed04"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-initialized.json",
+      "bytes": 2041,
+      "sha256": "f9f40149cfe92e6a8d98f1dfe2a043ff43f278399b0d384ed282acce3e1c9e87"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-permission-probes.json",
+      "bytes": 201,
+      "sha256": "fad881f47e50ff30dc52d7c3aac28d948e1e409d4b0f07001c62f0062b9f583f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/plan.json",
+      "bytes": 1072,
+      "sha256": "62a347bdd144c80f1e8ebcbb4c81fb579b70068598aebb4120e4dc8317bc82da"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/application-verified.json",
+      "bytes": 33503,
+      "sha256": "b5c2272d3f8fe7e3dd56cad061750d7a08e9635ad6d421968d982f9b77cb445d"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-creating.json",
+      "bytes": 1189,
+      "sha256": "0e3eed014147ffba1c6d17a2da001120f6605b6b4ae1df5eb4d2cc0fd18579cf"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-permission-probes.json",
+      "bytes": 201,
+      "sha256": "fad881f47e50ff30dc52d7c3aac28d948e1e409d4b0f07001c62f0062b9f583f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/application-target-verified.json",
+      "bytes": 31901,
+      "sha256": "57f10ea3f3d8c0187dedc93f003418ccd63f6c81a95730b37470de4498ff03cd"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/source-parked.json",
+      "bytes": 801,
+      "sha256": "3bc4c67fc94bb1f7b10be9ac021b6caea16f339fe335c6b6d1c76f5feefb8f0f"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/database.dump",
+      "bytes": 852503,
+      "sha256": "6d568c5730a85cbf1dbf25406fd9fb1070cfc28b48c5b70acde5d87cb7ee3146"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/manifest.sha256",
+      "bytes": 64,
+      "sha256": "b583ab250f68c7d71465bfe56d2bc542238e8a1a60945886c1ea330d8c0936db"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/manifest.json",
+      "bytes": 999957,
+      "sha256": "ccacb97792be19b157748580a71b0c8e4f891e249556aa3d8dcad1511598358b"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/3ab792a8-c6de-434e-acc0-b92a50ca2bb1.bin",
+      "bytes": 36,
+      "sha256": "efa9c6d25c1caea32fd571d41337af057f305059e94decd2f14eefd39d54c306"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/1b2e45e3-353f-4f5c-a9cb-7f3f1f9b6506.bin",
+      "bytes": 53,
+      "sha256": "38cdaf368344075a95b6ec10bd89e6a7abfd5278556305e5457562e9db01caee"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/d8056b89-9ceb-4b9c-9db0-fe25a62eee32.bin",
+      "bytes": 56,
+      "sha256": "595a130a587e3d01284a00ee14782d80d9175fcf6b82f8c589c32812a261a5e4"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/55256cda-6634-4edc-a2b8-86bc6be1a591.bin",
+      "bytes": 40,
+      "sha256": "82072b7bfc888d6bc5d7faac5fc50dfe2d4bd7edc32dbc183fb83ba6aa19163e"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/b9370b3c-d941-42a8-bc28-b77cedc85010.bin",
+      "bytes": 43,
+      "sha256": "9803d3f74b11b0885a9672655b34cdcffb97d375b0d5a386316724f19682b43c"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/784e0aad-0df5-4f5f-a085-22c6f098a461.bin",
+      "bytes": 43,
+      "sha256": "ea4e9101d0035f9e8b5285edc3997820f6f60c388b850afe987ee149624e255a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/archive/objects/0b290532-d4dc-4f39-adc4-3e8e369d17d7.bin",
+      "bytes": 51,
+      "sha256": "4699b9216dcf63a3f04850f28237be3ad262db97060fc3c0261afbcda60071bc"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/database.dump",
+      "bytes": 855203,
+      "sha256": "ce07d8b97a31f86e115e7d6764615791f653a4bb30c2e4f28e11d9aac7ef376a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/manifest.sha256",
+      "bytes": 64,
+      "sha256": "2fc103ea9937f74593a33be823d93218461c33593de31e371d91de0279c70eb3"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/manifest.json",
+      "bytes": 999955,
+      "sha256": "3e1915b10af001bcd7c4cbbdce515a2d898f82a437cd1293f5d1c9a54f50ae53"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/3ab792a8-c6de-434e-acc0-b92a50ca2bb1.bin",
+      "bytes": 36,
+      "sha256": "efa9c6d25c1caea32fd571d41337af057f305059e94decd2f14eefd39d54c306"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/1b2e45e3-353f-4f5c-a9cb-7f3f1f9b6506.bin",
+      "bytes": 53,
+      "sha256": "38cdaf368344075a95b6ec10bd89e6a7abfd5278556305e5457562e9db01caee"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/d8056b89-9ceb-4b9c-9db0-fe25a62eee32.bin",
+      "bytes": 56,
+      "sha256": "595a130a587e3d01284a00ee14782d80d9175fcf6b82f8c589c32812a261a5e4"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/55256cda-6634-4edc-a2b8-86bc6be1a591.bin",
+      "bytes": 40,
+      "sha256": "82072b7bfc888d6bc5d7faac5fc50dfe2d4bd7edc32dbc183fb83ba6aa19163e"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/b9370b3c-d941-42a8-bc28-b77cedc85010.bin",
+      "bytes": 43,
+      "sha256": "9803d3f74b11b0885a9672655b34cdcffb97d375b0d5a386316724f19682b43c"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/784e0aad-0df5-4f5f-a085-22c6f098a461.bin",
+      "bytes": 43,
+      "sha256": "ea4e9101d0035f9e8b5285edc3997820f6f60c388b850afe987ee149624e255a"
+    },
+    {
+      "local_path": ".local/backups/application/drill04-20261017-c23d8a71/target-archive/objects/0b290532-d4dc-4f39-adc4-3e8e369d17d7.bin",
+      "bytes": 51,
+      "sha256": "4699b9216dcf63a3f04850f28237be3ad262db97060fc3c0261afbcda60071bc"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/initial-unreferenced-object-keys-from-own-wal.json",
+      "bytes": 837,
+      "sha256": "c1fddaa8d1b5fd79384c6f543da1862e6ffee8f864e581b263c739c2afa2ab37"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-failure01.json",
+      "bytes": 584,
+      "sha256": "473ddd72b0f7296ba97c955687e91ee92a293d0259baa7991e304c8e8e7e60f9"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-actual-role-extension-metadata.json",
+      "bytes": 1722,
+      "sha256": "6b10ac2f7af8fa31fc40f8fc524de7004ab8e9be1ac0d078e3e737e0d7f13ef7"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/runtime-assets.json",
+      "bytes": 145334,
+      "sha256": "a5a4e37d2a74a065836c114c04f1ca08ce2e0b24178edf4b4dab10ca2d42d9ad"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-initialized.json",
+      "bytes": 2041,
+      "sha256": "0837fa905177e8a168bac92c48e8c4dda39ca2411f0838762843d7dc0de3cfd3"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/after-failed-fixture-table-inventory.json",
+      "bytes": 31620,
+      "sha256": "5f93a35fa6e6bb6ef34937483efb3590c9b030e3d02835d080cccbe100e9465d"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/member-credential.json",
+      "bytes": 265,
+      "sha256": "e705eafef7835b7813d39b20a690c21a8e559bbe5dee69f59652c3326308d4e6"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-objects.json",
+      "bytes": 529,
+      "sha256": "31dcd783a1902e53d868c7a09076551675ac983f14ebffec2549b76960f180bf"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-postgres-password",
+      "bytes": 43,
+      "sha256": "6a42fa8fe797566215288ae701d0bdca4fb162313132e150048b5efc301e76e2"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source.json",
+      "bytes": 1934,
+      "sha256": "5a39ae0ec98e11d9d824ab4d6f716c67186be83447a6e264f9af4b3a9458ce09"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-initialization-actual.json",
+      "bytes": 961,
+      "sha256": "fe2af19f9fa25fe30ef15cac6384863bfbfec7aefb652696baea916c3df90c15"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-permission-probes.json",
+      "bytes": 201,
+      "sha256": "fad881f47e50ff30dc52d7c3aac28d948e1e409d4b0f07001c62f0062b9f583f"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/initial-unreferenced-object-key-observation.json",
+      "bytes": 319,
+      "sha256": "aaf1a14edfaa71f03e1b5d952f3ea3a8303c5c82fe38af4ad500dabfe6bb2758"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/plan.json",
+      "bytes": 1072,
+      "sha256": "62a347bdd144c80f1e8ebcbb4c81fb579b70068598aebb4120e4dc8317bc82da"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/initial-unreferenced-object-receipts.json",
+      "bytes": 2280,
+      "sha256": "c362f8a95d13835d3d9fa518f71aace566d290cbe8cc166fcec230a7c7f8457c"
+    },
+    {
+      "local_path": ".local/backups/application/drill03-20261017-a19c4b6e/source-creating.json",
+      "bytes": 1189,
+      "sha256": "fa6fac887e227e053f4622ce5e7df47e2d508bec056452534a977c6e97d24668"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/meta.properties",
+      "bytes": 122,
+      "sha256": "949209d1a68ad9fb302a59c7edef269ff3fa078974d16048c797407ea794f173"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/recovery-point-offset-checkpoint",
+      "bytes": 1577,
+      "sha256": "4eccd475863791f14811e3f26632736351ccaecc19ec9bb2e5b37a4e2c887617"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/replication-offset-checkpoint",
+      "bytes": 1577,
+      "sha256": "3a1a4ffe7170bc62ec04eeceb12d77b50cd5892bc61c1e6f880c8840e84412e1"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/.kafka_cleanshutdown",
+      "bytes": 29,
+      "sha256": "6fd3985d8b1c920b8cafd3e965b25c5ae4149f6dc0ae72ff4a1779767f5acbe2"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/log-start-offset-checkpoint",
+      "bytes": 4,
+      "sha256": "52f96c26a39ed25108a6db43d6e11c6051eba8a498a5baab1891adfa7ac7c262"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/bootstrap.checkpoint",
+      "bytes": 355,
+      "sha256": "27b39d2dba8247615226f45ad62b181d9ad3c6f728f53f6a7cf6550ae92746c7"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/cleaner-offset-checkpoint",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/00000000000000002323.snapshot",
+      "bytes": 10,
+      "sha256": "98e930287de7b79c25ab25c7510b9aa1537494f1758aac269020cce43f0692f2"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/00000000000000000000.log",
+      "bytes": 166141,
+      "sha256": "0923a459804e2c3752d7dcaa8cc87593caae00937614b793265cb7fb2010c593"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/00000000000000000000.timeindex",
+      "bytes": 480,
+      "sha256": "95ac303a629537dd57527ac7c1386eace857f2a6071d35ed73799f1aee898219"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "bacb957d15fe846c7a83fbed44f1a27038ac1a346acbead56b1ee899549881c2"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/00000000000000000000.index",
+      "bytes": 312,
+      "sha256": "e218ce3899ef6aa479459548cd37c8f3faccc5f50b131c373e9e1eb02fe0d475"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "5f7305cb824ef7fb9bd004dffd8917f58630035e474d3dee9ce907814aed57dd"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/__cluster_metadata-0/quorum-state",
+      "bytes": 125,
+      "sha256": "a98bc7abf7424f1552046f058eca3d2b33f50b3066103cfa395d5a29e1f138fc"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "02382555f86a10b347e871f31a045d646260bca522cb8be989b4b158bab28d5f"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.document.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-4/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-4/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-4/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-4/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-4/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "17cd0143c69e2b264c1c8aaf78d41dbf840728d6176419956802c8a438aa3afa"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant-global.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-0/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-0/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-0/partition.metadata",
+      "bytes": 43,
+      "sha256": "38aeb1508af7e2c1e0f1028cc114bd84c1aae402d0bec2e15a505cc81a09f20c"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-0/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.assistant.v1-0/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "09bf91deb0abaa610c35e782bed62c8d53e3bfcb141a5b0c8f38e7523190e5ac"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.review.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "b70c773fdc63a8a213ed46784ba1698a7e2604ba439cefeed394455166221c67"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.domain.events.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-2/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-2/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-2/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-2/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-2/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "1bdeb110f6a5da3b0455dd5bac5c61d7cfdd225191875684a519fd3709b79f28"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.dead-letter.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-3/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-3/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-3/partition.metadata",
+      "bytes": 43,
+      "sha256": "505d6ac03e7b164a9fa7704b57e6883d0bc5c8665fa012f48d259bb7b993cb96"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-3/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.research.v1-3/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-5/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-5/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-5/partition.metadata",
+      "bytes": 43,
+      "sha256": "0125e4c6b8bc23dd3b08bb91eba2ec91b0b70611f8b01e92157917ce8e8dc856"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-5/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.export.v1-5/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-1/00000000000000000000.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-1/00000000000000000000.timeindex",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-1/partition.metadata",
+      "bytes": 43,
+      "sha256": "89864223c9f8e109c37be2173765f875ef5911b6b2fa362f05702ffbd90a2dfb"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-1/00000000000000000000.index",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-data/tender.task.comparison.v1-1/leader-epoch-checkpoint",
+      "bytes": 8,
+      "sha256": "3b1ad48c005681b75e5b9e53fce52657a0ffcf46192b467c2d7fb7c5d84eaceb"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/d9e93f11d4f773711b527dd3fa692b2bbc45033a9037b415dad5583e74430eae",
+      "bytes": 867,
+      "sha256": "f46dc63bb2a7e82199846b523db15c9352f4201840a1b5df3962b3ce71389af3"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/6497d2bdfaaa571bbea36bc48520b420741437cf47ce588b2be992c8c7b09470",
+      "bytes": 867,
+      "sha256": "c389041e6437286627c009240869eb810f86cdd5ae1118577f39ee24d1337d6a"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/4d905f54ae079e3a65e6045cbe9a32ead0c2bd1f268814bd8a1b71bf87cb5648",
+      "bytes": 1848,
+      "sha256": "2d40af4b0c5d547b1ccc25a836156dcce1c6a85910ede67800df5b16842216c0"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/3b6945161bcaa0ecd05d100397ef56bb65f7a4ecb01924ff6e26743911901d7a",
+      "bytes": 867,
+      "sha256": "fcc0de0dc041d70a31e21c8626dd4c125a820d7a710f7248b392a7b8385978cc"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/3291a3496cac0ec3273e5033c25a7278ebe0eb54e3d5c218efb9769eb84b3f2e",
+      "bytes": 1848,
+      "sha256": "487aaabd2aa47ab0dced0dc90bd428e8aefce829f7159e7963b86db4d031d1b8"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/f06e114d87ca8e2386157d91e006c36f2cd2f3ff541ba42e1192b642310a67df",
+      "bytes": 1178,
+      "sha256": "e8aaa518c94c5b02259b115e29b7c14dbefbba16bf9bb322d7515fdde627aa21"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/b4424eaf0b7e74706e9bafec7da42f81934f6d6327d4aa6ab2456fb5cda83c31",
+      "bytes": 1178,
+      "sha256": "9a548266a73de8d077893d2fad0d6b319dcb4255b50046e4f6b4ef192c4ba5d4"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/4be2506858ba0c88e1032ed014dae498e54acbbea3a2e0a0aa5d6f35e454ecad",
+      "bytes": 1848,
+      "sha256": "0c5d0263f8debfe523d12f3b9433bd8c015d623795359059f794a5a66bc8e9d2"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/2bbb6b7e92963b24f2c5fee0a3d74d5fd556ea1c01dc1923a0ff6eaf48f472e8",
+      "bytes": 867,
+      "sha256": "3a33128bf3d42ef125fbb9d9c01f9a7a3a43bd3a42d567676fc6fd095fba64dd"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/6bcb181f64e682f79f778e2d29ae94a7014ac004088079f703d302a7f1086392",
+      "bytes": 1848,
+      "sha256": "9559293c287594346c9e3d714effcd7775ca95fe57f9b15d0671d5232aa1cb08"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/7a48809549a9ccdf2e652699a08b5b8420e94ca8ba9ad1b21a559c20588473ec",
+      "bytes": 867,
+      "sha256": "1a40d33443b051ecdc7f54b9a59cbbd922ecff09f1c08818c2064e3db04122aa"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/bd66c2f88fd93e6bf3120ea1d60e98fae2a1cae86b8becb69628225d5d46944e",
+      "bytes": 1848,
+      "sha256": "bae7e35eb2232f1c64d13b563bdade9e6c78c18e3807eede98686f5442858dc9"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/c6f0b91f986b121f7a30e990f106660c51b835fe97773b29afadd227a2ddd237",
+      "bytes": 18752,
+      "sha256": "808604de8a9f5e294604a0ddfac15294e63f13ab5f16d5ada0f3d70349ffa3b5"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/94288345f35641a9ade29e01e25ae8343000bd7081cb23007a7fdb5212ac9276",
+      "bytes": 867,
+      "sha256": "26656a92ad610b42b212feeace0e02b595e5c3daa0afd92cf632dd7608345558"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/28bee3d055d266c849bc10120bd059deece80c0d3ea997a968530ddb5b817477",
+      "bytes": 1848,
+      "sha256": "d79eb4e850b0ccf4180cda441f77fdda64c565e3faee875e2d738d1c3192377d"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/08f276e316cf2aced2ce1b19e4214e8f55cc662ec6f475eb9077ae0842e608e2",
+      "bytes": 867,
+      "sha256": "61700a28acdf44b97c19b2f29a72216276e3d642ea432c9dc5a21083a63f296d"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/ca18627a12f077e5e1762064e372ab930137f59d48760797affbd7d273bb58d5",
+      "bytes": 1848,
+      "sha256": "c78eb9690579903000896160ce5a06ec1b4b5afea5d4bde47428f4454ad58dcd"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/6a29e0ea0056ce0500fe1fb04c1422b969ee136eff039851700e0af864e5437d",
+      "bytes": 867,
+      "sha256": "6b31efe48fe3d62c3aa4b772a6fa09c54cf2c0c0a4523c4e4843013ce5c8d4b3"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/d66ed810690002c20b7d01c92e1e5d8bcb13d1019a7f869ba2b81c1692c7221a",
+      "bytes": 867,
+      "sha256": "04616a0ca0b0c36ef2e411e582c2d8cc97cb6032da600019268a638d6481ccf6"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/5aa6ca75064e80640ac2914a51da2097a2e228eabd3043971ec9672fde33a332",
+      "bytes": 867,
+      "sha256": "ccf8f62c40d05fcec9a6318b5c61118683a65e9c659556a36548e588cf83edc2"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/31edb160d34998d85f3b376e5de6fc679e6649cffb3fe1d20184f0a5959c89dc",
+      "bytes": 1848,
+      "sha256": "cde28de40113b4dd5d3cf2ffb2657fffc4bee96390a6ba39aa717add15f4d84e"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/6c48006e750e4b1a928e8be777c22c86c64a32341c8b7ba5b7fc4d68c6b78c08",
+      "bytes": 867,
+      "sha256": "9721de6717c3daf34a184b27bab6cb0c66dd1b1d65d27cf29d6dea256e6c3c9e"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/7347414a059c23081150708f2586c07457ce08cd4b3ad2b63303d3eb1f95b878",
+      "bytes": 1848,
+      "sha256": "73b80751c681be06b238244793aba93a4a671fe6f284a309b71e8eb3ca91ff3d"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/ed75904d31c7ac2f9a5b1bebc68c75b474525dde6aee41299ae6a2844c009a6d",
+      "bytes": 867,
+      "sha256": "3320d29486bf74eef6da4724d097e996a98bb9ecf90146f2e4f2430fac5db773"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/f1db29336954be6ec96a6ba4667c5228639da1ac78fac0c2e9fb7601857b886a",
+      "bytes": 867,
+      "sha256": "1feedca93ff97cf216cddfc32024335f70285a1eed4d02e00e02346c72b7d891"
+    },
+    {
+      "local_path": ".local/assistant_ui01-objects/2bd197f51e5a2e7fa057f41d6a4942392754ec60b6d369d18928e6f766af6ff0",
+      "bytes": 1178,
+      "sha256": "54d0639573609c6f901061ae00ba244625d110d5ba85db67f1780163e4e1932d"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/kafkaServer-gc.log",
+      "bytes": 36229,
+      "sha256": "1215b31275f74f892ea97f5ca643a62910d6f71386602cd39417c2c9b0d6438b"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/server.log",
+      "bytes": 155647,
+      "sha256": "598880a7d759fbe881e26b8a4253eace04b027bfa8074c14414e67d9eef6c479"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/controller.log",
+      "bytes": 55218,
+      "sha256": "200664c6a742be3058adf8c79e6a9db85919711a4ffbc6ce82025feb34748b06"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/state-change.log",
+      "bytes": 41945,
+      "sha256": "ab240b2bf2955afa6e2b9078dacfc5dbaced5120c5399b619d103e802c8282cb"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/kafka-authorizer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/kafka-request.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "local_path": ".local/kafka-app02-server-logs/log-cleaner.log",
+      "bytes": 780,
+      "sha256": "a47c9cbc31812183c4cb7270bdc99f97741c8bf58d5876add76aa58bd642db87"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/prepared.json",
+      "bytes": 7700,
+      "sha256": "6c42fdc8ff830d3fb3a3c5b616d484698c8b579c84ae2723caafaab6b19c7ca4"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/backups/run.py",
+      "bytes": 17696,
+      "sha256": "a64c40a64271c62210b072b95bfad69b123169e6b7808c00d51d181ae1497604"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/backups/generic.py",
+      "bytes": 18528,
+      "sha256": "5307f1cb06a8f1fcceabc7e66c3cc797110adc9ded4461af49b3192d6949021f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/archive.py",
+      "bytes": 17483,
+      "sha256": "47b1810034a6e4f205df7379dc699a9a92b7fe131e38842dde5a300e820f3ea6"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/seed_retry.py",
+      "bytes": 3730,
+      "sha256": "a94fff1dc29bc9908fba93b79daa25b2a4d93b8391bb928235cf3ad114a2a86c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/runtime_child.py",
+      "bytes": 1347,
+      "sha256": "5f3b0837f266caf80aa0e890b40316f69c75a3f8e554f63c299a97a9bcd96eff"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/security.py",
+      "bytes": 8901,
+      "sha256": "dd29109059060f463fbe9a69264bc9b0472bc2d0659baa3cdc536816d8d7fb8f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/binding.py",
+      "bytes": 5780,
+      "sha256": "7bef1c064ca49b9fa1d7230757dcf23bce6a015a093edff3805f3c4226a43a7d"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/application.py",
+      "bytes": 13879,
+      "sha256": "fad526efb5819653cd210d7b00924210dc5a2193948cd5fafbbfd4edea6901ec"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/definition_equivalence.py",
+      "bytes": 1111,
+      "sha256": "1581e1b04c75bf1c5225c893a153aabae7320e5002ddcbc640fd6127d916dcca"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/cluster.py",
+      "bytes": 17501,
+      "sha256": "23d9d55c03c4e1ad2f1488407a9a139949d6e4a9f43195ff1c6cb509e9462713"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/fixture.py",
+      "bytes": 13521,
+      "sha256": "9ed445eb82e84c9769bad68624f6bcfe33e062493832af91ef11f28ebb880bcf"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/probes.py",
+      "bytes": 2990,
+      "sha256": "502913ec58fab64549099712f632e8fe31f7d9c49778da3521004de0545a381e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/assets.py",
+      "bytes": 4346,
+      "sha256": "c2943d06b95101229a6a662ece9682ef003e56720f8ee381e2a7c16e2a549e5b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/__init__.py",
+      "bytes": 90,
+      "sha256": "e4d465414abbe571ccc96c65d27f7ab0e4352ad53dbfd876cdd4e2c3eefa92d5"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/deploy/application_recovery/__main__.py",
+      "bytes": 9221,
+      "sha256": "d4f45c5f50475a56e319d96a0299f0975a67a7e65b64dbf28d6862b8baeda192"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/object-put-intent.json",
+      "bytes": 2348,
+      "sha256": "9729136c49f663e83c9df4cda3aaa95d5f192d174153a874dd7013db70f16e82"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/dump-toc.txt",
+      "bytes": 195710,
+      "sha256": "ec876f7fccdb0f713d6ae60bf67a32f468b7e88e0be9f28bdd0dffcfd0c76604"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/qa-result.json",
+      "bytes": 1498,
+      "sha256": "7207c783f1b8e2d10cf418b57f70c85a1235ee7228bac28d70816229f76f5f2f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/target-postgres-password",
+      "bytes": 43,
+      "sha256": "003056661ec505e582d153a4d090827a49fb1201d3d9761be09ef7ade06c1fcc"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/execution-intent.json",
+      "bytes": 651,
+      "sha256": "d19a9a4dfc683be0bb9952f87c596aa6e3b64d5032daefb79a1fa02e5b328dd4"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/target.json",
+      "bytes": 1934,
+      "sha256": "c0333d52db2dd10c024e8ff427866e096987847b8014e2d97ecb4d31b57d8327"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/target-creating.json",
+      "bytes": 1189,
+      "sha256": "8ae5e5575b8a8c132528c0d9ba5ba775e6dd7b550e2b9cddfeaabce763c8ef9f"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/database.dump",
+      "bytes": 852503,
+      "sha256": "6d568c5730a85cbf1dbf25406fd9fb1070cfc28b48c5b70acde5d87cb7ee3146"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/manifest.sha256",
+      "bytes": 64,
+      "sha256": "b583ab250f68c7d71465bfe56d2bc542238e8a1a60945886c1ea330d8c0936db"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/manifest.json",
+      "bytes": 999957,
+      "sha256": "ccacb97792be19b157748580a71b0c8e4f891e249556aa3d8dcad1511598358b"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/3ab792a8-c6de-434e-acc0-b92a50ca2bb1.bin",
+      "bytes": 36,
+      "sha256": "efa9c6d25c1caea32fd571d41337af057f305059e94decd2f14eefd39d54c306"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/1b2e45e3-353f-4f5c-a9cb-7f3f1f9b6506.bin",
+      "bytes": 53,
+      "sha256": "38cdaf368344075a95b6ec10bd89e6a7abfd5278556305e5457562e9db01caee"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/d8056b89-9ceb-4b9c-9db0-fe25a62eee32.bin",
+      "bytes": 56,
+      "sha256": "595a130a587e3d01284a00ee14782d80d9175fcf6b82f8c589c32812a261a5e4"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/55256cda-6634-4edc-a2b8-86bc6be1a591.bin",
+      "bytes": 40,
+      "sha256": "82072b7bfc888d6bc5d7faac5fc50dfe2d4bd7edc32dbc183fb83ba6aa19163e"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/b9370b3c-d941-42a8-bc28-b77cedc85010.bin",
+      "bytes": 43,
+      "sha256": "9803d3f74b11b0885a9672655b34cdcffb97d375b0d5a386316724f19682b43c"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/784e0aad-0df5-4f5f-a085-22c6f098a461.bin",
+      "bytes": 43,
+      "sha256": "ea4e9101d0035f9e8b5285edc3997820f6f60c388b850afe987ee149624e255a"
+    },
+    {
+      "local_path": ".local/qa-recovery05-40e8c1ed7230406293111e2c85006b98/.local/backups/application/single-target-40e8c1ed7230406293111e2c85006b98/archive/objects/0b290532-d4dc-4f39-adc4-3e8e369d17d7.bin",
+      "bytes": 51,
+      "sha256": "4699b9216dcf63a3f04850f28237be3ad262db97060fc3c0261afbcda60071bc"
+    },
+    {
+      "local_path": ".env",
+      "bytes": 1142,
+      "sha256": "02333792aafc77ac2922b67c9a0a9b8449c954779d319c652082df1505398849"
+    }
+  ]
+}

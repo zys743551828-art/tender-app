@@ -1,0 +1,20 @@
+{
+  "legacy_text_parser_function_and_descriptors_ast_equal": true,
+  "previous_feature_method_unchanged": true,
+  "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+  "inspected_pdfium_files": {
+    "page-1.png": "99fdb04c10a97bdfa367d335f9552a95aca2ae0f40bbe699150ba2936f01cd1d",
+    "page-2.png": "026eb5e3df9f22b0f1eac5e35bb47e0f8cd5761576688814dcfc58295d7af7bb",
+    "detail-1.png": "70dbad55aef7d135606e2e6b2501c89b4d3d5d30ca50f48ac235544fb6fb75ed",
+    "synthetic-source.pdf": "fc64bb9ec602e441bdc51b591f392cb917d94a551e0c0cd280b8f4cf40d33573"
+  },
+  "independent_poppler_files": {
+    "page-1.png": "2314a3f60ecd7355751c2dddd9bf082a6f012f92bae8334fd2d7be52ae475222",
+    "page-2.png": "84203974d56bc2149cb8d5ca169e82a064f79fc4335d0c0b74e35405b57dfce9"
+  },
+  "review": "assistant viewed two PDFium full pages, one same-raster detail and two independent Poppler pages; complete fixture content and colors visible; second source deliberately has 90-degree page rotation, preserved by both engines",
+  "fixture_asset_visual_reviewed": true,
+  "frontend_browser_visual_verified": false,
+  "real_document_readability_qualified": false,
+  "final_export_bytes_equal_inspected": true
+}

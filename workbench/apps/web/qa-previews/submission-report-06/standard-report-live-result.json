@@ -1,0 +1,71 @@
+{
+  "scope": "actual API/OSS/Kafka/export UI, explicitly controlled Parser03+MockTransport core review fixture; 4 upstream Mock calls, zero remote model/paid calls, not formal three-judgment model quality acceptance",
+  "project_id": "606845b4-eb73-4b90-ba32-b275d71f6b01",
+  "review_id": "512ab15f-2261-41ba-aec4-5ec42690f72c",
+  "fixture_scope": "synthetic API/Worker/Parser03/MockTransport mechanism fixture; not actual model quality",
+  "review_manifest_sha256": "f640fc530d6d88b9ec20c07e74a426aec35452e6f16e25acf4356c4b8c4ab55a",
+  "body_version_id": "3ff255dd-d363-4dcc-b2bf-4ef37ef9dafe",
+  "standard_submission_id": "3d570f82-831b-4b1e-a24b-c87b70e674f1",
+  "standard_current_gate_valid_at_real_submitted_at": true,
+  "platform_submission_verified": false,
+  "report_context_exact_body_preserved": true,
+  "unsupported_docx_annotation_absent": true,
+  "exports": [
+    {
+      "id": "f09bd11b-5d01-44a5-a2b4-7e2052102f03",
+      "kind": "review_report",
+      "format": "docx",
+      "document_version_id": "2db126ef-1824-41a9-a497-99857b261f85",
+      "sha256": "728b73d8814afc10e07ecf6f418d42b922923929036bcb4e0454aa44083b88b3",
+      "gaps": [],
+      "download_filename": "离线模型核心纵向_评审报告_f09bd11b-5d0.docx",
+      "presentation_revision": 2,
+      "source_impact_revision": 8
+    },
+    {
+      "id": "dc94b07d-4a9a-4707-a39c-4ffc3dc10459",
+      "kind": "review_report",
+      "format": "pdf",
+      "document_version_id": "f48d0363-5677-41c0-9788-6cd20bf51690",
+      "sha256": "ee02acf2df8785be899dad522895010f30bc82618838b9ef712f0b836449f9cc",
+      "gaps": ["RENDER_SANDBOX_NOT_ATTESTED"],
+      "download_filename": "离线模型核心纵向_评审报告_dc94b07d-4a9.pdf",
+      "presentation_revision": 2,
+      "source_impact_revision": 8
+    },
+    {
+      "id": "d65c29e6-e503-4d78-851f-5e9c00eb29fc",
+      "kind": "annotated_review_copy",
+      "format": "pdf",
+      "document_version_id": "01dc44a1-119c-4e2b-92ec-18906d44a712",
+      "sha256": "5e2f8fcdc7aab5e4102d692264b62b39d01c2430f6f045742b19ccd7fdcbb50c",
+      "gaps": ["ANNOTATION_WITHOUT_BODY_RANGE"],
+      "download_filename": "离线模型核心纵向_批注审阅稿_d65c29e6-e50.pdf",
+      "presentation_revision": 2,
+      "source_impact_revision": 8
+    }
+  ],
+  "report_history_server_discovered_after_refresh": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "paid_calls": 0,
+  "review_commands_by_frontend": 0,
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids/606845b4-eb73-4b90-ba32-b275d71f6b01/submissions"
+    },
+    {
+      "method": "POST",
+      "path": "reviews/512ab15f-2261-41ba-aec4-5ec42690f72c/report-exports"
+    },
+    {
+      "method": "POST",
+      "path": "reviews/512ab15f-2261-41ba-aec4-5ec42690f72c/report-exports"
+    },
+    {
+      "method": "POST",
+      "path": "reviews/512ab15f-2261-41ba-aec4-5ec42690f72c/report-exports"
+    }
+  ]
+}

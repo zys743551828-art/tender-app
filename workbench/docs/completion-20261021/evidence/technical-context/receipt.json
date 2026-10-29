@@ -1,0 +1,115 @@
+{
+  "scope": "acyclic context, external reference and final input; native verification references synthetic, no authority installed",
+  "tests": {
+    "linux_passed": 284,
+    "linux_seconds": 2.446,
+    "linux_skipped": 0,
+    "by_module": {
+      "tests.test_package_technical_vision": 38,
+      "tests.test_providers": 26,
+      "tests.test_package_technical_input": 62,
+      "tests.test_package_technical_assets": 50,
+      "tests.test_package_technical_features": 54,
+      "tests.test_scoring_contracts_profiles": 33,
+      "tests.test_package_scoring_recovery": 9,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 126,
+    "host_reported_seconds": 1.7,
+    "counts_overlap": true,
+    "frontend_rerun": false
+  },
+  "actual_model_calls": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "browser_visual_verified": false,
+  "independent_native_verification_installed": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "input_method_changed": true,
+  "serializer_method_changed": true,
+  "old_records_rewritten": false,
+  "runtime_inputs": 1177,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "source_identity_scope": "five modified inputs equal staged Git bytes, not immutable whole deployment",
+  "inputs": [
+    {
+      "path": "packages/contracts/package-technical-input.md",
+      "sha256": "4ddc61244f9599df1b76d1a03f3272f51351d7564e971329307820e477d8d513",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_input.py",
+      "sha256": "4495dc97e80e0ea077573385735b566188eaf132532986700dcfe1aa329d92ef",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_input.py",
+      "sha256": "b76dea014731b8fca98a642c73c42007740a085943c257d9aff31b6355127eb0",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_input.py",
+      "sha256": "a52f2f49c0008517bf40b164f40b7b403ae01b9d08f301eba6573dec2c717749",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_vision.py",
+      "sha256": "e289d31e114944ee1c46f392b1d9bd52d3af2a198d0fc0a0d5d746527e89b9ca",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-initial.log": "3567e9c184c6e52f7f26e370c11db394dfe1ccce703542b30a15bc5c2254759d",
+    "host-initial.xml": "ef950136858ca7fce942074089481cdb542534950f7b145b364360c164669285",
+    "host-final.log": "791b80e7a6648d47af0167e4517f7370aabf4668e330175b8dcc559ea092fc4c",
+    "host-final.xml": "875a856c2e259fb6ae6cb4029fb328c33536d963a91b52738ab0a6d0ccd4beb4",
+    "linux-final.log": "0c81408d26fbe189c200e537ce4e14ce6aec0a0cd69fcf701d200fe19dd1c652",
+    "linux-final.xml": "aa3ae5d50ee6c161819a460a4be76fe88c36da7f983f0b1dcfd512610b539f99",
+    "python-quality.log": "2443c4848ce68c104696efd0c65cd6ae30c95d480c605437bcdda897bb4701c7",
+    "http-runtime.json": "e0e04eec720f0cdfd75164dc7033825e833995408fc584263cbd6e3bd726fc82",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614",
+    "method-boundaries.json": "ccba5622a5fae64d2613b6dc84c1d543156adc736f3f505ac53ae62dfe0b94c9"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "ruff": "passed",
+  "format_check": "passed",
+  "mypy_tool": "passed",
+  "bandit_tool": "passed",
+  "pytest_mechanisms": 5
+}

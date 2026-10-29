@@ -1,0 +1,5 @@
+........................................................................ [ 75%]
+........................                                                 [100%]
+---------- generated xml file: /evidence/context-derivation-pure.xml -----------
+96 passed in 8.85s
+{"suite": "context-derivation-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

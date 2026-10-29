@@ -1,0 +1,250 @@
+# Keep active implementation bytes portable without rewriting frozen evidence.
+/apps/web/src/** text eol=lf
+/apps/web/*.json text eol=lf
+/apps/web/*.ts text eol=lf
+/apps/web/*.html text eol=lf
+/apps/web/*.js text eol=lf
+/apps/web/*.mjs text eol=lf
+/apps/web/*.md text eol=lf
+/apps/web/scripts/** text eol=lf
+/apps/web/public/theme.js text eol=lf
+/apps/web/.prettierignore text eol=lf
+/packages/word_intake/renderer.py text eol=lf
+/packages/word_intake/inspection.py text eol=lf
+/packages/word_intake/sandbox_runner.py text eol=lf
+/packages/assistant/sql/*.sql text eol=lf
+/packages/authoring/sql/*.sql text eol=lf
+/packages/contracts/sql/*.sql text eol=lf
+/packages/identity/sql/*.sql text eol=lf
+/packages/knowledge/sql/*.sql text eol=lf
+/deploy/sql/*.sql text eol=lf
+/deploy/fusion*.py text eol=lf
+/deploy/fusion.ps1 text eol=lf
+/deploy/compose.fusion*.yaml text eol=lf
+/deploy/nginx-fusion.conf text eol=lf
+/deploy/nginx-fusion-full.conf text eol=lf
+/deploy/package_history_dispatcher.py text eol=lf
+/packages/model_governance/package_history_dispatch.py text eol=lf
+/packages/model_governance/package_technical_features.py text eol=lf
+/packages/model_governance/package_technical_assets.py text eol=lf
+/packages/model_governance/package_technical_input.py text eol=lf
+/packages/model_governance/package_technical_vision.py text eol=lf
+/packages/domain/providers/deepseek.py text eol=lf
+/packages/domain/errors.py text eol=lf
+/packages/model_governance/package_current_sources.py text eol=lf
+/packages/model_governance/package_current_scope.py text eol=lf
+/packages/model_governance/package_current_original.py text eol=lf
+/packages/contracts/package-current-original.md text eol=lf
+/tests/test_package_current_original_pg.py text eol=lf
+/packages/model_governance/package_current_original_set.py text eol=lf
+/packages/contracts/package-current-original-set.md text eol=lf
+/tests/test_package_current_original_set_pg.py text eol=lf
+/packages/model_governance/package_current_parse_material.py text eol=lf
+/packages/model_governance/package_current_material.py text eol=lf
+/packages/contracts/package-current-material.md text eol=lf
+/tests/test_package_current_material_pg.py text eol=lf
+/packages/contracts/package_technical_material.py text eol=lf
+/packages/contracts/package-technical-complete-material.md text eol=lf
+/packages/model_governance/package_technical_material.py text eol=lf
+/packages/model_governance/package_technical_complete_vision.py text eol=lf
+/packages/domain/providers/deepseek_complete_vision.py text eol=lf
+/tests/test_package_technical_material.py text eol=lf
+/tests/test_package_technical_material_pg.py text eol=lf
+/packages/model_governance/package_complete_features.py text eol=lf
+/tests/test_package_complete_features.py text eol=lf
+/packages/model_governance/read_purpose.py text eol=lf
+/packages/contracts/package-current-scope.md text eol=lf
+/tests/test_package_current_scope_pg.py text eol=lf
+/packages/contracts/package-current-sources.md text eol=lf
+/tests/test_package_current_sources_pg.py text eol=lf
+/packages/domain/runtime.py text eol=lf
+/packages/domain/providers/errors.py text eol=lf
+/tests/test_provider_error_isolation.py text eol=lf
+/packages/domain/providers/deepseek_vision.py text eol=lf
+/packages/domain/providers/original_bytes.py text eol=lf
+/packages/contracts/package-original-get.md text eol=lf
+/tests/test_original_bytes.py text eol=lf
+/packages/domain/providers/json_protocol.py text eol=lf
+/packages/contracts/package-technical-vision.md text eol=lf
+/tests/test_package_technical_vision.py text eol=lf
+/packages/contracts/package_technical_input.py text eol=lf
+/packages/contracts/package-technical-input.md text eol=lf
+/tests/test_package_technical_input.py text eol=lf
+/packages/model_governance/technical_png.py text eol=lf
+/packages/contracts/package_technical_assets.py text eol=lf
+/packages/contracts/package-technical-page-assets.md text eol=lf
+/packages/parsing/physical_pdf.py text eol=lf
+/packages/parsing/pdfium_guard.py text eol=lf
+/packages/parsing/page_asset_wire.py text eol=lf
+/packages/contracts/package-page-asset-runtime.md text eol=lf
+/tests/test_fusion_asset_runtime.py text eol=lf
+/tests/test_package_technical_assets.py text eol=lf
+/packages/contracts/package_technical_features.py text eol=lf
+/packages/contracts/package-technical-features.md text eol=lf
+/tests/test_package_technical_features.py text eol=lf
+/packages/contracts/package-history-dispatch.md text eol=lf
+/packages/contracts/fusion-desktop-runtime.md text eol=lf
+/apps/api/main.py text eol=lf
+/apps/api/export_openapi.py text eol=lf
+/apps/api/project_summary_routes.py text eol=lf
+/packages/domain/project_summary*.py text eol=lf
+/packages/contracts/project_summary_api.py text eol=lf
+/tests/test_project_summary*.py text eol=lf
+/apps/api/package_next_action_routes.py text eol=lf
+/packages/domain/package_next_actions.py text eol=lf
+/packages/contracts/package_next_actions.py text eol=lf
+/packages/work_contexts/next_actions.py text eol=lf
+/tests/test_package_next_actions*.py text eol=lf
+/tests/test_bid_package_requirements_api.py text eol=lf
+/packages/contracts/project-work-summary.md text eol=lf
+/packages/contracts/package-next-actions.md text eol=lf
+/tests/test_fusion*.py text eol=lf
+/tests/test_package_history_dispatch*.py text eol=lf
+/docs/completion-20261021/evidence/windows-compose/** -text
+/docs/completion-20261021/evidence/history-dispatch/** -text
+/docs/completion-20261021/evidence/desktop-runtime/** -text
+/docs/completion-20261021/evidence/project-summary/** -text
+/docs/completion-20261021/evidence/package-next-actions/** -text
+/docs/completion-20261021/evidence/report-next-actions/** -text
+/docs/completion-20261021/evidence/submission-next-actions/** -text
+/docs/completion-20261021/evidence/registration-next-actions/** -text
+/docs/completion-20261021/evidence/technical-features/** -text
+/docs/completion-20261021/evidence/technical-assets/** -text
+/docs/completion-20261021/evidence/technical-input/** -text
+/docs/completion-20261021/evidence/technical-vision/** -text
+/docs/completion-20261021/evidence/technical-context/** -text
+/docs/completion-20261021/evidence/asset-runtime/** -text
+/docs/completion-20261021/evidence/provider-errors/** -text
+/docs/completion-20261021/evidence/current-source/** -text
+/docs/completion-20261021/evidence/current-scope/** -text
+/docs/completion-20261021/evidence/read-purpose/** -text
+/docs/completion-20261021/evidence/original-get/** -text
+/docs/completion-20261021/evidence/current-original/** -text
+/docs/completion-20261021/evidence/current-original-set/** -text
+/docs/completion-20261021/evidence/current-material/** -text
+/docs/completion-20261021/evidence/complete-material/** -text
+/packages/storage/*.py text eol=lf
+/packages/model_governance/package_material_archive.py text eol=lf
+/packages/contracts/package-private-material-archive.md text eol=lf
+/tests/test_private_content_store.py text eol=lf
+/tests/test_package_material_archive*.py text eol=lf
+/docs/completion-20261021/evidence/material-archive/** -text
+/packages/model_governance/package_material_recovery.py text eol=lf
+/packages/contracts/package-native-material-recovery.md text eol=lf
+/tests/test_package_material_recovery*.py text eol=lf
+/docs/completion-20261021/evidence/material-recovery/** -text
+/packages/model_governance/package_material_registration.py text eol=lf
+/packages/contracts/package-native-material-registration.md text eol=lf
+/deploy/sql/package-material-registration.sql text eol=lf
+/tests/test_package_material_registration*.py text eol=lf
+/docs/completion-20261021/evidence/material-registration/** -text
+/packages/model_governance/package_material_scope_review.py text eol=lf
+/packages/contracts/package-material-scope-review.md text eol=lf
+/tests/test_package_material_scope_review*.py text eol=lf
+/docs/completion-20261021/evidence/material-scope-review/** -text
+/packages/model_governance/package_material_cost.py text eol=lf
+/packages/contracts/package-material-cost.md text eol=lf
+/tests/test_package_material_cost*.py text eol=lf
+/docs/completion-20261021/evidence/material-cost/** -text
+/packages/model_governance/package_material_scope_findings.py text eol=lf
+/packages/model_governance/package_scope_findings_store.py text eol=lf
+/packages/contracts/package-material-scope-findings.md text eol=lf
+/tests/test_package_material_scope_findings*.py text eol=lf
+/docs/completion-20261021/evidence/material-scope-findings/** -text
+/docs/completion-20261021/evidence/proxy-dns/** -text
+/packages/model_governance/package_scope_review_issuers.py text eol=lf
+/deploy/sql/package-scope-review-issuers.sql text eol=lf
+/packages/contracts/package-scope-review-issuers.md text eol=lf
+/tests/test_scope_review_issuers*.py text eol=lf
+/docs/completion-20261021/evidence/scope-review-issuers/** -text
+/deploy/fusion_material_derivation.py text eol=lf
+/deploy/fusion_material_checks.py text eol=lf
+/deploy/compose.fusion.host-checks.yaml text eol=lf
+/tests/test_fusion_material_derivation*.py text eol=lf
+/packages/contracts/fusion-material-derivation.md text eol=lf
+/docs/completion-20261021/evidence/material-derivation/** -text
+/packages/model_governance/package_current_scope_review.py text eol=lf
+/packages/contracts/package-current-scope-review.md text eol=lf
+/tests/test_current_scope_review*.py text eol=lf
+/docs/completion-20261021/evidence/current-scope-review/** -text
+/deploy/fusion_context_derivation.py text eol=lf
+/tests/test_fusion_context_derivation*.py text eol=lf
+/packages/contracts/fusion-context-derivation.md text eol=lf
+/docs/completion-20261021/evidence/context-derivation/** -text
+/packages/model_governance/package_native_material_store.py text eol=lf
+/deploy/sql/package-native-material-store.sql text eol=lf
+/tests/test_native_material_store*.py text eol=lf
+/packages/contracts/package-native-material-store.md text eol=lf
+/docs/completion-20261021/evidence/native-material-store/** -text
+/packages/model_governance/package_native_material_recovery.py text eol=lf
+/tests/test_native_material_recovery*.py text eol=lf
+/packages/contracts/package-native-evidence-recovery.md text eol=lf
+/docs/completion-20261021/evidence/native-material-recovery/** -text
+/packages/model_governance/package_native_evidence_registration.py text eol=lf
+/deploy/sql/package-native-evidence-registration.sql text eol=lf
+/tests/test_native_evidence_registration*.py text eol=lf
+/packages/contracts/package-native-evidence-registration.md text eol=lf
+/docs/completion-20261021/evidence/native-evidence-registration/** -text
+/packages/model_governance/package_native_evidence_issuers.py text eol=lf
+/deploy/sql/package-native-evidence-issuers.sql text eol=lf
+/tests/test_native_evidence_issuers*.py text eol=lf
+/packages/contracts/package-native-evidence-issuers.md text eol=lf
+/docs/completion-20261021/evidence/native-evidence-issuers/** -text
+/packages/model_governance/package_native_current_review.py text eol=lf
+/tests/test_native_current_review*.py text eol=lf
+/packages/contracts/package-native-current-review.md text eol=lf
+/docs/completion-20261021/evidence/native-current-review/** -text
+/deploy/fusion_verified_material.py text eol=lf
+/tests/test_fusion_verified_material.py text eol=lf
+/packages/contracts/fusion-verified-material.md text eol=lf
+/docs/completion-20261021/evidence/verified-material/** -text
+/packages/model_governance/material_verification_commands.py text eol=lf
+/deploy/sql/material-verification-commands.sql text eol=lf
+/tests/test_verification_commands*.py text eol=lf
+/packages/contracts/material-verification-commands.md text eol=lf
+/docs/completion-20261021/evidence/verification-commands/** -text
+/packages/model_governance/material_verification_program.py text eol=lf
+/deploy/fusion_verification_program.py text eol=lf
+/deploy/sql/material-verification-program.sql text eol=lf
+/tests/test_verification_program*.py text eol=lf
+/packages/contracts/material-verification-program.md text eol=lf
+/docs/completion-20261021/evidence/verification-program/** -text
+
+/packages/model_governance/material_input_authority.py text eol=lf
+/deploy/sql/material-input-authority.sql text eol=lf
+/tests/test_input_authority*.py text eol=lf
+/packages/contracts/material-input-authority.md text eol=lf
+/docs/completion-20261021/evidence/input-authority/** -text
+
+/packages/model_governance/material_input_seals.py text eol=lf
+/deploy/sql/material-input-seals.sql text eol=lf
+/tests/test_input_seals*.py text eol=lf
+/packages/contracts/material-input-seals.md text eol=lf
+/docs/completion-20261021/evidence/input-seals/** -text
+
+/packages/model_governance/material_cost_quotes.py text eol=lf
+/packages/model_governance/native_rpc_audit.py text eol=lf
+/deploy/sql/material-cost-quotes.sql text eol=lf
+/tests/test_cost_quotes*.py text eol=lf
+/packages/contracts/material-cost-quotes.md text eol=lf
+/docs/completion-20261021/evidence/cost-quotes/** -text
+
+/packages/model_governance/material_input_renewals.py text eol=lf
+/deploy/sql/material-input-renewals.sql text eol=lf
+/tests/test_input_renewals*.py text eol=lf
+/packages/contracts/material-input-renewals.md text eol=lf
+/docs/completion-20261021/evidence/input-renewals/** -text
+
+/deploy/sql/material-judgment-jobs.sql text eol=lf
+/packages/model_governance/material_judgment_jobs.py text eol=lf
+/packages/contracts/material-judgment-jobs.md text eol=lf
+/tests/test_judgment_jobs.py text eol=lf
+/tests/test_judgment_jobs_pg.py text eol=lf
+/docs/completion-20261021/evidence/judgment-jobs/** -text
+
+/deploy/sql/material-preparation-leases.sql text eol=lf
+/packages/model_governance/material_preparation_leases.py text eol=lf
+/packages/contracts/material-preparation-leases.md text eol=lf
+/tests/test_preparation_leases.py text eol=lf
+/tests/test_preparation_leases_pg.py text eol=lf
+/docs/completion-20261021/evidence/preparation-leases/** -text

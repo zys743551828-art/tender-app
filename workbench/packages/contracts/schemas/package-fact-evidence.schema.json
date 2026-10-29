@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-fact-evidence:1",
+  "$ref": "#/$defs/BasisObservation",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "FrozenInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "id",
+        "digest"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "document_version_id",
+        "parse_run_id",
+        "source_id",
+        "file_digest",
+        "evidence_digest",
+        "physical_page"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "document_version_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "parse_run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "source_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "file_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "evidence_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "physical_page": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "frozen_input",
+        "selected",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-fact-evidence-selection/1"
+        },
+        "frozen_input": {
+          "$ref": "#/$defs/FrozenInput"
+        },
+        "selected": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          }
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        }
+      }
+    },
+    "BasisObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "selection",
+        "selection_digest",
+        "checked_at",
+        "basis_digest",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-fact-evidence-basis/1"
+        },
+        "selection": {
+          "$ref": "#/$defs/Selection"
+        },
+        "selection_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        },
+        "basis_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        }
+      }
+    }
+  }
+}

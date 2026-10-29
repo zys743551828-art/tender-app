@@ -1,0 +1,50 @@
+.exact-package-task-scope {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line, #d8e0e8);
+  border-radius: 0.75rem;
+  background: var(--surface-soft, #f5f8fb);
+  min-width: 0;
+}
+.exact-package-task-scope h4 {
+  margin: 0 0 0.75rem;
+}
+.exact-package-task-scope dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 0 0 1rem;
+}
+.exact-package-task-scope dl div,
+.exact-package-task-scope dd {
+  min-width: 0;
+}
+.exact-package-task-scope dt {
+  font-size: 0.8rem;
+  color: var(--muted, #5a6877);
+}
+.exact-package-task-scope dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.exact-package-task-scope p,
+.exact-package-task-result p,
+.exact-package-task-result a,
+.exact-package-task-command p {
+  overflow-wrap: anywhere;
+}
+.exact-package-task-result {
+  margin-block: 1rem;
+}
+.exact-package-task-readonly {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .exact-package-task-scope dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

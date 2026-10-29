@@ -1,0 +1,29 @@
+{
+  "status": "frozen source inputs before target-cluster verification",
+  "sources": [
+    {
+      "path": "deploy/initialize_topics.py",
+      "sha256": "a724482678066e65e2a14392e7bee09c83a67546e64978cb732852a7a4e1a0a9"
+    },
+    {
+      "path": "tests/test_initialize_topics.py",
+      "sha256": "864fff405723a30e4f14eadfd178b2ded83a50a361dd822ce55a6cc9e87d5f0b"
+    },
+    {
+      "path": "README.md",
+      "sha256": "a5134f28316f680106229d1b51d0bbb9cba62c1f76a32c09303e510ac179a229"
+    },
+    {
+      "path": "apps/worker/execution-policy-07.json",
+      "sha256": "72874d8f4d4ed43981433ed61351648ce493401f2d3014877d109c06b58e60fe"
+    },
+    {
+      "path": "packages/contracts/policies/execution-policy.json",
+      "sha256": "dbc68d4f6eb622e052f43b3b08573055ded80ace032337c1f146c0061a966b67"
+    }
+  ],
+  "runtime_root": "/workspace/tender-workbench/docs/deployment-topics-development-checks/frozen-inputs",
+  "target_cluster_id": "N8d3T4cNR6Wt6Ba9RX3kgA",
+  "bootstrap": "127.0.0.1:19098",
+  "allowed_mutation": "only create missing topics from actual nine-topic policy; no alter/delete/offset/consumer"
+}

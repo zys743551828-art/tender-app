@@ -1,0 +1,14 @@
+{
+  "scope": "real previously completed normal multipart baseline, commit accepted through actual HTTP for known batch identity; not new-browser discovery acceptance",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "upload_id": "a058fcc0-c791-42bd-87d2-5dcea1932c0d",
+  "batch_id": "62ddf147-90b2-4300-9d63-f092cf0b870c",
+  "mode": "multipart",
+  "part_count": 2,
+  "byte_size": 9441426,
+  "sha256": "eb9dad78eaf1be65ced74c8bfb39d1252ccd3d6d16d195f3d1052e14bda36262",
+  "existing_verified_original_reused_no_reupload": true,
+  "commit_accepted": true,
+  "identity_mobile_no_overflow": true,
+  "paid_requests": 0
+}

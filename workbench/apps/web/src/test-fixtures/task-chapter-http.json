@@ -1,0 +1,1824 @@
+{
+  "queued": {
+    "run": {
+      "id": "d9d2943d-b7b9-4ef0-a98d-e362dbcb58e5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "root_operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "final_operation_id": null,
+      "state": "queued",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+            "draft_id": "6e46027d-d842-435f-8a35-ae8ae8631829",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+              "digest": "8b5793a2f41fe8de8748592924bd8f6bb8388896bdd702ad5affa8ab1265a70d",
+              "parse_id": "b41e63b5-7989-4995-956c-13242c19a13f"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "5d27fd68-af94-43df-867a-79bf813bcd43"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+        "fee_scope": "a38ac90d89adbc95eec25fccd1dd967bdcfc5e7ee0525bf0f6ae2db07dcc3d8e",
+        "task_kind": "chapter_suggestion",
+        "request_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+        "accepted_at": "2026-10-21T04:04:24.625559-07:00",
+        "input_digest": "a5ceebb255428cca936b4b573ecae6857e28c4f81838481e7a3b7283835bcced",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+        "assistant_job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+          "native_actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+          "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+          "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+          "native_command_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+          "writing_plan_digest": "0aae1758caa81f34d77e7f1dec37165cb72a4aae5ee53091921ed993d2a66f05"
+        },
+        "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+        "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+        "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+        "job_ref": "/api/v1/assistant/jobs/d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+        "base_section_revision": 1,
+        "publication_state": "pending",
+        "candidate_digest": null,
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": null,
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "b5e46ec9cbb9ae161e34ed162c19d819a9af1bee13ab6a57254dd853c1a3a7d5"
+    },
+    "operation": {
+      "id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "kind": "authoring-generate",
+      "state": "queued",
+      "input_digest": "dd025f7ad37d5df14a52f8c568c2482a3ead75f7ff2dbc87bc986f0a56a8c674",
+      "handler_version": "authoring-generate/1",
+      "result_ref": null
+    },
+    "operation_etag": "\"operation:c69666ca-6c9c-45ef-8e4e-74e699b3e98c:1ce931eb8dbb1ad2ebf202b0e659af09c603198625d4145630dedb5fb7cad49f\"",
+    "proposal": null
+  },
+  "awaiting-publication": {
+    "run": {
+      "id": "d9d2943d-b7b9-4ef0-a98d-e362dbcb58e5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "root_operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "final_operation_id": null,
+      "state": "awaiting_publication",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+            "draft_id": "6e46027d-d842-435f-8a35-ae8ae8631829",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+              "digest": "8b5793a2f41fe8de8748592924bd8f6bb8388896bdd702ad5affa8ab1265a70d",
+              "parse_id": "b41e63b5-7989-4995-956c-13242c19a13f"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "5d27fd68-af94-43df-867a-79bf813bcd43"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+        "fee_scope": "a38ac90d89adbc95eec25fccd1dd967bdcfc5e7ee0525bf0f6ae2db07dcc3d8e",
+        "task_kind": "chapter_suggestion",
+        "request_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+        "accepted_at": "2026-10-21T04:04:24.625559-07:00",
+        "input_digest": "a5ceebb255428cca936b4b573ecae6857e28c4f81838481e7a3b7283835bcced",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+        "assistant_job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+          "native_actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+          "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+          "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+          "native_command_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+          "writing_plan_digest": "0aae1758caa81f34d77e7f1dec37165cb72a4aae5ee53091921ed993d2a66f05"
+        },
+        "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+        "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+        "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+        "job_ref": "/api/v1/assistant/jobs/d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+        "base_section_revision": 1,
+        "publication_state": "pending",
+        "candidate_digest": "608b5acffec83e84064ca732a1259e95612dd98a5d33bbdf7e70a178a9c7b4c9",
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": null,
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "b5e46ec9cbb9ae161e34ed162c19d819a9af1bee13ab6a57254dd853c1a3a7d5"
+    },
+    "operation": {
+      "id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "dd025f7ad37d5df14a52f8c568c2482a3ead75f7ff2dbc87bc986f0a56a8c674",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/d62b10dd-e4fc-4ac3-ab98-4f0239859a00"
+    },
+    "operation_etag": "\"operation:c69666ca-6c9c-45ef-8e4e-74e699b3e98c:34f7b61726e64bc5eb2c07844d6d2b4c560c5ca13e938c061630067ed840781e\"",
+    "proposal": null
+  },
+  "published": {
+    "run": {
+      "id": "d9d2943d-b7b9-4ef0-a98d-e362dbcb58e5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "root_operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "final_operation_id": null,
+      "state": "succeeded",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+            "draft_id": "6e46027d-d842-435f-8a35-ae8ae8631829",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+              "digest": "8b5793a2f41fe8de8748592924bd8f6bb8388896bdd702ad5affa8ab1265a70d",
+              "parse_id": "b41e63b5-7989-4995-956c-13242c19a13f"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "5d27fd68-af94-43df-867a-79bf813bcd43"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "8e0c11f1-8a92-4368-867a-49aab3954353",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+        "fee_scope": "a38ac90d89adbc95eec25fccd1dd967bdcfc5e7ee0525bf0f6ae2db07dcc3d8e",
+        "task_kind": "chapter_suggestion",
+        "request_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+        "accepted_at": "2026-10-21T04:04:24.625559-07:00",
+        "input_digest": "a5ceebb255428cca936b4b573ecae6857e28c4f81838481e7a3b7283835bcced",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+        "assistant_job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+          "native_actor_id": "52082da0-c422-40e9-8495-d7a72ac29326",
+          "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+          "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+          "native_command_id": "e68612fb-25e3-42f1-8d05-d259bb2eadcc",
+          "writing_plan_digest": "0aae1758caa81f34d77e7f1dec37165cb72a4aae5ee53091921ed993d2a66f05"
+        },
+        "definition_version_id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "job_input_digest": "79a66f05ecca9f29903c306427c392b49c9ce5b84308476e6bfe2f284797b20c",
+        "writing_plan_id": "11bda0e5-d837-46de-9614-f275552ab643",
+        "operation_id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+        "job_ref": "/api/v1/assistant/jobs/d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+        "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+        "base_section_revision": 1,
+        "publication_state": "published",
+        "candidate_digest": "608b5acffec83e84064ca732a1259e95612dd98a5d33bbdf7e70a178a9c7b4c9",
+        "action_id": "c35bb78b-769d-4156-beab-1111320a5c30",
+        "action_ref": "/api/v1/assistant/actions/c35bb78b-769d-4156-beab-1111320a5c30",
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": null,
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "0175b735-35ed-4b5d-b3bf-3f5c73ec6ae5",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "definition_id": "0d1cbed2-9b46-4ac1-a492-e4c46e23e5bd",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8e0c11f1-8a92-4368-867a-49aab3954353"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "b5e46ec9cbb9ae161e34ed162c19d819a9af1bee13ab6a57254dd853c1a3a7d5"
+    },
+    "operation": {
+      "id": "c69666ca-6c9c-45ef-8e4e-74e699b3e98c",
+      "bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "dd025f7ad37d5df14a52f8c568c2482a3ead75f7ff2dbc87bc986f0a56a8c674",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/d62b10dd-e4fc-4ac3-ab98-4f0239859a00"
+    },
+    "operation_etag": "\"operation:c69666ca-6c9c-45ef-8e4e-74e699b3e98c:34f7b61726e64bc5eb2c07844d6d2b4c560c5ca13e938c061630067ed840781e\"",
+    "proposal": {
+      "action_id": "c35bb78b-769d-4156-beab-1111320a5c30",
+      "job_id": "d62b10dd-e4fc-4ac3-ab98-4f0239859a00",
+      "target_bid_id": "88bab4eb-8a0d-436c-81b1-0ee1f0748c62",
+      "tool": "authoring.apply_patch",
+      "state": "pending",
+      "revision": 1,
+      "request_digest": "16c2ed38b38937c3889830788a3eec5f8c3eaec62a6897d09d1fd0db11cabd5e",
+      "base_revision": 1,
+      "expires_at": "2026-10-21T04:34:25.707000-07:00",
+      "preview": {
+        "kind": "authoring_patch",
+        "section_id": "2948a020-5aa1-4125-9bb4-462a87b60081",
+        "base_section_revision": 1,
+        "before": {
+          "type": "doc",
+          "attrs": {
+            "title": "施工组织安排",
+            "ordinal": 0,
+            "rule_ids": [],
+            "source_refs": [
+              {
+                "source_id": "472c558e-5a10-52f2-836d-a743f51c9a78",
+                "evidence_id": "bdad538f-39d7-4515-8cf6-090f9ca6eb62",
+                "source_revision": 2,
+                "document_version_id": "8e0c11f1-8a92-4368-867a-49aab3954353"
+              }
+            ]
+          },
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "id": "chapter-0-heading",
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "原小标题",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "id": "chapter-0-p1"
+              },
+              "content": [
+                {
+                  "text": "原正文一",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "attrs": {
+                "id": "chapter-0-table",
+                "caption": "原合并表",
+                "column_widths_twips": [2000, 2200]
+              },
+              "content": [
+                {
+                  "type": "tableRow",
+                  "attrs": {
+                    "id": "chapter-0-row1"
+                  },
+                  "content": [
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell1",
+                        "header": true,
+                        "colspan": 1,
+                        "rowspan": 2
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p1"
+                          },
+                          "content": [
+                            {
+                              "text": "格内原件内容必须保留",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell2",
+                        "header": true,
+                        "colspan": 1,
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p2"
+                          },
+                          "content": [
+                            {
+                              "text": "原数值123",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableRow",
+                  "attrs": {
+                    "id": "chapter-0-row2"
+                  },
+                  "content": [
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell3",
+                        "header": false,
+                        "colspan": 1,
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p3"
+                          },
+                          "content": [
+                            {
+                              "text": "原表续行",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "image",
+              "attrs": {
+                "id": "chapter-0-image",
+                "alt": "原现场图片",
+                "caption": "原图注",
+                "asset_id": "cedc8dd5-b929-45bc-92f1-d55eebdbc7ed",
+                "width_twips": 2400,
+                "height_twips": 1800,
+                "asset_revision": 1,
+                "asset_version_id": "9dc13fe3-cdfe-416b-b353-0bcf049b929d"
+              }
+            },
+            {
+              "type": "bulletList",
+              "attrs": {
+                "id": "chapter-0-list"
+              },
+              "content": [
+                {
+                  "type": "listItem",
+                  "attrs": {
+                    "id": "chapter-0-item1"
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "chapter-0-list-p1"
+                      },
+                      "content": [
+                        {
+                          "text": "原列表一",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "attrs": {
+                    "id": "chapter-0-item2"
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "chapter-0-list-p2"
+                      },
+                      "content": [
+                        {
+                          "text": "原列表二",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "id": "chapter-0-p2"
+              },
+              "content": [
+                {
+                  "text": "未选结尾不改",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        "after": {
+          "type": "doc",
+          "attrs": {
+            "title": "施工组织安排",
+            "ordinal": 0,
+            "rule_ids": [],
+            "source_refs": [
+              {
+                "source_id": "472c558e-5a10-52f2-836d-a743f51c9a78",
+                "evidence_id": "bdad538f-39d7-4515-8cf6-090f9ca6eb62",
+                "source_revision": 2,
+                "document_version_id": "8e0c11f1-8a92-4368-867a-49aab3954353"
+              }
+            ]
+          },
+          "content": [
+            {
+              "type": "heading",
+              "attrs": {
+                "id": "chapter-0-heading",
+                "level": 2
+              },
+              "content": [
+                {
+                  "text": "原小标题",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "id": "chapter-0-p1"
+              },
+              "content": [
+                {
+                  "text": "合成原页支持的修改建议，尚未采纳",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "attrs": {
+                "id": "chapter-0-table",
+                "caption": "原合并表",
+                "column_widths_twips": [2000, 2200]
+              },
+              "content": [
+                {
+                  "type": "tableRow",
+                  "attrs": {
+                    "id": "chapter-0-row1"
+                  },
+                  "content": [
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell1",
+                        "header": true,
+                        "colspan": 1,
+                        "rowspan": 2
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p1"
+                          },
+                          "content": [
+                            {
+                              "text": "格内原件内容必须保留",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell2",
+                        "header": true,
+                        "colspan": 1,
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p2"
+                          },
+                          "content": [
+                            {
+                              "text": "原数值123",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "tableRow",
+                  "attrs": {
+                    "id": "chapter-0-row2"
+                  },
+                  "content": [
+                    {
+                      "type": "tableCell",
+                      "attrs": {
+                        "id": "chapter-0-cell3",
+                        "header": false,
+                        "colspan": 1,
+                        "rowspan": 1
+                      },
+                      "content": [
+                        {
+                          "type": "paragraph",
+                          "attrs": {
+                            "id": "chapter-0-cell-p3"
+                          },
+                          "content": [
+                            {
+                              "text": "原表续行",
+                              "type": "text"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "image",
+              "attrs": {
+                "id": "chapter-0-image",
+                "alt": "原现场图片",
+                "caption": "原图注",
+                "asset_id": "cedc8dd5-b929-45bc-92f1-d55eebdbc7ed",
+                "width_twips": 2400,
+                "height_twips": 1800,
+                "asset_revision": 1,
+                "asset_version_id": "9dc13fe3-cdfe-416b-b353-0bcf049b929d"
+              }
+            },
+            {
+              "type": "bulletList",
+              "attrs": {
+                "id": "chapter-0-list"
+              },
+              "content": [
+                {
+                  "type": "listItem",
+                  "attrs": {
+                    "id": "chapter-0-item1"
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "chapter-0-list-p1"
+                      },
+                      "content": [
+                        {
+                          "text": "原列表一",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "listItem",
+                  "attrs": {
+                    "id": "chapter-0-item2"
+                  },
+                  "content": [
+                    {
+                      "type": "paragraph",
+                      "attrs": {
+                        "id": "chapter-0-list-p2"
+                      },
+                      "content": [
+                        {
+                          "text": "原列表二",
+                          "type": "text"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "attrs": {
+                "id": "chapter-0-p2"
+              },
+              "content": [
+                {
+                  "text": "未选结尾不改",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        "effect": "明确应用会追加新修订；不表示问题已解决"
+      },
+      "result": null,
+      "resolved_by": null,
+      "error_code": null,
+      "formal_scoring_input": false
+    }
+  },
+  "stale-section": {
+    "run": {
+      "id": "a77da096-50fb-412e-bc97-6e5f6765a341",
+      "bid_id": "88ef0a92-b7b2-45b7-867b-3a8556404c80",
+      "definition_version_id": "34aafd13-d1c6-4c97-a2d5-b9ce921c012c",
+      "root_operation_id": "ea4d3642-8d14-423e-88f1-2742bc2d1fd1",
+      "final_operation_id": null,
+      "state": "superseded",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "d3b3a5eb-7300-42bc-8bb9-f9288fdebabc",
+            "draft_id": "e95c3264-b1c3-44ef-bbd2-deb45cc5b612",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "06cfcb4b-dba0-4f45-8518-9ab0f6dcdfe3",
+              "digest": "ea294e966ca6d42ee77f4e4d81ba512a2b84a58fd4b00e2b96dbc30781b5e513",
+              "parse_id": "71d74f9d-0368-472e-8008-3f0a41b4721f"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "99b3de9e-5952-486d-9c6f-070fc71ae103"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "06cfcb4b-dba0-4f45-8518-9ab0f6dcdfe3",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "93cc7dbe-0adb-4026-b102-197135888c3c",
+        "fee_scope": "82cd9ed63fa4f71da7612679420dac6a9f081dc85e55025a0870b09d37f51a7d",
+        "task_kind": "chapter_suggestion",
+        "request_id": "56cb4452-dbb8-4505-aa57-aa7fecab1d2c",
+        "accepted_at": "2026-10-21T04:04:26.601023-07:00",
+        "input_digest": "fcadf1a8f1c680bce3b7a8fedb2c3fc7625f065b02c4cb81e649915382e69f80",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "d3b3a5eb-7300-42bc-8bb9-f9288fdebabc",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["06cfcb4b-dba0-4f45-8518-9ab0f6dcdfe3"]
+          }
+        },
+        "definition_id": "9f89066a-a0a1-4af3-ae2c-7b3aa4db7a51",
+        "assistant_job_id": "344ea845-9a70-466e-a045-600a91b6f3d8",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "344ea845-9a70-466e-a045-600a91b6f3d8",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "ea4d3642-8d14-423e-88f1-2742bc2d1fd1",
+          "native_actor_id": "93cc7dbe-0adb-4026-b102-197135888c3c",
+          "writing_plan_id": "2cee1287-2030-40b6-9fb9-fe21b736f419",
+          "job_input_digest": "36555ccea567e239472b38d5b9ff91597cab1d006e8b05b5538958e7a32b460e",
+          "native_command_id": "56cb4452-dbb8-4505-aa57-aa7fecab1d2c",
+          "writing_plan_digest": "be21bdccd0196745524f7e50de06ed7806f3d15f6b068e72b2b4b1ae1ed4e451"
+        },
+        "definition_version_id": "34aafd13-d1c6-4c97-a2d5-b9ce921c012c",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "344ea845-9a70-466e-a045-600a91b6f3d8",
+        "job_input_digest": "36555ccea567e239472b38d5b9ff91597cab1d006e8b05b5538958e7a32b460e",
+        "writing_plan_id": "2cee1287-2030-40b6-9fb9-fe21b736f419",
+        "operation_id": "ea4d3642-8d14-423e-88f1-2742bc2d1fd1",
+        "job_ref": "/api/v1/assistant/jobs/344ea845-9a70-466e-a045-600a91b6f3d8",
+        "section_id": "d3b3a5eb-7300-42bc-8bb9-f9288fdebabc",
+        "base_section_revision": 1,
+        "publication_state": "stale",
+        "candidate_digest": "04e02565b1eb5250bf645016b42477d619761eb241c3533cebf82fe17584245f",
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "ASSISTANT_INTENT_TARGET_CHANGED",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "34aafd13-d1c6-4c97-a2d5-b9ce921c012c",
+      "bid_id": "88ef0a92-b7b2-45b7-867b-3a8556404c80",
+      "definition_id": "9f89066a-a0a1-4af3-ae2c-7b3aa4db7a51",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "d3b3a5eb-7300-42bc-8bb9-f9288fdebabc",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["06cfcb4b-dba0-4f45-8518-9ab0f6dcdfe3"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "8551c5bbc2e7c3562f4fd9afaed532789bb936181acc3bd1bc267238f56f48a5"
+    },
+    "operation": {
+      "id": "ea4d3642-8d14-423e-88f1-2742bc2d1fd1",
+      "bid_id": "88ef0a92-b7b2-45b7-867b-3a8556404c80",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "fee574e612816c661c5be4ef38d7e6c6ccd88f35c64cfab49813d28a0d6bc997",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/344ea845-9a70-466e-a045-600a91b6f3d8"
+    },
+    "operation_etag": "\"operation:ea4d3642-8d14-423e-88f1-2742bc2d1fd1:e0211a3dd32332bc6455eb21ce12b98f437923b3e180a2b1bdd6ab84fb404a39\"",
+    "proposal": null
+  },
+  "stale-fact": {
+    "run": {
+      "id": "605bfcad-cf35-41e2-91fd-5cbd3c232fb0",
+      "bid_id": "a35c367a-e281-4390-acab-6af2f127c2d2",
+      "definition_version_id": "8c72ba4f-3429-4e69-a354-1509f799254b",
+      "root_operation_id": "f4d26984-64a6-4433-a825-6c4b51082140",
+      "final_operation_id": null,
+      "state": "superseded",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "6a178979-412c-46c6-8763-2f860b716667",
+            "draft_id": "074fd7a2-80a4-4136-b626-0ffb91884576",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "8763787d-6bc3-4ea2-81fc-dcaac97c1fa0",
+              "digest": "f528e38101accdbd50830fc173a7fe7e34257ede82ae6a209c7e9fe9aed8f6f4",
+              "parse_id": "88beea47-39ab-413b-8209-b8f4fbbbfcb0"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "25f5fbfa-5260-43b4-9d66-8a3e9eaba331"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "8763787d-6bc3-4ea2-81fc-dcaac97c1fa0",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "5464c7f6-b0da-407a-bb3a-7c12acf2e6e1",
+        "fee_scope": "ddf66d05337bf501f2e20206da6c6948d6727d9ca9c775500beea941ec0c7417",
+        "task_kind": "chapter_suggestion",
+        "request_id": "3d854e5e-5d0b-48cd-86b7-e7993140f7e7",
+        "accepted_at": "2026-10-21T04:04:28.532054-07:00",
+        "input_digest": "88ce542e1bf81d078ff4d421279358619595eb06d24d17c3d4c59e9b2302a078",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "6a178979-412c-46c6-8763-2f860b716667",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8763787d-6bc3-4ea2-81fc-dcaac97c1fa0"]
+          }
+        },
+        "definition_id": "1f4f9aad-1ed7-42fd-ab44-eeb0b913dfcc",
+        "assistant_job_id": "c73acdde-bc8d-4db5-b9cb-c8682483bc1b",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "c73acdde-bc8d-4db5-b9cb-c8682483bc1b",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "f4d26984-64a6-4433-a825-6c4b51082140",
+          "native_actor_id": "5464c7f6-b0da-407a-bb3a-7c12acf2e6e1",
+          "writing_plan_id": "24247ba5-bfdb-4dfb-8107-f71992fd6095",
+          "job_input_digest": "abf355e6b7ab0e75101605aa534894789397087a46ee8cf50cc7e6360bb7f0a5",
+          "native_command_id": "3d854e5e-5d0b-48cd-86b7-e7993140f7e7",
+          "writing_plan_digest": "f657c087a7a4a153c90bd2a9fd14f8c05234090915f699f276b9df614eb71bb7"
+        },
+        "definition_version_id": "8c72ba4f-3429-4e69-a354-1509f799254b",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "c73acdde-bc8d-4db5-b9cb-c8682483bc1b",
+        "job_input_digest": "abf355e6b7ab0e75101605aa534894789397087a46ee8cf50cc7e6360bb7f0a5",
+        "writing_plan_id": "24247ba5-bfdb-4dfb-8107-f71992fd6095",
+        "operation_id": "f4d26984-64a6-4433-a825-6c4b51082140",
+        "job_ref": "/api/v1/assistant/jobs/c73acdde-bc8d-4db5-b9cb-c8682483bc1b",
+        "section_id": "6a178979-412c-46c6-8763-2f860b716667",
+        "base_section_revision": 1,
+        "publication_state": "stale",
+        "candidate_digest": "bb4e4cb2ad35d43a71a8775deb2ac1a177af17476fb8beca53e3442d5b6062d5",
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "ASSISTANT_INTENT_TARGET_CHANGED",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "8c72ba4f-3429-4e69-a354-1509f799254b",
+      "bid_id": "a35c367a-e281-4390-acab-6af2f127c2d2",
+      "definition_id": "1f4f9aad-1ed7-42fd-ab44-eeb0b913dfcc",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "6a178979-412c-46c6-8763-2f860b716667",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["8763787d-6bc3-4ea2-81fc-dcaac97c1fa0"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "bee47844713ab9a0b6d79dedb4605b37125983529c4609a571ea6fa7cdeae997"
+    },
+    "operation": {
+      "id": "f4d26984-64a6-4433-a825-6c4b51082140",
+      "bid_id": "a35c367a-e281-4390-acab-6af2f127c2d2",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "daef5c9cc59dcf2e26ceed68738628fd22ac366778ba58f49cb9ef5f6d81f119",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/c73acdde-bc8d-4db5-b9cb-c8682483bc1b"
+    },
+    "operation_etag": "\"operation:f4d26984-64a6-4433-a825-6c4b51082140:6e3b668436780c169a74b01821b6637e0376d649c31de297f3ad9238e46357c7\"",
+    "proposal": null
+  },
+  "stale-source": {
+    "run": {
+      "id": "fbda95f4-22ed-4ac5-b614-4e60d465a4f3",
+      "bid_id": "49fd0402-411c-4971-ad88-a37802b2d993",
+      "definition_version_id": "b2bf7695-08eb-4794-9b46-f6e2ce756cfa",
+      "root_operation_id": "a3e897e2-c56b-4054-8db9-e3264b82adb2",
+      "final_operation_id": null,
+      "state": "superseded",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "b99c5b58-8567-43b3-a527-7c9c52fc1fcc",
+            "draft_id": "18b492ca-eccd-4d91-ba87-e0e46f2fb6c0",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "6f9d4d80-5ed4-4b41-9422-618bcd949dac",
+              "digest": "c066eb328fb3c728af6f7f54fa9939b314a19c4a7655338ef5b1c1fb550467f8",
+              "parse_id": "7d9d6484-3b9c-4770-bd3e-5de70228fb14"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "8eca21f0-21e5-4eb5-8d61-ecd241eab9ab"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "6f9d4d80-5ed4-4b41-9422-618bcd949dac",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "b364310f-fe27-41fb-945a-b29008c8e175",
+        "fee_scope": "400c0fc60250316a660ffcab2b530de588ce76083c21bbdbfd1bd09cc30e1dc2",
+        "task_kind": "chapter_suggestion",
+        "request_id": "bd4c9241-b924-468f-8956-58f1712900f2",
+        "accepted_at": "2026-10-21T04:04:30.219707-07:00",
+        "input_digest": "d0a584308cf3ebb91dbc6025584cfee0aa3adf05f832fbb9f984716fa96b1962",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "b99c5b58-8567-43b3-a527-7c9c52fc1fcc",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["6f9d4d80-5ed4-4b41-9422-618bcd949dac"]
+          }
+        },
+        "definition_id": "bd64c164-cdeb-4f64-baa8-ed06d9e705b8",
+        "assistant_job_id": "6767310e-d935-4e0f-bf1e-9a932beb7cc5",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "6767310e-d935-4e0f-bf1e-9a932beb7cc5",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "a3e897e2-c56b-4054-8db9-e3264b82adb2",
+          "native_actor_id": "b364310f-fe27-41fb-945a-b29008c8e175",
+          "writing_plan_id": "c85896a8-7a6a-4093-b2b3-0c1aa641c639",
+          "job_input_digest": "94a06af5ad032d4fd30cd1e107e01d958bb9e5cdc7136906e1d5fe2e82ad163b",
+          "native_command_id": "bd4c9241-b924-468f-8956-58f1712900f2",
+          "writing_plan_digest": "fcb90026d6e85920b6a44c2ad7f1f9776bedae17f03a271d768f2b2d7a758edf"
+        },
+        "definition_version_id": "b2bf7695-08eb-4794-9b46-f6e2ce756cfa",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "6767310e-d935-4e0f-bf1e-9a932beb7cc5",
+        "job_input_digest": "94a06af5ad032d4fd30cd1e107e01d958bb9e5cdc7136906e1d5fe2e82ad163b",
+        "writing_plan_id": "c85896a8-7a6a-4093-b2b3-0c1aa641c639",
+        "operation_id": "a3e897e2-c56b-4054-8db9-e3264b82adb2",
+        "job_ref": "/api/v1/assistant/jobs/6767310e-d935-4e0f-bf1e-9a932beb7cc5",
+        "section_id": "b99c5b58-8567-43b3-a527-7c9c52fc1fcc",
+        "base_section_revision": 1,
+        "publication_state": "stale",
+        "candidate_digest": "ef82a9d37f0d84ff289254260069f2c56f1c1f42c2e3ca8ed301a69cab142f97",
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "ASSISTANT_TARGET_IDENTITY_UNPROVEN",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "b2bf7695-08eb-4794-9b46-f6e2ce756cfa",
+      "bid_id": "49fd0402-411c-4971-ad88-a37802b2d993",
+      "definition_id": "bd64c164-cdeb-4f64-baa8-ed06d9e705b8",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "b99c5b58-8567-43b3-a527-7c9c52fc1fcc",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["6f9d4d80-5ed4-4b41-9422-618bcd949dac"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "8bbf58819a80cfa49b1ae239ab15b15dca042149eba29e752f89e45cbbe5720b"
+    },
+    "operation": {
+      "id": "a3e897e2-c56b-4054-8db9-e3264b82adb2",
+      "bid_id": "49fd0402-411c-4971-ad88-a37802b2d993",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "3c66646f0a5ad8800b16d3b5b858cdf29c2b1e95149d8638e5cf13b8017a170a",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/6767310e-d935-4e0f-bf1e-9a932beb7cc5"
+    },
+    "operation_etag": "\"operation:a3e897e2-c56b-4054-8db9-e3264b82adb2:ec1de7307b52e2d3970a08cfe0bdfba1a72562764e91927fb194cae0892405e7\"",
+    "proposal": null
+  },
+  "failed": {
+    "run": {
+      "id": "b3b10195-d7b1-49b1-8714-acf56efc0f05",
+      "bid_id": "04cab1b3-cd7c-4ad3-b1a9-1d10aa00b65b",
+      "definition_version_id": "f1371909-949f-4346-9ba0-2f3d7e6b0231",
+      "root_operation_id": "3b41369d-66a5-4bdb-9036-041518fdc6b1",
+      "final_operation_id": null,
+      "state": "failed",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "a2a97413-6770-489f-a89f-582341a546f2",
+            "draft_id": "7bd59556-fb0e-46f9-b3ab-2cac05675cae",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "9440f34e-cb3b-432e-8ba6-851b6a37f332",
+              "digest": "a1418da0827d9ec09e41a2cff4007cc597e1f89321b18e240c33b95592f9f6f8",
+              "parse_id": "3743c3d5-2709-4bc8-9af0-9ba21f593701"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "c981e1a8-0ab4-4ee3-9cd3-cd6a823f398b"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "9440f34e-cb3b-432e-8ba6-851b6a37f332",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "1f4ff029-afd1-40f2-a185-10be49551c7b",
+        "fee_scope": "76bc84c81230568a2215df48e6f00a8eb44d586147f47d520621423cca96f4ab",
+        "task_kind": "chapter_suggestion",
+        "request_id": "4e26505c-5ac3-4dd8-850f-5d86f1cccf2d",
+        "accepted_at": "2026-10-21T04:04:31.751097-07:00",
+        "input_digest": "069d55daaddd1dcc7836237cf4c544b5bc55863b95308dd64f7fe25218461a26",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "a2a97413-6770-489f-a89f-582341a546f2",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["9440f34e-cb3b-432e-8ba6-851b6a37f332"]
+          }
+        },
+        "definition_id": "cb11b310-bb58-4129-bec4-a5551352a268",
+        "assistant_job_id": "e825e867-a1cc-41a1-a0f7-318dcab3993c",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "e825e867-a1cc-41a1-a0f7-318dcab3993c",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "3b41369d-66a5-4bdb-9036-041518fdc6b1",
+          "native_actor_id": "1f4ff029-afd1-40f2-a185-10be49551c7b",
+          "writing_plan_id": "317e9693-7654-4858-beb6-fb7bb0c2bc16",
+          "job_input_digest": "9537822ed0997ad366de521b39e1be59b3376dcb9a520e1c07a8630a69c4f110",
+          "native_command_id": "4e26505c-5ac3-4dd8-850f-5d86f1cccf2d",
+          "writing_plan_digest": "b72c84aca01bcd73d533bf3372f54ec954f8e76628ed33b9241b9f00ba86d9f3"
+        },
+        "definition_version_id": "f1371909-949f-4346-9ba0-2f3d7e6b0231",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "e825e867-a1cc-41a1-a0f7-318dcab3993c",
+        "job_input_digest": "9537822ed0997ad366de521b39e1be59b3376dcb9a520e1c07a8630a69c4f110",
+        "writing_plan_id": "317e9693-7654-4858-beb6-fb7bb0c2bc16",
+        "operation_id": "3b41369d-66a5-4bdb-9036-041518fdc6b1",
+        "job_ref": "/api/v1/assistant/jobs/e825e867-a1cc-41a1-a0f7-318dcab3993c",
+        "section_id": "a2a97413-6770-489f-a89f-582341a546f2",
+        "base_section_revision": 1,
+        "publication_state": "failed",
+        "candidate_digest": "d573c7cfc6c7e133225ba67c0babab3b1f4dd05fd1cb083bcb490e2cb9ea27a3",
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "EXPLICIT_PUBLICATION_FAILURE",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "f1371909-949f-4346-9ba0-2f3d7e6b0231",
+      "bid_id": "04cab1b3-cd7c-4ad3-b1a9-1d10aa00b65b",
+      "definition_id": "cb11b310-bb58-4129-bec4-a5551352a268",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "a2a97413-6770-489f-a89f-582341a546f2",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["9440f34e-cb3b-432e-8ba6-851b6a37f332"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "b7591bda29a50bd9e80c2add2e4e85bdddc455b5e111df3440aba84e78b02822"
+    },
+    "operation": {
+      "id": "3b41369d-66a5-4bdb-9036-041518fdc6b1",
+      "bid_id": "04cab1b3-cd7c-4ad3-b1a9-1d10aa00b65b",
+      "kind": "authoring-generate",
+      "state": "succeeded",
+      "input_digest": "45e43aa9f873fc9dc4fe8d4af8640e65ce1d4d2034deda197db247c67ad8c8bb",
+      "handler_version": "authoring-generate/1",
+      "result_ref": "/api/v1/assistant/jobs/e825e867-a1cc-41a1-a0f7-318dcab3993c"
+    },
+    "operation_etag": "\"operation:3b41369d-66a5-4bdb-9036-041518fdc6b1:335d82e8c3db7b0101b17c8ecea88a8b319e0005c204164eb78520c1beada4a8\"",
+    "proposal": null
+  },
+  "unknown-fee": {
+    "run": {
+      "id": "9d346d44-ea40-4dd3-b87e-3500d6ae6180",
+      "bid_id": "b42f7ba7-2ec2-4de2-8815-5c938efa6948",
+      "definition_version_id": "989245b4-18f9-4f81-99a7-ee75f24c8b04",
+      "root_operation_id": "1a0fd9a8-0405-47f3-967f-4868832154d3",
+      "final_operation_id": null,
+      "state": "reconciliation_required",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "dafaa102-ad69-418b-839d-e79a13dcc96a",
+            "draft_id": "3d4dc64e-337e-4cd6-9e40-ee9a599da483",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "ddae71f2-b694-421c-ba8c-4e2af1bf5bcb",
+              "digest": "93b8cfeddebf57bf9426bfea6d485f8c88d1dfafaab1c830b11b2af45d04ef3b",
+              "parse_id": "78c95698-a60c-4582-a45f-d5f5b63711b6"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "b22e90c0-8c61-40c2-8e08-31bb4030e422"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "ddae71f2-b694-421c-ba8c-4e2af1bf5bcb",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "cb84b522-269e-4be1-a757-cf8a324bffca",
+        "fee_scope": "740f02c5b9a771c093778521a3921646c170665869ecf35ac23533360f5f364c",
+        "task_kind": "chapter_suggestion",
+        "request_id": "06dd5ce9-6073-4787-aa18-9ec98d8798d0",
+        "accepted_at": "2026-10-21T04:04:33.600606-07:00",
+        "input_digest": "273b64f983e22641501c4a726b6ee37f40023374b8e028a0ad615ad5b00192e6",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "dafaa102-ad69-418b-839d-e79a13dcc96a",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["ddae71f2-b694-421c-ba8c-4e2af1bf5bcb"]
+          }
+        },
+        "definition_id": "cca74843-804a-42c6-9ad5-18fafb401535",
+        "assistant_job_id": "b5104936-eb10-4592-b8fe-584cd7ff951f",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "b5104936-eb10-4592-b8fe-584cd7ff951f",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "1a0fd9a8-0405-47f3-967f-4868832154d3",
+          "native_actor_id": "cb84b522-269e-4be1-a757-cf8a324bffca",
+          "writing_plan_id": "256aec8d-2774-4813-9c8a-1e9d22ac965b",
+          "job_input_digest": "94193be6785a5ee62dc7623f4651967587b002bd28dbbe279b48050268855328",
+          "native_command_id": "06dd5ce9-6073-4787-aa18-9ec98d8798d0",
+          "writing_plan_digest": "8fadfbed48b821f68f7089282f0f872160e049bc271ecd4350740b50baa1631e"
+        },
+        "definition_version_id": "989245b4-18f9-4f81-99a7-ee75f24c8b04",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "b5104936-eb10-4592-b8fe-584cd7ff951f",
+        "job_input_digest": "94193be6785a5ee62dc7623f4651967587b002bd28dbbe279b48050268855328",
+        "writing_plan_id": "256aec8d-2774-4813-9c8a-1e9d22ac965b",
+        "operation_id": "1a0fd9a8-0405-47f3-967f-4868832154d3",
+        "job_ref": "/api/v1/assistant/jobs/b5104936-eb10-4592-b8fe-584cd7ff951f",
+        "section_id": "dafaa102-ad69-418b-839d-e79a13dcc96a",
+        "base_section_revision": 1,
+        "publication_state": "pending",
+        "candidate_digest": null,
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "MODEL_CALL_REQUIRES_RECONCILIATION",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "989245b4-18f9-4f81-99a7-ee75f24c8b04",
+      "bid_id": "b42f7ba7-2ec2-4de2-8815-5c938efa6948",
+      "definition_id": "cca74843-804a-42c6-9ad5-18fafb401535",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "dafaa102-ad69-418b-839d-e79a13dcc96a",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["ddae71f2-b694-421c-ba8c-4e2af1bf5bcb"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "fb5342f67fbbcc3d55b06ba08782fddf46f19c721b67da87552f18cd85b4a045"
+    },
+    "operation": {
+      "id": "1a0fd9a8-0405-47f3-967f-4868832154d3",
+      "bid_id": "b42f7ba7-2ec2-4de2-8815-5c938efa6948",
+      "kind": "authoring-generate",
+      "state": "failed",
+      "input_digest": "cdcac12f608793555806b7c38e85ccd597045c641bb7ee4825fcdb2d62839284",
+      "handler_version": "authoring-generate/1",
+      "result_ref": null
+    },
+    "operation_etag": "\"operation:1a0fd9a8-0405-47f3-967f-4868832154d3:b433fbeb8440ea451c0ffaea4914a47fc5c6aa82e9e0fe4dcf0070196f4df650\"",
+    "proposal": null
+  },
+  "cancelled": {
+    "run": {
+      "id": "56696284-38ad-45bc-a74f-04ab1528aa7d",
+      "bid_id": "c8b2a03f-1d30-4ca0-adb8-b97e6c2ffec7",
+      "definition_version_id": "f238aae8-bc4c-4319-876f-cbb34f5447bf",
+      "root_operation_id": "87fd7e3f-b141-4db7-aeff-0ce4e7b961bb",
+      "final_operation_id": null,
+      "state": "cancelled",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "4ea54d9d-7edc-4ac1-8c75-597213955a66",
+            "draft_id": "b5276add-0d17-40d5-a027-29e2667591f3",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "162f2575-f627-4703-92b4-97ff845d5de3",
+              "digest": "753c16df509c63058b8e83d1ec7b65bfe838639a3831688eab7f46e067f052e5",
+              "parse_id": "d5dddcc4-a156-445f-9ba2-e462ebf3d434"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "294323cb-5478-4040-ac7f-05c036d2b779"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "162f2575-f627-4703-92b4-97ff845d5de3",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "cb420f81-c209-416b-895a-35a097bf022a",
+        "fee_scope": "1437947add5f187b0a33666450763b28ad0f6199c3acba710a816b9f25f56ee2",
+        "task_kind": "chapter_suggestion",
+        "request_id": "b5576dd9-8305-49c6-8bf6-d1a5cc25c3fc",
+        "accepted_at": "2026-10-21T04:04:34.986531-07:00",
+        "input_digest": "065abae67f255e7c33e2574a0a63e29bd3c60a312fd0827004ff33ddbf1f69f9",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "4ea54d9d-7edc-4ac1-8c75-597213955a66",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["162f2575-f627-4703-92b4-97ff845d5de3"]
+          }
+        },
+        "definition_id": "80ea7f9c-ec3e-4e2f-a3dc-c8f6f1aa6e93",
+        "assistant_job_id": "5bb55a1e-c547-46a1-89be-c89481355924",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "5bb55a1e-c547-46a1-89be-c89481355924",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "87fd7e3f-b141-4db7-aeff-0ce4e7b961bb",
+          "native_actor_id": "cb420f81-c209-416b-895a-35a097bf022a",
+          "writing_plan_id": "b0ea71ed-7808-4097-9db0-86043c8c20ec",
+          "job_input_digest": "fb549ae8ac5ad6396ac1fb60b641b8f4d2b04df272daf3eec478c3f80245ece7",
+          "native_command_id": "b5576dd9-8305-49c6-8bf6-d1a5cc25c3fc",
+          "writing_plan_digest": "31ad3636654b6d0f33c580b182bddf9079fd726cedd2aa575026efc54bba360d"
+        },
+        "definition_version_id": "f238aae8-bc4c-4319-876f-cbb34f5447bf",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "5bb55a1e-c547-46a1-89be-c89481355924",
+        "job_input_digest": "fb549ae8ac5ad6396ac1fb60b641b8f4d2b04df272daf3eec478c3f80245ece7",
+        "writing_plan_id": "b0ea71ed-7808-4097-9db0-86043c8c20ec",
+        "operation_id": "87fd7e3f-b141-4db7-aeff-0ce4e7b961bb",
+        "job_ref": "/api/v1/assistant/jobs/5bb55a1e-c547-46a1-89be-c89481355924",
+        "section_id": "4ea54d9d-7edc-4ac1-8c75-597213955a66",
+        "base_section_revision": 1,
+        "publication_state": "pending",
+        "candidate_digest": null,
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": null,
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "f238aae8-bc4c-4319-876f-cbb34f5447bf",
+      "bid_id": "c8b2a03f-1d30-4ca0-adb8-b97e6c2ffec7",
+      "definition_id": "80ea7f9c-ec3e-4e2f-a3dc-c8f6f1aa6e93",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "4ea54d9d-7edc-4ac1-8c75-597213955a66",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["162f2575-f627-4703-92b4-97ff845d5de3"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "758be1397db4be6b0b44089b8be671ec46f8ffb0d9288e38c8a3c6667d859b03"
+    },
+    "operation": {
+      "id": "87fd7e3f-b141-4db7-aeff-0ce4e7b961bb",
+      "bid_id": "c8b2a03f-1d30-4ca0-adb8-b97e6c2ffec7",
+      "kind": "authoring-generate",
+      "state": "cancelled",
+      "input_digest": "56e176a98f6b0850812d04b9313b6ff04bae0a4f7e8697c16ccd40e59bb46f69",
+      "handler_version": "authoring-generate/1",
+      "result_ref": null
+    },
+    "operation_etag": "\"operation:87fd7e3f-b141-4db7-aeff-0ce4e7b961bb:e253472b64ca6f9d0041074fb5357c91f4a7275c9e5f4a801a89f6fd82dd2431\"",
+    "proposal": null
+  },
+  "model-invalid": {
+    "run": {
+      "id": "2aff7049-77dc-4300-8899-d0cf0e135503",
+      "bid_id": "dfc3c5ff-01f4-41cd-bdd2-bd2d1bed49a4",
+      "definition_version_id": "344727f3-bfd6-4f1d-b707-6f99fab3f84c",
+      "root_operation_id": "fa092893-9cd9-40b3-b4f6-44a63fe54498",
+      "final_operation_id": null,
+      "state": "failed",
+      "stage": "execution",
+      "frozen_manifest": {
+        "schema": "task-run/1",
+        "context": {
+          "section": {
+            "id": "21106985-b7dc-4546-8cc3-2ab817683f1e",
+            "draft_id": "bc3ff738-07cb-4acb-b00b-42612cc80387",
+            "head_revision": 1
+          },
+          "documents": [
+            {
+              "id": "52be3f2a-c15b-4439-b837-7c5489c0e9e5",
+              "digest": "1881cff337294291f74ae79b4544544e4af9ed749ffd025ea3c04ab0dc2e6b62",
+              "parse_id": "1f886358-7aba-4b38-9da4-a72d10b00ef1"
+            }
+          ],
+          "fact_head": {
+            "revision": 5,
+            "fact_set_id": "e97570ec-0c53-4a90-83cf-462e26bfb8b9"
+          },
+          "rule_set_id": null,
+          "method_digest": "4c2109049ed41740b0adcca041dc67c499238a9ab5e63b1ace9c7dbf84776e21",
+          "content_checks": {
+            "consistency": false,
+            "scope_residue": false
+          },
+          "body_version_id": "52be3f2a-c15b-4439-b837-7c5489c0e9e5",
+          "material_revision": 1,
+          "material_snapshot_id": null
+        },
+        "purpose": "assist",
+        "trigger": "manual",
+        "actor_id": "78c059cf-b049-4da8-aef5-11f48dca313c",
+        "fee_scope": "c0b81e4f35b7d24dbbf0c932508f68695818909ceac0e0f98fe5e9988ccffda6",
+        "task_kind": "chapter_suggestion",
+        "request_id": "8af3c649-774d-47b9-b6e6-fde0bc70b0c3",
+        "accepted_at": "2026-10-21T04:04:47.459339-07:00",
+        "input_digest": "a83bf4d18d30eaedd4ed3e322394a0bf9a5b74e1541be235441736356cca13d3",
+        "scheduled_at": null,
+        "configuration": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "21106985-b7dc-4546-8cc3-2ab817683f1e",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["52be3f2a-c15b-4439-b837-7c5489c0e9e5"]
+          }
+        },
+        "definition_id": "417b1c1f-6323-495f-bf0a-3a1d861c3387",
+        "assistant_job_id": "b82ecfbf-13cf-4de4-9a65-b912e58f9211",
+        "trigger_event_id": null,
+        "authoring_binding": {
+          "job_id": "b82ecfbf-13cf-4de4-9a65-b912e58f9211",
+          "schema": "task-authoring-binding/1",
+          "operation_id": "fa092893-9cd9-40b3-b4f6-44a63fe54498",
+          "native_actor_id": "78c059cf-b049-4da8-aef5-11f48dca313c",
+          "writing_plan_id": "59e77638-8e6f-4dc1-9166-eb591d45bd3b",
+          "job_input_digest": "bb6baac329d206f59769008ea193cc9c2b8668092a26c581fd48f6182ff6faf1",
+          "native_command_id": "8af3c649-774d-47b9-b6e6-fde0bc70b0c3",
+          "writing_plan_digest": "1d383aebd13dbfe01db483a643414839b18aaf4d54c1583668fe44e2ee07f6b2"
+        },
+        "definition_version_id": "344727f3-bfd6-4f1d-b707-6f99fab3f84c",
+        "formal_decisions_allowed": false
+      },
+      "result": {
+        "schema": "task-authoring-result/1",
+        "job_id": "b82ecfbf-13cf-4de4-9a65-b912e58f9211",
+        "job_input_digest": "bb6baac329d206f59769008ea193cc9c2b8668092a26c581fd48f6182ff6faf1",
+        "writing_plan_id": "59e77638-8e6f-4dc1-9166-eb591d45bd3b",
+        "operation_id": "fa092893-9cd9-40b3-b4f6-44a63fe54498",
+        "job_ref": "/api/v1/assistant/jobs/b82ecfbf-13cf-4de4-9a65-b912e58f9211",
+        "section_id": "21106985-b7dc-4546-8cc3-2ab817683f1e",
+        "base_section_revision": 1,
+        "publication_state": "pending",
+        "candidate_digest": null,
+        "action_id": null,
+        "action_ref": null,
+        "source_scope": "legacy_section_and_source_versions",
+        "automatic_apply": false
+      },
+      "error_code": "MODEL_OUTPUT_INVALID",
+      "formal_decisions_created": false,
+      "coverage": "not_formal_score"
+    },
+    "template_version": {
+      "id": "344727f3-bfd6-4f1d-b707-6f99fab3f84c",
+      "bid_id": "dfc3c5ff-01f4-41cd-bdd2-bd2d1bed49a4",
+      "definition_id": "417b1c1f-6323-495f-bf0a-3a1d861c3387",
+      "revision": 1,
+      "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+      "config": {
+        "paused": false,
+        "schema": "task-template/1",
+        "definition": {
+          "name": "合成章节发布任务",
+          "trigger": {
+            "cron": null,
+            "mode": "manual",
+            "timezone": "Asia/Shanghai"
+          },
+          "task_kind": "chapter_suggestion",
+          "section_id": "21106985-b7dc-4546-8cc3-2ab817683f1e",
+          "instructions": "只提出有来源的文字修改，保留表格图片，须人工预览采纳",
+          "source_selection": {
+            "mode": "selected_versions",
+            "version_ids": ["52be3f2a-c15b-4439-b837-7c5489c0e9e5"]
+          }
+        },
+        "formal_decisions_allowed": false
+      },
+      "digest": "648a383fdcac7cb4e4ad217ed65dd3b5f76a3afd9e363cfabc82a114f328203a"
+    },
+    "operation": {
+      "id": "fa092893-9cd9-40b3-b4f6-44a63fe54498",
+      "bid_id": "dfc3c5ff-01f4-41cd-bdd2-bd2d1bed49a4",
+      "kind": "authoring-generate",
+      "state": "failed",
+      "input_digest": "a94670ff5fd4c75872d5f03aa036e54c75ff5bd1451cae29521542f574e49f4d",
+      "handler_version": "authoring-generate/1",
+      "result_ref": null
+    },
+    "operation_etag": "\"operation:fa092893-9cd9-40b3-b4f6-44a63fe54498:3ddbf61bb5ec00dd9a472598512508220d82d50a25f3e6301fd080309f4d8899\"",
+    "proposal": null
+  }
+}

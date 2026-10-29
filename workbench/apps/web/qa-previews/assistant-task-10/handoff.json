@@ -1,0 +1,19 @@
+{
+  "candidate": {
+    "path": "/workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/frontend-candidate.json",
+    "sha256": "d1be8aa67adfa75adaf7f904efcc626b720e5931b694adec8fca115126af3aee"
+  },
+  "handoff": "/workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/HANDOFF.md",
+  "assistant_browser": "/workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/assistant-mock-browser-result.json",
+  "tasks_browser": "/workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/tasks-browser-result.json",
+  "cold_binding": {
+    "path": "/workspace/tender-workbench/apps/web/qa-previews/assistant-task-10/cold-runtime-binding.json",
+    "sha256": "4271b46736627248f9d99a8f1f31eb7d7f2185af49439e5218ed62c82379d0f7"
+  },
+  "fixed_web": "http://127.0.0.1:5184",
+  "api": "http://127.0.0.1:8816",
+  "business_writes_in_cold_check": 0,
+  "control": "hold",
+  "frontend_development_round_complete": true,
+  "pending": "Independent QA/product/user; positive task notifications/event+cron delivery and real provider quality not asserted"
+}

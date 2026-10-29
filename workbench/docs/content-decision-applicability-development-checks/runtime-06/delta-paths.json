@@ -1,0 +1,12 @@
+[
+  "packages/domain/content_decision_basis.py",
+  "packages/domain/engineering.py",
+  "packages/domain/finding_lifecycle.py",
+  "packages/domain/human_decisions.py",
+  "packages/domain/reviews.py",
+  "apps/worker/content_handlers.py",
+  "tests/test_content_decision_applicability_integration.py",
+  "tests/test_content_findings_integration.py",
+  "tests/test_engineering.py",
+  "tests/test_content_checks.py"
+]

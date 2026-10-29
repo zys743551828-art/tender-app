@@ -1,0 +1,11 @@
+{
+  "stage": "cross-context-batch-discovery",
+  "project_id": "06c25da7-412b-4c0c-b56c-567da0729968",
+  "auto_review": false,
+  "initial_identity": "pending",
+  "body_version_id": "e47d142e-e044-4ae1-aa22-885c8e024f6f",
+  "tender_version_id": "b11f491b-4231-4e31-86bc-0d08920d3216",
+  "batch_id": "5e412ccf-c683-4dd2-904f-4457f6dfbb32",
+  "original_submission_id": "61e7d7aa-ac6d-458e-8f0e-0e5b159d139c",
+  "corrected_submission_id": "dd24a602-f910-4a55-a533-83219a8c7484"
+}

@@ -1,0 +1,29 @@
+node_modules
+dist
+package-lock.json
+*.tsbuildinfo
+
+public/pdfjs
+qa-previews/**/frozen-inputs
+
+qa-previews/**/*.openapi.json
+
+# Frozen candidate bytes and original evidence retain their recorded digests.
+qa-previews/multipart-knowledge-05/
+
+# Generated validation metadata and retained original failure observations.
+qa-previews/submission-report-06/final-quality-result.json
+qa-previews/submission-report-06/pre-final-regression/
+
+# Immutable compiled candidate and generated command-result metadata.
+qa-previews/knowledge-metrics-07/frozen-dist/
+qa-previews/knowledge-metrics-07/final-quality-result.json
+
+# Candidate06 source and appended runtime records remain immutable.
+qa-previews/submission-report-06/
+qa-previews/knowledge-metrics-07/pre-final-quality/
+
+# Immutable08 baseline and09 compiled/runtime metadata.
+qa-previews/pricing-method-08/
+qa-previews/knowledge-version-09/frozen-dist/
+qa-previews/knowledge-version-09/final-quality-result.json

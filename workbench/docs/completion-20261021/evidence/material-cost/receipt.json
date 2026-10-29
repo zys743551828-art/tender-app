@@ -1,0 +1,224 @@
+{
+  "scope": "integer full-capacity cost reservation preview; no native pricing or ledger authority",
+  "tests": {
+    "linux_passed": 92,
+    "linux_seconds": 12.98,
+    "linux_by_module": {
+      "tests.test_package_material_cost_pg": 1,
+      "tests.test_package_material_cost": 57,
+      "tests.test_provider_error_isolation": 22,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 79,
+    "host_seconds": 9.297,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "f62a0e20747c3e8a71f75c6a2567cf17a7fd0da43ea38595680630cab29d8ecf",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "eb018379ff16fa1580a17bfb3473e410e2acde2a99b6efd4b1c1acef5896446a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-material-cost.md",
+      "sha256": "05798b851eb2c9b221acafe5fa80031dcc7c8469c02afaf78a7a36ed9eb15c91",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_material_cost.py",
+      "sha256": "224e257ef5da97b35091d8d49ffe921e2e584a2ff0ccb60d295d9af048d46bea",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_cost.py",
+      "sha256": "c976be2b4369d6d315697ff143304ba8ff5f5b2007c98dd980ab384f0cd944ee",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_material_cost_pg.py",
+      "sha256": "d73881146499bc730165aad5e0699379e950be079feaacfaaac54c3fd88fc2ff",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "5fbfbd915786f094e331a17165abd9b98ab0141057cc9a3f0a60ae7cc7bc13f7",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+    "pending_material_registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+    "material_scope_review_method_digest": "766308c7ce0e94527f1c0857534c97a2f5fd085d37ec4d49eade2f007f60b4c8",
+    "material_cost_method_digest": "74e4fa0930751cca9090b085e5cd79295c925fcd9b44e5819d8a8d1ba158df85"
+  },
+  "native_cost_preview_proof": {
+    "quote": {
+      "version": "package-material-reservation-quote/1",
+      "method_digest": "74e4fa0930751cca9090b085e5cd79295c925fcd9b44e5819d8a8d1ba158df85",
+      "context_digest": "719ed8119504be84d64d0ebd6a12b05806504984a0c5869aa1fdfc47ea5338ac",
+      "policy_digest": "72903004d1681d870b67709877d19c5648c5a1ba152e7597309f0b84b21a3d7d",
+      "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+      "serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+      "as_of": "2026-10-24T01:00:00Z",
+      "currency": "USD",
+      "minor_per_unit": 1000000,
+      "rule_ids": [
+        "0ae38a54-b607-4cbc-8caf-a4e49b233240",
+        "31550b69-34e9-4c4c-ae9d-1f48630f6d1e",
+        "d4775eaa-628d-4129-9e35-dffbfdee3a1a"
+      ],
+      "required_valid_slots": 9,
+      "max_attempts_per_slot": 2,
+      "maximum_external_calls": 18,
+      "reserved_input_tokens_per_call": 1048576,
+      "reserved_output_tokens_per_call": 4096,
+      "per_call_ceiling_minor": 319488,
+      "required_reservation_minor": 5750784,
+      "budget_ceiling_minor": 9007199254740991,
+      "budget_sufficient_under_policy": true,
+      "all_declared_included_rules_retained": true,
+      "reservation_is_not_invoice_cap": true,
+      "price_policy_native_verified": false,
+      "model_context_fit_proven": false,
+      "request_body_limit_verified": false,
+      "fee_ledger_reserved": false,
+      "automatic_retry": false,
+      "native_binding_verified": false,
+      "execution_authorized": false,
+      "digest": "4fe3fe61003ebd67852ae1807419ecd2f763fe080c03519a9d099e3e98637593"
+    },
+    "synthetic_price_policy": true,
+    "native_price_registry_installed": false,
+    "actual_loopback_gets": 2,
+    "provider_attempts": 0,
+    "paid_calls": 0,
+    "body_exported": false
+  },
+  "files": {
+    "material-cost-native-proof.json": "b1a0a4425ecd8dd1964ecb938adb0fafca7974788277a00fdbfc90a2df0a78ba",
+    "official-source-observation.json": "ea5a29ed62d1af703a605fbd759046ca15942cb4c9612b92b137baa7903aadc2",
+    "linux-final.log": "f7434db8a30b45874e19687c4fa9d177a55a8b82878b13a8cb151f0bb4504554",
+    "linux-final.xml": "8f37dcbf21e5cf710406eeadbc5ef7bfba0f2d344047c247d2617da38117ad94",
+    "host-final.log": "ab93dc1db3efce82720c7f9868a49c39d02c9d3f8f65add90a48f5b89952f37c",
+    "host-final.xml": "9d03797771bd8aa7a42cf701a4bfb14785cf56d08c507e0019347db5d789c63d",
+    "python-final.log": "277b16922543b7b334df9ab6232e57d9b42ad4d42ad552aba3c4f0837e3f5474",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "business-boundary.json": "e9f47c346e9c8aa594021e2ec92653a68cb62034fd45b45b7406c471b066a31c",
+    "http-runtime.json": "afca6db72aa9769d388e26aa6895d8e5eecd02ebf5d9fcb35bcd98f4ec709a4b",
+    "method-boundaries.json": "90544a7abd18da78ef7a74404d74f9939c68d1d8c99b69e96765f33b054c204a"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136,
+    "registration_schemas": 0
+  },
+  "runtime_inputs": 1221,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants_in_business_database": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}

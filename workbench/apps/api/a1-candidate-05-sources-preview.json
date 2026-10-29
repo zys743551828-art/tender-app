@@ -1,0 +1,371 @@
+{
+  "status": "own_source_snapshot_for_fixed_assistant01_overlay_not_final_candidate",
+  "source_count": 91,
+  "sources": [
+    {
+      "path": "apps/api/README.md",
+      "sha256": "40a22814f3cfdcaf3dba86c58ab519d79589951b0f3d381e76f68fd4084cf221"
+    },
+    {
+      "path": "apps/api/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "apps/api/__main__.py",
+      "sha256": "1f2f36250f2cff00c4ff891293cc2046455e8cb3049c22410c6aa7a2a694cf88"
+    },
+    {
+      "path": "apps/api/auth.py",
+      "sha256": "e13a3fd78e08676c275cba5869d3895ebbec943a745c82574cd514517200809d"
+    },
+    {
+      "path": "apps/api/bootstrap.py",
+      "sha256": "4a05d71f3578b93f74304092040b235edfa825e86fd0ff36328a3837bf9d709b"
+    },
+    {
+      "path": "apps/api/build_coordinator.py",
+      "sha256": "fabcb0a5eda3a2f996a9a9c5ce4ed4ad1d77af7de6db189d0ffb0fd18f4a3ead"
+    },
+    {
+      "path": "apps/api/comparison_contracts.py",
+      "sha256": "d70d7a1ddb1ec20472396980f836397062d1d5f39a8a2651ff3aac7ae0859678"
+    },
+    {
+      "path": "apps/api/comparison_routes.py",
+      "sha256": "f0d946a756615a2f45f4db7a2ccec2b0f7ea6fdc1c774313eb6529c880cc9c2a"
+    },
+    {
+      "path": "apps/api/export_openapi.py",
+      "sha256": "57257e4bee443097c2b1361ef73e84c22c386afa0f4f0df4ab91f6f1de3ebd66"
+    },
+    {
+      "path": "apps/api/history_routes.py",
+      "sha256": "12eed771933f96000d8ec5542b1da0dce3167f93c4d2ab12419fdf3d0d9b6322"
+    },
+    {
+      "path": "apps/api/human_contracts.py",
+      "sha256": "9d6198d47b86aa7425676eadc2aaf8cb6876d28c5e1609517517c3c227dc7283"
+    },
+    {
+      "path": "apps/api/human_routes.py",
+      "sha256": "c8af58e4aac9f309b886eadf982ae2ab50484613448691d2d636d78d51441630"
+    },
+    {
+      "path": "apps/api/main.py",
+      "sha256": "297552ede13ba5da2a6823fcde37eaced851dec6e0b00e548349ff16eaeda4f8"
+    },
+    {
+      "path": "apps/api/report_contracts.py",
+      "sha256": "db87c5a97dd424eb9af746f7c2a1bf437ff16b993441ba96454e0c5bdcb9b4c1"
+    },
+    {
+      "path": "apps/api/report_routes.py",
+      "sha256": "78f7176d598949f24821f2786ed8c4a2f3554b43b6c1a2de291c729e30dfff99"
+    },
+    {
+      "path": "apps/api/review_contracts.py",
+      "sha256": "da0c7ad8282d35e3b17c4bb386f9f9c5cd3411768c4ae443cf6f3ca92d83f6db"
+    },
+    {
+      "path": "apps/api/review_coordinator.py",
+      "sha256": "af7b3ca26283d75095720a74d3deb41291f4538bb0296d0a7f233af689cf806d"
+    },
+    {
+      "path": "apps/api/review_routes.py",
+      "sha256": "d9fa32161d8a0a2f6c78b5e877a73eb9ec7d945b19e6dd403f77e4f150dc2721"
+    },
+    {
+      "path": "apps/api/review_views.py",
+      "sha256": "ca242ea615303ea209f47173611e3b1ba77c02cb2a5b93b94763c7a73eda1b39"
+    },
+    {
+      "path": "apps/api/settings_routes.py",
+      "sha256": "b1a0f2eb9977cd62beee4f92fd2f5092b17e388835ec61dcc95a3ca5809c8fa2"
+    },
+    {
+      "path": "apps/api/source_effectivity_contracts.py",
+      "sha256": "6d36caa8d6e3b632b5e7e63b12da231431d8676407a9fc10a2fd6bb6807fb51d"
+    },
+    {
+      "path": "apps/api/source_effectivity_routes.py",
+      "sha256": "f1eb03ea63edc244143b314923cd5b126c1e3e1d3d3c5b2e49ed0d86176f5554"
+    },
+    {
+      "path": "apps/api/submission_contracts.py",
+      "sha256": "c79aef5382a5babb3a996d28bb1626f8327232b0e905bfef163a24fef77a290d"
+    },
+    {
+      "path": "apps/api/submission_routes.py",
+      "sha256": "5e01db94404596358ad3b8fe676a33de7eaeee47c07d2c97827908a03b205183"
+    },
+    {
+      "path": "apps/api/upload_contracts.py",
+      "sha256": "9670fcf3c099fcccb80ed84795a38cdcafec418392d12cb893dfa35c8b641799"
+    },
+    {
+      "path": "apps/api/upload_layout_routes.py",
+      "sha256": "f2d7f6c3183ab135def96267eec345ea76eda47a995d657186f0a177dc2c0ff8"
+    },
+    {
+      "path": "apps/api/views.py",
+      "sha256": "206794028670b986865c2aede747ed8d877271f4b3532395f3d48b7a899b0cda"
+    },
+    {
+      "path": "apps/worker/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "apps/worker/__main__.py",
+      "sha256": "77e763bcf7b31fad3a4a7df85d74c181750d1c26dbbcd343f2cfb572c8fdbc9e"
+    },
+    {
+      "path": "apps/worker/comparison_handlers.py",
+      "sha256": "7b8739725490d378f70049c89d3d07b360647b8ee9ddf5137be081b45be4af07"
+    },
+    {
+      "path": "apps/worker/content_handlers.py",
+      "sha256": "5eb882a2fd25740670c0f769ed71099f6e760c4c7e8fb861c13f6621eef5726c"
+    },
+    {
+      "path": "apps/worker/engine.py",
+      "sha256": "f8de4159850ff1ebe7c045f79ca2ea3796761964a4c58191720994867b4cc02b"
+    },
+    {
+      "path": "apps/worker/export_handlers.py",
+      "sha256": "bebf701d5fbcb800c04048016df3a8ac20475769eed0a0f7faaf0161f21ad609"
+    },
+    {
+      "path": "apps/worker/handlers.py",
+      "sha256": "1f2cf6a16a99aa9494ef60d0df9817bd2abbb062c594ac2b24552978ead27b47"
+    },
+    {
+      "path": "apps/worker/report_handlers.py",
+      "sha256": "0d109e6c35f9ff554a1643876fea70d409ac3ec79d720e709c1a15e8a523c0d4"
+    },
+    {
+      "path": "apps/worker/review_handlers.py",
+      "sha256": "0a7bd3076d95b413c92326535de39f73e46de5844e73bc0b921349c95c1fac78"
+    },
+    {
+      "path": "docs/a1-backend-development-checks/review-fixture-05.md",
+      "sha256": "4cffd0b1c36d7d44131b8065da3c2a568148c0b65d1b7fcf72412b2b7b15e8c0"
+    },
+    {
+      "path": "docs/a1-submission-report-product-review.md",
+      "sha256": "1c65cf6c6034a305715badd4616e41d8bb56bc953a2d5030876e3a726ce8f045"
+    },
+    {
+      "path": "packages/domain/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "packages/domain/build_followups.py",
+      "sha256": "7b64d50e4b52392283a0fa6202a1e2b378e3e582211655632da78b33f4a183f5"
+    },
+    {
+      "path": "packages/domain/comparisons.py",
+      "sha256": "8b56aee2f04cb30274f933646764afb23d5d488bfa18c7746d90b65ccb429bea"
+    },
+    {
+      "path": "packages/domain/content_check_status.py",
+      "sha256": "3cf55d761abb3be207d0cdbbc98e4595b76c38410f17d04824c94876ebe2c503"
+    },
+    {
+      "path": "packages/domain/content_checks.py",
+      "sha256": "1fc5d69a39e2b44b813bd1211f91f3847bc73e346e6f88a8faa41557dc96a5ad"
+    },
+    {
+      "path": "packages/domain/core_recheck_scope.py",
+      "sha256": "422bd66cb2367b5a31d2de63226fa5813c1c500ee93d362f6edf64c8fa4786ed"
+    },
+    {
+      "path": "packages/domain/engineering.py",
+      "sha256": "a813334a9d68764d9a5b928e3d79ae88cc1e3a3ec65e1a7e9cccdfe4266e03fc"
+    },
+    {
+      "path": "packages/domain/fact_sets.py",
+      "sha256": "3c57927422bfa63cb9112bb84f2d109b7ef0824b8b21435f01da50174cd95e38"
+    },
+    {
+      "path": "packages/domain/finding_lifecycle.py",
+      "sha256": "875b04be5ffb57a67455b25daadafd46cb27c12af69777a8362f29dfdc2416c6"
+    },
+    {
+      "path": "packages/domain/human_decisions.py",
+      "sha256": "fbb9d2a794ac2888089e90797711a3b422dcec91e0c828a68ab5415f4d2def35"
+    },
+    {
+      "path": "packages/domain/input_changes.py",
+      "sha256": "b5947e0cbbf03cbcfc2b4f98d4fb87be10ef718e27b3ffb5ac0ed477df00ff1a"
+    },
+    {
+      "path": "packages/domain/model_calls.py",
+      "sha256": "77a5e89799fdf46e130424634e8b61754efb7eff32c899cf3da1aed74a847f01"
+    },
+    {
+      "path": "packages/domain/model_recovery.py",
+      "sha256": "6872d377d1fb5b9d36abd9f1bf5a4c7f0ba519e23ca6f19facb960107f6d59ef"
+    },
+    {
+      "path": "packages/domain/parsing_profile.py",
+      "sha256": "f61a997b4af11a635660f431086f6d0c73fac8f96262674698ba7a6a9bd8e1db"
+    },
+    {
+      "path": "packages/domain/reports.py",
+      "sha256": "e9f747006c670a55fdcab83b44329fbd646d27bfd84a4b12522382712f8147df"
+    },
+    {
+      "path": "packages/domain/review_comparison.py",
+      "sha256": "854786301ed939f0ba3c43a406289c2c4d46eb668d4429fe0c3f3fa5632637a8"
+    },
+    {
+      "path": "packages/domain/review_data.py",
+      "sha256": "0c3878d17e0a9097166fd7f959119e232dce2130df26fd994e0ca7489213a822"
+    },
+    {
+      "path": "packages/domain/review_identity.py",
+      "sha256": "d6f03e98fd5fee7a7699dfe7c9092d88b871b4b980cff0fb00e025aad90d1358"
+    },
+    {
+      "path": "packages/domain/reviews.py",
+      "sha256": "fafb1d99515ccb8a114124fbe0546c009d70273387855af38887acea41039136"
+    },
+    {
+      "path": "packages/domain/rule_corrections.py",
+      "sha256": "635d76d36d5bb8163c7d37dcfcb79c883072daf1e75e6c7fc537e56a50b20e8f"
+    },
+    {
+      "path": "packages/domain/rule_sets.py",
+      "sha256": "fb4800911262cca213cc699a79b577c94bbfeeaec2bcbea2c9aec7c175127d67"
+    },
+    {
+      "path": "packages/domain/runtime.py",
+      "sha256": "7fbee870bffee0b3ce35ae8dfb912b45dfc69e0da76e24e8a2541906705a397e"
+    },
+    {
+      "path": "packages/domain/source_effectivity.py",
+      "sha256": "acdab0c772bea603152f7ec35036d3ace294f8e8cc000807497a3adfab282aa7"
+    },
+    {
+      "path": "packages/domain/storage.py",
+      "sha256": "302ee87f93c90f9ca914ea4fd578b79db70aab8f69efd174ff5c4723ad39c265"
+    },
+    {
+      "path": "packages/domain/submission_gate.py",
+      "sha256": "33ac41614487a34f7526a9636dc48a224cb268c5a5e7bb8492ef45d1bf570b62"
+    },
+    {
+      "path": "packages/domain/submissions.py",
+      "sha256": "909905a73bed084ea56d6f8b349132d395d6b061f6faafd26e5036379262df9d"
+    },
+    {
+      "path": "packages/uploads/read_model.py",
+      "sha256": "97318581c6b6105e2261d3dfa25628884328a9271014c12679821404cfd6a33d"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "eab3531329b02bffff9925dfdd89f91f67096c831562282a1cb094559c24df89"
+    },
+    {
+      "path": "requirements.lock.txt",
+      "sha256": "8f36855479ddf5dae63e1f69f65d4a2665ee6ada01c22a2673f95b52b7db6923"
+    },
+    {
+      "path": "tests/test_actual_contract.py",
+      "sha256": "1c52569eb9c4def00e4a43d6b840efc04df52cf8638c5a0c07172198c45f36c7"
+    },
+    {
+      "path": "tests/test_bid_list_integration.py",
+      "sha256": "6e73148fe01bfda237b22b2ca5ee424af5bf8ea9ce7b627f945b99c588eeadad"
+    },
+    {
+      "path": "tests/test_build_followups_integration.py",
+      "sha256": "3c2e238629ec8667f0118c28ba6aadf132fdf1f090a7bc1cb284cafa5c61d001"
+    },
+    {
+      "path": "tests/test_build_history_integration.py",
+      "sha256": "284d229bb895b31970e4a8eb3162225814ec910027818ba39b02d51c074b36ed"
+    },
+    {
+      "path": "tests/test_cancel_integration.py",
+      "sha256": "431619df6c2147ee35993b66f3b3e4bf11c9442dce5eb05ea1695d5d93ab5916"
+    },
+    {
+      "path": "tests/test_content_checks.py",
+      "sha256": "f1feb66bc66dee2741de4cdd28aabdc9a1e6f3f277eb2e44f49edbc26fade2f7"
+    },
+    {
+      "path": "tests/test_content_findings_integration.py",
+      "sha256": "cb41a51fa6d96938d901db40c38b6c760c6102062abf4e396c32545c60d21a7e"
+    },
+    {
+      "path": "tests/test_core_recheck_scope_integration.py",
+      "sha256": "704a921aee0ecbf9efdda83ae6deee8d3252540600b0c1893bdde7c59bfff0e6"
+    },
+    {
+      "path": "tests/test_domain.py",
+      "sha256": "00fd78fb3ac840a2895eb37cf857c27f723cf29a3adf1a400e829b4b70a3df99"
+    },
+    {
+      "path": "tests/test_engineering.py",
+      "sha256": "2af7004b52e8d1bfba4fb4db987a11c0b452b926ca53891e7b2c75a1327b0bd1"
+    },
+    {
+      "path": "tests/test_fact_sets_integration.py",
+      "sha256": "16403d9c868c9fe3b619877e9c92cf82450a7b33b893a69bf9da383ca514aa79"
+    },
+    {
+      "path": "tests/test_model_ledger_integration.py",
+      "sha256": "de79b42b4a3bfa1520a8658fbc0a70f2eb22714b6a212e170aa744f35da2f300"
+    },
+    {
+      "path": "tests/test_model_purpose_integration.py",
+      "sha256": "b560ac7c909d971c3b0dd1ef234a1896bb3446cbf41332d11064fc855c092306"
+    },
+    {
+      "path": "tests/test_optional_stage_integration.py",
+      "sha256": "a1c4cf3d6bf87ed9c530d3cf1890e64056abaf842a06067ee63b16677d562392"
+    },
+    {
+      "path": "tests/test_providers.py",
+      "sha256": "30ab844ac97afa34108ff2736fff8cd8f154c4294b4575c6c8e3916d6f91a71b"
+    },
+    {
+      "path": "tests/test_recovery_integration.py",
+      "sha256": "beaee59f02a49ead046f504b779a37e21a398a112d786a1ad458362802bec187"
+    },
+    {
+      "path": "tests/test_review_comparison.py",
+      "sha256": "1736c6bbe24695892c0664ec9564747206aa86dd39a5f4185f8985f17cc96f88"
+    },
+    {
+      "path": "tests/test_review_identity.py",
+      "sha256": "e0b5595f06232cc0f83520aa175fcc2cc3b3af925e26bb347194108529488e13"
+    },
+    {
+      "path": "tests/test_review_input_limits.py",
+      "sha256": "55d5743aab4d6f2ee79f4d206c3ade94e911c6b2e77423803edb3a7151ad82b5"
+    },
+    {
+      "path": "tests/test_review_integration.py",
+      "sha256": "2a353da9d37fe8216fea68c7a89b51c55a72495d3196af97fb58f6b65e5c30b3"
+    },
+    {
+      "path": "tests/test_source_effectivity_integration.py",
+      "sha256": "58d83ca36fdc71737dbb3ae0264f760c1d986c3ee3b6a610b571f4bd66fb7450"
+    },
+    {
+      "path": "tests/test_submission_gate_integration.py",
+      "sha256": "5292582cd0849fa7d004571c8ac9e23f0e7c1664ccfdc4d534f7a8e5e105aca3"
+    },
+    {
+      "path": "tests/test_submission_lifecycle_integration.py",
+      "sha256": "fd1f4de18cfb2a4808e3af480de79fe45d71aa63cdba8fc7e599138162cae8f1"
+    },
+    {
+      "path": "tests/test_upload_layout_integration.py",
+      "sha256": "5d2308d7712f442975040414501020bcb22b6bf965f76b3b6a98e9f494fa85d3"
+    }
+  ],
+  "assistant_dependency": "/workspace/tender-docs/04-验证与测试/work-conversations-development-checks/candidate-01/frozen-inputs/"
+}

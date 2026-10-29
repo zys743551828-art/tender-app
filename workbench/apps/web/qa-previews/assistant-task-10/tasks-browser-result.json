@@ -1,0 +1,126 @@
+{
+  "at": "2026-10-17T03:33:32.906856+00:00",
+  "scope": "Native5184/real8816 fixedtask05 explicit fixture DB; structured task/NL control-plane + single local supplement run; no paid task types or provider execution",
+  "project_id": "d62284e0-f41c-41e8-8c95-134760df3e19",
+  "auto_review": false,
+  "checks": [
+    {
+      "case": "explicit-save-default-manual-no-run-refresh-persistent",
+      "passed": true,
+      "template_id": "6f9138a1-6025-4308-889d-91d152937f17",
+      "version_id": "ef5d0deb-dc68-4ed5-8040-177840dfd719"
+    },
+    {
+      "case": "manual-supplement-local-result-fixed-input-not-semantic-success",
+      "passed": true,
+      "run_id": "9e1e635c-f988-41c5-989a-c51401194893"
+    },
+    {
+      "case": "event-opt-in-immutable-version-pause-future-not-old-run",
+      "passed": true,
+      "event_version_id": "9f6d0aa8-dd39-4a34-95be-41537e9e96fe",
+      "paused_version_id": "b861499c-dd05-4422-9616-6fd4b54923dd"
+    },
+    {
+      "case": "explicit-cron-timezone-server-next-time-paused-after-check",
+      "passed": true,
+      "next_run_at": "2026-10-19T01:00:00+00:00"
+    },
+    {
+      "case": "NL-private-persistent-editable-unresolved-draft-only-save",
+      "passed": true,
+      "draft_id": "6f0b6199-3429-432b-b7b4-deca9d0be9f6"
+    },
+    {
+      "case": "one-explicit-template-save-serial-ack-no-second-confirm-no-run-no-duplicate",
+      "passed": true,
+      "template_id": "37663b01-9e95-466b-8383-d33b810f9be2"
+    },
+    {
+      "case": "private-drafts-shared-final-template-membership",
+      "passed": true
+    },
+    {
+      "case": "four-kind-presets-persisted-trusted-section-no-run-scoring-refused",
+      "passed": true
+    }
+  ],
+  "writes": [
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17/runs",
+      "method": "POST",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions/6f9138a1-6025-4308-889d-91d152937f17/pause",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definition-drafts",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definition-drafts/6f0b6199-3429-432b-b7b4-deca9d0be9f6",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definition-drafts/6f0b6199-3429-432b-b7b4-deca9d0be9f6",
+      "method": "PUT",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definition-drafts/6f0b6199-3429-432b-b7b4-deca9d0be9f6/save",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/bids/d62284e0-f41c-41e8-8c95-134760df3e19/task-definitions",
+      "method": "POST",
+      "status": 201
+    }
+  ],
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "schedule_finally_paused": true,
+  "event_domain_delivery_and_missed_recovery_positive": "not executed; page empty is not acceptance"
+}

@@ -1,0 +1,5 @@
+
+> @tender/workbench-web@0.1.0 contracts:generate
+> python scripts/generate-contracts.py && prettier --write src/contracts.ts
+
+src/contracts.ts 203ms

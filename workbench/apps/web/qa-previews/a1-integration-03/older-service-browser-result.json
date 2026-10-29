@@ -1,0 +1,10 @@
+{
+  "scope": "developer browser check against deliberately older API; no A1/RAG service success claim",
+  "registered_but_not_live_explicit_version_error": true,
+  "state_unavailable_prevents_new_review": true,
+  "retrieval_error_keeps_query": true,
+  "390px_no_overflow": true,
+  "focus_returns": true,
+  "business_requests": ["retrievals"],
+  "page_errors": []
+}

@@ -1,0 +1,14 @@
+{
+  "scope": "real browser/API developer recovery check; one true committed PATCH response deliberately dropped; real second-context CAS, no fake server success",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "draft_id": "0dfa090c-4f35-4d27-90cd-a2be3fa4813d",
+  "baseline_draft_revision": 4,
+  "final_draft_revision": 8,
+  "lost_response_replayed_exact_key_etag_body": true,
+  "newer_text_saved_after_replay_ack": true,
+  "only_two_revisions_for_loss_replay_and_new_content": true,
+  "real_412_preserves_local_and_remote_comparison": true,
+  "explicit_merged_save_uses_fresh_head": true,
+  "mobile_no_overflow": true,
+  "page_errors": []
+}

@@ -1,0 +1,10 @@
+{
+  "api_origin": "http://127.0.0.1:8806",
+  "web_origin": "http://127.0.0.1:5176",
+  "strict_live_openapi_json_equal": true,
+  "actual_sha256": "33e3e86a956778919fb7929d41e1d4e61a91921452a1a1ac857bfa0f80037472",
+  "live_wire_sha256": "455c6053f5b184fa20adddab69adc989f174bf6d68e43cf590af3e6e015ca5d8",
+  "paths": 129,
+  "operations": 150,
+  "credentials_printed": false
+}

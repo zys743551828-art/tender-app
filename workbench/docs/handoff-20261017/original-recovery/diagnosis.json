@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-16T07:53:17.294765+00:00",
+  "draft_revision": 3,
+  "draft_unchanged": true,
+  "last_save_result": "base version stale; save not confirmed",
+  "runtime_network": "restricted; research domains not applied",
+  "current_turn_save_retried": false,
+  "reason_not_retried": "tool explicitly states rereading and resubmitting the same stale draft will not repair it"
+}

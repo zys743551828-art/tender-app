@@ -1,0 +1,6 @@
+{
+  "result": "rejected_by_API_column_grant",
+  "sqlstate": "42501",
+  "production_ddl_changed": false,
+  "scope": "real restricted API LOGIN; Worker original intake and API retry have distinct INSERT grants"
+}

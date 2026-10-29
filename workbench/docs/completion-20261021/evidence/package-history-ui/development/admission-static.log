@@ -1,0 +1,7 @@
+
+/workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web/scripts/check-package-history-admission-browser.mjs
+   1:75  error  'location' is defined but never used  @typescript-eslint/no-unused-vars
+  77:11  error  'URL' is not defined                  no-undef
+
+✖ 2 problems (2 errors, 0 warnings)
+

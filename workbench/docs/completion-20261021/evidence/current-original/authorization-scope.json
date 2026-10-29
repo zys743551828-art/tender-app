@@ -1,0 +1,11 @@
+{
+  "status": "explicit_user_approved",
+  "scope": "fresh independent tender-fusion Compose check database only",
+  "group": "tender_current_original_verify",
+  "inherited_group": "tender_current_scope_verify",
+  "rpc": "current_technical_original.locate(uuid,uuid,text,uuid,text)",
+  "business_database_installation_authorized": false,
+  "production_or_real_original_credentials": false,
+  "cleanup_required": true,
+  "scope_document_sha256": "88f00259426bcda91a57ab3c17f4f9700376f6f17d24be55d4b7af736af1b1a7"
+}

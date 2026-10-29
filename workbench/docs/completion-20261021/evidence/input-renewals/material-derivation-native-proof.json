@@ -1,0 +1,367 @@
+{
+  "controller_method_digest": "06fa2fe5893f82bb8251c3a37a32cd577c4c0e6a13e9c9c478a7979ba5de1800",
+  "derivation": {
+    "version": "fusion-current-material-derivation/1",
+    "method_digest": "06fa2fe5893f82bb8251c3a37a32cd577c4c0e6a13e9c9c478a7979ba5de1800",
+    "material_observation_digest": "50373936b21602b587ec17e3e45b92169228a10f1a20725583c3a412f25e8fc7",
+    "material_digest": "f7bde58687f6563c29c669c0c508754bdf7b420170d4ab74d339ca410d53a948",
+    "runtime": {
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "hard_timeout_ms": 40000
+    },
+    "runtime_description_receipt": {
+      "container_id": "079f1d2d26423ab402f8f5ad6a3a0419626e2bcc7064df797eab3cbc2ad9c3b7",
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "compose_project": "tender-fusion",
+      "compose_service": "asset-renderer",
+      "hard_timeout_ms": 40000,
+      "container_started_at": "2026-10-24T12:36:23.810845482Z",
+      "observed_kernel_limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "pids.max": "32",
+        "cpu.max": "100000 100000",
+        "no_new_privileges": true,
+        "seccomp_filter_active": true,
+        "effective_permitted_bounding_ambient_capabilities_zero": true,
+        "network_interfaces": [
+          "lo"
+        ],
+        "read_only_source_files": 7
+      },
+      "stopped_verified": true,
+      "container_pid": 0,
+      "oom_killed": false,
+      "container_finished_at": "2026-10-24T12:36:25.266755111Z",
+      "container_exit_code": 0,
+      "was_running_before_stop": true,
+      "source_fingerprint_checked_before_and_after": true
+    },
+    "documents": [
+      {
+        "document_version_id": "4a0bdb1c-5fc4-462f-882e-0f6c34d4d147",
+        "manifest_digest": "02dac01e66f18e84ef46ba7cccc5d730fe390b117440a354df432186b73fa42b",
+        "receipt": {
+          "container_id": "d41e79a1b9df832b3fb366db53d7a051ecae8fd3542b9cf1cd47f190075caae8",
+          "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+          "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+          "compose_project": "tender-fusion",
+          "compose_service": "asset-renderer",
+          "hard_timeout_ms": 40000,
+          "container_started_at": "2026-10-24T12:36:27.855558229Z",
+          "observed_kernel_limits": {
+            "memory.max": "1073741824",
+            "memory.swap.max": "0",
+            "pids.max": "32",
+            "cpu.max": "100000 100000",
+            "no_new_privileges": true,
+            "seccomp_filter_active": true,
+            "effective_permitted_bounding_ambient_capabilities_zero": true,
+            "network_interfaces": [
+              "lo"
+            ],
+            "read_only_source_files": 7
+          },
+          "stopped_verified": true,
+          "container_pid": 0,
+          "oom_killed": false,
+          "container_finished_at": "2026-10-24T12:36:29.70842403Z",
+          "container_exit_code": 0,
+          "was_running_before_stop": true,
+          "source_fingerprint_checked_before_and_after": true,
+          "version": "package-page-render-execution/1",
+          "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "result_manifest_digest": "02dac01e66f18e84ef46ba7cccc5d730fe390b117440a354df432186b73fa42b",
+          "wire_result_digest": "2e5079d45d2cd3424a1ba17923e761ac637117e983e0e11f09d08051cecc4a92",
+          "container_boundary_observed": true,
+          "input_authority_granted": false,
+          "visual_readability_verified": false,
+          "formal_execution_authorized": false
+        }
+      },
+      {
+        "document_version_id": "796df750-d780-4250-a3c6-cac2bc82b46c",
+        "manifest_digest": "8b534b59096619efbc41ad96148454b713f6ef0260a75e1e567b9f1850aa41fb",
+        "receipt": {
+          "container_id": "db33c9a16234182f7ae5bee2a2046be63be4070254be5aaf52dd2f09633ccbee",
+          "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+          "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+          "compose_project": "tender-fusion",
+          "compose_service": "asset-renderer",
+          "hard_timeout_ms": 40000,
+          "container_started_at": "2026-10-24T12:36:31.219002293Z",
+          "observed_kernel_limits": {
+            "memory.max": "1073741824",
+            "memory.swap.max": "0",
+            "pids.max": "32",
+            "cpu.max": "100000 100000",
+            "no_new_privileges": true,
+            "seccomp_filter_active": true,
+            "effective_permitted_bounding_ambient_capabilities_zero": true,
+            "network_interfaces": [
+              "lo"
+            ],
+            "read_only_source_files": 7
+          },
+          "stopped_verified": true,
+          "container_pid": 0,
+          "oom_killed": false,
+          "container_finished_at": "2026-10-24T12:36:33.061179304Z",
+          "container_exit_code": 0,
+          "was_running_before_stop": true,
+          "source_fingerprint_checked_before_and_after": true,
+          "version": "package-page-render-execution/1",
+          "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+          "result_manifest_digest": "8b534b59096619efbc41ad96148454b713f6ef0260a75e1e567b9f1850aa41fb",
+          "wire_result_digest": "a1716d9c0661ef28c557af9d42b44b1d874c0f01cf1c3900e858bbf4cbb5f1d9",
+          "container_boundary_observed": true,
+          "input_authority_granted": false,
+          "visual_readability_verified": false,
+          "formal_execution_authorized": false
+        }
+      }
+    ],
+    "fresh_native_facts_checked_after_all_render_sessions": true,
+    "actual_render_boundaries_observed": true,
+    "renderer_receipts_match_all_documents": true,
+    "visual_readability_verified": false,
+    "necessary_scope_verified": false,
+    "native_binding_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "186f5d178542a4bcb26e957b626e41c1e0db8f861cd787f75ef7d46a598781a2"
+  },
+  "native_material_observation": {
+    "version": "package-current-material-observation/1",
+    "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+    "scope_id": "6838ebf3-5995-492d-96ba-fcb8ca60e9b5",
+    "scope_digest": "2075797d7feb3347f35d2965573c1487d7ec73b16bdf4db64816fa31efae1a16",
+    "method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "material_digest": "f7bde58687f6563c29c669c0c508754bdf7b420170d4ab74d339ca410d53a948",
+    "original_set_digest": "28ba38e6a7db5f95a467d861d612b0c600361aefeebc2a38242ce73ae0be80c5",
+    "initial_parse_observation": {
+      "version": "package-current-parse-material/1",
+      "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+      "observed_at": "2026-10-24T12:36:25.624937+00:00",
+      "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+      "documents_digest": "2b3db311b942cf710eb2848561bafa7b973cd031cd04f0c919bd4c9b4ae87204",
+      "counts": {
+        "pages": 4,
+        "blocks": 6,
+        "text_bytes": 166,
+        "metadata_bytes": 2460
+      },
+      "graph": {
+        "roots": [
+          "660166e0-86f8-5db8-a914-a0e4ecf47635",
+          "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72",
+          "9dbea7e0-036f-5752-93c4-0eb16a5ae550",
+          "ee35bc3c-f8b3-5564-be61-fd7be367d95d"
+        ],
+        "nodes": [
+          {
+            "id": "660166e0-86f8-5db8-a914-a0e4ecf47635",
+            "document_version_id": "796df750-d780-4250-a3c6-cac2bc82b46c",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.639048+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.639048+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72",
+            "document_version_id": "4a0bdb1c-5fc4-462f-882e-0f6c34d4d147",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.612821+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.612821+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "9dbea7e0-036f-5752-93c4-0eb16a5ae550",
+            "document_version_id": "796df750-d780-4250-a3c6-cac2bc82b46c",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.639048+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.639048+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "ee35bc3c-f8b3-5564-be61-fd7be367d95d",
+            "document_version_id": "4a0bdb1c-5fc4-462f-882e-0f6c34d4d147",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.612821+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.612821+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          }
+        ],
+        "edges": [
+          [
+            "660166e0-86f8-5db8-a914-a0e4ecf47635",
+            "9dbea7e0-036f-5752-93c4-0eb16a5ae550"
+          ],
+          [
+            "ee35bc3c-f8b3-5564-be61-fd7be367d95d",
+            "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72"
+          ]
+        ]
+      },
+      "native_parse_content_reverified": true,
+      "original_bytes_reverified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "22ed22086217f8010e41a1914b355de84da2d15defa4b7336775885ada62421c"
+    },
+    "final_parse_observation": {
+      "version": "package-current-parse-material/1",
+      "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+      "observed_at": "2026-10-24T12:36:33.405131+00:00",
+      "method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+      "documents_digest": "2b3db311b942cf710eb2848561bafa7b973cd031cd04f0c919bd4c9b4ae87204",
+      "counts": {
+        "pages": 4,
+        "blocks": 6,
+        "text_bytes": 166,
+        "metadata_bytes": 2460
+      },
+      "graph": {
+        "roots": [
+          "660166e0-86f8-5db8-a914-a0e4ecf47635",
+          "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72",
+          "9dbea7e0-036f-5752-93c4-0eb16a5ae550",
+          "ee35bc3c-f8b3-5564-be61-fd7be367d95d"
+        ],
+        "nodes": [
+          {
+            "id": "660166e0-86f8-5db8-a914-a0e4ecf47635",
+            "document_version_id": "796df750-d780-4250-a3c6-cac2bc82b46c",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.639048+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.639048+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72",
+            "document_version_id": "4a0bdb1c-5fc4-462f-882e-0f6c34d4d147",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.612821+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.612821+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "9dbea7e0-036f-5752-93c4-0eb16a5ae550",
+            "document_version_id": "796df750-d780-4250-a3c6-cac2bc82b46c",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.639048+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.639048+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          },
+          {
+            "id": "ee35bc3c-f8b3-5564-be61-fd7be367d95d",
+            "document_version_id": "4a0bdb1c-5fc4-462f-882e-0f6c34d4d147",
+            "digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809",
+            "kind": "document",
+            "policy_class": "prebid_content",
+            "known_at": "2026-10-24T12:36:21.612821+00:00",
+            "revision": 2,
+            "status": "published",
+            "valid_from": "2026-10-24T12:36:21.612821+00:00",
+            "valid_until": null,
+            "bid_id": "288d4c40-757e-45d7-ab17-2c284eb3552d",
+            "original_digest": "e64cd8c2abf1ebec0d818287e0c896fff30133202b106c861374d4c64717b809"
+          }
+        ],
+        "edges": [
+          [
+            "660166e0-86f8-5db8-a914-a0e4ecf47635",
+            "9dbea7e0-036f-5752-93c4-0eb16a5ae550"
+          ],
+          [
+            "ee35bc3c-f8b3-5564-be61-fd7be367d95d",
+            "70e9bba8-9baf-5ca7-92f2-3ac57f5adf72"
+          ]
+        ]
+      },
+      "native_parse_content_reverified": true,
+      "original_bytes_reverified": false,
+      "necessary_scope_verified": false,
+      "input_authority_granted": false,
+      "execution_authorized": false,
+      "historical_existence_verified": false,
+      "digest": "f83a381fe2d4f0bb0d02acb9b2a444f571aae9de9abd6b94f3f538ab04d147cb"
+    },
+    "final_scope_observation_digest": "cfafa3cfd6065921ef7998a8fe2edd40e61f5aa5002fb44403b921321f6c25ed",
+    "document_count": 2,
+    "physical_page_count": 4,
+    "asset_bytes": 59224,
+    "asset_pixels": 7200000,
+    "native_parse_and_original_material_observed": true,
+    "complete_frozen_declarations_retained": true,
+    "renderer_boundary_verified": false,
+    "visual_readability_verified": false,
+    "necessary_scope_verified": false,
+    "input_authority_granted": false,
+    "execution_authorized": false,
+    "historical_existence_verified": false,
+    "digest": "50373936b21602b587ec17e3e45b92169228a10f1a20725583c3a412f25e8fc7"
+  },
+  "events": [
+    "parse_observation",
+    "render_stopped",
+    "render_stopped",
+    "parse_observation"
+  ],
+  "actual_loopback_gets": 2,
+  "actual_fresh_compose_sessions": 3,
+  "physical_pages": 4,
+  "database_rechecked_after_container_render": true,
+  "transactions_idle_during_get_and_render": true,
+  "synthetic_material": true,
+  "input_authority_granted": false,
+  "provider_attempts": 0,
+  "body_exported": false
+}

@@ -1,0 +1,16 @@
+{
+  "scope": "developer read-only self-check of actual history projection and UI; synthetic product-review project; not independent QA",
+  "bid_id": "ab02f97e-3f0b-47e6-889c-09f9f292da11",
+  "head_document_id": "973b7f28-56e7-44a6-b329-3dad354dcc10",
+  "old_document_id": "7f86513a-1f98-483e-b681-2ea866d73709",
+  "old_filename": "product-body.pdf",
+  "old_version": 1,
+  "head_version": 2,
+  "history_metadata_file_matches": true,
+  "history_badge_visible": true,
+  "old_canvas_visible": true,
+  "download_sha256_matches_old_version": true,
+  "download_filename_matches_old_version": true,
+  "focus_returns_to_history_action": true,
+  "mobile_no_overflow": true
+}

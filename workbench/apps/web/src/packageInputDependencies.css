@@ -1,0 +1,116 @@
+.package-input-dependencies {
+  container-type: inline-size;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.package-input-dependencies > summary {
+  font-weight: 650;
+  cursor: pointer;
+}
+.package-input-dependencies .package-input-dependencies__body {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+  padding-top: 0.75rem;
+}
+.package-input-dependencies p,
+.package-input-dependencies span,
+.package-input-dependencies strong,
+.package-input-dependencies small,
+.package-input-dependencies code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.package-input-dependencies .package-input-dependencies__body > *,
+.package-input-dependencies li > *,
+.package-input-dependencies label {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.package-input-dependencies h6 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.package-input-dependencies .package-input-dependencies__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.package-input-dependencies button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.package-input-dependencies .package-input-dependencies__requirements {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.package-input-dependencies .package-input-dependencies__requirements > li {
+  display: flex;
+  align-items: start;
+  gap: 0.8rem;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem;
+}
+.package-input-dependencies
+  .package-input-dependencies__requirements
+  > li
+  > div {
+  flex: 1;
+}
+.package-input-dependencies .package-input-dependencies__editor {
+  display: grid;
+  gap: 0.8rem;
+  min-width: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.package-input-dependencies .package-input-dependencies__requirements small {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+}
+.package-input-dependencies label {
+  display: grid;
+  gap: 0.4rem;
+}
+.package-input-dependencies select,
+.package-input-dependencies textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.package-input-dependencies .package-input-dependencies__choice {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  gap: 0.6rem;
+}
+.package-input-dependencies .package-input-dependencies__choice input {
+  flex: 0 0 auto;
+  width: 1.1rem;
+  height: 1.1rem;
+  min-height: 0;
+  padding: 0;
+  margin: 0.2rem 0 0;
+}
+@container (max-width:640px) {
+  .package-input-dependencies .package-input-dependencies__requirements > li {
+    flex-direction: column;
+  }
+  .package-input-dependencies .package-input-dependencies__actions > button {
+    flex: 1 1 11rem;
+  }
+}

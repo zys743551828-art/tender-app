@@ -1,0 +1,125 @@
+{
+  "scope": "Source/doc/evidence publication audit, not application regression or runtime backup",
+  "all_six_active_role_handoffs_saved": true,
+  "development_stopped": true,
+  "cloud_restore_authorization_unconsumed": true,
+  "known_local_secret_scan": "Compared private environment/role-profile secret values in memory without printing them; published bytes contain no matching known values. Also provider-key and signed-query patterns scanned.",
+  "manual_classifications": [
+    {
+      "workspace_path": "tender-workbench/apps/web/.env.external.local",
+      "sha256": "1855f4a2a4156f994ef1bd72c15f2301b02baf1e274aa4b60dbeb39076163438",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-workbench/apps/web/.env.delivery06.local",
+      "sha256": "cf1bdf15d3ce3abf7e53e610d9b4ed74c2a67e8537092625874a47febed9b775",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-workbench/apps/web/qa-previews/a2-integration-04/frozen-inputs/.env.external.local",
+      "sha256": "1855f4a2a4156f994ef1bd72c15f2301b02baf1e274aa4b60dbeb39076163438",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-workbench/apps/web/qa-previews/multipart-knowledge-05/frozen-inputs/.env.external.local",
+      "sha256": "1855f4a2a4156f994ef1bd72c15f2301b02baf1e274aa4b60dbeb39076163438",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/provider-deployment-checks/frozen-proxy-inputs/apps/web/.env.external.local",
+      "sha256": "1855f4a2a4156f994ef1bd72c15f2301b02baf1e274aa4b60dbeb39076163438",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/provider-deployment-checks/live-01/frontend-sources/.env.external.local",
+      "sha256": "1855f4a2a4156f994ef1bd72c15f2301b02baf1e274aa4b60dbeb39076163438",
+      "classification": "Only loopback API_PROXY_TARGET; public frozen frontend input, no credential."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04-final/publisher-private-input.json",
+      "sha256": "1be0e0efbedd4adb9b3baf36d6190ef063f0ab5a0389409e2231f2cb63380951",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04-final/api-private-input.json",
+      "sha256": "8d0835d1a1d84ad98fc939081608c1639e8d6ccf7ec678593ffe7f47c5bdebee",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04-final/worker-private-input.json",
+      "sha256": "74ed522226c827a211398282eda7f31d529fba2f3fa6856f447b51d9c9b30b2f",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture05/publisher-private-input.json",
+      "sha256": "4ab8d60258710330fc7000ab1e5115a3e86bcfc13f2a5c4f8f72cb7f433b5476",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture05/api-private-input.json",
+      "sha256": "fef19d5c941a28a8e1df86fc8356ea5c4a3b034cbacd8a6bd3f6660f07f5eafe",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture05/worker-private-input.json",
+      "sha256": "4c8b6ef068ad5ae3a9db3619e2ec9fe1170fd0653b292e71247edf0c925e9042",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture01/publisher-private-input.json",
+      "sha256": "65549c00be58d2fcc6d3a69621824f4b422e01224c0b4eaecc50b89ac2012901",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture01/seed-private-input.json",
+      "sha256": "48ad73aa5bd73868c0607fd16112f8db455b09e5967e5eb66c5eca0cbf1b9c08",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture01/api-private-input.json",
+      "sha256": "da306bd6bd7792143d63caeca14292d9c48906c12a3cdfc4c7b38d06013a6d0c",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture01/worker-private-input.json",
+      "sha256": "db054a21f12d0669072741f295d20f8fcd9e222c45c5564e24bb598260713698",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04/publisher-private-input.json",
+      "sha256": "1a5804ee4bb0f11e263f35b18ce7a98f66ba72e7c2b4c2e0ff7348908533684f",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04/api-private-input.json",
+      "sha256": "61eee6e6f9b5c54bf6337fdaacf717266cdab9ce903ea344d46ebad6a2c4ae8a",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    },
+    {
+      "workspace_path": "tender-docs/04-验证与测试/assistant-browser-environment01/fixture04/worker-private-input.json",
+      "sha256": "6d5e7027f2ef0793ac6137e74802dd19dc9762efcb434e4a24ec0721d72d07c2",
+      "classification": "Existing launcher deliberately strips DSNs/session/csrf secrets; 13 exact public scalar/ID metadata fields verified, no known secrets or provider/signature patterns."
+    }
+  ],
+  "excluded_sensitive_files": [
+    {
+      "workspace_path": "tender-workbench/.env",
+      "sha256": "02333792aafc77ac2922b67c9a0a9b8449c954779d319c652082df1505398849",
+      "reason": "Private root runtime configuration containing live credentials; original bytes retained locally."
+    }
+  ],
+  "dsn_literal_review": "Non-private findings are code interpolation templates, deliberately synthetic URI boundary tests/no-password fake addresses, and an upstream demo Compose default; no live credential literal approved.",
+  "archive_review": "Existing original recovery zip/source material inspected for provider-key patterns; no matches. Uploaded archive originals remain locally with exact SHA index; extracted material preserved byte-for-byte.",
+  "deliberately_not_uploaded": [
+    ".local/ runtime state and private backups/config/objects",
+    "Live databases and Docker volume data",
+    "Virtual environments/node_modules/cache/working dist",
+    "Downloaded model weights; exact local model identity recorded separately"
+  ],
+  "metadata_only": [
+    "private-state-index.json",
+    "model-cache-index.json",
+    "runtime-observation.json"
+  ],
+  "limitations": "This publication preserves work/knowledge and public evidence. It is not an export of original running databases, private identities or a production recovery certification."
+}

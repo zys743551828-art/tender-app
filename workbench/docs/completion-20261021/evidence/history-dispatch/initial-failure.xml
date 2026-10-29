@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="27" time="207.912" timestamp="2026-10-23T09:19:20.341109+00:00" hostname="4fd69d97f054"><testcase classname="tests.test_package_history_dispatch" name="test_bounded_page_uses_only_the_selected_purpose_and_preserves_microseconds" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[verify-5]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[None-5]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[purpose2-5]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[train-True]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[train-0]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[train-21]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_purpose_or_batch_never_connects[train-1.0]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[extra]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[count]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[reverse]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[duplicate]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[boolean]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[naive]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[invalid_uuid]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_invalid_metadata_cannot_run_a_job[behind]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_stale_head_advances_and_does_not_starve_the_next_candidate" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_permission_failure_is_fatal_without_claiming_later_work" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_graceful_stop_does_not_start_the_remaining_job" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags0]" time="0.001" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags1]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags2]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags3]" time="0.001" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags4]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_launcher_rejects_ambiguous_or_unbounded_arguments[flags5]" time="0.000" /><testcase classname="tests.test_package_history_dispatch" name="test_parent_passes_one_private_purpose_without_ambient_credentials" time="0.002" /><testcase classname="tests.test_package_history_dispatch_pg" name="test_discovery_to_train_and_final_evaluate_uses_distinct_real_child_logins" time="206.475"><failure message="subprocess.TimeoutExpired: Command '['/usr/local/bin/python', '-I', '/tmp/fusion-checks-a0z14n_5/deploy/package_history_dispatcher.py', '--purpose', 'train', '--profile', '/tmp/pytest-of-root/pytest-0/test_discovery_to_train_and_fi0/9757e8d6320e4cf2aa96823d0815fea9.profile', '--cycles', '1', '--batch-size', '5', '--poll-seconds', '1']' timed out after 120 seconds">api = {'actor': 'c5240f9b-308a-423a-a797-acbd8efa144f', 'app': &lt;apps.api.main.WorkbenchAPI object at 0x740d3bf9ae40&gt;, 'clien....TestClient object at 0x740d3b887530&gt;, 'csrf': '3ccb71b8ca4fa034fe85a792ad7d14d402f12bff53747f047710f6c3428e979e', ...}
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_discovery_to_train_and_fi0')
+
+    def test_discovery_to_train_and_final_evaluate_uses_distinct_real_child_logins(api, tmp_path):
+        cases, _, cohort, _ = native.cohort_fixture(api, tmp_path)
+        w = cases[0]
+        train = native.job(w, cohort, "train")
+        assert scan(w, "evaluate") == []
+&gt;       process, receipts = child(w, "train", tmp_path)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_package_history_dispatch_pg.py:119: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_package_history_dispatch_pg.py:75: in child
+    result = subprocess.run(
+/usr/local/lib/python3.12/subprocess.py:550: in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.12/subprocess.py:2116: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Popen: returncode: -9 args: ['/usr/local/bin/python', '-I', '/tmp/fusion-ch...&gt;
+endtime = 1694.203531196, orig_timeout = 120, stdout_seq = [], stderr_seq = []
+skip_check_and_raise = False
+
+    def _check_timeout(self, endtime, orig_timeout, stdout_seq, stderr_seq,
+                       skip_check_and_raise=False):
+        """Convenience for checking if a timeout has expired."""
+        if endtime is None:
+            return
+        if skip_check_and_raise or _time() &gt; endtime:
+&gt;           raise TimeoutExpired(
+                    self.args, orig_timeout,
+                    output=b''.join(stdout_seq) if stdout_seq else None,
+                    stderr=b''.join(stderr_seq) if stderr_seq else None)
+E           subprocess.TimeoutExpired: Command '['/usr/local/bin/python', '-I', '/tmp/fusion-checks-a0z14n_5/deploy/package_history_dispatcher.py', '--purpose', 'train', '--profile', '/tmp/pytest-of-root/pytest-0/test_discovery_to_train_and_fi0/9757e8d6320e4cf2aa96823d0815fea9.profile', '--cycles', '1', '--batch-size', '5', '--poll-seconds', '1']' timed out after 120 seconds
+
+/usr/local/lib/python3.12/subprocess.py:1253: TimeoutExpired</failure></testcase></testsuite></testsuites>

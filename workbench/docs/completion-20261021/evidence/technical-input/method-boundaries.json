@@ -1,0 +1,36 @@
+{
+  "host_method_digest": "94637e9e5e93a4a1b1bc6337bfec94ac11a265cf7ce9cff924fe56f3ced306bd",
+  "host_descriptor": {
+    "version": "package-technical-input-method/2",
+    "source": "88df54e97af509fa0ad7965cf15e61a10ee77cd0b097cf78c8b8bfb366afcb97",
+    "contract_source": "3b3d2f8af8964a3e65737a4c6e6b7823a9858e3c3e1005188e5e985b4560df2b",
+    "feature_contract_source": "e5df5ee5fd995f79e021d5941b7dd5b8aaf7579e0537e3f15708834ccf7137c4",
+    "asset_contract_source": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+    "canonical_source": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+    "asset_verifier_source": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+    "codec_source": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+    "schema_digest": "9f136ade3a310db9441de3a7618c47caa771b85cd338524e76c0dfd2fb7be875",
+    "output_schema_digest": "6682c9f622418af4db493c25a94453108dc0c2e7617c7b87146dec6dde24839d",
+    "python_version": [
+      3,
+      12,
+      14
+    ],
+    "zlib_runtime_version": "1.3.2",
+    "schema_validator_version": "4.24.0",
+    "maximum_projection_bytes": 4194304,
+    "maximum_metadata_bytes": 8388608,
+    "maximum_text_bytes": 2097152,
+    "maximum_asset_bytes": 67108864,
+    "maximum_total_pixels": 128000000,
+    "maximum_pages": 256,
+    "maximum_images": 384,
+    "part_closure": "descendants_and_transitive_related_parts",
+    "materials": "all_frozen_documents_pages_details_and_evidence_in_order",
+    "semantic_packet": "version_method_projection_material_digest_rule_closure",
+    "authority_grants": false
+  },
+  "previous_feature_method_unchanged": true,
+  "previous_asset_sources_unchanged": true,
+  "host_linux_method_equality_claimed": false
+}

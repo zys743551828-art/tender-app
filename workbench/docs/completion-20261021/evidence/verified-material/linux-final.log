@@ -1,0 +1,4 @@
+................................................................         [100%]
+----------- generated xml file: /evidence/verified-material-pure.xml -----------
+64 passed in 11.89s
+{"suite": "verified-material-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

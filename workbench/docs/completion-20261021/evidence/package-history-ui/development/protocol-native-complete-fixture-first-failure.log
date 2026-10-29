@@ -1,0 +1,121 @@
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+ ✓ src/packageHistoricalResearchProtocol.test.ts (27 tests) 38ms
+ ✓ src/packageHistoricalResearchRecovery.test.ts (21 tests) 16ms
+ ✓ src/recordedCommandCleanup.test.ts (7 tests) 10ms
+ ❯ src/packageHistoricalResearchNative.test.ts (92 tests | 1 failed) 91ms
+   ✓ keeps actual infrastructure verification separate from real business qualification 4ms
+   ✓ unchanged native responses > validates context 'primary_missing_proof' with its original tag and selected identities 4ms
+   ✓ unchanged native responses > validates context 'admission_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'fit_second_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'fit_second_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'development_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'development_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'unselected_bridge_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_known_missing_proof' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'final_known_context' with its original tag and selected identities 1ms
+   ✓ unchanged native responses > validates context 'final_crossing_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_crossing_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_missing_proof' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates context 'final_unknown_context' with its original tag and selected identities 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_created' 2ms
+   ✓ unchanged native responses > validates original command ACK 'fit_second_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'development_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'unselected_bridge_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_known_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'final_crossing_admitted' 0ms
+   ✓ unchanged native responses > validates original command ACK 'final_unknown_admitted' 1ms
+   ✓ unchanged native responses > validates original command ACK 'protocol_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'cohort_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'train_created' 1ms
+   ✓ unchanged native responses > validates original command ACK 'pause_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'pause_replayed' 1ms
+   ✓ unchanged native responses > validates original command ACK 'resume_ack' 0ms
+   ✓ unchanged native responses > validates original command ACK 'evaluate_created' 0ms
+   ✓ unchanged native responses > validates original command ACK 'admission_replayed_after_revocation' 1ms
+   ✓ unchanged native responses > validates the CPU template and exact method fingerprint 1ms
+   ✓ unchanged native responses > accepts the native admission history view 'fit_second_current' without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the native admission history view 'development_current' without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the native admission history view 'unselected_bridge_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_known_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_crossing_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'final_unknown_current' without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the native admission history view 'admission_current' without re-granting eligibility 0ms
+   ✓ unchanged native responses > accepts the native admission history view 'admission_stale' without re-granting eligibility 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_current including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_after_train including transitive excluded closure 1ms
+   ✓ unchanged native responses > accepts the full native cohort cohort_stale including transitive excluded closure 1ms
+   ✓ unchanged native responses > validates native job 'train_queued' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'train_paused' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_resumed' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'train_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluate_queued' and its cohort bindings 0ms
+   ✓ unchanged native responses > validates native job 'evaluate_succeeded' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates native job 'evaluation_stale' and its cohort bindings 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_directory 1ms
+   ✓ unchanged native responses > validates metadata directory protocols_directory 1ms
+   ✓ unchanged native responses > validates metadata directory cohorts_directory 0ms
+   ✓ unchanged native responses > validates metadata directory jobs_directory 1ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_one 0ms
+   ✓ unchanged native responses > validates metadata directory admissions_page_two 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'admissions_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'protocols_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'cohorts_unavailable' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'admissions_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'protocols_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > keeps directory 'cohorts_empty' unknown or empty exactly as observed 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_page_one' 1ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_page_two' 1ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_observation_changed' 2ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'cohorts_wrong_cursor_scope' 0ms
+   ✓ native unavailable and recovery boundaries > verifies original directory response 'protocols_refreshed' 1ms
+   ✓ native unavailable and recovery boundaries > restores the exact protocol ACK after the installed method changes while rejecting a new-key response 3ms
+   ✓ native unavailable and recovery boundaries > retains a command after the ordinary API denies synthetic role access; that denial is not an ACK 1ms
+   ✓ preserves the original admission and pause ACKs when later observations change 2ms
+   ✓ preserves zero baseline gain, null intervals and all independent evaluation denominators 2ms
+   ✓ preserves real zero in the synthetic admission and unavailable calibration in training 1ms
+   ✓ rejects a resealed native admission with corrupted binding 1ms
+   ✓ rejects a resealed native admission with corrupted proof_origin 1ms
+   ✓ rejects a resealed native admission with corrupted future_label 2ms
+   ✓ rejects a resealed native admission with corrupted qualification 2ms
+   ✓ rejects a resealed native evaluation with corrupted selected_denominator 2ms
+   ✓ rejects a resealed native evaluation with corrupted report_denominator 2ms
+   ✓ rejects a resealed native evaluation with corrupted silently_dropped_unlabeled 2ms
+   ✓ rejects a resealed native evaluation with corrupted zero_to_null 2ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_cohort 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_membership 1ms
+   ✓ rejects a resealed native evaluation with corrupted wrong_protocol 2ms
+   ✓ rejects a resealed native evaluation with corrupted fake_origin 1ms
+   ✓ rejects a resealed native evaluation with corrupted paid_call 1ms
+   ✓ rejects a resealed native evaluation with corrupted qualification 4ms
+   ✓ rejects a resealed native evaluation with corrupted false_coverage 1ms
+   ✓ rejects a resealed native evaluation with corrupted cohort_timing 1ms
+   ✓ rejects a resealed native training result with corrupted family 1ms
+   ✓ rejects a resealed native training result with corrupted model_export 1ms
+   ✓ rejects a resealed native training result with corrupted loss_selection 1ms
+   ✓ rejects a resealed native training result with corrupted false_interval 1ms
+   × rejects a resealed cohort that removes the unselected transitive bridge from a member closure 4ms
+     → Missing native bridge case
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/packageHistoricalResearchNative.test.ts > rejects a resealed cohort that removes the unselected transitive bridge from a member closure
+Error: Missing native bridge case
+ ❯ src/packageHistoricalResearchNative.test.ts:547:11
+    545|   );
+    546|   if (!member || member.group_id === member.admission_id)
+    547|     throw new Error("Missing native bridge case");
+       |           ^
+    548|   member.closure_ids = [member.admission_id];
+    549|   value.cohort.membership_digest = await jsonDigest(value.cohort.membe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 146 passed (147)
+   Start at  19:20:46
+   Duration  1.07s (transform 469ms, setup 431ms, collect 1.06s, tests 156ms, environment 1.27s, prepare 251ms)
+

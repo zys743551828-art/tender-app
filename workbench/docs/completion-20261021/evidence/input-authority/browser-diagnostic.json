@@ -1,0 +1,14 @@
+{
+  "observed_at": "2026-10-24T10:52:12.923950+00:00",
+  "surface": "in-app browser",
+  "skill_version": "26.1013.40934",
+  "existing_runtime_binding": false,
+  "bootstrap_attempted": true,
+  "bootstrap_succeeded": false,
+  "page_control_reached": false,
+  "error": "Cannot find module 'C:\\Users\\74355\\.codex\\plugins\\cache\\openai-bundled\\browser\\26.1016.62342\\scripts\\browser-service.mjs' imported from trusted-worker.js",
+  "route_discovery_reached": false,
+  "browser_visual_verified": false,
+  "application_security_or_personal_data_modified": false,
+  "external_browser_used": false
+}

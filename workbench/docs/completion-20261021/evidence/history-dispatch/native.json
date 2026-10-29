@@ -1,0 +1,77 @@
+{
+  "synthetic_business_evidence": true,
+  "actual_cpu_subprocesses": true,
+  "training": [
+    {
+      "ok": true,
+      "result": {
+        "schema": "package-history-dispatch-cycle/1",
+        "purpose": "train",
+        "scanned": 1,
+        "attempted": 1,
+        "completed": 1,
+        "outcomes": [
+          {
+            "job_id": "bd26e7d5-fc9d-425e-a7ad-ffb3824781f4",
+            "generation": 3,
+            "state": "completed"
+          }
+        ],
+        "next_cursor": {
+          "created_at": "2026-10-23T09:47:21.309881+00:00",
+          "job_id": "bd26e7d5-fc9d-425e-a7ad-ffb3824781f4"
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "provider_requests": 0,
+        "paid_calls": 0
+      }
+    }
+  ],
+  "evaluation": [
+    {
+      "ok": true,
+      "result": {
+        "schema": "package-history-dispatch-cycle/1",
+        "purpose": "evaluate",
+        "scanned": 1,
+        "attempted": 1,
+        "completed": 1,
+        "outcomes": [
+          {
+            "job_id": "6c4cef95-e011-49aa-8fd3-e3788cb3f217",
+            "generation": 1,
+            "state": "completed"
+          }
+        ],
+        "next_cursor": {
+          "created_at": "2026-10-23T09:47:56.047113+00:00",
+          "job_id": "6c4cef95-e011-49aa-8fd3-e3788cb3f217"
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "provider_requests": 0,
+        "paid_calls": 0
+      }
+    },
+    {
+      "ok": true,
+      "result": {
+        "schema": "package-history-dispatch-cycle/1",
+        "purpose": "evaluate",
+        "scanned": 0,
+        "attempted": 0,
+        "completed": 0,
+        "outcomes": [],
+        "next_cursor": null,
+        "research_only": true,
+        "formal_eligibility": "unavailable",
+        "provider_requests": 0,
+        "paid_calls": 0
+      }
+    }
+  ],
+  "evaluation_denominator": 2,
+  "formal_eligibility": "unavailable",
+  "paid_calls": 0
+}

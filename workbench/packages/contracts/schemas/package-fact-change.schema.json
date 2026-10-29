@@ -1,0 +1,474 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-fact-change:1",
+  "$ref": "#/$defs/Record",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Fact": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 5000
+        },
+        "value": {
+          "type": [
+            "string",
+            "boolean",
+            "null"
+          ],
+          "maxLength": 20000
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1,
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "subject",
+        "scope",
+        "name",
+        "value",
+        "unit",
+        "evidence_ids",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Head": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "revision"
+      ],
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "ConfirmRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frozen_digest",
+        "expected_head",
+        "replaces_fact_id",
+        "fact",
+        "confirmation"
+      ],
+      "properties": {
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "expected_head": {
+          "$ref": "#/$defs/Head"
+        },
+        "replaces_fact_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fact": {
+          "$ref": "#/$defs/Fact"
+        },
+        "confirmation": {
+          "const": "confirmed"
+        }
+      }
+    },
+    "WithdrawRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frozen_digest",
+        "expected_head",
+        "fact_id",
+        "reason"
+      ],
+      "properties": {
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "expected_head": {
+          "$ref": "#/$defs/Head"
+        },
+        "fact_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      }
+    },
+    "Binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "frozen_input_id",
+        "frozen_digest"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "command_id",
+        "actor_id",
+        "action",
+        "recorded_at",
+        "reason",
+        "binding",
+        "previous_head",
+        "head",
+        "fact_id",
+        "replaces_fact_id",
+        "decision_id",
+        "evidence_selection_digest",
+        "evidence_basis_digest",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-fact-change/1"
+        },
+        "kind": {
+          "const": "package_fact_change"
+        },
+        "command_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "actor_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "action": {
+          "enum": [
+            "confirmed",
+            "withdrawn"
+          ]
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "previous_head": {
+          "$ref": "#/$defs/Head"
+        },
+        "head": {
+          "$ref": "#/$defs/Head"
+        },
+        "fact_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "replaces_fact_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_selection_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_basis_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        }
+      }
+    },
+    "Record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest",
+        "digest"
+      ],
+      "properties": {
+        "manifest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Manifest"
+            },
+            {
+              "$ref": "#/$defs/ManifestV2"
+            }
+          ]
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "ManifestV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "command_id",
+        "actor_id",
+        "action",
+        "recorded_at",
+        "reason",
+        "binding",
+        "previous_head",
+        "head",
+        "fact_id",
+        "replaces_fact_id",
+        "decision_id",
+        "evidence_selection_digest",
+        "evidence_basis_digest",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "request_digest"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-fact-change/2"
+        },
+        "kind": {
+          "const": "package_fact_change"
+        },
+        "command_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "actor_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "action": {
+          "enum": [
+            "confirmed",
+            "withdrawn"
+          ]
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "previous_head": {
+          "$ref": "#/$defs/Head"
+        },
+        "head": {
+          "$ref": "#/$defs/Head"
+        },
+        "fact_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "replaces_fact_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_selection_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_basis_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "request_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    }
+  }
+}

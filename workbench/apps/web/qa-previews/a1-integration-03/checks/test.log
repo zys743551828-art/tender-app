@@ -1,0 +1,23 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/RetrievalDrawer.test.tsx (6 tests) 814ms
+ ✓ src/A1Recovery.test.tsx (10 tests) 855ms
+ ✓ src/App.test.tsx (4 tests) 921ms
+   ✓ 投标工作区 > 登录失败持续显示，成功后空工作区不展示模拟指标  419ms
+   ✓ 投标工作区 > 会话过期保留未提交名称；重新登录不自动重放写入  362ms
+ ✓ src/HistoryPanel.test.tsx (2 tests) 265ms
+ ✓ src/A1Workspace.test.tsx (9 tests) 770ms
+ ✓ src/Project.test.tsx (3 tests) 686ms
+   ✓ 确认请求响应丢失后重试复用幂等键，不创建第二次入库命令  321ms
+ ✓ src/api.test.ts (3 tests) 7ms
+
+ Test Files  7 passed (7)
+      Tests  37 passed (37)
+   Start at  17:39:02
+   Duration  4.42s (transform 686ms, setup 942ms, collect 1.66s, tests 4.32s, environment 2.81s, prepare 629ms)
+

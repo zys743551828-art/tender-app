@@ -1,0 +1,11 @@
+........................................................................ [ 66%]
+.....................................                                    [100%]
+=============================== warnings summary ===============================
+tests/test_cost_quotes_pg.py::test_native_full_rules_quote_matches_pure_arithmetic_and_reopens_without_io
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------- generated xml file: /evidence/cost-quotes-native.xml -------------
+109 passed, 1 warning in 215.02s (0:03:35)
+{"suite": "cost-quotes-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

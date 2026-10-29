@@ -1,0 +1,520 @@
+{
+  "technical_scope": {
+    "receipt": {
+      "kind": "synthetic-browser-interaction",
+      "real_model_calls": 0,
+      "real_database": false,
+      "viewports": [
+        {
+          "width": 1280,
+          "horizontal_overflow": false,
+          "console_errors": [],
+          "recovered_original_request": true,
+          "model_calls": 0
+        },
+        {
+          "width": 768,
+          "horizontal_overflow": false,
+          "console_errors": [],
+          "recovered_original_request": true,
+          "model_calls": 0
+        },
+        {
+          "width": 390,
+          "horizontal_overflow": false,
+          "console_errors": [],
+          "recovered_original_request": true,
+          "model_calls": 0
+        }
+      ],
+      "eligibility": [
+        {
+          "width": 1280,
+          "theme": "light",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 1280,
+          "theme": "light",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 1280,
+          "theme": "dark",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 768,
+          "theme": "light",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 768,
+          "theme": "light",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 768,
+          "theme": "dark",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 768,
+          "theme": "dark",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 390,
+          "theme": "light",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 390,
+          "theme": "light",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 390,
+          "theme": "dark",
+          "mode": "current",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        },
+        {
+          "width": 390,
+          "theme": "dark",
+          "mode": "historical",
+          "horizontal_overflow": false,
+          "page_errors": [],
+          "real_pg_fixture_replayed": true
+        }
+      ]
+    },
+    "screenshots": [
+      {
+        "name": "eligibility-current-dark-1280.png",
+        "sha256": "0924a80746b01e9485e28cea41b0a139e3d7ed1e7f27d9a69b3a5d3a78dc1c48"
+      },
+      {
+        "name": "eligibility-current-dark-390.png",
+        "sha256": "2570544af509c521ee953fbcaf25fbcc766c66ccf2991d60440bb6ff497bb2f3"
+      },
+      {
+        "name": "eligibility-current-dark-768.png",
+        "sha256": "39766c0d0b7cc8454556af1940ff8cb7152a8251bbae48e447eec3c455a91af4"
+      },
+      {
+        "name": "eligibility-current-light-1280.png",
+        "sha256": "5de465571960f48690a4e3d8eb333aa399c37304b74cbabe8ffebe083d751d9a"
+      },
+      {
+        "name": "eligibility-current-light-390.png",
+        "sha256": "bcbaa47a9b2db3f74b76e0cef0a2260b82a3b633a7d0df6706f3735d41759aa2"
+      },
+      {
+        "name": "eligibility-current-light-768.png",
+        "sha256": "04063146697970ef085a505665f22b079b6673d04c196cab7e28de81a0abe884"
+      },
+      {
+        "name": "eligibility-historical-dark-1280.png",
+        "sha256": "b39f76d3ef1127ee2703f1f34503ddedfbe7d259c8d29ee3885735e84f7f039b"
+      },
+      {
+        "name": "eligibility-historical-dark-390.png",
+        "sha256": "9dc64c5d361df9b0617dae1b1d1e5bdf03818480be4df3b6bc4b1c804142f026"
+      },
+      {
+        "name": "eligibility-historical-dark-768.png",
+        "sha256": "127348001050a51f6c2db75b99f6f9cd41d36cb45b55476991634dab3eb9c6b5"
+      },
+      {
+        "name": "eligibility-historical-light-1280.png",
+        "sha256": "92528bd72dcb378c2e8fafec478e619f2cb493f63954cfdfab8f4fb3bda83e94"
+      },
+      {
+        "name": "eligibility-historical-light-390.png",
+        "sha256": "3cb22dbcf52f867e647c81d86753def89c057f3cbae02ad67490e88dd931c4bd"
+      },
+      {
+        "name": "eligibility-historical-light-768.png",
+        "sha256": "71567334c3f49b9f7a0fa6206035bda7b206e1ed73cecb9dbc324d6da034623e"
+      },
+      {
+        "name": "preview-1280.png",
+        "sha256": "2527ca771d961a79ca0f797f1efbab2fd212d584a9575bfaadbab7e44c79a60c"
+      },
+      {
+        "name": "preview-390.png",
+        "sha256": "a1d866b0c8bfc437c6e6c413703eed41628892d120eb7dd15d76db1852a802da"
+      },
+      {
+        "name": "preview-768.png",
+        "sha256": "f141c66752e9acc68fc13a84832cb0115028f706142b56ba45c41bfd77a23753"
+      },
+      {
+        "name": "saved-1280.png",
+        "sha256": "ee198b496a4ffdfc255b8a8028dffc82f03183f643b4e79146b66dcbb51e27ca"
+      },
+      {
+        "name": "saved-390.png",
+        "sha256": "d015c62aed6550996a72ce0753f7933f6433a2924b6c878771a8c30cf57e1fc6"
+      },
+      {
+        "name": "saved-768.png",
+        "sha256": "f13323caec97b80aeb3ff52faae14568188dd57ce4fe7ca6f9938c3656fd7410"
+      }
+    ]
+  },
+  "theme": {
+    "receipt": {
+      "kind": "synthetic-theme-browser",
+      "real_database": false,
+      "provider_calls": 0,
+      "cases": [
+        {
+          "width": 1280,
+          "surface": "login",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 1280,
+          "surface": "login",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 1280,
+          "surface": "projects",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 1280,
+          "surface": "projects",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 1280,
+          "surface": "gallery",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 1280,
+          "surface": "gallery",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "login",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "login",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "projects",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "projects",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "gallery",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 768,
+          "surface": "gallery",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "login",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "login",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "projects",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "projects",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "gallery",
+          "theme": "light",
+          "horizontal_overflow": false,
+          "page_errors": []
+        },
+        {
+          "width": 390,
+          "surface": "gallery",
+          "theme": "dark",
+          "horizontal_overflow": false,
+          "page_errors": []
+        }
+      ],
+      "contrast": [
+        {
+          "theme": "light",
+          "pairs": [
+            {
+              "front": "foreground",
+              "back": "background",
+              "ratio": 18.959972511153374
+            },
+            {
+              "front": "foreground",
+              "back": "card",
+              "ratio": 19.789759910049753
+            },
+            {
+              "front": "muted-foreground",
+              "back": "card",
+              "ratio": 5.9531010962473045
+            },
+            {
+              "front": "muted-foreground",
+              "back": "background",
+              "ratio": 5.70348673526086
+            },
+            {
+              "front": "primary-foreground",
+              "back": "primary",
+              "ratio": 7.8383157240422925
+            },
+            {
+              "front": "danger-foreground",
+              "back": "danger-soft",
+              "ratio": 6.04726982551666
+            },
+            {
+              "front": "warning-foreground",
+              "back": "warning-soft",
+              "ratio": 7.206095680960615
+            },
+            {
+              "front": "success-foreground",
+              "back": "success-soft",
+              "ratio": 5.395756183865998
+            },
+            {
+              "front": "ai-foreground",
+              "back": "ai-soft",
+              "ratio": 7.848208549247363
+            }
+          ],
+          "paper": "rgb(255, 255, 255)",
+          "filter": "none"
+        },
+        {
+          "theme": "dark",
+          "pairs": [
+            {
+              "front": "foreground",
+              "back": "background",
+              "ratio": 16.826735661458308
+            },
+            {
+              "front": "foreground",
+              "back": "card",
+              "ratio": 15.871258374206995
+            },
+            {
+              "front": "muted-foreground",
+              "back": "card",
+              "ratio": 7.147393948146114
+            },
+            {
+              "front": "muted-foreground",
+              "back": "background",
+              "ratio": 7.57767946297268
+            },
+            {
+              "front": "primary-foreground",
+              "back": "primary",
+              "ratio": 5.838735761082335
+            },
+            {
+              "front": "danger-foreground",
+              "back": "danger-soft",
+              "ratio": 8.960876469917926
+            },
+            {
+              "front": "warning-foreground",
+              "back": "warning-soft",
+              "ratio": 10.450039908151632
+            },
+            {
+              "front": "success-foreground",
+              "back": "success-soft",
+              "ratio": 10.110352028534482
+            },
+            {
+              "front": "ai-foreground",
+              "back": "ai-soft",
+              "ratio": 9.09759291367314
+            }
+          ],
+          "paper": "rgb(255, 255, 255)",
+          "filter": "none"
+        }
+      ]
+    },
+    "screenshots": [
+      {
+        "name": "gallery-dark-1280.png",
+        "sha256": "e15489abddb70c64baac619cf3e781721337274adfb4cdfb864e56b56cfdac42"
+      },
+      {
+        "name": "gallery-dark-390.png",
+        "sha256": "4603724de34fae4bb3325f00eef61a3d750f94bd968bf99a7dc8a91b505471ca"
+      },
+      {
+        "name": "gallery-dark-768.png",
+        "sha256": "ef0545619d18ce32cba288d4952bb899a0061eb41147f67c471cbbfad8e6dbf4"
+      },
+      {
+        "name": "gallery-light-1280.png",
+        "sha256": "789743c4287eade2cbc9c73966d64959b79587159bd1fc12521acab7a1852d45"
+      },
+      {
+        "name": "gallery-light-390.png",
+        "sha256": "95ebe379bc72b99aac38b8f80ea574f1960167c6cf93046afd99fa9b8a58b42c"
+      },
+      {
+        "name": "gallery-light-768.png",
+        "sha256": "5992a73a76ce81402ec3dfea338370e1c49295a0fe30ed97265686acbba92e9d"
+      },
+      {
+        "name": "login-dark-1280.png",
+        "sha256": "227cd7a3850ec2a564b7691fb366405c2481a5ee76dd0d22ec7b2ac2287cc81a"
+      },
+      {
+        "name": "login-dark-390.png",
+        "sha256": "55e21e138a74d35c8175fc8961d608dc7feafd0a343914716dd948b22993d117"
+      },
+      {
+        "name": "login-dark-768.png",
+        "sha256": "53c90781e4012e0083f351cabb0e7cb95f50470454b7bf1ed83b2e9761e36ea0"
+      },
+      {
+        "name": "login-light-1280.png",
+        "sha256": "f607d66472221ca3042ebf0930196c32109d30b22d18c66f82015350701a9f13"
+      },
+      {
+        "name": "login-light-390.png",
+        "sha256": "5886a3fe43a9d1b6e60b037fb377134e949ec397d30e460dffaf7ea1d34aba51"
+      },
+      {
+        "name": "login-light-768.png",
+        "sha256": "2fc914561c6e73f612dcdfd64bc67ab6bb7fa6ffb967997d98cab67bddc73916"
+      },
+      {
+        "name": "projects-dark-1280.png",
+        "sha256": "04e8516fce48b17d323e52adc6e5149f2481ee59af79b44ff59fb4e2c58bc1a1"
+      },
+      {
+        "name": "projects-dark-390.png",
+        "sha256": "555f58fb98ad0a471dfe95c57a37947a7241b56265aa9a2631bb5116de2d9785"
+      },
+      {
+        "name": "projects-dark-768.png",
+        "sha256": "09b8f26e097ad057880562ee1001d3728287475c3249fba7a6c585f4e7609929"
+      },
+      {
+        "name": "projects-light-1280.png",
+        "sha256": "5c19a8bbec95afee6f40f008c7a08484cafa0059b8045a64831df4e04bc54958"
+      },
+      {
+        "name": "projects-light-390.png",
+        "sha256": "457858b58df93b4e2c7f7a8f349f9aac729ec8ca6dfc4526e04ae354016533dd"
+      },
+      {
+        "name": "projects-light-768.png",
+        "sha256": "b483fd2ce01fde50fa1a219b27130d90650075dc93716e2eff37ee78bc5ee4b4"
+      }
+    ]
+  },
+  "boundary": "Actual Chromium and React components; synthetic HTTP replay and data, not a browser connected to a business database; zero paid calls."
+}

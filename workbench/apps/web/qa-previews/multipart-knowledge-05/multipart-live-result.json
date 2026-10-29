@@ -1,0 +1,43 @@
+{
+  "scope": "real101/115 frontend+native OSS+Kafka worker, explicit synthetic PDF; continuation of same upload after harness TypeError",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "batch_id": "76294beb-e982-4ab7-a093-aa0c23815b4d",
+  "upload_id": "cba6e60c-e1e2-41c9-a5d0-18ce6df69a56",
+  "document_version_id": "cff9552d-5cb2-4462-b884-f001f074e919",
+  "byte_size": 9441426,
+  "sha256": "eb9dad78eaf1be65ced74c8bfb39d1252ccd3d6d16d195f3d1052e14bda36262",
+  "mode": "multipart",
+  "part_count": 2,
+  "part_size": 8388608,
+  "first_scenario_received_parts": [1],
+  "received_at_continuation": [1],
+  "continuation_put_parts": [2],
+  "wrong_file_no_transfer": true,
+  "only_missing_parts_retried": true,
+  "original_complete_request_hashes": [
+    {
+      "key_sha256": "441cb873dc7f5d3d5e1ae456f525edff0047d2a95694febe383797d2146e49d6",
+      "if_match_sha256": "1670e357d05ff729f91b04255c58789d7b6aa1753990f5df9ebc04b30840cb37",
+      "body_sha256": "618c3887fef3012575512351a95bb5ffbb278d6d2b576c9b2d5b239850591fd2"
+    },
+    {
+      "key_sha256": "441cb873dc7f5d3d5e1ae456f525edff0047d2a95694febe383797d2146e49d6",
+      "if_match_sha256": "1670e357d05ff729f91b04255c58789d7b6aa1753990f5df9ebc04b30840cb37",
+      "body_sha256": "618c3887fef3012575512351a95bb5ffbb278d6d2b576c9b2d5b239850591fd2"
+    }
+  ],
+  "same_complete_key_etag_body": true,
+  "verified_sha_and_actual_download_sha_match": true,
+  "physical_pages": 3,
+  "raster_page_canvas_visible": true,
+  "download_name": "frontend05-multipart-recovery.pdf",
+  "mobile_no_overflow": true,
+  "coverage": "partial",
+  "gaps": [
+    "物理页3:TEXT_VISUAL_COMPOSITION_UNVERIFIED",
+    "物理页3:OCR_NO_TEXT_NONBLANK_PAGE",
+    "物理页3:SCAN_LAYOUT_TABLES_AND_VISUALS_UNVERIFIED"
+  ],
+  "page_errors": [],
+  "paid_requests": 0
+}

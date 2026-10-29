@@ -1,0 +1,136 @@
+{
+  "scope": "full inline serialization and explicit single-attempt port; all model HTTP uses MockTransport",
+  "tests": {
+    "linux_passed": 272,
+    "linux_seconds": 2.211,
+    "linux_skipped": 0,
+    "by_module": {
+      "tests.test_package_technical_vision": 37,
+      "tests.test_providers": 26,
+      "tests.test_package_technical_input": 51,
+      "tests.test_package_technical_assets": 50,
+      "tests.test_package_technical_features": 54,
+      "tests.test_scoring_contracts_profiles": 33,
+      "tests.test_package_scoring_recovery": 9,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 63,
+    "host_reported_seconds": 1.12,
+    "counts_overlap": true,
+    "frontend_rerun": false
+  },
+  "actual_model_calls": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "full_wire_response_feature_chain_with_synthetic_http_verified": true,
+  "real_provider_or_quality_verified": false,
+  "independent_input_authority_verified": false,
+  "token_or_fee_upper_bound_verified": false,
+  "native_execution_installed": false,
+  "runtime_inputs": 1177,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "baseline_commit": "f5dc076537fde6a4da413c34a124f054e0594967",
+  "source_identity_scope": "eight modified inputs equal staged Git raw bytes, not immutable whole deployment",
+  "inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "0dc8ad91024bb70a0cc0ee6bf3f4d608927abe0de107e75ffe3d78b886a2646e",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "3d571ddfd33ef66c225534a5a6e2312858179ed35e90690474ddf67d0dc84f17",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-vision.md",
+      "sha256": "e493e52fed224cffe9947bb905704d02b8fab3e41769d050e3ebe03a8b6e71b3",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/deepseek.py",
+      "sha256": "f6afe33d543679b890ef9e16d3fa566257529b3a922a6cbfacd4355d3b14eadb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/deepseek_vision.py",
+      "sha256": "d429b566e93dd4d6661c38c3d1f9c3d539157a99866a535ef0d6b4bf4b53c29d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/json_protocol.py",
+      "sha256": "14458619f32671640c35bf0badb8b66c1ac8dbc725e91299eb30a0551c708b44",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_vision.py",
+      "sha256": "f43f20f512de4c29dd494e56216f2a52b271b02b0cd8c766f7004a4c0afb0f74",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_vision.py",
+      "sha256": "936cb85a840d76ad4d488ea64588660965f7c8decf582fa6ea23b27f5bdb1e69",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-before-error-assertion.log": "f90d1a6742a8c0a37c3346c09209c5fac317135fe20614ace4461e3cecfbe468",
+    "host-before-error-assertion.xml": "3ad72d244ad4f9be77d26483e01e019c213c794ae0a7c309efd978e17a482e60",
+    "host-before-feature-error-type.log": "35162ad4dd12ce845778864200fef06736d4b1034c3d38c5a35ccb8ba1d539ca",
+    "host-before-feature-error-type.xml": "f7cfb115d093be184d5c9c26563e5526a611ef3388d357938b1d7943cdb6ac58",
+    "host-vision.log": "111b5511ca4ac98c4404f5bad1f409d903af8f860349c0955d4fe7c191318739",
+    "host-hang-cleanup.json": "9f5aa251946b6f56f21a4928289e024641fabd7da60f8fff70c5e7e230640d44",
+    "host-final.log": "ad7cd7da58856e5fbe242db0e88bb96d270058cccaeb80243c6dcd7058c2a033",
+    "host-final.xml": "7b4ee3171ad5733a98678003a15491fe3a39cedb8fd2cc7cd44666bc2e85013a",
+    "linux-before-wire-feature.log": "e1e115f7c550d51b07f3e8f8546e2a3d35b8f8fc8262054aef703ee9200e3935",
+    "linux-before-wire-feature.xml": "c58b379b0477682cec57a650adf18abb8feec2b65fc95c94d4ac75834920f43e",
+    "linux-final.log": "1864b61575051f80adb633f9b8506c1511d0dc2391877642cae879899fa97433",
+    "linux-final.xml": "5b3c081a650cb3931a3a90b7d256be05c973bc4340189460a17ade71eb6fddb2",
+    "python-quality.log": "4bb8ae9a71e6481675687702ad90e116f8e5e7da3e9a7f2111f20e164c657e91",
+    "http-runtime.json": "e0e04eec720f0cdfd75164dc7033825e833995408fc584263cbd6e3bd726fc82",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614",
+    "method-boundaries.json": "de9c2554c11a86dad8e8193084bf0accfd58ccf684853e9ad69ae7961226545a"
+  }
+}

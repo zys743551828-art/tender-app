@@ -1,0 +1,10 @@
+
+> @tender/workbench-web@0.1.0 prebuild
+> node scripts/copy-pdf-resources.mjs
+
+
+> @tender/workbench-web@0.1.0 build
+> tsc -b && vite build
+
+src/DocumentRelationNotice.test.tsx(6,20): error TS2352: Conversion of type '{ bid_id: string; source_relation: { source_document_version_id: string; kind: "user_declared_same_draft"; verification: "unverified"; evidence_ids: never[]; }; }' to type 'DocumentView' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ bid_id: string; source_relation: { source_document_version_id: string; kind: "user_declared_same_draft"; verification: "unverified"; evidence_ids: never[]; }; }' is missing the following properties from type 'DocumentView': id, filename, role, artifact_kind, and 10 more.

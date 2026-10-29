@@ -1,0 +1,140 @@
+{
+  "approved_public_mount_fixture_amendment": {
+    "checks": "ruff/format passed; six native HTTP/groups PG tests passed after production main mount",
+    "files": {
+      "tests/test_package_history_pg.py": {
+        "after": "5411fcca4e226cf85657bf4f5c0f661fb9b21f212ed9cc9007f28e1ff16799b2",
+        "before": "38714fdee6d4b6fb111efd3ffb8e5093943b2b1c6554c3d091b05e2a1d58c84d"
+      }
+    },
+    "production_guard_suite": "tests/test_package_history_exposure_bridge_pg.py",
+    "scope": "Only standalone fixture removes/restores this module core routes before adding native two-SQL mechanism router; product core/SQL/CPU unchanged. Public bridge tests directly use main production routes, requiring all ten mandatory dependencies."
+  },
+  "approved_query_guard_amendment": {
+    "checks": "ruff, format, mypy passed; six HTTP/groups PostgreSQL tests passed",
+    "files": {
+      "apps/api/package_historical_research.py": {
+        "after": "6e30bb0ecfc383314ebc72d42f9e2adb6e89bcd0cfaa08069ada8c98fce668d4",
+        "before": "d9d1411b5dee9dafbb755312814b72e695b14c936b06ceb6c85af2af116e1cb2"
+      },
+      "tests/test_package_history_pg.py": {
+        "after": "38714fdee6d4b6fb111efd3ffb8e5093943b2b1c6554c3d091b05e2a1d58c84d",
+        "before": "5b792c732c7e411b5d5d8dbcc53041b968e24abbe74f51763eeaa2421ae698bb"
+      }
+    },
+    "http_counterexamples": 14,
+    "scope": "All five GET routes reject duplicate/unknown query parameters before DB read; SQL, CPU, context locking and request replay order unchanged"
+  },
+  "bridge": "separate optional increment verified through production main and old API/CPU/research Worker; see package-history-exposure-bridge-checks.json",
+  "checks": {
+    "bandit": "passed",
+    "format": "passed",
+    "mypy": "passed: 7 source files",
+    "ruff": "passed"
+  },
+  "default_installation": false,
+  "files": {
+    "apps/api/package_historical_research.py": "6e30bb0ecfc383314ebc72d42f9e2adb6e89bcd0cfaa08069ada8c98fce668d4",
+    "deploy/package_history_worker.py": "3fa508eef981a8d14d8018de7d3453e8eab159c85b3be994436da362ddf17ca0",
+    "deploy/sql/package-historical-admission.sql": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+    "deploy/sql/package-historical-research.sql": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+    "packages/contracts/package_historical_research_api.py": "9e5d3982bee04e30b6c367946c17c6569897983aead2f1336bcdae37d1c7e681",
+    "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8",
+    "packages/model_governance/package_history_proofs.py": "2c6e306d5f02f1e7c583c88321dd01f4c56627ae7f4326979e7c63aaa377edd2",
+    "packages/model_governance/package_history_repository.py": "259dd2eec92ce2ff881437d59aebbf04af7a544cee9a7a2006aaa4ea3b89cbf1",
+    "packages/model_governance/package_history_runtime.py": "b06a51f5611dda34e1a275a0d59a5ec3c720b56f0d19da3e2ab0908a2c1dcfb3",
+    "requirements-package-history.txt": "68e3f7d026d2e0f0c208bcda478ce55ffb7b876a3a96e6c20c6eb58ab37ac69c",
+    "tests/package_history_fixtures.py": "b2a3f5e2214bab3b6ce1fafda595048591c8f26b371a4d5542815db17eb4c415",
+    "tests/test_package_history.py": "dde256d4177e517e4d056ae00c30eff8d2c43318bea6efdea1c521ae11ccdbc2",
+    "tests/test_package_history_pg.py": "5411fcca4e226cf85657bf4f5c0f661fb9b21f212ed9cc9007f28e1ff16799b2"
+  },
+  "formal_eligibility": "unavailable",
+  "http_fixture": "/tmp/tender-review-current/package-historical-research-http.json",
+  "http_fixture_sha256": "a50f79595886995c2f1db8eb0b85b4d59b38ad1db0b671d11c31a7548cafec1d",
+  "old_retrospective_wip_used": false,
+  "paid_calls": 0,
+  "pg_passed": 17,
+  "pg_runs": [
+    {
+      "case": "core",
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 10,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 55957,
+      "postgres": "17.11",
+      "provider_invoked": false,
+      "receipt_path": "/tmp/tender-review-f06/history-pg-34t8kx5l/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    },
+    {
+      "bridge_sql_sha256": null,
+      "case": "http_and_groups",
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 6,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 33271,
+      "postgres": "17.11",
+      "provider_invoked": false,
+      "receipt_path": "/tmp/tender-review-f06/history-pg-c8n2nmq0/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    },
+    {
+      "case": "expiry",
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 1,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 36009,
+      "postgres": "17.11",
+      "provider_invoked": false,
+      "receipt_path": "/tmp/tender-review-f06/history-pg-ij5dkeag/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    },
+    {
+      "bridge_sql_sha256": null,
+      "case": "http_and_groups",
+      "deselected": 11,
+      "elapsed_seconds": 103.97,
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 6,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 50307,
+      "postgres": "17.11",
+      "provider_invoked": false,
+      "purpose": "native standalone HTTP/groups after production main mount",
+      "readable_copy": "/tmp/tender-review-current/history-receipts/history-pg-gfc94nfr.json",
+      "receipt_path": "/tmp/tender-review-f06/history-pg-gfc94nfr/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "source_hashes": {},
+      "source_hashes_unchanged": true,
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    }
+  ],
+  "provider_requests": 0,
+  "pure_passed": 28,
+  "real_historical_qualification": false,
+  "schema": "package-history-mechanism-checks/1",
+  "synthetic": true
+}

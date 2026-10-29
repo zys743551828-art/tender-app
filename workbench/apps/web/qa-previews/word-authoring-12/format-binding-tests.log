@@ -1,0 +1,17 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/AuthoringFormatBindings.test.tsx src/AuthoringStructure.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/AuthoringFormatBindings.test.tsx (1 test) 321ms
+   ✓ 格式绑定只选已确认要求，用可信原页投影；来源不可新用时不构造ref  320ms
+ ✓ src/AuthoringStructure.test.tsx (5 tests) 820ms
+   ✓ 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag  342ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  04:20:39
+   Duration  2.11s (transform 385ms, setup 282ms, collect 712ms, tests 1.14s, environment 892ms, prepare 152ms)
+

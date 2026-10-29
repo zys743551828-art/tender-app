@@ -1,0 +1,95 @@
+{
+  "scope": "dynamic Docker DNS and real API readiness; full Nginx config syntax only",
+  "tests": {
+    "linux_passed": 164,
+    "linux_seconds": 11.103,
+    "linux_skipped": 0,
+    "host_structural_passed": 5,
+    "host_deselected": 7,
+    "counts_overlap": true
+  },
+  "runtime_inputs": 1170,
+  "production_assets": 68,
+  "runtime_includes_uncommitted_pdf_asset_candidate": true,
+  "source_identity_scope": "four modified proxy inputs equal staged Git bytes, not immutable full deployment",
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "browser_visual_verified": false,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "inputs": [
+    {
+      "path": "deploy/nginx-fusion.conf",
+      "sha256": "8b063486c67b29eb6bc1a145c3f4f6f35fc9d9fb45179182c679885afd09aa76",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/nginx-fusion-full.conf",
+      "sha256": "a6f5ff0eb2556e81e5a58e8ca132983e155f0ed1f830bee6f6557c6185fde7ae",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/compose.fusion.yaml",
+      "sha256": "95d2588d2e2165cec4c2d483e3fd4a4cc5ff9e8c7678641e75b2d457f15fbaa8",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_fusion_compose.py",
+      "sha256": "652b131be8a031cdbb99a497638cb3fc57e19b83630870608e6756560791d5a4",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "linux-final.log": "caf5731b567a452dc50140b52db0dab8b941cab53ff06c1d8b85b1c212cca074",
+    "linux-final.xml": "78c7c9c94f62b97b0df5ada7165b91c6a77b6871ec8dc0a69887832347df17d9",
+    "host-temp-failure.log": "524d5b09f5e95176571a8ef0ab55e130ee6aff7bd4eee7bbf8728ba6d947053c",
+    "host-selection-failure.log": "be47e42eb668c9eda006a093fbab39de29c7973ea237eb785787729bbaf9f026",
+    "host-structural.log": "2473d2ece7fdc83419ef7127bd917548c3963f4bd6a85691942204a06c44b031",
+    "python-quality.log": "8544e86a5dfcfba650ea6017e554d61035bf344c8381e830e67e1efb0259f1d4",
+    "ip-rotation-proof.json": "439c288e474bd9605a35206b461633d1f182485bf4351553332e306df29d6ea5",
+    "pre-fix-observation.json": "5fc1870de8e095a4033af2e221519efbf1bc05dbcebf3e71b2ed1464938bd5dd",
+    "nginx-default-test.log": "fea8cc4865dcc9e4eb20c6b1066cdc5d75344554a9d4e9aaa10b66f5a5f7a821",
+    "nginx-full-test.log": "e0780a2d2f849a147b5613f78de8c82944a76568538c9e496b1eb703c739a611",
+    "checks-cleanup.json": "b10216b82d2fd31c21dac25c43d98264c28477f80740e4b42fd3170d17159bec",
+    "http-runtime.json": "7647cfad383edb0dfa263af078274c728f25610a5eef21a186bfb094833f8299"
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "scope": "complete /3 native material, reference shape, inline vision payload, explicit mock transport and three-slot features",
+  "tests": {
+    "linux_passed": 81,
+    "linux_junit_seconds": 17.28,
+    "linux_by_module": {
+      "tests.test_package_technical_material_pg": 2,
+      "tests.test_package_technical_material": 35,
+      "tests.test_package_complete_features": 16,
+      "tests.test_provider_error_isolation": 16,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 67,
+    "host_junit_seconds": 13.388,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "8ad2935c1b9a8572abf41845391f6a7a0b015639c75f87b0d857b2ef051e4949",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "400f2dcdea8456f9b07e9da523320e73ccbc46ce25b264bed83473b5fd27a2fd",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-complete-material.md",
+      "sha256": "601d24b5fb5450013615bacd3c6e9354835b1fc1b983254c956660ff525aad41",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_material.py",
+      "sha256": "0dc0c3807cdcc33b1bce3984cc8f24cd05823fdbe6c3162b884286eec952720a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/deepseek_complete_vision.py",
+      "sha256": "5647709092aab89fd53677980dd9d34b5b1283360217bc3cc916ff37bd46bc31",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_complete_features.py",
+      "sha256": "91b0f778ddde2a63ffee245bb18ac048832ddaacac40a0f851b304204a0388d8",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_complete_vision.py",
+      "sha256": "5264cf133fa8311f90fbbf1025de85c15173d1bc061147eafa3547bd0de45c5d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_material.py",
+      "sha256": "0d8828584aed67b3ca996b3bc66f228ff20be9aa680400049752934c35c7633b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_complete_features.py",
+      "sha256": "382b626fedbb8db749f363211f24423780dc99f6b638fc6b5f659db1c85d3d0e",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_material.py",
+      "sha256": "b9697543b3ed3d8a8b9e015c14a803cdf51572426d0a1fe97567ce8561838476",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_material_pg.py",
+      "sha256": "6178f09ec35b394ac25af1a5872ad992307f836389f8c00fd4832efa3406716b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "b2afe024b4275cf1f7c6f890921e4fda426fd5816619b70ae402788fe4b934aa",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264"
+  },
+  "native_mechanism_mock_provider_calls": 3,
+  "native_mechanism_loopback_original_gets": 2,
+  "synthetic_binding_reference_not_native_registration": true,
+  "raw_body_exported": false,
+  "native_binding_verified": false,
+  "real_external_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "public_http_api_changed": false,
+  "new_database_grants": false,
+  "default_base_sql_files": 37,
+  "runtime_inputs": 1208,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "current_material_capability_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "cc08a2482c9f2fddda023fe34cb8a912b28cd0fa5ca65bc036e0dd554431302d",
+    "linux-initial.xml": "c4c7e92aa29e6cdd3062e3310efe87da95ceb40aced0e80377c432f4a07e4662",
+    "host-initial.log": "0ed77c67ea90e8f668fe899c8bc05b2f25ac18dc31f7efdfa16f8396516ea2eb",
+    "host-initial.xml": "50b4a9d280a4cf836ffbceb709907498b066bc9668701c0680445c4153f676c8",
+    "binding-before.log": "d45eaff7958c1c1b4a12dd9556ec52df1c39bea4e13fc5102d0007c980aa089a",
+    "binding-before.xml": "70d6ddf467c911e37dc75c847fe33766bdd4d24655de050c078909b93e9af838",
+    "linux-final.log": "68c68f5a9c24325adcb0530fa6c64cc1da4de4a9ca1d8faf04626cd5dff37622",
+    "linux-final.xml": "bdbdf7fa73b77e5f15de62fbe24f882655899f462d6e8291b445ed4754cf099d",
+    "host-final.log": "a28662904943e39ef926bd18df928e5f7b3e9322c7ceaa098d69bc14fbeb0242",
+    "host-final.xml": "cf2ac9531bb89d7c624b02919ae7371f5ee26fa1abf64487fd0d520f1885c5ba",
+    "python-final.log": "f7584574620a86f67dbfceef863047347b670a538cfa0d38e65b2d7edf889bff",
+    "complete-material-native-proof.json": "97896c3c87880fee0050323b49842875cd42e0fb7101f162c71e0a11e47a8b67",
+    "checks-cleanup.json": "38a2771e97c29a1b7207ed3d4920e9339cc4ccc487ebd42cc809dbf470b88ad4",
+    "business-boundary.json": "1b978e268569509d805fed328333f1ebb34beabd2f169ef10e9d294fafb42339",
+    "http-runtime.json": "f39eec54e3445060f070a208e0e59525750ff9e3f5c4e90a2bcf29b6c9f8141a",
+    "method-boundaries.json": "91ec737416f942c9e4091193df7a4c885c4380dc3893296650c76cb6dd9a25ab"
+  }
+}

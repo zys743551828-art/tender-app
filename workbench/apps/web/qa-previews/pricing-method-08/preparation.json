@@ -1,0 +1,10 @@
+{
+  "base_frontend07_sha256": "3047525933873ffe0d611a76fe4bcaa8f2d111c5664ec26dfd44cb03adbf75af",
+  "planned_backend_f04_sha256": "4de90e779708d21d2e335845f9fdf174a643cfbeaa0f61a5e71b53a88b28a79f",
+  "shared_environment_changed": false,
+  "only_initial_ui_delta": [
+    "src/PricingFormulaEditor.tsx",
+    "src/PricingFormulaEditor.test.tsx"
+  ],
+  "contract_binding": "Regenerate consumed schemas against unchanged actual backend07/F04 superset contract"
+}

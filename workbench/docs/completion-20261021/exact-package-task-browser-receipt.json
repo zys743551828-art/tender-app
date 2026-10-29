@@ -1,0 +1,274 @@
+{
+  "schema": "package-task-ui-browser-receipt/1",
+  "production_connected": false,
+  "paid_model_calls": 0,
+  "checks": [
+    {
+      "width": 1200,
+      "fixtureSource": "Actual non-owner PostgreSQL HTTP responses with synthetic originals and MockTransport Worker; package/task/template/run digests unchanged",
+      "boundary": "Local production browser bundle with synthetic fetch; Bid metadata and empty supplemental directories are explicit projections; lost transport ACK injected once; no real model or production backend",
+      "savedNoRun": true,
+      "recoverySame": true,
+      "nativeExact": true,
+      "unavailableBlocked": true,
+      "legacyMaterialReads": 0,
+      "runRequests": 2,
+      "bounds": [
+        {
+          "name": "exact-template-editor",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "exact-template-card",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "expanded-exact-identities",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "lost-run-ack",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "accepted-and-current",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "native-original-run",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "name": "executor-unavailable",
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "accepted-and-current-1200.png",
+          "sha256": "515eae8634bc9e52d85e8317c037d7e6f45c6ff0d6f6d84991924c84e4fa8d0e"
+        },
+        {
+          "name": "exact-template-card-1200.png",
+          "sha256": "a88ac370676e245fbd4163d88fa3e9db296ae2864fc234ad0fbe1fad99aa5542"
+        },
+        {
+          "name": "exact-template-editor-1200.png",
+          "sha256": "6bd6f94233d7ad0a52ef5dac7f337664b40100c2b360916823efe11e0ac7886a"
+        },
+        {
+          "name": "executor-unavailable-1200.png",
+          "sha256": "d240eca98077d9af492850860b185b181f2b2d5e63e80c81c30e58f9e5ad626f"
+        },
+        {
+          "name": "expanded-exact-identities-1200.png",
+          "sha256": "4d75e4355fdaa1bca5c01b3083237166a8fde3b339b389076e6d24a6d5e13fc9"
+        },
+        {
+          "name": "lost-run-ack-1200.png",
+          "sha256": "3a02e5c1f2599311795cdf6309b7b6ebd096efbd8a7c17a2bc0b8ceaca298da1"
+        },
+        {
+          "name": "native-original-run-1200.png",
+          "sha256": "03cc691ae558d643458401a3927951eee256be2e4dcb6af441c93bf90c7e35b5"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "fixtureSource": "Actual non-owner PostgreSQL HTTP responses with synthetic originals and MockTransport Worker; package/task/template/run digests unchanged",
+      "boundary": "Local production browser bundle with synthetic fetch; Bid metadata and empty supplemental directories are explicit projections; lost transport ACK injected once; no real model or production backend",
+      "savedNoRun": true,
+      "recoverySame": true,
+      "nativeExact": true,
+      "unavailableBlocked": true,
+      "legacyMaterialReads": 0,
+      "runRequests": 2,
+      "bounds": [
+        {
+          "name": "exact-template-editor",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "exact-template-card",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "expanded-exact-identities",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "lost-run-ack",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "accepted-and-current",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "native-original-run",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "name": "executor-unavailable",
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "accepted-and-current-768.png",
+          "sha256": "fefc68aa238c4f01693719f6c4c74f83f388ad882208d434b6a6f0234b0e5f91"
+        },
+        {
+          "name": "exact-template-card-768.png",
+          "sha256": "0b4a3ad89438c1fcbb966d0424a2d83ab5af00de7ddc64421f6472403b91b600"
+        },
+        {
+          "name": "exact-template-editor-768.png",
+          "sha256": "1780389d8b0507b0130f9a78ce37a965ef80f6fcbd6e2334a3e28bb2d8aa4887"
+        },
+        {
+          "name": "executor-unavailable-768.png",
+          "sha256": "5ba0d0b431501480e4a119a174c1550b7cce44a0603c890905df8f414da08df3"
+        },
+        {
+          "name": "expanded-exact-identities-768.png",
+          "sha256": "eb032244c73ca431b3b3d8e666bb27bd9173b637daeec0feeaabc6d826bda4b7"
+        },
+        {
+          "name": "lost-run-ack-768.png",
+          "sha256": "d214fbd508b59e2c4b783d577801356f55a7c3b36ff51a948a6acfac1167f62a"
+        },
+        {
+          "name": "native-original-run-768.png",
+          "sha256": "34f1701ddd61441bb0dcffe091a9db8211915a62e1ff150ccb86a748b674ea80"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "fixtureSource": "Actual non-owner PostgreSQL HTTP responses with synthetic originals and MockTransport Worker; package/task/template/run digests unchanged",
+      "boundary": "Local production browser bundle with synthetic fetch; Bid metadata and empty supplemental directories are explicit projections; lost transport ACK injected once; no real model or production backend",
+      "savedNoRun": true,
+      "recoverySame": true,
+      "nativeExact": true,
+      "unavailableBlocked": true,
+      "legacyMaterialReads": 0,
+      "runRequests": 2,
+      "bounds": [
+        {
+          "name": "exact-template-editor",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "exact-template-card",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "expanded-exact-identities",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "lost-run-ack",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "accepted-and-current",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "native-original-run",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "name": "executor-unavailable",
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        }
+      ],
+      "errors": [],
+      "screenshots": [
+        {
+          "name": "accepted-and-current-390.png",
+          "sha256": "87fb3887a4b74c38ae8cc4fc5e74477167a915e7ec6cc72f7f92ea0de55d9dd5"
+        },
+        {
+          "name": "exact-template-card-390.png",
+          "sha256": "602d83cbef748213a709a821012119641522b597fc8e5b1150fcf415f5e2696d"
+        },
+        {
+          "name": "exact-template-editor-390.png",
+          "sha256": "28f02f3d26f86d7510979c0b88c0af4dd980a8d3e0a4867ee470fd4537040b3a"
+        },
+        {
+          "name": "executor-unavailable-390.png",
+          "sha256": "647108ba235dd2be10ce7d49d6293d58fb52994c040fe643d2bd4828149e541b"
+        },
+        {
+          "name": "expanded-exact-identities-390.png",
+          "sha256": "84817783f6e11e6cd11d83966c027f6ffc6fb3ef884dd6119f4c46bbd5d59394"
+        },
+        {
+          "name": "lost-run-ack-390.png",
+          "sha256": "e0e3e396e7c609e275ca050e519c0d92158aff54fe5b7a47eed4a535c32eaed6"
+        },
+        {
+          "name": "native-original-run-390.png",
+          "sha256": "30b23bc3000c564dccfba58c804c4897db53c307338cd0a794be516c8c0d59e4"
+        }
+      ]
+    }
+  ],
+  "manual_inspection": [
+    "exact-template-editor-390.png",
+    "exact-template-card-1200.png",
+    "native-original-run-390.png"
+  ],
+  "repository_screenshots": [
+    "screenshots/package-task-card-1200.png",
+    "screenshots/package-task-editor-390.png"
+  ]
+}

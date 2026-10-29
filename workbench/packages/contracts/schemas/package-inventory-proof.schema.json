@@ -1,0 +1,561 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-inventory-proof:1",
+  "$ref": "#/$defs/View",
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Prepared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "frozen_input_id",
+        "execution_input_id",
+        "execution_input_digest"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "execution_input_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    },
+    "Document": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "document_version_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "parse_run_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "declared_page_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "all_pages_declared": {
+          "type": "boolean"
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "member_id",
+        "document_version_id",
+        "parse_run_id",
+        "page_count",
+        "declared_page_count",
+        "all_pages_declared",
+        "evidence_count"
+      ]
+    },
+    "View": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "manifest",
+        "digest"
+      ]
+    },
+    "ManifestV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "package-inventory-proof/1"
+        },
+        "kind": {
+          "const": "frozen_inventory_scope_observation"
+        },
+        "scope": {
+          "const": "frozen_authority_parse_blocks_only"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "inventory_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "authority_revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "authority_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Document"
+          }
+        },
+        "all_declared_pages_bound": {
+          "type": "boolean"
+        },
+        "frozen_evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "frozen_evidence_ids_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "extraction_receipt_state": {
+          "enum": [
+            "not_frozen",
+            "archive_missing",
+            "matched",
+            "read_set_mismatch"
+          ]
+        },
+        "receipt_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recorded_read_evidence_ids_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraction_coverage": {
+          "enum": [
+            "unknown",
+            "complete",
+            "partial",
+            "conflict"
+          ]
+        },
+        "extraction_range_proven": {
+          "type": "boolean"
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unbound_requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "quality_status": {
+          "const": "not_measured"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED",
+              "INVENTORY_EXTRACTION_NOT_FROZEN",
+              "INVENTORY_EXTRACTION_ARCHIVE_MISSING",
+              "INVENTORY_READ_EVIDENCE_MISMATCH",
+              "INVENTORY_DECLARED_PAGE_GAP",
+              "INVENTORY_EXTRACTION_PARTIAL",
+              "INVENTORY_EXTRACTION_CONFLICT",
+              "INVENTORY_EMPTY_REQUIREMENTS",
+              "INVENTORY_UNBOUND_REQUIREMENT",
+              "INVENTORY_NO_FROZEN_EVIDENCE"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "scope",
+        "prepared",
+        "frozen_digest",
+        "inventory_digest",
+        "authority_revision_id",
+        "authority_digest",
+        "documents",
+        "all_declared_pages_bound",
+        "frozen_evidence_count",
+        "frozen_evidence_ids_digest",
+        "extraction_receipt_state",
+        "receipt_digest",
+        "recorded_read_evidence_ids_digest",
+        "extraction_coverage",
+        "extraction_range_proven",
+        "requirement_count",
+        "unbound_requirement_count",
+        "quality_status",
+        "inventory_complete",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "blockers",
+        "policy_digest"
+      ]
+    },
+    "ManifestV2": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "const": "package-inventory-proof/2"
+        },
+        "kind": {
+          "const": "frozen_inventory_scope_observation"
+        },
+        "scope": {
+          "const": "frozen_authority_parse_blocks_only"
+        },
+        "prepared": {
+          "$ref": "#/$defs/Prepared"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "inventory_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "authority_revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "authority_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Document"
+          }
+        },
+        "all_declared_pages_bound": {
+          "type": "boolean"
+        },
+        "frozen_evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "frozen_evidence_ids_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "extraction_receipt_state": {
+          "enum": [
+            "not_frozen",
+            "archive_missing",
+            "matched",
+            "read_set_mismatch"
+          ]
+        },
+        "receipt_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recorded_read_evidence_ids_digest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extraction_coverage": {
+          "enum": [
+            "unknown",
+            "complete",
+            "partial",
+            "conflict"
+          ]
+        },
+        "extraction_range_proven": {
+          "type": "boolean"
+        },
+        "requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unbound_requirement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "quality_status": {
+          "const": "not_measured"
+        },
+        "inventory_complete": {
+          "const": false
+        },
+        "original_bytes_verified": {
+          "const": false
+        },
+        "facts_qualified": {
+          "const": false
+        },
+        "review_ready": {
+          "const": false
+        },
+        "launch_available": {
+          "const": false
+        },
+        "publication_authorized": {
+          "const": false
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "INVENTORY_SEMANTIC_COMPLETENESS_UNMEASURED",
+              "INVENTORY_EXTRACTION_NOT_FROZEN",
+              "INVENTORY_EXTRACTION_ARCHIVE_MISSING",
+              "INVENTORY_READ_EVIDENCE_MISMATCH",
+              "INVENTORY_DECLARED_PAGE_GAP",
+              "INVENTORY_EXTRACTION_PARTIAL",
+              "INVENTORY_EXTRACTION_CONFLICT",
+              "INVENTORY_EMPTY_REQUIREMENTS",
+              "INVENTORY_UNBOUND_REQUIREMENT",
+              "INVENTORY_NO_FROZEN_EVIDENCE"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "human_derivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "enum": [
+                "verified",
+                "archive_missing"
+              ]
+            },
+            "root_inventory_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "root_rule_set_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "head_id": {
+              "$ref": "#/$defs/Id"
+            },
+            "head_digest": {
+              "$ref": "#/$defs/Digest"
+            },
+            "length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32
+            },
+            "counts": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "total": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "active": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "inactive": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "needs_revalidation": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "human_withdrawn": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "inherited_superseded": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "total",
+                "active",
+                "inactive",
+                "needs_revalidation",
+                "human_withdrawn",
+                "inherited_superseded"
+              ]
+            }
+          },
+          "required": [
+            "state",
+            "root_inventory_id",
+            "root_rule_set_id",
+            "head_id",
+            "head_digest",
+            "length",
+            "counts"
+          ]
+        }
+      },
+      "required": [
+        "version",
+        "kind",
+        "scope",
+        "prepared",
+        "frozen_digest",
+        "inventory_digest",
+        "authority_revision_id",
+        "authority_digest",
+        "documents",
+        "all_declared_pages_bound",
+        "frozen_evidence_count",
+        "frozen_evidence_ids_digest",
+        "extraction_receipt_state",
+        "receipt_digest",
+        "recorded_read_evidence_ids_digest",
+        "extraction_coverage",
+        "extraction_range_proven",
+        "requirement_count",
+        "unbound_requirement_count",
+        "quality_status",
+        "inventory_complete",
+        "original_bytes_verified",
+        "facts_qualified",
+        "review_ready",
+        "launch_available",
+        "publication_authorized",
+        "blockers",
+        "policy_digest",
+        "human_derivation"
+      ]
+    },
+    "Manifest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ManifestV1"
+        },
+        {
+          "$ref": "#/$defs/ManifestV2"
+        }
+      ]
+    }
+  }
+}

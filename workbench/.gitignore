@@ -1,0 +1,21 @@
+.env
+.env.*.local
+.venv/
+.venv-rag/
+.venv-parsing/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+*.egg-info/
+.local/
+qa/artifacts/private/
+
+# Readable local export; the complete deterministic gzip snapshot is tracked.
+/packages/contracts/fusion-implemented.openapi.json
+

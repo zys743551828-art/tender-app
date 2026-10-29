@@ -1,0 +1,6 @@
+{
+  "scope": "validation-only pure multipart suite; production runtime335 unchanged",
+  "path": "tests/test_multipart.py",
+  "frozen_path": "docs/word-mainflow-development-checks/validation-fixtures/tests/test_multipart.py",
+  "sha256": "c724996c71b1801ac082d1f0df9a32f24cbcb14904d17d6f80d88c29517854cf"
+}

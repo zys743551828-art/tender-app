@@ -1,0 +1,15 @@
+{
+  "postgres": {
+    "url": "https://ftp.postgresql.org/pub/source/v17.11/postgresql-17.11.tar.bz2",
+    "bytes": 21787224,
+    "sha256": "dd27f2b3c59e73ed14aa3324901242bf69a032a6347805f274e6260322d42979",
+    "official_sha256_verified": true
+  },
+  "pgvector": {
+    "ref": "v0.8.2",
+    "commit": "cab9da72c04353f143bb06b42ab70a403daac64a",
+    "url": "https://codeload.github.com/pgvector/pgvector/tar.gz/cab9da72c04353f143bb06b42ab70a403daac64a",
+    "bytes": 124996,
+    "sha256": "0af705b6c9b2a3a1fd1f6fd991425c125387d3c8edc68b75ef027d2e0a05e57a"
+  }
+}

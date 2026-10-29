@@ -1,0 +1,202 @@
+{
+  "scope": "A1独立验收计划，尚未执行，补充已有13条原任务而不改其状态",
+  "software_executed": 0,
+  "prd_sha256": "a8f2349ce87418fc7249af0ec3ca5ac7ef3a3444d8be650ec27e2d597c4a1f9e",
+  "canonical_product_checks": "/workspace/tender-docs/04-验证与测试/implementation-product-review/README.md",
+  "canonical_pending_cases": "/workspace/tender-docs/04-验证与测试/design-remediation-checks/application-acceptance.json",
+  "evidence_rules": [
+    "合法/异常/禁止路径分别断言；断言持久对象和原件身份，不只看toast",
+    "明确软件机制/显式测试适配/真实模型业务效果/真人/生产五层范围",
+    "运行前后冻结实际源、Schema/SQL、配置摘要、输入摘要、requestID/usage；不保存秘密/签名URL/真实原文",
+    "本阶段唯一连通chat已用，A1真实模型请求按PM新有界预算协调，不由回归脚本隐式发起"
+  ],
+  "cases": [
+    {
+      "id": "A1-Q01",
+      "status": "pending_application",
+      "references": [
+        "IP-01",
+        "IP-02",
+        "IE-04"
+      ],
+      "fixture": "同批招标+V1正文，两成员同时受理等价输入",
+      "actions": "双击、原key重试、另key等价请求；离开后重开",
+      "expected": "相同输入复用合法逻辑评审身份；命令同key原响应；nonce仅新执行，不改内容摘要；快照可恢复",
+      "forbidden": "每个文件重复评审、凭流结束判成功、以审计冻结时间制造不同内容",
+      "requires": "实际批次/评审API、PG/Kafka、当前API契约"
+    },
+    {
+      "id": "A1-Q02",
+      "status": "pending_application",
+      "references": [
+        "IP-03",
+        "PPR-AC-03"
+      ],
+      "fixture": "人工标注11核心要求，输出只识别10项；一必要扫描页未读",
+      "actions": "触发评审，查看UI/API/导出覆盖",
+      "expected": "source_scope/core_extraction/judgment/scoring及人工确认分开；已识别10/10不能宣称原文零遗漏或全部满足",
+      "forbidden": "未知总数的提取100%、partial范围清零、运行完成冒充业务满足",
+      "requires": "四层覆盖应用、标注合成资料、真实API/浏览器"
+    },
+    {
+      "id": "A1-Q03",
+      "status": "pending_application",
+      "references": [
+        "IP-04",
+        "IE-02"
+      ],
+      "fixture": "同引文分别来自正确/错误版本、页码、跨bid及不存在正文；数量单位/条件冲突",
+      "actions": "送入受控模型响应并查看拒绝详情与剩余有效项",
+      "expected": "非法引用或断言不得成为有效判定；保留字段原因及影响范围；缺失型列已检查范围",
+      "forbidden": "静默删失败项后完整通过、编造缺失引文、仅数字相同就采纳",
+      "requires": "显式测试适配配置及真实证据校验；真实模型质量另测"
+    },
+    {
+      "id": "A1-Q04",
+      "status": "pending_application",
+      "references": [
+        "IP-07",
+        "IE-05"
+      ],
+      "fixture": "V1评审执行中上传V2或有效补遗，旧任务稍后结束",
+      "actions": "控制真实Worker顺序，重开项目与历史",
+      "expected": "V1只记历史/过期；当前输入保持V2/新来源；当前结果选择有可核验CAS",
+      "forbidden": "按最后完成时间抢当前、旧报告放行新稿",
+      "requires": "真实Worker/PG/Kafka、版本及评审API"
+    },
+    {
+      "id": "A1-Q05",
+      "status": "pending_application",
+      "references": [
+        "IP-05",
+        "IP-07"
+      ],
+      "fixture": "关键违反、普通建议、暂缓项及有理由驳回项",
+      "actions": "确认规则、采纳建议、声称已改、暂缓、理由驳回、实际V2有效复核",
+      "expected": "人工规则确认不代表正文满足；只有有效复核解决或有理由驳回结束该问题阻断；暂缓仍未决",
+      "forbidden": "聊天已改就解决、确认条款就满足、批量确认覆盖既有决定",
+      "requires": "实际人工决定与复核API/浏览器"
+    },
+    {
+      "id": "A1-Q06",
+      "status": "pending_application",
+      "references": [
+        "PPR-AC-01",
+        "PPR-AC-02",
+        "IE-06"
+      ],
+      "fixture": "已确认关键矛盾和待复核风险，关闭可选检测",
+      "actions": "刷新、复评无新发现、导出、提交检查，再有效解决/有理由驳回",
+      "expected": "未解决且未有理由驳回的既有关键风险持续可见并阻断；本轮未运行；结束后历史留存不再阻断",
+      "forbidden": "关闭或零新发现洗风险、风险隐藏但不可定位阻断、解决历史永远阻断",
+      "requires": "开关/问题生命周期/报告/提交应用"
+    },
+    {
+      "id": "A1-Q07",
+      "status": "pending_application",
+      "references": [
+        "IP-06",
+        "IE-07",
+        "PPR-AC-03-B"
+      ],
+      "fixture": "漏提核心规则；合法逐字引文、错引文、跨bid/失效来源、歧义及2人并发",
+      "actions": "一次补充并确认，重复key、注入每种非法及并发旧head",
+      "expected": "合法原子新包+人工confirmed+旧评审过期；等价旧决定保留；非法整笔不写且UI保留输入；CAS仅一人推进",
+      "forbidden": "部分写包/决定、二次确认审批、伪造原actor、保存规则自动正文通过",
+      "requires": "实际correctRuleSet事务/证据/浏览器"
+    },
+    {
+      "id": "A1-Q08",
+      "status": "pending_application",
+      "references": [
+        "PPR-AC-03-C",
+        "IE-07"
+      ],
+      "fixture": "人工有据补入核心规则后模型漏提，再等价抽取/来源变更/有据替代",
+      "actions": "重提取、补遗重建并检查包/身份/决定/历史",
+      "expected": "有效未变人工要求继续纳入并沿用；等价合并不重计；效力不明保留待核验；有据替代可结束义务",
+      "forbidden": "模型漏提消除人工劳动、失效要求永久当有效、静默丢关键风险",
+      "requires": "人工来源身份及重建应用/真实PG"
+    },
+    {
+      "id": "A1-Q09",
+      "status": "pending_application",
+      "references": [
+        "IP-08",
+        "PPR-AC-04"
+      ],
+      "fixture": "核心通过+纯评分失败；混合条款否决部分失败；确认卡期间新稿",
+      "actions": "服务端标准登记、旧确认卡重放及新稿登记",
+      "expected": "四类闸门重查；纯评分失败不入核心分母；混合条款核心失败阻断；旧卡拒绝当前变化",
+      "forbidden": "评分资格替代核心、只校验前端、旧稿凭旧卡成功",
+      "requires": "实际标准登记/gate API及PG事务"
+    },
+    {
+      "id": "A1-Q10",
+      "status": "pending_application",
+      "references": [
+        "IP-08"
+      ],
+      "fixture": "实际线下已提交但未完整检查，时间/稿件/来源明确",
+      "actions": "独立补录并查看导出、配对和历史",
+      "expected": "补录事实有未完整检查标记，不伪造当时预测/放行，稿件时间身份可追溯",
+      "forbidden": "用闸门通过伪造历史事实、补造事前预测统计",
+      "requires": "补录应用及审计/导出"
+    },
+    {
+      "id": "A1-Q11",
+      "status": "pending_application",
+      "references": [
+        "IE-08",
+        "PPR-AC-05",
+        "PPR-AC-06"
+      ],
+      "fixture": "未配置、认证失败、429、超时未知计费、JSON无效、取消及会话过期",
+      "actions": "按显式测试适配注入故障；真实模型仅经PM有界预算批准",
+      "expected": "真实阶段和受影响范围可见；未知计费不隐式补发；恢复遵循服务端；A1/研究/模型质量独立状态",
+      "forbidden": "默认半分/演示成功、自动重复付费、重新登录自动重放待确认写、连通即正式评分合格",
+      "requires": "实际评审调用账本/预算/取消；独立额度；故障适配明确"
+    },
+    {
+      "id": "A1-Q12",
+      "status": "pending_application",
+      "references": [
+        "U02-A",
+        "IE-03"
+      ],
+      "fixture": "原DOCX转换失败及用户自导出PDF，同名但内容不同",
+      "actions": "从原文件处补传PDF并明确逻辑新版本目标",
+      "expected": "保留Word与失败范围；无需重传招标；PDF独立身份及实际评审，未支持DOCX就如实说明",
+      "forbidden": "同名自动认同稿、授予未验DOCX的PDF结论、强制在线编辑",
+      "requires": "实际转换/上传/身份应用"
+    },
+    {
+      "id": "A1-Q13",
+      "status": "pending_application",
+      "references": [
+        "U01-A",
+        "IE-09",
+        "IP-09"
+      ],
+      "fixture": "报告Word、批注PDF、真实正文原件；关闭预测分数但有官方成绩",
+      "actions": "下载后离开页面辨认用途；刷新/复制/图表/新导出核对",
+      "expected": "真实文件用途/版本正确；批注绑定该原PDF；隐藏预测数值/区间/分差，官方成绩和风险保留",
+      "forbidden": "报告冒充正文、正文按钮取报告、旧导出缓存泄漏预测、误隐藏官方成绩",
+      "requires": "真实导出/浏览器/官方成绩字段"
+    },
+    {
+      "id": "A1-Q14",
+      "status": "pending_application",
+      "references": [
+        "U03-A",
+        "IP-03",
+        "IP-04"
+      ],
+      "fixture": "两关键风险+普通建议及已授权RAG证据",
+      "actions": "键盘和390px逐项处理第一项后继续查第二项与双侧原页",
+      "expected": "第二关键项仍可发现；原页可读/回到原位置；RAG仅允许证据且不能替代完整评分章节",
+      "forbidden": "只凭提交拦截证明可发现、片段冒充完整评审或正式评分",
+      "requires": "实际浏览器；真人任务单独观察，不用脚本替代"
+    }
+  ]
+}

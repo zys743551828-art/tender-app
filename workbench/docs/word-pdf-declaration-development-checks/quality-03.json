@@ -1,0 +1,62 @@
+[
+  {
+    "command": [
+      "ruff",
+      "check",
+      "apps/api/main.py",
+      "apps/api/views.py",
+      "apps/api/retained_upload_routes.py",
+      "apps/api/upload_contracts.py",
+      "packages/uploads/service.py",
+      "packages/word_intake/declarations.py",
+      "tests/test_word_pdf_declaration_bindings.py",
+      "apps/worker/handlers.py",
+      "packages/domain/retained_uploads.py"
+    ],
+    "exit_code": 0,
+    "output": "All checks passed!\n"
+  },
+  {
+    "command": [
+      "ruff",
+      "format",
+      "--check",
+      "apps/api/main.py",
+      "apps/api/views.py",
+      "apps/api/retained_upload_routes.py",
+      "apps/api/upload_contracts.py",
+      "packages/uploads/service.py",
+      "packages/word_intake/declarations.py",
+      "tests/test_word_pdf_declaration_bindings.py",
+      "apps/worker/handlers.py",
+      "packages/domain/retained_uploads.py"
+    ],
+    "exit_code": 0,
+    "output": "9 files already formatted\n"
+  },
+  {
+    "command": [
+      "mypy",
+      "--follow-imports=silent",
+      "apps/api/main.py",
+      "apps/api/views.py",
+      "apps/api/retained_upload_routes.py",
+      "apps/api/upload_contracts.py",
+      "packages/uploads/service.py",
+      "packages/word_intake/declarations.py",
+      "apps/worker/handlers.py",
+      "packages/domain/retained_uploads.py"
+    ],
+    "exit_code": 0,
+    "output": "Success: no issues found in 8 source files\n"
+  },
+  {
+    "command": [
+      "bandit",
+      "-q",
+      "8 production files (default rules)"
+    ],
+    "exit_code": 0,
+    "output": "default rules exit 0; rerun after partial explicit-rule warning"
+  }
+]

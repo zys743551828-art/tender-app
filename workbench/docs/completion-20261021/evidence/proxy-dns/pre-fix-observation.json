@@ -1,0 +1,12 @@
+{
+  "source": "structured record of in-session observations, not a raw packet/log archive",
+  "anonymous_bids_status": 502,
+  "content_type": "text/html",
+  "body_bytes": 157,
+  "nginx_cached_api_ip": "172.21.0.4",
+  "actual_api_ip": "172.21.0.3",
+  "web_container_reported_healthy": true,
+  "old_nginx_health_source": "constant return 200",
+  "observed_error": "connect() failed (113: Host is unreachable) while connecting to old upstream",
+  "private_response_or_credentials_saved": false
+}

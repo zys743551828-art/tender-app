@@ -1,0 +1,146 @@
+{
+  "scope": "native current-source and exact parse observation only; no original object bytes, necessary scope, verification binding or scoring execution",
+  "tests": {
+    "linux_passed": 53,
+    "linux_junit_seconds": 3.873,
+    "linux_by_module": {
+      "tests.test_package_current_sources_pg": 37,
+      "tests.test_provider_error_isolation": 4,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 4,
+    "host_junit_seconds": 1.858,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "1c3ed9d22f3f53657ecbe0c34d38ad25d92a9b03daf0c5b75456935136bb2966",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "7e041e7b346a9706d8974f5c9927ba116526e84993380750a29993ed3a94cb05",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-current-source-grants.sql",
+      "sha256": "9bebb4a7affb4eaccbb43655be7c1451167b3c16be3cb79596480ed3b80ed552",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-sources.md",
+      "sha256": "5e9a1430d293c59038f05b7043025361b49db3b94f39aa19fa9eb441d2132878",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_sources.py",
+      "sha256": "84c17eccd736573cfb13088aad777ef631362d70fb0e32526ebcd8b1b075e375",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_sources_pg.py",
+      "sha256": "eb7341cd00c4e04d423a04c6f103d359a830a1ab1b1ecf8d7331ac297a7d8baa",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "42faf8859196f1ec6ded2699065ce0ff75c44a93683c8cd836104053a4e35423",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "457a90f0b6feff6a773037b09800beb7cf82e2bcd1693bee12522e3cfe6ec636",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false
+  },
+  "actual_native_login": "fusion_current_source_verify",
+  "actual_denied_queries": 5,
+  "read_only_repeatable_read_and_concurrent_revocation_verified": true,
+  "public_definer_and_effective_extra_permissions_rejected": true,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "default_schema_or_http_changed": false,
+  "runtime_inputs": 1187,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "current_source_capability_roles": 0
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "e0f0b40dab782cc7e9944d9e4dd8e3c33c2e7b3c01e6964f9aa712f0cff13350",
+    "linux-initial.xml": "73183459d122a7f1e9e48db95391187bbbb4f510a4f9d0e28d879175aadcb24c",
+    "linux-second.log": "f2004517a4f31c3d34c0adbfd30e4aa80b769518e2c743943da9e23dea668e58",
+    "linux-second.xml": "ca0105a8f3b2691acb88981198f987747e62bf5ba8148450b2ce8432fb0c7913",
+    "linux-third.log": "90cae63b9fc3a50f8a93dca53724aec5c9a9095f7a93e302a30724618ff25072",
+    "linux-third.xml": "633be252f373bc13c2fb902cde71b90bdedad4ca3e5b3b086d8878243c230744",
+    "linux-pre-final.log": "d8dd740b09c2622157c1b019ae0d3b1250179773eff91b200a7bb6978844c49a",
+    "linux-pre-final.xml": "831fee8d43a03b817829c26f29d707fb85dcc62ef767d9c8b86a3e4c6cc19e04",
+    "linux-final.log": "990b0ee494228d0a26605da52c0cbe7e553127f8cbd7949a6cfc506d4ab7d2e6",
+    "linux-final.xml": "d890dddbe4aa7754b67c59ce133bbe52f1a9f4d82887e4582b622634f6096747",
+    "host-final.log": "1d1db31d89f4e6ce27c25af7bc7925fbd291611e2ef8879d31a52b7e7fbd1244",
+    "host-final.xml": "91165542b38897c86a2dccba0596b4e7697bc2f7387b3421d34cf775bdee3f56",
+    "python-quality.log": "f273305506ad2b44cd2315e889cedf70bfa516ec7f907861705450a5a8e4786c",
+    "python-quality-final.log": "3a6870ce2ec4e29adace287b867c892bea51321d9412522a856215dc0d5790f5",
+    "python-format.log": "c73f413630ff06bc48f1df7c1e96b94d4116938803f990fea6eb2561dfb5b08f",
+    "python-final.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "native-observation.json": "be15cac2719c21f9daf4aead08cf54d5b131e64c7babd353ed2e926311a8613a",
+    "method-boundaries.json": "5c98b6f565211f93d533f9bb8442617d4c08b0e9381d0e544eac82ebc39f4322",
+    "http-runtime.json": "c81fa22d2d6eae35c430580a5e0ca508380cf275c3aa2d54de61a567324f97b4",
+    "checks-cleanup.json": "036a133d567770f055466c77d279d494c2e11ad0d00afdbf7f0d5f49b5a3e7a7"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "crop_method_digest": "8ae2729962b4a914627210ceecd43202f58650e53cf3fcb880de76b96b7254f7",
+  "cropped_at": "2026-10-23T17:11:55.422302Z",
+  "details": [
+    {
+      "asset": {
+        "byte_size": 1010,
+        "height": 230,
+        "id": "87a111b03edfae5d6949c26ba100fa00cc93ef6c69ecce27275b6a0b5647c338",
+        "media_type": "image/png",
+        "sha256": "36844fda4f74135956172f2e4c5384bc89f7316a2ef07f4e32119650d2725232",
+        "width": 345
+      },
+      "parent_asset_id": "78b77c4e0cc7ac0553377d7520c8cbd3e811c4c92431dd9e0265d8d449573331",
+      "parent_image_digest": "5a94bf98fa87229962e886586d6b5318cc86209b63aeffe51631f7a32fcc8ecb",
+      "physical_page": 1,
+      "rectangle": [
+        45,
+        250,
+        390,
+        480
+      ]
+    }
+  ],
+  "digest": "3f410951f3796e24b5b3bd2a3aa27ece37361490a850647a03dbe74d3754780e",
+  "document_version_id": "00000000-0000-0000-0000-000000002397",
+  "font_reproducibility_verified": false,
+  "full_pages_retained": true,
+  "historical_byte_existence_verified": false,
+  "input_authority_granted": false,
+  "isolated_execution_verified": false,
+  "limitations": [
+    "CURRENT_DERIVATION_NOT_HISTORICAL_BYTE_PROOF",
+    "PIXELS_NOT_READABILITY_PROOF",
+    "PDFIUM_CANVAS_UNITS_NOT_VERIFIED_DPI",
+    "FONT_AND_COLOR_REPRODUCTION_NOT_CERTIFIED",
+    "ISOLATED_WORKER_REQUIRED_BEFORE_PUBLIC_USE"
+  ],
+  "page_count": 2,
+  "pages": [
+    {
+      "asset": {
+        "byte_size": 15048,
+        "height": 1200,
+        "id": "78b77c4e0cc7ac0553377d7520c8cbd3e811c4c92431dd9e0265d8d449573331",
+        "media_type": "image/png",
+        "sha256": "5a94bf98fa87229962e886586d6b5318cc86209b63aeffe51631f7a32fcc8ecb",
+        "width": 900
+      },
+      "canvas_height": "400.0",
+      "canvas_width": "300.0",
+      "crop_box": null,
+      "media_box": [
+        "0.0",
+        "0.0",
+        "300.0",
+        "400.0"
+      ],
+      "physical_page": 1,
+      "rotation": 0
+    },
+    {
+      "asset": {
+        "byte_size": 19980,
+        "height": 1200,
+        "id": "3402231e81f1e1c94d9005aebb18a9a359174168cbc88934068da1bab5a92b52",
+        "media_type": "image/png",
+        "sha256": "3b86c754d6b2a6be0612c5ecee89b53d3f14a4df87eff3e17c9ea170c57056f2",
+        "width": 900
+      },
+      "canvas_height": "400.0",
+      "canvas_width": "300.0",
+      "crop_box": null,
+      "media_box": [
+        "0.0",
+        "0.0",
+        "400.0",
+        "300.0"
+      ],
+      "physical_page": 2,
+      "rotation": 90
+    }
+  ],
+  "parent_manifest_digest": "1a7cb5b879a42b0c756525df3f5656fee54018dbfb30b0066c4b994161344610",
+  "pixel_format": "rgb8-filter0/1",
+  "render_method_digest": "c100f326047a47013569fa5c82f6598e3b172677db9e20726776d8ab2aa49fd5",
+  "render_scope": "all_pdfium_page_viewports",
+  "rendered_at": "2026-10-23T17:11:55.401968Z",
+  "source_byte_size": 1846,
+  "source_digest": "41d5711914cdd88a27c96525123a1396549b380333e63fdb359c55a40c06f95e",
+  "version": "package-technical-page-assets/2",
+  "visual_readability_verified": false
+}

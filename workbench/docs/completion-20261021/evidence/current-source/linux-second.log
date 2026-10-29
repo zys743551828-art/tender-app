@@ -1,0 +1,40 @@
+F
+=================================== FAILURES ===================================
+_____ test_native_login_observation_and_denied_history_and_object_locator ______
+
+native = {'api_dsn': 'user=fusion_package_requirements_service password=-yyspzqSRdWFA9eExqBN-PBNAp7U-Vzdz1Dsth6ZrhHtHz4G dbname...d2390fa113a', 'block': '3912e5e9-cb5d-4309-9edc-02515563bede', 'document': 'f12214a8-c015-400c-aa7f-c6f9730ba0fb', ...}
+
+    def test_native_login_observation_and_denied_history_and_object_locator(native):
+        w = native
+>       value = observe(w).metadata
+                ^^^^^^^^^^
+
+tests/test_package_current_sources_pg.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_package_current_sources_pg.py:139: in observe
+    return sources.observe(
+packages/model_governance/package_current_sources.py:331: in observe
+    documents, counts = _documents(c, bid_id, expected)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/model_governance/package_current_sources.py:218: in _documents
+    identity = parses.read_parse_identity(
+packages/domain/bid_package_repository.py:105: in read_parse_identity
+    row = _one(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+c = <psycopg.Cursor [closed] [IDLE] (host=fusion-nonowner-postgres user=fusion_current_source_verify database=fusion_package_requirements_api) at 0x764836d95490>
+query = 'SELECT parser_digest,config_digest,page_count,coverage,gaps FROM design.parse_runs\n            WHERE bid_id=%s AND document_version_id=%s AND id=%s'
+parameters = ('dd042e4b-2e08-463b-9552-dd2390fa113a', 'f12214a8-c015-400c-aa7f-c6f9730ba0fb', 'a37ae8f9-dff1-4b3e-96e3-f8ad60b422ab')
+
+    def _one(c: Any, query: str, parameters: tuple[Any, ...]) -> dict[str, Any] | None:
+>       with c.cursor(row_factory=dict_row) as cursor:
+             ^^^^^^^^
+E       AttributeError: 'Cursor' object has no attribute 'cursor'
+
+packages/domain/bid_package_repository.py:42: AttributeError
+----------- generated xml file: /evidence/current-source-native.xml ------------
+=========================== short test summary info ============================
+FAILED tests/test_package_current_sources_pg.py::test_native_login_observation_and_denied_history_and_object_locator
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.85s
+{"suite": "current-source-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

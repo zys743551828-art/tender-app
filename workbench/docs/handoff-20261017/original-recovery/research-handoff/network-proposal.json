@@ -1,0 +1,28 @@
+{
+  "config": {
+    "network": {
+      "allowed_domains": [
+        "claude.ai",
+        "www.govdash.com",
+        "govdash.com",
+        "www.documentcrunch.com",
+        "documentcrunch.com",
+        "trunktools.com",
+        "www.trunktools.com",
+        "www.autogenai.com",
+        "autogenai.com",
+        "www.glean.com",
+        "glean.com",
+        "aws.amazon.com",
+        "cloud.google.com",
+        "customers.microsoft.com",
+        "learn.microsoft.com",
+        "www.anthropic.com",
+        "www.langchain.com",
+        "docs.langchain.com",
+        "docs.dify.ai",
+        "docs.temporal.io"
+      ]
+    }
+  }
+}

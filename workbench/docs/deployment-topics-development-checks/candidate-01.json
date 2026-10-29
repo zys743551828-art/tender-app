@@ -1,0 +1,79 @@
+{
+  "status": "developer frozen deployment tool delta; independent review pending",
+  "sources": [
+    {
+      "path": "deploy/initialize_topics.py",
+      "sha256": "a724482678066e65e2a14392e7bee09c83a67546e64978cb732852a7a4e1a0a9"
+    },
+    {
+      "path": "tests/test_initialize_topics.py",
+      "sha256": "864fff405723a30e4f14eadfd178b2ded83a50a361dd822ce55a6cc9e87d5f0b"
+    },
+    {
+      "path": "README.md",
+      "sha256": "a5134f28316f680106229d1b51d0bbb9cba62c1f76a32c09303e510ac179a229"
+    },
+    {
+      "path": "apps/worker/execution-policy-07.json",
+      "sha256": "72874d8f4d4ed43981433ed61351648ce493401f2d3014877d109c06b58e60fe"
+    },
+    {
+      "path": "packages/contracts/policies/execution-policy.json",
+      "sha256": "dbc68d4f6eb622e052f43b3b08573055ded80ace032337c1f146c0061a966b67"
+    }
+  ],
+  "fixed_source_root": "/workspace/tender-workbench/docs/deployment-topics-development-checks/frozen-inputs",
+  "source_manifest_sha256": "f3bdbf0bc8d35c870b226989b7f265a84d4657b468eab2f56ac0312c432a8e07",
+  "artifacts": [
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/source-manifest-01.json",
+      "sha256": "f3bdbf0bc8d35c870b226989b7f265a84d4657b468eab2f56ac0312c432a8e07"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/metadata-before-01.json",
+      "sha256": "191e8341fa962cf06fbaa623565a8e9b7bf63845c833652479bac7b5139b4588"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/initialize-result-01.json",
+      "sha256": "d2f60f2a4014462756bcc244706f827888c14a64c10b5c1a5fc1432c3a149f8b"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/check-result-01.json",
+      "sha256": "361d94cdcdf5fe1bc112c49999ff5ca59ee88307fd2f656dfc9e32401731ae8d"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/metadata-after-01.json",
+      "sha256": "bf1fb23f41153b4eb73731ab7285f4771be8fb476bfc97c9e3b0c822f2cf2c68"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/pytest-result-01.xml",
+      "sha256": "63f1b50fbe1f265e06f8cb3ad348b8565edb69e2c8fbbb2e873302bed6445e33"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/quality-01.json",
+      "sha256": "ec84285e2effa36f0f09c54a9931de16e5d7c53d69b0ef33e07f92f77d5ef570"
+    },
+    {
+      "path": "/workspace/tender-workbench/docs/deployment-topics-development-checks/source-integrity-01.json",
+      "sha256": "7a5b221e168c2ad396ef818581857641c4ff9208ff42065fdd4075f74cad7237"
+    }
+  ],
+  "default_policy_sha256": "72874d8f4d4ed43981433ed61351648ce493401f2d3014877d109c06b58e60fe",
+  "old_target_policy_sha256": "dbc68d4f6eb622e052f43b3b08573055ded80ace032337c1f146c0061a966b67",
+  "real_verification": {
+    "cluster_id": "N8d3T4cNR6Wt6Ba9RX3kgA",
+    "bootstrap": "127.0.0.1:19098",
+    "topics_before": 6,
+    "topics_after": 9,
+    "created": [
+      "tender.task.assistant-global.v1",
+      "tender.task.assistant.v1",
+      "tender.task.comparison.v1"
+    ],
+    "prior_six_metadata_unchanged": true,
+    "consumer_groups": 0,
+    "consumer_started": 0,
+    "provider_calls": 0
+  },
+  "scope": "Kafka initialization/metadata only; no application02 API/guard change or consumer execution claim"
+}

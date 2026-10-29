@@ -1,0 +1,20 @@
+{
+  "model_calls": 0,
+  "operations": 2,
+  "outbox": 2,
+  "superuser": false,
+  "bypassrls": false,
+  "operation_states": [
+    {
+      "kind": "build",
+      "state": "succeeded",
+      "count": 1
+    },
+    {
+      "kind": "verify-upload",
+      "state": "cancel_requested",
+      "count": 1
+    }
+  ],
+  "scope": "Explicit synthetic queued/cancel-requested intent and actual DOCX build mechanism; no consumer/provider dispatch"
+}

@@ -1,0 +1,49 @@
+{
+  "scope": "文档、来源与执行产物身份检查；不重跑实验，不代表整套产品或真实评分验收",
+  "passed": true,
+  "requirements_traced": 50,
+  "official_repositories": 28,
+  "official_files": 77,
+  "source_files_rehashed": 77,
+  "source_rehash_status": "已复核原文缓存",
+  "supplemental_source_checks": [
+    {
+      "manifest": "orchestration-sources.json",
+      "repositories": 6,
+      "files": 44,
+      "files_rehashed": 44,
+      "cache_status": "已复核原文缓存"
+    },
+    {
+      "manifest": "product-architecture-sources.json",
+      "repositories": 4,
+      "files": 26,
+      "files_rehashed": 26,
+      "cache_status": "已复核原文缓存"
+    }
+  ],
+  "isolated_probe_scripts": 5,
+  "result_groups": 5,
+  "local_links_checked": 92,
+  "failures": [],
+  "input_hashes": {
+    "01-背景与市场研究/成熟AI系统与技术组件调研.md": "3a8c75eaf2091dcb5d0b2ec82f4e9071dc5f9289cc4f61601ff58b2201844da2",
+    "05-技术与设计/AI投标工作台全新系统技术方案.md": "920ae2b0e3e64413a17605d6bf6d6d7ca9049de338d607e1c0a9a9bc04398443",
+    "04-验证与测试/全新技术方案验证与自审.md": "51e1093f0f91cba67411d8816b0d4a5f3bbfd115d43ff001bc43312dece1cd2f",
+    "README.md": "2745384259b9c16c16aab45e35d65ff152d5c9ba8c63b3365ab1592a534dfdfc",
+    "04-验证与测试/architecture-checks/README.md": "dc78b9d06c604063637056fe49e47e1e963177a455dded2a77fd05ef690fdca7",
+    "05-技术与设计/评分预测训练与验收方案.md": "5dcafcea30e92d40655de254e87c37ed6ab439c42c3cce5579de9c5f422afa62",
+    "02-业务与产品/AI投标工作台产品化方案.md": "0ada4613223b8fd8e5fcf5a2ace8233178c7fc8fa0d60de104baa4eb9a3f8045",
+    "05-技术与设计/LangGraph路线技术方案.md": "732957577f9f692cc9265d8d0652f2419bd8abc510056c2916bec59f9ad155c9",
+    "01-背景与市场研究/AI执行与工作流选型复核.md": "a2fd274d1d9f5b070f02d7df6fb339ce14b137fe35d13f309ca4e3b5412a0fbf",
+    "01-背景与市场研究/相似AI产品技术路线核查.md": "a6168420e7086dd1c8a267be4004713cecb14f6bfcfc50af8c40929f01cbc9fa",
+    "04-验证与测试/architecture-checks/orchestration-sources.json": "ae3d7477c45b17353475ab7e407b13b025f2ed6877154862867d2c2f07d90a6f",
+    "04-验证与测试/architecture-checks/product-architecture-sources.json": "e2f2398c1ebf918b27c097d1f3b280f830efd7f5cb95858350515f91e742583b",
+    "02-业务与产品/AI投标工作台PRD.md": "4c2ce8bdc32494172d6ad0d8f4584203647565f064b1cc8b8db990e3e4f823ad",
+    "04-验证与测试/architecture-checks/official-sources.json": "06380ba48dbeae6e8f08a3f3a4b588aea136740b1500f5a4b05bbb4088dd52de",
+    "04-验证与测试/architecture-checks/requirements-trace.json": "3aabbe4f9b6a4365c7136d84cd90946ddac6e5634dfaff84121eb5666cf53138",
+    "04-验证与测试/architecture-checks/run-manifest.json": "67c09287026b23b311715cbe2b1efcd7c26c2e70376bfd343e2d57a429113a83",
+    "04-验证与测试/architecture-checks/check_design_assets.py": "28ed0802ff73fd148500fe33f687d50acd81dbdc5f262b98ce82974137564b91",
+    "04-验证与测试/architecture-checks/fetch_official_sources.py": "d666687d21f1c0ce5ef1a2367f8736fc4df7f9f7acba5f4bcd5f64d062aaae50"
+  }
+}

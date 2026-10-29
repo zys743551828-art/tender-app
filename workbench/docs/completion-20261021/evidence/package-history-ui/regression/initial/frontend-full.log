@@ -1,0 +1,34 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> @tender/workbench-web@0.1.0 test
+> vitest run --maxWorkers=2
+
+
+ RUN  v3.2.3 /workspace/scratch/d0221a1cc751/tender-app/workbench/apps/web
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+RangeError: options.minThreads and options.maxThreads must not conflict
+ ❯ new Tinypool node_modules/tinypool/dist/index.js:745:120
+ ❯ createForksPool node_modules/vitest/dist/chunks/coverage.D1a3dTnj.js:2632:15
+ ❯ forks node_modules/vitest/dist/chunks/coverage.D1a3dTnj.js:3387:17
+ ❯ node_modules/vitest/dist/chunks/coverage.D1a3dTnj.js:3424:22
+ ❯ executeTests node_modules/vitest/dist/chunks/coverage.D1a3dTnj.js:3418:4
+ ❯ node_modules/vitest/dist/chunks/cli-api.C37Ou0i1.js:9638:6
+ ❯ Vitest.runFiles node_modules/vitest/dist/chunks/cli-api.C37Ou0i1.js:9666:10
+ ❯ Vitest.start node_modules/vitest/dist/chunks/cli-api.C37Ou0i1.js:9554:18
+ ❯ startVitest node_modules/vitest/dist/chunks/cli-api.C37Ou0i1.js:10508:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  no tests
+      Tests  no tests
+     Errors  1 error
+   Start at  19:29:42
+   Duration  30ms (transform 0ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms)
+

@@ -1,0 +1,7 @@
+{
+  "actual_contract": "/workspace/tender-docs/04-验证与测试/backend07-independent-checks/actual-main-07.openapi.json",
+  "sha256": "3249fec969b04a3bc298bfd77a2f0dda7d1a4f3a1f1213a1a8d6648db6998fe7",
+  "semantic_generated_types_equal08": true,
+  "source_header_preserved_from08": true,
+  "pricing_editor_08_bytes_preserved": true
+}

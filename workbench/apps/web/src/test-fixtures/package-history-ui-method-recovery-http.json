@@ -1,0 +1,215 @@
+{
+  "protocol": "package-history-ui-http/1",
+  "synthetic": true,
+  "real_qualification": false,
+  "paid_calls": 0,
+  "provider_requests": 0,
+  "transport": "actual public FastAPI main with complete exposure bridge and independent PostgreSQL 17 LOGINs",
+  "object_transport": "explicit synthetic in-memory original bytes; no real object-store transport claim",
+  "actor_id": "e72c6feb-d85b-492a-91cb-d4be208a6054",
+  "responses": [
+    {
+      "name": "protocol_template",
+      "method": "GET",
+      "path": "/api/v1/package-historical-research/cpu-protocol-template",
+      "query": {},
+      "request_body": null,
+      "request_headers": {},
+      "status": 200,
+      "etag": "\"package-history-protocol-template:00000000-0000-0000-0000-000000000000:30fd27e0ca0b8080b66278ab0fc6c881e99d31080757d3db481df2856393cbd8\"",
+      "headers": {
+        "etag": "\"package-history-protocol-template:00000000-0000-0000-0000-000000000000:30fd27e0ca0b8080b66278ab0fc6c881e99d31080757d3db481df2856393cbd8\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "schema_configured": true,
+        "document": {
+          "schema": "package-history-cpu-protocol/1",
+          "method": {
+            "version": "package-history-project-baselines/1",
+            "purpose": "retrospective_research",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0,
+            "sources": {
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8",
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604"
+            },
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6"
+          },
+          "families": [
+            "mean",
+            "median"
+          ],
+          "selection_metric": "project_mae",
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "refit_with_development": false,
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "bootstrap_iterations": 1000,
+          "seed": 17,
+          "group_spanning_policy": "exclude"
+        },
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "signed_proof_public_upload": false,
+        "feature_calibration_available": false,
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocol_created",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 17,
+        "bootstrap_iterations": 100,
+        "reason": "Original explicit protocol request before a method upgrade"
+      },
+      "request_headers": {
+        "idempotency-key": "afe36e86-6255-46c9-ab26-9b6d529bf883"
+      },
+      "status": 201,
+      "etag": "\"package-history-protocol:d77f5d40-44e7-4efd-9c19-4cb34cb00438:64f4c3afbf5fd62086df721b88c9bb72986e4daec15ab08ca7ad3d1a12690513\"",
+      "headers": {
+        "etag": "\"package-history-protocol:d77f5d40-44e7-4efd-9c19-4cb34cb00438:64f4c3afbf5fd62086df721b88c9bb72986e4daec15ab08ca7ad3d1a12690513\"",
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "id": "d77f5d40-44e7-4efd-9c19-4cb34cb00438",
+        "digest": "43cc73676e1f82d9f2c0af8920c344d604fea27e86f96b668c20e72b91f61de6",
+        "document": {
+          "seed": 17,
+          "method": {
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "purpose": "retrospective_research",
+            "sources": {
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+            },
+            "version": "package-history-project-baselines/1",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0
+          },
+          "schema": "package-history-cpu-protocol/1",
+          "families": [
+            "mean",
+            "median"
+          ],
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "selection_metric": "project_mae",
+          "bootstrap_iterations": 100,
+          "group_spanning_policy": "exclude",
+          "refit_with_development": false
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocol_original_replayed",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 17,
+        "bootstrap_iterations": 100,
+        "reason": "Original explicit protocol request before a method upgrade"
+      },
+      "request_headers": {
+        "idempotency-key": "afe36e86-6255-46c9-ab26-9b6d529bf883"
+      },
+      "status": 201,
+      "etag": "\"package-history-protocol:d77f5d40-44e7-4efd-9c19-4cb34cb00438:64f4c3afbf5fd62086df721b88c9bb72986e4daec15ab08ca7ad3d1a12690513\"",
+      "headers": {
+        "etag": "\"package-history-protocol:d77f5d40-44e7-4efd-9c19-4cb34cb00438:64f4c3afbf5fd62086df721b88c9bb72986e4daec15ab08ca7ad3d1a12690513\"",
+        "cache-control": "private,no-store",
+        "idempotency-replayed": "true"
+      },
+      "body": {
+        "id": "d77f5d40-44e7-4efd-9c19-4cb34cb00438",
+        "digest": "43cc73676e1f82d9f2c0af8920c344d604fea27e86f96b668c20e72b91f61de6",
+        "document": {
+          "seed": 17,
+          "method": {
+            "digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "purpose": "retrospective_research",
+            "sources": {
+              "packages/model_governance/common.py": "a6f237d4cfc4d6790d643b2a5109dca6385da01705af8251ebdd81f0020d21f4",
+              "packages/model_governance/evaluation.py": "d0ac7e2029644105173395f3ba315e0e87a74f19555f55a4eb01e2588792b967",
+              "packages/model_governance/statistics.py": "dcffb36e8b29e872fc50e1364521e1a4f8a6ea2468637e7f9ed0f96ff472f604",
+              "packages/model_governance/package_history_cpu.py": "fc6caa9061eea77eac258573261fc211790b4de45183b2c79762ca8122041eb8"
+            },
+            "version": "package-history-project-baselines/1",
+            "features": "not_required_by_constant_baselines",
+            "provider_requests": 0
+          },
+          "schema": "package-history-cpu-protocol/1",
+          "families": [
+            "mean",
+            "median"
+          ],
+          "tie_order": [
+            "mean",
+            "median"
+          ],
+          "interval_levels": [
+            0.8,
+            0.9
+          ],
+          "selection_metric": "project_mae",
+          "bootstrap_iterations": 100,
+          "group_spanning_policy": "exclude",
+          "refit_with_development": false
+        },
+        "research_only": true,
+        "formal_eligibility": "unavailable"
+      }
+    },
+    {
+      "name": "protocol_new_key_rejected",
+      "method": "POST",
+      "path": "/api/v1/package-historical-research/protocols",
+      "query": {},
+      "request_body": {
+        "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+        "seed": 17,
+        "bootstrap_iterations": 100,
+        "reason": "Original explicit protocol request before a method upgrade"
+      },
+      "request_headers": {
+        "idempotency-key": "90648f2c-4212-4cc8-b9d2-b47a84b9c63e"
+      },
+      "status": 409,
+      "etag": null,
+      "headers": {
+        "cache-control": "private,no-store"
+      },
+      "body": {
+        "code": "PACKAGE_HISTORY_METHOD_CHANGED",
+        "message": "CPU 方法已变化，请读取当前方法再冻结",
+        "request_id": "911f1e6a-03a4-4dcf-bb12-34890785fbea",
+        "retryable": false,
+        "details": {}
+      }
+    }
+  ]
+}

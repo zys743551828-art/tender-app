@@ -1,0 +1,45 @@
+{
+  "scope": "actual101/115 D03+identity03 same-candidate continuation after parse-source became readable; explicit synthetic project, no model requests",
+  "project_id": "ca1873fa-b457-474f-8569-81e377c908d3",
+  "company_id": "50ced4e6-9004-4762-b9d8-c8d58816af69",
+  "document_version_id": "ab6fbb26-ce00-4fa4-84e3-7da2f6fb90c0",
+  "knowledge_id": "ab478357-4664-4ceb-b6ec-081603443053",
+  "knowledge_version_id": "7f3a86cb-bbbb-4456-bd6b-691e25c98d9c",
+  "source_parse_id": "97a1faaf-24ae-4c67-b03c-009f2643b225",
+  "source_evidence_id": "0bbbc689-9b8b-4ea7-992a-92f56a6ff61a",
+  "source_physical_page": 1,
+  "source_excerpt_sha256": "58b356663cc2adfef11a367127d8e307b8936fba28b9bb025c775784e4630df2",
+  "same_candidate_and_original_preserved": true,
+  "cached_input_restored": true,
+  "server_authoritative_source_preserved": true,
+  "original_page_canvas_real": true,
+  "source_buttons_do_not_submit": true,
+  "explicit_publication_and_reference": true,
+  "facts_unchanged": true,
+  "withdraw_blocks_new_use_keeps_frozen_reference": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "knowledge/ab478357-4664-4ceb-b6ec-081603443053/versions"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/ab478357-4664-4ceb-b6ec-081603443053/submit"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/ab478357-4664-4ceb-b6ec-081603443053/publish"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/ab478357-4664-4ceb-b6ec-081603443053/references"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge/ab478357-4664-4ceb-b6ec-081603443053/withdraw"
+    }
+  ],
+  "paid_requests": 0
+}

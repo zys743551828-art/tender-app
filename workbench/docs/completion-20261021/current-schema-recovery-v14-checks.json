@@ -1,0 +1,42 @@
+{
+  "schema": "current-schema-recovery-v14-checks/1",
+  "native": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 12.62,
+    "runner_exit": 0,
+    "receipt_sha256": "0cd91e4ec1f8b09337b69f2a862c653dfe95b0dddb4b478eb64ffd1d2dd6736c"
+  },
+  "unit": {
+    "tests": 44,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "passed": 43,
+    "seconds": 0.33,
+    "raw_junit_sha256": "388836d89cbb6c45f5b8e7bb2ec8667c6240e1511923fb5e14cb7a67aa8f8244",
+    "skipped_cases": [
+      {
+        "name": "test_real_future_schema_snapshot_restore_read_only_without_object_requests",
+        "reason": "explicit local PG profile required; no remote object calls"
+      }
+    ]
+  },
+  "static": {
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "git_diff_check": "passed"
+  },
+  "owned_source_sha256": {
+    "tests/test_completion_recovery_pg.py": "835b9053f8367872dc35953fc1a29138e62cc7525f44db51e1ef6e948df209fe",
+    "tests/completion_recovery_native_records.py": "a91414054bcef8cf70541e5c1ca4c4fae0e047be1c3c0a6f31698c12443c83ca"
+  },
+  "recorded_source_and_ordered_sql_unchanged": true,
+  "self_owned_services_exited": true,
+  "temporary_pg_directories_remaining": 0,
+  "temporary_s3_directories_remaining": 0,
+  "paid_calls": 0,
+  "model_calls": 0,
+  "worker_started": false
+}

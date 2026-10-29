@@ -1,0 +1,11 @@
+{
+  "status": "requires_explicit_user_confirmation",
+  "auto_review_rejected_action": "new original locator SECURITY DEFINER RPC, role inheritance and private locator return capability",
+  "reason": "existing authorization did not explicitly cover this exact sensitive access expansion",
+  "blocked_patch_applied": false,
+  "blocked_sql_exists": false,
+  "blocked_types_exist": false,
+  "database_acl_changed": false,
+  "safe_transport_does_not_replace_native_authorization": true,
+  "proposal_sha256": "96115215248c1c46f20a3c356cee82290da74e41a608642ea0ed4ea685434e6d"
+}

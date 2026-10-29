@@ -1,0 +1,13 @@
+{
+  "scope": "actual129/150 D candidate UI missing-input delta only; no publication/reference/facts qualification",
+  "checked_at": "2026-10-17T01:19:08.275744+00:00",
+  "knowledge_id": "7b790795-9949-4725-99f3-774b1acc134c",
+  "project_id": "06c25da7-412b-4c0c-b56c-567da0729968",
+  "missing_fields_visible_before_disabled_save": true,
+  "no_extra_conditions_does_not_remove_scope_note_requirement": true,
+  "filled_scope_note_removed_from_missing_list": true,
+  "other_missing_fields_still_block": true,
+  "business_writes": ["POST knowledge"],
+  "paid_calls": 0,
+  "mobile_no_overflow": true
+}

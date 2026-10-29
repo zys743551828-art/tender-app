@@ -1,0 +1,46 @@
+{
+  "checks": {
+    "initializer": {
+      "business_capabilities_expanded": false,
+      "chown_dac_override_succeeded": true,
+      "chown_only_denied": true,
+      "effective_capability_mask": "0x3",
+      "host_file_owner_uid": 65532,
+      "private_directory_mode": "0700",
+      "private_file_mode": "0600"
+    },
+    "nginx": {
+      "actual_6mib_source_transfer": true,
+      "actual_7mib_last_multipart_part": true,
+      "actual_nginx_t_succeeded": true,
+      "actual_static_javascript_mime": "application/javascript",
+      "backend_is_transport_test_fixture": true,
+      "configuration_directory_readonly": true,
+      "container_executed": false,
+      "effective_capabilities": 0,
+      "host_origin_csrf_cookie_forwarded": true,
+      "master_uid": 65532,
+      "ordinary_json_limit_413": true,
+      "over_part_limit_413": true,
+      "over_source_limit_413": true,
+      "pid_and_all_temporary_paths_in_private_tmp": true,
+      "private_ticket_absent_from_logs": true,
+      "spa_fallback": true,
+      "static_directory_readonly": true,
+      "upstream_failure_502": true
+    }
+  },
+  "docker_executed": false,
+  "nginx_binary_sha256": "1f16b72bea2f44e5d04fe6cf9e3e4b0dec53a82c50c7c1533c302a8ecaeccacf",
+  "nginx_version": "nginx version: nginx/1.24.0 (Ubuntu)",
+  "provider_calls": 0,
+  "source_sha256": {
+    "deploy/compose.fusion-full.yaml": "9c57cdda655323b14a2de1180e22935a8b6909e08c7dcf5e3f10d778d63115d3",
+    "deploy/fusion_full_configure.py": "4a2c11743e5f42ba6f67be1de57c694c39d58302669f308f8205783e65304de5",
+    "deploy/fusion_full_control.py": "62bde6428e56df472f7f28924301a8f13c54738e39e3d2c4700f41ca92a99b64",
+    "deploy/fusion_full_runtime.py": "3f913b707a1d5d5cfdd39c776fcb0e3dfc3031b12741efe61dc3f99401813f16",
+    "deploy/nginx-fusion-full-main.conf": "f22c9a86ba231110f229165c665df4742b6e54849df0254086bcce2a85af5681",
+    "deploy/nginx-fusion-full.conf": "c138e4864f45a638f449fd7c773103ea29fee9be13ee090a9c3178f2cf937e4f"
+  },
+  "version": "fusion-full-platform-acceptance/1"
+}

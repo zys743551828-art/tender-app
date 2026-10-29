@@ -1,0 +1,101 @@
+F
+=================================== FAILURES ===================================
+___________ test_native_locator_then_complete_actual_loopback_bytes ____________
+
+saved = {'actor': 'ea639ca8-1d25-41f5-bd27-5ae81ba975a1', 'app': <apps.api.main.WorkbenchAPI object at 0x7892f62f8140>, 'base'...i/v1/bids/561b4f0d-dae8-4ed0-b7ce-9d70090d1368/packages', 'body_evidence': 'dc7b16da-1da4-4d4e-9d8f-0eeb5d6030d9', ...}
+caplog = <_pytest.logging.LogCaptureFixture object at 0x7892f7716240>
+
+    def test_native_locator_then_complete_actual_loopback_bytes(saved, caplog):
+        w = saved
+>       observed = observe(w)
+                   ^^^^^^^^^^
+
+tests/test_package_current_original_pg.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_package_current_original_pg.py:80: in observe
+    return current.observe(w["database"]["original_verifier"], **args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=fusion_current_original_verify database=fusion_package_requirements_api) at 0x7892f7ce3b60>
+
+    def observe(
+        connection,
+        *,
+        bid_id,
+        scope_id,
+        expected_scope_digest,
+        document_version_id,
+        expected_original_digest,
+        expected_method_digest,
+    ):
+        valid = False
+        try:
+            valid = all(str(UUID(v)) == v for v in (bid_id, scope_id, document_version_id))
+        except (ValueError, TypeError, AttributeError):
+            pass
+        if not valid:
+            fail("INVALID_ID")
+        for value in (expected_scope_digest, expected_original_digest):
+            if (
+                not isinstance(value, str)
+                or len(value) != 64
+                or any(c not in "0123456789abcdef" for c in value)
+            ):
+                fail("INVALID_DIGEST")
+        method = method_digest()
+        if expected_method_digest != method:
+            fail("METHOD_MISMATCH")
+        if connection.info.transaction_status != TransactionStatus.IDLE:
+            fail("IDLE_CONNECTION_REQUIRED")
+        failure = None
+        try:
+            with connection.transaction():
+                with connection.cursor(row_factory=dict_row) as c:
+                    c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+                    c.execute("SET LOCAL statement_timeout='5s'")
+                    read_purpose.require_read_purpose(
+                        c,
+                        read_purpose.ReadPurpose(
+                            groups=frozenset({GROUP, scope.GROUP}), definer_calls=(RPC, scope.RPC)
+                        ),
+                    )
+                    scope_body = scope._native_method(c)
+                    native_body = _native_method(c)
+                    value = c.execute(
+                        "SELECT current_technical_original.locate(%s,%s,%s,%s,%s) AS value",
+                        (
+                            bid_id,
+                            scope_id,
+                            expected_scope_digest,
+                            document_version_id,
+                            expected_original_digest,
+                        ),
+                    ).fetchone()["value"]
+                    if method_digest() != method:
+                        fail("METHOD_CHANGED")
+        except read_purpose.ReadPurposeError as error:
+            failure = "CURRENT_ORIGINAL_" + error.code
+        except scope.CurrentScopeError:
+            failure = "CURRENT_ORIGINAL_SCOPE_NATIVE_METHOD_MISMATCH"
+        except psycopg.Error as error:
+            code = error.diag.message_primary
+            failure = code if code in KNOWN_ERRORS else "CURRENT_ORIGINAL_NATIVE_UNAVAILABLE"
+        # Discard native exception context; it may carry private query/result values.
+        if failure:
+>           raise CurrentOriginalError(failure)
+E           packages.model_governance.package_current_original.CurrentOriginalError: CURRENT_ORIGINAL_SOURCE_SET_INVALID
+
+packages/model_governance/package_current_original.py:157: CurrentOriginalError
+=============================== warnings summary ===============================
+tests/test_package_current_original_pg.py::test_native_locator_then_complete_actual_loopback_bytes
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- generated xml file: /evidence/current-original-native.xml -----------
+=========================== short test summary info ============================
+FAILED tests/test_package_current_original_pg.py::test_native_locator_then_complete_actual_loopback_bytes
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 1 warning in 3.95s
+{"suite": "current-original-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

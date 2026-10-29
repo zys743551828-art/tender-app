@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-17T02:40:22.663066+00:00",
+  "scope": "09fixed compiled asset overlay at Origin5176, actual unchanged8806 knowledge API; own previously saved synthetic07project; not09independent deployment",
+  "candidate_sha256": "1ff95626d95bcc7ebc1c6230d339e99cec5766077d64a121c664236491e98621",
+  "source_files_verified": 112,
+  "build_assets_verified": 215,
+  "served_assets_verified": [
+    "/assets/Knowledge-08C1b7aY.js",
+    "/assets/index-DTfIzv3j.js",
+    "/assets/index-K7HYe8Mx.css",
+    "/assets/useBidChoices-BU2kAgnI.js"
+  ],
+  "runtime": {
+    "pid": 2280313,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/qa-previews/knowledge-version-09/frozen-inputs/node_modules/vite/bin/vite.js preview --host 127.0.0.1 --port 5179 --strictPort --outDir /workspace/tender-workbench/apps/web/qa-previews/knowledge-version-09/frozen-dist"
+  },
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "knowledge_id": "0347f05d-7380-4e7a-96ed-7f505fab947b",
+  "historical_version_id": "5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+  "historical_version_no": 1,
+  "current_version_id": "9d25f85b-2ca0-4d76-a4cd-aece413ed410",
+  "current_version_no": 2,
+  "historical_server_payload_sha256": "a5ae24b681f94384405e3b70533c502654dcc7ca814ba1a5fe789bca91092a93",
+  "selected_fixed_url": "http://127.0.0.1:5176/knowledge?item=0347f05d-7380-4e7a-96ed-7f505fab947b&bid=1793bf12-726c-4092-8b3a-caca223a44e3&trace=4d4732d4-13f3-4330-8476-ad6aaca21ab6&citation=ee165c30-7982-41aa-b06a-a2c8fa8fe602&version=5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+  "old_version_readonly": true,
+  "reload_keeps_explicit_version": true,
+  "browser_back_forward_keeps_identity": true,
+  "return_current_removes_only_version": true,
+  "bid_trace_citation_preserved": true,
+  "trace_citation_restored_and_invalid_new_reference_disabled": true,
+  "missing_version_never_falls_back_to_head": true,
+  "facts_unchanged": true,
+  "mobile_no_overflow": true,
+  "version_reads": [
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/00000000-0000-4000-8000-000000000001",
+      "status": 404
+    },
+    {
+      "path": "/api/v1/knowledge/0347f05d-7380-4e7a-96ed-7f505fab947b/versions/5426ffe9-8197-4ba7-84fe-3224726fcdd0",
+      "status": 200
+    }
+  ],
+  "business_writes": [],
+  "page_errors": [],
+  "paid_calls": 0
+}

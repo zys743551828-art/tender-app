@@ -1,0 +1,435 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/PackageRequirements.test.tsx (36 tests) 10616ms
+   ✓ explicitly starts an editable check plan, saves zero with exact original scope and never writes coverage  816ms
+   ✓ restores a v2 lost ACK with original plan, snapshots, key and CAS after refresh and generic pre-command rejection 422  739ms
+   ✓ restores a v2 lost ACK with original plan, snapshots, key and CAS after refresh and generic pre-command rejection 428  1069ms
+   ✓ keeps the original plan editable after a definitive conflict and requires exact read plus explicit baseline adoption  1021ms
+   ✓ rejects a foreign exact baseline manifest after 412 and preserves the plan without automatic retry  882ms
+   ✓ latches original-rule changes, keeps entered fields and permits cancelling an unsent plan  877ms
+   ✓ allows explicitly abandoning a definitively failed plan without deleting any unknown operation  849ms
+   ✓ unknown ACK freezes full scope/body/key/condition and restores identical request after refresh  397ms
+   ✓ does not send when complete pending record cannot be persisted  309ms
+   ✓ can recover the original lost ACK while the project is now closed  309ms
+   ✓ does not erase an already unknown command on pre-command rejection 422  328ms
+   ✓ does not erase an already unknown command on pre-command rejection 428  310ms
+ ✓ src/PackageFactScopeWorkspace.test.tsx (25 tests) 12961ms
+   ✓ 仅显式读取和选择；先保存恢复体，再发送声明，不授执行资格  1009ms
+   ✓ 丢失ACK后重挂载不自动重发，按原键原体恢复已提交声明  1021ms
+   ✓ 来源失效时只允许追加撤回，旧记录不被改写  943ms
+   ✓ 存储失败时不发送写请求  1003ms
+   ✓ 换事实编号后迟到观察不覆盖新选择  760ms
+   ✓ 异常回执digest不清未决请求  1004ms
+   ✓ 异常回执scope不清未决请求  1006ms
+   ✓ 异常回执grant不清未决请求  1004ms
+   ✓ 异常回执actor不清未决请求  953ms
+   ✓ 异常回执previous不清未决请求  978ms
+   ✓ 再次保存先清旧成功，断网不能留下当前保存已成功的提示  512ms
+   ✓ 首次明确拒绝释放待确认记录，仍须重读后才能再次保存  1006ms
+   ✓ 切换准备记录后旧保存迟到，不改已保留的原请求  963ms
+   ✓ 按原事实名称选择后读取当前范围，不需要手工填写编号  476ms
+ ✓ src/PackageRuleCorrections.test.tsx (16 tests) 7831ms
+   ✓ keeps preview separate from save and submits exact frozen-source content only after explicit confirmation  805ms
+   ✓ recovers a lost successful ACK with the identical body/key/etag after remount, even if the current inventory changed  714ms
+   ✓ retains a mismatched ACK and locks new corrections instead of reporting success  678ms
+   ✓ checks the current head again after preview and preserves the proposal if another writer won  639ms
+   ✓ does not send apply if browser recovery storage is unavailable  592ms
+   ✓ keeps the persisted command unresolved when its late ACK arrives after unmount  740ms
+   ✓ previews a scoring replacement and evidenced withdrawal together without flattening exceptions or inheriting the replaced check plan  1344ms
+   ✓ does not silently accept a condition absent from selected original quotes  457ms
+   ✓ preserves embedded newlines as one condition rather than silently splitting the legal condition  513ms
+   ✓ releases only a proven CAS rejection and keeps the preview and entered proposal for review  644ms
+ ✓ src/CoverageEditor.test.tsx (20 tests) 6443ms
+   ✓ permits an unmapped missing observation with a reason and no fabricated evidence or range  366ms
+   ✓ requires the complete own range, exact material evidence and an explicit human declaration  803ms
+   ✓ does not turn a partial inspection into verified but preserves it as a negative observation  894ms
+   ✓ rejects zero, negative, fractional and outside-part physical pages rather than dropping the range  1019ms
+   ✓ permits already grounded NA with separately explicit confirmation and authority evidence, without a range  573ms
+   ✓ does not offer positive state when frozen confirmation, source, applicability, parsing or quantity gates are missing  343ms
+   ✓ rejects a quote from another parse even if the exact directory entry was valid  388ms
+   ✓ does not promote authority evidence into verified own-material proof  819ms
+   ✓ ignores a late quote after inventory context changes and locks the original input  340ms
+ ✓ src/RequirementCheckPlan.test.tsx (17 tests) 6377ms
+   ✓ derives multiple categories from frozen shared parts and permits the same exact evidence once  420ms
+   ✓ preserves unknown as null and explicit zero as zero with quantity check  571ms
+   ✓ rejects an unsafe or negative explicit quantity -1  525ms
+   ✓ rejects an unsafe or negative explicit quantity 9007199254740992  727ms
+   ✓ requires a separately chosen not-applicable basis even if the same evidence is already the plan basis  512ms
+   ✓ does not truncate an overlong reason into an apparently valid declaration  417ms
+   ✓ disables editing without dropping an already entered mapping  390ms
+   ✓ invalidates rather than reusing a draft after original rule conditions change  332ms
+   ✓ requires a real explicit-offset timestamp and retains blank as unknown  1666ms
+ ✓ src/DocumentParseWorkspace.test.tsx (18 tests) 6133ms
+   ✓ does zero network work until opened and explicitly read, then persists before POST and displays partial coverage  514ms
+   ✓ recovers a lost ACK using the original key/body after the project closes, with no new context lookup  448ms
+   ✓ retains the original pending request on COMMAND_INCOMPLETE  408ms
+   ✓ retains the original pending request on IDEMPOTENCY_CONFLICT  386ms
+   ✓ retains the original pending request on DOCUMENT_PARSE_SCOPE_MISMATCH  403ms
+   ✓ clears an explicit context rejection and requires another deliberate context read  385ms
+   ✓ keeps a malformed ACK for recovery and never displays it as a valid parse  386ms
+   ✓ reports cross-member reuse with the original author without rejecting legitimate shared work  386ms
+   ✓ does not send when the original request cannot be durably saved  387ms
+   ✓ preserves pending on post-ACK storage failure and does not regress terminal GET state when replaying the queued ACK  449ms
+   ✓ keeps an unmounted late ACK recoverable and never posts automatically after returning  391ms
+   ✓ keeps verified parse recovery independent of the optional task-center cache  381ms
+   ✓ does not replace a terminal result with a regressing refresh response  427ms
+   ✓ isolates a different selected document from a late original request  405ms
+ ✓ src/AuthoringWordImport.test.tsx (15 tests) 5987ms
+   ✓ 先等待当前编辑保存确认，再固定原件创建候选；层级和合并表格预览不写草稿  460ms
+   ✓ 每项损失明确确认后才追加；回执绑定原候选、原请求与下一草稿修订  624ms
+   ✓ 阻断项不能靠确认警告放行；拒绝候选保留历史且不刷新或改写草稿  618ms
+   ✓ 追加ACK丢失后刷新，在项目禁写或能力关闭时仍按原键原体原ETag恢复  788ms
+   ✓ 另一成员的成功ACK不能清除原请求或显示本次追加成功  714ms
+   ✓ 服务端CAS拒绝保留候选和用户确认，不会换新head自动重发  765ms
+   ✓ 尚未解决本地编辑恢复时，保存队列返回null，不能创建候选  349ms
+   ✓ 无法保存恢复记录时不发送创建请求  369ms
+   ✓ 创建候选时离开页面，迟到ACK不丢弃可恢复的原请求  354ms
+   ✓ 候选图片核对实际PNG字节和尺寸后才允许追加，离开时回收Blob URL  362ms
+   ✓ 长度相同但SHA错误的图片不会显示或允许追加，明确重读后才恢复  432ms
+ ✓ src/PackageSubmissionPanel.test.tsx (14 tests) 5467ms
+   ✓ 确切包四门检查后只能明确线下登记；保存前重读并使用原head条件  507ms
+   ✓ 保存前头变化不发登记，不悄悄采用新ETag，输入保留  498ms
+   ✓ 提交已成功但ACK丢失，刷新后仍用同一body/key/etag恢复，不以历史取代回执  425ms
+   ✓ wrong-actor 保留原命令并锁住新登记  458ms
+   ✓ missing-header 保留原命令并锁住新登记  461ms
+   ✓ generic-422 保留原命令并锁住新登记  422ms
+   ✓ 本地恢复记录写不下时不发送登记，表单不丢失  428ms
+   ✓ 明确CAS拒绝结束pending但保留输入，新检查需重新确认  448ms
+   ✓ 未知ACK在退出后的迟到响应不会重建已清除的账户恢复记录  508ms
+   ✓ 运行目录能继续分页，只显示匹配清单并读取确切frozen/prepared运行  402ms
+   ✓ 混入另一个原输入的run响应不开放登记检查  326ms
+   ✓ 统一历史保留无subject_kind旧单稿，明确整包更正走新路由与统一head  498ms
+ ✓ src/PackageFactChangeWorkspace.test.tsx (16 tests) 5207ms
+   ✓ saves the exact pending body before confirming and invalidates parent observations only after verified ACK  385ms
+   ✓ keeps no as a scalar when confirming  448ms
+   ✓ keeps empty as a scalar when confirming  509ms
+   ✓ a field edit cancels prior human confirmation  391ms
+   ✓ a lost ACK survives refresh and retries the same body and key even when editing is disabled  442ms
+   ✓ rejects a well-hashed ACK for changed content and retains the pending operation  434ms
+   ✓ does not coerce unsupported historical JSON into an editable string and supports explicit withdrawal  387ms
+   ✓ a fact outside the selected frozen parse cannot be reconfirmed  419ms
+   ✓ rejects a mismatched unpublished citation without adopting it  308ms
+   ✓ a late ACK after unmount does not clear the old recovery record  434ms
+ ✓ src/AssistantIntentRecovery.test.tsx (17 tests) 5448ms
+   ✓ 真实对象及允许用途明确选择，其他项目条款不能成为本项目目标  384ms
+   ✓ global章节目标还须明确选择所属项目来源，来源移除后目标失效而不暗换  341ms
+   ✓ 只列真实当前评审的问题，未知或其他轮次问题不成为目标  308ms
+   ✓ 关联原job只读回状态并保留草稿，普通发送仍禁且不自动触发  357ms
+   ✓ 服务端复用原job时保留草稿并明确没有创建新任务  571ms
+   ✓ 新问题受理答复丢失后只恢复同一请求和幂等键，不重选目标  619ms
+   ✓ 选择新对象后出现真实在途任务，硬门立即恢复且不发送  464ms
+   ✓ global明确新项目时保留该项目版本来源，不自动切会话或添加原任务引用  494ms
+   ✓ 提交新rule只发送所选对象/用途，服务端不独立拒绝保留草稿且不自动改目标  511ms
+ ✓ src/PackageReviewComparisonWorkspace.test.tsx (5 tests) 4670ms
+   ✓ only reads after explicit selection, pages 20 rows and opens the exact original input without starting work  1544ms
+   ✓ preserves only each member's two-run selection through remount and never automatically rereads  700ms
+   ✓ opens a specific comparison row at its exact original requirement instead of the first report page  795ms
+   ✓ discards a late prior selection and does not let it release a newer read  797ms
+   ✓ stops paging after a changed human snapshot invalidates the cursor, keeping the prior page explicitly stale  833ms
+ ✓ src/PackageInputDependencyWorkspace.test.tsx (15 tests) 5191ms
+   ✓ required facts without a value produce a known gap, not automatic pool selection  665ms
+   ✓ a requirement dependency does not silently select that fact for actual consumption  759ms
+   ✓ explicit consumption remains unvalidated and omitted requirements stay unknown  837ms
+   ✓ editing invalidates old assessment and cannot calculate an unapplied draft  579ms
+   ✓ a rejected plan recovery releases the pending check and ignores its response before a new check  745ms
+   ✓ a rejected plan recovery releases the pending check and ignores its response after a new check  856ms
+ ✓ src/ExactPackageTaskUI.test.tsx (21 tests) 4621ms
+   ✓ updates an exact template with its original readonly input and strict version ACK  664ms
+   ✓ restores a lost exact PUT after remount using its original body, key and ETag even when the prop head advanced  742ms
+   ✓ preserves exact input after 412 and waits for a successful explicit current-template read before a new CAS  805ms
+   ✓ shows completed exact-run scope and opens its verified native details without selecting a body or latest run  384ms
+   ✓ keeps a collapsed exact editor mounted so its real dirty state continues to interlock run and pause  345ms
+ ✓ src/Knowledge.test.tsx (9 tests) 4560ms
+   ✓ 收起、离开后保留成员自己的候选输入，恢复本地输入不发创建请求  539ms
+   ✓ 原页与失败重试按钮不会提交版本；412后保留正文及旧令牌，明确比较才用新令牌  693ms
+   ✓ 创建请求尚未返回时离开页面，迟到ACK不把用户导航回知识对象  511ms
+   ✓ 引用上下文409后不普通重试，明确重读主体与原知识版本才以新命令继续，摘录不丢且不创建事实  632ms
+   ✓ 整包知识引用必须明确选择目录中的一次核查，回执核对精确目标（错误回执=false）  807ms
+   ✓ 整包知识引用必须明确选择目录中的一次核查，回执核对精确目标（错误回执=true）  852ms
+ ✓ src/PackageAuthoringDraft.test.tsx (5 tests) 4417ms
+   ✓ uses the native private create, revise, template-save and final-read bodies without starting a model job  1121ms
+   ✓ recovers the original create ACK after remount without selecting another input (malformed=false)  545ms
+   ✓ recovers the original create ACK after remount without selecting another input (malformed=true)  536ms
+   ✓ recovers a lost revise ACK with its original draft-only intent and never saves a template  1066ms
+   ✓ recovers a lost template-save ACK from the original revision after the current draft has advanced  1148ms
+ ✓ src/PricingPanel.test.tsx (7 tests) 4348ms
+   ✓ 400ms情景更新保持dirty输入，迟到旧响应不替换新情景，未知分数不变零且试算不保存方案  1396ms
+   ✓ 来源变化409阻止自动重试，保留本方/对手输入，明确核对后才继续  1400ms
+   ✓ 保存条件412后旧模拟不能再次保存，重读公式后仍须明确重新试算取得新条件  1433ms
+ ✓ src/PackageHistoricalResearch.native.test.tsx (5 tests) 4123ms
+   ✓ freezes the exact selected native admissions, protocol and microsecond boundaries, then controls and independently reads results  2611ms
+   ✓ requires fresh state and reconfirmation after the native 412 without losing the control reason  779ms
+   ✓ recovers a lost protocol ACK using the same stored native request and key after remount  341ms
+ ✓ src/PackageDependencyPlanWorkspace.test.tsx (15 tests) 4319ms
+   ✓ saves only after checked candidate, reason and explicit confirmation, preserving unknown status  416ms
+   ✓ cannot save absent or changed candidate even with a reason and prior confirmation  354ms
+   ✓ retains unknown POST and restores exact body and key after reload only on explicit action  480ms
+   ✓ preserves pending on malformed ACK instead of declaring saved  419ms
+   ✓ handles recovered PACKAGE_INPUT_DEPENDENCIES_CHANGED without silently replacing the original request  493ms
+   ✓ handles recovered IDEMPOTENCY_CONFLICT without silently replacing the original request  463ms
+   ✓ does not transmit when local recovery persistence fails  431ms
+   ✓ clears a proven new-request rejection and requests a new dependency check  396ms
+ ✓ src/PackageCoverageWorkspace.test.tsx (25 tests) 4149ms
+   ✓ reports actual unsent edits and clears only the draft guard on explicit cancel or a verified save  385ms
+ ✓ src/PackageReviewWorkspace.test.tsx (11 tests) 4112ms
+   ✓ does not launch on mount or history read and explicitly launches the chosen original plan  627ms
+   ✓ recovers a lost acknowledgement with the original plan, body and key after refresh without auto POST  439ms
+   ✓ retains the original request when recovery cannot be proved: mismatched-plan  337ms
+   ✓ retains the original request when recovery cannot be proved: malformed-error  350ms
+   ✓ retains a complete large plan but explicitly blocks an execution above the method's 400-requirement bound  364ms
+   ✓ treats semantic duplication as a rejected new request and opens the existing run under its original preparation  732ms
+   ✓ does not create an original-run navigation link from a cross-bid duplicate summary  356ms
+   ✓ keeps an unmounted original request recoverable and ignores its late acknowledgement in a new prepared scope  341ms
+ ✓ src/PackageReviewHumanDecisions.test.tsx (8 tests) 3591ms
+   ✓ explicitly records an opinion against the observed head while preserving the machine matrix and partial boundary  403ms
+   ✓ recovers a lost ACK with the exact old key/body, then displays a newer current head separately from the old receipt  465ms
+   ✓ keeps an unknown or mismatched ACK pending and blocks replacement decisions  381ms
+   ✓ refreshes a rejected CAS without discarding the draft and requires a new explicit decision against the new head  419ms
+   ✓ preserves a draft across true matrix pages, filters and remount without submitting it  912ms
+   ✓ ignores a late accepted response after switching runs and leaves the original pending key recoverable  406ms
+   ✓ keeps the accepted request recoverable if storage fails after its ACK and does not claim that it was unsent  436ms
+ ✓ src/PackageOfficialOutcomes.test.tsx (18 tests) 3631ms
+   ✓ requires an explicit contiguous excerpt from a long original block and blocks rewritten quotations  367ms
+   ✓ restores a lost verification ACK with the original evidence and revision after verified history is visible  347ms
+   ✓ preserves all verification inputs on an explicit 412 and requires a fresh read and explicit version adoption  386ms
+ ✓ src/dependencyCapacity.test.tsx (8 tests) 3613ms
+   ✓ checks, saves and recovers all 501 declarations as the same plan and pages its original receipt  459ms
+   ✓ retains edits from distant pages and saves/replays one assessment without treating omitted rows as declared  1717ms
+   ✓ recovers an accepted historical 4–5 MiB request without applying the new-write budget or changing its key  518ms
+ ✓ src/HistoricalImports.test.tsx (14 tests) 3796ms
+   ✓ keeps local checks unsaved, persists a preview explicitly, then confirms only the exact original manifest with empty body and strong ETag  401ms
+   ✓ restores a committed confirm after current batch changed and retains its original empty body, key and ETag  353ms
+   ✓ prepares only explicitly selected failed records for correction, preserving zero/unknown and leaving imported rows and old batch untouched  459ms
+   ✓ rejects a changed head before confirmation without sending a new command or silently adopting it  320ms
+   ✓ requires all record pages and rejects mixed revisions while keeping confirmation disabled  364ms
+   ✓ releases only a definitive confirm rejection, then requires fresh source review and explicit agreement  341ms
+ ✓ src/PackageFrozenInputWorkspace.test.tsx (32 tests) 3121ms
+   ✓ 历史GET不依赖当前候选或可写状态，允许原记录的其他创建人  697ms
+ ✓ src/PackageExecutionInputWorkspace.test.tsx (21 tests) 3045ms
+   ✓ 精确历史读取允许历史操作者，且不释放待恢复保存  508ms
+   ✓ 编辑历史编号后迟到读回不得覆盖当前选择  1303ms
+   ✓ 保存开始后此前历史读取的迟到结果不得覆盖未知状态  793ms
+ ✓ src/BidPackages.test.tsx (13 tests) 2876ms
+   ✓ 未明确选解析时保存未知原件，多用途逗号输入保留，未接正式评审  403ms
+   ✓ 用户明确选精确解析后添加物理页范围，失败解析不能选且不推断摘要  306ms
+   ✓ CAS冲突保留本地选择，读取核对最新记录后才允许继续，绝不自动重试  481ms
+ ✓ src/AuthoringGenerationBatch.test.tsx (15 tests) 2999ms
+   ✓ saves before spending and freezes exact head, chapter revisions, goals, sources and integer budget  490ms
+ ✓ src/PackageReviewCancel.test.tsx (6 tests) 2442ms
+   ✓ reads the exact operation and If-Match, persists before POST and reloads the same run after a verified acknowledgement  395ms
+   ✓ retains unknown cancellation across refresh and retries the original reason, key and ETag without a new GET  448ms
+   ✓ does not cancel an operation with another bid or input digest  403ms
+   ✓ keeps a mismatched cancellation acknowledgement pending and never declares the other operation cancelled  403ms
+   ✓ clears a replay-prioritized revision rejection but preserves the reason for an explicit retry  405ms
+   ✓ does not submit when the fresh operation read is already terminal  386ms
+ ✓ src/TaskPackageTriggers.test.tsx (12 tests) 2501ms
+   ✓ recovers a lost cancel ACK after remount with the original body, key and ETag while current GET is already cancelled  347ms
+   ✓ creates a private draft only from the original package selection: valid  327ms
+   ✓ creates a private draft only from the original package selection: lost-ack  403ms
+   ✓ creates a private draft only from the original package selection: changed-source  344ms
+ ✓ src/AuthoringHistory.test.tsx (13 tests) 2230ms
+ ✓ src/AuthoringPackageCapture.test.tsx (3 tests) 2105ms
+   ✓ requires explicit package, revision, snapshot, node, identity facts and purpose before saving  1929ms
+ ✓ src/PricingFormulaEditor.test.tsx (1 test) 2044ms
+   ✓ 原页逐字段选择使用可信身份，一次登记被单位证据拒绝后保留参数/摘录，不声称成功  2043ms
+ ✓ src/PackageAuthoringUI.test.tsx (12 tests) 2005ms
+   ✓ requires an explicit saved input choice and saves the exact template without starting a job  796ms
+   ✓ shows the bound full proposal and concrete changes without a write or legacy source claim  729ms
+ ✓ src/PackageReviewReportCancel.test.tsx (5 tests) 1918ms
+   ✓ targets only the report operation input and stores its exact cancellation before POST  385ms
+   ✓ recovers a lost cancellation with the original key, body and ETag without a fresh operation GET  433ms
+   ✓ refuses the original review operation digest at the report-cancel endpoint  357ms
+   ✓ leaves a wrong cancellation receipt pending and never claims that the report is cancelled  371ms
+   ✓ reads an already completed report without sending cancellation  372ms
+ ✓ src/PackageAppNavigation.test.tsx (7 tests) 1982ms
+   ✓ records explicit revision changes, clears their old inventory, and restores the original chain with browser back/forward  330ms
+   ✓ protects unsent rule correction input and releases navigation after explicit cancellation  368ms
+   ✓ propagates an existing deep freeze pending through the real App guard and restores only that request after reload  419ms
+ ✓ src/Identity.test.tsx (5 tests) 1883ms
+   ✓ 真实默认主体在表单可见，创建一次即绑定所选ID，无第二次确认且不按近似名合并  378ms
+   ✓ 有据纠正412保留选择和理由，读取影响并明确新基准后才重试；不重写旧记录  649ms
+   ✓ 目录加载后续轮次时保留工程绑定，已有轮次创建不误建新轮或要求手填编号  494ms
+ ✓ src/SourceSurface.test.tsx (7 tests) 1621ms
+   ✓ reserves desktop source space, keeps the body editable and releases only its own reservation  324ms
+   ✓ shares keyboard width changes with nested originals and remembers the source width  523ms
+ ✓ src/PackageHistoricalResearch.test.tsx (14 tests) 1713ms
+   ✓ retains unsent time boundaries and reason when moving between research steps  588ms
+ ✓ src/AssistantReviewDetails.test.tsx (12 tests) 1587ms
+ ✓ src/TaskPanel.test.tsx (9 tests) 1449ms
+   ✓ 保存模板默认manual，明确保存只创建模板不运行，也不把补遗语义检查说成已完成  384ms
+   ✓ PUT失响应刷新恢复，仍用同一方法、请求体、ETag与幂等键，不用新头重试  308ms
+ ✓ src/SubmissionPanel.test.tsx (4 tests) 1452ms
+   ✓ 线下补录选择真实原件及自身附件，一次保存并持续标明未完整检查/未核验平台  792ms
+   ✓ 412保留实际时间与附件，只在明确重读后使用新Gate身份；更正用Bid tag而非原记录tag  334ms
+ ✓ src/RetrievalDrawer.test.tsx (6 tests) 1451ms
+   ✓ 网络失败后重试原输入与同一命令键，修改中的问题不悄悄替换失败命令  417ms
+ ✓ src/PackagePricingScope.test.tsx (5 tests) 1379ms
+   ✓ uses exact context, filters another package and restores its editor draft after mode changes and reselection  864ms
+ ✓ src/PackageReviewRerun.test.tsx (2 tests) 1266ms
+   ✓ creates a new execution identity only after an explicit rerun reason, without launching from the preparation form  801ms
+   ✓ retains the original rerun nonce and reason through a lost acknowledgement and restores without a current candidate  464ms
+ ✓ src/A1Recovery.test.tsx (12 tests) 1304ms
+   ✓ 取消未冻结准备使用服务器ReviewState强令牌，412时保留原因而不声称已取消  306ms
+ ✓ src/PackageReviewReportExports.test.tsx (8 tests) 1088ms
+ ✓ src/App.test.tsx (4 tests) 1190ms
+   ✓ 投标工作区 > 登录失败持续显示，成功后空工作区不展示模拟指标  466ms
+   ✓ 投标工作区 > 会话过期保留未提交名称；重新登录不自动重放写入  617ms
+ ✓ src/AssistantWorkspace.test.tsx (9 tests) 1125ms
+   ✓ 只显式创建同一主会话，保存讨论不请求AI，刷新能恢复服务器消息  423ms
+ ✓ src/PackageReviewEligibility.test.tsx (17 tests) 1077ms
+ ✓ src/BusinessResults.test.tsx (3 tests) 1143ms
+   ✓ 结果一次追加不自动核验；CAS失败保留候选输入并显式重读当前头  954ms
+ ✓ src/PackageReviewInputDetails.test.tsx (6 tests) 1064ms
+ ✓ src/AuthoringImagePicker.test.tsx (4 tests) 971ms
+   ✓ 图片失响应后刷新只重发原图片与 key，成功后仍须明确选择插入  306ms
+ ✓ src/AuthoringLayout.test.tsx (3 tests) 1005ms
+   ✓ starts with the body, keeps directory/editor mounted while collapsed, and restores directory focus  378ms
+   ✓ a failed save prevents chapter changes, retains the actual editor, and retries the same command  509ms
+ ✓ src/PackageReviewReport.test.tsx (5 tests) 952ms
+   ✓ locates an exact original requirement from beyond the first page and keeps all requirements available after clearing search  458ms
+ ✓ src/PackageFactCheck.test.tsx (15 tests) 956ms
+ ✓ src/PackageFrozenInputDirectory.test.tsx (13 tests) 943ms
+ ✓ src/PackageOriginalVerification.test.tsx (15 tests) 1018ms
+ ✓ src/WorkContextAppNavigation.test.tsx (3 tests) 828ms
+   ✓ restores the exact saved stage on a real project-home visit and browser back/forward  586ms
+ ✓ src/A1Workspace.test.tsx (9 tests) 969ms
+   ✓ 批量规则只提交明确勾选的pending项，不覆盖驳回和暂缓  339ms
+   ✓ 单条决定对象已变化时保留输入并禁止旧解释配新ETag提交  375ms
+ ✓ src/AuthoringPlan.test.tsx (3 tests) 944ms
+   ✓ 人工预算保存走plan revision 0与draft11，不借section10冒充plan基准；空行不作事实  360ms
+ ✓ src/AssistantDrawer.test.tsx (5 tests) 904ms
+   ✓ compact sources close first with Escape, keep the question, and restore each focus level  380ms
+ ✓ src/AuthoringStructure.test.tsx (5 tests) 877ms
+ ✓ src/TaskChapterResult.test.tsx (12 tests) 869ms
+   ✓ shows the exact native proposal, original text and concrete change without any write  449ms
+ ✓ src/KnowledgeRetrieval.test.tsx (3 tests) 825ms
+   ✓ 只在明确查证后执行，实际unit登记参考且固定链接恢复，不创建事实  618ms
+ ✓ src/WorkContextWorkspace.test.tsx (6 tests) 795ms
+ ✓ src/PackageReviewInputPreview.test.tsx (10 tests) 755ms
+   ✓ 刷新后未做预检也能恢复所选清单的旧保存，不依赖当前可写状态  331ms
+ ✓ src/AuthoringOutputAdoption.test.tsx (6 tests) 707ms
+   ✓ 首次请求失响应后刷新，结束项目仍只按原 key 与原包条件恢复  313ms
+ ✓ src/useTaskPackageCommand.test.tsx (36 tests) 677ms
+ ✓ src/WordUploadBinding.test.tsx (2 tests) 696ms
+   ✓ 旧批次画面不是声明判定依据；fresh GET有Word声明时拒旧PDF版本目标并保留原因  374ms
+   ✓ 旧ACK缺新字段不能解释为无声明；新GET未提供约束就地保留原件  322ms
+ ✓ src/AuthoringBuilds.test.tsx (7 tests) 713ms
+ ✓ src/PackageNavigationWorkspace.test.tsx (10 tests) 609ms
+ ✓ src/Project.test.tsx (5 tests) 591ms
+ ✓ src/AuthoringFormatBindings.test.tsx (1 test) 619ms
+   ✓ 格式绑定只选已确认要求，用可信原页投影；来源不可新用时不构造ref  619ms
+ ✓ src/PackageTaskTemplate.test.tsx (10 tests) 567ms
+ ✓ src/PackageScopeGuard.test.tsx (2 tests) 673ms
+   ✓ blocks departure for a real deep report-cancel command, restores it on reopen, and accepts only its original receipt  527ms
+ ✓ src/PackageRetrospectives.test.tsx (4 tests) 596ms
+ ✓ src/ReportPanel.test.tsx (4 tests) 573ms
+   ✓ 412不丢用途选择，显式重读后按新展示修订申请；未配置PDF转换可改Word  328ms
+ ✓ src/PackageReviewProgress.test.tsx (4 tests) 505ms
+ ✓ src/Research.test.tsx (3 tests) 563ms
+   ✓ 研究来源分组412保留输入，明确比较后才能按新令牌保存；不会启动收费批次  514ms
+ ✓ src/PackageAuthoringActionControls.test.tsx (6 tests) 461ms
+ ✓ src/useAuthoringExactDraft.test.tsx (5 tests) 461ms
+ ✓ src/PackageHistoricalAdmission.test.tsx (12 tests) 385ms
+ ✓ src/PackageReviewEvidence.test.tsx (7 tests) 412ms
+ ✓ src/PackageReviewDecisionHistory.test.tsx (3 tests) 424ms
+ ✓ src/PackageHistoricalAdmission.integration.test.tsx (3 tests) 345ms
+ ✓ src/PackagePreparedFactPicker.test.tsx (12 tests) 413ms
+ ✓ src/PackageTechnicalScope.test.tsx (4 tests) 371ms
+ ✓ src/AuthoringTemplateEditor.test.tsx (2 tests) 386ms
+ ✓ src/DocumentParseOriginal.test.tsx (5 tests) 381ms
+ ✓ src/WorkspaceNavigation.test.tsx (4 tests) 312ms
+ ✓ src/AuthoringRichEditor.test.tsx (2 tests) 334ms
+   ✓ 既有RICH章节可编辑保存，保留合并单元格、稳定节点和明确RICH摘要  306ms
+ ✓ src/PackageReviewReportDownload.test.tsx (6 tests) 360ms
+ ✓ src/AuthoringExactDraft.test.tsx (1 test) 347ms
+   ✓ reads the exact snapshot and qualification, protects edits, and leaves chapter navigation available  346ms
+ ✓ src/NavigationGuard.test.tsx (2 tests) 287ms
+ ✓ src/AuthoringRichSnapshot.test.tsx (10 tests) 318ms
+ ✓ src/useAssistantContinuation.test.tsx (7 tests) 296ms
+ ✓ src/PackageTechnicalEligibility.test.tsx (5 tests) 270ms
+ ✓ src/PackageRuleCorrectionIntegration.test.tsx (1 test) 258ms
+ ✓ src/PackageReviewReportProgress.test.tsx (3 tests) 244ms
+ ✓ src/UploadBatchDiscovery.test.tsx (2 tests) 297ms
+ ✓ src/WorkContextSummary.test.tsx (2 tests) 257ms
+ ✓ src/SectionEditorReadOnly.test.tsx (3 tests) 283ms
+ ✓ src/usePackageAuthoringCommand.test.tsx (14 tests) 240ms
+ ✓ src/PackageTechnicalExecution.test.tsx (7 tests) 229ms
+ ✓ src/ResourceFeedback.test.tsx (3 tests) 244ms
+ ✓ src/UploadStatus.test.tsx (2 tests) 210ms
+ ✓ src/Metrics.test.tsx (1 test) 187ms
+ ✓ src/uploadTransport.test.ts (7 tests) 179ms
+ ✓ src/WordOriginals.test.tsx (3 tests) 171ms
+ ✓ src/OperationCenter.test.tsx (1 test) 144ms
+ ✓ src/ProjectWorkSummary.test.tsx (11 tests) 177ms
+ ✓ src/useExactAuthoringAction.test.tsx (8 tests) 116ms
+ ✓ src/authoringExactBuildNative.test.tsx (2 tests) 136ms
+ ✓ src/HistoryPanel.test.tsx (2 tests) 124ms
+ ✓ src/WorkContextReviewDetails.test.tsx (3 tests) 122ms
+ ✓ src/TextChangePreview.test.tsx (1 test) 93ms
+ ✓ src/WorkContextSubmissionDetails.test.tsx (3 tests) 93ms
+ ✓ src/PackageReviewOriginalRunDetails.test.tsx (3 tests) 87ms
+ ✓ src/packageReviewComparisonProtocol.test.ts (12 tests) 77ms
+ ✓ src/useSaveQueue.test.tsx (4 tests) 91ms
+ ✓ src/taskPackageProtocol.test.ts (93 tests) 68ms
+ ✓ src/packageAuthoringProtocol.test.ts (22 tests) 63ms
+ ✓ src/packageReviewProtocol.test.ts (23 tests) 57ms
+ ✓ src/SourceEditorSchemaTransition.test.tsx (1 test) 55ms
+ ✓ src/usePackageTechnicalScopeCommand.test.tsx (5 tests) 57ms
+ ✓ src/workContextProtocol.test.ts (18 tests) 47ms
+ ✓ src/packageHistoricalResearchNative.test.ts (98 tests) 44ms
+ ✓ src/packageReviewReportProtocol.test.ts (11 tests) 31ms
+ ✓ src/packageTechnicalScopeProtocol.test.ts (12 tests) 52ms
+ ✓ src/dependencyPlanProtocol.test.ts (15 tests) 32ms
+ ✓ src/packageReviewDecisionProtocol.test.ts (14 tests) 38ms
+ ✓ src/authoringExactProtocol.test.ts (11 tests) 36ms
+ ✓ src/theme.test.tsx (6 tests) 36ms
+ ✓ src/DocumentRelationNotice.test.tsx (1 test) 35ms
+ ✓ src/packageReviewReportRecovery.test.ts (5 tests) 19ms
+ ✓ src/workContextAuthoringProtocol.test.ts (18 tests) 29ms
+ ✓ src/packageOutcomeProtocol.test.ts (9 tests) 26ms
+ ✓ src/packageReviewInputProtocol.test.ts (8 tests) 26ms
+ ✓ src/packageSubmissionProtocol.test.ts (8 tests) 21ms
+ ✓ src/packageReviewDecisionRecovery.test.ts (7 tests) 23ms
+ ✓ src/packageRuleCorrectionProtocol.test.ts (8 tests) 23ms
+ ✓ src/packageReviewRecovery.test.ts (6 tests) 20ms
+ ✓ src/packageTechnicalExecutionProtocol.test.ts (18 tests) 24ms
+ ✓ src/authoringHistoryProtocol.test.ts (19 tests) 18ms
+ ✓ src/packageRetrospectiveProtocol.test.ts (10 tests) 19ms
+ ✓ src/useRecordedCommand.test.tsx (4 tests) 22ms
+ ✓ src/authoringGenerationProtocol.test.ts (10 tests) 18ms
+ ✓ src/taskTriggerProtocol.test.ts (7 tests) 17ms
+ ✓ src/documentParseProtocol.test.ts (14 tests) 15ms
+ ✓ src/factChangeProtocol.test.ts (22 tests) 14ms
+ ✓ src/packageHistoricalResearchProtocol.test.ts (27 tests) 15ms
+ ✓ src/eventStream.test.tsx (2 tests) 15ms
+ ✓ src/textDifference.test.ts (9 tests) 15ms
+ ✓ src/historicalImportProtocol.test.ts (13 tests) 10ms
+ ✓ src/authoringCaptureProtocol.test.ts (4 tests) 10ms
+ ✓ src/packageNavigation.test.ts (14 tests) 11ms
+ ✓ src/packageTechnicalEligibilityCatalog.test.ts (2 tests) 8ms
+ ✓ src/workspacePosition.test.ts (24 tests) 9ms
+ ✓ src/packageRuleCorrectionRecovery.test.ts (5 tests) 12ms
+ ✓ src/packageOutcomeRecovery.test.ts (2 tests) 9ms
+ ✓ src/packageTechnicalEligibilityProtocol.test.ts (4 tests) 8ms
+ ✓ src/packageSubmissionRecovery.test.ts (3 tests) 7ms
+ ✓ src/documentParseRecovery.test.ts (4 tests) 9ms
+ ✓ src/packageHistoricalResearchRecovery.test.ts (21 tests) 8ms
+ ✓ src/api.test.ts (5 tests) 8ms
+ ✓ src/editorSchema.test.ts (4 tests) 6ms
+ ✓ src/authoringWordImportProtocol.test.ts (8 tests) 7ms
+ ✓ src/historicalImportRecovery.test.ts (3 tests) 6ms
+ ✓ src/richTableTools.test.ts (5 tests) 6ms
+ ✓ src/authoringWordImportRecovery.test.ts (11 tests) 5ms
+ ✓ src/taskAuthoringProtocol.test.ts (29 tests) 5ms
+ ✓ src/authoringGenerationRecovery.test.ts (6 tests) 5ms
+ ✓ src/recordedCommandCleanup.test.ts (7 tests) 3ms
+ ✓ src/authoringGenerationBudget.test.ts (3 tests) 3ms
+ ✓ src/retrospectiveStorage.test.ts (1 test) 3ms
+ ✓ src/uploadFormats.test.ts (1 test) 2ms
+
+ Test Files  177 passed (177)
+      Tests  1742 passed (1742)
+   Start at  19:15:00
+   Duration  236.83s (transform 3.87s, setup 52.17s, collect 26.12s, tests 216.18s, environment 133.86s, prepare 18.20s)
+

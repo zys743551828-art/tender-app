@@ -1,0 +1,9 @@
+node_modules
+dist
+package-lock.json
+*.tsbuildinfo
+
+public/pdfjs
+qa-previews/**/frozen-inputs
+
+qa-previews/**/*.openapi.json

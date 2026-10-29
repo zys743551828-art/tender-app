@@ -1,0 +1,124 @@
+{
+  "invalid_pdf": {
+    "error_code": "ASSET_RENDER_REJECTED",
+    "container_id": "fc1bdc2f00fae8b71108f7bcc3ff1903e4177a7a314f4b652d1d1ee1919244ff",
+    "stopped_verified": true,
+    "container_pid": 0
+  },
+  "wrong_method": {
+    "error_code": "ASSET_WORKER_METHOD_MISMATCH",
+    "container_id": "ba293ce5bf7a6a80398364a3d4daa1e0614e78364c5cb8614e2b62116d01af6e",
+    "stopped_verified": true,
+    "container_pid": 0
+  },
+  "wall_timeout": {
+    "error_code": "ASSET_EXEC_WALL_TIMEOUT",
+    "container_id": "f879f2a5d206bc20ad3d533b362592a6afb5a3cf29eb719a1e490e9c0672fb30",
+    "stopped_verified": true,
+    "container_pid": 0,
+    "deadline_ms": 1,
+    "native_pdf_parse_started_not_asserted": true
+  },
+  "controller_crash": {
+    "controller_exit_code": 17,
+    "orphan_container_id": "536e834a129320100d8cc560dac16e563fe07e65eed91d502a76e2aa6697db1a",
+    "orphan_running_after_controller_crash": true,
+    "old_container_removed_before_next_original": true,
+    "next_tmpfs_marker_absent": true,
+    "recovery_receipt": {
+      "container_id": "223fbc7976f6d95c0ecddfd5bf9803179b1a62ffe9c8449f49ab161c83f8265e",
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "compose_project": "tender-fusion",
+      "compose_service": "asset-renderer",
+      "hard_timeout_ms": 40000,
+      "container_started_at": "2026-10-23T17:12:17.05788278Z",
+      "observed_kernel_limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "pids.max": "32",
+        "cpu.max": "100000 100000",
+        "no_new_privileges": true,
+        "seccomp_filter_active": true,
+        "effective_permitted_bounding_ambient_capabilities_zero": true,
+        "network_interfaces": [
+          "lo"
+        ],
+        "read_only_source_files": 7
+      },
+      "stopped_verified": true,
+      "container_pid": 0,
+      "oom_killed": false,
+      "container_finished_at": "2026-10-23T17:12:18.643053534Z",
+      "container_exit_code": 0,
+      "was_running_before_stop": true,
+      "source_fingerprint_checked_before_and_after": true
+    }
+  },
+  "exclusive_controller": {
+    "error_code": "ASSET_RUNTIME_BUSY"
+  },
+  "cross_job_reset": {
+    "detached_child_marker_created_before_stop": true,
+    "old_receipt": {
+      "container_id": "4025d1067c645d7c4acd1d5b9d963145d4aced2d39ce99285dcb12d98cf76045",
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "compose_project": "tender-fusion",
+      "compose_service": "asset-renderer",
+      "hard_timeout_ms": 40000,
+      "container_started_at": "2026-10-23T17:12:07.636985214Z",
+      "observed_kernel_limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "pids.max": "32",
+        "cpu.max": "100000 100000",
+        "no_new_privileges": true,
+        "seccomp_filter_active": true,
+        "effective_permitted_bounding_ambient_capabilities_zero": true,
+        "network_interfaces": [
+          "lo"
+        ],
+        "read_only_source_files": 7
+      },
+      "stopped_verified": true,
+      "container_pid": 0,
+      "oom_killed": false,
+      "container_finished_at": "2026-10-23T17:12:09.432278539Z",
+      "container_exit_code": 0,
+      "was_running_before_stop": true,
+      "source_fingerprint_checked_before_and_after": true
+    },
+    "new_receipt": {
+      "container_id": "f9dd0e5e5cdc78cabea79924489b5f38d63271349c9ea085fd53002dd330744f",
+      "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+      "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+      "compose_project": "tender-fusion",
+      "compose_service": "asset-renderer",
+      "hard_timeout_ms": 40000,
+      "container_started_at": "2026-10-23T17:12:10.908329346Z",
+      "observed_kernel_limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "pids.max": "32",
+        "cpu.max": "100000 100000",
+        "no_new_privileges": true,
+        "seccomp_filter_active": true,
+        "effective_permitted_bounding_ambient_capabilities_zero": true,
+        "network_interfaces": [
+          "lo"
+        ],
+        "read_only_source_files": 7
+      },
+      "stopped_verified": true,
+      "container_pid": 0,
+      "oom_killed": false,
+      "container_finished_at": "2026-10-23T17:12:12.491766223Z",
+      "container_exit_code": 0,
+      "was_running_before_stop": true,
+      "source_fingerprint_checked_before_and_after": true
+    },
+    "fresh_container_id_different": true,
+    "next_tmpfs_marker_absent": true
+  }
+}

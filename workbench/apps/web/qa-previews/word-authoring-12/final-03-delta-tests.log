@@ -1,0 +1,22 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/WordUploadBinding.test.tsx src/WordOriginals.test.tsx src/AuthoringStructure.test.tsx src/AuthoringPlan.test.tsx src/AuthoringTemplateEditor.test.tsx src/AuthoringFormatBindings.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/AuthoringFormatBindings.test.tsx (1 test) 363ms
+   ✓ 格式绑定只选已确认要求，用可信原页投影；来源不可新用时不构造ref  362ms
+ ✓ src/WordUploadBinding.test.tsx (2 tests) 337ms
+ ✓ src/AuthoringStructure.test.tsx (5 tests) 946ms
+   ✓ 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag  337ms
+ ✓ src/WordOriginals.test.tsx (3 tests) 252ms
+ ✓ src/AuthoringPlan.test.tsx (2 tests) 480ms
+   ✓ 人工预算保存走plan revision 0与draft11，不借section10冒充plan基准；空行不作事实  312ms
+ ✓ src/AuthoringTemplateEditor.test.tsx (2 tests) 346ms
+
+ Test Files  6 passed (6)
+      Tests  15 passed (15)
+   Start at  04:28:36
+   Duration  3.12s (transform 568ms, setup 829ms, collect 1.26s, tests 2.72s, environment 2.30s, prepare 433ms)
+

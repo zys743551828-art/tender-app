@@ -1,0 +1,43 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/Project.test.tsx src/WordUploadBinding.test.tsx
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordUploadBinding.test.tsx (2 tests) 330ms
+ ❯ src/Project.test.tsx (5 tests | 1 failed) 466ms
+   ✓ 先前读取晚到时不覆盖新项目快照和标题 118ms
+   ✓ 确认请求响应丢失后重试复用幂等键，不创建第二次入库命令 112ms
+   ✓ 局部核验失败必须明确选择部分入库，不将失败补遗悄悄略过 112ms
+   ✓ 资料包412冲突保留verified原件，刷新后由人重新确认且不重传 114ms
+   × 空文件本地拒绝不创建空服务端批次，不留下关闭项目的无效阻断 9ms
+     → Cannot read properties of null (reading 'namespaceURI')
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/Project.test.tsx > 空文件本地拒绝不创建空服务端批次，不留下关闭项目的无效阻断
+TypeError: Cannot read properties of null (reading 'namespaceURI')
+ ❯ isElementType node_modules/@testing-library/user-event/dist/esm/utils/misc/isElementType.js:2:17
+ ❯ Object.upload node_modules/@testing-library/user-event/dist/esm/utility/upload.js:9:19
+ ❯ node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:35
+ ❯ Object.asyncWrapper node_modules/@testing-library/react/dist/pure.js:88:28
+ ❯ wrapAsync node_modules/@testing-library/user-event/dist/esm/setup/wrapAsync.js:6:24
+ ❯ Object.method node_modules/@testing-library/user-event/dist/esm/setup/setup.js:83:16
+ ❯ Object.upload node_modules/@testing-library/user-event/dist/esm/setup/directApi.js:52:37
+ ❯ src/Project.test.tsx:231:19
+    229|   });
+    230|   render(<Project id="bid-1" onBack={vi.fn()} />);
+    231|   await userEvent.upload(
+       |                   ^
+    232|     document.querySelector<HTMLInputElement>("#project-files")!,
+    233|     new File([], "空文件.pdf", { type: "application/pdf" }),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 6 passed (7)
+   Start at  04:30:54
+   Duration  1.56s (transform 341ms, setup 276ms, collect 800ms, tests 796ms, environment 668ms, prepare 120ms)
+

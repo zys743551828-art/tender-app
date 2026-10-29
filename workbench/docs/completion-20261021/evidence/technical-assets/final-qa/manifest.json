@@ -1,0 +1,93 @@
+{
+  "version": "package-technical-page-assets/2",
+  "document_version_id": "00000000-0000-0000-0000-000000002329",
+  "source_digest": "fc64bb9ec602e441bdc51b591f392cb917d94a551e0c0cd280b8f4cf40d33573",
+  "source_byte_size": 2000,
+  "render_method_digest": "c100f326047a47013569fa5c82f6598e3b172677db9e20726776d8ab2aa49fd5",
+  "crop_method_digest": "8ae2729962b4a914627210ceecd43202f58650e53cf3fcb880de76b96b7254f7",
+  "parent_manifest_digest": "0c711afec3cb4fd17ec98f7d33bb55f9152bc7e5064c2777db3d48f9fe9323d9",
+  "rendered_at": "2026-10-23T15:21:15.701135Z",
+  "cropped_at": "2026-10-23T15:21:15.766076Z",
+  "pixel_format": "rgb8-filter0/1",
+  "render_scope": "all_pdfium_page_viewports",
+  "page_count": 2,
+  "pages": [
+    {
+      "physical_page": 1,
+      "rotation": 0,
+      "canvas_width": "420.0",
+      "canvas_height": "595.0",
+      "media_box": [
+        "0.0",
+        "0.0",
+        "420.0",
+        "595.0"
+      ],
+      "crop_box": null,
+      "asset": {
+        "id": "52da40807847815ea963e28227db5441a22dd26701973ee98e507f287a905d63",
+        "sha256": "99fdb04c10a97bdfa367d335f9552a95aca2ae0f40bbe699150ba2936f01cd1d",
+        "byte_size": 40981,
+        "width": 1260,
+        "height": 1785,
+        "media_type": "image/png"
+      }
+    },
+    {
+      "physical_page": 2,
+      "rotation": 90,
+      "canvas_width": "420.0",
+      "canvas_height": "595.0",
+      "media_box": [
+        "0.0",
+        "0.0",
+        "595.0",
+        "420.0"
+      ],
+      "crop_box": null,
+      "asset": {
+        "id": "2f838738bc99de36e32670deb03d6a111051dd2145f47e9500e8adb268c5f524",
+        "sha256": "026eb5e3df9f22b0f1eac5e35bb47e0f8cd5761576688814dcfc58295d7af7bb",
+        "byte_size": 31249,
+        "width": 1260,
+        "height": 1785,
+        "media_type": "image/png"
+      }
+    }
+  ],
+  "details": [
+    {
+      "physical_page": 1,
+      "parent_asset_id": "52da40807847815ea963e28227db5441a22dd26701973ee98e507f287a905d63",
+      "parent_image_digest": "99fdb04c10a97bdfa367d335f9552a95aca2ae0f40bbe699150ba2936f01cd1d",
+      "rectangle": [
+        60,
+        1050,
+        1140,
+        1450
+      ],
+      "asset": {
+        "id": "194904b778e9f202a9ce6ccb74e10dbf0a95249a2dd04ea77f628a47359cea73",
+        "sha256": "70dbad55aef7d135606e2e6b2501c89b4d3d5d30ca50f48ac235544fb6fb75ed",
+        "byte_size": 13041,
+        "width": 1080,
+        "height": 400,
+        "media_type": "image/png"
+      }
+    }
+  ],
+  "full_pages_retained": true,
+  "input_authority_granted": false,
+  "visual_readability_verified": false,
+  "historical_byte_existence_verified": false,
+  "isolated_execution_verified": false,
+  "font_reproducibility_verified": false,
+  "limitations": [
+    "CURRENT_DERIVATION_NOT_HISTORICAL_BYTE_PROOF",
+    "PIXELS_NOT_READABILITY_PROOF",
+    "PDFIUM_CANVAS_UNITS_NOT_VERIFIED_DPI",
+    "FONT_AND_COLOR_REPRODUCTION_NOT_CERTIFIED",
+    "ISOLATED_WORKER_REQUIRED_BEFORE_PUBLIC_USE"
+  ],
+  "digest": "9bd1b548c0adc36f9f978ca1dd988fa043365aeb8ef5c1afbb87fa1d42587b6f"
+}

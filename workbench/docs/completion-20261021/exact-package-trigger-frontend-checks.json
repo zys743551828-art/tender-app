@@ -1,0 +1,340 @@
+{
+  "schema": "exact-package-trigger-frontend-acceptance/1",
+  "actual_generated_contracts": true,
+  "temporary_supports_api_overrides": false,
+  "source_sha256": {
+    "apps/web/src/ExactPackageTaskDraftEditor.tsx": "0455fe835806285fd2114083a727d70399fbef21731db182f4f5f682fec48dd1",
+    "apps/web/src/ExactPackageTaskDraftStart.tsx": "88b35e9eabb86e61ff665a23b46dee78ab9e9eb0be24fa84300ab0e8c168cf46",
+    "apps/web/src/ExactPackageTaskRunControl.tsx": "d08c56351c1be57bfb05e5faab2233e62500f34affc79a540399b1f72691e4c8",
+    "apps/web/src/ExactPackageTaskTemplateEditor.tsx": "dad2651e3cfd79ca1cb09bdb03e4ff81ff4d56868d69d8ec56a059f2759586d5",
+    "apps/web/src/ExactPackageTaskTriggerFields.tsx": "f06a071aaf5852a7080c8de79e326ef0a987a8deb3ce9b76bddeb81294e820fa",
+    "apps/web/src/ExactPackageTaskUI.test.tsx": "ce4d1cb3e84b32c9fd46d939a6ab8ec66e780f603f80802921a48d43d4bba3d7",
+    "apps/web/src/PackageTaskTemplate.test.tsx": "9c3873aa95ff671c6b25ba6b519355b77f3fc23d1909b81d6ab432a86118fc3a",
+    "apps/web/src/PackageTaskTemplate.tsx": "da0c543e8818267ac91ee6c9c9bcd3803bf60e62dc9eaa68bef65d51caa167a0",
+    "apps/web/src/TaskDraftPanel.tsx": "2aa4120cff823c51a29b3470ba3ac3ff0ed714bada2e62dc33fa120672aa103a",
+    "apps/web/src/TaskPackageTriggerPanel.tsx": "42ca751c1353b4c41c13c8e306bbc457bd1fc87ec8243013e5919fae38a38d54",
+    "apps/web/src/TaskPackageTriggers.test.tsx": "57a8090058d7bda8e6fa32116d25de355a3bae4b78bff532c1e2dd2c96bf4f9c",
+    "apps/web/src/TaskPanel.test.tsx": "bd429d2c78d94b0a427c72cf33d9d18f5998349795188837a35f9d99e9c3bcfe",
+    "apps/web/src/TaskPanel.tsx": "c1d29a7c8ca37a9cca18df9a905882186367675b5d40b9f2775f6221822dad51",
+    "apps/web/src/TaskRunCard.tsx": "1a67a94b30412ca754f3bf8af6e4b035c0f6ae49551b11cbcc8052361124166b",
+    "apps/web/src/TaskTemplateCard.tsx": "da50c376ad1c578a5c7f8b6005267444427d42659d69d4856f19ab8f417d7e5b",
+    "apps/web/src/TaskTemplateEditor.tsx": "270e184c2037328184c7a5e796afc85697ec71e2ddd37d213df5aa3081a8406a",
+    "apps/web/src/packageTaskTemplateSelection.ts": "f55f2fa0643cef84aeec5b7c555c42c38eaf67814d93577a6d1f3d4fd62a2701",
+    "apps/web/src/taskPackageProtocol.ts": "4218c15ccb0310ed0665961445cd2041d9c65f09d571c513fa4e5b99203c44c8",
+    "apps/web/src/taskState.ts": "7bbe88a0f33298e8ee365ae43a8fe3a5a13eca76498421de7e862b1d22314596",
+    "apps/web/src/taskTriggerContracts.ts": "4b4e9a3dd577e1df5d8afa2886cf51bab5dc9b5fdc8128e256f14732442e3a3c",
+    "apps/web/src/taskTriggerFixtures.test-support.ts": "06172136c5aaee433915e984a38fb04be540e26fc7a3edede8c925876bccf865",
+    "apps/web/src/taskTriggerProtocol.test.ts": "2eb046ae3606edd51785e69825bdb648baa2992a255645f30ede456af2792782",
+    "apps/web/src/test-fixtures/task-package-triggers-http.json": "58dfbdcff0df2b2330ecefa540feb4c7288726924e537bd743ad257927f1ceda",
+    "apps/web/src/useTaskPackageCommand.ts": "1d227fb520a937a77bce5fb6a1fb099243eb53d72ce85b1703173377be3ba270",
+    "apps/web/src/useTaskTriggerPage.ts": "03e9beaa21dcb20416c770a288b60e5e6331216895371f9b674297d9048bdc39",
+    "apps/web/scripts/check-task-triggers-browser.mjs": "da928d8f48b7d5c89ebf4f608c06e5aec31da76f29e3f5466760d65b6d5cb912"
+  },
+  "integration_input_sha256": {
+    "apps/web/src/contracts.ts": "18491c39f34e15b25b44f4e22fd47044e3f3e8c47b190a44da12aed3189e8954",
+    "apps/web/src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "apps/web/src/recordedCommandStorage.ts": "a73f11d919207be126441f6117c36011cad69a41195b5c44d7a813847b2e41aa",
+    "apps/web/src/styles.css": "f1eefd0889569b07631163e668b1a0e88fc94bd0e42411b1f67f6e2d7286fdc6"
+  },
+  "tests": {
+    "passed": 188,
+    "failed": 0,
+    "skipped": 0,
+    "files": 7,
+    "raw_report_sha256": "9dccf0c190fe4738778a54798cfa8f828ec03b4699801b89cc4c88e6fa67c870",
+    "suites": [
+      {
+        "file": "apps/web/src/ExactPackageTaskUI.test.tsx",
+        "passed": 21,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/PackageTaskTemplate.test.tsx",
+        "passed": 10,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/TaskPackageTriggers.test.tsx",
+        "passed": 12,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/TaskPanel.test.tsx",
+        "passed": 9,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/taskPackageProtocol.test.ts",
+        "passed": 93,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/taskTriggerProtocol.test.ts",
+        "passed": 7,
+        "failed": 0
+      },
+      {
+        "file": "apps/web/src/useTaskPackageCommand.test.tsx",
+        "passed": 36,
+        "failed": 0
+      }
+    ]
+  },
+  "browser": {
+    "kind": "actual-react-pg-http-fixture-browser",
+    "real_model_calls": 0,
+    "real_database_in_browser": false,
+    "private_draft_http": "constructed synthetic response; other task responses replay isolated PG/ASGI fixtures",
+    "checks": [
+      {
+        "mode": "event",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definitions"
+        ]
+      },
+      {
+        "mode": "schedule",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-definitions"
+        ]
+      },
+      {
+        "mode": "cancel",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/a0281fb5-8492-43fb-80d9-5bf8ba7f05c7/task-package-trigger-intents/d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae/cancel"
+        ]
+      },
+      {
+        "mode": "history",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "missed",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "draft",
+        "width": 1280,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 1280,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definition-drafts"
+        ]
+      },
+      {
+        "mode": "event",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definitions"
+        ]
+      },
+      {
+        "mode": "schedule",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-definitions"
+        ]
+      },
+      {
+        "mode": "cancel",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/a0281fb5-8492-43fb-80d9-5bf8ba7f05c7/task-package-trigger-intents/d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae/cancel"
+        ]
+      },
+      {
+        "mode": "history",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "missed",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "draft",
+        "width": 768,
+        "theme": "light",
+        "errors": [],
+        "scrollWidth": 768,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definition-drafts"
+        ]
+      },
+      {
+        "mode": "event",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definitions"
+        ]
+      },
+      {
+        "mode": "schedule",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/48d61958-8eee-4b7c-b641-36eaf1d3c078/task-definitions"
+        ]
+      },
+      {
+        "mode": "cancel",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/a0281fb5-8492-43fb-80d9-5bf8ba7f05c7/task-package-trigger-intents/d66ae36f-f4e4-46c5-b9bd-26d71ed3a2ae/cancel"
+        ]
+      },
+      {
+        "mode": "history",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "missed",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": []
+      },
+      {
+        "mode": "draft",
+        "width": 390,
+        "theme": "dark",
+        "errors": [],
+        "scrollWidth": 390,
+        "controlsOutside": 0,
+        "unexpected": [],
+        "writes": [
+          "/api/v1/bids/d406e920-f62c-4ccd-acc5-195ac785155c/task-definition-drafts"
+        ]
+      }
+    ]
+  },
+  "screenshots_sha256": {
+    "cancel-1280.png": "c5ad20c8bfcc70317027cd828dd7d5121a5d64f9f14c9aff7dc8b86b3570909d",
+    "cancel-390.png": "559bd9466598f055e5a2592752b82b14ad37d924b19ae19124273a9722587a82",
+    "cancel-768.png": "dd07f9458c4d1a6696768d2f521e27f5acac2415de61a3aedb811f321f82c530",
+    "draft-1280.png": "8c6fc1f80141ac17c874c6f8d0eaf9abb0669496863fe2120bfbd82866d9df8f",
+    "draft-390.png": "539d9401b46722658da83dcca388269061050c747de6fae740b9e9e5182b5fef",
+    "draft-768.png": "c1f0f4444e0fceef5cd731401f7a47a5d22914120258e4292241d277c9433fd5",
+    "event-1280.png": "172ed45821da92fe803242bf0817f4b0dd3cdf9b46024ef204830a0a4ad385c1",
+    "event-390.png": "a22a5fe4ddde48267f2b8b1d55ccb101aed1cb349e2aabf9d488cf987bfb8020",
+    "event-768.png": "5746f91ef5613b53db95705256bf7366436b42ab7d8f935a212ec0dee9c0966e",
+    "history-1280.png": "6369f39881518034567e832c19ebf72821a9710aa579095fcf6654ada34afc19",
+    "history-390.png": "0f4ae81cf756a448d11042d83e20f3e73d423e57e268e98d6b67619c6f325fd6",
+    "history-768.png": "7e8c29f8eedfef44ebcac9427d533dd0bc0f3038c6c33d9d4eafa2515de9e1e4",
+    "missed-1280.png": "8de4894842bf397d19cebdd2e0c4483a278f469d9cc5aafb4664f5e4b6196e4e",
+    "missed-390.png": "a8660d1637a8a0e8841bf2bbe7bedefdad36e4371b5c10b7eee8f4d3186f70c4",
+    "missed-768.png": "3007ff5f1713cb634a55b292574aa7815263637a228cd6bbaee98c29fa83be63",
+    "schedule-1280.png": "d9f074d9d51a22c4def7603995f8d39b8f8d674f6176f885da0df2ffa5d0b50f",
+    "schedule-390.png": "1686ad97cf0b6fd5bd5361a073444fc69ccaf4cadff8be235dd9983f9f5da52e",
+    "schedule-768.png": "447d9f96aee3d6c7ae801cf01382baa90b14b029a7f67c7caea796c6b32133e3"
+  },
+  "reviewed_screenshots": [
+    "event-390.png",
+    "schedule-768.png",
+    "cancel-390.png",
+    "history-1280.png",
+    "missed-390.png",
+    "draft-390.png"
+  ],
+  "static": {
+    "eslint_task_scope": "passed, zero warnings",
+    "prettier_task_scope": "passed",
+    "diff_check_task_scope": "passed",
+    "full_typecheck_build": "owned by root integration, not duplicated here"
+  },
+  "backend_receipt_sha256": "fd94ebf0f142d9d80a28bcaa0ffb8d3b389820cae456a6e2bc2088f972e95b6f",
+  "backend_source_and_ordered_sql_unchanged": true,
+  "http_fixture_count": 16,
+  "http_fixture_semantically_identical_to_original_exports": true,
+  "limitations": [
+    "Private draft creation and edit HTTP responses are explicitly constructed synthetic fixtures; other trigger HTTP data replays isolated PG/ASGI exports.",
+    "Browser does not connect to real PG, Kafka, object store or model providers.",
+    "This is exact denial-check automation only; other exact package producers remain separate work."
+  ],
+  "paid_calls": 0,
+  "real_model_calls": 0
+}

@@ -1,0 +1,12 @@
+........................................................................ [ 49%]
+........................................................................ [ 98%]
+..                                                                       [100%]
+=============================== warnings summary ===============================
+tests/test_package_material_recovery_pg.py::test_native_reopen_recovers_exact_v3_request_and_separate_fresh_observation
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------- generated xml file: /evidence/material-recovery-native.xml ----------
+146 passed, 1 warning in 37.59s
+{"suite": "material-recovery-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

@@ -1,0 +1,5 @@
+Found 1 error (1 fixed, 0 remaining).
+4 files reformatted
+deploy\fusion_asset_worker.py:45: error: Module has no attribute "geteuid"; maybe "getpid"?  [attr-defined]
+deploy\fusion_asset_worker.py:95: error: Module has no attribute "pause"  [attr-defined]
+Found 2 errors in 1 file (checked 3 source files)

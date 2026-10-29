@@ -1,0 +1,42 @@
+{
+  "stage": "correction-response-lost-refresh-exact-replay",
+  "error_type": "TimeoutError",
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "submission_id": "01283e54-4d37-4377-a7f1-643f6b4a12ef",
+  "initial_result_id": "fb7490dd-81de-401e-8525-bea88af1b412",
+  "candidate_metrics": {
+    "effective_submissions": 1,
+    "stage_counts": {
+      "technical_shortlisted": 0,
+      "not_shortlisted": 0,
+      "rejected": 0,
+      "candidate": 1,
+      "awarded": 0,
+      "not_awarded": 0,
+      "cancelled": 0,
+      "failed_tender": 0
+    },
+    "win_rate": {
+      "numerator": 0,
+      "denominator": 0,
+      "value": null
+    },
+    "verification_counts": {
+      "pending": 1,
+      "verified": 0,
+      "conflict": 0,
+      "rejected": 0
+    }
+  },
+  "alerts": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/submissions/01283e54-4d37-4377-a7f1-643f6b4a12ef/business-results"
+    },
+    {
+      "method": "POST",
+      "path": "business-results/fb7490dd-81de-401e-8525-bea88af1b412/corrections"
+    }
+  ]
+}

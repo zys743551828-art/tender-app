@@ -1,0 +1,17 @@
+# 统一应用与生命周期条件更新
+
+固定入口是runtime-preview-02；候选、最终recipe和来源摘要以candidate-02.json指向的字节为准。recipe-02.json是开发预览，曾随组合测试增补改变摘要；首次1e13…原JSON未另保留，PM预连摘要拒绝的记录保留，不重建或冒称旧快照。recipe-02-final.json为最终冻结清单，之后不覆盖。
+
+生命周期资源使用独立强ETag：完整service.view加当前Bid资源标记共同摘要。GET在同一RR只读快照形成body与tag；POST在bid锁后先读Command原成功结果，再对同一生命周期投影比较条件，成功返回tag覆盖实际响应。其他Bid条件头不变。客户端必须取GET /bids/{bid_id}/lifecycle的实际tag更新生命周期，不能使用普通Bid tag。
+
+候选01原399份源与历史失败保持。固定输入叠加已独验A2 PAGE02的31份自有源和Scale01的10份源（7生产/3测试），不取移动RICH或新的Score max接线。唯一重叠逐条记录于最终recipe：A2自己的authoring实现由固定包替换；公共main/Worker/Word/Score与用途隔离保留。全部五份原候选及1424个source/ref/dependency在质量与回归窗口前后逐SHA核对，未发现硬链改写。硬链仅引用固定输入，本片文件独立复制；格式只执行check，不修改固定树源码。运行缓存已清理，测试不往原件树写入业务配置。
+
+实际OpenAPI为227路径、258操作、406 Schema。相较统一01，19个新增操作有具体成功响应投影；373个原Schema未变，仅BuildRequest与AuthoringSnapshot按独立A2 PAGE02完全相同定义有意扩展。DraftView与TaskDraftView仍分离。17个response_model按实际序列化展开完全匹配；241个未标注response_model操作在contract-registration-check-02.json逐条列明，只对选定ASGI实对象及原独立模块范围核验，不能称全响应自动校验。
+
+验证为277项相关纯机制/契约、8项新19SQL非owner全app PG/ASGI、1项旧17SQL缺扩展失败关闭。新库8项包括原组合4项、生命周期批次/在途状态2项、A2树/计划/双模板到真实OOXML经实际engine fence发布1项、Scale独立配置不授评分集成1项。A2用显式memory对象端口，DOCX可回读核SHA；没有Docker/PDF/PAGE全组合渲染结论。计划页数与实际页数未知保持分离；follow_up=none，不自动评审。关闭后新计划拒绝，构建原件历史可读。
+
+旧17SQL环境的A2模板目录明确503 AUTHORING_STRUCTURE_NOT_READY；Scale能力明确未配置，未触UndefinedTable 500。使用PM新19SQL私有profile跑正向，没有对旧库补DDL。新Scale登记不改变Score01的technical_maximum=null、maximum_verified=false、numeric_prediction_available=false、paid_execution_enabled=false或formal资格。
+
+AC01原失败被恢复：open批次及真实pending操作、cancel_requested状态改变tag；旧tag412；新tag下仍正确归档阻断；原生命周期200与任务草案201 ACK可重放。首次新操作用例漏Cancellation必填布尔字段，返回422导致断言失败，保留lifecycle-etag-pg-02.xml，仅修测试请求后03及新库用例通过，没有改生产取消语义。
+
+ruff/format、5个生产入口与正常依赖mypy、4个自有测试文件隔离mypy、生产bandit通过。新库最终model_calls=0，只有自有合成待取消verify-upload与真实DOCX构建两个operation/outbox，无消费者或provider。当前没有新运行API、broker或前端部署；现有API/DB保持不动。部署需要按最终recipe顺序在另一个全新环境初始化19份精确SQL，由PM组织；本片没有执行DDL或开模型窗口。

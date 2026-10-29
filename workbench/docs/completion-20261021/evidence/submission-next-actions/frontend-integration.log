@@ -1,0 +1,11 @@
+
+ RUN  v3.2.3 D:/workspace/tender/tender-app/workbench/apps/web
+
+ ✓ src/PackageSubmissionReviewActions.test.tsx (9 tests) 527ms
+   ✓ 实交卡完整核验后按保存的运行读取，原报告只按原引用打开  346ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  20:49:12
+   Duration  2.34s (transform 268ms, setup 278ms, collect 452ms, tests 527ms, environment 690ms, prepare 149ms)
+

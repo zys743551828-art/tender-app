@@ -1,0 +1,244 @@
+{
+  "scope": "trusted host controller and named Compose page renderer only; synthetic PDF; no public API, source authority or formal Worker install",
+  "tests": {
+    "linux_pure_passed": 126,
+    "linux_pure_seconds": 1.19,
+    "desktop_passed": 193,
+    "desktop_seconds": 11.986,
+    "host_passed": 46,
+    "host_reported_seconds": 0.77,
+    "counts_overlap": true,
+    "frontend_rerun": false,
+    "native_named_compose_sessions": 10,
+    "native_controller_actual_exit": 17
+  },
+  "observed_kernel_limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "pids.max": "32",
+    "cpu.max": "100000 100000",
+    "no_new_privileges": true,
+    "seccomp_filter_active": true,
+    "effective_permitted_bounding_ambient_capabilities_zero": true,
+    "network_interfaces": [
+      "lo"
+    ],
+    "read_only_source_files": 7
+  },
+  "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+  "source_git_comparison": [
+    {
+      "path": "deploy/compose.fusion.yaml",
+      "executed_raw_sha256": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "git_raw_sha256": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion.defaults.env",
+      "executed_raw_sha256": "44a408b0b2c7352dd38a0f15f0fa5e51d50663f7f68f63c26c4703078f023ae2",
+      "git_raw_sha256": "44a408b0b2c7352dd38a0f15f0fa5e51d50663f7f68f63c26c4703078f023ae2",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_worker.py",
+      "executed_raw_sha256": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "git_raw_sha256": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_runtime.py",
+      "executed_raw_sha256": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "git_raw_sha256": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/parsing/page_asset_wire.py",
+      "executed_raw_sha256": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "git_raw_sha256": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_assets.py",
+      "executed_raw_sha256": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "git_raw_sha256": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/model_governance/technical_png.py",
+      "executed_raw_sha256": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "git_raw_sha256": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_assets.py",
+      "executed_raw_sha256": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "git_raw_sha256": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/parsing/pdfium_guard.py",
+      "executed_raw_sha256": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "git_raw_sha256": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+      "raw_git_bytes_equal": true,
+      "execution_text_equal": true
+    },
+    {
+      "path": "packages/domain/review_identity.py",
+      "executed_raw_sha256": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+      "git_raw_sha256": "d6f03e98fd5fee7a7699dfe7c9092d88b871b4b980cff0fb00e025aad90d1358",
+      "raw_git_bytes_equal": false,
+      "execution_text_equal": true,
+      "executed_snapshot": "executed-sources/packages/domain/review_identity.py"
+    }
+  ],
+  "actual_model_calls": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "browser_visual_verified": false,
+  "synthetic_asset_visual_reviewed": true,
+  "input_authority_granted": false,
+  "business_readability_verified": false,
+  "formal_worker_installed": false,
+  "normal_word_service_not_modified": true,
+  "standalone_debug_containers_created": 0,
+  "runtime_inputs": 1182,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "source_identity_scope": "ten modified inputs equal staged Git bytes; executed-source differences explicitly snapshotted, not whole immutable deployment",
+  "inputs": [
+    {
+      "path": "deploy/compose.fusion.yaml",
+      "sha256": "558f3e9851f053d3cebb92be31551ec8b012448ff097b60b89c0aa1cc73a40a5",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "6318f23a2b6a30105ae028c611a1b26494d86ff94636b8f78c83ba9e2e705f42",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_acceptance.py",
+      "sha256": "bea8edb249b34237b8f6a8ff9bcd14393025fe6677f40c89e88309f8ad4516fd",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_runtime.py",
+      "sha256": "17265560bb3cf406c7968896be39e34911afaa27b4f6a44fa0899681d74b14b5",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_asset_worker.py",
+      "sha256": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "5a274dcacc5a4442b9d7be500507b56b7fdfcaf0cf8e29f6cd74c2aab464324d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-page-asset-runtime.md",
+      "sha256": "a0627b22e57f993c5918949efe53c6024ebefb735c409ff4290f85ea15890873",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/parsing/page_asset_wire.py",
+      "sha256": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_fusion_asset_runtime.py",
+      "sha256": "e9f34b022b278ba4bc6ed329c7d4ecdef118c6f614c0cf66f3e744523132f4ce",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_fusion_compose.py",
+      "sha256": "8344e924af601cba2a0e6fb6f8816ef922b41c65841b781edb6af78b610236b3",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-initial.log": "81773905c60e3806131363d3100d2155a245edf5ea3edb10bad877ef132d56b9",
+    "host-initial.xml": "351e21c58faebd74bbe4c566380c8a44ff2aed257d303cb86bc7209a7df26508",
+    "host-final.log": "fc9798ad3e29e6447b5b8624cdc00857627de698992ff7400bc16975cefb0881",
+    "host-final.xml": "3ae134d0007abc4ccc0a7fe97a7c1e9e27da42011456041cab323a8e53139141",
+    "linux-pure.log": "f0d44cb4755bc54ca7982d9311d7a5333accc9d577d5846bf835f7a003510bf0",
+    "linux-pure.xml": "d9788ad1441d62e7967ba20c4db20ad21c197cf5a811791e2112a18c31eb12fd",
+    "linux-desktop.log": "fed5fa706ad17a53ed1532e675af2eedfdeed87a619b5813a16a2a10bf653a81",
+    "linux-desktop.xml": "4eefce5ff3daddb8c92602c5cdb65393f64a02df188f2637b46aece48b253d94",
+    "python-quality-initial.log": "36906bfacbc903967d97986147cda4b695e35cde9925af203cc0f26cb4cfaa22",
+    "python-quality.log": "59ee8687365ca7e6c6565cd1bdfd53b0aac29d77c09f3db4b81e719efdf0826e",
+    "native-final.log": "3f266eec223d4beb59f35bd020de833876a29aa2a640117d5c8dee096044c67b",
+    "visual-proof.json": "bf2f706589c0a9a6a9c2bdfefe47ed888e008849bdf72fa608477027382d9f6c",
+    "poppler-render.log": "74095b267fcd746d2f088f0aea89f337e472614c4726d4626eb919cbb3107ff8",
+    "http-runtime.json": "0e228a4c67d94db9ce27f26f5c3ffdb9a700a7b67025a68875cb09467cef0c58",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614",
+    "final-native/summary.json": "87a1de46de991c7ec63c8e084ef8b634f4384f2c9a2e2dabad2b61b585a2ac96",
+    "final-native/runtime-description.json": "753a5dac838b3dca59900f97987a161e08db02b2ed95d9402a3bdb22d8d603e8",
+    "final-native/native-render-proof.json": "83e48614ad80ed0db64d75b8e0a92bb79937095441291d3dbd9f709c780f1033",
+    "final-native/native-fault-proof.json": "73e8790d295133cc3ac36ed844c091ab60b7e46ee1ab408151038f94733f1e57",
+    "final-native/orphan.json": "54bd99f92f990bcf673acd95d1806c4139e57be3158097f031503bee11b03eb5",
+    "final-native/synthetic-source.pdf": "41d5711914cdd88a27c96525123a1396549b380333e63fdb359c55a40c06f95e",
+    "final-native/page-1.png": "5a94bf98fa87229962e886586d6b5318cc86209b63aeffe51631f7a32fcc8ecb",
+    "final-native/page-2.png": "3b86c754d6b2a6be0612c5ecee89b53d3f14a4df87eff3e17c9ea170c57056f2",
+    "final-native/detail.png": "36844fda4f74135956172f2e4c5384bc89f7316a2ef07f4e32119650d2725232",
+    "final-native/manifest.json": "4466e27599688ccc94069f3e7e209a7bdde40be726346569e31b9fc31d4a576c",
+    "poppler/page-1.png": "712a0ab1fa4c1341d30d4a53e1b566c46f0bd399ca297c192a1f985e807ccc28",
+    "poppler/page-2.png": "b110180638bcd79c87fc27c49fd16e3dff963077f939989b0e6d994411c579e1",
+    "executed-sources/packages/domain/review_identity.py": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+    "method-boundaries.json": "06ba08f73af73c21af589616c0358307e3eeb5415726705325c8b3531b962cb1"
+  }
+}

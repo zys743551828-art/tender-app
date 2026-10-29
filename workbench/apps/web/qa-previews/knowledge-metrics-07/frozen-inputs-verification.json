@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-10-17T02:17:10.738731+00:00",
+  "source_file_count": 112,
+  "original_and_archive_match": true,
+  "candidate_sha256": "3047525933873ffe0d611a76fe4bcaa8f2d111c5664ec26dfd44cb03adbf75af",
+  "source_tree_sha256": "eed623fe812b1539f6b2db33416066ab501fe741861f0073f836313a2c4b9d62",
+  "prior05_and06_archives_verified": true,
+  "lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "build_asset_sha256": "f6a72df7ced18f396dc2661a20a0e43fde4eb4ff2359674d5183aaf5b2afca73"
+}

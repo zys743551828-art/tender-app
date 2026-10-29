@@ -1,0 +1,19 @@
+{
+  "nginx_version": "nginx version: nginx/1.30.5",
+  "before_api_ip": "172.21.0.3",
+  "requested_test_ip": "172.21.0.128",
+  "web_started_at": "2026-10-23T14:55:33.153562522Z",
+  "health_when_api_disconnected": 0,
+  "changed_ip_recovery_seconds": 3.063,
+  "restored_dynamic_ip_recovery_seconds": 5.562,
+  "restored_api_ip": "172.21.0.3",
+  "restored_dynamic_ip": true,
+  "api_started_before_restart": "2026-10-23T14:30:57.13680998Z",
+  "actual_restart_recovery_seconds": 3.094,
+  "api_started_after_restart": "2026-10-23T14:58:29.270811116Z",
+  "web_not_restarted": true,
+  "final_health": 200,
+  "final_anonymous_bids": 401,
+  "business_writes": 0,
+  "paid_calls": 0
+}

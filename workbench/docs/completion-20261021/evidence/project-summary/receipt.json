@@ -1,0 +1,175 @@
+{
+  "scope": "project directory metadata only; six-level risk actions and browser visual acceptance remain separate",
+  "tests": {
+    "linux_passed": 19,
+    "linux_seconds": 11.9,
+    "linux_skipped": 0,
+    "frontend_files": 177,
+    "frontend_passed": 1742,
+    "frontend_seconds": 236.83,
+    "contract_passed": 12,
+    "contract_seconds": 5.35,
+    "final_hook_passed": 11,
+    "final_hook_seconds": 1.7,
+    "overlapping_test_counts_not_added": true
+  },
+  "deployed_url": "http://127.0.0.1:5188",
+  "runtime_inputs_verified": 1153,
+  "assets_verified": 65,
+  "business_projects": 0,
+  "paid_calls": 0,
+  "read_only_batch": true,
+  "bid_cas_unchanged": true,
+  "browser_visual_verified": false,
+  "checks_cleanup": {
+    "test_databases": 0,
+    "test_logins": 0
+  },
+  "inputs": [
+    {
+      "path": "apps/api/export_openapi.py",
+      "sha256": "98f24f567bb679f2cc5b8b31ff52e8721855c20842b6fe3b5aadd5e8da044352",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/api/main.py",
+      "sha256": "b9bf4bef63c9fb65bbfedb1b858c44400007b845456213f77947b8b0865683fa",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/api/project_summary_routes.py",
+      "sha256": "648a8ba42b72bcce87bae0d22b3657014ae93c56419661c581bc2b9639437400",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/scripts/generate-contracts.py",
+      "sha256": "3aee3385f5cae2c64cac275770ff2830e4417e0b9d33cfb344ae6e962f5a91d0",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/App.tsx",
+      "sha256": "475f5f5d6845d4b1f3703f672702edb7f457c13272c7a612a0ecc427f941d284",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageOverviewNextStep.tsx",
+      "sha256": "40498f90167959ad2debab869b0cadc8e9df0f46971d4d4694d0fe7c3114ed89",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkSummary.test.tsx",
+      "sha256": "ecf8308cb6996d35836e87e46d73bbdea659c1040032ac60a98c0596e62e6d4a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkSummary.tsx",
+      "sha256": "e2c2b103fa8a46bb2df2f8593c1cecae4d71ae6715f915a7487b2f59a7ef752e",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkspace.tsx",
+      "sha256": "26ade64644c21ac99f9184dca3428fe83a578d0f774aff0a24d237495b2aee49",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/contracts.ts",
+      "sha256": "b2831ea3e923dfb8e2de42b500ad86b17ede57ff2803b6f3a22e2642460f4dfb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/projectSummaries.ts",
+      "sha256": "e48ed84ca72c37041cf5ba925b9a3af038a6dfcfdea4dc2f290772d36e4d7e2d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/useProjectSummaries.ts",
+      "sha256": "ea2e395e4b28e7bb01d975ab44559334134b28b3ac32b55acf678c2178318b53",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "2eea8c97269852bd38af843f208a0971ce8aa38abc0645fdffc62db902f6f55d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "aecd2d66d7002463e49e5cc8679d041b01b5b04b9012b49689dc10b4f52fc85c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/fusion-implemented.openapi.json.gz",
+      "sha256": "0f0263f94a38b3926947cad9c7f45c787c5021cf934ea19ceb86ccb7dddfb00d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/project-work-summary.md",
+      "sha256": "503879fa7f0e7f0953c22336fe5dff3d2a0e1cc6c8beb29f97a37598e71cf5c6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/project_summary_api.py",
+      "sha256": "739c449acaebbcaa1cf8dbb782f2130d1d94f3bc6f1730d150725c3a9d69df20",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/project_summary.py",
+      "sha256": "795db4bda99da8756b85efd8c1398072e78f7c6c0d44c6211b754041f8d010af",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/project_summary_repository.py",
+      "sha256": "a9fd3ca839e98014f0a3534b293eb8ffa1378af44fb9981cd29a3186069c3d91",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_project_summary.py",
+      "sha256": "58082aedc0dc37f8df1541d8e90c265013434492a544e744faf91ce19649e986",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_project_summary_api.py",
+      "sha256": "48b0e957762ee3a047787aeb1a144518ea1c2bf9ea65f66bb8c71620d579eebb",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "frontend-full.log": "bae36d62b1873326ea109052432c428bafbfdf9caf2a08009a585cf553a8b9b8",
+    "frontend-hook-final.log": "1f1f87514285434b93c0dccabb3c519778486e999b5bd4c097e798f5a4881f18",
+    "project-summaries-final.xml": "e5ff578efd284a7f217035175808bbdbfb0cec62bb75eb32338e8b2fbc9490f9",
+    "checks-corrected-output.log": "36cc92b67f7fc768efa3b36504d5bf181573f87fd204f760ba5b2615d4b23d25",
+    "contracts-corrected.log": "1ca24826f1a0231a0320f165eda625456166a811abd6222e1a6b9c9e0174fec1",
+    "format-release.log": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283",
+    "lint-corrected.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck-corrected.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build-final.log": "a87925cd2bf60b5c83832bd5ffc4cd1f5b27bcc36609e73a7ef206195938269d",
+    "http-runtime.json": "958cf11c07a8dab2e9816d47346606334cd073ab3c26e7fc7fcdf0496538cb2a",
+    "checks-cleanup.json": "1ccad53f8bead16e74588e6db580e6fc5a36e658e286fa76ac9d93c4f18c9c30"
+  },
+  "retained_initial_failures": [
+    {
+      "suite": "frontend targeted",
+      "passed": 26,
+      "failed": 2,
+      "cause": "beforeEach returned a mocked function; fixed harness without increasing timeout"
+    },
+    {
+      "suite": "partial application contracts",
+      "passed": 5,
+      "failed": 7,
+      "cause": "new extension assumed route exists; now extends actual registered path only"
+    },
+    {
+      "suite": "not-frozen fixture",
+      "passed": 18,
+      "failed": 1,
+      "cause": "null parse_run_id rejected by existing contract; fixture now omits unselected parse"
+    },
+    {
+      "suite": "eslint",
+      "errors": 0,
+      "warnings": 1,
+      "cause": "ref cleanup callback; explicit invalidation callback passes final lint"
+    }
+  ],
+  "browser_blocker": "Cannot find browser/26.1016.62342/scripts/browser-service.mjs before initialization"
+}

@@ -1,0 +1,68 @@
+{
+  "checked_at": "2026-10-17T01:26:48.028341+00:00",
+  "all_passed": false,
+  "checks": [
+    {
+      "name": "contracts-generate",
+      "command": [
+        "npm",
+        "run",
+        "contracts:generate"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.549,
+      "log": "contracts-generate.log",
+      "log_sha256": "27d83eb128c30448c0a5a5f987878077fea3b5518a94436a08a96facfec16e55"
+    },
+    {
+      "name": "format-check",
+      "command": [
+        "npm",
+        "run",
+        "format:check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.718,
+      "log": "format-check.log",
+      "log_sha256": "2d3abd9b881f683304333a9fc84263331e875bf1e3cb8a6c75813e2033f14a99"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.482,
+      "log": "lint.log",
+      "log_sha256": "1a9cd86ad9205b6997094ec298ecabe4aa9c0e1fa50ea40af65ac7209a423637"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 5.723,
+      "log": "typecheck.log",
+      "log_sha256": "289d61a11032d75167a3d99a848138a725424fce76cfe4ef250babf68a9f7b68"
+    },
+    {
+      "name": "test",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--",
+        "--reporter=dot"
+      ],
+      "exit_code": 1,
+      "duration_seconds": 13.609,
+      "log": "test.log",
+      "log_sha256": "bcd44d92fcaace0f1df0c6f68ef57af2f626fd03287e1ebbd5bd96a03654196b"
+    }
+  ]
+}

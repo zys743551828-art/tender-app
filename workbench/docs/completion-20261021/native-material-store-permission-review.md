@@ -1,0 +1,11 @@
+# 完整材料证据原生存储权限审查
+
+可选专项DDL只初始化全新独立Compose检查库，不加入BASE或正常业务库。使用technical_material_store schema、两个NOLOGIN组及各自独立非owner LOGIN：tender_material_store_write只有put RPC，tender_material_store_read只有read RPC；无表／列／序列、其他用途组、schema／数据库CREATE或通用对象读写。现有审核主体的私有role_policy只在受控函数内部复用，不能由运行角色直接调用或自选策略。
+
+put只写固定完整材料证据：准确context、旧取得观察、新派生观察、完整审核声明和全部PNG；受控程序完整复验后提供规范对象、闭合引用清单和已由调用方持久固定的command。所有引用／对象SHA及长度由原生重新核对，必须恰好覆盖清单，实际原生bid／scope绑定准确；最终记录由数据库生成实际ID／时间／session_user。对象与记录同一事务，命令重放优先，内容不同冲突。不能先保存部分图再宣称完整。
+
+read须固定bid／command／packet摘要，可再固定原生记录摘要；对象只有属于该准确记录时才输出。查询不提供列表、前缀、任意定位或通用bucket权限。返回完整原始bytes及其SHA／长度，读取者还须重新复验context、声明和图页；存储和主体身份不能证明实际渲染、人工阅读或必要范围。所有语义／原生binding／正向输入／执行／历史位由服务器固定false。
+
+运行时使用独立事务／5秒超时，Python核原生函数正文、owner、语言、search_path及有效权限，SQL再核实际session_user和有效授权，不自动修权限或切角色。共享私有策略只经pg_catalog审查，运行角色不获其他用途schema的USAGE或入口EXECUTE。原件PDF不复制，私有正文及PNG仅在受保护DB对象中，不进日志／Git／公开HTTP。约束context12MiB、取得观察2MiB、新派生观察4MiB、声明约8MiB、PNG64MiB／384资产及总字节预算，超量拒绝不截断。
+
+专项验证使用合成数据，初始owner只做新库／角色初始化和受控反例；写读由实际独立LOGIN执行。结束清理独立库／临时LOGIN与八类专用组，停止检查／渲染服务并恢复宿主随机回环端口／临时网络；保留正常预览和Word。真实生产权限和可信核验程序配置后续分别承接，不将本次存储验证当正式输入资格。

@@ -1,0 +1,293 @@
+{
+  "schema": "package-history-admission-browser/1",
+  "passed": true,
+  "real_database_in_browser": false,
+  "paid_calls": 0,
+  "transport": "Actual Chromium and component; explicitly simulated admission context, writes and fault responses. Source metadata is from an earlier synthetic fixture, not one joined native run.",
+  "source_before": {
+    "scripts/check-package-history-admission-browser.mjs": "9d6adb6bec0d05010fd488724872a6e76b25dac0626580fb89c5a0514121bc64",
+    "src/PackageHistoricalAdmission.css": "b63dfcdbbb1d5fb98465e3ddcc24c9b904917f62b79dad84e7e996e485bfd00c",
+    "src/PackageHistoricalAdmission.tsx": "55df8dcceff4631f26460ae38913a011dac3613ee182b0f8e94720c979155aff",
+    "src/PackageTechnicalScope.css": "ebae0e6cf650eafdf6b3e6f4f23d82d66415d49a25aca2accc833a649ffdc4d9",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageHistoricalAdmissionFixtures.test-support.ts": "bbf0350081359a8dfa75be4dc98a6b0e9ee646a70b0af7f47d4ae1fabbd12c32",
+    "src/packageHistoricalResearchProtocol.ts": "25ecf9437a1b00f96b0d25753cde0287e16ffd6ecf3dde3104d0d4226315abf9",
+    "src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+    "src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+    "src/packageOutcomeProtocol.ts": "435d24c328ee8157df6da8fe8c7df6c15d7d88f764f9771d160d524a33f95271",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/test-fixtures/technical-eligibility-catalog-http.json": "9dbfbe94b09d53a0725e48fc66d9376b5c2101c5433ace4cf5a77a9aac85a897",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+  },
+  "checks": [
+    {
+      "mode": "explicit",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "lost",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "wrong",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "gap",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 0
+    },
+    {
+      "mode": "explicit",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "lost",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "wrong",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "gap",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 0
+    },
+    {
+      "mode": "explicit",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "lost",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "wrong",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "gap",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 0
+    },
+    {
+      "mode": "explicit",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "lost",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "wrong",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 1
+    },
+    {
+      "mode": "gap",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "javascript_errors": [],
+      "external_requests": [],
+      "horizontal_overflow": false,
+      "writes": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "admission-explicit-390-light.png",
+      "sha256": "9994b9bc6c886668d780d308ac49bbc315269c38b6a4145cbc7871cf5723f38f"
+    },
+    {
+      "file": "admission-lost-390-light.png",
+      "sha256": "9994b9bc6c886668d780d308ac49bbc315269c38b6a4145cbc7871cf5723f38f"
+    },
+    {
+      "file": "admission-wrong-390-light.png",
+      "sha256": "39833ca35962f2c58b34e89c10702d7bca35944038a6468382cf0c4e38eb9bfa"
+    },
+    {
+      "file": "admission-gap-390-light.png",
+      "sha256": "5a42dab0186a0d98e6df87144898d326c62a96958bbff534fb1d33635097cbcb"
+    },
+    {
+      "file": "admission-explicit-390-dark.png",
+      "sha256": "2a83c73aef8a53a19706a61929a0afe585bde5f5c942f5632e0b9b6a5c5743b6"
+    },
+    {
+      "file": "admission-lost-390-dark.png",
+      "sha256": "2a83c73aef8a53a19706a61929a0afe585bde5f5c942f5632e0b9b6a5c5743b6"
+    },
+    {
+      "file": "admission-wrong-390-dark.png",
+      "sha256": "62616e93d116fe755d8f4421617b02fc227c2ab72add427bcd2860ef7ff03b9e"
+    },
+    {
+      "file": "admission-gap-390-dark.png",
+      "sha256": "d782cf4146dcb947629de8c049dc0750023b702ba8b13802447f419c0980524c"
+    },
+    {
+      "file": "admission-explicit-1280-light.png",
+      "sha256": "962644094d25782348c0e7b4f54de7cc6d7219330ba88e60531eecafd3a2ad9e"
+    },
+    {
+      "file": "admission-lost-1280-light.png",
+      "sha256": "962644094d25782348c0e7b4f54de7cc6d7219330ba88e60531eecafd3a2ad9e"
+    },
+    {
+      "file": "admission-wrong-1280-light.png",
+      "sha256": "4640365878a0c8fa912732fd10d62fd55cd39a69c53e2741e314dcc8f5a3f22a"
+    },
+    {
+      "file": "admission-gap-1280-light.png",
+      "sha256": "64385e268056aa743ad5c3bd0a4b1168fedfad95da5a45593ac03c1670446512"
+    },
+    {
+      "file": "admission-explicit-1280-dark.png",
+      "sha256": "4e983fa4a1e4b0a52bf32796f59a4351f6f8b172421160035f78ad3e827feae8"
+    },
+    {
+      "file": "admission-lost-1280-dark.png",
+      "sha256": "4e983fa4a1e4b0a52bf32796f59a4351f6f8b172421160035f78ad3e827feae8"
+    },
+    {
+      "file": "admission-wrong-1280-dark.png",
+      "sha256": "4bd0e1961dc17d62111fb3c2f52f71d1ec6bbc829a798b683fd7b8923de8a119"
+    },
+    {
+      "file": "admission-gap-1280-dark.png",
+      "sha256": "0c54db6b2e2c6ff0cff99fadd95c1f142e3854549ddf571ac6edf78dd42a2498"
+    }
+  ],
+  "chromium": "151.0.7922.34",
+  "source_after": {
+    "scripts/check-package-history-admission-browser.mjs": "9d6adb6bec0d05010fd488724872a6e76b25dac0626580fb89c5a0514121bc64",
+    "src/PackageHistoricalAdmission.css": "b63dfcdbbb1d5fb98465e3ddcc24c9b904917f62b79dad84e7e996e485bfd00c",
+    "src/PackageHistoricalAdmission.tsx": "55df8dcceff4631f26460ae38913a011dac3613ee182b0f8e94720c979155aff",
+    "src/PackageTechnicalScope.css": "ebae0e6cf650eafdf6b3e6f4f23d82d66415d49a25aca2accc833a649ffdc4d9",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageHistoricalAdmissionFixtures.test-support.ts": "bbf0350081359a8dfa75be4dc98a6b0e9ee646a70b0af7f47d4ae1fabbd12c32",
+    "src/packageHistoricalResearchProtocol.ts": "25ecf9437a1b00f96b0d25753cde0287e16ffd6ecf3dde3104d0d4226315abf9",
+    "src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+    "src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+    "src/packageOutcomeProtocol.ts": "435d24c328ee8157df6da8fe8c7df6c15d7d88f764f9771d160d524a33f95271",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/test-fixtures/technical-eligibility-catalog-http.json": "9dbfbe94b09d53a0725e48fc66d9376b5c2101c5433ace4cf5a77a9aac85a897",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+  },
+  "source_unchanged": true
+}

@@ -1,3 +1,9 @@
+> 后续开发统一使用 `dev`，跟踪 `origin/dev`。应用源码主目录为 `workbench/`；旧供体及历史分支作为来源保留。跨仓维护策略见[正式交接](https://github.com/zys743551828-art/tender-docs/blob/dev/00-项目管理/工作交接.md)。
+
+> 当前工作交接请先读 [HANDOFF-20261017.md](HANDOFF-20261017.md)，该记录对应`handoff/2026-10-17`历史分支。以下历史说明保留原范围。
+
+当前新增系统在 [workbench](workbench/README.md)，独立审查分支 `render-acceptance-20261026`。正式[需求与实现追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)及[运行说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)与代码同步。以下旧交接及 backend/frontend 是历史来源，不要求切回旧分支。
+
 # tender-app
 
 施组（施工组织设计）投标评审工作台的代码仓库。目标是中标：上传招标文件与技术标正文后，系统自动评审，给出废标／否决风险、强制性要求的响应矩阵、前后矛盾与范围残留、评分预测（未校准的估计）和报价模拟，并导出 Word 评审报告与批注版 PDF。

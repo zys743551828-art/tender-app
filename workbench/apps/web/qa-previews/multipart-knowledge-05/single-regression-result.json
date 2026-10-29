@@ -1,0 +1,35 @@
+{
+  "scope": "actual81/90 single-PDF regression of new shared transport controller; multipart not live and not accepted",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "sha256": "64878c692681bcff279e117ac0a958b24355880b6f2a16c684dec572491c193e",
+  "declared_and_verified_sha_match": true,
+  "complete_uses_actual_upload_etag": true,
+  "mobile_no_overflow": true,
+  "writes": [
+    {
+      "path": "bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/upload-batches",
+      "method": "POST",
+      "conditional": false
+    },
+    {
+      "path": "bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/uploads",
+      "method": "POST",
+      "conditional": false
+    },
+    {
+      "path": "object-transfers/uploads/4b858694-a6ff-4175-a1aa-8acc525d4847",
+      "method": "PUT",
+      "conditional": false
+    },
+    {
+      "path": "uploads/4b858694-a6ff-4175-a1aa-8acc525d4847/complete",
+      "method": "POST",
+      "conditional": true
+    },
+    {
+      "path": "bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/upload-batches/73120c0b-fa5c-45b4-8834-ed095ab7bb47/commit",
+      "method": "POST",
+      "conditional": true
+    }
+  ]
+}

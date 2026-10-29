@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="9" failures="0" skipped="0" tests="9" time="1.102" timestamp="2026-10-17T04:34:29.355757+00:00" hostname="597cea30c71f"><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_declared_rebind_cannot_target_existing_pdf" time="0.003"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_new_browser_reads_exact_declaration_and_regular_pdf_rebind_still_works" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_single_and_multipart_initial_targets_are_checked_before_creating_new_intent" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_closed_batch_reuse_keeps_declaration_and_only_allows_independent_file" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_pending_old_binding_receipt_replays_but_new_commit_requires_rebinding" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_retained_source_is_revalidated_after_real_byte_io[source_version]" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_retained_source_is_revalidated_after_real_byte_io[expiry]" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_retained_cancel_and_close_refuse_late_publication[cancel]" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase><testcase classname="tests.test_word_pdf_declaration_bindings" name="test_retained_cancel_and_close_refuse_late_publication[close_project]" time="0.001"><error message="failed on setup with &quot;psycopg.OperationalError: connection is bad: no error details available&quot;">tests/test_word_intake_integration.py:55: in world
+    with connection() as c:
+         ^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+packages/domain/runtime.py:107: in connection
+    with psycopg.connect(required(key), row_factory=dict_row) as conn:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.venv/lib/python3.12/site-packages/psycopg/connection.py:118: in connect
+    raise last_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: no error details available</error></testcase></testsuite></testsuites>

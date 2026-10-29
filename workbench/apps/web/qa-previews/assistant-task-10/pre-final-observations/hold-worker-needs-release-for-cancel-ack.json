@@ -1,0 +1,32 @@
+{
+  "stage": "hold-cancel",
+  "error_type": "AssertionError",
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/actions/acffde42-7bde-4fec-b1d7-e69666379847/resolve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/555be9c4-ea98-53f8-be9d-db6348564e93/turns",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/jobs/86c6ee41-846a-41fa-9225-bd4d0b35add4/cancel",
+      "status": 202
+    }
+  ],
+  "page_errors": []
+}

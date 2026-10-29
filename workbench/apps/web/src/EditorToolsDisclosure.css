@@ -1,0 +1,13 @@
+.editor-tools-disclosure > button:not([hidden]) {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  background: var(--subtle);
+  color: var(--foreground);
+}
+.editor-tools-disclosure > [hidden] {
+  display: none;
+}

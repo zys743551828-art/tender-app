@@ -1,0 +1,13 @@
+{
+  "stage": "record-candidate-no-auto-verification",
+  "error_type": "TimeoutError",
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "submission_id": "01283e54-4d37-4377-a7f1-643f6b4a12ef",
+  "alerts": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids/1793bf12-726c-4092-8b3a-caca223a44e3/submission-facts"
+    }
+  ]
+}

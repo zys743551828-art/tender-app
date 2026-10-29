@@ -1,0 +1,213 @@
+.historical-imports,
+.historical-import-body,
+.historical-import-editor,
+.historical-import-local-preview,
+.historical-import-batch,
+.historical-import-directory,
+.historical-import-confirm {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.historical-imports {
+  padding: 24px;
+}
+.historical-import-body[hidden] {
+  display: none;
+}
+.historical-imports :is(h2, h3, h4, p, dl) {
+  margin: 0;
+}
+.historical-imports :is(p, li, dd, small, summary) {
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.historical-imports .section-heading {
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.historical-imports .section-heading p {
+  margin-top: 8px;
+}
+.historical-imports :is(input, textarea, select) {
+  min-width: 0;
+  max-width: 100%;
+}
+.historical-imports :is(button, summary) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.historical-imports :is(details, fieldset) {
+  min-width: 0;
+}
+.historical-imports details > :not(summary) {
+  margin-top: 12px;
+}
+.historical-imports summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.historical-imports .notice {
+  display: block;
+}
+.historical-imports .notice > :is(p, button, details) {
+  margin-top: 10px;
+}
+.historical-import-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.historical-import-toolbar > label {
+  flex: 1 1 260px;
+}
+.historical-import-json {
+  font-family:
+    ui-monospace, "Noto Sans SC Variable", "PingFang SC", "Microsoft YaHei",
+    monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  resize: vertical;
+}
+.historical-import-record {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+details.historical-import-record {
+  display: block;
+}
+.historical-import-record ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.historical-import-original {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.historical-import-original dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  font-size: 13px;
+}
+.historical-import-original dt {
+  color: var(--muted);
+}
+.historical-import-original dd {
+  margin: 0;
+}
+.historical-import-explanation {
+  white-space: pre-wrap;
+}
+.historical-import-code {
+  display: block;
+  color: var(--muted);
+}
+.historical-import-state {
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: var(--surface-muted);
+}
+.historical-import-state.state-imported {
+  background: var(--success-soft);
+  color: var(--success-foreground);
+}
+.historical-import-state:is(.state-conflict, .state-failed) {
+  background: var(--warning-soft);
+  color: var(--warning-foreground);
+}
+.historical-import-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--primary-soft);
+}
+.historical-import-counts dt {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+.historical-import-counts dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.historical-imports .historical-import-check {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.historical-import-check input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  margin-top: 3px;
+}
+.historical-import-directory,
+.historical-import-batch {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+.historical-import-directory-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.historical-import-directory-list > button {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  padding: 16px;
+  color: var(--foreground);
+}
+.historical-import-directory-list > button[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.historical-import-directory-list span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+@media (max-width: 650px) {
+  .historical-imports {
+    padding: 16px;
+  }
+  .historical-import-record {
+    padding: 14px;
+  }
+  .historical-import-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .historical-import-directory-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .historical-import-original dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .historical-import-original dd {
+    margin-bottom: 8px;
+  }
+}

@@ -1,0 +1,13 @@
+........................................................................ [ 57%]
+......................................................                   [100%]
+=============================== warnings summary ===============================
+tests/test_package_technical_assets.py::test_existing_text_parser_uses_same_lock_and_keeps_partial_claims
+tests/test_document_parses.py::test_real_pdfium_pages_are_read_without_promising_word_or_visual_coverage
+tests/test_document_parses.py::test_byte_and_parser_work_have_no_open_connection_and_postcheck_is_required
+  /usr/local/lib/python3.12/site-packages/pypdfium2/_helpers/textpage.py:80: UserWarning: get_text_range() call with default params will be implicitly redirected to get_text_bounded()
+    warnings.warn("get_text_range() call with default params will be implicitly redirected to get_text_bounded()")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------- generated xml file: /evidence/asset-runtime-pure.xml -------------
+126 passed, 3 warnings in 1.19s
+{"suite": "asset-runtime-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

@@ -1,0 +1,89 @@
+{
+  "schema": "task-chapter-publication-checks/1",
+  "recorded_at": "2026-10-21T11:08:05.711697+00:00",
+  "acceptance_scope": "chapter_suggestion legacy source_version_ids native binding and publication; not exact-package authoring",
+  "paid_calls": 0,
+  "real_external_model_calls": 0,
+  "native_receipt": {
+    "path": "docs/completion-20261021/task-chapter-publication-receipt.json",
+    "sha256": "5b1b65b991d53a5481feff3f9ec6fe511caa5323a547f0b52e35f0f07e15ad8c",
+    "all_source_files_still_match_at_freeze": true
+  },
+  "browser_receipt": {
+    "path": "docs/completion-20261021/task-chapter-publication-browser.json",
+    "sha256": "aa8b9ed00e336769b1c427bb24224d6c227f82fe46c8339651e489edc6d4c47d"
+  },
+  "browser_bundle_sha256": {
+    "app.js": "aec26d6198b3443f41c6e0da6b66ecefa8c65640b3f17c7bf911008cd8a0ceaf",
+    "app.css": "dd9e45ab66ae17b5b0206447e8f9eecb0ff2cefbef15438ccc9df7254598d63f"
+  },
+  "unit_tests": {
+    "passed": 111,
+    "failures": 0,
+    "errors": 0,
+    "seconds": "6.627",
+    "files": [
+      "tests/test_task_actual_contracts.py",
+      "tests/test_task_package_inputs.py",
+      "tests/test_task_draft_interpreter.py",
+      "tests/test_task_guard_entrypoints.py",
+      "tests/test_task_scheduling.py"
+    ]
+  },
+  "frontend_tests": {
+    "total": 71,
+    "passed": 71,
+    "failed": 0,
+    "success": true,
+    "files": [
+      "apps/web/src/ExactPackageTaskUI.test.tsx",
+      "apps/web/src/TaskChapterResult.test.tsx",
+      "apps/web/src/TaskPanel.test.tsx",
+      "apps/web/src/taskAuthoringProtocol.test.ts"
+    ]
+  },
+  "fixture_records": [
+    "queued",
+    "awaiting-publication",
+    "published",
+    "stale-section",
+    "stale-fact",
+    "stale-source",
+    "failed",
+    "unknown-fee",
+    "cancelled",
+    "model-invalid"
+  ],
+  "fixture_data_exactly_equal_to_pg_export": true,
+  "static": {
+    "ruff": "passed",
+    "mypy_5_production_files": "passed",
+    "bandit_5_production_files": "passed",
+    "prettier_10_owned_paths": "passed",
+    "eslint_9_owned_code_paths": "passed",
+    "git_diff_check_tracked_owned_paths": "passed"
+  },
+  "visual_inspection": [
+    "published-1280.png",
+    "published-390.png",
+    "awaiting-publication-390.png"
+  ],
+  "owned_source_sha256": {
+    "packages/tasks/models.py": "4af1c35cf5313dcb116eec40f932db65381592efd0fad411a0eeb80ce8c519a5",
+    "packages/tasks/runs.py": "dd5b34f8123b6af2f2376d69d081bc7f592bbb869685185f2b12b0031864f85a",
+    "packages/tasks/runner.py": "cddd915082b83dd8cdd7912ea8b79cf1234dd7ce818389dccf6a60210c6a76bb",
+    "packages/tasks/authoring_result.py": "2c0c9415ef6f9e40088892d1b1402c8c85b32ecc73c212eba027d73c1e67a5c9",
+    "deploy/task_chapter_acceptance.py": "1319dcf5c09c9ee2d83c0f06a9258e3c8fc1173f71dfd0318ccfeb963f9eca5c",
+    "tests/test_task_chapter_results_pg.py": "4fab67c881223abe143916d948aaf391ea070e048de0a4e398e72d3be3bb5df8",
+    "apps/web/src/TaskRunCard.tsx": "4fc814f78f739ac02fa249a55f3eb69b5b8f55ec42b8b162a8fc6a4499c49228",
+    "apps/web/src/taskState.ts": "b036fd062c54d0243e1dd918d65388cdd1810b5e567d2dfbebb2abfbda5330e6",
+    "apps/web/src/TaskPanel.tsx": "bdcbbf9cb7f9fabf5eda005c564edd7214acd12f39acd12b32ae27e1c4bf8b2b",
+    "apps/web/src/TaskAuthoringResultPanel.tsx": "5cf31c5108a351ac1f91ecccb822a53d5f63011807b42e1d3cbd971f1b6b0928",
+    "apps/web/src/taskAuthoringProtocol.ts": "eebfa9d22f3dfe7b4a36b6ffac3e0fcc5fd93f152083ee06a5187f6fec1d0b06",
+    "apps/web/src/taskChapterFixtures.test-support.ts": "c41f597499b8bb9897e1e56bc219f9d986e13ffeb40ccdf6a8e647656a31c2b3",
+    "apps/web/src/taskAuthoringProtocol.test.ts": "5ffe3398bd412e8fe21c1c6f2c53e31809eabb5890d6b5bd66251b0246ba02c9",
+    "apps/web/src/TaskChapterResult.test.tsx": "08916eeacf4966c5ad5576a921cc39bee2dbf91e0b7742fc4a83606e089bd099",
+    "apps/web/src/test-fixtures/task-chapter-http.json": "ea3e1bee5701e3050851e7de213e35dc12b6f14b83875a67e77d97c55284f569",
+    "apps/web/scripts/check-task-chapter-browser.mjs": "4e49f4fa582f63c4ced7f853e3992292fd0b4052191b414568dd821f28bfd2a4"
+  }
+}

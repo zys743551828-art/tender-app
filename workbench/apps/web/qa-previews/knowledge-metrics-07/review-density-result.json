@@ -1,0 +1,42 @@
+{
+  "scope": "read-only developer delta, isolated frontend07 assets overlay; fixed synthetic review identity unchanged, no model execution",
+  "at": "2026-10-17T02:13:20.742805+00:00",
+  "observations": [
+    {
+      "width": 1440,
+      "next_action": {
+        "x": 282,
+        "y": 555.171875,
+        "width": 138.015625,
+        "height": 38
+      },
+      "report_format": {
+        "x": 259,
+        "y": 1507.34375,
+        "width": 1002,
+        "height": 39
+      },
+      "completed_folded": true,
+      "no_overflow": true
+    },
+    {
+      "width": 390,
+      "next_action": {
+        "x": 35,
+        "y": 610.640625,
+        "width": 129,
+        "height": 38
+      },
+      "report_format": {
+        "x": 19,
+        "y": 1577.40625,
+        "width": 352,
+        "height": 39
+      },
+      "completed_folded": true,
+      "no_overflow": true
+    }
+  ],
+  "business_writes": [],
+  "paid_calls": 0
+}

@@ -1,0 +1,86 @@
+{
+  "version": "package-page-render-runtime/1",
+  "uid": 65532,
+  "worker_source_digest": "02d612875b154e763ff96d575a257c70b07218bcb484a3746e0d9f82e4f8c8cd",
+  "wire_source_digest": "a34c77f18a4353af87efe297ee4a7a5266aeea0372d32406581d52816fb0445b",
+  "render_method_digest": "c100f326047a47013569fa5c82f6598e3b172677db9e20726776d8ab2aa49fd5",
+  "crop_method_digest": "8ae2729962b4a914627210ceecd43202f58650e53cf3fcb880de76b96b7254f7",
+  "render_descriptor": {
+    "schema_digest": "051458154bd837186791be16d9c63a9ff8857d6af09e8a6330f1a8c0957254d7",
+    "regions_schema_digest": "28e2bc4b08328a2e87b2e9125922aa0ddf1d3c6f54ea60ec7c86f98ab9d77cae",
+    "contract_source": "26498e1d28411452ce055167f27049e0868ccc7f07d7b70d85ad678f519eb4a7",
+    "canonical_source": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+    "codec_source": "a3fd5dd8407e61cad987423e5960cb570d3323f1f189ef9571aee5df10fe1ef7",
+    "codec": "rgb8-filter0/1",
+    "zlib_compile": "1.2.13",
+    "zlib_runtime": "1.2.13",
+    "python_version": [
+      3,
+      12,
+      15
+    ],
+    "schema_validator_version": "4.24.0",
+    "maximum_bytes": 33554432,
+    "maximum_manifest_bytes": 524288,
+    "maximum_page_pixels": 24000000,
+    "maximum_dimension": 8192,
+    "version": "package-technical-page-render-method/2",
+    "source": "924cd1ae6bb3bf5430aac19df773edab6a875867765667b63a83cc5f54305bca",
+    "guard_source": "b09b40f2cef692a019fe4a81e1708d7acf0a7c7877d8a35ae0b1bdc77755199f",
+    "pdfium_wrapper": "4.30.1",
+    "pdfium_engine": "133.0.6899.0",
+    "platform": "linux",
+    "pixels_per_pdfium_canvas_unit": 3,
+    "physical_dpi_verified": false,
+    "maximum_source_bytes": 33554432,
+    "maximum_pages": 128,
+    "maximum_total_pixels": 128000000,
+    "soft_seconds": 30,
+    "annotations": true,
+    "forms": "reject_canonical_or_orphan_widget",
+    "resampling": "none",
+    "hard_isolation_installed": false
+  },
+  "isolation": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "pids.max": "32",
+    "cpu.max": "100000 100000",
+    "no_new_privileges": true,
+    "seccomp_filter_active": true,
+    "effective_permitted_bounding_ambient_capabilities_zero": true,
+    "network_interfaces": [
+      "lo"
+    ],
+    "read_only_source_files": 7
+  },
+  "execution_receipt": {
+    "container_id": "93e1a68bafacff693017361c89958de7683a564fd375f822e4dcfb9881078642",
+    "image_id": "sha256:f21edf5853b0c337de05a4b6af7ee16787b5520d8e4101b34fea6ee2a70b25be",
+    "source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "compose_project": "tender-fusion",
+    "compose_service": "asset-renderer",
+    "hard_timeout_ms": 40000,
+    "container_started_at": "2026-10-23T17:11:47.9130469Z",
+    "observed_kernel_limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "32",
+      "cpu.max": "100000 100000",
+      "no_new_privileges": true,
+      "seccomp_filter_active": true,
+      "effective_permitted_bounding_ambient_capabilities_zero": true,
+      "network_interfaces": [
+        "lo"
+      ],
+      "read_only_source_files": 7
+    },
+    "stopped_verified": true,
+    "container_pid": 0,
+    "oom_killed": false,
+    "container_finished_at": "2026-10-23T17:11:49.283789762Z",
+    "container_exit_code": 0,
+    "was_running_before_stop": true,
+    "source_fingerprint_checked_before_and_after": true
+  }
+}

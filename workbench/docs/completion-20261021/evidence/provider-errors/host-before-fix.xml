@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="1.038" timestamp="2026-10-24T01:36:40.667723+08:00" hostname="zhangyansong"><testcase classname="tests.test_provider_error_isolation" name="test_purpose_import_never_enters_business_runtime_or_reads_env[packages.domain.providers.deepseek_vision]" time="0.498"><failure message="AssertionError: assert {'legacy_text...loaded': True} == {'legacy_text...oaded': False}&#10;  &#10;  Differing items:&#10;  {'profile_marker_present': True} != {'profile_marker_present': False}&#10;  {'runtime_loaded': True} != {'runtime_loaded': False}&#10;  {'profile_reads': 1} != {'profile_reads': 0}&#10;  {'legacy_text_port_loaded': True} != {'legacy_text_port_loaded': False}&#10;  Use -v to get more diff">module = 'packages.domain.providers.deepseek_vision'
+
+    @pytest.mark.parametrize(
+        "module",
+        ["packages.domain.providers.deepseek_vision", "packages.domain.providers.json_protocol"],
+    )
+    def test_purpose_import_never_enters_business_runtime_or_reads_env(module):
+        code = """import importlib,json,os,sys
+    from pathlib import Path
+    from unittest.mock import patch
+    sys.path.insert(0,sys.argv[1])
+    original_exists=Path.exists
+    original_read=Path.read_text
+    reads=[]
+    def exists(path):
+        return True if path.name=='.env' else original_exists(path)
+    def read(path,*args,**kwargs):
+        if path.name=='.env':
+            reads.append('synthetic profile read')
+            return 'SHOULD_NOT_LOAD_BUSINESS_PROFILE=synthetic'
+        return original_read(path,*args,**kwargs)
+    with patch.object(Path,'exists',exists),patch.object(Path,'read_text',read):
+        importlib.import_module(sys.argv[2])
+    print(json.dumps({'runtime_loaded':'packages.domain.runtime' in sys.modules,
+                      'legacy_text_port_loaded':'packages.domain.providers.deepseek' in sys.modules,
+                      'profile_reads':len(reads),'profile_marker_present':'SHOULD_NOT_LOAD_BUSINESS_PROFILE' in os.environ}))
+    """
+        environment = {key: value for key, value in os.environ.items() if key in SYSTEM_KEYS}
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", code, str(ROOT), module],
+            capture_output=True,
+            env=environment,
+            check=True,
+            timeout=20,
+        )  # nosec B603
+&gt;       assert json.loads(result.stdout) == {
+            "runtime_loaded": False,
+            "legacy_text_port_loaded": False,
+            "profile_reads": 0,
+            "profile_marker_present": False,
+        }
+E       AssertionError: assert {'legacy_text...loaded': True} == {'legacy_text...oaded': False}
+E         
+E         Differing items:
+E         {'profile_marker_present': True} != {'profile_marker_present': False}
+E         {'runtime_loaded': True} != {'runtime_loaded': False}
+E         {'profile_reads': 1} != {'profile_reads': 0}
+E         {'legacy_text_port_loaded': True} != {'legacy_text_port_loaded': False}
+E         Use -v to get more diff
+
+tests\test_provider_error_isolation.py:48: AssertionError</failure></testcase><testcase classname="tests.test_provider_error_isolation" name="test_purpose_import_never_enters_business_runtime_or_reads_env[packages.domain.providers.json_protocol]" time="0.330"><failure message="AssertionError: assert {'legacy_text...loaded': True} == {'legacy_text...oaded': False}&#10;  &#10;  Omitting 1 identical items, use -vv to show&#10;  Differing items:&#10;  {'profile_marker_present': True} != {'profile_marker_present': False}&#10;  {'profile_reads': 1} != {'profile_reads': 0}&#10;  {'runtime_loaded': True} != {'runtime_loaded': False}&#10;  Use -v to get more diff">module = 'packages.domain.providers.json_protocol'
+
+    @pytest.mark.parametrize(
+        "module",
+        ["packages.domain.providers.deepseek_vision", "packages.domain.providers.json_protocol"],
+    )
+    def test_purpose_import_never_enters_business_runtime_or_reads_env(module):
+        code = """import importlib,json,os,sys
+    from pathlib import Path
+    from unittest.mock import patch
+    sys.path.insert(0,sys.argv[1])
+    original_exists=Path.exists
+    original_read=Path.read_text
+    reads=[]
+    def exists(path):
+        return True if path.name=='.env' else original_exists(path)
+    def read(path,*args,**kwargs):
+        if path.name=='.env':
+            reads.append('synthetic profile read')
+            return 'SHOULD_NOT_LOAD_BUSINESS_PROFILE=synthetic'
+        return original_read(path,*args,**kwargs)
+    with patch.object(Path,'exists',exists),patch.object(Path,'read_text',read):
+        importlib.import_module(sys.argv[2])
+    print(json.dumps({'runtime_loaded':'packages.domain.runtime' in sys.modules,
+                      'legacy_text_port_loaded':'packages.domain.providers.deepseek' in sys.modules,
+                      'profile_reads':len(reads),'profile_marker_present':'SHOULD_NOT_LOAD_BUSINESS_PROFILE' in os.environ}))
+    """
+        environment = {key: value for key, value in os.environ.items() if key in SYSTEM_KEYS}
+        result = subprocess.run(
+            [sys.executable, "-I", "-c", code, str(ROOT), module],
+            capture_output=True,
+            env=environment,
+            check=True,
+            timeout=20,
+        )  # nosec B603
+&gt;       assert json.loads(result.stdout) == {
+            "runtime_loaded": False,
+            "legacy_text_port_loaded": False,
+            "profile_reads": 0,
+            "profile_marker_present": False,
+        }
+E       AssertionError: assert {'legacy_text...loaded': True} == {'legacy_text...oaded': False}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Differing items:
+E         {'profile_marker_present': True} != {'profile_marker_present': False}
+E         {'profile_reads': 1} != {'profile_reads': 0}
+E         {'runtime_loaded': True} != {'runtime_loaded': False}
+E         Use -v to get more diff
+
+tests\test_provider_error_isolation.py:48: AssertionError</failure></testcase></testsuite></testsuites>

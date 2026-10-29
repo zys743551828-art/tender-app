@@ -1,0 +1,323 @@
+# Explicit isolated application runtime. Existing tender-fusion/fusion_v12 is unchanged.
+name: ${COMPOSE_PROJECT_NAME:?Use the generated private compose.env}
+
+x-source: &source
+  - ../packages:/workspace/packages:ro
+  - ../apps/api:/workspace/apps/api:ro
+  - ../apps/worker:/workspace/apps/worker:ro
+  - .:/workspace/deploy:ro
+  - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../pyproject.toml:/workspace/pyproject.toml:ro
+
+x-python: &python
+  image: ${FUSION_FULL_PYTHON_IMAGE:?Explicit pinned dependency image required}
+  pull_policy: never
+  working_dir: /workspace
+  user: "65532:65532"
+  read_only: true
+  restart: "no"
+  init: true
+  mem_limit: 1g
+  pids_limit: 256
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  stop_grace_period: 45s
+  tmpfs: ["/tmp:rw,nosuid,nodev,size=512m,mode=1777"]
+  environment:
+    PYTHONPATH: /workspace
+    PYTHONDONTWRITEBYTECODE: "1"
+    PYTHONUNBUFFERED: "1"
+    WORKBENCH_ENV_FILE: explicit-fusion-full-no-inherited-profile
+  volumes: *source
+  networks: [core]
+  depends_on:
+    init: {condition: service_completed_successfully}
+  healthcheck:
+    test: [CMD, python, -m, deploy.fusion_full_probe]
+    interval: 45s
+    timeout: 40s
+    retries: 2
+    start_period: 20s
+
+x-worker-volumes: &worker-volumes
+  - ../packages:/workspace/packages:ro
+  - ../apps/api:/workspace/apps/api:ro
+  - ../apps/worker:/workspace/apps/worker:ro
+  - .:/workspace/deploy:ro
+  - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../pyproject.toml:/workspace/pyproject.toml:ro
+  - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/worker:/runtime:ro
+
+x-controller-volumes: &controller-volumes
+  - ../packages:/workspace/packages:ro
+  - ../apps/api:/workspace/apps/api:ro
+  - ../apps/worker:/workspace/apps/worker:ro
+  - .:/workspace/deploy:ro
+  - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../pyproject.toml:/workspace/pyproject.toml:ro
+  - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/controller:/runtime:ro
+
+x-paid-volumes: &paid-volumes
+  - ../packages:/workspace/packages:ro
+  - ../apps/api:/workspace/apps/api:ro
+  - ../apps/worker:/workspace/apps/worker:ro
+  - .:/workspace/deploy:ro
+  - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../pyproject.toml:/workspace/pyproject.toml:ro
+  - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/paid_worker:/runtime:ro
+
+services:
+  postgres:
+    image: pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d
+    command: [postgres, -c, jit=off]
+    pull_policy: never
+    restart: "no"
+    mem_limit: 1g
+    pids_limit: 256
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/owner_password
+    secrets: [owner_password]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [core]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d postgres]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  kafka:
+    image: apache/kafka@sha256:5cc2a2fd93fa2687b44015eee04fb2c3edd9e526bd64bf8bec5ff1e268772e0e
+    pull_policy: never
+    restart: "no"
+    mem_limit: 1536m
+    pids_limit: 256
+    environment:
+      CLUSTER_ID: ${FUSION_FULL_CLUSTER_ID:?Explicit fresh cluster identity required}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    volumes: [kafka_data:/var/lib/kafka/data]
+    networks: [core]
+    healthcheck:
+      test: [CMD-SHELL, /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1]
+      interval: 5s
+      timeout: 8s
+      retries: 30
+
+  object-store:
+    image: chrislusf/seaweedfs@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
+    pull_policy: never
+    restart: "no"
+    mem_limit: 768m
+    pids_limit: 128
+    command:
+      - server
+      - -dir=/data
+      - -ip=object-store
+      - -ip.bind=0.0.0.0
+      - -master.telemetry=false
+      - -master.volumeSizeLimitMB=32
+      - -volume.max=32
+      - -s3
+      - -s3.port=8333
+      - -s3.config=/run/secrets/s3-identities.json
+      - -iam=false
+      - -s3.port.iceberg=0
+      - -s3.port.lance=0
+      - -s3.autoCreateBucket=false
+      - -s3.allowDeleteBucketNotEmpty=false
+    secrets:
+      - source: s3_identities
+        target: s3-identities.json
+    volumes: [object_data:/data]
+    networks: [core]
+
+  init:
+    <<: *python
+    user: "0:0"
+    cap_add: [CHOWN, DAC_OVERRIDE]
+    healthcheck: {disable: true}
+    command: [python, -m, deploy.fusion_full_init]
+    depends_on:
+      postgres: {condition: service_healthy}
+      kafka: {condition: service_healthy}
+      object-store: {condition: service_started}
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - ../apps/web/dist:/workspace/apps/web/dist:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}:/deployment
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/state:/workspace/.local
+
+  api:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, api]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/api:/runtime:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/application-state/api:/workspace/.local
+    healthcheck:
+      test: [CMD, python, -m, deploy.fusion_full_runtime, api, --check]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 20s
+
+  web:
+    image: ${FUSION_FULL_WEB_IMAGE:?Explicit pinned nginx image required}
+    pull_policy: never
+    entrypoint: [nginx, -c, /etc/nginx/nginx.conf, -e, /dev/null, -g, "daemon off;"]
+    user: "65532:65532"
+    restart: "no"
+    read_only: true
+    mem_limit: 256m
+    pids_limit: 128
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      api: {condition: service_healthy}
+    ports: ["127.0.0.1:${FUSION_FULL_PORT:?Explicit loopback port required}:8080"]
+    volumes:
+      - ../apps/web/dist:/usr/share/nginx/html:ro
+      - ./nginx-fusion-full-main.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-fusion-full.conf:/etc/nginx/conf.d/fusion-full-server.conf:ro
+    tmpfs: ["/tmp:rw,nosuid,nodev,size=64m,mode=1777"]
+    networks: [core, preview]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/nginx-health]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  relay:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, relay]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/relay:/runtime:ro
+
+  reconcile:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, reconcile]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/reconcile:/runtime:ro
+
+  worker-document:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, document]
+    volumes: *worker-volumes
+
+  worker-export:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, export]
+    volumes: *worker-volumes
+
+  worker-comparison:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, comparison]
+    volumes: *worker-volumes
+
+  build-controller:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, build-controller]
+    volumes: *controller-volumes
+
+  word-controller:
+    <<: *python
+    command: [python, -m, deploy.fusion_full_runtime, word-controller]
+    volumes: *controller-volumes
+
+  worker-review:
+    <<: *python
+    profiles: [model]
+    command: [python, -m, deploy.fusion_full_runtime, review]
+    volumes: *paid-volumes
+    networks: [core, model_egress]
+
+  worker-assistant:
+    <<: *python
+    profiles: [model]
+    command: [python, -m, deploy.fusion_full_runtime, assistant]
+    volumes: *paid-volumes
+    networks: [core, model_egress]
+
+  review-controller:
+    <<: *python
+    profiles: [model]
+    command: [python, -m, deploy.fusion_full_runtime, review-controller]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/paid_controller:/runtime:ro
+
+  assistant-controller:
+    <<: *python
+    profiles: [model]
+    command: [python, -m, deploy.fusion_full_runtime, assistant-controller]
+    volumes: *controller-volumes
+
+  task-runner:
+    <<: *python
+    profiles: [automation]
+    command: [python, -m, deploy.fusion_full_runtime, task-runner]
+    volumes:
+      - ../packages:/workspace/packages:ro
+      - ../apps/api:/workspace/apps/api:ro
+      - ../apps/worker:/workspace/apps/worker:ro
+      - .:/workspace/deploy:ro
+      - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../pyproject.toml:/workspace/pyproject.toml:ro
+      - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/task_runner:/runtime:ro
+
+networks:
+  core: {internal: true}
+  preview: {driver: bridge}
+  model_egress: {driver: bridge}
+
+volumes:
+  postgres_data:
+  kafka_data:
+  object_data:
+
+secrets:
+  owner_password:
+    file: ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/owner-password
+  s3_identities:
+    file: ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/s3-identities.json

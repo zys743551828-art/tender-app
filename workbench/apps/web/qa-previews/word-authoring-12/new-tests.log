@@ -1,0 +1,19 @@
+
+> @tender/workbench-web@0.1.0 test
+> vitest run src/WordOriginals.test.tsx src/AuthoringStructure.test.tsx src/AuthoringPlan.test.tsx src/uploadFormats.test.ts
+
+
+ RUN  v3.2.3 /workspace/tender-workbench/apps/web
+
+ ✓ src/WordOriginals.test.tsx (3 tests) 361ms
+ ✓ src/AuthoringPlan.test.tsx (2 tests) 511ms
+   ✓ 人工预算保存走plan revision 0与draft11，不借section10冒充plan基准；空行不作事实  347ms
+ ✓ src/AuthoringStructure.test.tsx (4 tests) 906ms
+   ✓ 删除先显示完整影响，不直接写稿；一次明确应用使用原draft tag  504ms
+ ✓ src/uploadFormats.test.ts (1 test) 3ms
+
+ Test Files  4 passed (4)
+      Tests  10 passed (10)
+   Start at  04:13:29
+   Duration  2.46s (transform 456ms, setup 660ms, collect 1.01s, tests 1.78s, environment 1.66s, prepare 354ms)
+

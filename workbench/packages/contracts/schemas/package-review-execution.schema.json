@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tender:package-review-execution:1",
+  "$ref": "#/$defs/Identity",
+  "$defs": {
+    "Digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "Id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "Binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bid_id",
+        "package_id",
+        "revision_id",
+        "inventory_id",
+        "identity_digest",
+        "frozen_input_id",
+        "frozen_digest",
+        "input_digest",
+        "evidence_digest",
+        "context_digest",
+        "method_digest",
+        "policy_digest",
+        "purpose"
+      ],
+      "properties": {
+        "bid_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "package_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "inventory_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "frozen_input_id": {
+          "$ref": "#/$defs/Id"
+        },
+        "frozen_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "evidence_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "context_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "method_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "policy_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "purpose": {
+          "const": "prebid_compliance"
+        }
+      }
+    },
+    "RerunIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonce",
+        "reason"
+      ],
+      "properties": {
+        "nonce": {
+          "$ref": "#/$defs/Id"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?(?![\\s\\S])"
+        }
+      }
+    },
+    "Identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "binding",
+        "rerun",
+        "content_digest",
+        "execution_digest"
+      ],
+      "properties": {
+        "version": {
+          "const": "package-review-execution/1"
+        },
+        "kind": {
+          "const": "identity"
+        },
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "rerun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RerunIntent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "content_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "execution_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      }
+    }
+  }
+}

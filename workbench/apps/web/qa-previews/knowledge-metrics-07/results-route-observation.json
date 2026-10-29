@@ -1,0 +1,14 @@
+{
+  "stage": "resume-existing-synthetic-results",
+  "error_type": "TimeoutError",
+  "project_id": "1793bf12-726c-4092-8b3a-caca223a44e3",
+  "submission_id": "01283e54-4d37-4377-a7f1-643f6b4a12ef",
+  "original_candidate_id": "fb7490dd-81de-401e-8525-bea88af1b412",
+  "alerts": [],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "business-results/d425142f-e8fb-4997-8391-d4aaa04d1c44/corrections"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+........................................................................ [ 86%]
+...........                                                              [100%]
+=============================== warnings summary ===============================
+tests/test_package_material_scope_findings_pg.py::test_native_frozen_review_items_bind_complete_citations_without_issuer_authority
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------- generated xml file: /evidence/material-scope-findings-native.xml -------
+83 passed, 1 warning in 14.26s
+{"suite": "material-scope-findings-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

@@ -1,0 +1,196 @@
+{
+  "snapshot": "2026-10-17",
+  "scope": "待办及依赖，不是执行通过证据",
+  "tasks": [
+    {
+      "id": "HANDOFF-VERIFY",
+      "priority": "P0",
+      "owner": "PM",
+      "work": "先核GitHub分支、文件inventory、各角色静止与私有材料边界",
+      "status": "not_started",
+      "depends_on": [],
+      "acceptance": "原SHA可核，遗漏/保密排除明确，不能只克隆main"
+    },
+    {
+      "id": "OPS-QA-LIMITED",
+      "priority": "P1",
+      "owner": "测试+架构",
+      "work": "固定前缀且SDK实际硬限7PUT+7GET的新driver静审；再独立单新target恢复",
+      "status": "pending_review",
+      "depends_on": [
+        "HANDOFF-VERIFY"
+      ],
+      "acceptance": "1536MiB初始/256MiB阶段门、164表/ACL/暂停API/真实7对象SHA；未知即停，用户授权仅一次"
+    },
+    {
+      "id": "WORD03-FINAL",
+      "priority": "P1",
+      "owner": "主开发+架构",
+      "work": "最终声明投影+retained新定位实际GET/SHA guard候选独验",
+      "status": "see_development_handoff",
+      "depends_on": [
+        "HANDOFF-VERIFY"
+      ],
+      "acceptance": "同SHA两次新batch、篡改/跨bid/取消/终止/旧ACK；原503保留"
+    },
+    {
+      "id": "UNIFIED-NATIVE03",
+      "priority": "P1",
+      "owner": "PM+前端+测试",
+      "work": "clean19SQL新库、同固定Word03根profile、API8818/前端5186/普通Workers",
+      "status": "prepared_not_executed",
+      "depends_on": [
+        "OPS-QA-LIMITED",
+        "WORD03-FINAL"
+      ],
+      "acceptance": "实际契约+字节来源绑定，Word失败PDF接续/树/计划/双模板/双格式真实浏览器"
+    },
+    {
+      "id": "RICH02-RP01",
+      "priority": "P1",
+      "owner": "编制+架构",
+      "work": "稀疏图片局部可见修复、profile新指纹、原反例独立复核",
+      "status": "see_authoring_handoff",
+      "depends_on": [
+        "HANDOFF-VERIFY"
+      ],
+      "acceptance": "白框遮数字不得complete，保持原01不变"
+    },
+    {
+      "id": "A2-M1-FULL",
+      "priority": "P1",
+      "owner": "编制+解析+前端+独立QA/用户",
+      "work": "真实RICH表格几何、受限实际渲染、Word结构预览导入、TOC/章页和预览闭环",
+      "status": "in_progress",
+      "depends_on": [
+        "RICH02-RP01",
+        "UNIFIED-NATIVE03"
+      ],
+      "acceptance": "A2-FULL-01至07及09完整任务，3轮真实分页收敛，未知为partial"
+    },
+    {
+      "id": "ASSISTANT-SQL03",
+      "priority": "P1",
+      "owner": "助手+架构",
+      "work": "修核清NULL、native预算/profile/max_tokens绑定、来源依据资格、防重复/三桶unknown/迟到usage冲突并具体审查",
+      "status": "wip_not_executed",
+      "depends_on": [
+        "HANDOFF-VERIFY"
+      ],
+      "acceptance": "SQL02原反例保留、无费用洗零，canonical不受nonce/context/profile变化重发"
+    },
+    {
+      "id": "FRESH-HELPER05",
+      "priority": "P1",
+      "owner": "PM+架构",
+      "work": "在04上另新delta拒预算组非预期继承，核LOGIN exact membership/effective禁止",
+      "status": "not_implemented",
+      "depends_on": [
+        "HANDOFF-VERIFY"
+      ],
+      "acceptance": "拒同名NOLOGIN组继承API/其他用途，独立singleDSN600，业务env剔除；不在旧DB补权"
+    },
+    {
+      "id": "ASSISTANT-BUDGET-FULL",
+      "priority": "P1",
+      "owner": "助手+前端+测试",
+      "work": "新已审fresh admin隔离、API/WorkerhardMock、unknown下可信独立新对象UI",
+      "status": "in_progress",
+      "depends_on": [
+        "ASSISTANT-SQL03",
+        "FRESH-HELPER05"
+      ],
+      "acceptance": "冻结trusted价格/上限/三桶配置缺失则pause，0真实付费，旧8816夹具不改"
+    },
+    {
+      "id": "DENOMINATOR-C",
+      "priority": "P1",
+      "owner": "研究+PM+架构",
+      "work": "20SQL fresh C，再真实当前确认→真实提交→迟到label/严格时间测试",
+      "status": "prepared_not_executed",
+      "depends_on": [
+        "OPS-QA-LIMITED"
+      ],
+      "acceptance": "C读取experiments.method_digest；B库不补DDL；旧score max NULL原样保留"
+    },
+    {
+      "id": "RESEARCH-RETROSPECTIVE",
+      "priority": "P1",
+      "owner": "研究+产品+架构",
+      "work": "官方label scale权威、回溯group/label/sealed exports/CPUrunner/资格区分",
+      "status": "wip_unreviewed_sql",
+      "depends_on": [
+        "DENOMINATOR-C"
+      ],
+      "acceptance": "不倒填旧known时间，不把回溯误差当未来预测；retrospective-research.sql未审不得执行"
+    },
+    {
+      "id": "TASK-RUNNER-SEMANTICS",
+      "priority": "P2",
+      "owner": "任务开发+产品+测试",
+      "work": "实际调度/事件/cron运输与通知、完整补遗关系和通用NL范围",
+      "status": "partial",
+      "depends_on": [
+        "UNIFIED-NATIVE03"
+      ],
+      "acceptance": "现Task05仅注册关系和有界草案；runs.notify一次不等于调度闭环"
+    },
+    {
+      "id": "A2-M2-AI",
+      "priority": "P2",
+      "owner": "编制+助手+前端",
+      "work": "选区/多章节建议、差异预览一次应用、局部失败/重试/费用身份",
+      "status": "pending",
+      "depends_on": [
+        "A2-M1-FULL",
+        "ASSISTANT-BUDGET-FULL"
+      ],
+      "acceptance": "只改所选，CAS失败保留人工稿，unknown不补发，采纳不解决风险"
+    },
+    {
+      "id": "LATEST-APP-RECOVERY",
+      "priority": "P1",
+      "owner": "备份+测试+架构",
+      "work": "覆盖最新A2/Score/Scale/RICH/预算schema的完整备份恢复",
+      "status": "pending",
+      "depends_on": [
+        "UNIFIED-NATIVE03",
+        "A2-M1-FULL",
+        "ASSISTANT-BUDGET-FULL"
+      ],
+      "acceptance": "当前code05只07/15SQL/164表，不能冒最新应用恢复或生产RTO"
+    },
+    {
+      "id": "FULL-ACCEPTANCE",
+      "priority": "P1",
+      "owner": "PM+产品+架构+测试+用户",
+      "work": "40FR追踪、原13实际任务与A2整包、crossreview、交付说明",
+      "status": "pending",
+      "depends_on": [
+        "A2-M1-FULL",
+        "ASSISTANT-BUDGET-FULL",
+        "DENOMINATOR-C",
+        "LATEST-APP-RECOVERY"
+      ],
+      "acceptance": "各角色实际实现独立验收，不用模块通过自动关闭整FR"
+    },
+    {
+      "id": "EXTERNAL-REAL-DATA",
+      "priority": "external",
+      "owner": "用户提供/产品",
+      "work": "已授权完整招标/技术正文、真实实交/官方技术成绩出处",
+      "status": "blocked",
+      "depends_on": [],
+      "acceptance": "CASE001已知2对象OSS404；不虚构真实标签和模型精度"
+    },
+    {
+      "id": "EXTERNAL-PAID-BOUND",
+      "priority": "external",
+      "owner": "用户明确授权",
+      "work": "原合成提取+核心验收最多2调用/0.05美元估计请求未获答复",
+      "status": "blocked",
+      "depends_on": [],
+      "acceptance": "原自动审批拒绝真实常驻paid消费者，不绕过；7对象OSS授权不能用于模型"
+    }
+  ]
+}

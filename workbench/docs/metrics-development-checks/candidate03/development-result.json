@@ -1,0 +1,17 @@
+{
+  "status": "passed_development_mechanisms_only",
+  "tests_passed": 39,
+  "candidate02_regressions": 37,
+  "new_time_regressions": 2,
+  "quality": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "passed",
+    "bandit": "passed"
+  },
+  "candidate02_frozen_and_37_evidence_preserved": true,
+  "external_calls": 0,
+  "paid_calls": 0,
+  "actual_qualified_online_pairs": 0,
+  "independent_approved": false
+}

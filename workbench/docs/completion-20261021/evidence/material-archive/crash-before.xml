@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="27" time="0.659" timestamp="2026-10-24T03:02:03.608064+00:00" hostname="96ccb08c0679"><testcase classname="tests.test_private_content_store" name="test_actual_write_reopen_idempotence_and_modes" time="0.002" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[../outside]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[0000000000000000000000000000000000000000000000000000000000000000]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[False]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_digest_names_are_closed[None]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_object_type_and_limits[]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_object_type_and_limits[body]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_object_type_and_limits[False]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_limit_before_write" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_public_permissions_rejected[root]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_public_permissions_rejected[objects]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_public_permissions_rejected[file]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_symlinks_rejected[ancestor]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_symlinks_rejected[root]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_symlinks_rejected[objects]" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_symlinks_rejected[file]" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_hardlink_not_a_private_object" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_fifo_does_not_block" time="0.000" /><testcase classname="tests.test_private_content_store" name="test_corruption_cannot_be_read_or_overwritten" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_pinned_root_and_closed_instance" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_concurrent_independent_instances_publish_identical_bytes" time="0.021" /><testcase classname="tests.test_private_content_store" name="test_short_writes_and_reopen" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_fsync_failure_leaves_no_published_key_and_no_path_in_error" time="0.001" /><testcase classname="tests.test_private_content_store" name="test_process_crash_before_publication_is_unreadable_and_recoverable" time="0.033" /><testcase classname="tests.test_private_content_store" name="test_process_crash_after_atomic_publication_remains_readable" time="0.033"><failure message="packages.storage.private_cas.PrivateStoreError: PRIVATE_STORE_PRIVATE_BOUNDARY_INVALID">root = PosixPath('/tmp/pytest-of-root/pytest-0/test_process_crash_after_atomi0/private')
+
+    def test_process_crash_after_atomic_publication_remains_readable(root):
+        source = Path(__file__).resolve().parents[1]
+        code = """import os,sys
+    sys.path.insert(0,sys.argv[1])
+    from packages.storage.private_cas import PrivateContentStore
+    with PrivateContentStore(sys.argv[2]) as store:
+        def crash_after(function):
+            def run(*a,**k):
+                function(*a,**k)
+                os._exit(74)
+            return run
+        os.link=crash_after(os.link)
+        os.rename=crash_after(os.rename)
+        store.put_object(b'synthetic published crash')
+    """
+        result = subprocess.run([sys.executable, "-I", "-c", code, str(source), str(root)], check=False, timeout=10)  # nosec B603
+        assert result.returncode == 74
+        with cas.PrivateContentStore(root) as store:
+            key = cas.sha(b"synthetic published crash")
+&gt;           assert store.get_object(key) == b"synthetic published crash"
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_private_content_store.py:216: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+packages/storage/private_cas.py:46: in wrapped
+    return function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:244: in get_object
+    return self._get("objects", key, MAX_OBJECT_BYTES)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:254: in _get
+    return self._read(fd, key, limit)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/storage/private_cas.py:168: in _read
+    _private(before, directory=False)
+packages/storage/private_cas.py:63: in _private
+    fail("PRIVATE_BOUNDARY_INVALID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+code = 'PRIVATE_BOUNDARY_INVALID'
+
+    def fail(code: str) -&gt; NoReturn:
+&gt;       raise PrivateStoreError("PRIVATE_STORE_" + code)
+E       packages.storage.private_cas.PrivateStoreError: PRIVATE_STORE_PRIVATE_BOUNDARY_INVALID
+
+packages/storage/private_cas.py:26: PrivateStoreError</failure></testcase></testsuite></testsuites>

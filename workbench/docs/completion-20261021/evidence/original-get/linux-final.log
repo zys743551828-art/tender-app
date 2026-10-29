@@ -1,0 +1,4 @@
+......................................................                   [100%]
+------------- generated xml file: /evidence/original-get-pure.xml --------------
+54 passed in 2.55s
+{"suite": "original-get-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

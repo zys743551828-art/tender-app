@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-17T02:15:35.793454+00:00",
+  "all_passed": false,
+  "checks": [
+    {
+      "name": "contracts-generate",
+      "command": [
+        "npm",
+        "run",
+        "contracts:generate"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.597,
+      "log": "contracts-generate.log",
+      "log_sha256": "e9223e56cc7c70b259a1988c7fddecbd49d47ed46cd088014b34617bdfad60f7"
+    },
+    {
+      "name": "format-check",
+      "command": [
+        "npm",
+        "run",
+        "format:check"
+      ],
+      "exit_code": 1,
+      "duration_seconds": 3.254,
+      "log": "format-check.log",
+      "log_sha256": "97d600eba654de9f2c9873127efa5ec8cb0f7e588b9b81ed3ae15b078538aeb6"
+    }
+  ]
+}

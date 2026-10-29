@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-17T03:10:05.741117+00:00",
+  "scope": "10 developing compiled assets overlay at5178; real untouched8808 API; no turns/generation/run/resolve/research",
+  "project_id": "78431ad6-0bda-4039-8745-1c579e3cc000",
+  "project_conversation_id": "494175df-5c22-5055-9611-e775f71d6a3a",
+  "global_conversation_id": "3dd4da92-9ba1-56f5-87f0-3056de0e9e06",
+  "auto_review": false,
+  "project_note_saved_and_refreshed": true,
+  "main_identity_stable_through_state_changes": true,
+  "hidden_to_closed_then_active": true,
+  "drawer_and_fullscreen_share_main_and_local_input": true,
+  "global_null_scope_private": true,
+  "foreign_global_messages_status": 404,
+  "second_member_project_shared_status": 200,
+  "mobile_no_overflow": true,
+  "escape_returns_trigger": true,
+  "writes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/78431ad6-0bda-4039-8745-1c579e3cc000/conversations/main"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/78431ad6-0bda-4039-8745-1c579e3cc000/conversations/494175df-5c22-5055-9611-e775f71d6a3a/messages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/78431ad6-0bda-4039-8745-1c579e3cc000/conversations/494175df-5c22-5055-9611-e775f71d6a3a/state"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/78431ad6-0bda-4039-8745-1c579e3cc000/conversations/494175df-5c22-5055-9611-e775f71d6a3a/state"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/bids/78431ad6-0bda-4039-8745-1c579e3cc000/conversations/494175df-5c22-5055-9611-e775f71d6a3a/state"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/assistant/global-conversations/main"
+    }
+  ],
+  "page_errors": [],
+  "actual_remote_model_calls": 0,
+  "paid_calls": 0
+}

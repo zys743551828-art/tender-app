@@ -1,0 +1,2158 @@
+{
+  "schema": "package-history-native-browser/1",
+  "passed": false,
+  "paid_calls": 0,
+  "real_database_in_browser": false,
+  "transport": "Actual Chromium and product UI. Unmodified successful/failed HTTP bodies and ETags from native PG captures are replayed locally. The recovery scenario alone injects browser-only transport loss. No model or database is contacted by the browser.",
+  "fixtures": {
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+    "src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74"
+  },
+  "source_before": {
+    "scripts/check-package-history-native-browser.mjs": "5b2a223d3aec38ecc544bfa6eab4fba8326b35e84124d56902a80fd3774867cf",
+    "src/PackageHistoricalAdmission.css": "b63dfcdbbb1d5fb98465e3ddcc24c9b904917f62b79dad84e7e996e485bfd00c",
+    "src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+    "src/PackageHistoricalResearch.css": "05caa3c2a2ea6d1ff3836db553d39b0b83e8e4b6bf3e62f2f4dc72fe90ab54eb",
+    "src/PackageHistoricalResearch.tsx": "5474421fd73845e762c8bbe05c70998abad3752fd6e4273bb5744cea90c8e37b",
+    "src/PackageHistoricalResearchCommon.tsx": "b86ea5899b222fa78500ba3563308d9779d1a7cd4170dd62d53c0162c7719685",
+    "src/PackageHistoricalResearchDetails.tsx": "44de980656f4e2bd90632e97760d3f1c20138d8ab28b932f2e8074848aec3518",
+    "src/PackageHistoricalResearchForms.tsx": "79f34c7a6d7aa98d99443e6d984b95f3a70d3d3685fa27cf6f66acc642ed53f7",
+    "src/PackageHistoricalResearchJobs.tsx": "7d0204f85e44caa47d152c54236c817b6f907591e8b53639039ad76e6717f3cc",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/navigationGuard.ts": "b58d04fef23cb3d7a39945fa449beb563098bf3b23e31c2f7ef3dd5692e3a4d9",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageHistoricalResearchProtocol.ts": "25ecf9437a1b00f96b0d25753cde0287e16ffd6ecf3dde3104d0d4226315abf9",
+    "src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+    "src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+    "src/packageHistoryPresentation.ts": "acb1624bdfa58f53c9c311dd2a9b5c713fd85477a06ed95d9c7f352166766ade",
+    "src/packageNavigation.ts": "bf734b6f2903b0fe7783e8a32fde7b7116ae36f086e68db04b3111b1788f3871",
+    "src/packageOutcomeProtocol.ts": "435d24c328ee8157df6da8fe8c7df6c15d7d88f764f9771d160d524a33f95271",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/packageScopeGuard.ts": "65e23e1c54899ba58618a0448f613535f9ff163f5d00e1f7d80e11f8906fd695",
+    "src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+    "src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/usePackageHistoryDirectory.ts": "afd59b55734a4f958444317125f11bbdc98ac23b1436a650a400f738a03a0520",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+  },
+  "checks": [
+    {
+      "mode": "admission",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admission-context",
+          "query": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admissions",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
+            "proof_id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
+            "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
+            "reason": "Explicit synthetic research admission through the guarded public API"
+          },
+          "etag": "\"package-history-context:bf3558df-07a6-422f-8e52-4290c4f0e94e:a97dcf1e1440876f2565b17543f5d6d02956459798f11ecbae5f30d98ea32a41\"",
+          "key": "474775ac-1265-4e8e-b908-ae9ab9eada63"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admission_context",
+        "admission_created"
+      ]
+    },
+    {
+      "mode": "study",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/bf750dba-070d-4323-abf9-f2e1649196e9",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/02696389-2633-4439-b5df-8e40f051aa25",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "protocol_id": "b40e8a78-6ed7-4e43-b0e8-885e23870b04",
+            "submission_split_at": "2026-10-22T01:18:49.560869+00:00",
+            "label_available_as_of": "2026-10-22T01:18:53.236511+00:00",
+            "selections": [
+              {
+                "admission_id": "bf750dba-070d-4323-abf9-f2e1649196e9",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+                "purpose": "development"
+              },
+              {
+                "admission_id": "a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "02696389-2633-4439-b5df-8e40f051aa25",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+                "purpose": "final"
+              }
+            ],
+            "reason": "Exact selected admissions with actual split, cutoff and full related-group closure"
+          },
+          "etag": null,
+          "key": "076343df-fbca-4c6a-a244-21914a1e396a"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "kind": "train",
+            "reason": "Run the exact independently credentialed CPU baseline"
+          },
+          "etag": "\"package-history-cohort-view:11b3ba28-3b68-415c-b775-43e81b852b52:4977e935de8e8167cac8eeb47c331d1f5c52cb474a5a6e9ce0688bd1e2c212e1\"",
+          "key": "8c550270-56e9-49b1-bf22-41bcf46a206a"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "pause",
+            "generation": 1,
+            "reason": "Pause this exact task before the independent CPU runner"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:9597c24cebce5144c5cc086eb1be793f17c4a4eba1d6279afc5aa20d63e988a3\"",
+          "key": "bceaef5b-0903-4d67-939e-aa8201e668b6"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "resume",
+            "generation": 2,
+            "reason": "Resume the same frozen research task"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:fc7a7e10170d465242d488eb40d7b7e06facd054edd3fda6afd24a8b17cc921a\"",
+          "key": "02fafa6a-bee0-4636-83d9-a963d00149eb"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_directory",
+        "admission_current",
+        "fit_second_current",
+        "development_current",
+        "final_known_current",
+        "final_crossing_current",
+        "final_unknown_current",
+        "protocols_directory",
+        "cohort_created",
+        "cohort_current",
+        "train_created",
+        "cohort_current",
+        "train_queued",
+        "train_queued",
+        "pause_ack",
+        "cohort_current",
+        "train_paused",
+        "train_paused",
+        "resume_ack",
+        "cohort_current",
+        "train_resumed",
+        "train_resumed",
+        "train_succeeded"
+      ]
+    },
+    {
+      "mode": "evaluation",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_current",
+        "jobs_directory",
+        "evaluate_succeeded"
+      ]
+    },
+    {
+      "mode": "stale",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_stale",
+        "jobs_directory",
+        "evaluation_stale"
+      ]
+    },
+    {
+      "mode": "recovery",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "seed": 17,
+            "bootstrap_iterations": 100,
+            "reason": "Explicit feature-free CPU baseline protocol; synthetic mechanism evidence"
+          },
+          "etag": null,
+          "key": "a979dbe9-3fe9-4998-86a4-a34c1898934a"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "protocol_created"
+      ]
+    },
+    {
+      "mode": "unavailable",
+      "width": 390,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_unavailable",
+        "admissions_empty"
+      ]
+    },
+    {
+      "mode": "admission",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admission-context",
+          "query": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admissions",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
+            "proof_id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
+            "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
+            "reason": "Explicit synthetic research admission through the guarded public API"
+          },
+          "etag": "\"package-history-context:bf3558df-07a6-422f-8e52-4290c4f0e94e:a97dcf1e1440876f2565b17543f5d6d02956459798f11ecbae5f30d98ea32a41\"",
+          "key": "f984dabb-4097-47a1-bc43-f5e135d856e3"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admission_context",
+        "admission_created"
+      ]
+    },
+    {
+      "mode": "study",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/bf750dba-070d-4323-abf9-f2e1649196e9",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/02696389-2633-4439-b5df-8e40f051aa25",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "protocol_id": "b40e8a78-6ed7-4e43-b0e8-885e23870b04",
+            "submission_split_at": "2026-10-22T01:18:49.560869+00:00",
+            "label_available_as_of": "2026-10-22T01:18:53.236511+00:00",
+            "selections": [
+              {
+                "admission_id": "bf750dba-070d-4323-abf9-f2e1649196e9",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+                "purpose": "development"
+              },
+              {
+                "admission_id": "a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "02696389-2633-4439-b5df-8e40f051aa25",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+                "purpose": "final"
+              }
+            ],
+            "reason": "Exact selected admissions with actual split, cutoff and full related-group closure"
+          },
+          "etag": null,
+          "key": "6539743c-6ea3-4040-8b6e-1174fa0eb49e"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "kind": "train",
+            "reason": "Run the exact independently credentialed CPU baseline"
+          },
+          "etag": "\"package-history-cohort-view:11b3ba28-3b68-415c-b775-43e81b852b52:4977e935de8e8167cac8eeb47c331d1f5c52cb474a5a6e9ce0688bd1e2c212e1\"",
+          "key": "20eecf0e-c342-4924-af3a-8c585cf93b7b"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "pause",
+            "generation": 1,
+            "reason": "Pause this exact task before the independent CPU runner"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:9597c24cebce5144c5cc086eb1be793f17c4a4eba1d6279afc5aa20d63e988a3\"",
+          "key": "a1ff349b-4f23-4397-8da6-2206402821ef"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "resume",
+            "generation": 2,
+            "reason": "Resume the same frozen research task"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:fc7a7e10170d465242d488eb40d7b7e06facd054edd3fda6afd24a8b17cc921a\"",
+          "key": "a96df4d4-f4be-47c3-8eac-667faccc0b26"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_directory",
+        "admission_current",
+        "fit_second_current",
+        "development_current",
+        "final_known_current",
+        "final_crossing_current",
+        "final_unknown_current",
+        "protocols_directory",
+        "cohort_created",
+        "cohort_current",
+        "train_created",
+        "cohort_current",
+        "train_queued",
+        "train_queued",
+        "pause_ack",
+        "cohort_current",
+        "train_paused",
+        "train_paused",
+        "resume_ack",
+        "cohort_current",
+        "train_resumed",
+        "train_resumed",
+        "train_succeeded"
+      ]
+    },
+    {
+      "mode": "evaluation",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_current",
+        "jobs_directory",
+        "evaluate_succeeded"
+      ]
+    },
+    {
+      "mode": "stale",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_stale",
+        "jobs_directory",
+        "evaluation_stale"
+      ]
+    },
+    {
+      "mode": "recovery",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "seed": 17,
+            "bootstrap_iterations": 100,
+            "reason": "Explicit feature-free CPU baseline protocol; synthetic mechanism evidence"
+          },
+          "etag": null,
+          "key": "fc11c207-8b87-49f2-a91e-80be8756945b"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "protocol_created"
+      ]
+    },
+    {
+      "mode": "unavailable",
+      "width": 390,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_unavailable",
+        "admissions_empty"
+      ]
+    },
+    {
+      "mode": "admission",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admission-context",
+          "query": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admissions",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
+            "proof_id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
+            "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
+            "reason": "Explicit synthetic research admission through the guarded public API"
+          },
+          "etag": "\"package-history-context:bf3558df-07a6-422f-8e52-4290c4f0e94e:a97dcf1e1440876f2565b17543f5d6d02956459798f11ecbae5f30d98ea32a41\"",
+          "key": "41b93ebe-fc89-43bf-81f5-ae6ee7dfea48"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admission_context",
+        "admission_created"
+      ]
+    },
+    {
+      "mode": "study",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/bf750dba-070d-4323-abf9-f2e1649196e9",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/02696389-2633-4439-b5df-8e40f051aa25",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "protocol_id": "b40e8a78-6ed7-4e43-b0e8-885e23870b04",
+            "submission_split_at": "2026-10-22T01:18:49.560869+00:00",
+            "label_available_as_of": "2026-10-22T01:18:53.236511+00:00",
+            "selections": [
+              {
+                "admission_id": "bf750dba-070d-4323-abf9-f2e1649196e9",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+                "purpose": "development"
+              },
+              {
+                "admission_id": "a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "02696389-2633-4439-b5df-8e40f051aa25",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+                "purpose": "final"
+              }
+            ],
+            "reason": "Exact selected admissions with actual split, cutoff and full related-group closure"
+          },
+          "etag": null,
+          "key": "d1ce0a22-6e4d-4509-b25d-f1360b20c53c"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "kind": "train",
+            "reason": "Run the exact independently credentialed CPU baseline"
+          },
+          "etag": "\"package-history-cohort-view:11b3ba28-3b68-415c-b775-43e81b852b52:4977e935de8e8167cac8eeb47c331d1f5c52cb474a5a6e9ce0688bd1e2c212e1\"",
+          "key": "57c305cd-86d8-48cf-b7b3-9512ea7dcf04"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "pause",
+            "generation": 1,
+            "reason": "Pause this exact task before the independent CPU runner"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:9597c24cebce5144c5cc086eb1be793f17c4a4eba1d6279afc5aa20d63e988a3\"",
+          "key": "7b967443-ba77-4c41-8504-4c8a14d084fa"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "resume",
+            "generation": 2,
+            "reason": "Resume the same frozen research task"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:fc7a7e10170d465242d488eb40d7b7e06facd054edd3fda6afd24a8b17cc921a\"",
+          "key": "fc6dbf76-2463-4001-a35c-bbd5bc1eac95"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_directory",
+        "admission_current",
+        "fit_second_current",
+        "development_current",
+        "final_known_current",
+        "final_crossing_current",
+        "final_unknown_current",
+        "protocols_directory",
+        "cohort_created",
+        "cohort_current",
+        "train_created",
+        "cohort_current",
+        "train_queued",
+        "train_queued",
+        "pause_ack",
+        "cohort_current",
+        "train_paused",
+        "train_paused",
+        "resume_ack",
+        "cohort_current",
+        "train_resumed",
+        "train_resumed",
+        "train_succeeded"
+      ]
+    },
+    {
+      "mode": "evaluation",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_current",
+        "jobs_directory",
+        "evaluate_succeeded"
+      ]
+    },
+    {
+      "mode": "stale",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_stale",
+        "jobs_directory",
+        "evaluation_stale"
+      ]
+    },
+    {
+      "mode": "recovery",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "seed": 17,
+            "bootstrap_iterations": 100,
+            "reason": "Explicit feature-free CPU baseline protocol; synthetic mechanism evidence"
+          },
+          "etag": null,
+          "key": "df7a34c8-018d-446e-8ae7-7c00bf837b84"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "protocol_created"
+      ]
+    },
+    {
+      "mode": "unavailable",
+      "width": 1280,
+      "theme": "light",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_unavailable",
+        "admissions_empty"
+      ]
+    },
+    {
+      "mode": "admission",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admission-context",
+          "query": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/bids/c27af7b3-1332-4eeb-8ef1-68a00d75a550/packages/4b359230-3a70-4704-8cef-c6f0abda4688/revisions/3f8e0b93-1151-4862-8d20-f4b18847c9ba/technical-scopes/bf3558df-07a6-422f-8e52-4290c4f0e94e/historical-admissions",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "submission_id": "03833cea-c096-4a18-814c-077ad6772102",
+            "outcome_id": "268198a0-80e6-4b4c-b331-3f67aff6a5e1",
+            "proof_id": "9a3337fa-521e-4fa4-9411-83feb9a99706",
+            "context_digest": "968fad1217cd4058190b6a382f7df3dd9c2edc6844284d975e925268e6e733a7",
+            "reason": "Explicit synthetic research admission through the guarded public API"
+          },
+          "etag": "\"package-history-context:bf3558df-07a6-422f-8e52-4290c4f0e94e:a97dcf1e1440876f2565b17543f5d6d02956459798f11ecbae5f30d98ea32a41\"",
+          "key": "a093abeb-0f35-423a-81f0-cfb7de3f84ca"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admission_context",
+        "admission_created"
+      ]
+    },
+    {
+      "mode": "study",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/bf750dba-070d-4323-abf9-f2e1649196e9",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/02696389-2633-4439-b5df-8e40f051aa25",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions/84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "protocol_id": "b40e8a78-6ed7-4e43-b0e8-885e23870b04",
+            "submission_split_at": "2026-10-22T01:18:49.560869+00:00",
+            "label_available_as_of": "2026-10-22T01:18:53.236511+00:00",
+            "selections": [
+              {
+                "admission_id": "bf750dba-070d-4323-abf9-f2e1649196e9",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "d9ed96ad-113f-4503-a457-cc8c6feb8f2f",
+                "purpose": "fit"
+              },
+              {
+                "admission_id": "8ac7c09a-1669-42c8-8c5e-5bdd32897852",
+                "purpose": "development"
+              },
+              {
+                "admission_id": "a0a93faa-7ca7-42ad-af90-2ce5fc506cc4",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "02696389-2633-4439-b5df-8e40f051aa25",
+                "purpose": "final"
+              },
+              {
+                "admission_id": "84b1b312-c0a3-4658-ba98-5cbcacb788c6",
+                "purpose": "final"
+              }
+            ],
+            "reason": "Exact selected admissions with actual split, cutoff and full related-group closure"
+          },
+          "etag": null,
+          "key": "618e968b-198d-45e4-9dc2-b4e15dc75143"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "kind": "train",
+            "reason": "Run the exact independently credentialed CPU baseline"
+          },
+          "etag": "\"package-history-cohort-view:11b3ba28-3b68-415c-b775-43e81b852b52:4977e935de8e8167cac8eeb47c331d1f5c52cb474a5a6e9ce0688bd1e2c212e1\"",
+          "key": "1452894b-4265-477f-aebf-72146eaa3db0"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "pause",
+            "generation": 1,
+            "reason": "Pause this exact task before the independent CPU runner"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:9597c24cebce5144c5cc086eb1be793f17c4a4eba1d6279afc5aa20d63e988a3\"",
+          "key": "065bae97-5168-428c-b2ff-e7773c1206d7"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec/control",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "action": "resume",
+            "generation": 2,
+            "reason": "Resume the same frozen research task"
+          },
+          "etag": "\"package-history-job-view:06a79b25-3574-485d-adb3-d330c2f12bec:fc7a7e10170d465242d488eb40d7b7e06facd054edd3fda6afd24a8b17cc921a\"",
+          "key": "0873679b-3ee3-4bb1-9285-a5ac95d8507f"
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/06a79b25-3574-485d-adb3-d330c2f12bec",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_directory",
+        "admission_current",
+        "fit_second_current",
+        "development_current",
+        "final_known_current",
+        "final_crossing_current",
+        "final_unknown_current",
+        "protocols_directory",
+        "cohort_created",
+        "cohort_current",
+        "train_created",
+        "cohort_current",
+        "train_queued",
+        "train_queued",
+        "pause_ack",
+        "cohort_current",
+        "train_paused",
+        "train_paused",
+        "resume_ack",
+        "cohort_current",
+        "train_resumed",
+        "train_resumed",
+        "train_succeeded"
+      ]
+    },
+    {
+      "mode": "evaluation",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_current",
+        "jobs_directory",
+        "evaluate_succeeded"
+      ]
+    },
+    {
+      "mode": "stale",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/cohorts",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/cohorts/11b3ba28-3b68-415c-b775-43e81b852b52/jobs",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/jobs/cd7b8d3e-c7e4-438b-9c46-a34160bd29e0",
+          "query": {},
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "cohorts_directory",
+        "cohort_stale",
+        "jobs_directory",
+        "evaluation_stale"
+      ]
+    },
+    {
+      "mode": "recovery",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/protocols",
+          "query": {},
+          "method": "POST",
+          "body": {
+            "method_digest": "6934837f0728822af4717b7e97b0477d05e069b0641f6d4a77cdc5022c60e8e6",
+            "seed": 17,
+            "bootstrap_iterations": 100,
+            "reason": "Explicit feature-free CPU baseline protocol; synthetic mechanism evidence"
+          },
+          "etag": null,
+          "key": "5a8525cb-a7be-42fe-87f9-0a39920c7b88"
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "protocol_created"
+      ]
+    },
+    {
+      "mode": "unavailable",
+      "width": 1280,
+      "theme": "dark",
+      "passed": true,
+      "overflow": false,
+      "errors": [],
+      "external": [],
+      "calls": [
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        },
+        {
+          "path": "/api/v1/package-historical-research/admissions",
+          "query": {
+            "limit": "20"
+          },
+          "method": "GET",
+          "body": null,
+          "etag": null,
+          "key": null
+        }
+      ],
+      "unexpected": [],
+      "used": [
+        "admissions_unavailable",
+        "admissions_empty"
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "native-admission-complete-390-light.png",
+      "sha256": "510d0a52a7ac8126413c1767be3101d63c4e89b49912c09906b3c865479c6515"
+    },
+    {
+      "file": "native-study-proposal-390-light.png",
+      "sha256": "180a77c67bb01d533b11a67b13a89aa33b4984b7a61f1517ba76eb92c0e07d06"
+    },
+    {
+      "file": "native-study-complete-390-light.png",
+      "sha256": "289ef2713f1ba9f756c875e88be62040b2c53bc18dad9cc61a62b2ad83a60254"
+    },
+    {
+      "file": "native-evaluation-complete-390-light.png",
+      "sha256": "406ee07bf43957119d661c0c0d521104f52b5c66c32ab34b2369de28dc3b0a0c"
+    },
+    {
+      "file": "native-stale-complete-390-light.png",
+      "sha256": "41fb6c29054d68cbdadc896f7283bfbc9a7bfe6c9ac766953924197ff816dfbc"
+    },
+    {
+      "file": "native-recovery-pending-390-light.png",
+      "sha256": "3bed3f24e2aaa616e90e06eaff5a888bc0932e23633e3464631470f2847f2dd9"
+    },
+    {
+      "file": "native-recovery-complete-390-light.png",
+      "sha256": "86f9290ed27dee79af82824d2e274228da1793e56a06d4c4f39fa8a87d4cd81e"
+    },
+    {
+      "file": "native-unavailable-unknown-390-light.png",
+      "sha256": "ab58922b9a7d08936a2ad14cc8e8197639224381a2a581877efce2eba5cb0229"
+    },
+    {
+      "file": "native-unavailable-complete-390-light.png",
+      "sha256": "18dd76faaa21c63cb0aefca1695d86e33824b7d3b4b6a2de5c80d39683c67eed"
+    },
+    {
+      "file": "native-admission-complete-390-dark.png",
+      "sha256": "f42223a1ee57772325499133de7f08054b4c62be462369f8690e9c4c5231dbff"
+    },
+    {
+      "file": "native-study-proposal-390-dark.png",
+      "sha256": "3c60a3493914c92c19bbbb8065b16b807078200c87ccf818f7c60d281845841d"
+    },
+    {
+      "file": "native-study-complete-390-dark.png",
+      "sha256": "349dc71fb21cfc3a974cd3761369dac8c0eef87fd840975ad94fbbc1a07b20a4"
+    },
+    {
+      "file": "native-evaluation-complete-390-dark.png",
+      "sha256": "5625e607a77c540d06c166bf160bfc52c7cbc4ae15b27fe8292e9740d361c185"
+    },
+    {
+      "file": "native-stale-complete-390-dark.png",
+      "sha256": "37bed376af1cff9fe3b8e72aa7ff1a96ade928a19e2c43fc966773acf1912498"
+    },
+    {
+      "file": "native-recovery-pending-390-dark.png",
+      "sha256": "9f1c902f53a1c40d1540c5b01a28df10af721d8fb82f3acfb7e6e8b946e639f8"
+    },
+    {
+      "file": "native-recovery-complete-390-dark.png",
+      "sha256": "c8b4f9a9c15963dba7091f68d2e23cb2450374eeb9ad3c449f9b1f009cc80727"
+    },
+    {
+      "file": "native-unavailable-unknown-390-dark.png",
+      "sha256": "69ded660604b7d08240e7ea8ef4595606107b836f420db73a51153e3d6c6a099"
+    },
+    {
+      "file": "native-unavailable-complete-390-dark.png",
+      "sha256": "bdeaae8b13a7b9ff6e20c81764ad93ec7427e8725482902905e715d7c176c83a"
+    },
+    {
+      "file": "native-admission-complete-1280-light.png",
+      "sha256": "2cabc771c2359dc61a41330949426d1317d180f658afbd7ba2bb65815aa759a7"
+    },
+    {
+      "file": "native-study-proposal-1280-light.png",
+      "sha256": "e8ac3f6b41115e7344116536f4ecd9990811d122f277814fd8dc5263e5fd3cf5"
+    },
+    {
+      "file": "native-study-complete-1280-light.png",
+      "sha256": "07b385b41de6abdc695d5d3a222bce52d2efaf326deecefa05551cda4d358c2c"
+    },
+    {
+      "file": "native-evaluation-complete-1280-light.png",
+      "sha256": "a12d4c8a86bb59bbb0388e497f0cf56ecdccf74c87a1ffad1db827b2506c5fdb"
+    },
+    {
+      "file": "native-stale-complete-1280-light.png",
+      "sha256": "f161e10668e8daae2788c156b1795ce4341a15c9c63d3d1438753baf7936408b"
+    },
+    {
+      "file": "native-recovery-pending-1280-light.png",
+      "sha256": "8a5338dac8e833db65f88f4ae6dd494de8a90ee87ca386b35acc353f78919d9a"
+    },
+    {
+      "file": "native-recovery-complete-1280-light.png",
+      "sha256": "d9a088065a11b3461670867570146a59f0b6e9d7dc56844cb7adbb1ef8b955f3"
+    },
+    {
+      "file": "native-unavailable-unknown-1280-light.png",
+      "sha256": "2b7be40a79647e1063e97b4df43e284bd06bf181b4dad74905c5bfba44d0cb37"
+    },
+    {
+      "file": "native-unavailable-complete-1280-light.png",
+      "sha256": "73e33c47cbe6455f6da0b35ee62ce874247eff62cef74417914408abcc06a818"
+    },
+    {
+      "file": "native-admission-complete-1280-dark.png",
+      "sha256": "7180c9c3b44e14b79f80a089920c5c97209b6420bab527130ac41096e1f2eb99"
+    },
+    {
+      "file": "native-study-proposal-1280-dark.png",
+      "sha256": "c58200f410252a5a8cdbf84092373d86908136ff2f211b6fe979b11279d63956"
+    },
+    {
+      "file": "native-study-complete-1280-dark.png",
+      "sha256": "614b0f933efd5b218f563dd7dbe289cd17ebc329bbff697c28d04f22ee639b5e"
+    },
+    {
+      "file": "native-evaluation-complete-1280-dark.png",
+      "sha256": "950a072a2f12d95a523a5a46f4e40a2d4ddbad1014769c9685becdcdeebc2e1e"
+    },
+    {
+      "file": "native-stale-complete-1280-dark.png",
+      "sha256": "05ad13a42f39f5804c1abb6dc6e8a3011a61667facb78a3d288c0bc8b89ffb27"
+    },
+    {
+      "file": "native-recovery-pending-1280-dark.png",
+      "sha256": "c1e6d7f72a9673df0b34ad256413133bab7cf556bd8ed7c0b9866f718ac0be41"
+    },
+    {
+      "file": "native-recovery-complete-1280-dark.png",
+      "sha256": "c7b32e39ff8bf31bc3e144f6cfe93dc323c5deba58098fedf7c6b33269951ae4"
+    },
+    {
+      "file": "native-unavailable-unknown-1280-dark.png",
+      "sha256": "5c84f9c2069656fcb849db1ed5bcbb6160df426f0fc3053dabf4cf1a9dcb1d78"
+    },
+    {
+      "file": "native-unavailable-complete-1280-dark.png",
+      "sha256": "76d542e7bd38e93025e80a63e1074fe9dbc69c7ae14d95a30bf07d4685e9154a"
+    }
+  ],
+  "chromium": "151.0.7922.34",
+  "source_after": {
+    "scripts/check-package-history-native-browser.mjs": "5b2a223d3aec38ecc544bfa6eab4fba8326b35e84124d56902a80fd3774867cf",
+    "src/PackageHistoricalAdmission.css": "b63dfcdbbb1d5fb98465e3ddcc24c9b904917f62b79dad84e7e996e485bfd00c",
+    "src/PackageHistoricalAdmission.tsx": "336966d7ff3cc66cd88399fd806a9ea12a2e5887d3755071e95d8282e6791619",
+    "src/PackageHistoricalResearch.css": "05caa3c2a2ea6d1ff3836db553d39b0b83e8e4b6bf3e62f2f4dc72fe90ab54eb",
+    "src/PackageHistoricalResearch.tsx": "5474421fd73845e762c8bbe05c70998abad3752fd6e4273bb5744cea90c8e37b",
+    "src/PackageHistoricalResearchCommon.tsx": "b86ea5899b222fa78500ba3563308d9779d1a7cd4170dd62d53c0162c7719685",
+    "src/PackageHistoricalResearchDetails.tsx": "44de980656f4e2bd90632e97760d3f1c20138d8ab28b932f2e8074848aec3518",
+    "src/PackageHistoricalResearchForms.tsx": "79f34c7a6d7aa98d99443e6d984b95f3a70d3d3685fa27cf6f66acc642ed53f7",
+    "src/PackageHistoricalResearchJobs.tsx": "7d0204f85e44caa47d152c54236c817b6f907591e8b53639039ad76e6717f3cc",
+    "src/ResourceFeedback.css": "2afe5d67344e2e1c61a26eae1b8783791f4d4931cfcd8d68f794049ce9ed9beb",
+    "src/api.ts": "4e5db2a8394c698aa62b7692716b11bab74765091466c55780f7286d49af5ecd",
+    "src/components.tsx": "b0c8965ea6a4d2c27cf19572465a590895350a8d1246086dadb241c09973cc6b",
+    "src/contracts.ts": "a279c8f3f5788c3b040a5f2866792be24b1b6069974948eb40e7781b99a10d28",
+    "src/editorSchema.ts": "31ae847e2674f22b26a5a70f384869ec62a485fcaae1b01034132ad2254d0456",
+    "src/executionInputValidation.ts": "bd5d26d2767ab8f7ac965d0a4a390eb4ddf35429fd8428b795efc58c5e132eb0",
+    "src/fusion-fonts.css": "3c296a327b7e90ebca5e03bdd8846daccb96d078c7ce2010183b662f5854fde4",
+    "src/historicalImportProtocol.ts": "599781a947f3c5f83603b53950ff349f444f807b4988f78eb388cff53ed2f763",
+    "src/navigationGuard.ts": "b58d04fef23cb3d7a39945fa449beb563098bf3b23e31c2f7ef3dd5692e3a4d9",
+    "src/packageEligibilityObservation.ts": "6b91b9f80ef7ecfa475d6a75d95e9b2731b181ded10e7e3f1cd502b6624eac30",
+    "src/packageFrozenInput.ts": "93f12fdcba4c1f5da2cdf5cc8a9f9023bed34b46fbd628b594cbfef4ef512580",
+    "src/packageHistoricalResearchProtocol.ts": "5b3aa83599afba69a6aefb32d7f96da23f0816944e1bd80b68e5924eb7bb375a",
+    "src/packageHistoricalResearchRecovery.ts": "ed4cb3a5ce98cf7d21cb7aee7128cf74a1b91da241e4f4784bfd9a5d19aa9c61",
+    "src/packageHistoricalResearchSchemas.ts": "d890ebdd0fdf24a437593f8eb127a56006316bb260e19c96f75024ddfe7c3663",
+    "src/packageHistoryPresentation.ts": "acb1624bdfa58f53c9c311dd2a9b5c713fd85477a06ed95d9c7f352166766ade",
+    "src/packageNavigation.ts": "bf734b6f2903b0fe7783e8a32fde7b7116ae36f086e68db04b3111b1788f3871",
+    "src/packageOutcomeProtocol.ts": "435d24c328ee8157df6da8fe8c7df6c15d7d88f764f9771d160d524a33f95271",
+    "src/packageReviewBlockers.ts": "d6496820844f6862eac537faf14975dacc562977aec49dbc92e1c83c2f12658a",
+    "src/packageReviewContext.ts": "4ef51c02d7a3ebb14cc92923127bffad4fbd1217b5d0b1a12002fd669902e357",
+    "src/packageScopeGuard.ts": "65e23e1c54899ba58618a0448f613535f9ff163f5d00e1f7d80e11f8906fd695",
+    "src/recordedCommandStorage.ts": "86de7e00940046cf6f4b1fb605e0939aa157f0f355309995a1b1bdb0cc1be740",
+    "src/styles.css": "bb3ff7be2cc15d4f33ae83099765eaa6cce80a00c93673a5b9e7ec1855612c85",
+    "src/test-fixtures/package-history-ui-complete-http.json": "66bf161e65cdb09cc72e4b4a1e4803ecacc57830e32dfcd123beb34519e9679a",
+    "src/test-fixtures/package-history-ui-unavailable-http.json": "21e039e5fdec975e5b3d03713e739e8c27aea0cd19c76f1a525f23d29342ed74",
+    "src/theme.css": "8c2aa9b1c0743be1a267f2fe6963cf8c96e58bbe4e79a48dfd5c6c60e413d31b",
+    "src/usePackageHistoryDirectory.ts": "afd59b55734a4f958444317125f11bbdc98ac23b1436a650a400f738a03a0520",
+    "src/workContextProtocol.ts": "2d97fc083caabd8709f231f9ea7b8de9f42cd65a8b99dde3a0889aa3bdb718b6"
+  },
+  "source_unchanged": false,
+  "error": "Error: Source changed during browser run"
+}

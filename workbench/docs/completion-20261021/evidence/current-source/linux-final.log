@@ -1,0 +1,4 @@
+.....................................................                    [100%]
+----------- generated xml file: /evidence/current-source-native.xml ------------
+53 passed in 3.87s
+{"suite": "current-source-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

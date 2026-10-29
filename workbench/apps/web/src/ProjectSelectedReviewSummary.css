@@ -1,0 +1,31 @@
+.project-review-summary > .section-heading {
+  flex-wrap: wrap;
+}
+.project-review-summary > .section-heading > div {
+  flex: 1 1 220px;
+}
+.project-review-summary > .section-heading > button {
+  flex-shrink: 0;
+}
+.project-review-summary__content {
+  padding: 0 23px 22px;
+  overflow-wrap: anywhere;
+}
+.project-review-summary .project-review-summary__selection-heading {
+  padding: 0;
+  margin: 8px 0 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.project-review-summary .package-next-actions {
+  padding: 16px;
+  margin: 16px 0;
+}
+@media (max-width: 600px) {
+  .project-review-summary__content {
+    padding: 0 16px 18px;
+  }
+  .project-review-summary .package-next-actions {
+    padding: 12px;
+  }
+}

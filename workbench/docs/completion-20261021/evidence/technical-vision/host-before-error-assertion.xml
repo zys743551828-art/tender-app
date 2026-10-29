@@ -1,0 +1,1386 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="56" time="1.205" timestamp="2026-10-23T23:49:33.410237+08:00" hostname="zhangyansong"><testcase classname="tests.test_package_technical_vision" name="test_wire_contains_every_text_page_and_exact_png_in_frozen_order" time="0.039" /><testcase classname="tests.test_package_technical_vision" name="test_three_calls_have_identical_body_without_previous_answers_and_keep_raw_response" time="0.004" /><testcase classname="tests.test_package_technical_vision" name="test_serializer_and_input_digests_cannot_be_replaced" time="0.021" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[text]" time="0.008" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[blob]" time="0.010" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[missing_blob]" time="0.010" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[profile]" time="0.008" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[semantic]" time="0.008" /><testcase classname="tests.test_package_technical_vision" name="test_changed_input_or_bytes_rejected_before_any_http[material_digest]" time="0.008" /><testcase classname="tests.test_package_technical_vision" name="test_preflight_limits_reject_instead_of_dropping_images_or_resampling[MAX_BODY_BYTES]" time="0.034" /><testcase classname="tests.test_package_technical_vision" name="test_preflight_limits_reject_instead_of_dropping_images_or_resampling[MAX_IMAGES]" time="0.034" /><testcase classname="tests.test_package_technical_vision" name="test_preflight_limits_reject_instead_of_dropping_images_or_resampling[MAX_IMAGE_BYTES]" time="0.033" /><testcase classname="tests.test_package_technical_vision" name="test_many_image_dimension_limit_uses_fifteen_including_every_overview" time="0.078" /><testcase classname="tests.test_package_technical_vision" name="test_wire_must_match_owned_reserved_request_before_send[body]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_wire_must_match_owned_reserved_request_before_send[profile]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[301]" time="0.002" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[401]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[403]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[429]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[500]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_http_failure_does_not_follow_redirect_retry_or_echo_raw[503]" time="0.001" /><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-INVALID_RESPONSE-unknown0]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_INVALID_RESPONSE'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66700&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"other-model","system_fingerprint":"synthetic-fingerprint","choices":[{"message":... \\"evidence\\": []}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_INVALID_RESPONSE
+
+packages\domain\providers\deepseek_vision.py:88: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66700&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_INVALID_RESPONSE'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-INVALID_RESPONSE-unknown1]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_INVALID_RESPONSE'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C667A0&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":"synthetic-fingerprint","choices":[{"messag...\"evidence\\": []}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":true,"completion_tokens":10,"total_tokens":11}}'
+request_id = None
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_INVALID_RESPONSE
+
+packages\domain\providers\deepseek_vision.py:88: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C667A0&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_INVALID_RESPONSE'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-OUTPUT_INCOMPLETE-usage_reported]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_OUTPUT_INCOMPLETE'">self = &lt;packages.domain.providers.deepseek_vision.DeepSeekVisionClient object at 0x00000292C5E5DB50&gt;
+request = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+
+    def generate(self, request, *, expected_request_digest, expected_profile_digest):
+        try:
+&gt;           asyncio.get_running_loop()
+E           RuntimeError: no running event loop
+
+packages\domain\providers\deepseek_vision.py:138: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66840&gt;, code = 'OUTPUT_INCOMPLETE'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":"synthetic-fingerprint","choices":[{"messag...\"evidence\\": []}"},"finish_reason":"length"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+            raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+        if finish != "stop":
+&gt;           raise VisionProviderError(
+                "VISION_OUTPUT_INCOMPLETE",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            )
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_OUTPUT_INCOMPLETE
+
+packages\domain\providers\deepseek_vision.py:92: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66840&gt;, code = 'OUTPUT_INCOMPLETE'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_OUTPUT_INCOMPLETE'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-OUTPUT_INVALID-usage_reported0]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_OUTPUT_INVALID'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C668E0&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":"synthetic-fingerprint","choices":[{"messag...:"{\\"wrong\\":true}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+            raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+        if finish != "stop":
+            raise VisionProviderError(
+                "VISION_OUTPUT_INCOMPLETE",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            )
+        try:
+            data = decode(content)
+            canonical(data)
+            if not Draft202012Validator(JUDGMENT, format_checker=FormatChecker()).is_valid(data):
+                raise ValueError("judgment")
+        except (TypeError, ValueError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_OUTPUT_INVALID",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_OUTPUT_INVALID
+
+packages\domain\providers\deepseek_vision.py:105: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C668E0&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_OUTPUT_INVALID'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-OUTPUT_INVALID-usage_reported1]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_OUTPUT_INVALID'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66980&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":"synthetic-fingerprint","choices":[{"messag...\\"a\\":1,\\"a\\":2}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+            raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+        if finish != "stop":
+            raise VisionProviderError(
+                "VISION_OUTPUT_INCOMPLETE",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            )
+        try:
+            data = decode(content)
+            canonical(data)
+            if not Draft202012Validator(JUDGMENT, format_checker=FormatChecker()).is_valid(data):
+                raise ValueError("judgment")
+        except (TypeError, ValueError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_OUTPUT_INVALID",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_OUTPUT_INVALID
+
+packages\domain\providers\deepseek_vision.py:105: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66980&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_OUTPUT_INVALID'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-OUTPUT_INVALID-usage_reported2]" time="0.002"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_OUTPUT_INVALID'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66A20&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":"synthetic-fingerprint","choices":[{"messag...tent":"{\\"a\\":NaN}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+            raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+        if finish != "stop":
+            raise VisionProviderError(
+                "VISION_OUTPUT_INCOMPLETE",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            )
+        try:
+            data = decode(content)
+            canonical(data)
+            if not Draft202012Validator(JUDGMENT, format_checker=FormatChecker()).is_valid(data):
+                raise ValueError("judgment")
+        except (TypeError, ValueError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_OUTPUT_INVALID",
+                raw_response=raw,
+                raw_complete=True,
+                request_id=request_id,
+                usage=usage,
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_OUTPUT_INVALID
+
+packages\domain\providers\deepseek_vision.py:105: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66A20&gt;, code = 'OUTPUT_INVALID'
+billing = 'usage_reported'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_OUTPUT_INVALID'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_invalid_response_preserves_raw_and_precise_billing_without_retry[&lt;lambda&gt;-INVALID_RESPONSE-unknown2]" time="0.001"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: '未自动重试'&#10; Input: 'VISION_INVALID_RESPONSE'">request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66AC0&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+        with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+&gt;           send(client(handler), request_packet)
+
+tests\test_package_technical_vision.py:404: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_package_technical_vision.py:185: in send
+    return port.generate(
+packages\domain\providers\deepseek_vision.py:140: in generate
+    return asyncio.run(
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\asyncio\base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+packages\domain\providers\deepseek_vision.py:203: in generate_async
+    return parse_response(bytes(raw), request_id, expected_request_digest)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+raw = b'{"id":"synthetic-response","model":"deepseek-flash","system_fingerprint":{"secret":"not identifier"},"choices":[{"me... \\"evidence\\": []}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":20,"completion_tokens":10,"total_tokens":30}}'
+request_id = 'synthetic-response'
+request_digest = '42b10e1e734f15e8740462415925d2ede04e1d80279153fef46ce53b18d8fe00'
+
+    def parse_response(raw, request_id, request_digest):
+        request_id = identifier(request_id)
+        try:
+            value = decode(raw)
+            usage = value["usage"]
+            if (
+                not isinstance(usage, dict)
+                or any(
+                    type(usage.get(k)) is not int or usage[k] &lt; 0
+                    for k in ("prompt_tokens", "completion_tokens", "total_tokens")
+                )
+                or usage["total_tokens"] != usage["prompt_tokens"] + usage["completion_tokens"]
+            ):
+                raise ValueError("usage")
+            usage = {key: count for key, count in usage.items() if type(count) is int and count &gt;= 0}
+            response_id = identifier(value["id"])
+            request_id = request_id or response_id
+            if (
+                not response_id
+                or not request_id
+                or value["model"] != vision.profile()["expected_response_model"]
+                or len(value["choices"]) != 1
+            ):
+                raise ValueError("identity")
+            choice = value["choices"][0]
+            message = choice["message"]
+            content = message["content"]
+            fingerprint = value.get("system_fingerprint")
+            if (
+                message["role"] != "assistant"
+                or message.get("tool_calls")
+                or not isinstance(content, str)
+                or not content.strip()
+                or (fingerprint is not None and identifier(fingerprint) != fingerprint)
+            ):
+                raise ValueError("message")
+            finish = choice["finish_reason"]
+        except (TypeError, ValueError, KeyError, IndexError, UnicodeError, RecursionError):
+&gt;           raise VisionProviderError(
+                "VISION_INVALID_RESPONSE", raw_response=raw, raw_complete=True, request_id=request_id
+            ) from None
+E           packages.domain.providers.deepseek_vision.VisionProviderError: VISION_INVALID_RESPONSE
+
+packages\domain\providers\deepseek_vision.py:88: VisionProviderError
+
+During handling of the above exception, another exception occurred:
+
+request_packet = &lt;packages.model_governance.package_technical_vision.PreparedVisionRequest object at 0x00000292C5E9E1B0&gt;
+change = &lt;function &lt;lambda&gt; at 0x00000292C3C66AC0&gt;, code = 'INVALID_RESPONSE'
+billing = 'unknown'
+
+    @pytest.mark.parametrize(
+        "change,code,billing",
+        [
+            (lambda v: v.update(model="other-model"), "INVALID_RESPONSE", "unknown"),
+            (
+                lambda v: v.update(
+                    usage={"prompt_tokens": True, "completion_tokens": 10, "total_tokens": 11}
+                ),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+            (
+                lambda v: v["choices"][0].update(finish_reason="length"),
+                "OUTPUT_INCOMPLETE",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"wrong":true}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":1,"a":2}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v["choices"][0]["message"].update(content='{"a":NaN}'),
+                "OUTPUT_INVALID",
+                "usage_reported",
+            ),
+            (
+                lambda v: v.update(system_fingerprint={"secret": "not identifier"}),
+                "INVALID_RESPONSE",
+                "unknown",
+            ),
+        ],
+    )
+    def test_invalid_response_preserves_raw_and_precise_billing_without_retry(
+        request_packet, change, code, billing
+    ):
+        value = envelope()
+        change(value)
+        seen = []
+    
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=value)
+    
+&gt;       with pytest.raises(provider.VisionProviderError, match="未自动重试") as caught:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: '未自动重试'
+E        Input: 'VISION_INVALID_RESPONSE'
+
+tests\test_package_technical_vision.py:403: AssertionError</failure></testcase><testcase classname="tests.test_package_technical_vision" name="test_total_timeout_and_response_size_keep_unknown_billing" time="0.006" /><testcase classname="tests.test_package_technical_vision" name="test_configuration_is_explicit_and_sync_entry_refuses_running_loop" time="0.001" /><testcase classname="tests.test_providers" name="test_generation_single_request_json_usage_and_qualification" time="0.002" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[301]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[401]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[403]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[429]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[500]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_http_failure_never_retries_or_echoes[503]" time="0.001" /><testcase classname="tests.test_providers" name="test_model_timeout_has_unknown_billing_and_one_attempt" time="0.019" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response0-MODEL_OUTPUT_INCOMPLETE]" time="0.002" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response1-MODEL_OUTPUT_INVALID]" time="0.002" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response2-MODEL_OUTPUT_INVALID]" time="0.001" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response3-MODEL_OUTPUT_INVALID]" time="0.001" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response4-MODEL_INVALID_RESPONSE]" time="0.002" /><testcase classname="tests.test_providers" name="test_invalid_model_outputs_never_accepted[response5-MODEL_INVALID_RESPONSE]" time="0.001" /><testcase classname="tests.test_providers" name="test_invalid_configuration_and_schema_fail_before_network" time="0.001" /><testcase classname="tests.test_providers" name="test_nested_schema_resource_fails_before_payment" time="0.001" /><testcase classname="tests.test_providers" name="test_runtime_reference_error_retains_usage_and_safe_failure" time="0.001" /><testcase classname="tests.test_providers" name="test_native_oss_signing_and_strict_grants" time="0.001" /><testcase classname="tests.test_providers" name="test_oss_immutable_dedup_actual_bytes_and_prefix" time="0.000" /><testcase classname="tests.test_providers" name="test_invalid_oss_prefix_rejected[/outside/]" time="0.000" /><testcase classname="tests.test_providers" name="test_invalid_oss_prefix_rejected[../other/]" time="0.000" /><testcase classname="tests.test_providers" name="test_invalid_oss_prefix_rejected[valid/no-trailing-slash]" time="0.000" /><testcase classname="tests.test_providers" name="test_invalid_oss_prefix_rejected[a//b/]" time="0.000" /><testcase classname="tests.test_providers" name="test_invalid_oss_prefix_rejected[a/../../]" time="0.000" /><testcase classname="tests.test_providers" name="test_oss_transport_preserves_proxy_ca_no_redirects_or_retry" time="0.000" /><testcase classname="tests.test_providers" name="test_oss_body_read_error_is_safe" time="0.000" /></testsuite></testsuites>

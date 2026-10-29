@@ -1,0 +1,330 @@
+[
+  {
+    "repository": "tender-app",
+    "base_commit": "88d35bb6a7e5e65a3870fe2f3cc103529a0f649d",
+    "tracked_changed_paths": [
+      "frontend/src/features/materials/MaterialsPage.test.tsx",
+      "frontend/src/features/materials/MaterialsPage.tsx",
+      "frontend/src/features/report/ReportPage.test.tsx",
+      "frontend/src/features/report/ReportPage.tsx",
+      "frontend/src/features/submit/SubmitPage.test.tsx",
+      "frontend/src/routes/App.test.tsx",
+      "frontend/src/routes/ProjectNav.tsx"
+    ],
+    "untracked_paths": [],
+    "archived_files": [
+      {
+        "path": "frontend/src/features/materials/MaterialsPage.test.tsx",
+        "sha256": "07c08f5e0cc01f6261d42475913128b65d11227dd07cb51ab4a7fb3152924b7b",
+        "bytes": 11129
+      },
+      {
+        "path": "frontend/src/features/materials/MaterialsPage.tsx",
+        "sha256": "212d776e321823bc7f10fdb130c2b4d5bb67fd940a6995d1eb220552f4cb3b3a",
+        "bytes": 17453
+      },
+      {
+        "path": "frontend/src/features/report/ReportPage.test.tsx",
+        "sha256": "198545f284f4678a879c31d5c967467f03e05673446c86876bcaf0ee287cbb48",
+        "bytes": 23964
+      },
+      {
+        "path": "frontend/src/features/report/ReportPage.tsx",
+        "sha256": "9cbce175694d9e7d5cd48acd8f5a76c7d997c0a62758be14d11dfb6beb698745",
+        "bytes": 12339
+      },
+      {
+        "path": "frontend/src/features/submit/SubmitPage.test.tsx",
+        "sha256": "3cd62d7a4323aab30c153b776644a805e6539f5725ebb6a2d5a02834a9b0e268",
+        "bytes": 11544
+      },
+      {
+        "path": "frontend/src/routes/App.test.tsx",
+        "sha256": "38116204b02c3482bf7624af73358170db728d99d1db5c28321a32a3aa282053",
+        "bytes": 4230
+      },
+      {
+        "path": "frontend/src/routes/ProjectNav.tsx",
+        "sha256": "71be392cfde071920fc0b61630b812b8bbb053a4d73e8be9dad6f2c40c560f16",
+        "bytes": 4118
+      }
+    ]
+  },
+  {
+    "repository": "tender-docs",
+    "base_commit": "afe99e4977a21df5be2fc5b4ab963084ad7f14fa",
+    "tracked_changed_paths": [
+      "00-项目管理/决策与依赖.md",
+      "02-业务与产品/一期方案与验证计划.md",
+      "02-业务与产品/业务需求说明书.md",
+      "03-数据与案例/数据管理规范.md",
+      "05-技术与设计/系统架构与数据契约.md",
+      "README.md"
+    ],
+    "untracked_paths": [
+      "01-背景与市场研究/AI执行与工作流选型复核.md",
+      "01-背景与市场研究/成熟AI系统与技术组件调研.md",
+      "01-背景与市场研究/相似AI产品技术路线核查.md",
+      "02-业务与产品/AI投标工作台PRD.md",
+      "02-业务与产品/AI投标工作台产品化方案.md",
+      "04-验证与测试/PRD逻辑检查与场景验证.md",
+      "04-验证与测试/architecture-checks/README.md",
+      "04-验证与测试/architecture-checks/check_design_assets.py",
+      "04-验证与测试/architecture-checks/design-assets-result.json",
+      "04-验证与测试/architecture-checks/fetch_official_sources.py",
+      "04-验证与测试/architecture-checks/frontend-package-metadata.json",
+      "04-验证与测试/architecture-checks/langgraph-result.json",
+      "04-验证与测试/architecture-checks/official-sources.json",
+      "04-验证与测试/architecture-checks/orchestration-sources.json",
+      "04-验证与测试/architecture-checks/pgvector-result.json",
+      "04-验证与测试/architecture-checks/postgres-result.json",
+      "04-验证与测试/architecture-checks/probe_langgraph.py",
+      "04-验证与测试/architecture-checks/probe_pgvector.py",
+      "04-验证与测试/architecture-checks/probe_postgres.py",
+      "04-验证与测试/architecture-checks/probe_scoring.py",
+      "04-验证与测试/architecture-checks/probe_temporal.py",
+      "04-验证与测试/architecture-checks/product-architecture-sources.json",
+      "04-验证与测试/architecture-checks/requirements-trace.json",
+      "04-验证与测试/architecture-checks/requirements.lock.txt",
+      "04-验证与测试/architecture-checks/run-manifest.json",
+      "04-验证与测试/architecture-checks/scoring-result.json",
+      "04-验证与测试/architecture-checks/temporal-result.json",
+      "04-验证与测试/prd-checks/check_prd.py",
+      "04-验证与测试/prd-checks/design-check-result.json",
+      "04-验证与测试/prd-checks/design-fixtures.json",
+      "04-验证与测试/prd-checks/scenarios.json",
+      "04-验证与测试/全新技术方案验证与自审.md",
+      "05-技术与设计/AI投标工作台全新系统技术方案.md",
+      "05-技术与设计/LangGraph路线技术方案.md",
+      "05-技术与设计/评分预测训练与验收方案.md"
+    ],
+    "archived_files": [
+      {
+        "path": "00-项目管理/决策与依赖.md",
+        "sha256": "beb50921d7d086416490524feb714d7f91073a0b4f098dee3d128ad01e8d7a6e",
+        "bytes": 16324
+      },
+      {
+        "path": "01-背景与市场研究/AI执行与工作流选型复核.md",
+        "sha256": "a2fd274d1d9f5b070f02d7df6fb339ce14b137fe35d13f309ca4e3b5412a0fbf",
+        "bytes": 13749
+      },
+      {
+        "path": "01-背景与市场研究/成熟AI系统与技术组件调研.md",
+        "sha256": "3a8c75eaf2091dcb5d0b2ec82f4e9071dc5f9289cc4f61601ff58b2201844da2",
+        "bytes": 20782
+      },
+      {
+        "path": "01-背景与市场研究/相似AI产品技术路线核查.md",
+        "sha256": "a6168420e7086dd1c8a267be4004713cecb14f6bfcfc50af8c40929f01cbc9fa",
+        "bytes": 9320
+      },
+      {
+        "path": "02-业务与产品/AI投标工作台PRD.md",
+        "sha256": "4c2ce8bdc32494172d6ad0d8f4584203647565f064b1cc8b8db990e3e4f823ad",
+        "bytes": 70246
+      },
+      {
+        "path": "02-业务与产品/AI投标工作台产品化方案.md",
+        "sha256": "0ada4613223b8fd8e5fcf5a2ace8233178c7fc8fa0d60de104baa4eb9a3f8045",
+        "bytes": 10810
+      },
+      {
+        "path": "02-业务与产品/一期方案与验证计划.md",
+        "sha256": "3d61c70f4121fc0be3cd70d1313d07bf84002ed26e8921428931a7b97a41c7eb",
+        "bytes": 61334
+      },
+      {
+        "path": "02-业务与产品/业务需求说明书.md",
+        "sha256": "c70ab34890905671f5286f620821f61528c48e0e1a0440740a83c8ca3e4a3c9f",
+        "bytes": 20858
+      },
+      {
+        "path": "03-数据与案例/数据管理规范.md",
+        "sha256": "124ce574580e89b89a05be7ac606b2c4aea677f9ac8c7c1b2665697879b8646e",
+        "bytes": 16533
+      },
+      {
+        "path": "04-验证与测试/PRD逻辑检查与场景验证.md",
+        "sha256": "6d6d6de28b9959f8bc1a9b4752a00cecce8dab8378779e72775f254cd14dc147",
+        "bytes": 44645
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/README.md",
+        "sha256": "dc78b9d06c604063637056fe49e47e1e963177a455dded2a77fd05ef690fdca7",
+        "bytes": 4089
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/check_design_assets.py",
+        "sha256": "28ed0802ff73fd148500fe33f687d50acd81dbdc5f262b98ce82974137564b91",
+        "bytes": 8673
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/design-assets-result.json",
+        "sha256": "2cf12d6c4c94430cd4981a5dd3dab3064cfa5b95a1bb256397c6fb85acc4eb0c",
+        "bytes": 3200
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/fetch_official_sources.py",
+        "sha256": "d666687d21f1c0ce5ef1a2367f8736fc4df7f9f7acba5f4bcd5f64d062aaae50",
+        "bytes": 2385
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/frontend-package-metadata.json",
+        "sha256": "64f4d26e3462ffa115391d8edcf5e7c701517858d5f6fffc6ba365a400b6a60b",
+        "bytes": 1274
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/langgraph-result.json",
+        "sha256": "3c8ffad8ce925737ba85f34685f99f049e4ca7565c06f63128a275bfd5dce6f4",
+        "bytes": 663
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/official-sources.json",
+        "sha256": "06380ba48dbeae6e8f08a3f3a4b588aea136740b1500f5a4b05bbb4088dd52de",
+        "bytes": 35999
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/orchestration-sources.json",
+        "sha256": "ae3d7477c45b17353475ab7e407b13b025f2ed6877154862867d2c2f07d90a6f",
+        "bytes": 20096
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/pgvector-result.json",
+        "sha256": "62a96ccab3cbf7e730757aded8a218d55d571b240e998d38cdfa8a68919b2de0",
+        "bytes": 839
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/postgres-result.json",
+        "sha256": "ffdf43839f0e791c24dbf2eda0b0231016672779a72ab05c2a03ed03ebb33a52",
+        "bytes": 1342
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/probe_langgraph.py",
+        "sha256": "b93110de3b03f864594c46361027d40b6d1c4df98bbaabb6bb3df0d89b75c1f1",
+        "bytes": 3582
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/probe_pgvector.py",
+        "sha256": "36b0a0c5e610a4ab01a66e3f26eea2d651de500e6943571978605d3629d0f8be",
+        "bytes": 3010
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/probe_postgres.py",
+        "sha256": "7624ecd3086f960265cc420f48c8fedea425719a2489390e97e70c2e75df9136",
+        "bytes": 10308
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/probe_scoring.py",
+        "sha256": "f61bc16d6c7bd514f9b2cba765625595c572015ffe3b89c10cbf8d78a80506f0",
+        "bytes": 2158
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/probe_temporal.py",
+        "sha256": "e4b4c2e1c29c33d2a54af8ba2458f06f9ff1f997885ad0a6bc41b1df11b56aae",
+        "bytes": 7172
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/product-architecture-sources.json",
+        "sha256": "e2f2398c1ebf918b27c097d1f3b280f830efd7f5cb95858350515f91e742583b",
+        "bytes": 13171
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/requirements-trace.json",
+        "sha256": "3aabbe4f9b6a4365c7136d84cd90946ddac6e5634dfaff84121eb5666cf53138",
+        "bytes": 8067
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/requirements.lock.txt",
+        "sha256": "302bbd7a996b6ad4a51c5a3f43b00df29bc95b72802dd7281d25f7a99ba3e44e",
+        "bytes": 1033
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/run-manifest.json",
+        "sha256": "67c09287026b23b311715cbe2b1efcd7c26c2e70376bfd343e2d57a429113a83",
+        "bytes": 2342
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/scoring-result.json",
+        "sha256": "f979df2ce33027cd43c0a51cadd90b3696f11458394f0847b94f426cfee1a595",
+        "bytes": 510
+      },
+      {
+        "path": "04-验证与测试/architecture-checks/temporal-result.json",
+        "sha256": "577b024ef75752b4c657452d24bb3b2de4e145e734a2595e36fcfc8457f2ba5f",
+        "bytes": 1056
+      },
+      {
+        "path": "04-验证与测试/prd-checks/check_prd.py",
+        "sha256": "100078acbaa8514a073dc13960ac22503ea3579475b7af9c1a43d47bdd3fd17d",
+        "bytes": 16469
+      },
+      {
+        "path": "04-验证与测试/prd-checks/design-check-result.json",
+        "sha256": "368e4c86617ddf5c5c5574de6b99e3d534ec42f368456ca70e4e9771e638aa93",
+        "bytes": 1355
+      },
+      {
+        "path": "04-验证与测试/prd-checks/design-fixtures.json",
+        "sha256": "0b1cec770ffde8a9313d8fd853c916f851a503ea633958d8fda28b7f37f08435",
+        "bytes": 24213
+      },
+      {
+        "path": "04-验证与测试/prd-checks/scenarios.json",
+        "sha256": "9c5e1ae9f2a77f8567484ac12d917f8db0cb4dcd13b855029ee74ea712c87bbf",
+        "bytes": 42270
+      },
+      {
+        "path": "04-验证与测试/全新技术方案验证与自审.md",
+        "sha256": "51e1093f0f91cba67411d8816b0d4a5f3bbfd115d43ff001bc43312dece1cd2f",
+        "bytes": 21045
+      },
+      {
+        "path": "05-技术与设计/AI投标工作台全新系统技术方案.md",
+        "sha256": "920ae2b0e3e64413a17605d6bf6d6d7ca9049de338d607e1c0a9a9bc04398443",
+        "bytes": 50041
+      },
+      {
+        "path": "05-技术与设计/LangGraph路线技术方案.md",
+        "sha256": "732957577f9f692cc9265d8d0652f2419bd8abc510056c2916bec59f9ad155c9",
+        "bytes": 12932
+      },
+      {
+        "path": "05-技术与设计/系统架构与数据契约.md",
+        "sha256": "bf740114f2f3552fba67a9a4e0455469ff5d2ab51177f49f87bb02e86a3b2775",
+        "bytes": 91763
+      },
+      {
+        "path": "05-技术与设计/评分预测训练与验收方案.md",
+        "sha256": "5dcafcea30e92d40655de254e87c37ed6ab439c42c3cce5579de9c5f422afa62",
+        "bytes": 20649
+      },
+      {
+        "path": "README.md",
+        "sha256": "2745384259b9c16c16aab45e35d65ff152d5c9ba8c63b3365ab1592a534dfdfc",
+        "bytes": 15778
+      }
+    ]
+  },
+  {
+    "repository": "tender-design",
+    "base_commit": "175b325e6b4eb83d4b132343cf5429a6f459afec",
+    "tracked_changed_paths": [],
+    "untracked_paths": [],
+    "archived_files": []
+  },
+  {
+    "repository": "tender-research",
+    "base_commit": "007107df49b2dba60846b4d3855c1808b67c9cc6",
+    "tracked_changed_paths": [],
+    "untracked_paths": [],
+    "archived_files": []
+  },
+  {
+    "repository": "tender-datasets",
+    "base_commit": "cad38ba76d7bb9494a57a3cc69559dd55e030e3e",
+    "tracked_changed_paths": [],
+    "untracked_paths": [],
+    "archived_files": []
+  }
+]

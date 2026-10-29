@@ -1,0 +1,11 @@
+{
+  "local_openapi_refs_checked": 1257,
+  "unresolved_local_refs": 0,
+  "fixed_runtime_source_count": 308,
+  "fixed_runtime_sha_verified": true,
+  "own_archive_sha_verified": true,
+  "external_generation_requests": 0,
+  "consumer_started": false,
+  "database_ddl_changed": false,
+  "live8806_5176_changed": false
+}

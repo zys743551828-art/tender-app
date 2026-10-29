@@ -1,0 +1,5 @@
+........................................................................ [ 58%]
+....................................................                     [100%]
+----------- generated xml file: /evidence/material-archive-pure.xml ------------
+124 passed in 7.57s
+{"suite": "material-archive-pure", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

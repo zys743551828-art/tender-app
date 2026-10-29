@@ -1,0 +1,11 @@
+........................................................................ [ 69%]
+...............................                                          [100%]
+=============================== warnings summary ===============================
+tests/test_preparation_leases_pg.py::test_owned_exact_context_and_all_assets_heartbeat_and_reopen
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------- generated xml file: /evidence/preparation-leases-native.xml ----------
+103 passed, 1 warning in 178.96s (0:02:58)
+{"suite": "preparation-leases-native", "exit_code": 0, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

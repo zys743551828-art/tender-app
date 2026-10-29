@@ -1,0 +1,147 @@
+{
+  "version": "runtime-task-navigation-regression/1",
+  "base_commit": "5e0e52092cb2a90e021339ffbcb26909fc4c225b",
+  "candidate": "Independent full runtime, exact package manual tasks, project navigation and real transport fault recovery",
+  "backend": {
+    "returncode": 0,
+    "passed": 2397,
+    "skipped": 1310,
+    "failed": 0,
+    "errors": 0,
+    "warnings": 4,
+    "pytest_seconds": 83.39,
+    "wrapper_seconds": 85.87,
+    "source_file_count": 3966,
+    "source_before_sha256": "e8f9787d5c95da495ba147efe9fd3510b2d78ff4214c2268e05163a6687b148e",
+    "source_after_sha256": "e8f9787d5c95da495ba147efe9fd3510b2d78ff4214c2268e05163a6687b148e",
+    "source_unchanged": true,
+    "command": [
+      "/usr/bin/bwrap",
+      "--die-with-parent",
+      "--unshare-user",
+      "--ro-bind",
+      "/",
+      "/",
+      "--bind",
+      "/tmp",
+      "/tmp",
+      "--tmpfs",
+      "/workspace",
+      "--bind",
+      "/workspace/scratch",
+      "/workspace/scratch",
+      "--ro-bind",
+      "/tmp/tender-completion-runtime/recovery-archive-discovery/docs",
+      "/workspace/tender-docs",
+      "--dev",
+      "/dev",
+      "--chdir",
+      "/workspace/scratch/31e56f630f51/tender-app-review/workbench",
+      "/workspace/scratch/31e56f630f51/review-venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "--tb=short",
+      "-p",
+      "no:cacheprovider",
+      "--ignore-glob=tests/*technical_scope*"
+    ],
+    "excluded_future_name_fragments": [
+      "technical_scope",
+      "technical-scopes"
+    ],
+    "paid_model_calls": 0,
+    "database_dsns_provided": false,
+    "archive_source": {
+      "repository": "https://github.com/zys743551828-art/tender-docs",
+      "commit": "b0425e8a10ae8e08b099556b6f1183062562ce75",
+      "verified_count": 327,
+      "dependency_source": {
+        "url": "https://registry.npmjs.org/flatted/-/flatted-3.4.4.tgz",
+        "sri": "sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==",
+        "path": "package/python/flatted.py",
+        "sha256": "f784c254de76a25435ebaa61c72942072733ae4b42619b943bf37b09fa45e644",
+        "bytes": 3773
+      }
+    },
+    "log_sha256": "d9c09aa22adf2a1a6aa169cdf6be08fd9be6f44d8151078be09e98352edf519b",
+    "raw_receipt_sha256": "368577f2ccff14c6b04be6aedf9a89fb1f63291ef27fb41697ddaa379d739970"
+  },
+  "frontend": {
+    "raw_receipt_filename": "checkpoint9-frontend-first.json",
+    "raw_receipt_sha256": "458b2b8f61c9f84d190bdbf38847ced337431fc6cf9d0bbbe9b62ec1debe1e15",
+    "source_file_count": 3626,
+    "source_before_sha256": "748d2646e8a7baa179c81d216f3ef04425b31406e1f013ee4a35259bbbd2805b",
+    "source_after_sha256": "748d2646e8a7baa179c81d216f3ef04425b31406e1f013ee4a35259bbbd2805b",
+    "source_unchanged": true,
+    "full_suite": {
+      "files": 121,
+      "passed": 1153,
+      "failed": 0,
+      "seconds": 33.1
+    },
+    "checks": {
+      "format_write": {
+        "returncode": 0,
+        "elapsed_seconds": 2.07,
+        "log_sha256": "6711c3b04248db5518872f3678d8878ce3a0b7effb7c004f6b775dc5ba1b2811"
+      },
+      "test": {
+        "returncode": 0,
+        "elapsed_seconds": 33.67,
+        "log_sha256": "1ff147a4d4191d94dfab260cd10479a394adb165f1e41d059a824e984741f0a6"
+      },
+      "build": {
+        "returncode": 0,
+        "elapsed_seconds": 17.11,
+        "log_sha256": "9410ec33a85200111d9656cdb518a2502cded2b4e1e064f48d1c30f5105ef09d"
+      },
+      "lint": {
+        "returncode": 0,
+        "elapsed_seconds": 2.48,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "format_check": {
+        "returncode": 0,
+        "elapsed_seconds": 1.92,
+        "log_sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+      }
+    },
+    "build": {
+      "typescript_passed": true,
+      "production_build_passed": true,
+      "vite_seconds": 4.5,
+      "entry_kb": 630.6,
+      "entry_gzip_kb": 196.38,
+      "chunk_size_warning_retained": true
+    }
+  },
+  "static_checks": {
+    "python_ruff_and_format_files": 30,
+    "python_mypy_and_bandit_implementation_files": 22,
+    "typescript_eslint_files": 54,
+    "frontend_prettier_files": 58,
+    "python_raw_receipt_sha256": "df851343a1c94262f8d8620961a2b6e19ac295747f1bc37331ffcd521a7e6222",
+    "all_passed": true
+  },
+  "independent_evidence": {
+    "final_task_sql_sha256": "2e1c9ae9b24533402c0a8e5da43f6c5098539b6d8697098be2e2f14dc4e7e1f2",
+    "task_pg_passed": 27,
+    "task_pure_passed": 109,
+    "task_http_fixture_export_passed": 1,
+    "native_runtime_passed": 5,
+    "native_platform_passed": 3,
+    "transport_fault_suite_passed": 4,
+    "real_fault_scenarios": 3,
+    "runtime_receipt_sha256": "f42e6ce30705921c55829ffe72f883445924ce4dd76c201fe129c0547b8d1850",
+    "platform_receipt_sha256": "3b6c79fdb51c7b9d5214a96fc3854ef1b1a12b10fc819aec57bbc73a9abcccc8",
+    "fault_receipt_sha256": "d0dea67f2d37a42a0c1826b6d84d5056db986e9e88b5488d906cc85f40d41bd0",
+    "note": "These are different executions and source snapshots; counts are not added to the full-suite count."
+  },
+  "boundaries": [
+    "Environment skips are not passes. Real PG/Kafka/S3/browser evidence is reported separately.",
+    "Only exact manual denial_check is integrated; other task types and event/scheduled package execution retain their own gates.",
+    "No Docker/Compose execution, production capacity, paid model quality or formal score qualification is claimed.",
+    "Unregistered technical-scope work remains excluded from this checkpoint."
+  ]
+}

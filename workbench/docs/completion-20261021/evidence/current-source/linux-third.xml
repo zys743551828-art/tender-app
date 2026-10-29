@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="3" time="0.892" timestamp="2026-10-23T17:56:07.574125+00:00" hostname="262e38a3be2d"><testcase classname="tests.test_package_current_sources_pg" name="test_native_login_observation_and_denied_history_and_object_locator" time="0.388" /><testcase classname="tests.test_package_current_sources_pg" name="test_reject_changed_or_ineligible_native_sources[withdrawn]" time="0.034" /><testcase classname="tests.test_package_current_sources_pg" name="test_reject_changed_or_ineligible_native_sources[future]" time="0.108"><failure message="psycopg.errors.ObjectNotInPrerequisiteState: immutable_record&#10;CONTEXT:  PL/pgSQL function append_only() line 2 at RAISE">native = {'api_dsn': 'user=fusion_package_requirements_service password=hLd7JPbf9ZKPc__WZCyTXWkqokZ1w6ZXC2pOv8pkDRWo8M52 dbname...abb1e06315e', 'block': '18815337-a2d7-446a-a69b-9a8ef88eb45c', 'document': 'e68f5372-9b5c-4a7b-b703-0db062464a8d', ...}
+mutation = 'future'
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            "withdrawn",
+            "future",
+            "expired",
+            "label",
+            "mixed",
+            "cross_bid",
+            "root_digest",
+            "missing_edge",
+            "wrong_parse",
+            "changed_text",
+            "partial",
+        ],
+    )
+    def test_reject_changed_or_ineligible_native_sources(native, mutation):
+        w = native
+        c = w["owner"]
+        if mutation == "withdrawn":
+            c.execute(
+                "UPDATE retrieval.source_heads SET status='withdrawn' WHERE source_id=%s",
+                (w["original"],),
+            )
+        elif mutation == "future":
+&gt;           c.execute(
+                "UPDATE retrieval.source_nodes SET known_at=now()+interval '1 day' WHERE id=%s",
+                (w["original"],),
+
+tests/test_package_current_sources_pg.py:201: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=postgres database=fusion_package_requirements_api) at 0x7e89641ec650&gt;
+query = "UPDATE retrieval.source_nodes SET known_at=now()+interval '1 day' WHERE id=%s"
+params = ('dedeb838-5570-5537-baea-e2cf9c85168d',)
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -&gt; Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+&gt;           raise ex.with_traceback(None)
+E           psycopg.errors.ObjectNotInPrerequisiteState: immutable_record
+E           CONTEXT:  PL/pgSQL function append_only() line 2 at RAISE
+
+/usr/local/lib/python3.12/site-packages/psycopg/connection.py:257: ObjectNotInPrerequisiteState</failure></testcase></testsuite></testsuites>

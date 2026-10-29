@@ -1,0 +1,23 @@
+{
+  "status": "passed_P1_development_guards_pending_independent_review",
+  "tests_passed": 29,
+  "previous_regressions": 11,
+  "new_regressions": 18,
+  "real_existing_nonowner_read_only_identity_probes": 6,
+  "query_override_rejected_before_any_connect": true,
+  "admin_and_fresh_identity_checked_before_target_ddl": true,
+  "all_created_logins_verified_before_business_profiles": true,
+  "new_fresh_environment_created_with_02": false,
+  "existing_databases_or_profiles_modified": false,
+  "provider_requests": 0,
+  "model_calls": 0,
+  "owner_business_changes": false,
+  "quality": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "passed_4_sources",
+    "bandit": "passed"
+  },
+  "previous_manifest_and_frozen_source_preserved": "a6ee9f9ab21268c69b5494b8c18492ec951cc7b64e0ee4a403cd8ba9db2ff27b",
+  "independent_approved": false
+}

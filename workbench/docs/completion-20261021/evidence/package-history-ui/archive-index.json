@@ -1,0 +1,317 @@
+{
+  "schema": "package-history-ui-archive/1",
+  "records": [
+    {
+      "file": "browser/native-final/receipt.json",
+      "sha256": "c07d3aecc14983c05cee39348d29ac9783d4079bc4a3d79971484bcd99cb6e17",
+      "bytes": 72581,
+      "original_path": "/tmp/tender-history-native-browser-final/receipt.json"
+    },
+    {
+      "file": "browser/native-final/screenshots.zip",
+      "sha256": "a52ce050bd21b820243c49c694680b77744ff2cfb4177a88efa344638f9aaa97",
+      "bytes": 8681320,
+      "original_path": "/tmp/tender-history-native-browser-final"
+    },
+    {
+      "file": "browser/admission-final/receipt.json",
+      "sha256": "29d9e74df472c6142b7794f88c46e7c0b1fb1fe6b7424f760a859ca7b1ba81d2",
+      "bytes": 12151,
+      "original_path": "/tmp/tender-history-admission-browser-final/receipt.json"
+    },
+    {
+      "file": "browser/admission-final/screenshots.zip",
+      "sha256": "e4609289c12121175b8f423752e70eddb5d32e0763b5607dfbb548a2c312c17f",
+      "bytes": 1501005,
+      "original_path": "/tmp/tender-history-admission-browser-final"
+    },
+    {
+      "file": "browser/attempts/native-first.json",
+      "sha256": "e444e54156822f3487ab307821e1f3ff81ef9ca1c31814f1cf2e467dbcd7382d",
+      "bytes": 9954,
+      "original_path": "/tmp/tender-history-native-browser-first/receipt.json"
+    },
+    {
+      "file": "browser/attempts/native-second.json",
+      "sha256": "80a75f495c1ccec66e54f3a1669c9bd7f7df33e071fd1af5ffbb6bd600b962b7",
+      "bytes": 9954,
+      "original_path": "/tmp/tender-history-native-browser-second/receipt.json"
+    },
+    {
+      "file": "browser/attempts/native-third.json",
+      "sha256": "9d619fedf0cd2f85bfbaf7c0b7e07e79c5c30112411887814328403620159faa",
+      "bytes": 9732,
+      "original_path": "/tmp/tender-history-native-browser-third/receipt.json"
+    },
+    {
+      "file": "browser/attempts/native-fourth.json",
+      "sha256": "9ee37aaddce42cb0dc946f26b28160786b39ab7e7e42b92225e77cb3b2dd38c0",
+      "bytes": 72638,
+      "original_path": "/tmp/tender-history-native-browser-fourth/receipt.json"
+    },
+    {
+      "file": "browser/attempts/admission-second.json",
+      "sha256": "8d13efeaa94a6a4357e6edad2de8ee8a8e4e2378eccd03f16aa14e65c040112c",
+      "bytes": 11531,
+      "original_path": "/tmp/tender-history-admission-browser-second/receipt.json"
+    },
+    {
+      "file": "browser/attempts/admission-layout.json",
+      "sha256": "fa2367f23a85dde914683ff67e1ee6551e1da316b5c42a65bb446fe450b6a4d4",
+      "bytes": 11751,
+      "original_path": "/tmp/tender-history-admission-browser-layout/receipt.json"
+    },
+    {
+      "file": "browser/proposal-mobile-light.png",
+      "sha256": "304343ba5192fd0db095373ce527484e3d59db4d45370425a6f6b14e5bd3f7ac",
+      "bytes": 308276,
+      "original_path": "/tmp/tender-history-native-browser-final/native-study-proposal-390-light.png"
+    },
+    {
+      "file": "browser/evaluation-desktop-dark.png",
+      "sha256": "f61df706287a10a34adeff208bbcbbf989a036503d8f0422a798d0491a843c7a",
+      "bytes": 492212,
+      "original_path": "/tmp/tender-history-native-browser-final/native-evaluation-complete-1280-dark.png"
+    },
+    {
+      "file": "browser/stale-mobile-dark.png",
+      "sha256": "5a7da7e7ff887d97deb3ed0e9fd7b3c87d4ecbec21f25153a4296036fdee7726",
+      "bytes": 451737,
+      "original_path": "/tmp/tender-history-native-browser-final/native-stale-complete-390-dark.png"
+    },
+    {
+      "file": "browser/admission-recovered-mobile-light.png",
+      "sha256": "9994b9bc6c886668d780d308ac49bbc315269c38b6a4145cbc7871cf5723f38f",
+      "bytes": 64634,
+      "original_path": "/tmp/tender-history-admission-browser-final/admission-lost-390-light.png"
+    },
+    {
+      "file": "development/protocol-recovery-before.log",
+      "sha256": "00c33e415a9641ac34d6c723e89bd299e74bcc6011cb1ccdf2168a29a21ded16",
+      "bytes": 5187,
+      "original_path": ".local/checkpoint16/protocol-recovery-before.log"
+    },
+    {
+      "file": "development/protocol-recovery-after.log",
+      "sha256": "62a4c6f50ca1b1c8559ad035a3e20dde28e7bb2f3ea910a2352d4ee6d128e06a",
+      "bytes": 98,
+      "original_path": ".local/checkpoint16/protocol-recovery-after.log"
+    },
+    {
+      "file": "development/protocol-native-first-failure.log",
+      "sha256": "b9de1bd15ca208682392b676d2f4e40b7af3f06ecdf0a017e0cb945bbb37e04f",
+      "bytes": 15238,
+      "original_path": ".local/checkpoint16/protocol-native-first-failure.log"
+    },
+    {
+      "file": "development/protocol-native-complete-fixture-first-failure.log",
+      "sha256": "e167026ff2053d80fb69404a1049eb0434e1fad9e65f4c3765f4a446159f27db",
+      "bytes": 11013,
+      "original_path": ".local/checkpoint16/protocol-native-complete-fixture-first-failure.log"
+    },
+    {
+      "file": "development/protocol-context-null-first-failure.log",
+      "sha256": "16a19aa0d8bf72965e8f84fbc915c8bee3c9cba86e7628de59f9bf3476f293b5",
+      "bytes": 13565,
+      "original_path": ".local/checkpoint16/protocol-context-null-first-failure.log"
+    },
+    {
+      "file": "development/protocol-context-null-fixed-tests.log",
+      "sha256": "34a00daf03d2c41c94b3757f9f22ef86cdf352221c78aad3620fec3cab6a1ee4",
+      "bytes": 524,
+      "original_path": ".local/checkpoint16/protocol-context-null-fixed-tests.log"
+    },
+    {
+      "file": "development/protocol-agent-receipt.json",
+      "sha256": "fd52cc21960213e61c0ed4e76fd54787756a849b8aace3a5b1ff4e890055919b",
+      "bytes": 7260,
+      "original_path": ".local/checkpoint16/protocol-agent-receipt.json"
+    },
+    {
+      "file": "development/admission-static.log",
+      "sha256": "6348e6fa40795b2ed6ed7c339f209c59156eb2091dcb2c897075e0fcaa1c68c3",
+      "bytes": 306,
+      "original_path": ".local/checkpoint16/admission-static.log"
+    },
+    {
+      "file": "development/admission-static-fixed.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": ".local/checkpoint16/admission-static-fixed.log"
+    },
+    {
+      "file": "development/admission-browser-first.log",
+      "sha256": "d88e327a0cbad0341c298f088993052b28781acf6129fed98c9c1a86a5a7569e",
+      "bytes": 597,
+      "original_path": ".local/checkpoint16/admission-browser-first.log"
+    },
+    {
+      "file": "development/admission-integration-before-receipt.json",
+      "sha256": "d620ce0bf7ee615619bb65fe670fd38741a3fc432d653046ec02454bc5ba0824",
+      "bytes": 631,
+      "original_path": "/tmp/tender-ui-runtime/admission-integration-before/receipt.json"
+    },
+    {
+      "file": "development/admission-integration-before-vitest.log",
+      "sha256": "6fec34a5e168b24cfbbe25adcc4201bb518bef656ba7e4a52b8c40da4bcf4938",
+      "bytes": 1644,
+      "original_path": "/tmp/tender-ui-runtime/admission-integration-before/vitest.log"
+    },
+    {
+      "file": "development/admission-integration-final-receipt.json",
+      "sha256": "c00a27db3ff4fa550d99fcc7fadccd5d27a00864d74501b6ff2617d14a4a4934",
+      "bytes": 1272,
+      "original_path": "/tmp/tender-ui-runtime/admission-integration-final/receipt.json"
+    },
+    {
+      "file": "development/admission-integration-final-vitest.log",
+      "sha256": "b953f93884d00bbc147f3e859053ea5eecfd2c226ed1e6b713103d3833e5ae19",
+      "bytes": 337,
+      "original_path": "/tmp/tender-ui-runtime/admission-integration-final/vitest.log"
+    },
+    {
+      "file": "regression/initial/receipt.json",
+      "sha256": "ca89c695c2e68a6b598cacfd9736af5018529b98813a5b3eec390c503418d8da",
+      "bytes": 391610,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/receipt.json"
+    },
+    {
+      "file": "regression/initial/backend-targeted.log",
+      "sha256": "20de75e5e817ff9084f9543a72e49b89d84010f7e3856036443d3109fce5c6af",
+      "bytes": 99,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/backend-targeted.log"
+    },
+    {
+      "file": "regression/initial/python-ruff.log",
+      "sha256": "74cb2db24a1e12b2f9e66916907e1a944cb3bba3bed1933aaf5971763044d81f",
+      "bytes": 213,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/python-ruff.log"
+    },
+    {
+      "file": "regression/initial/python-format.log",
+      "sha256": "24c718e14d6a45d21d4f07d64a1247c0ecb51a1f5299db5ef9936286233be5ad",
+      "bytes": 253,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/python-format.log"
+    },
+    {
+      "file": "regression/initial/python-mypy.log",
+      "sha256": "f9b031e5c45aa702cd4fef028d465551cb20a2c4698e0913c7b00766b20ac4d8",
+      "bytes": 43,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/python-mypy.log"
+    },
+    {
+      "file": "regression/initial/python-bandit.log",
+      "sha256": "c8b3e881c31b50fd82f0875970cfecf885cd20f0f1b72ab0fc7cd02be9c887e4",
+      "bytes": 51671,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/python-bandit.log"
+    },
+    {
+      "file": "regression/initial/frontend-format.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/frontend-format.log"
+    },
+    {
+      "file": "regression/initial/frontend-eslint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/frontend-eslint.log"
+    },
+    {
+      "file": "regression/initial/frontend-typescript.log",
+      "sha256": "8adcd6418239d42a07e80f9c6bd8ff5215a80fb48444ed3654dda71250fef6a4",
+      "bytes": 165,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/frontend-typescript.log"
+    },
+    {
+      "file": "regression/initial/frontend-full.log",
+      "sha256": "f8358d47288d675f036ec936189c9048dea1b6de8fc4899803f714561fd183a6",
+      "bytes": 1527,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/frontend-full.log"
+    },
+    {
+      "file": "regression/initial/frontend-build.log",
+      "sha256": "691206b3021222492257d47b6f715ba4e7dd9dd354dcfa244a2fe1e7d83a0c24",
+      "bytes": 7188,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/frontend-build.log"
+    },
+    {
+      "file": "regression/initial/openapi-export.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/openapi-export.log"
+    },
+    {
+      "file": "regression/initial/openapi-byte-match.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/openapi-byte-match.log"
+    },
+    {
+      "file": "regression/initial/contracts-regenerate.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/contracts-regenerate.log"
+    },
+    {
+      "file": "regression/initial/contracts-format.log",
+      "sha256": "08abe68af84f336d7192ebecbecf6524e726ef7725b300d831b425426e82fe8e",
+      "bytes": 165,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/contracts-format.log"
+    },
+    {
+      "file": "regression/initial/contracts-byte-match.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/contracts-byte-match.log"
+    },
+    {
+      "file": "regression/initial/runtime-schemas-byte-match.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/final/runtime-schemas-byte-match.log"
+    },
+    {
+      "file": "regression/corrected/receipt.json",
+      "sha256": "f3ac4daa606fdadca846215b23df0629dc93a2427689d76fa996c852746219b9",
+      "bytes": 385935,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/receipt.json"
+    },
+    {
+      "file": "regression/corrected/python-ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/python-ruff.log"
+    },
+    {
+      "file": "regression/corrected/python-format.log",
+      "sha256": "f114d83b30c5c657ee43a847a45bafccaea255d82673feb87c26d252c61e29c1",
+      "bytes": 26,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/python-format.log"
+    },
+    {
+      "file": "regression/corrected/python-bandit-production.log",
+      "sha256": "38cae1dc3e7af83f5fc985df10f5805c1e25a88c760936616ab29d59d423ba9d",
+      "bytes": 73,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/python-bandit-production.log"
+    },
+    {
+      "file": "regression/corrected/frontend-format.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20",
+      "bytes": 66,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/frontend-format.log"
+    },
+    {
+      "file": "regression/corrected/frontend-eslint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/frontend-eslint.log"
+    },
+    {
+      "file": "regression/corrected/frontend-full.log",
+      "sha256": "aaeff60390ddc0841103fe2eb29d89508cad13ba57a1f1667256a29d6d7138e5",
+      "bytes": 18942,
+      "original_path": "/workspace/scratch/d0221a1cc751/tender-app/workbench/.local/checkpoint16/corrections/frontend-full.log"
+    }
+  ]
+}

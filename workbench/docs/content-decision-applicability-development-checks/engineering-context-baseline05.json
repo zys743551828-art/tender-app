@@ -1,0 +1,21 @@
+{
+  "source_sha256": "a813334a9d68764d9a5b928e3d79ae88cc1e3a3ec65e1a7e9cccdfe4266e03fc",
+  "provider_calls": 0,
+  "results": [
+    {
+      "case": "numeric_other_project",
+      "expected": "rejected",
+      "actual": "accepted"
+    },
+    {
+      "case": "name_other_project",
+      "expected": "rejected",
+      "actual": "accepted"
+    },
+    {
+      "case": "numeric_other_scope",
+      "expected": "rejected",
+      "actual": "accepted"
+    }
+  ]
+}

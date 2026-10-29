@@ -1,0 +1,67 @@
+{
+  "status": "frozen_for_independent_review",
+  "scope": "API-role controlled build PDF adoption and durable review request; no paid model execution; independent follow-up projection wiring pending",
+  "source_count": 3,
+  "sources": [
+    {
+      "path": "packages/domain/build_followups.py",
+      "sha256": "7b64d50e4b52392283a0fa6202a1e2b378e3e582211655632da78b33f4a183f5"
+    },
+    {
+      "path": "apps/api/build_coordinator.py",
+      "sha256": "fabcb0a5eda3a2f996a9a9c5ce4ed4ad1d77af7de6db189d0ffb0fd18f4a3ead"
+    },
+    {
+      "path": "tests/test_build_followups_integration.py",
+      "sha256": "3c2e238629ec8667f0118c28ba6aadf132fdf1f090a7bc1cb284cafa5c61d001"
+    }
+  ],
+  "dependencies_observed": [
+    {
+      "path": "packages/authoring/build_repository.py",
+      "sha256": "a9bdda02b788fe9d209c9adef5063f75d09e3c9a9109145aa79ad0142738a91b"
+    },
+    {
+      "path": "packages/authoring/repository.py",
+      "sha256": "5554bb747093df46c28a753f07c1308913bce25bb140afd20ecec15428e14885"
+    },
+    {
+      "path": "packages/domain/reviews.py",
+      "sha256": "9fee5e6dbbc12c2e85d9dfdba19a259fef1d771e13312ff4a610d085e902a893"
+    },
+    {
+      "path": "packages/domain/parsing_profile.py",
+      "sha256": "f61a997b4af11a635660f431086f6d0c73fac8f96262674698ba7a6a9bd8e1db"
+    },
+    {
+      "path": "packages/domain/runtime.py",
+      "sha256": "7fbee870bffee0b3ce35ae8dfb912b45dfc69e0da76e24e8a2541906705a397e"
+    },
+    {
+      "path": "apps/worker/engine.py",
+      "sha256": "23dce46fac9b2300394fd0ccd546ab4f87ec437170899ecca8e3199e42360c53"
+    },
+    {
+      "path": "apps/worker/export_handlers.py",
+      "sha256": "bebf701d5fbcb800c04048016df3a8ac20475769eed0a0f7faaf0161f21ad609"
+    }
+  ],
+  "self_tests": {
+    "real_nonowner_pg_s3_libreoffice_engine": {
+      "passed": 6,
+      "failed": 0,
+      "kafka_consumer": false,
+      "remote_model_calls": 0
+    },
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "passed",
+    "bandit": "passed"
+  },
+  "limits": [
+    "No independent QA/architecture acceptance yet",
+    "No automatic external controller startup",
+    "Adopted means selected PDF plus durable preparation request, not completed review",
+    "Legacy contexts and changed heads retain history and require explicit selection"
+  ]
+}

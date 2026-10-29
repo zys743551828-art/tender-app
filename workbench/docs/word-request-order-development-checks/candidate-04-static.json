@@ -1,0 +1,47 @@
+{
+  "candidate": "word-request-order04-static",
+  "status": "awaiting architecture SQL review and fresh DB execution",
+  "sources": [
+    {
+      "path": "packages/word_intake/request_order.sql",
+      "sha256": "8a379cb1b7d4c8bb807892937e03f77d3f75304ebd3abe256a1cf44e06319277",
+      "frozen_path": "frozen-inputs-04/packages/word_intake/request_order.sql"
+    },
+    {
+      "path": "tests/test_word_request_order_counterexample.py",
+      "sha256": "97ef758fe2482ce1ceb597cefc47589dc6628c12c0fc5ac3a1e34401e10a6506",
+      "frozen_path": "frozen-inputs-04/tests/test_word_request_order_counterexample.py"
+    },
+    {
+      "path": "docs/word-request-order-development-checks/implementation-note.md",
+      "sha256": "6b30ef55123709f4e3602bef977853a4c8d67990ebb61f50016f8fe4888d3587",
+      "frozen_path": "frozen-inputs-04/docs/word-request-order-development-checks/implementation-note.md"
+    }
+  ],
+  "base_word_candidate": {
+    "path": "/workspace/tender-docs/04-验证与测试/word-intake-development-checks/candidate-03/candidate.json",
+    "sha256": "b12e2e456ead217296510ae6fde3f7747198d75adffe42706bb3692c28406fa6"
+  },
+  "sql": {
+    "path": "packages/word_intake/request_order.sql",
+    "sha256": "8a379cb1b7d4c8bb807892937e03f77d3f75304ebd3abe256a1cf44e06319277",
+    "fresh_only": true,
+    "application_grants_changed": false,
+    "applied_to_existing_database": false
+  },
+  "preserved_results": [
+    {
+      "path": "baseline-result.json",
+      "sha256": "1ca4d09df30b8a02de3295b5236569ca3de577fc1bbb0fea288547679fd80063"
+    },
+    {
+      "path": "explicit-column-result.json",
+      "sha256": "60b196695a2d48ce33c0cb6323dd3e6b041a88eadbf082e2f01cd3ff31001df5"
+    }
+  ],
+  "pending": [
+    "same real API/Worker dual transaction counterexample passes on fresh default",
+    "latest failed or pending conversion must not fall back to old complete controlled output"
+  ],
+  "provider_requests": 0
+}

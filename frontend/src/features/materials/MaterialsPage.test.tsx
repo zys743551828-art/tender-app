@@ -61,6 +61,24 @@ describe('资料：解析状态与评审进度', () => {
     expect(steps.getByText('进行中')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /下一步/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /下一步/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '查看评审进度' })).toHaveAttribute(
+      'href',
+      '/projects/prj-1',
+    );
+  });
+
+  it('评审完成后直接提供查看报告的入口', async () => {
+    backend([], []);
+    server.use(
+      http.get('/api/v1/projects/prj-1/pipeline', () =>
+        HttpResponse.json(pipeline({ stage: 'done' })),
+      ),
+    );
+    renderApp('/projects/prj-1/materials');
+    expect(await screen.findByRole('link', { name: '查看评审报告' })).toHaveAttribute(
+      'href',
+      '/projects/prj-1',
+    );
   });
 
   it('解析失败：如实显示状态与原因', async () => {

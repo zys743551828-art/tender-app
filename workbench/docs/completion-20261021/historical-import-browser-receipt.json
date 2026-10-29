@@ -1,0 +1,209 @@
+{
+  "source_receipt_sha256": "f43f49ecbced0e8db79f5d62eac52344df4e2683c40e07fd55617b0379fb2703",
+  "cases": [
+    {
+      "width": 1200,
+      "fixtureSource": "Immutable actual non-owner PostgreSQL + real original bytes verification: 1 imported, 1 missing, 1 corrupted",
+      "boundary": "Local fixture HTTP responses and injected lost confirm ACK; original downloads not repeated; no model calls",
+      "localWrites": 0,
+      "guarded": true,
+      "pendingSaved": true,
+      "cleared": true,
+      "onlyFailed": true,
+      "noImportedRetry": true,
+      "sourceDownloadExact": true,
+      "sameReplay": true,
+      "retryIds": ["actual-1"],
+      "retryStillUnknown": true,
+      "bounds": [
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        },
+        {
+          "viewport": 1200,
+          "scrollWidth": 1200,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "52cd147face686c0573153b3961350d0288bd8b1e70f2f07880589581068f7de",
+      "screenshots": [
+        {
+          "name": "local-input-1200.png",
+          "sha256": "209c47458a280d32a32798c4e4960867f78eee0503cc6d84dc10edd84e986404"
+        },
+        {
+          "name": "lost-ack-1200.png",
+          "sha256": "00b1f6f62efb575b2cb0e4c2b4e7421e733a39022f2740ad3cfd0e6c63881cd1"
+        },
+        {
+          "name": "partial-result-1200.png",
+          "sha256": "abec5c9fbba898f720b03a7f3ba317def944d6ff38a366d53de82117fcc2e5ca"
+        },
+        {
+          "name": "precheck-1200.png",
+          "sha256": "28c8f37999d8efa73ab83dc24e37483cc8aadcacdb61f21a1306dd0fe70da522"
+        },
+        {
+          "name": "retry-history-1200.png",
+          "sha256": "a1183da0e97d2b1702176b04055a6d12254a5d28e6169729e25f5700c9a12fb8"
+        }
+      ]
+    },
+    {
+      "width": 768,
+      "fixtureSource": "Immutable actual non-owner PostgreSQL + real original bytes verification: 1 imported, 1 missing, 1 corrupted",
+      "boundary": "Local fixture HTTP responses and injected lost confirm ACK; original downloads not repeated; no model calls",
+      "localWrites": 0,
+      "guarded": true,
+      "pendingSaved": true,
+      "cleared": true,
+      "onlyFailed": true,
+      "noImportedRetry": true,
+      "sourceDownloadExact": true,
+      "sameReplay": true,
+      "retryIds": ["actual-1"],
+      "retryStillUnknown": true,
+      "bounds": [
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        },
+        {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "52cd147face686c0573153b3961350d0288bd8b1e70f2f07880589581068f7de",
+      "screenshots": [
+        {
+          "name": "local-input-768.png",
+          "sha256": "b1085981d470f41a0b62cd814064e99f74244f1ba2a1e09b898165d082220268"
+        },
+        {
+          "name": "lost-ack-768.png",
+          "sha256": "f4150bdefad69673d51fcdff371aa9a62b88f029a806a90f241a2201660843c4"
+        },
+        {
+          "name": "partial-result-768.png",
+          "sha256": "538c6866f902325a750a46e3574b63e454030a66a3ddfd6d44e40737fb316e2c"
+        },
+        {
+          "name": "precheck-768.png",
+          "sha256": "b2b814c264cff3d38a9efd0755073b64942e2b225a6335e6610ab5b507fae371"
+        },
+        {
+          "name": "retry-history-768.png",
+          "sha256": "8600f278a399174221b7b5eca4a22cc340420762fc01873e9956172e8543f52a"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "fixtureSource": "Immutable actual non-owner PostgreSQL + real original bytes verification: 1 imported, 1 missing, 1 corrupted",
+      "boundary": "Local fixture HTTP responses and injected lost confirm ACK; original downloads not repeated; no model calls",
+      "localWrites": 0,
+      "guarded": true,
+      "pendingSaved": true,
+      "cleared": true,
+      "onlyFailed": true,
+      "noImportedRetry": true,
+      "sourceDownloadExact": true,
+      "sameReplay": true,
+      "retryIds": ["actual-1"],
+      "retryStillUnknown": true,
+      "bounds": [
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        },
+        {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "overflows": []
+        }
+      ],
+      "alerts": [],
+      "errors": [],
+      "post_count": 3,
+      "post_requests_sha256": "52cd147face686c0573153b3961350d0288bd8b1e70f2f07880589581068f7de",
+      "screenshots": [
+        {
+          "name": "local-input-390.png",
+          "sha256": "f4c55890fdb5259556c49fbde903b0d6743a1d6d75041786916160b52143afd2"
+        },
+        {
+          "name": "lost-ack-390.png",
+          "sha256": "ba7c433e75bdf02d08fc65edc6f7bfde7de9fed54de662d14482a7e8bfffb89b"
+        },
+        {
+          "name": "partial-result-390.png",
+          "sha256": "6f22d41bcf927a2fd26591a31acb0ae3a086e6aa76bbbdbe04c03172d96e4153"
+        },
+        {
+          "name": "precheck-390.png",
+          "sha256": "f28bef7b9b26000835ff5f142dfa2e926c120ae2b58ba4390b06d58a6c08d55b"
+        },
+        {
+          "name": "retry-history-390.png",
+          "sha256": "323c2b739e1d733e26a7dd390128b6421174fe433798cda646207b6b0b13b299"
+        }
+      ]
+    }
+  ]
+}

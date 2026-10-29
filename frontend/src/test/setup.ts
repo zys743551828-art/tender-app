@@ -1,10 +1,16 @@
+import { transferableAbortController } from 'node:util';
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { toast } from 'sonner';
 import { server } from './server';
 
-// Node 的 fetch 不接受相对 URL；浏览器会按页面 origin 解析，这里在测试里补上同样的行为。
+// Node fetch 校验原生 AbortSignal 类型；jsdom 信号属于另一运行时。
+// 测试传输使用 Node 控制器，仍执行真实取消，而不是忽略 signal。
+globalThis.AbortController = transferableAbortController().constructor as typeof AbortController;
+globalThis.AbortSignal = new AbortController().signal.constructor as typeof AbortSignal;
+
+// 测试中按浏览器 origin 解析 Node fetch 不支持的相对 URL。
 const nativeFetch = globalThis.fetch.bind(globalThis);
 globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) =>
   nativeFetch(

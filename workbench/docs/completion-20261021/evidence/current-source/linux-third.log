@@ -1,0 +1,70 @@
+..F
+=================================== FAILURES ===================================
+___________ test_reject_changed_or_ineligible_native_sources[future] ___________
+
+native = {'api_dsn': 'user=fusion_package_requirements_service password=hLd7JPbf9ZKPc__WZCyTXWkqokZ1w6ZXC2pOv8pkDRWo8M52 dbname...abb1e06315e', 'block': '18815337-a2d7-446a-a69b-9a8ef88eb45c', 'document': 'e68f5372-9b5c-4a7b-b703-0db062464a8d', ...}
+mutation = 'future'
+
+    @pytest.mark.parametrize(
+        "mutation",
+        [
+            "withdrawn",
+            "future",
+            "expired",
+            "label",
+            "mixed",
+            "cross_bid",
+            "root_digest",
+            "missing_edge",
+            "wrong_parse",
+            "changed_text",
+            "partial",
+        ],
+    )
+    def test_reject_changed_or_ineligible_native_sources(native, mutation):
+        w = native
+        c = w["owner"]
+        if mutation == "withdrawn":
+            c.execute(
+                "UPDATE retrieval.source_heads SET status='withdrawn' WHERE source_id=%s",
+                (w["original"],),
+            )
+        elif mutation == "future":
+>           c.execute(
+                "UPDATE retrieval.source_nodes SET known_at=now()+interval '1 day' WHERE id=%s",
+                (w["original"],),
+
+tests/test_package_current_sources_pg.py:201: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=postgres database=fusion_package_requirements_api) at 0x7e89641ec650>
+query = "UPDATE retrieval.source_nodes SET known_at=now()+interval '1 day' WHERE id=%s"
+params = ('dedeb838-5570-5537-baea-e2cf9c85168d',)
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool = False,
+    ) -> Cursor[Row]:
+        """Execute a query and return a cursor to read its results."""
+        try:
+            cur = self.cursor()
+            if binary:
+                cur.format = BINARY
+    
+            return cur.execute(query, params, prepare=prepare)
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.ObjectNotInPrerequisiteState: immutable_record
+E           CONTEXT:  PL/pgSQL function append_only() line 2 at RAISE
+
+/usr/local/lib/python3.12/site-packages/psycopg/connection.py:257: ObjectNotInPrerequisiteState
+----------- generated xml file: /evidence/current-source-native.xml ------------
+=========================== short test summary info ============================
+FAILED tests/test_package_current_sources_pg.py::test_reject_changed_or_ineligible_native_sources[future]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 2 passed in 0.89s
+{"suite": "current-source-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

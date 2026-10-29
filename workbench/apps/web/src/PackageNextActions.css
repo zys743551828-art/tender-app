@@ -1,0 +1,25 @@
+.package-next-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+.package-next-actions .section-heading {
+  padding: 0;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.package-next-actions .section-heading > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.package-next-actions .button,
+.package-next-actions summary,
+.package-next-actions li {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.package-next-actions .button {
+  text-align: left;
+  margin-block: 4px;
+}

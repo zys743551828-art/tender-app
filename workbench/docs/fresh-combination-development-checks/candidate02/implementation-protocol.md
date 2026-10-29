@@ -1,0 +1,15 @@
+# Fresh bootstrap02：libpq身份覆盖P1修复
+
+保全01 manifest a6ee9f9ab21268c69b5494b8c18492ec951cc7b64e0ee4a403cd8ba9db2ff27b、六个frozen-inputs原源及原环境探针，不把本修复误绑01结论。
+
+01存在确定缺陷：urlsplit替换path/netloc保留query，libpq实际以query dbname/user/password覆盖路径及userinfo，可能连接旧库或旧LOGIN。02先严格限定私有owner配置为显式单network-host PostgreSQL URI，拒绝全部query/fragment、多host和无效端口；拒绝在任何数据库connect/CREATE之前发生，不依赖DDL名称碰撞失败保护。该限定工具暂不支持用query配置SSL/service等参数，不宣称通用连接串支持。
+
+合法URI用conninfo_to_dict取得真实percent解码身份，以make_conninfo显式覆盖dbname/user/password，再构造无query的canonical URI保留现有check_external工具兼容。派生URI再次用libpq解析，必须与规范字段完全一致；密码/DSN不输出。用户名percent编码按真实解码值比对，不直接拿urlsplit.username误比。
+
+admin连接第一条只读查询必须验证postgres＋预期owner，失败无后续catalog或DDL；新库连接第一条查询必须验证新DB＋预期owner，失败不执行任何schema SQL。创建LOGIN后逐个实际连接，验证新DB＋对应LOGIN、无super/BYPASSRLS/CREATEDB/CREATEROLE/replication及无业务表owner，然后才生成普通business和两个purpose profile。初始化凭据提前私有保存以支持诊断，但任何身份失败均不发布business/purpose profile，且没有resume/旧库补权路径。
+
+29本地测试通过：原11回归，新增18含实际libpq离线覆盖反例、6种query/fragment拒绝且0connect、多host/port拒绝、percent编码身份、伪admin/fresh身份阻止目标DDL、受限账号超权/owner拒绝。模拟fresh误指向旧库时只执行身份SELECT，不发该连接上的DDL；admin创建过的新空目标库不据此冒称未创建。
+
+另以既有组合六个非owner LOGIN执行新verify_connection正向和故意错误期望库名反向，只读身份/pg_catalog查询通过；不使用owner业务、不改任何已有DB/profile，不发provider或模型请求。没有用02创建新环境，也不把01初始化成功当02实际fresh正向通过；新的完整fresh验证由PM/独立复验决定。原组合真实DB/LOGIN是否匹配以原及新的只读探针分别陈述，不根据漏洞推断已有数据污染。
+
+ruff/format/mypy4源/bandit通过。FR040暂让路此P1，未完成或冻结task-run改动不属于本部署候选。02待独立架构复核，不宣称最终组合应用交付。

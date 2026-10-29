@@ -1,0 +1,171 @@
+{
+  "scope": "pure error import boundary and actual API exception compatibility; no formal scoring installation",
+  "tests": {
+    "linux-final": {
+      "passed": 296,
+      "junit_seconds": 7.619
+    },
+    "host-final": {
+      "passed": 67,
+      "junit_seconds": 3.487
+    },
+    "host-openapi": {
+      "passed": 11,
+      "junit_seconds": 4.347
+    }
+  },
+  "counts_overlap": true,
+  "ruff_files": 9,
+  "mypy_bandit_implementations": 8,
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "db1fa8b87344ad096911ceb4aa2f42000db510cfa0d7ac7c3c02c4a0dd4f0bba",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "330adb2a00c112f425cce50413633b2925abf6cf2a8db3317865812b055e008d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-vision.md",
+      "sha256": "4e1d9ed1b4b1bc0732cc827eda5bf7bed056dc6baa720780474c02ef6e6e8ebb",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/errors.py",
+      "sha256": "feb846c0e7d63fde19282dac9405265eb03632b7a1d16ab0748a3a1251a68a35",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/deepseek.py",
+      "sha256": "3c6e53ff97003ec9fa5798e330953a4b2e9ccf982e56d416db750dc88e24ca8c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/deepseek_vision.py",
+      "sha256": "592a2b34043e12c4030ad756e9854fbc7b26084966894a303985930783fbfb16",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/errors.py",
+      "sha256": "3ef4c48a5f301f1e62635b4be7569b5e43171e6d3ecdc359ed39c926c01433f1",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/json_protocol.py",
+      "sha256": "cee0be7106e6c3ea8338d22ac374a11a37e509a038e0671311ec4b5a6a867323",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/runtime.py",
+      "sha256": "90d403327ab88fdba85eac28c7ebab2425cd369561754b26a3f8aed68d73f326",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_vision.py",
+      "sha256": "d87bab40660de9235e8fd15385912ec5265ac456f8be0c2411cc3ec944eb03a1",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "37c729d8cb0aaf56bb579b835058a78afd665d15b8a13a0b3843ce68f7e03e14",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "domain_error_body_unchanged": true,
+    "provider_error_body_unchanged": true,
+    "legacy_runtime_and_text_port_body_unchanged": true,
+    "vision_and_json_body_unchanged": true,
+    "input_method_unchanged": true,
+    "features_method_unchanged": true,
+    "native_renderer_source_unchanged": true,
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "old_records_rewritten": false,
+    "new_methods_bind_both_pure_error_sources": true
+  },
+  "runtime_inputs": 1184,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "new_http_or_sql": false,
+  "no_real_business_profile_read_by_test": true,
+  "normal_word_service_not_modified": true,
+  "runtime_mode": "development read-only source mounts; observed inputs not whole immutable release",
+  "files": {
+    "host-before-fix.log": "9a85cbf91776b12b86e9abbdd2158cdca5f90212e03dd9d2dad2b3c21b6bbd76",
+    "host-before-fix.xml": "9d983b850ef47d4550dc7a14d462ed10b1d5379164eea7387046214f9da8fde5",
+    "host-after-fix.log": "6a6ad8ebf6fe80fa311f17df2d03b6ffac0af0386f2477765f46dad8efb4a976",
+    "host-after-fix.xml": "00868928d0cf8b3bd17a88c4a00cd6b8f0569f66115b26cd07892da0e916f0f7",
+    "host-compat-initial.log": "0cacaa25a5101d4544580f02add6e2fc070584bcaee13fc35c00ac37ad8dd539",
+    "host-compat-initial.xml": "f754e91a3e7c6dbe619123d8aa3a830b495e360a7f3cc4683653a04fd77fd826",
+    "host-diagnostic.log": "a055b4b1e2a9b220254336a191e63ae98d00fa9083ab98cd4ff4c51a35b3f338",
+    "host-diagnostic.xml": "43812e4c5b166022bc83d2b32c85540f9d4440a13c8122b0dca57d07e7eb0be9",
+    "host-final.log": "3f7646581aa9151d5d337daf50517909e6374524b3123ed4ec060c16e68170d7",
+    "host-final.xml": "e6d35bcb7e3b9281c15e455b3c6709bddb2992465dedae5a501d72c8a2dd2c27",
+    "host-openapi.log": "87b00bc41680f6a4080bb3a43c437d31bb535c430875fedc72963dae553807e3",
+    "host-openapi.xml": "684537b7fe8407a79bb47a92435ca9bda4efc36243b45b79c0f04943162b47a6",
+    "linux-initial.log": "d9ec6da6a6a4482f91013d0dc470091830fa877e547075c972376e4376c77a30",
+    "linux-initial.xml": "21f643d7286729a9dc68c64023a49f59dc1346d8fa142fdab7cf66e8f7314ad7",
+    "linux-final.log": "b664da88b1e7630d4093ee7534174ce38b7b1ab8a6afd7cdeeaf6387e95f4ab3",
+    "linux-final.xml": "ac602b823d34c66195b1478594da3fd57ad380ee94efecb8427ab0decd4e353a",
+    "python-quality.log": "7aefcacc6d445354a115cf76fcdea696165be7ad8cf9b86a60ea98727c6e96f6",
+    "python-final.log": "86c3c25ac958347f86fb18a8e71088e7a72e4783646fa276c60f4115245e17ef",
+    "method-boundaries.json": "eee4115d95945f48c1ed2208a1334a0588d404759daf37328e590228cd4c9b3a",
+    "http-runtime.json": "913873a33efb1f1550108e9c524ac250f58877ddaa325679668146142c2cee92",
+    "checks-cleanup.json": "981f1d893ca0415b500be993616bffc113b2eb8ff41f0761fb5e43c484b45614"
+  }
+}

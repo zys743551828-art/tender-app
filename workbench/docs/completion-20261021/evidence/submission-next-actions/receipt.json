@@ -1,0 +1,138 @@
+{
+  "scope": "saved submission history card and work-context original share the selected saved review result next actions; no backend changes",
+  "tests": {
+    "frontend_files": 179,
+    "frontend_passed": 1781,
+    "frontend_seconds": 59.17,
+    "targeted_passed_before_final_case": 55,
+    "integration_passed": 9,
+    "new_cases_in_full_suite": 9,
+    "overlapping_counts_not_added": true,
+    "python_or_contract_suites_rerun": false
+  },
+  "quality": [
+    "Prettier",
+    "ESLint",
+    "TypeScript",
+    "production Vite build",
+    "Compose config"
+  ],
+  "build_seconds": 6.57,
+  "existing_chunk_warning": true,
+  "ui_fixture": "explicit synthetic submission packet checked by real submission protocol; original-details component mocked as an exact-reference observer; not a new PG original-byte end-to-end proof",
+  "runtime_inputs": 1161,
+  "production_js_css_assets": 67,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "business_projects": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "browser_blocker": "missing browser/26.1016.62342/scripts/browser-service.mjs before bootstrap",
+  "source_identity_scope": "modified inputs equal staged Git raw bytes; development source mounts are not an immutable release",
+  "inputs": [
+    {
+      "path": "apps/web/src/PackageNextActions.tsx",
+      "sha256": "87b89a39135c20f0854edbdf3bb7a10f79d3d70415274dfba7c6cdf92ea94f2b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionCard.tsx",
+      "sha256": "6791eecb70ce59b5984a5892d96e2e71fe5289c5067d0d078e235c9521513156",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionReviewActions.test.tsx",
+      "sha256": "13b41fef3e0a894bcdc320622379cb9c09b809e82b3aed5d09f083aa32008307",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/PackageSubmissionReviewActions.tsx",
+      "sha256": "0a1669aa2bdb9eca4e519c123f5b04c24309c3fb7852742b04c95b1503f77636",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/ProjectWorkspace.tsx",
+      "sha256": "ac506a5cbbc80ef8a0b2007730848bd0a9bacf8952aa84c3096f2af2c038a06a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/SubmissionPanel.tsx",
+      "sha256": "397785b5d990ebdf4d11259b1c5624b90bb2cee627f56c6bf2285c45b417bc7b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/WorkContextSubmissionDetails.tsx",
+      "sha256": "4c354f57b1d61cae9c57b4c64ababf20e9625cb282bded0146412ef43ee66145",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/WorkContextWorkspace.tsx",
+      "sha256": "b30bac49941d4b2c5f64569ba017dc02f42e9f038ec9aaba0f528352743fb351",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/packageNextActionsProtocol.ts",
+      "sha256": "c1ca825a35cbc625811e9dc9a3a141acc5f24eeb0e63ad6f93a7bd2c307c00ad",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "apps/web/src/packageReviewHistoricalRun.ts",
+      "sha256": "33d7ac2b5884d6f95881e8c90d2350fde963122e0d6654c66b1e70a07f2a670a",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-next-actions.md",
+      "sha256": "2a7e9030a91a28ce2399c0b73e944b5f74d8d136f66ef55e1cf5cdbfcf57f3b1",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "frontend-full.log": "533fa0cee74b900768b67baeaab3b365298f9143d827a08a9a5e28c13d66eec1",
+    "frontend-targeted.log": "6a1befc9d001fc56e4f9aebb53439504d63f0a3ecd7b14060c19e545c593534f",
+    "frontend-integration.log": "a192484fbb83599ba99029fe7da515440629a1cadce5bcd8cc13408aa55bf121",
+    "format.log": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283",
+    "lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lint-final-test.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build.log": "e03b8bf53953a270542558690771b6f8f9b673048ae7061c968155a681d444fa",
+    "compose-config.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "http-runtime.json": "e9aaadeea41e3f0fb85916b1d0bbf4f1fb7ab237124abc37dbfccfdd26bde226"
+  }
+}

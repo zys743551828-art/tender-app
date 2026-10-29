@@ -1,0 +1,412 @@
+{
+  "schema_version": 1,
+  "started_at": "2026-10-21T09:22:03.218998+00:00",
+  "passed": true,
+  "paid_generation_calls": 0,
+  "business_quality_accepted": false,
+  "source_sha256": {
+    "deploy/rag_native_acceptance.py": "b749e5fdab7b43a5b7806a739de80f41ee28bdc3456ad6248956f724e1c449f7",
+    "deploy/rag_native_scale.py": "22bf6a6bddf476e33a4b2e4111732a6ef39dece884b6de061d805f6e5cdb341a",
+    "packages/rag/numeric.py": "1986c9b3fa7d34699427e02d8478946863d5e0593ff42509c16eb0b6f71ce4ac",
+    "packages/rag/search.py": "e7a32884f19b191b57a19389ade3cb51fcb5bd67921780e1acfcbdf30566d11c",
+    "packages/rag/http_port.py": "149cf1bef79c19d5857acd7b028f84d273ee2eb7e4d34b1a295babe2d8a3fad6",
+    "packages/rag/local_models.py": "ce7fba2a39b08443964dfff8a1030b0074ca1d9eea9675cc56d589fc7a0fc194",
+    "packages/knowledge/rag_search.py": "b5d3ad02627417f6b97039b48891b1d201c48b8de7d83d8a82636b387b5f67e0",
+    "packages/knowledge/rag_api.py": "8e2fde660755fc866f0cf7190d5e8fb0a8d379f05a05e1261f03201fad4a9d35",
+    "apps/api/rag_routes.py": "bdb2af5f1c20cc14ec4a14a6250e9912893aa3b3411566b9e580495cf9fc327a",
+    "tests/test_rag_real_integration.py": "b41fab929f2f2e12f129cba3d563e3b83cdae3d6b9b1c3f20a56689556d5cf26",
+    "tests/test_rag_staged_indexing.py": "73dbbbe66e75ef52fc41bba61c1acb48c5e0611af8af89a54d62932d227659c8",
+    "tests/test_rag_staged_api.py": "f69f2cc69ac5dcb32e99ac0e7295b026db59b7dfd8f703d928c380ff1b66a812",
+    "tests/test_rag_numeric_pg.py": "f55d0d5c52b92ebc47a9e3eec4033279c23524477e2714c08a72d319041f9618",
+    "tests/test_knowledge_rag_real.py": "940a24a980785ead9043cabb4aafa64c5d75c36781bdfc50b47758deb2b85fda"
+  },
+  "scope": "Actual offline BGE, new PG17/pgvector, synthetic parse fixtures; not original-document or business relevance acceptance",
+  "ordered_sql": [
+    {
+      "path": "packages/contracts/sql/core.sql",
+      "sha256": "27f249ff5110c914404846d2e14f6d4fd8b85ae51e9f6a3b9caa7c1b9595e5cd"
+    },
+    {
+      "path": "packages/contracts/sql/domain.sql",
+      "sha256": "b279c9b1c3477feeb28eaa5f6a45adb4493585a1d112d7d7a637cefac1404d96"
+    },
+    {
+      "path": "packages/contracts/sql/bid-packages.sql",
+      "sha256": "f18cbd9a22cdcb3f1d3229d0e43b3ad4b0ff3568f4b160787e0c4572b6f9c319"
+    },
+    {
+      "path": "packages/identity/sql/stable-lot-identity.sql",
+      "sha256": "3d4775a72daa3fd1c813aab72212e9aefdf5e5ef5aa22eb0c83db2cd580b3738"
+    },
+    {
+      "path": "packages/contracts/sql/retrieval.sql",
+      "sha256": "afdfb3d81bc049cedaa45777af3c8aa622b8c3eb465cd6b35e3a37c992991876"
+    },
+    {
+      "path": "packages/contracts/sql/worker-functions.sql",
+      "sha256": "8f18a20578c010144ed851d0e96753894c86a4147deff95c49aa19ec5faaea4b"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-requirements.sql",
+      "sha256": "d08c29c6b56a46674ab78f37dd5cb38fe074963c68d334b595fbf87fb0197bf9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-inputs.sql",
+      "sha256": "d066c92234ba5b3cba3990e51cab3316dc5b72ec6a6c563a5a776c9c13067da6"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-execution-inputs.sql",
+      "sha256": "f5f473c2b92f652b016e1eb0170eb2b22952160cf0432d831b5ba021390d8706"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-fact-scopes.sql",
+      "sha256": "4a86390f08d9ed4e16277220fe655d28f2d9f8df0310ed1671b44d87c2623a10"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-dependency-plans.sql",
+      "sha256": "443a3f1a82ef60120ffadfbd073623c2e98308792f2f6bdc5cf47715a5e41260"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-runs.sql",
+      "sha256": "5ef4cf1160b17abe4cf106cb1acd9676277f9b31f982c06f96bf0ea8a3de3281"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-review-decisions.sql",
+      "sha256": "a53f0210e68844fc339dcf0fe0cc10b685bcf049b0f0b20a6022deb5a68358e9"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-report-exports.sql",
+      "sha256": "48adf4288f4e2ac4e0b94d2b59edde19229cc83b91bf773a48a1b653275e7184"
+    },
+    {
+      "path": "packages/contracts/sql/document-parses.sql",
+      "sha256": "b965bc6826d783e368517ffb505631196f051d8ddcb561eb3843f98c45011681"
+    },
+    {
+      "path": "packages/contracts/sql/roles.sql",
+      "sha256": "b1b77fc0d65a95da41b8071475c28d8918f958e3cc479b65ce099e0563fb7ec1"
+    },
+    {
+      "path": "packages/authoring/sql/structure.sql",
+      "sha256": "ebb88fada5e4942d338fde54a13884e43741208829a736ff679d9c761e38c94d"
+    },
+    {
+      "path": "packages/authoring/sql/rich_assets.sql",
+      "sha256": "cba0da43fcf36566e02df46d7962e3c53f7b5daad671b51d1513cae7185f2edd"
+    },
+    {
+      "path": "packages/authoring/sql/docx_import.sql",
+      "sha256": "2a832ccf1b9a549105a9923705de0f720f64aeef30c8607ac12944ba305a92b0"
+    },
+    {
+      "path": "deploy/sql/bid-package-runtime-grants.sql",
+      "sha256": "1667815c514a455b29230753202876c125ce10e34a0c408b4d50f49f118bd14e"
+    },
+    {
+      "path": "deploy/sql/bid-package-requirement-runtime-grants.sql",
+      "sha256": "4d510b265e9e98355d2794839ab204a9501a9cbcad1b9b82f4ad53c924d9498e"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-input-runtime-grants.sql",
+      "sha256": "eb4f56ecfa2ad25bf86468ab35d657cd7859ae1880ed3bffeb0a46a5def14d55"
+    },
+    {
+      "path": "deploy/sql/bid-package-execution-input-runtime-grants.sql",
+      "sha256": "53bc424cfbcd1b8207875f3882c5738813ff6a1a9e5d8c6ad91988af7cb10373"
+    },
+    {
+      "path": "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
+      "sha256": "12c23369c1e9a5abbc5beea52b82cdbad0d198e619b2f5d3655cf4db1aa791a7"
+    },
+    {
+      "path": "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
+      "sha256": "2c7170ac325fa3027aa137ad0934456c0b4a0a4298980caaaa672dc128da9a1c"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-run-runtime-grants.sql",
+      "sha256": "eb82e88cd04b60b10f5ff026596c20029a164ab64144075b48cd2433cf5fb624"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-rule-corrections.sql",
+      "sha256": "a87cc9ea616d2e7a9c151322450bb80f4cc4d0ee4b1e99ea26d6af8c1b889e87"
+    },
+    {
+      "path": "deploy/sql/bid-package-review-decision-runtime-grants.sql",
+      "sha256": "e48a7d76ed72bc360854be02d63eb96d68d67b77d58fda43a89958dcc29c2911"
+    },
+    {
+      "path": "deploy/sql/bid-package-report-runtime-grants.sql",
+      "sha256": "8630b580795663dbd6d6a32bd242697e6dd4858294fe37aaa817cc7777bbfa24"
+    },
+    {
+      "path": "deploy/sql/document-parse-runtime-grants.sql",
+      "sha256": "155737233a97e71d40ade0a342ef33c819c2775172aa08bbb1ec8dbccbbc97c1"
+    },
+    {
+      "path": "deploy/sql/vector-runtime-grants.sql",
+      "sha256": "c66ce4615b007706ad690166233aad58053ff38b53eab5f7549583fc7c400619"
+    },
+    {
+      "path": "deploy/sql/research-source-qualification.sql",
+      "sha256": "0b04ba8dd0ae471d06c45b4c6d36b8570211d248fd60410e15362a2b373ba027"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-submissions.sql",
+      "sha256": "d6fea7f77da4378e23fae217737ac7cffc38f30255d1bd39885852bc0aaf2b0c"
+    },
+    {
+      "path": "packages/contracts/sql/bid-package-technical-scopes.sql",
+      "sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46"
+    },
+    {
+      "path": "packages/contracts/sql/task-package-reviews.sql",
+      "sha256": "2e1c9ae9b24533402c0a8e5da43f6c5098539b6d8697098be2e2f14dc4e7e1f2"
+    },
+    {
+      "path": "packages/knowledge/sql/rag.sql",
+      "sha256": "51c98cf1aea5364b418747161e86bb374b9b3d44222d67891ec18e27bc200003"
+    }
+  ],
+  "nonowner_logins_verified": true,
+  "runtime": {
+    "protocol_version": 1,
+    "identity": {
+      "model_name": "BAAI/bge-m3",
+      "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "weights_digest": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38",
+      "preprocessing_digest": "3df98f34cdc8f2a82279c50f6c6ae7e8ec2313861f12de6281fecad0b14a7b3e"
+    },
+    "dimensions": 1024,
+    "device": "cpu",
+    "lexical_dictionary_digest": "7197c3211ddd98962b036cdf40324d1ea2bfaa12bd028e68faa70111a88e12a8"
+  },
+  "tests": {
+    "tests": 19,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "seconds": 20.472
+  },
+  "scale": {
+    "scope": "document-chunk full allowed scope; not enterprise knowledge scope or production concurrency",
+    "corpus_kind": "synthetic repeated clauses with independently identified evidence and pages",
+    "distinct_texts_embedded": 128,
+    "actual_embedding_seconds": 20.83563462999882,
+    "query_embedding_seconds": 0.3740172019970487,
+    "corpus_text_digest": "0e01691e14ddb492bb3d077b29289eca590e2fd131d3a0b0f5133793daf138a5",
+    "embedding_profile": {
+      "model_name": "BAAI/bge-m3",
+      "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "weights_digest": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38",
+      "preprocessing_digest": "3df98f34cdc8f2a82279c50f6c6ae7e8ec2313861f12de6281fecad0b14a7b3e"
+    },
+    "lexical_dictionary_digest": "7197c3211ddd98962b036cdf40324d1ea2bfaa12bd028e68faa70111a88e12a8",
+    "dimensions": 1024,
+    "normalized": true,
+    "distance": "cosine",
+    "enterprise_knowledge_max_units_unchanged": 5000,
+    "rows": [
+      {
+        "eligible_chunks": 1000,
+        "stored_embeddings": 1000,
+        "distinct_texts_and_real_embeddings": 128,
+        "fixture_copy_index_seconds": 0.6687784679961624,
+        "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit",
+        "pgvector": "0.8.0",
+        "index_ingestion": "explicit nonowner COPY capacity fixture; production staged publication tested separately",
+        "requested_chunks": 1000,
+        "query_count": 12,
+        "first_query_seconds": 0.04725034000148298,
+        "hybrid_sql_p50_seconds": 0.04650906649840181,
+        "hybrid_sql_p95_seconds": 0.08173748200351838,
+        "actual_rerank_p50_seconds": 7.728976905000309,
+        "actual_rerank_p95_seconds": 8.439774145997944,
+        "synthetic_reference_checks": [
+          {
+            "query_id": "aca67c6a7125d3b667b175a358c013f586bda5d03e934617b0d0d5515c10c344",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "9fd6a4c181d6060ae49ce9e4f99abd0641261935e7dda2b0bf9dbf3f97878274",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "66b44e21b9a16e04e742ea5cecdbd94e14fc333391dbbcc2ca257cb2291d73b9",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "c251faa55a8141993a687f31dbf804bd12c3df8eebfe6459ecbb7d5b5c929e40",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          }
+        ]
+      },
+      {
+        "eligible_chunks": 10000,
+        "stored_embeddings": 10000,
+        "distinct_texts_and_real_embeddings": 128,
+        "fixture_copy_index_seconds": 5.389471866001259,
+        "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit",
+        "pgvector": "0.8.0",
+        "index_ingestion": "explicit nonowner COPY capacity fixture; production staged publication tested separately",
+        "requested_chunks": 10000,
+        "query_count": 12,
+        "first_query_seconds": 0.2240231739997398,
+        "hybrid_sql_p50_seconds": 0.22265254100057064,
+        "hybrid_sql_p95_seconds": 0.24768319800205063,
+        "actual_rerank_p50_seconds": 7.429114907499752,
+        "actual_rerank_p95_seconds": 9.051968846004456,
+        "synthetic_reference_checks": [
+          {
+            "query_id": "aca67c6a7125d3b667b175a358c013f586bda5d03e934617b0d0d5515c10c344",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "9fd6a4c181d6060ae49ce9e4f99abd0641261935e7dda2b0bf9dbf3f97878274",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "66b44e21b9a16e04e742ea5cecdbd94e14fc333391dbbcc2ca257cb2291d73b9",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "c251faa55a8141993a687f31dbf804bd12c3df8eebfe6459ecbb7d5b5c929e40",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          }
+        ]
+      },
+      {
+        "eligible_chunks": 50000,
+        "stored_embeddings": 50000,
+        "distinct_texts_and_real_embeddings": 128,
+        "fixture_copy_index_seconds": 31.44448673199804,
+        "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit",
+        "pgvector": "0.8.0",
+        "index_ingestion": "explicit nonowner COPY capacity fixture; production staged publication tested separately",
+        "requested_chunks": 50000,
+        "query_count": 12,
+        "first_query_seconds": 0.9024801260020467,
+        "hybrid_sql_p50_seconds": 0.8892057529992599,
+        "hybrid_sql_p95_seconds": 0.9457339410000714,
+        "actual_rerank_p50_seconds": 7.750222523998673,
+        "actual_rerank_p95_seconds": 8.34339688000182,
+        "synthetic_reference_checks": [
+          {
+            "query_id": "aca67c6a7125d3b667b175a358c013f586bda5d03e934617b0d0d5515c10c344",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "9fd6a4c181d6060ae49ce9e4f99abd0641261935e7dda2b0bf9dbf3f97878274",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "66b44e21b9a16e04e742ea5cecdbd94e14fc333391dbbcc2ca257cb2291d73b9",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          },
+          {
+            "query_id": "c251faa55a8141993a687f31dbf804bd12c3df8eebfe6459ecbb7d5b5c929e40",
+            "hits": 8,
+            "literal_target_in_top8": true,
+            "citation_original_page_verified": true,
+            "route": "exact_vector+lexical+numeric_exact+rrf+reranker",
+            "actual_reranker_identity": {
+              "model": "BAAI/bge-reranker-v2-m3",
+              "revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+              "assets_and_runtime_digest": "8f93302fca9aa3078917b49c94735a257caed96db5dbacdf74cb7c82e2560fb4"
+            }
+          }
+        ]
+      }
+    ],
+    "business_relevance_quality": "not_measured_no_labeled_company_corpus"
+  },
+  "source_unchanged_during_execution": true,
+  "completed_at": "2026-10-21T09:25:24.975389+00:00"
+}

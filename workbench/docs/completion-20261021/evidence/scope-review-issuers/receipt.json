@@ -1,0 +1,294 @@
+{
+  "scope": "independent configured native issuer identities; no semantic or input authority",
+  "tests": {
+    "linux_passed": 84,
+    "linux_seconds": 84.904,
+    "linux_by_module": {
+      "tests.test_scope_review_issuers_pg": 31,
+      "tests.test_scope_review_issuers": 16,
+      "tests.test_provider_error_isolation": 25,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 41,
+    "host_seconds": 12.851,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "ca29787c1c72eea8e112a34a15413b2b89b7bf04d5a5e5ed2c5db9518ec2f054",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "25bc7b7144e58af3c69673ee30900830e0e9cf3b4e8a8a9d29390d55a601af6f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/sql/package-scope-review-issuers.sql",
+      "sha256": "b079946d0ffab9fa7f9810bc10f693ff1d1cadfc5f89f0f890fc777d1c2e08a7",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-scope-review-issuers.md",
+      "sha256": "ddb75331599ecf94492a12be7b21cc32cf29ffa593ce10a2348bb3fc8d499dae",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_scope_review_issuers.py",
+      "sha256": "2c9629484e5ea7e2f54bc17b9cc8c9cdf25dba9340252361e15bad46448cb102",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "8c5297429402a3e46f0b54c22fec915f9915a1f87ab3a12c44764ca52e8f4c0d",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_scope_review_issuers.py",
+      "sha256": "525318fbb8edf22df96592d464ba473fd953fd531be4bd3b3f04be8e0ea75fac",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_scope_review_issuers_pg.py",
+      "sha256": "ef46c8a77a9ccfd6dedff2d4c4fb58566db2aae7512d1c1b9b1cbb3bdd39aa1c",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false,
+    "current_original_method_digest": "ef74df0c86c94f867714b7351da76c15a56c84aef377fa6f6b2720e5020eceb8",
+    "current_original_native_body_digest": "1afd8cc4b3cb0009f445ef7764d378da2d848a3e428ab35f53a4a52fab5e9344",
+    "isolated_locator_capability_checked": true,
+    "formal_binding_registered": false,
+    "current_original_set_method_digest": "af79c49c77bcfdef5ccb77170477b875a058969521ddddb5b971cd20d870710f",
+    "new_database_grants": false,
+    "current_parse_material_method_digest": "2cf20bf5baa36a1ecfd3ce19e4650e15aa32f985ab1ca8575055b10071093cd7",
+    "current_material_method_digest": "7310249ee04344f98a0d23964492efdc5831b56662ad78a05b90b1a64cb2468f",
+    "single_source_v2_model_contract_unchanged": true,
+    "multi_source_material_is_not_v2_model_input": true,
+    "complete_material_input_method_digest": "c91d8d2c4f1ece7301c2ac5a8c9a3bfbfddfefc0a19053630add946e057a7c74",
+    "complete_material_context_method_digest": "d589353bdd6752d495b0a2496f803e44bac96f0b9cf50e12ef50300c93451c07",
+    "complete_vision_serializer_digest": "41d37f3489e7b7ee5b16259cfa74e4f62a9252e1c67ef7b8ee064068de4374b6",
+    "complete_judgment_method_digest": "cce18e181f2b32c4e78663ab7663da4c86fa442cb80429c7e545626d24e8a254",
+    "complete_provider_profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
+    "complete_feature_method_digest": "528184cc75f05a121e649e53963e506f463d4dc1abccd631c7fb56fefd15a264",
+    "private_material_archive_method_digest": "bcd42c0247e2bebcd9171b25ce94f12717e0eb772a9902711c180c4a0c6db9fd",
+    "native_material_recovery_method_digest": "d34d41f925491885ed9940748ca39f1f8dd7df9067d67fe83ca8ad3dc11d9e9c",
+    "pending_material_registration_method_digest": "1673d91623cb1b77afd5c0d6a80401b39c47e0fad0bdc27b7d84dd427d69b1cf",
+    "material_scope_review_method_digest": "766308c7ce0e94527f1c0857534c97a2f5fd085d37ec4d49eade2f007f60b4c8",
+    "material_cost_method_digest": "74e4fa0930751cca9090b085e5cd79295c925fcd9b44e5819d8a8d1ba158df85",
+    "material_scope_findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+    "scope_findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03",
+    "scope_review_issuer_method_digest": "32a54db484f2ca11cf9d44b0705b2c9a71863974cbfcf3255620e87b5fa69fa6"
+  },
+  "native_issuer_proof": {
+    "issuer_method_digest": "32a54db484f2ca11cf9d44b0705b2c9a71863974cbfcf3255620e87b5fa69fa6",
+    "command_commit_digest": "f005af5e44ce964a9877fc3dfdb196576219634c5737cc47f9ada9c9944f4e3a",
+    "record": {
+      "digest": "73033c3d3b701a7e5cdbbc798500c7abccf4837359ec3523d9f80a291015f60b",
+      "document": {
+        "bid_id": "ce9256fe-ecca-4561-b3e5-5a1b3d5a7850",
+        "status": "issuer_attestation_recorded",
+        "case_id": "ab0c823c-7f8d-4c7f-ae7b-8c613d5e362c",
+        "version": "package-native-scope-review-attestation/1",
+        "scope_id": "72f2df0c-40e2-4d23-bedd-de2360261937",
+        "reference": {
+          "version": "package-scope-review-attestation-reference/1",
+          "review_digest": "7dc90ec9e1aafb45518d184113ca20f671675f7dc11573079bd33ea406e755b5",
+          "context_digest": "29db43e1aeee8c50b501b8bdc332106c16e0eb99dedf4aa48864b2f25f47bbda",
+          "findings_digest": "ace8183d9f554f27c6b1faaf24d738faa937ab72ca74bb1d0bf50c55f797995a",
+          "findings_commit_digest": "e8e569b759ee5efd1347e847e63e1918443b6b0eef397e898326ec28f30b649d",
+          "findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+          "findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03"
+        },
+        "command_id": "8ed3bcf7-2413-4ee7-8ea5-34255dcac578",
+        "profile_id": "616e3dd6-623b-447a-a505-f9fba99d8f77",
+        "subject_id": "7ceb75e7-e37c-4062-993d-68d63a4a3100",
+        "case_digest": "b3f30e28ce579f3877fbe664966facf176961837274bee5b867bd1bec0b14888",
+        "issuer_kind": "human",
+        "recorded_at": "2026-10-24T05:10:27.361070Z",
+        "recorded_by": "fusion_scope_review_issuer",
+        "issuer_origin": "synthetic_mechanism",
+        "attestation_id": "9f338524-180d-48f8-a23e-82c45492f3d9",
+        "profile_digest": "162cbb7172195d42ec6611ae11870d91ad955069a6e42164a00425b10d1fcd0b",
+        "registration_id": "1d53b194-d67d-4af6-8bf0-8469ab3fa252",
+        "registration_digest": "e8cb4215f450d12e876ccb5f0e8a754ece6296f1a0328ea644f708cfecf657a3",
+        "execution_authorized": false,
+        "authority_policy_digest": "5a07b6f86b4b55f92cb9df336eea60cc6e5970d2df02678526c77d883c2f28ae",
+        "input_authority_granted": false,
+        "native_binding_verified": false,
+        "necessary_scope_verified": false
+      },
+      "native_issuer_record_identity_verified": true
+    },
+    "observation": {
+      "version": "package-native-scope-review-issuer-observation/1",
+      "method_digest": "32a54db484f2ca11cf9d44b0705b2c9a71863974cbfcf3255620e87b5fa69fa6",
+      "record": {
+        "digest": "73033c3d3b701a7e5cdbbc798500c7abccf4837359ec3523d9f80a291015f60b",
+        "document": {
+          "bid_id": "ce9256fe-ecca-4561-b3e5-5a1b3d5a7850",
+          "status": "issuer_attestation_recorded",
+          "case_id": "ab0c823c-7f8d-4c7f-ae7b-8c613d5e362c",
+          "version": "package-native-scope-review-attestation/1",
+          "scope_id": "72f2df0c-40e2-4d23-bedd-de2360261937",
+          "reference": {
+            "version": "package-scope-review-attestation-reference/1",
+            "review_digest": "7dc90ec9e1aafb45518d184113ca20f671675f7dc11573079bd33ea406e755b5",
+            "context_digest": "29db43e1aeee8c50b501b8bdc332106c16e0eb99dedf4aa48864b2f25f47bbda",
+            "findings_digest": "ace8183d9f554f27c6b1faaf24d738faa937ab72ca74bb1d0bf50c55f797995a",
+            "findings_commit_digest": "e8e569b759ee5efd1347e847e63e1918443b6b0eef397e898326ec28f30b649d",
+            "findings_method_digest": "35fda4a609f98a1adbf51cbe72e5de41fa3894f910e968a674701f0699ffc4c4",
+            "findings_store_method_digest": "e62c01b1376ed0202ff27805f613339c8948080b07be370b2c7223db216f1a03"
+          },
+          "command_id": "8ed3bcf7-2413-4ee7-8ea5-34255dcac578",
+          "profile_id": "616e3dd6-623b-447a-a505-f9fba99d8f77",
+          "subject_id": "7ceb75e7-e37c-4062-993d-68d63a4a3100",
+          "case_digest": "b3f30e28ce579f3877fbe664966facf176961837274bee5b867bd1bec0b14888",
+          "issuer_kind": "human",
+          "recorded_at": "2026-10-24T05:10:27.361070Z",
+          "recorded_by": "fusion_scope_review_issuer",
+          "issuer_origin": "synthetic_mechanism",
+          "attestation_id": "9f338524-180d-48f8-a23e-82c45492f3d9",
+          "profile_digest": "162cbb7172195d42ec6611ae11870d91ad955069a6e42164a00425b10d1fcd0b",
+          "registration_id": "1d53b194-d67d-4af6-8bf0-8469ab3fa252",
+          "registration_digest": "e8cb4215f450d12e876ccb5f0e8a754ece6296f1a0328ea644f708cfecf657a3",
+          "execution_authorized": false,
+          "authority_policy_digest": "5a07b6f86b4b55f92cb9df336eea60cc6e5970d2df02678526c77d883c2f28ae",
+          "input_authority_granted": false,
+          "native_binding_verified": false,
+          "necessary_scope_verified": false
+        }
+      },
+      "current": {
+        "case_active": true,
+        "observed_at": "2026-10-24T05:10:27.401553Z",
+        "issuer_active": true,
+        "case_head_revision": 1,
+        "execution_authorized": false,
+        "profile_head_revision": 1,
+        "input_authority_granted": false,
+        "native_binding_verified": false,
+        "necessary_scope_verified": false,
+        "current_business_sources_rechecked": false,
+        "configured_issuer_identity_verified": true
+      },
+      "digest": "eb64f178da0fe2d227ab6c940086e40de27fc993b7ed38555535b4fd55714811"
+    },
+    "actual_loopback_gets": 4,
+    "independent_issuer_and_reader_logins": true,
+    "durable_command_replay_same_record": true,
+    "lost_result_lookup_by_command": true,
+    "session_timezones_differ": true,
+    "synthetic_review_claims": true,
+    "actual_human_review": false,
+    "input_authority_granted": false,
+    "provider_attempts": 0,
+    "body_exported": false
+  },
+  "files": {
+    "scope-review-issuers-native-proof.json": "f3feac70ba51e59323d0ddc0f00cc8c71cd673eeb2dae84ca6f260ecf35850b1",
+    "linux-final.log": "90f173938ddd05fb5d77343290201885ea7b655a5cee412ef064ff2b207a529f",
+    "linux-final.xml": "e23df5ed01a2792851200a9a4cfe45066502ea53e4935c8982e62a30cf3e09a5",
+    "host-final.log": "0333bba8becbdf828073ebfd120f9fcde8c2e5a1567a4c1c32cbad51a7fb96d7",
+    "host-final.xml": "65f895a888692d6602e6c3f9b8c5024adee6102b15212baea533211b1149de0b",
+    "python-final.log": "277b16922543b7b334df9ab6232e57d9b42ad4d42ad552aba3c4f0837e3f5474",
+    "checks-cleanup.json": "d551f3cf284c1988f8088549b68ff6ba37d583e0853b34c7e526060674a2c3d5",
+    "business-boundary.json": "a2bf88467ea252439f64b6b2f540533548829a21b36c867ba19c6c1ae0363d8d",
+    "http-runtime.json": "d4739335d8e078381e5b585bb93cdfabc5707398afa63724dfd9f09a0e39ed1a",
+    "method-boundaries.json": "fd60dc66e643d939e7d6b561544f20af01b185f20d45144fc8608bb6c34c57f6"
+  },
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "temporary_databases": 0,
+    "temporary_logins": 0,
+    "verification_roles": 0
+  },
+  "normal_business_boundary": {
+    "verification_roles": 0,
+    "design_tables": 136,
+    "registration_schemas": 0,
+    "issuer_schemas": 0
+  },
+  "runtime_inputs": 1227,
+  "production_assets": 68,
+  "real_provider_attempts": 0,
+  "paid_calls": 0,
+  "business_writes": 0,
+  "native_binding_registered": false,
+  "input_authority_granted": false,
+  "execution_authorized": false,
+  "public_http_api_changed": false,
+  "new_database_grants_in_business_database": false,
+  "new_database_grants_in_isolated_checks_only": true,
+  "default_base_sql_files": 37,
+  "windows_private_acl_backend_installed": false,
+  "power_loss_durability_verified": false,
+  "worker_automatic_recovery_installed": false,
+  "browser_visual_verified": false,
+  "frontend_rerun": false,
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true
+}

@@ -1,0 +1,131 @@
+{
+  "scope": "closed non-numeric CPU feature projection only; no production API, SQL, provider, Worker or authority installation",
+  "tests": {
+    "linux_passed": 106,
+    "linux_seconds": 0.875,
+    "linux_skipped": 0,
+    "by_module": {
+      "tests.test_package_technical_features": 54,
+      "tests.test_scoring_contracts_profiles": 33,
+      "tests.test_package_scoring_recovery": 9,
+      "tests.test_fusion_compose": 10
+    },
+    "host_passed": 54,
+    "host_reported_seconds": 0.88,
+    "overlapping_counts_not_added": true,
+    "frontend_rerun": false
+  },
+  "quality": [
+    "Ruff check/format four files",
+    "mypy three implementations",
+    "Bandit three implementations",
+    "Compose config"
+  ],
+  "method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+  "host_linux_method_equal": true,
+  "jsonschema_version": "4.24.0",
+  "qualification_grants": false,
+  "raw_numeric_total": null,
+  "formal_prediction": null,
+  "actual_pdf_rendering_or_provider_authenticated": false,
+  "original_bytes_reverified": false,
+  "visual_readability_verified": false,
+  "runtime_inputs": 1165,
+  "production_js_css_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0
+  },
+  "business_projects": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "browser_visual_verified": false,
+  "browser_blocker": "missing browser/26.1016.62342/scripts/browser-service.mjs before bootstrap",
+  "source_identity_scope": "modified inputs equal staged Git raw bytes; actual CPU method fingerprints match both runtimes, not entire tree or immutable deployment",
+  "preserved_initial_failure": "38 host cases passed, one negative fixture prehashed a forbidden float before invoking the builder; supplied an external expected digest for that invalid packet",
+  "inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "3011b0b66810ed5314ab6924b80cf8211b765d232463c319499103582e0f921b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "05713645d09540b08273943ac034a823a781d47b5a8dde9b552301428a624431",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-technical-features.md",
+      "sha256": "4096fa90a0af79f615601a09fead6088f080b7b80e83ebc37be95bcf1a61c48e",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package_technical_features.py",
+      "sha256": "e5df5ee5fd995f79e021d5941b7dd5b8aaf7579e0537e3f15708834ccf7137c4",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_technical_features.py",
+      "sha256": "60e9abdd47adf29acd7c516185170e0c24d272e06da4409662633770c1d5eaf6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_technical_features.py",
+      "sha256": "5316fea65d59ebba991c5f66f7392bc95f539768b31539edf18d7db71fd4541b",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "files": {
+    "host-initial.log": "05289b1c8f3e6af6f13b8fe5bf6ab892e04de8ab06ad22b04d77874e1310c0b1",
+    "host-final.log": "d1d095d41d53426ed773e50f2d433251bbef22a87befd3a1b1dc83cd92e20c0d",
+    "host-final.xml": "0530180371960c28465e885c037ae4848d66a097edb7e1c8e01b2ed5031d12b4",
+    "linux-initial.log": "5df468762535a9630dd192b1edc5e9782589bc870df18cb40fed986ac0b35c5b",
+    "linux-initial.xml": "3c7dc30b7c160caf98053509642096218e232d243e0954fec3ef4a825e4d49a0",
+    "linux-before-page-guard.log": "7b04a278940449f792d52f926191a79677a336d69473df246b162d5a2a03e404",
+    "linux-before-page-guard.xml": "d6dffc95a36b861d074e3de89a5ac4144d0ef7749b9beaae8039b39c8ef2096e",
+    "linux-final.log": "588e9e1c3fb171573caaf2162661a99c4428623c4664aaf54cdca934bce2d353",
+    "linux-final.xml": "3a484bbd78eb4bb0004194f3709df7de576c79d94ddda83e315f0ce2558d6c81",
+    "python-quality.log": "505e25af4f908d67c4f0d4532685d382e58bc79a312c772d5a22fc1da11009d9",
+    "method-runtime.json": "7b38fe2845d2e9d390de8ebaa1e534a61dbec531be4bc4e60d0f20d98a74e303",
+    "checks-cleanup.json": "b10216b82d2fd31c21dac25c43d98264c28477f80740e4b42fd3170d17159bec",
+    "compose-config.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "http-runtime.json": "c59cd9d25a3fc83d646a0496c472273a76e6b5a5dd500434fbf0c5628a8cb7f2"
+  }
+}

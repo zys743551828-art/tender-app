@@ -1,0 +1,105 @@
+{
+  "checked_at": "2026-10-17T01:29:03.571120+00:00",
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "contracts-generate",
+      "command": [
+        "npm",
+        "run",
+        "contracts:generate"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.688,
+      "log": "contracts-generate.log",
+      "log_sha256": "06ed735ee42df54ab8f1e543b991a8b903c9a03fce5e02160853da22a5ac63b5"
+    },
+    {
+      "name": "format-check",
+      "command": [
+        "npm",
+        "run",
+        "format:check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 3.221,
+      "log": "format-check.log",
+      "log_sha256": "2d3abd9b881f683304333a9fc84263331e875bf1e3cb8a6c75813e2033f14a99"
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 2.677,
+      "log": "lint.log",
+      "log_sha256": "1a9cd86ad9205b6997094ec298ecabe4aa9c0e1fa50ea40af65ac7209a423637"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 5.402,
+      "log": "typecheck.log",
+      "log_sha256": "289d61a11032d75167a3d99a848138a725424fce76cfe4ef250babf68a9f7b68"
+    },
+    {
+      "name": "test",
+      "command": [
+        "npm",
+        "run",
+        "test",
+        "--",
+        "--reporter=dot"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 14.044,
+      "log": "test.log",
+      "log_sha256": "49b63493c30d80b7beb826e1180986a1a8f55785ce075ac40327da2f12b11619"
+    },
+    {
+      "name": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 9.526,
+      "log": "build.log",
+      "log_sha256": "3a4e558338f89d68746133124bd4628d1c80e1d588bfe23681267cea765f88e8"
+    },
+    {
+      "name": "generator-lint",
+      "command": [
+        "../../.venv/bin/ruff",
+        "check",
+        "scripts/generate-contracts.py"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.008,
+      "log": "generator-lint.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "generator-format",
+      "command": [
+        "../../.venv/bin/ruff",
+        "format",
+        "--check",
+        "scripts/generate-contracts.py"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.032,
+      "log": "generator-format.log",
+      "log_sha256": "fd2299c9f1c6dc869070883e281051bfe93aacf66c1a3b0069f45b4aa410ca50"
+    }
+  ]
+}

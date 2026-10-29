@@ -1,0 +1,17 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_________ test_invalid_url_error_has_no_private_sdk_exception_context _________
+
+    def test_invalid_url_error_has_no_private_sdk_exception_context():
+        with pytest.raises(port.OriginalReadError) as error:
+            prepared(url="http://127.0.0.1:synthetic-private-token/original")
+>       assert error.value.__context__ is None
+E       assert InvalidURL("Invalid port: 'synthetic-private-token'") is None
+E        +  where InvalidURL("Invalid port: 'synthetic-private-token'") = OriginalReadError('ORIGINAL_READ_INVALID_URL').__context__
+E        +    where OriginalReadError('ORIGINAL_READ_INVALID_URL') = <ExceptionInfo OriginalReadError('ORIGINAL_READ_INVALID_URL') tblen=5>.value
+
+tests\test_original_bytes.py:131: AssertionError
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\original-get\privacy-before.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_original_bytes.py::test_invalid_url_error_has_no_private_sdk_exception_context
+1 failed in 0.60s

@@ -1,0 +1,942 @@
+{
+  "schema": "package-technical-execution-http-fixture/1",
+  "evidence": "Authenticated actual PostgreSQL/ASGI with synthetic materials; no real provider or eligibility",
+  "basePath": "/api/v1/bids/626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7/packages/4a8463bc-b331-4daa-8dfe-df69a534898c/revisions/937b7da7-4b60-4d4c-974b-cdd291f62cbe/technical-scopes/9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+  "scope": {
+    "manifest": {
+      "version": "package-technical-scope/1",
+      "id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+      "actor_id": "9ac9f721-a0c4-4de6-864c-f12ab06c8044",
+      "command_id": "1ca1137a-85c1-4245-8291-5aac1b88d1c6",
+      "frozen_at": "2026-10-21T09:55:38.222211Z",
+      "preview": {
+        "manifest": {
+          "version": "package-technical-scope-preview/1",
+          "scope": {
+            "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+            "package_id": "4a8463bc-b331-4daa-8dfe-df69a534898c",
+            "revision_id": "937b7da7-4b60-4d4c-974b-cdd291f62cbe",
+            "inventory_id": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+          },
+          "basis": {
+            "package_digest": "81dd4b3d2434015a7b26d642049718c1f9e2a12ac07160ea883a7dd8a131c40b",
+            "authority_revision_id": "fed615ed-70bd-494e-bc6b-99a6e3873644",
+            "authority_digest": "c3a90144e7196b3663fbee3922d077cb5602d929df2963a2bd1a1379169d6154",
+            "inventory_digest": "56c31072a9a153edc302d022c5216b7257caa2ad5f493d48d1d2bfd874dd50dc",
+            "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+            "rule_set_digest": "03d28946f5bf14bcc259bb79728aa9fdcb27382c2bb19b10be241bb1e795d040",
+            "identity_digest": "18f1e42944b41d4c0e3911d1f3669079c6456fd9e9c468d538ea061872a2e89b"
+          },
+          "method": {
+            "version": "package-technical-scope-policy/1",
+            "limits": {
+              "members": 500,
+              "parts": 2000,
+              "rules": 1000,
+              "source_rows": 20000,
+              "blocks": 100000,
+              "pages": 100000,
+              "request_bytes": 1048576,
+              "snapshot_bytes": 33554432,
+              "original_bytes": 1073741824
+            },
+            "sources": {
+              "packages/domain/package_technical_scope.py": "19af3c58413fac89457b5af123a4a85244a5ea8156eb42016d7439f977702beb",
+              "packages/domain/bid_package_technical_scope_repository.py": "2c809deffbad350a22220f5401c5e2761d1e83f1393b4687351b4e7ee5b823a5",
+              "packages/domain/bid_package_technical_scope_service.py": "ee6cdd2a6c7db5b195a07ae1038cf61c88c444f3cbe8c7b209424e6ed7ef5843",
+              "packages/contracts/package_technical_scope_api.py": "8a286d8c225a9ae6e6fa42a6e8515e9d87751c2f4e0d5159a0e4e6fdf2ed587c",
+              "packages/contracts/sql/bid-package-technical-scopes.sql": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+              "packages/domain/bid_package_review_documents.py": "277b80143ad5fb33d28593ba560f96b5728598484d25b464f5613265662728d4",
+              "packages/domain/bid_package_repository.py": "f28d5ddc2377f60bba9dd72b8ee0486effe1363d2ce57ac1fc01dd31eed443a7",
+              "packages/rag/indexing.py": "362451119c67f935ac2b0a530278a53fb75daa2ad95ceaf8b8e52601701c56ad"
+            },
+            "digest": "e61b3b80780d5d5ad928a74c1ffe9ee66f57454c4e24e95319def660545e63ba"
+          },
+          "request": {
+            "purpose": "current_prebid",
+            "package_digest": "81dd4b3d2434015a7b26d642049718c1f9e2a12ac07160ea883a7dd8a131c40b",
+            "authority_revision_id": "fed615ed-70bd-494e-bc6b-99a6e3873644",
+            "authority_digest": "c3a90144e7196b3663fbee3922d077cb5602d929df2963a2bd1a1379169d6154",
+            "inventory_id": "8d7f32cd-af00-4261-ae4a-7db49e3aa134",
+            "inventory_digest": "56c31072a9a153edc302d022c5216b7257caa2ad5f493d48d1d2bfd874dd50dc",
+            "technical_part_ids": ["tech", "appendix/table"],
+            "rule_scopes": [
+              {
+                "rule_id": "82c64e9b-0807-458b-89d6-595af248ab33",
+                "rule_digest": "4d30e3437e6b10a2a84c8264c8b9deae1e586cd1b3b37e3743b951183960ad86",
+                "selection": "include",
+                "part_ids": ["tech", "appendix/table"],
+                "reason": "Synthetic exact authority clause, declared scope and retained exclusions."
+              },
+              {
+                "rule_id": "8825709e-547e-4e84-a7c9-9332bc9d7fdf",
+                "rule_digest": "f3bd070860cde243afb7336887d771f0ccf28c935d9f4bc47492b611d5c07879",
+                "selection": "exclude",
+                "part_ids": [],
+                "reason": "Synthetic exact authority clause, declared scope and retained exclusions."
+              },
+              {
+                "rule_id": "f653201e-7792-4095-a35e-be598f204e1c",
+                "rule_digest": "a0767a070416cd649a52466a26c06a0650157d7fed9d6a09d970839729f83af6",
+                "selection": "include",
+                "part_ids": ["tech", "appendix/table"],
+                "reason": "Synthetic exact authority clause, declared scope and retained exclusions."
+              }
+            ],
+            "reason": "Synthetic explicit current technical scope; completeness is not proven."
+          },
+          "request_digest": "979f959d38a6e95b0c59cf592aec7157a51ad51a53e8e723e91b3f2ca6c17e0e",
+          "context_digest": "6ef622ae1c332fdb95b77d21016570d0ed78f44fcbbd4736313d3c5cdf455fa1",
+          "parts": [
+            {
+              "member_id": "original",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "part": {
+                "part_id": "tech",
+                "category": "technical",
+                "first_page": 1,
+                "last_page": 1,
+                "shared_attachment": false,
+                "heading_path": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+              },
+              "selected": true,
+              "read_physical_pages": [1],
+              "block_ids": ["6db45d1f-d073-467a-9199-889cdc02a03d"],
+              "text_evidence_present": true,
+              "visual_coverage": "unproven"
+            },
+            {
+              "member_id": "original",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "part": {
+                "part_id": "appendix/table",
+                "category": "technical",
+                "first_page": 2,
+                "last_page": 2,
+                "shared_attachment": false,
+                "heading_path": [12]
+              },
+              "selected": true,
+              "read_physical_pages": [2],
+              "block_ids": [
+                "96166590-ddfc-4384-a777-81b3f1e6b8fb",
+                "e6afb946-9fc0-4c29-a6bf-fd0cbe241c17"
+              ],
+              "text_evidence_present": true,
+              "visual_coverage": "unproven"
+            }
+          ],
+          "rules": [
+            {
+              "rule_id": "82c64e9b-0807-458b-89d6-595af248ab33",
+              "rule_digest": "4d30e3437e6b10a2a84c8264c8b9deae1e586cd1b3b37e3743b951183960ad86",
+              "selection": "include",
+              "part_ids": ["tech", "appendix/table"],
+              "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+              "rule_snapshot": {
+                "id": "82c64e9b-0807-458b-89d6-595af248ab33",
+                "kind": "scoring",
+                "bands": [
+                  {
+                    "label": "full",
+                    "points": "10",
+                    "description": "entire required range"
+                  }
+                ],
+                "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+                "statement": "Synthetic scoring clause 0",
+                "conditions": ["when the technical range applies"],
+                "exceptions": ["explicitly excepted alternative"],
+                "max_points": "10",
+                "origin_kind": "model_extracted",
+                "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+                "evidence_ids": ["6d495f34-3af5-44ff-8581-c1ac95b3ce56"],
+                "provenance_status": "effective",
+                "applicability_scope": {},
+                "manual_origin_rule_id": null
+              },
+              "requirement_digest": "af3e1815e556212d967cc8cb345c5257a70e5dac247e11f2a0a936604b49c429",
+              "declared_target_part_ids": ["tech", "appendix/table"],
+              "source_evidence": [
+                {
+                  "member_id": "authority",
+                  "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+                  "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+                  "parse_run_id": "c34bb16c-6873-4561-b458-6aeed1c4f8b7",
+                  "physical_page": 1,
+                  "evidence_id": "6d495f34-3af5-44ff-8581-c1ac95b3ce56",
+                  "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                  "text_content": "synthetic page 1",
+                  "part_ids": ["tech"]
+                }
+              ]
+            },
+            {
+              "rule_id": "8825709e-547e-4e84-a7c9-9332bc9d7fdf",
+              "rule_digest": "f3bd070860cde243afb7336887d771f0ccf28c935d9f4bc47492b611d5c07879",
+              "selection": "exclude",
+              "part_ids": [],
+              "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+              "rule_snapshot": {
+                "id": "8825709e-547e-4e84-a7c9-9332bc9d7fdf",
+                "kind": "scoring",
+                "bands": [
+                  {
+                    "label": "full",
+                    "points": "10",
+                    "description": "entire required range"
+                  }
+                ],
+                "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+                "statement": "Synthetic scoring clause 2",
+                "conditions": ["when the technical range applies"],
+                "exceptions": ["explicitly excepted alternative"],
+                "max_points": "10",
+                "origin_kind": "model_extracted",
+                "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+                "evidence_ids": ["6d495f34-3af5-44ff-8581-c1ac95b3ce56"],
+                "provenance_status": "effective",
+                "applicability_scope": {},
+                "manual_origin_rule_id": null
+              },
+              "requirement_digest": "7091b0ddde6211c90a7cdc8ba3674496c80a7ee1f147a9e6f8401d0ee83e46e5",
+              "declared_target_part_ids": ["tech", "appendix/table"],
+              "source_evidence": [
+                {
+                  "member_id": "authority",
+                  "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+                  "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+                  "parse_run_id": "c34bb16c-6873-4561-b458-6aeed1c4f8b7",
+                  "physical_page": 1,
+                  "evidence_id": "6d495f34-3af5-44ff-8581-c1ac95b3ce56",
+                  "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                  "text_content": "synthetic page 1",
+                  "part_ids": ["tech"]
+                }
+              ]
+            },
+            {
+              "rule_id": "f653201e-7792-4095-a35e-be598f204e1c",
+              "rule_digest": "a0767a070416cd649a52466a26c06a0650157d7fed9d6a09d970839729f83af6",
+              "selection": "include",
+              "part_ids": ["tech", "appendix/table"],
+              "reason": "Synthetic exact authority clause, declared scope and retained exclusions.",
+              "rule_snapshot": {
+                "id": "f653201e-7792-4095-a35e-be598f204e1c",
+                "kind": "scoring",
+                "bands": [
+                  {
+                    "label": "full",
+                    "points": "10",
+                    "description": "entire required range"
+                  }
+                ],
+                "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+                "statement": "Synthetic scoring clause 1",
+                "conditions": ["when the technical range applies"],
+                "exceptions": ["explicitly excepted alternative"],
+                "max_points": "10",
+                "origin_kind": "model_extracted",
+                "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+                "evidence_ids": ["6d495f34-3af5-44ff-8581-c1ac95b3ce56"],
+                "provenance_status": "effective",
+                "applicability_scope": {},
+                "manual_origin_rule_id": null
+              },
+              "requirement_digest": "f16427a190c5955fe9384e6976e00078d1d64f99096d9f25fe10df25ffed491c",
+              "declared_target_part_ids": ["tech", "appendix/table"],
+              "source_evidence": [
+                {
+                  "member_id": "authority",
+                  "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+                  "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+                  "parse_run_id": "c34bb16c-6873-4561-b458-6aeed1c4f8b7",
+                  "physical_page": 1,
+                  "evidence_id": "6d495f34-3af5-44ff-8581-c1ac95b3ce56",
+                  "evidence_digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                  "text_content": "synthetic page 1",
+                  "part_ids": ["tech"]
+                }
+              ]
+            }
+          ],
+          "documents": [
+            {
+              "package_role": "target",
+              "member_id": "original",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "byte_size": 61,
+              "parse": {
+                "status": "frozen",
+                "parse_run_id": "35b211d9-e447-47cc-ad3e-466786d732e0",
+                "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "evidence_digest": "d6e318d622043c6406abf5db628f0066b34f8dd43b739b76c7c46ae3e81ae534",
+                "reason": null
+              },
+              "page_count": 2,
+              "pages": [
+                {
+                  "physical_page": 1,
+                  "quality": "usable",
+                  "gaps": []
+                },
+                {
+                  "physical_page": 2,
+                  "quality": "usable",
+                  "gaps": []
+                }
+              ],
+              "blocks": [
+                {
+                  "id": "6db45d1f-d073-467a-9199-889cdc02a03d",
+                  "physical_page": 1,
+                  "ordinal": 0,
+                  "kind": "text",
+                  "text_content": "synthetic page 1",
+                  "digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                  "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                  "structure_json": "{\"cell_width\": 1.25}"
+                },
+                {
+                  "id": "96166590-ddfc-4384-a777-81b3f1e6b8fb",
+                  "physical_page": 2,
+                  "ordinal": 0,
+                  "kind": "text",
+                  "text_content": "synthetic page 2",
+                  "digest": "42e729fbdfef7b9b61acc919addf0826279527cb1a88739447307023d05713e3",
+                  "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                  "structure_json": "{\"cell_width\": 1.25}"
+                },
+                {
+                  "id": "e6afb946-9fc0-4c29-a6bf-fd0cbe241c17",
+                  "physical_page": 2,
+                  "ordinal": 1,
+                  "kind": "table",
+                  "text_content": "Synthetic table: term 30 days; alternative 45 days.",
+                  "digest": "f1a293858e3a9c1a3ac37e55fb922eab401c45e79cb325d7e445732789d58959",
+                  "bbox_json": "[0, 1.25, 100, 200]",
+                  "structure_json": "{\"rows\": [[\"term\", \"30 days\", \"45 days\"]]}"
+                }
+              ]
+            },
+            {
+              "package_role": "authority",
+              "member_id": "authority",
+              "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+              "file_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "byte_size": 61,
+              "parse": {
+                "status": "frozen",
+                "parse_run_id": "c34bb16c-6873-4561-b458-6aeed1c4f8b7",
+                "parser_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "config_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "evidence_digest": "303f8a55b2c2ca47296b3bddec270441bed798978782c9d7bfd909c1fffc9f88",
+                "reason": null
+              },
+              "page_count": 2,
+              "pages": [
+                {
+                  "physical_page": 1,
+                  "quality": "usable",
+                  "gaps": []
+                },
+                {
+                  "physical_page": 2,
+                  "quality": "usable",
+                  "gaps": []
+                }
+              ],
+              "blocks": [
+                {
+                  "id": "6d495f34-3af5-44ff-8581-c1ac95b3ce56",
+                  "physical_page": 1,
+                  "ordinal": 0,
+                  "kind": "text",
+                  "text_content": "synthetic page 1",
+                  "digest": "487a6d6db33e7ad20bf99adb742e660236c1aa489a1aa3bc2301b2238c5b0b89",
+                  "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                  "structure_json": "{\"cell_width\": 1.25}"
+                },
+                {
+                  "id": "9af05c61-501f-4f4f-b65e-06b9d4bd09da",
+                  "physical_page": 2,
+                  "ordinal": 0,
+                  "kind": "text",
+                  "text_content": "synthetic page 2",
+                  "digest": "42e729fbdfef7b9b61acc919addf0826279527cb1a88739447307023d05713e3",
+                  "bbox_json": "[0.1, 0.2, 0.8, 0.9]",
+                  "structure_json": "{\"cell_width\": 1.25}"
+                },
+                {
+                  "id": "d7c20e6c-ba11-4a2f-a9e2-dc563aca244e",
+                  "physical_page": 2,
+                  "ordinal": 1,
+                  "kind": "table",
+                  "text_content": "Synthetic table: term 30 days; alternative 45 days.",
+                  "digest": "f1a293858e3a9c1a3ac37e55fb922eab401c45e79cb325d7e445732789d58959",
+                  "bbox_json": "[0, 1.25, 100, 200]",
+                  "structure_json": "{\"rows\": [[\"term\", \"30 days\", \"45 days\"]]}"
+                }
+              ]
+            }
+          ],
+          "source_snapshot": [
+            {
+              "source_id": "2d387ab6-58e7-5c8e-8179-c9ad12e79b2e",
+              "ancestor_id": "2d387ab6-58e7-5c8e-8179-c9ad12e79b2e",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.810317-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.810317-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            },
+            {
+              "source_id": "63916a5f-56a8-56af-b771-af000f084769",
+              "ancestor_id": "63916a5f-56a8-56af-b771-af000f084769",
+              "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.822510-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.822510-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            },
+            {
+              "source_id": "63916a5f-56a8-56af-b771-af000f084769",
+              "ancestor_id": "f52d3d6e-93c8-53f9-9724-d5662a15a546",
+              "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.822510-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.822510-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            },
+            {
+              "source_id": "7c89180f-f9a0-5c8b-9ea2-4140663eed92",
+              "ancestor_id": "2d387ab6-58e7-5c8e-8179-c9ad12e79b2e",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.810317-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.810317-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            },
+            {
+              "source_id": "7c89180f-f9a0-5c8b-9ea2-4140663eed92",
+              "ancestor_id": "7c89180f-f9a0-5c8b-9ea2-4140663eed92",
+              "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.810317-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.810317-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            },
+            {
+              "source_id": "f52d3d6e-93c8-53f9-9724-d5662a15a546",
+              "ancestor_id": "f52d3d6e-93c8-53f9-9724-d5662a15a546",
+              "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+              "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+              "kind": "document",
+              "policy_class": "prebid_content",
+              "known_at": "2026-10-21T05:55:37.822510-04:00",
+              "revision": 2,
+              "status": "published",
+              "valid_from": "2026-10-21T05:55:37.822510-04:00",
+              "valid_until": null,
+              "document_bid": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+              "original_digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769"
+            }
+          ],
+          "coverage": {
+            "state": "partial",
+            "all_part_count": 2,
+            "selected_part_count": 2,
+            "all_scoring_rule_count": 3,
+            "included_rule_count": 2,
+            "frozen_parse_member_count": 1,
+            "gaps": [
+              {
+                "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+                "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+                "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134",
+                "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。"
+              },
+              {
+                "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+                "code": "VISUAL_COMPLETENESS_UNPROVEN",
+                "subject": null,
+                "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。"
+              },
+              {
+                "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+                "code": "REQUIRED_RANGE_UNPROVEN",
+                "subject": null,
+                "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。"
+              },
+              {
+                "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+                "code": "MODEL_EXECUTION_NOT_OPEN",
+                "subject": null,
+                "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。"
+              },
+              {
+                "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+                "code": "RULE_EXCLUDED_BY_DECLARATION",
+                "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf",
+                "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。"
+              }
+            ],
+            "visual_coverage": "unproven",
+            "required_range_completeness": "unproven"
+          },
+          "timing": {
+            "purpose": "current_prebid",
+            "historical_as_of": null,
+            "submitted_at": null,
+            "label_known_at": null,
+            "training_frozen_at": null,
+            "submission_split_at": null,
+            "label_available_as_of": null,
+            "historical_qualification": "not_established"
+          },
+          "original_bytes_verified": false,
+          "inventory_complete": false,
+          "scoring_ready": false,
+          "formal_scoring_eligible": false,
+          "model_execution_enabled": false,
+          "training_eligible": false
+        },
+        "digest": "2e6d91025f18abdc8765e12e424df770a6a78084806a7c1abbbc6f86f99146fe"
+      },
+      "original_verification": {
+        "state": "verified_at_recording",
+        "verified_at": "2026-10-21T09:55:38.157993Z",
+        "files": [
+          {
+            "document_version_id": "35b6625b-c830-4eab-a676-65a91db2e45f",
+            "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+            "byte_size": 61
+          },
+          {
+            "document_version_id": "f7bba606-c543-4460-ae58-f387d79ae3c2",
+            "digest": "22dfc406dd0402bf6b7de52f1fb8296ab426b768c68e20feb75bfadf51c0d769",
+            "byte_size": 61
+          }
+        ]
+      },
+      "inventory_complete": false,
+      "scoring_ready": false,
+      "formal_scoring_eligible": false,
+      "model_execution_enabled": false,
+      "training_eligible": false
+    },
+    "digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b"
+  },
+  "context": {
+    "version": "package-technical-execution-context/1",
+    "qualification": {
+      "version": "package-technical-scoring-context/1",
+      "purpose": "current_prebid",
+      "scope": {
+        "bid_id": "626aeeba-f7ca-4789-9de8-5b1e2fcfe7c7",
+        "package_id": "4a8463bc-b331-4daa-8dfe-df69a534898c",
+        "revision_id": "937b7da7-4b60-4d4c-974b-cdd291f62cbe",
+        "inventory_id": "8d7f32cd-af00-4261-ae4a-7db49e3aa134",
+        "scope_id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+        "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b"
+      },
+      "basis": {
+        "rule_set_id": "bdf4d9aa-22a0-48b3-9305-245dfd6811eb",
+        "package_digest": "81dd4b3d2434015a7b26d642049718c1f9e2a12ac07160ea883a7dd8a131c40b",
+        "identity_digest": "18f1e42944b41d4c0e3911d1f3669079c6456fd9e9c468d538ea061872a2e89b",
+        "rule_set_digest": "03d28946f5bf14bcc259bb79728aa9fdcb27382c2bb19b10be241bb1e795d040",
+        "authority_digest": "c3a90144e7196b3663fbee3922d077cb5602d929df2963a2bd1a1379169d6154",
+        "inventory_digest": "56c31072a9a153edc302d022c5216b7257caa2ad5f493d48d1d2bfd874dd50dc",
+        "authority_revision_id": "fed615ed-70bd-494e-bc6b-99a6e3873644"
+      },
+      "observed_at": "2026-10-21T05:55:38.371572-04:00",
+      "current_input": {
+        "state": "matched",
+        "stored_context_digest": "6ef622ae1c332fdb95b77d21016570d0ed78f44fcbbd4736313d3c5cdf455fa1",
+        "current_context_digest": "6ef622ae1c332fdb95b77d21016570d0ed78f44fcbbd4736313d3c5cdf455fa1",
+        "method_matches": true,
+        "original_bytes_reverified": false,
+        "reasons": []
+      },
+      "coverage": {
+        "gaps": [
+          {
+            "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+            "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+            "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+            "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+          },
+          {
+            "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+            "code": "VISUAL_COMPLETENESS_UNPROVEN",
+            "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+            "subject": null
+          },
+          {
+            "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+            "code": "REQUIRED_RANGE_UNPROVEN",
+            "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+            "subject": null
+          },
+          {
+            "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+            "code": "MODEL_EXECUTION_NOT_OPEN",
+            "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+            "subject": null
+          },
+          {
+            "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+            "code": "RULE_EXCLUDED_BY_DECLARATION",
+            "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+            "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+          }
+        ],
+        "state": "partial",
+        "all_part_count": 2,
+        "visual_coverage": "unproven",
+        "included_rule_count": 2,
+        "selected_part_count": 2,
+        "all_scoring_rule_count": 3,
+        "frozen_parse_member_count": 1,
+        "required_range_completeness": "unproven"
+      },
+      "denominator": {
+        "state": "unselected",
+        "scale_id": null,
+        "scale_digest": null,
+        "purpose": "current_prebid",
+        "technical_maximum": null,
+        "scale_description": null,
+        "aggregation": null,
+        "maximum_usable": false,
+        "aggregation_usable": false,
+        "evidence_refs": [],
+        "reasons": [
+          {
+            "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+            "code": "TECHNICAL_SCALE_NOT_SELECTED",
+            "subject": null,
+            "message": "尚未选择有据技术满分权威，满分保持未知。"
+          }
+        ]
+      },
+      "judgments": {
+        "required_valid_independent": 3,
+        "recorded_valid_independent": 0,
+        "producer_authority": "not_configured_for_exact_package",
+        "previous_answers_in_input": false,
+        "retries_count_as_independent": false,
+        "unknown_send_auto_retry": false,
+        "execution_enabled": false
+      },
+      "numeric_prediction": null,
+      "blockers": [
+        {
+          "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+          "code": "TECHNICAL_SCALE_NOT_SELECTED",
+          "subject": null,
+          "message": "尚未选择有据技术满分权威，满分保持未知。"
+        },
+        {
+          "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+          "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+          "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+          "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+        },
+        {
+          "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+          "code": "VISUAL_COMPLETENESS_UNPROVEN",
+          "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+          "subject": null
+        },
+        {
+          "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+          "code": "REQUIRED_RANGE_UNPROVEN",
+          "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+          "subject": null
+        },
+        {
+          "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+          "code": "MODEL_EXECUTION_NOT_OPEN",
+          "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+          "subject": null
+        },
+        {
+          "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+          "code": "RULE_EXCLUDED_BY_DECLARATION",
+          "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+          "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+        },
+        {
+          "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+          "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+          "subject": null,
+          "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+        },
+        {
+          "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+          "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+          "subject": null,
+          "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+        },
+        {
+          "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+          "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+          "subject": null,
+          "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+        }
+      ],
+      "official_label_access": "forbidden",
+      "inventory_complete": false,
+      "scoring_ready": false,
+      "formal_scoring_eligible": false,
+      "model_execution_enabled": false,
+      "training_eligible": false
+    },
+    "producer": {
+      "software_foundation": "not_installed",
+      "real_provider_configured": false,
+      "formal_input_authority_configured": false,
+      "mechanism_test_publicly_available": false
+    },
+    "method": {
+      "schema": "package-technical-judgment-method/1",
+      "provider": "deepseek",
+      "model_alias": "deepseek-flash",
+      "immutable_weights_verified": false,
+      "input_protocol": "package-technical-judgment-input/1",
+      "output_protocol": "package-technical-judgments/1",
+      "transport_protocol": "controlled-score-response/1",
+      "thinking": "disabled",
+      "temperature": 0,
+      "context_tokens": 1000000,
+      "max_output_tokens": 4096,
+      "maximum_prompt_characters": 262144,
+      "prompt_digest": "b0f0dbab7ff8604813d50c9caf838f66c7d810f254b47773c68f5dda39a92eea",
+      "output_schema_digest": "c41b1c0d5685dcddc247f1c0343046c6c52a749b039440f312fb62be7065829c",
+      "valid_replicates_required": 3,
+      "retry_is_replicate": false,
+      "complete_package_snapshot_required": true,
+      "visual_interpretation_supported": false,
+      "formal_scoring_eligible": false,
+      "digest": "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996"
+    },
+    "execution_enabled": false,
+    "blockers": [
+      {
+        "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+        "code": "TECHNICAL_SCALE_NOT_SELECTED",
+        "subject": null,
+        "message": "尚未选择有据技术满分权威，满分保持未知。"
+      },
+      {
+        "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+        "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+        "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+        "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+      },
+      {
+        "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+        "code": "VISUAL_COMPLETENESS_UNPROVEN",
+        "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+        "subject": null
+      },
+      {
+        "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+        "code": "REQUIRED_RANGE_UNPROVEN",
+        "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+        "subject": null
+      },
+      {
+        "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+        "code": "MODEL_EXECUTION_NOT_OPEN",
+        "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+        "subject": null
+      },
+      {
+        "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+        "code": "RULE_EXCLUDED_BY_DECLARATION",
+        "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+        "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+      },
+      {
+        "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+        "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+        "subject": null,
+        "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+      },
+      {
+        "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+        "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+        "subject": null,
+        "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+      },
+      {
+        "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+        "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+        "subject": null,
+        "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+      },
+      {
+        "id": "4e46d1fa33f8134dadc55a08535d3d85011e4bd2e03d430b62b8ab29cea1cb72",
+        "code": "PACKAGE_SCORE_FORMAL_RANGE_AUTHORITY_MISSING",
+        "subject": null,
+        "message": "完整必要范围尚无独立权威证明；用户选择技术分册不授予完整读取资格。"
+      },
+      {
+        "id": "40fd559ed67907b1d864b6ca90072675fcab1121bd41567030befc317e3c6170",
+        "code": "PACKAGE_SCORE_VISUAL_AUTHORITY_MISSING",
+        "subject": null,
+        "message": "图、表和示意图的原页读取及视觉覆盖尚未由独立执行权威核验。"
+      },
+      {
+        "id": "77412ac7443a1a673068ce1278fb7d28fcb1fbb9f471cdaa21fc11803e749a2b",
+        "code": "PACKAGE_SCORE_PROVIDER_NOT_CONFIGURED",
+        "subject": null,
+        "message": "当前仅验收隔离软件机制，未配置有资格的真实模型运行端口。"
+      },
+      {
+        "id": "22be5cef46bb718523d833f55792e8b9e8c3eda7c8d87483bff8b6011afb0bca",
+        "code": "PACKAGE_SCORE_METHOD_NOT_CERTIFIED",
+        "subject": null,
+        "message": "整包方法及模型身份尚未通过独立真实验收，不能产生正式分数或训练资格。"
+      }
+    ]
+  },
+  "etag": "\"package-technical-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:0d72d2dc64b683c1aa0ef38382131d8fe62eba47a20049d6a8ee7be4cd0d7c9f\"",
+  "request": {
+    "purpose": "current_prebid",
+    "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
+    "method_digest": "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996",
+    "scale_id": null,
+    "budget": "0",
+    "reason": "Synthetic formal request must not borrow isolated mechanism eligibility"
+  },
+  "refusal": {
+    "code": "PACKAGE_TECHNICAL_EXECUTION_BLOCKED",
+    "message": "整包正式执行资格尚未成立，未创建任务、预留费用或发送模型请求",
+    "request_id": "d5f776ec-bcf1-4524-a9db-db371fa07674",
+    "retryable": false,
+    "details": {
+      "scope_id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
+      "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
+      "method_digest": "b278c1ce4785d51f483070c022d0041902115c0858eeed74b02d52c443089996",
+      "blockers": [
+        {
+          "id": "5548bf2d7103618f19cfe1b7ec95b6122ad65a538eb0afc9561b4f4953e00cf3",
+          "code": "TECHNICAL_SCALE_NOT_SELECTED",
+          "subject": null,
+          "message": "尚未选择有据技术满分权威，满分保持未知。"
+        },
+        {
+          "id": "c247dd2d98433331108ec7b4d8f9dd2784ea5322f269e980f32fe7a97e5e1536",
+          "code": "INVENTORY_COMPLETENESS_UNPROVEN",
+          "message": "当前规则清单没有完整性实测权威；技术范围选择不会消除漏提风险。",
+          "subject": "8d7f32cd-af00-4261-ae4a-7db49e3aa134"
+        },
+        {
+          "id": "4102a47b833f464c7bb5839c11e80e8e622e1f78b19cadf6568690c369ff6f88",
+          "code": "VISUAL_COMPLETENESS_UNPROVEN",
+          "message": "当前证据只记录实际解析内容，没有全图表完整阅读的资格证明。",
+          "subject": null
+        },
+        {
+          "id": "6ec058b4ffa58d48d662319e43b4e1c5d8d159c7d88de254fe19c4f086c6261e",
+          "code": "REQUIRED_RANGE_UNPROVEN",
+          "message": "用户声明的适用章节不能独立证明已覆盖全部必要技术范围。",
+          "subject": null
+        },
+        {
+          "id": "d563db4c42d56a3ab9fd20991d838132d0867018f75c15bfbcd19b9bd6dc143c",
+          "code": "MODEL_EXECUTION_NOT_OPEN",
+          "message": "本记录仅冻结范围，不创建评分任务、三次判断或训练样本。",
+          "subject": null
+        },
+        {
+          "id": "f5fc0fbe1f4434449e5e942f8f9498d7168678e4e89fb15f2218b4fc81b307f4",
+          "code": "RULE_EXCLUDED_BY_DECLARATION",
+          "message": "本条款未进入技术判断范围；人工选择与理由保留，不会删除潜在适用义务。",
+          "subject": "8825709e-547e-4e84-a7c9-9332bc9d7fdf"
+        },
+        {
+          "id": "6c6cee4fbe1918d0770f0150e13822c29eb9a936db40e11ffece0e3e2407e375",
+          "code": "PACKAGE_TECHNICAL_PRODUCER_NOT_CONFIGURED",
+          "subject": null,
+          "message": "多册确切范围尚未配置专用评分生产者；单正文生产者不能替代此范围。"
+        },
+        {
+          "id": "76186d73873ace35bb2701917913a8c4d17d4e1176fe0291eede050133d7146f",
+          "code": "THREE_VALID_INDEPENDENT_JUDGMENTS_REQUIRED",
+          "subject": null,
+          "message": "每个适用评分项须有同一冻结输入的三次有效独立判断；失败和重试不计入三次。"
+        },
+        {
+          "id": "16b910ffec86c11e627be22653ca96e899749301ab993c393f8d6b53aa62e06e",
+          "code": "ORIGINAL_BYTES_RECHECK_REQUIRED",
+          "subject": null,
+          "message": "本上下文只核对数据库原件身份；正式执行前须再次核对实际原字节。"
+        },
+        {
+          "id": "4e46d1fa33f8134dadc55a08535d3d85011e4bd2e03d430b62b8ab29cea1cb72",
+          "code": "PACKAGE_SCORE_FORMAL_RANGE_AUTHORITY_MISSING",
+          "subject": null,
+          "message": "完整必要范围尚无独立权威证明；用户选择技术分册不授予完整读取资格。"
+        },
+        {
+          "id": "40fd559ed67907b1d864b6ca90072675fcab1121bd41567030befc317e3c6170",
+          "code": "PACKAGE_SCORE_VISUAL_AUTHORITY_MISSING",
+          "subject": null,
+          "message": "图、表和示意图的原页读取及视觉覆盖尚未由独立执行权威核验。"
+        },
+        {
+          "id": "77412ac7443a1a673068ce1278fb7d28fcb1fbb9f471cdaa21fc11803e749a2b",
+          "code": "PACKAGE_SCORE_PROVIDER_NOT_CONFIGURED",
+          "subject": null,
+          "message": "当前仅验收隔离软件机制，未配置有资格的真实模型运行端口。"
+        },
+        {
+          "id": "22be5cef46bb718523d833f55792e8b9e8c3eda7c8d87483bff8b6011afb0bca",
+          "code": "PACKAGE_SCORE_METHOD_NOT_CERTIFIED",
+          "subject": null,
+          "message": "整包方法及模型身份尚未通过独立真实验收，不能产生正式分数或训练资格。"
+        }
+      ],
+      "jobs_created": 0,
+      "model_requests": 0
+    }
+  }
+}

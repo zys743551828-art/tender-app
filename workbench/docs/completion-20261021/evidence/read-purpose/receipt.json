@@ -1,0 +1,155 @@
+{
+  "scope": "shared native effective-grant audit for independent verification ports and indirect RPC ownership rejection",
+  "tests": {
+    "linux_passed": 76,
+    "linux_junit_seconds": 46.574,
+    "linux_by_module": {
+      "tests.test_package_current_sources_pg": 37,
+      "tests.test_package_current_scope_pg": 21,
+      "tests.test_provider_error_isolation": 6,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 6,
+    "host_junit_seconds": 2.244,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "261d2bf20afa65ab16d9a5610a2a59ef18ccffd90aa8ed4cf7dce1ea73a6619c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "c6b3606e0219042449b609fca2a18ccc6e9c61d48eb1816e515e644933002c5f",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-scope.md",
+      "sha256": "c4f1e970621806445d8e10d845373ae514169533998ad3c27c57b384bcc567d4",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-current-sources.md",
+      "sha256": "0b5d5d09536beaab8ea0cf30c575be51c8fd84134302484197eb726ac40e8631",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_scope.py",
+      "sha256": "ec683f7988653b5e555749209a9d0c920b168611a5bf9902299a6a57de782dcd",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/package_current_sources.py",
+      "sha256": "7cf10a081970e5e2f8b4b847387e08801f66cc8366a6498dd31e9c04436c5935",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/model_governance/read_purpose.py",
+      "sha256": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_package_current_scope_pg.py",
+      "sha256": "572c84d2f110dd33b0c268a587073b6a68eaa366d7c6fb7ab4442e3a5eb80059",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "394e178739e2c6cc86c5dfb0eb878c610f42545d41a64f515edecd845d47fc88",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true
+  },
+  "inherited_rpc_owner_rejected": true,
+  "runtime_permission_repair": false,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "sql_or_http_changed": false,
+  "runtime_inputs": 1191,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "current_verification_capability_roles": 0
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-initial.log": "164d978a1f3c1a2f188748d13e768aab0e520a8db90df2745fdc3a7a131f34dd",
+    "linux-initial.xml": "022da07940ac7744b1f7f1aad1d8b80575ceba4cd04e6552f08cf0259881d47c",
+    "linux-final.log": "3bdef03f3755c102a0596150c31b4de81b546249d00d6e870738b1153d422996",
+    "linux-final.xml": "3cbd743d4db7bda163025f2ca13410c497316b68f4bcd7029eb24fff8bb7a6e3",
+    "host-final.log": "03eaa9eefa335a7f772a76df3cc7c3d91ae21608518e153df5f3ea547db418b3",
+    "host-final.xml": "d0660edacf9a447b52dfc41dfb5d4dfb0e087cdd68f18b82dc40cca3184257b0",
+    "python-final.log": "52bf68c14fcce70a8ffc71dae49542f4b59c0c0c650707477f129488151fa39a",
+    "native-source-observation.json": "2acb47da89f88f233a997945f1839485d55d82955165a7d545c320f2b41614b2",
+    "native-scope-observation.json": "aee637f4ebc60c8d97ab478610acc599aad14a17e61f426486ed0717630df385",
+    "method-boundaries.json": "c95c2221836f0548cc04b197cbc4149bcd0f2d3490036b1618b0710f6dd9fadf",
+    "http-runtime.json": "a971a94c436a7a1ef3508f6587210ea694a6dcaab6ae136bad8e07b6a10c4f33",
+    "checks-cleanup.json": "22bcc7afe13d708c2c2e4feb73a33d31f9b80891e0a71af7c10b875afd2bcc17"
+  }
+}

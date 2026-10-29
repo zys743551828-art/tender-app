@@ -1,0 +1,128 @@
+.package-frozen-input {
+  min-width: 0;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+.package-frozen-input > h4 {
+  margin: 0 0 12px;
+}
+.package-frozen-input p {
+  margin-block: 10px;
+}
+.package-frozen-input button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.package-frozen-input > details {
+  margin-top: 16px;
+}
+.package-frozen-input [role="status"] {
+  padding: 12px;
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+}
+.package-frozen-input p,
+.package-frozen-input code {
+  overflow-wrap: anywhere;
+}
+.package-frozen-input label {
+  display: grid;
+  gap: 0.4rem;
+  margin-block: 0.75rem;
+}
+.package-frozen-input input {
+  width: 100%;
+  min-width: 0;
+}
+.package-frozen-input__result {
+  margin-block: 0.75rem;
+}
+.package-frozen-input__directory ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.package-frozen-input__directory li {
+  min-width: 0;
+}
+.package-frozen-input__directory li button {
+  text-align: start;
+  width: 100%;
+  justify-content: start;
+}
+.package-frozen-input__directory li span {
+  min-width: 0;
+}
+.package-frozen-input__eligibility {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__eligibility > h5 {
+  margin: 0;
+  font-size: 14px;
+}
+.package-frozen-input__execution {
+  min-width: 0;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__execution > h5 {
+  margin: 0;
+  font-size: 14px;
+}
+.package-frozen-input__fact-check {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.package-frozen-input__fact-check > h6 {
+  margin: 0;
+  font-size: 14px;
+}
+.package-frozen-input__fact-scope {
+  min-width: 0;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.package-frozen-input__fact-scope select,
+.package-frozen-input__fact-scope textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.package-frozen-input__fact-scope-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.package-frozen-input__fact-picker ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.package-frozen-input__fact-picker li,
+.package-frozen-input__fact-picker span {
+  min-width: 0;
+}
+.package-frozen-input__fact-picker li button {
+  width: 100%;
+  justify-content: start;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.package-frozen-input__fact-picker small {
+  display: block;
+  margin-top: 4px;
+}

@@ -1,0 +1,118 @@
+{
+  "baseline": "784c038de0d22d15660c8683adbf8686e0394178",
+  "scope": "Windows full frontend and schema checks; Linux fixed Compose checks; API-only v14 preview",
+  "browser_visual_verified": false,
+  "paid_calls": 0,
+  "evidence": [
+    {
+      "file": "backend.log",
+      "bytes": 26529,
+      "sha256": "8f1e3cf1c0fd6606614a3352834f9a31ddee4cb75bf923a82ee39a80276b946e"
+    },
+    {
+      "file": "backend.xml",
+      "bytes": 36287,
+      "sha256": "d28ee3fda9a032f187017bbef214cbd5212b5ddf43776f03e81bfafa0b265b38"
+    },
+    {
+      "file": "bandit.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "completion-api.log",
+      "bytes": 1879,
+      "sha256": "a7a4344feba92817a6814f8efe4a5794370284e030065606020c02505c038919"
+    },
+    {
+      "file": "completion-api.xml",
+      "bytes": 12666,
+      "sha256": "c30329e5c856fb77ca8ea824d8c31495de176e0d6a33d68edc98239836a5202f"
+    },
+    {
+      "file": "database.json",
+      "bytes": 211,
+      "sha256": "b83354bd7be01aa043cc6002b0210f4522fe317a11dee88788fc4d1834828110"
+    },
+    {
+      "file": "delivery-pure.log",
+      "bytes": 456,
+      "sha256": "3606518ead637832d1daad2818d45d5cec18fc91e80092c9073ea8ea4080816f"
+    },
+    {
+      "file": "delivery-pure.xml",
+      "bytes": 24633,
+      "sha256": "f235ca36fa13b09545e46578e7f996894fea204f19bca9e7f454e51f24c123b9"
+    },
+    {
+      "file": "format.log",
+      "bytes": 27,
+      "sha256": "97d85b4b6c185a05396e2d09a3c304ff0f7cc77f8b7b7bb7989ec6cd875b3898"
+    },
+    {
+      "file": "http-runtime.json",
+      "bytes": 10295,
+      "sha256": "b29f8400e8171808adff272e0d976e3c20410724cb440c1cda0f3d674789586c"
+    },
+    {
+      "file": "mypy.log",
+      "bytes": 43,
+      "sha256": "8e63ae22e8213e327a5e9cbd584067681681bd8ef7f25c869877887ccdcfc4ff"
+    },
+    {
+      "file": "openapi.log",
+      "bytes": 204,
+      "sha256": "617067a0be38df0dc849d0069fc879ee470d7868b8c9caaccfbb6d0d76764be2"
+    },
+    {
+      "file": "openapi.xml",
+      "bytes": 828,
+      "sha256": "35edbafb0f65fde3bbaaa552977dad9ed5a1526fa7933c5de5f4b122490d083d"
+    },
+    {
+      "file": "ruff.log",
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    {
+      "file": "services.txt",
+      "bytes": 1582,
+      "sha256": "d9afe971a3a665875e7dd4e70e80a54554011059b6bb9cee868cb460bdaa6137"
+    },
+    {
+      "file": "web-build.log",
+      "bytes": 6994,
+      "sha256": "0055d3f600843c8292f8aa30e81c8abb76f27bf6d605a3fe6bb020761ba82a74"
+    },
+    {
+      "file": "web-format.log",
+      "bytes": 68,
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "file": "web-lint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "web-test-initial-failure.log",
+      "bytes": 1480,
+      "sha256": "ee1470246a018ba7375d5a9fbac3a963cb38a083e7631f96b543c4dda2d9150e"
+    },
+    {
+      "file": "web-test.log",
+      "bytes": 35973,
+      "sha256": "c71ce80bbade9e1e7904a8348cf62efb02aac828f3d344d1bf89c3d2224aefa3"
+    },
+    {
+      "file": "web-types.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "web.xml",
+      "bytes": 366387,
+      "sha256": "0ae177b2ebbf5b4563fb85b18d3def8a623c2dc86ce512d76db8b86550db06df"
+    }
+  ]
+}

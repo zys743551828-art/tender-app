@@ -1,0 +1,118 @@
+.........................................................F
+=================================== FAILURES ===================================
+_____________ test_rpc_owned_by_inherited_group_is_not_independent _____________
+
+connection = <psycopg.Connection [IDLE] (host=fusion-nonowner-postgres user=fusion_current_scope_verify database=fusion_package_requirements_api) at 0x739cbef9dfa0>
+
+    def observe(connection, *, bid_id, scope_id, expected_scope_digest, expected_method_digest):
+        try:
+            if any(str(UUID(value)) != value for value in (bid_id, scope_id)):
+                fail("INVALID_ID")
+        except (ValueError, TypeError, AttributeError):
+            fail("INVALID_ID")
+        if (
+            not isinstance(expected_scope_digest, str)
+            or len(expected_scope_digest) != 64
+            or any(char not in "0123456789abcdef" for char in expected_scope_digest)
+        ):
+            fail("INVALID_DIGEST")
+        method = method_digest()
+        if expected_method_digest != method:
+            fail("METHOD_MISMATCH")
+        if connection.info.transaction_status != TransactionStatus.IDLE:
+            fail("IDLE_CONNECTION_REQUIRED")
+        try:
+            with connection.transaction():
+                with connection.cursor(row_factory=dict_row) as c:
+                    c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+                    c.execute("SET LOCAL statement_timeout='5s'")
+                    _role(c)
+                    native_digest = _native_method(c)
+>                   value = c.execute(
+                        "SELECT current_technical_scope.observe(%s,%s,%s) AS value",
+                        (bid_id, scope_id, expected_scope_digest),
+                    ).fetchone()["value"]
+
+packages/model_governance/package_current_scope.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.Cursor [closed] [IDLE] (host=fusion-nonowner-postgres user=fusion_current_scope_verify database=fusion_package_requirements_api) at 0x739cb860c350>
+query = 'SELECT current_technical_scope.observe(%s,%s,%s) AS value'
+params = ('38c53211-8beb-4a32-9569-f29b1ed91afd', '4cf40945-87cb-4d12-ac91-a0884df01c1e', '32649140e51e3fa570a6a87ad4193b0513da201d273f90bf9b9b7ae6a9367c98')
+
+    def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool | None = None,
+    ) -> Self:
+        """
+        Execute a query or command to the database.
+        """
+        try:
+            with self._conn.lock:
+                self._conn.wait(
+                    self._execute_gen(query, params, prepare=prepare, binary=binary)
+                )
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.InsufficientPrivilege: permission denied for function observe
+
+/usr/local/lib/python3.12/site-packages/psycopg/cursor.py:97: InsufficientPrivilege
+
+During handling of the above exception, another exception occurred:
+
+saved = {'actor': 'bc747602-6a8b-409f-ae46-1d1ae3ac6c92', 'app': <apps.api.main.WorkbenchAPI object at 0x739cba1a6e10>, 'base'...i/v1/bids/38c53211-8beb-4a32-9569-f29b1ed91afd/packages', 'body_evidence': '67c2b3cb-7d86-4165-b26c-935c73901135', ...}
+
+    def test_rpc_owned_by_inherited_group_is_not_independent(saved):
+        w = saved
+        c = w["database"]["owner"]
+        owner = c.execute(
+            "SELECT pg_get_userbyid(proowner) AS name FROM pg_proc WHERE oid=%s::regprocedure",
+            (current.RPC,),
+        ).fetchone()["name"]
+        try:
+            c.execute(
+                "ALTER FUNCTION current_technical_scope.observe(uuid,uuid,text) OWNER TO tender_current_scope_verify"
+            )
+            with pytest.raises(current.CurrentScopeError, match="NATIVE_METHOD_MISMATCH"):
+                observe(w)
+        finally:
+            c.execute(
+                sql.SQL(
+                    "ALTER FUNCTION current_technical_scope.observe(uuid,uuid,text) OWNER TO {}"
+                ).format(sql.Identifier(owner))
+            )
+>       assert observe(w).metadata["native_current_facts_checked"]
+               ^^^^^^^^^^
+
+tests/test_package_current_scope_pg.py:301: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_package_current_scope_pg.py:77: in observe
+    return current.observe(w["database"]["scope_verifier"], **args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/model_governance/package_current_scope.py:140: in observe
+    fail("NATIVE_UNAVAILABLE")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+code = 'NATIVE_UNAVAILABLE'
+
+    def fail(code):
+>       raise CurrentScopeError("CURRENT_SCOPE_" + code)
+E       packages.model_governance.package_current_scope.CurrentScopeError: CURRENT_SCOPE_NATIVE_UNAVAILABLE
+
+packages/model_governance/package_current_scope.py:44: CurrentScopeError
+=============================== warnings summary ===============================
+tests/test_package_current_scope_pg.py::test_native_current_packages_identity_inventory_and_exclusions
+  /usr/local/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------ generated xml file: /evidence/read-purpose-native.xml -------------
+=========================== short test summary info ============================
+FAILED tests/test_package_current_scope_pg.py::test_rpc_owned_by_inherited_group_is_not_independent
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 57 passed, 1 warning in 44.44s
+{"suite": "read-purpose-native", "exit_code": 1, "real_provider_attempts": 0, "compose_project": "tender-fusion"}

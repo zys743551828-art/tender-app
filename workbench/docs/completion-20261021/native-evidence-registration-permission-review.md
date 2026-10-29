@@ -1,0 +1,11 @@
+# 原生证据登记v2权限审查
+
+仅在全新独立Compose检查库安装可选SQL，不加入BASE或正常业务库。新增tender_native_material_registration NOLOGIN组和独立非owner LOGIN，只有material_registration.record_native／read_native两种RPC；不继承旧登记、材料存储、来源、审核主体或API／Worker组，无直接表／列／序列、其他schema USAGE、CREATE或通用对象读取。
+
+v2使用既有不可变material_registration.records作为登记身份载体，但以新文档／packet版本明确区分。packet引用真实原生storage record ID／摘要／packet及本次恢复观察，完整恢复观察与记录一起原子保存；不生成或填充旧CAS commit字段。旧SQL／权限／方法及v1文档不改，两个版本共用command唯一约束和同一advisory锁；跨版本或跨主体冲突拒绝，准确旧命令重放优先。read_native只返回本实际LOGIN的v2记录。
+
+服务器核准确bid／scope／scope摘要、实际原生私有存储记录与context／原取得／报告／派生根，核恢复观察摘要及版本、当前来源检查的声明和全部资格false。ID／登记时间／session_user由数据库生成，状态固定awaiting_independent_verification，原生binding／必要范围／输入／执行false。当前观察不等原子快照或lease，记录不授独立内容或评分资格。
+
+共享私有策略及依赖方法只经pg_catalog审查，运行时不修权限、不切角色或创建LOGIN。Python核实际函数正文／owner／语言／search_path／UTC及有效授权，SQL再核目的角色与事务；写RC／RW、读RR／RO、5秒语句超时，结果校验在提交前。未知结果按固定command／packet查回，调用方必须事先持久固定逻辑命令。
+
+结束清理独立库、临时LOGIN与九类专用组并停止检查／渲染，保留预览与Word；无正常业务DDL／授权、模型／付费或公开HTTP。新v2身份可由既有审核case的registration外键引用，不使用旧v1的文件提交字段冒充原生证明。

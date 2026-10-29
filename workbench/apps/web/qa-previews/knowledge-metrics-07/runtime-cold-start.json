@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-17T02:18:17.876158+00:00",
+  "scope": "cold fixed compiled07 frontend asset overlay at Origin5176; actualAPI8806 unchanged; not independently deployed07 same-origin acceptance",
+  "candidate_sha256": "3047525933873ffe0d611a76fe4bcaa8f2d111c5664ec26dfd44cb03adbf75af",
+  "source_tree_sha256": "eed623fe812b1539f6b2db33416066ab501fe741861f0073f836313a2c4b9d62",
+  "source_files_verified": 112,
+  "build_assets_verified": 215,
+  "served_assets_sha_verified": [
+    "/assets/Knowledge-BHF_j5B5.js",
+    "/assets/Metrics-GiMFeEN0.js",
+    "/assets/SubmissionPanel-Chjch8hR.js",
+    "/assets/businessNames-D2PcdCRi.js",
+    "/assets/index-BoUEueox.js",
+    "/assets/index-K7HYe8Mx.css",
+    "/assets/useBidChoices-CuxZI52c.js"
+  ],
+  "runtime": {
+    "pid": 2013191,
+    "uid": 1000,
+    "argv": "node ./node_modules/.bin/vite preview --host 127.0.0.1 --port 5177 --strictPort --outDir ../frozen-dist"
+  },
+  "asset_service": "http://127.0.0.1:5177",
+  "root": "/workspace/tender-workbench/apps/web/qa-previews/knowledge-metrics-07/frozen-inputs",
+  "compiled_root": "/workspace/tender-workbench/apps/web/qa-previews/knowledge-metrics-07/frozen-dist",
+  "lock_sha256": "240dcc9e8a081687a2395f7e04de78cbe7e71ae0897dd966e2743c620db17210",
+  "api_contract_sha256": "33e3e86a956778919fb7929d41e1d4e61a91921452a1a1ac857bfa0f80037472",
+  "restored_trace_and_citation_old_bytes": true,
+  "current_ineligible_new_reference_disabled": true,
+  "server_result_current_and_history": true,
+  "metrics_explicit_project_filter": true,
+  "mobile_no_overflow": true,
+  "business_writes": [],
+  "page_errors": [],
+  "paid_calls": 0
+}

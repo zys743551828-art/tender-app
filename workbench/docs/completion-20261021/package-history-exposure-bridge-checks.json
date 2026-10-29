@@ -1,0 +1,175 @@
+{
+  "checks": {
+    "bandit": "passed: 4 source files",
+    "format": "passed: 7 Python files",
+    "mypy": "passed: 4 source files",
+    "ruff": "passed: 7 Python files"
+  },
+  "core_freeze_manifest": "docs/completion-20261021/package-historical-research-checks.json",
+  "default_installation": false,
+  "documents": {
+    "docs/completion-20261021/package-history-exposure-bridge-acceptance.md": "6aa67cdedd3291912ddf12d8bccf26ec3280de285be64f38e5d163d7cba94d87",
+    "docs/completion-20261021/package-history-exposure-bridge-design.md": "b0b8a283538269a0ff34924dce8668860e4f599d76769525c213e22677d7e4ad"
+  },
+  "files": {
+    "apps/api/package_history_exposure_errors.py": "aaf608837fc85b2efd9193e1288c224e47a8a18f03c3e639f7e5ed8596d04870",
+    "apps/api/package_history_public_gate.py": "eb5f777b6c2b3a01b3778125ddd0495b37c6963c2b5308ff15483db6af5e5451",
+    "deploy/sql/package-history-exposure-bridge.sql": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+    "packages/research/package_history_exposure_fence.py": "eeecc54dd31561743b155ada908fabc375910ee8c1a9c77b2fa597baf0a5b212",
+    "packages/research/worker.py": "7ba4fca90dc46f0c8ae5aec5f18fb40312162a3a51cfe19dff49b434e6656d30",
+    "tests/package_history_legacy_fixtures.py": "20a74a1b7e4fd4b51a351027e06c28cc6ecdd313bce308383ba650c4a5a55637",
+    "tests/test_package_history_exposure_bridge_pg.py": "dd293d6844e9d0ced1fcc7579d4acd53251a210a1450bf6128e895f88250b2fb"
+  },
+  "formal_eligibility": "unavailable",
+  "old_retrospective_wip_used": false,
+  "paid_calls": 0,
+  "pg_passed_distinct": 13,
+  "pg_runs": [
+    {
+      "bridge_sql_sha256": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+      "case": "all",
+      "elapsed_seconds": 147.99,
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 13,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 45431,
+      "postgres": "17.11",
+      "production_main_mount": false,
+      "provider_invoked": false,
+      "readable_copy": "/tmp/tender-review-current/history-receipts/history-pg-iep3p88r.json",
+      "receipt_path": "/tmp/tender-review-f06/history-pg-iep3p88r/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "source_hashes": {
+        "apps/api/package_history_exposure_errors.py": "aaf608837fc85b2efd9193e1288c224e47a8a18f03c3e639f7e5ed8596d04870",
+        "apps/api/package_history_public_gate.py": "7fa8f39b3c485e2659ca43963275ba8c9f7d27f1a04add14e8c787682a504e24",
+        "deploy/sql/package-history-exposure-bridge.sql": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+        "packages/research/package_history_exposure_fence.py": "eeecc54dd31561743b155ada908fabc375910ee8c1a9c77b2fa597baf0a5b212",
+        "packages/research/worker.py": "7ba4fca90dc46f0c8ae5aec5f18fb40312162a3a51cfe19dff49b434e6656d30",
+        "tests/package_history_legacy_fixtures.py": "20a74a1b7e4fd4b51a351027e06c28cc6ecdd313bce308383ba650c4a5a55637",
+        "tests/test_package_history_exposure_bridge_pg.py": "928418ac83bb07babc7db7572121d7bbcedd1cfe1dc1a82e950bd530a3b908bb"
+      },
+      "source_hashes_unchanged": true,
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_exposure_bridge_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    },
+    {
+      "bridge_sql_sha256": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+      "case": "all",
+      "elapsed_seconds": 154.61,
+      "exit_code": 0,
+      "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+      "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+      "paid_calls": 0,
+      "passed": 13,
+      "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+      "port": 53857,
+      "postgres": "17.11",
+      "production_main_mount": true,
+      "provider_invoked": false,
+      "readable_copy": "/tmp/tender-review-current/history-receipts/history-pg-hyjmd5st.json",
+      "receipt_path": "/tmp/tender-review-f06/history-pg-hyjmd5st/test-receipt.json",
+      "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+      "source_hashes": {
+        "apps/api/package_history_exposure_errors.py": "aaf608837fc85b2efd9193e1288c224e47a8a18f03c3e639f7e5ed8596d04870",
+        "apps/api/package_history_public_gate.py": "eb5f777b6c2b3a01b3778125ddd0495b37c6963c2b5308ff15483db6af5e5451",
+        "deploy/sql/package-history-exposure-bridge.sql": "f7673a5df3b560f2307b29e34964ce1752d4803298180176ca88f35bfa35e0e7",
+        "packages/research/package_history_exposure_fence.py": "eeecc54dd31561743b155ada908fabc375910ee8c1a9c77b2fa597baf0a5b212",
+        "packages/research/worker.py": "7ba4fca90dc46f0c8ae5aec5f18fb40312162a3a51cfe19dff49b434e6656d30",
+        "tests/package_history_legacy_fixtures.py": "20a74a1b7e4fd4b51a351027e06c28cc6ecdd313bce308383ba650c4a5a55637",
+        "tests/test_package_history_exposure_bridge_pg.py": "dd293d6844e9d0ced1fcc7579d4acd53251a210a1450bf6128e895f88250b2fb"
+      },
+      "source_hashes_unchanged": true,
+      "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+      "test": "tests/test_package_history_exposure_bridge_pg.py",
+      "uuid_extension": "uuid-ossp/1.1"
+    }
+  ],
+  "prior_reader_verification": {
+    "initial_reader_failure": {
+      "elapsed_seconds": 124.75,
+      "failed": 1,
+      "fix": "dedicated short-lived connection fixes SESSION search_path; no privilege or guard relaxation",
+      "passed_before_failure": 6,
+      "reason": "SET LOCAL search_path cleared by metadata commit; actual UndefinedTable before first object",
+      "receipt": "/tmp/tender-review-f06/history-pg-etsb3gdn/test-receipt.json"
+    },
+    "reader_groups": {
+      "deselected": 6,
+      "elapsed_seconds": 35.4,
+      "passed": 2,
+      "receipt": "/tmp/tender-review-f06/history-pg-7utjzdth/test-receipt.json"
+    },
+    "six_sql_groups": {
+      "elapsed_seconds": 94.26,
+      "passed": 6,
+      "receipt": "/tmp/tender-review-f06/history-pg-ievn6xir/test-receipt.json"
+    }
+  },
+  "provider_requests": 0,
+  "public_guard": {
+    "contracts": 76,
+    "core_paths": 10,
+    "function_count": 58,
+    "half_installed_native_sqls": 2,
+    "missing_bridge_status": 503,
+    "negative_initial_schema_fixtures": [
+      "old_guard_body",
+      "disabled_exposure",
+      "private_execute",
+      "forged_readiness"
+    ],
+    "readiness_body_sha256": "2e34c9cce5297cd7c8c32e9e27464eb821579c4f62b152c9eebbd3e2d7de2d66",
+    "relation_and_namespace_count": 7,
+    "schema": "package-history-public-guard/1",
+    "trigger_count": 11
+  },
+  "reader_fence": {
+    "db_during_object_io": "idle; no transaction; bounded session advisory lock",
+    "deadline_seconds": 45,
+    "exceptions_tested": [
+      "RuntimeError",
+      "KeyboardInterrupt",
+      "actual total timeout",
+      "actual lease expiry"
+    ],
+    "refreshed_lease_seconds": 120,
+    "runtime": "POSIX main thread, no other active ITIMER_REAL; unsupported runtime rejects before object I/O"
+  },
+  "real_historical_qualification": false,
+  "schema": "package-history-exposure-bridge-checks/1",
+  "standalone_http_regression": {
+    "bridge_sql_sha256": null,
+    "case": "http_and_groups",
+    "deselected": 11,
+    "elapsed_seconds": 103.97,
+    "exit_code": 0,
+    "history_sql_sha256": "08df823d3cc1476b1afc7c17a652b9256a00ed4ca48e0f2ed8f5383c0d171c91",
+    "original_io": "synthetic original and source receipt bytes; actual signature verifier",
+    "paid_calls": 0,
+    "passed": 6,
+    "pg_roles": "actual isolated API, verifier, train and evaluator logins",
+    "port": 50307,
+    "postgres": "17.11",
+    "provider_invoked": false,
+    "purpose": "native standalone HTTP/groups after production main mount",
+    "readable_copy": "/tmp/tender-review-current/history-receipts/history-pg-gfc94nfr.json",
+    "receipt_path": "/tmp/tender-review-f06/history-pg-gfc94nfr/test-receipt.json",
+    "research_sql_sha256": "4400fe1f7d163ee494f83f16bd83b788d85534d2e56e6ba618d6c8ff70b2d002",
+    "source_hashes": {},
+    "source_hashes_unchanged": true,
+    "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+    "test": "tests/test_package_history_pg.py",
+    "uuid_extension": "uuid-ossp/1.1"
+  },
+  "static_initial_finding": {
+    "check": "bandit B608",
+    "fix": "psycopg.sql SQL.format with fixed CATALOG; no suppression",
+    "reason": "constant SQL composition flagged"
+  },
+  "synthetic": true,
+  "trust_boundary": "Reviewed deployment code and initialization owner; API/Worker/CPU cannot alter private contracts or spoof RPC. Not a malicious superuser defense."
+}

@@ -1,0 +1,14 @@
+All checks passed!
+4 files already formatted
+packages\domain\providers\original_bytes.py:88: error: Item "None" of "URL | None" has no attribute "userinfo"  [union-attr]
+packages\domain\providers\original_bytes.py:88: error: Item "None" of "URL | None" has no attribute "fragment"  [union-attr]
+packages\domain\providers\original_bytes.py:88: error: Item "None" of "URL | None" has no attribute "path"  [union-attr]
+packages\domain\providers\original_bytes.py:92: error: Item "None" of "URL | None" has no attribute "scheme"  [union-attr]
+packages\domain\providers\original_bytes.py:93: error: Item "None" of "URL | None" has no attribute "host"  [union-attr]
+packages\domain\providers\original_bytes.py:94: error: Item "None" of "URL | None" has no attribute "port"  [union-attr]
+packages\domain\providers\original_bytes.py:98: error: Item "None" of "URL | None" has no attribute "scheme"  [union-attr]
+packages\domain\providers\original_bytes.py:99: error: Item "None" of "URL | None" has no attribute "host"  [union-attr]
+packages\domain\providers\original_bytes.py:99: error: Item "None" of "URL | None" has no attribute "port"  [union-attr]
+packages\domain\providers\original_bytes.py:101: error: Item "None" of "URL | None" has no attribute "host"  [union-attr]
+packages\domain\providers\original_bytes.py:101: error: Item "None" of "URL | None" has no attribute "port"  [union-attr]
+Found 11 errors in 1 file (checked 2 source files)

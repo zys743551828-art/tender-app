@@ -1,0 +1,142 @@
+..F................................................................      [100%]
+================================== FAILURES ===================================
+______ test_legacy_aliases_and_actual_api_handler_recognize_pure_errors _______
+
+    def test_legacy_aliases_and_actual_api_handler_recognize_pure_errors():
+        code = """import asyncio,json,sys
+    sys.path.insert(0,sys.argv[1])
+    import httpx
+    from fastapi import FastAPI,Request
+    from apps.api.main import app as business_app
+    from packages.domain.errors import DomainError
+    from packages.domain.providers.errors import ProviderError
+    from packages.domain.providers.deepseek_vision import VisionProviderError
+    from packages.domain.runtime import DomainError as LegacyDomainError
+    from packages.domain.providers.deepseek import ProviderError as LegacyProviderError
+    assert DomainError is LegacyDomainError
+    assert ProviderError is LegacyProviderError
+    app=FastAPI()
+    app.add_exception_handler(DomainError,business_app.exception_handlers[DomainError])
+    @app.get('/probe/{kind}')
+    async def probe(kind:str,request:Request):
+        request.state.request_id='synthetic-request'
+        if kind=='domain':
+            raise DomainError('SYNTHETIC_DOMAIN','synthetic message',422,{'field':'synthetic'},True)
+        if kind=='provider':
+            raise ProviderError('SYNTHETIC_PROVIDER','synthetic provider')
+        raise VisionProviderError('SYNTHETIC_VISION',raw_response=b'raw-not-public')
+    async def verify():
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as client:
+            for kind,status,code in [('domain',422,'SYNTHETIC_DOMAIN'),('provider',503,'SYNTHETIC_PROVIDER'),('vision',503,'SYNTHETIC_VISION')]:
+                response=await client.get('/probe/'+kind)
+                body=response.json()
+                assert response.status_code==status and body['code']==code
+                assert body['request_id']=='synthetic-request'
+                assert body['retryable'] is (kind=='domain')
+                assert b'raw-not-public' not in response.content
+                if kind!='domain':
+                    assert body['details']=={'provider':'deepseek','billing_state':'unknown','external_attempts':1}
+    asyncio.run(verify())
+    print(json.dumps({'same_legacy_class_identity':True,'actual_handler_cases':3,'raw_response_exposed':False}))
+    """
+        environment = {key: value for key, value in os.environ.items() if key in SYSTEM_KEYS}
+        environment["WORKBENCH_ENV_FILE"] = "explicit-isolation-test-no-business-profile"
+>       result = subprocess.run(
+            [sys.executable, "-I", "-c", code, str(ROOT)],
+            capture_output=True,
+            env=environment,
+            check=True,
+            timeout=30,
+        )  # nosec B603
+
+tests\test_provider_error_isolation.py:95: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = 30, check = True
+popenargs = (['D:\\workspace\\tender\\tender-app\\workbench\\.venv\\Scripts\\python.exe', '-I', '-c', "import asyncio,json,sys\nsy...ty':True,'actual_handler_cases':3,'raw_response_exposed':False}))\n", 'D:\\workspace\\tender\\tender-app\\workbench'],)
+kwargs = {'env': {'LANG': 'C.UTF-8', 'LC_ALL': 'C.UTF-8', 'LC_CTYPE': 'C.UTF-8', 'PATH': 'C:\\Users\\74355\\.cache\\codex-runti...5d5756dbf318;C:\\Users\\74355\\AppData\\Local\\OpenAI\\Codex\\bin\\37f54d68e5533a51', ...}, 'stderr': -1, 'stdout': -1}
+process = <Popen: returncode: 1 args: ['D:\\workspace\\tender\\tender-app\\workbench\\...>
+stdout = b''
+stderr = b'Traceback (most recent call last):\r\n  File "<string>", line 5, in <module>\r\n  File "D:\\workspace\\tender\\tende... ^^^^^^^^\r\nUnicodeDecodeError: \'gbk\' codec can\'t decode byte 0xae in position 167: illegal multibyte sequence\r\n'
+retcode = 1
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['D:\\workspace\\tender\\tender-app\\workbench\\.venv\\Scripts\\python.exe', '-I', '-c', "import asyncio,json,sys\nsys.path.insert(0,sys.argv[1])\nimport httpx\nfrom fastapi import FastAPI,Request\nfrom apps.api.main import app as business_app\nfrom packages.domain.errors import DomainError\nfrom packages.domain.providers.errors import ProviderError\nfrom packages.domain.providers.deepseek_vision import VisionProviderError\nfrom packages.domain.runtime import DomainError as LegacyDomainError\nfrom packages.domain.providers.deepseek import ProviderError as LegacyProviderError\nassert DomainError is LegacyDomainError\nassert ProviderError is LegacyProviderError\napp=FastAPI()\napp.add_exception_handler(DomainError,business_app.exception_handlers[DomainError])\n@app.get('/probe/{kind}')\nasync def probe(kind:str,request:Request):\n    request.state.request_id='synthetic-request'\n    if kind=='domain':\n        raise DomainError('SYNTHETIC_DOMAIN','synthetic message',422,{'field':'synthetic'},True)\n    if kind=='provider':\n        raise ProviderError('SYNTHETIC_PROVIDER','synthetic provider')\n    raise VisionProviderError('SYNTHETIC_VISION',raw_response=b'raw-not-public')\nasync def verify():\n    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://test') as client:\n        for kind,status,code in [('domain',422,'SYNTHETIC_DOMAIN'),('provider',503,'SYNTHETIC_PROVIDER'),('vision',503,'SYNTHETIC_VISION')]:\n            response=await client.get('/probe/'+kind)\n            body=response.json()\n            assert response.status_code==status and body['code']==code\n            assert body['request_id']=='synthetic-request'\n            assert body['retryable'] is (kind=='domain')\n            assert b'raw-not-public' not in response.content\n            if kind!='domain':\n                assert body['details']=={'provider':'deepseek','billing_state':'unknown','external_attempts':1}\nasyncio.run(verify())\nprint(json.dumps({'same_legacy_class_identity':True,'actual_handler_cases':3,'raw_response_exposed':False}))\n", 'D:\\workspace\\tender\\tender-app\\workbench']' returned non-zero exit status 1.
+
+C:\Users\74355\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\subprocess.py:571: CalledProcessError
+============================== warnings summary ===============================
+tests/test_providers.py::test_native_oss_signing_and_strict_grants
+  D:\workspace\tender\tender-app\workbench\.venv\Lib\site-packages\oss2\auth.py:579: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_datetime = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: D:\workspace\tender\tender-app\workbench\.local\provider-errors\host-final.xml -
+=========================== short test summary info ===========================
+FAILED tests/test_provider_error_isolation.py::test_legacy_aliases_and_actual_api_handler_recognize_pure_errors
+1 failed, 66 passed, 1 warning in 2.83s

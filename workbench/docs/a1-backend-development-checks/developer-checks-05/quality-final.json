@@ -1,0 +1,25 @@
+{
+  "production_file_count": 62,
+  "checks": [
+    {
+      "check": "ruff check",
+      "exit_code": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "check": "ruff format",
+      "exit_code": 0,
+      "output": "62 files already formatted\n"
+    },
+    {
+      "check": "mypy",
+      "exit_code": 0,
+      "output": "Success: no issues found in 62 source files\n"
+    },
+    {
+      "check": "bandit",
+      "exit_code": 0,
+      "output": ""
+    }
+  ]
+}

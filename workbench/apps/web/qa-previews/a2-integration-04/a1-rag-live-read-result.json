@@ -1,0 +1,13 @@
+{
+  "scope": "developer real local RAG + current A1 read-only smoke against unified API8802, existing synthetic OSS project; no review/chat/core model calls",
+  "project_id": "79a7fdd5-71ab-4d20-9af3-2bd1853de6e7",
+  "real_review_state_read": true,
+  "real_empty_history_explicit_not_pass": true,
+  "retrieval_hits": 1,
+  "source_rechecked_same_command_before_original": true,
+  "exact_original_pdf_canvas_visible": true,
+  "390px_no_overflow": true,
+  "focus_returns": true,
+  "business_write_paths": ["retrievals", "retrievals"],
+  "page_errors": []
+}

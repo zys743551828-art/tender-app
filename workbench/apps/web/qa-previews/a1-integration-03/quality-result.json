@@ -1,0 +1,19 @@
+{
+  "scope": "Frontend developer candidate; unit/component assertions are explicit fixtures and not live model acceptance",
+  "checks": {
+    "contracts:generate": "passed from actual36-path/38-operation snapshot",
+    "format:check": "final check logged after manifest formatting",
+    "lint": "passed",
+    "typecheck": "passed",
+    "test": "37 passed across 7 files",
+    "build": "passed"
+  },
+  "live_browser_evidence": "older-service-browser-result.json: actual old dev service returns version-not-ready; draft/focus/390px verified; one cost-free retrieval rejected404; no paid review",
+  "current_release_read_probe": "5175 Cookie login200, review-state404; awaiting coordinated API/Worker restart",
+  "bound_previous_pdf_acceptance": "a1-foundation-02 and independent same-origin OSS PDF scope retained as historical evidence; no claim its source manifest describes this new candidate",
+  "pending": [
+    "Current release A1 prepared request/review/manifest/history/matrix/evidence browser integration",
+    "Current release real local RAG query and source original PDF integration",
+    "Independent A1 product/user/test/architecture acceptance; paid model/full scoring quality not claimed"
+  ]
+}

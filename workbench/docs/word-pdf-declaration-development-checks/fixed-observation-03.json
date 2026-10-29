@@ -1,0 +1,7 @@
+{
+  "status_code": 409,
+  "error_code": "WORD_PDF_NEW_FILE_REQUIRED",
+  "backend_main_path": "/workspace/tender-workbench/docs/word-pdf-declaration-development-checks/runtime-preview-03/apps/api/main.py",
+  "backend_main_sha256": "71aa56afc8468c30114f0939ddd8fdb4d9b0cf70aab894a6d489921a180535cb",
+  "scope": "Real nonowner HTTP bind after actual shared byte verification; explicit memory objects, no Docker/model"
+}

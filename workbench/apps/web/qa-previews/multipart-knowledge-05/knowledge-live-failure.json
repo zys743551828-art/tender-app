@@ -1,0 +1,41 @@
+{
+  "stage": "version-with-authoritative-source",
+  "error_type": "TimeoutError",
+  "project_id": "ca1873fa-b457-474f-8569-81e377c908d3",
+  "document_version_id": "ab6fbb26-ce00-4fa4-84e3-7da2f6fb90c0",
+  "knowledge_id": "ab478357-4664-4ceb-b6ec-081603443053",
+  "alerts": [
+    "本次操作未完成\n\n请补全知识版本的主体、条件、期限和出处\n\nINVALID_KNOWLEDGE_VERSION · 排查编号 81a1ce0c-6372-4cff-b56b-a136c7c1b62d\n重试",
+    "本次操作未完成\n\n来源或祖先已撤回、未生效或过期，不能发布或新增引用\n\nKNOWLEDGE_SOURCE_INVALID · 排查编号 365aefd3-7803-42d3-bf2e-a27bf94c9b74\n重试"
+  ],
+  "writes": [
+    {
+      "method": "POST",
+      "path": "bids"
+    },
+    {
+      "method": "POST",
+      "path": "bids/ca1873fa-b457-474f-8569-81e377c908d3/upload-batches"
+    },
+    {
+      "method": "POST",
+      "path": "bids/ca1873fa-b457-474f-8569-81e377c908d3/uploads"
+    },
+    {
+      "method": "PUT",
+      "path": "object-transfers/uploads/70748aad-be71-46a7-863f-9b0d61586519"
+    },
+    {
+      "method": "POST",
+      "path": "uploads/70748aad-be71-46a7-863f-9b0d61586519/complete"
+    },
+    {
+      "method": "POST",
+      "path": "bids/ca1873fa-b457-474f-8569-81e377c908d3/upload-batches/3f3ba62b-c58e-4509-8ca4-f56961cef534/commit"
+    },
+    {
+      "method": "POST",
+      "path": "knowledge"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "host_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+  "host_descriptor": {
+    "version": "package-technical-feature-method/2",
+    "projection_version": "package-technical-feature-projection/2",
+    "output_version": "package-technical-features/2",
+    "valid_slots_required": 3,
+    "diagnostics": [
+      "supported",
+      "unsupported",
+      "uncertain"
+    ],
+    "dimensions": [
+      "specificity",
+      "validity",
+      "consistency"
+    ],
+    "modal_ties": "preserve_frozen_band_order",
+    "numeric_aggregation": "not_provided",
+    "maximum_projection_bytes": 16777216,
+    "source_digest": "60e9abdd47adf29acd7c516185170e0c24d272e06da4409662633770c1d5eaf6",
+    "contract_source_digest": "e5df5ee5fd995f79e021d5941b7dd5b8aaf7579e0537e3f15708834ccf7137c4",
+    "canonical_source_digest": "3bf554e19fcd5e8f4715f2db853f280b454030aba8728425e4bacbad9a9ce917",
+    "validator": {
+      "distribution": "jsonschema",
+      "version": "4.24.0",
+      "draft": "2020-12"
+    },
+    "schema_digest": "02f04c379d720ba019b8383df8f1c72eb40d3f23365086ebfbed335ad3701431",
+    "output_schema_digest": "aca24832325095befa7d798ca10d02a9a6d8ba1f529b36bd772384562984c690"
+  },
+  "linux_junit_properties": {
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "jsonschema_version": "4.24.0",
+    "feature_source_sha256": "60e9abdd47adf29acd7c516185170e0c24d272e06da4409662633770c1d5eaf6"
+  },
+  "host_linux_method_equal": true,
+  "host_linux_feature_source_equal": true
+}

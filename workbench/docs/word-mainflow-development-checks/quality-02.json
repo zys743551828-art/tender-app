@@ -1,0 +1,22 @@
+[
+  {
+    "check": "ruff",
+    "returncode": 0,
+    "files": 19
+  },
+  {
+    "check": "format",
+    "returncode": 0,
+    "files": 19
+  },
+  {
+    "check": "mypy",
+    "returncode": 0,
+    "files": 16
+  },
+  {
+    "check": "bandit",
+    "returncode": 0,
+    "files": 16
+  }
+]

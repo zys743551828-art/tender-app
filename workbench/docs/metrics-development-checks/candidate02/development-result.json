@@ -1,0 +1,28 @@
+{
+  "status": "passed_development_mechanisms_only",
+  "candidate": "02",
+  "tests_passed": 37,
+  "original_regressions": 19,
+  "new_regressions": 18,
+  "quality": {
+    "ruff": "passed",
+    "format": "passed",
+    "mypy": "passed_10_source_files",
+    "bandit": "passed"
+  },
+  "execution": "isolated_local_PG17_nonowner_API_and_Worker_LOGIN_ASGI",
+  "source_data": "synthetic_mechanism_fixtures",
+  "external_calls": 0,
+  "paid_calls": 0,
+  "qualified_actual_online_pairs": 0,
+  "new_sql": false,
+  "owner_business_changes": false,
+  "lock_order": "bid -> advisory(90127,1) -> source_heads",
+  "candidate01_frozen_inputs_verified": true,
+  "architect_original_counterexamples_preserved": {
+    "/workspace/tender-docs/04-验证与测试/metrics-architect-review/candidate01-source-candidate-counterexample.json": "f79d0429c0e61b519aa609f01472365c20866583d5a313ec347622c478f0e7e7",
+    "/workspace/tender-docs/04-验证与测试/metrics-architect-review/candidate01-source-future_known-counterexample.json": "3fd0d7610c0e791c6dbc4162c9c36218e883b4fc6bd1a4f399f2d0309d8f6a96"
+  },
+  "independent_approved": false,
+  "complete_FR011_delivery_claimed": false
+}

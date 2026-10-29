@@ -1,0 +1,154 @@
+{
+  "scope": "bounded private GET transport only; synthetic loopback HTTP; no native locator permission, OSS/S3 deployment or formal input authority",
+  "tests": {
+    "linux_passed": 54,
+    "linux_junit_seconds": 2.55,
+    "linux_by_module": {
+      "tests.test_original_bytes": 35,
+      "tests.test_provider_error_isolation": 7,
+      "tests.test_fusion_compose": 12
+    },
+    "host_passed": 42,
+    "host_junit_seconds": 2.732,
+    "counts_overlap": true
+  },
+  "source_inputs": [
+    {
+      "path": "deploy/fusion.ps1",
+      "sha256": "c3ba420d05628fdddb40d6325daf1274bc671a56b81d6f96b3db096e786a1cc7",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "deploy/fusion_checks.py",
+      "sha256": "bc411902f72965e32f627a30b6d208907c5d2e9e42f13659553c9e4d1a2fa6af",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/contracts/package-original-get.md",
+      "sha256": "d6b5c83a52a6b93d22f2a53bd793718f797a087cac52b4f576c358ee59ccb66b",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "packages/domain/providers/original_bytes.py",
+      "sha256": "e04e1ee2dca3bd970658ed11a1201085ed4cafd857c4e1412dbcd9d9a497ddf6",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_original_bytes.py",
+      "sha256": "d591a6e0cee24e5b34c20e7a60ce3ea7550901638a5e119b206c8aaae16de17c",
+      "git_index_bytes_equal": true
+    },
+    {
+      "path": "tests/test_provider_error_isolation.py",
+      "sha256": "43d8ccf71bb67b41cbabd0774803c7b320cfc49c59eae8b069e698c394f68a5c",
+      "git_index_bytes_equal": true
+    }
+  ],
+  "methods": {
+    "source_observation_method_digest": "7717db58d7d613a43fc6c6ec6ce5fcf5d15d1a227ae32fbdfbdc53a2fdbd3453",
+    "native_renderer_source_digest": "f83a2f6ccd6ad4a0bdf816acb90622dd09c8edfb4bc52fa3e9ba8fd624bf72d7",
+    "input_method_digest": "92398070010ea015de2bfa1e972375c4a3dc04d289e267320a1f6ab2159e6851",
+    "vision_serializer_digest": "14519e5c3d9972f066931df557fb05531d3f89ab25b561998dfce934f8b1abe7",
+    "judgment_method_digest": "df92705087ed1bbad3e741e0cb38c517ed762e75081250600a423aa49e8bea65",
+    "feature_method_digest": "caaa4105cc2186c472c99d3a3affafbf17f47edb425d270cebac7a41a024baca",
+    "existing_methods_unchanged": true,
+    "old_records_rewritten": false,
+    "native_observation_is_not_verification_binding": true,
+    "default_base_sql_changed": false,
+    "current_scope_method_digest": "102ddde23bcab9faa0c5d7533021f19332eb64447d6f3b6e598288b1ecbf095f",
+    "current_scope_native_body_digest": "323a983ce0feeadf97145cd4b106f645f42a2d1d2b67e60b0e1932388c18a5ef",
+    "all_previous_methods_unchanged": true,
+    "shared_read_purpose_source_digest": "912f7e15418db74c97174b210fcd543e21eae59b429d89fa39b80bdbdd6dd7e0",
+    "source_and_scope_observation_bodies_unchanged": true,
+    "scope_native_sql_unchanged": true,
+    "source_and_scope_observation_methods_changed": true,
+    "previous_asset_input_vision_and_feature_methods_unchanged": true,
+    "original_get_method_digest": "79baafba5d7b8591ef87833826dcf26de58fb2dbb06f2ccd95a5c6968a3db7a6",
+    "all_existing_methods_unchanged": true,
+    "native_permission_granted": false
+  },
+  "approval": {
+    "status": "requires_explicit_user_confirmation",
+    "auto_review_rejected_action": "new original locator SECURITY DEFINER RPC, role inheritance and private locator return capability",
+    "reason": "existing authorization did not explicitly cover this exact sensitive access expansion",
+    "blocked_patch_applied": false,
+    "blocked_sql_exists": false,
+    "blocked_types_exist": false,
+    "database_acl_changed": false,
+    "safe_transport_does_not_replace_native_authorization": true,
+    "proposal_sha256": "96115215248c1c46f20a3c356cee82290da74e41a608642ea0ed4ea685434e6d"
+  },
+  "real_loopback_http_bytes": 43,
+  "external_object_reads": 0,
+  "business_writes": 0,
+  "paid_calls": 0,
+  "frontend_rerun": false,
+  "browser_visual_verified": false,
+  "sql_or_http_api_changed": false,
+  "runtime_inputs": 1193,
+  "production_assets": 68,
+  "services": {
+    "api": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "asset-renderer": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "checks-postgres": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "init": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 0
+    },
+    "object-image-info": {
+      "state": "exited",
+      "health": "",
+      "exit_code": 2
+    },
+    "postgres": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    },
+    "web": {
+      "state": "running",
+      "health": "healthy",
+      "exit_code": 0
+    }
+  },
+  "cleanup": {
+    "non_system_databases": 0,
+    "temporary_login_roles": 0,
+    "new_original_capability_roles": 0
+  },
+  "normal_word_service_not_modified": true,
+  "development_mount_observation_not_immutable_release": true,
+  "files": {
+    "linux-final.log": "1a283b24ffb7e6e2708d8c647ab28cf3f58c20b52878fa2a73a78d67b112b30d",
+    "linux-final.xml": "5c213d86d7308b7e3a0dcfad23dbd6ae2011c82ae570ebbf0826c5c3c42d0791",
+    "host-final.log": "e2e632db7d73646bd1d2b4ec04b328940054b9bdaaca7f531617366b3f020fc6",
+    "host-final.xml": "8efd3464043c77bcdc512ee5bab835a436b33160178276ce54767f634af3f57f",
+    "python-final.log": "4bdee5f53d1ed78b2cb025613750b359d63cb8c3e9a64a2b7fe4d8eaad20676e",
+    "privacy-before.log": "f498f6ebec9b4c041fe66cfbfb3ce56a3ea1d756b29e0ae598b1305bcada36e7",
+    "privacy-before.xml": "7fa6f97e5d263c153f0bffe12c44ccee121d8f95df7dad4aae4b61f869c828c9",
+    "python-null-initial.log": "e8ec1604cab008e39c8cc9f228f413bb7d7da4fbd7de07403f2bec0a220cf121",
+    "wire-proof.json": "acb140574c3144097ac01382a1dbe514cf14f3904e6a144232896d08d6954c6e",
+    "method-boundaries.json": "c39de94912e3e290eb65d0d0b4cefa4af221212dad6fe2e6f86a2afb25293a93",
+    "approval-state.json": "414bd26e93720294991184e27e6747d1913e0f82d7dbe84606fe7d3a3738d42d",
+    "http-runtime.json": "f85da2c66355f3e03e45b91b3e0ae9a73c604e07ad6c5ee9846cae3258d89239",
+    "checks-cleanup.json": "4a6f94eac0745a51d614893235e40c3a3d6180c3e64fc6ec13b4be354c3107ef"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "scope": "独立应用验收计划，非执行结果",
+  "software_executed": 0,
+  "cases": [
+    {
+      "id": "T0-01",
+      "scenario": "登录/退出/匿名边界",
+      "expected": "普通成员真实会话、错误口令和撤销生效",
+      "requires": "实际API/PG",
+      "driver": "test_api_boundary.py",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-02",
+      "scenario": "Origin与CSRF",
+      "expected": "跨站/缺失错误CSRF不能写入，错误可定位",
+      "requires": "实际API",
+      "driver": "test_api_boundary.py",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-03",
+      "scenario": "命令幂等",
+      "expected": "同键同请求回原结果，变更请求冲突，不重复对象",
+      "requires": "实际API/PG",
+      "driver": "test_api_boundary.py",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-04",
+      "scenario": "重启持久化",
+      "expected": "重启API后原对象/命令/操作仍可读取，同键无二次效果",
+      "requires": "API进程控制/PG",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-05",
+      "scenario": "全成员访问与能力隔离",
+      "expected": "两登录成员可查全部项目；API/普通Worker/评分/研究使用独立非owner LOGIN且禁止路径仍拒绝",
+      "requires": "两成员/实际运行DSN身份只读观察",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-06",
+      "scenario": "真实Kafka消费",
+      "expected": "Outbox真实投递、实际Worker按PG收据完成，不以示例消息代替",
+      "requires": "实际PG/Kafka/Outbox/Worker",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-07",
+      "scenario": "PG提交后offset前进程退出",
+      "expected": "重放复用收据，无第二个领域效果和模型预留",
+      "requires": "隔离故障注入/offset与收据观察",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "T0-08",
+      "scenario": "租约取消fence竞争",
+      "expected": "旧generation跳过，旧fence不能发布，取消先成功则迟到不得覆盖，失联被持久接管",
+      "requires": "实际Worker/取消API/进程控制",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UP-01",
+      "scenario": "原件SHA",
+      "expected": "声明正确内容错误不能成为verified或有效资料，ETag不是SHA",
+      "requires": "真实对象存储/合成字节",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UP-02",
+      "scenario": "分片补传刷新",
+      "expected": "失败只补缺片，403合并重授权，重开需核本地身份，过期明确410",
+      "requires": "对象存储/浏览器",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UP-03",
+      "scenario": "head竞争与重绑定",
+      "expected": "两新稿仅一个推进；冲突者复用字节显式重绑，旧binding拒绝，再竞争仍CAS；跨bid/角色/过期/已提交拒绝",
+      "requires": "实际上传API/PG/对象存储",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UP-04",
+      "scenario": "批次与新旧身份",
+      "expected": "一批完成一次受理；新PDF独立版本/轮次，旧结果不能抢当前",
+      "requires": "实际API/Worker",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "A1-01",
+      "scenario": "未配置诚实失败",
+      "expected": "无真实模型/存储不得回测试成功或半分默认，错误保留范围/恢复动作",
+      "requires": "实际正式配置缺失场景",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "A1-02",
+      "scenario": "核心提交与补录",
+      "expected": "当前身份/核心覆盖/确认/关键问题闸门与纯评分缺口分开；补录不伪造通过",
+      "requires": "实际评审与提交API",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UI-01",
+      "scenario": "主要下一步与证据",
+      "expected": "两项关键风险依次可发现，原页/返回可用，390px与键盘可操作",
+      "requires": "实际浏览器/前端",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    },
+    {
+      "id": "UI-02",
+      "scenario": "文件用途与转换恢复",
+      "expected": "报告/批注/正文可区分，Word失败可就地补PDF且不冒认同稿",
+      "requires": "实际浏览器/对象存储/转换",
+      "driver": "pending_driver",
+      "status": "pending_implementation"
+    }
+  ]
+}

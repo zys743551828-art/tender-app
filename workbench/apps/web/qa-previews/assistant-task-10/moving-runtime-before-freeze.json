@@ -1,0 +1,7 @@
+[
+  {
+    "pid": 2697650,
+    "uid": 1000,
+    "argv": "node /workspace/tender-workbench/apps/web/node_modules/.bin/vite --host 127.0.0.1 --port 5173 --port 5184 --strictPort"
+  }
+]

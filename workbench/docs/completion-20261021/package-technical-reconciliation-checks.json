@@ -1,0 +1,109 @@
+{
+  "checks": [
+    {
+      "database": "PostgreSQL 17.11",
+      "exit_code": 0,
+      "passed": 17,
+      "seconds": 58.82,
+      "suite": "tests/test_package_scoring_recovery_pg.py"
+    },
+    {
+      "exit_code": 0,
+      "passed": 9,
+      "seconds": 0.05,
+      "suite": "tests/test_package_scoring_recovery.py"
+    },
+    {
+      "exit_code": 0,
+      "files": 4,
+      "tool": "ruff check + format check"
+    },
+    {
+      "exit_code": 0,
+      "source_files": 2,
+      "tool": "mypy --follow-imports=silent"
+    },
+    {
+      "exit_code": 0,
+      "scoped_suppressions": [
+        "B404 fixed subprocess import",
+        "B603 fixed interpreter and owned script with argument array, no shell, purpose-only environment"
+      ],
+      "source_files": 2,
+      "tool": "bandit"
+    }
+  ],
+  "date": "2026-10-21",
+  "execution_sql_sha256": "2e92d270cbfa98e03812a23cb4221bb5af45764f77d1b5d057bfc2e2aa31c76f",
+  "formal_scoring_eligible": false,
+  "material_origin": "synthetic originals, provider receipts, prices and usage in a separately registered disposable physical database",
+  "metrics_eligible": false,
+  "paid_calls": 0,
+  "pg_receipt": {
+    "execution_sql_sha256": "2e92d270cbfa98e03812a23cb4221bb5af45764f77d1b5d057bfc2e2aa31c76f",
+    "exit_code": 0,
+    "original_io": "synthetic bounded stream; transaction-free assertion",
+    "paid_calls": 0,
+    "pg_roles": "actual isolated API and Worker logins",
+    "port": 39001,
+    "postgres": "17.11",
+    "provider_invoked": false,
+    "recovery_sql_sha256": "62eb152aa95cd8019e585290bab586cde32be1868566e7ebc9f80932de21222b",
+    "sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+    "test": "tests/test_package_scoring_recovery_pg.py",
+    "uuid_extension": "uuid-ossp/1.1"
+  },
+  "positive_run": {
+    "explicit_resume_required": true,
+    "final_applicable_rules": 2,
+    "numeric_prediction": null,
+    "original_call_retransmitted": false,
+    "original_call_state": "unknown",
+    "previous_call_preserved_verbatim": true,
+    "registered_receipt_resolution": "succeeded",
+    "remaining_mock_http_calls": 5,
+    "same_original_call_id": true,
+    "valid_replicates_per_rule": 3
+  },
+  "real_provider_calls": 0,
+  "reconciliation_provider_requests": 0,
+  "remaining_boundaries": [
+    "confirmed not_sent releases reserve but does not authorize a new attempt",
+    "invalid billed response is not a valid independent replicate and has no resend path",
+    "real provider receipt verifier not configured",
+    "formal range/visual/model/aggregation and strict historical sample authority remain unavailable"
+  ],
+  "schema": "package-technical-reconciliation-checks/1",
+  "scope_sql_sha256": "06d17e3cb0833177585a3d08252b0d8717494eef843fc1225ffcc97df599ea46",
+  "source_base_commit": "65433caebe5385c4bb0c6546fe53479c2cdefd86",
+  "source_sha256": {
+    "deploy/package_scoring_reconcile.py": "8ec8c4aba7bbdcd68b04a309d6b096eb23a9acdacb57d617333679e1abb244ac",
+    "deploy/sql/package-score-reconciliation.sql": "62eb152aa95cd8019e585290bab586cde32be1868566e7ebc9f80932de21222b",
+    "docs/completion-20261021/package-technical-reconciliation-acceptance.md": "2f93586106e82510f611aa70ac1b562d5ed6505633f4765a414d50868eed3a11",
+    "packages/model_governance/package_scoring_recovery.py": "d1f8511098887ba886939072e8ad8e27bd9b14942f33350ddc15edc6681473ec",
+    "tests/test_package_scoring_recovery.py": "930e0a04730fa3f994cf2e4f57b1b2507c1265a6b5bbee345be9896fbd252374",
+    "tests/test_package_scoring_recovery_pg.py": "13152939bd3f69755ba1d841f9bac267f9cbef059e00088752c935d0665523fd"
+  },
+  "state": "independent uncommitted increment; earlier scope/execution interfaces unchanged",
+  "training_eligible": false,
+  "verified_atomicity": [
+    "same command replays the original result after source withdrawal",
+    "different request under same key rejected",
+    "same call under another key rejected",
+    "forced audit error rolls back state, fees, generation and reconciliation receipt"
+  ],
+  "verified_refusals": [
+    "active lease",
+    "expired registered receipt",
+    "wrong previous call digest",
+    "wrong request digest",
+    "wrong method",
+    "wrong provider model",
+    "inconsistent token total",
+    "negative usage",
+    "usage exceeding original reserve",
+    "ordinary API or Worker role",
+    "mixed reconciliation role",
+    "unregistered caller-provided receipt"
+  ]
+}

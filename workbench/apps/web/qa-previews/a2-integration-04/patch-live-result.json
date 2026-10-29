@@ -1,0 +1,17 @@
+{
+  "scope": "real developer manual patch preview/apply and stale-preview boundary; no paid model",
+  "project_id": "821e5ade-fbf5-4a24-a37a-8f79fdcd784d",
+  "draft_id": "0dfa090c-4f35-4d27-90cd-a2be3fa4813d",
+  "baseline_revision": 8,
+  "applied_revision": 9,
+  "real_preview_and_apply": true,
+  "stale_preview_cannot_overwrite_new_edit": true,
+  "mobile_no_overflow": true,
+  "page_errors": [],
+  "writes": [
+    "POST bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/sections/58978847-6922-4eb1-92e0-ac26c0f3b5f6/patch-previews",
+    "POST bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/authoring-actions/9bd71d38-d709-4b85-86ee-1d5bf75eea8b/apply",
+    "POST bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/sections/58978847-6922-4eb1-92e0-ac26c0f3b5f6/patch-previews",
+    "PATCH bids/821e5ade-fbf5-4a24-a37a-8f79fdcd784d/drafts/0dfa090c-4f35-4d27-90cd-a2be3fa4813d"
+  ]
+}
