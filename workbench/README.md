@@ -113,3 +113,5 @@ QA使用独立配置`.local/qa.env`、独立数据库、Kafka及存储；通过`
 所有测试资料为明确的合成输入。真实模型质量、真实投标人员试用、正式评分精度和生产运行恢复各自验收，机制验证不授予这些资格。
 
 新增预测原生安装、传输及/2隔离恢复验收入口：`deploy/prediction_native_acceptance.py`。正式结果见文档仓[预测原生联合验证](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/预测原生联合验证.md)，区分拒绝链、恢复机制和未完成的正式预测正向链。
+
+当前原生执行安装使用 `material-execution-attempts-v2.sql`，方法/3撤销内部helper的PUBLIC执行；恢复生成格式为/3（完整）或/4（预测对象扩展），旧/1与/2按旧清单只读恢复。失败与复验见[dev CI原生权限修复](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/dev-CI原生权限修复.md)。

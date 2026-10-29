@@ -721,3 +721,17 @@ def test_settlement_locks_current_source_until_immutable_outcome_commits(wire, m
         ).fetchone()["revision"]
         == d["profile_head_revision"] + 1
     )
+
+
+def test_internal_send_guard_is_not_public_or_directly_worker_executable(database):
+    owner = database["owner"]
+    assert owner.execute(
+        "SELECT NOT EXISTS(SELECT FROM pg_proc p,aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) a "
+        "WHERE p.oid='material_execution.live_send_current(uuid)'::regprocedure AND a.grantee=0 AND a.privilege_type='EXECUTE') AS private"
+    ).fetchone()["private"]
+    with database["execution_worker_factory"]() as c:
+        assert not c.execute(
+            "SELECT has_function_privilege(session_user,'material_execution.live_send_current(uuid)','EXECUTE') AS allowed"
+        ).fetchone()["allowed"]
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            c.execute("SELECT material_execution.live_send_current(%s)", (str(uuid4()),))

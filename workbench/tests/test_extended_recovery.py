@@ -23,7 +23,7 @@ def test_plan_preserves_old_plan_and_covers_authoring_and_full_material_chain_on
     assert set(extended_recovery.MATERIAL_SQL) <= set(paths)
     assert (
         paths.index("deploy/sql/material-preparation-leases.sql")
-        < paths.index("deploy/sql/material-execution-attempts.sql")
+        < paths.index("deploy/sql/material-execution-attempts-v2.sql")
         < paths.index("deploy/sql/material-execution-dispatch.sql")
     )
 
@@ -75,3 +75,67 @@ def test_rerun_clears_all_case_evidence_before_any_selected_service_starts(tmp_p
     extended_recovery_runtime.clear_reports(tmp_path)
     assert all(not (tmp_path / name).exists() for name in stale)
     assert unrelated.read_text() == "retain unrelated notes"
+
+
+def test_private_helper_acl_upgrade_keeps_old_archive_sql_bytes():
+    old = extended_recovery.frozen_plan(helper_acl=False)
+    current = extended_recovery.frozen_plan()
+    changes = [(a.path, b.path) for a, b in zip(old, current, strict=True) if a != b]
+    assert changes == [
+        (
+            "deploy/sql/material-execution-attempts.sql",
+            "deploy/sql/material-execution-attempts-v2.sql",
+        )
+    ]
+    assert extended_recovery.LEGACY_FORMAT != extended_recovery.FORMAT
+    legacy_execution = next(
+        item for item in old if item.path.endswith("/material-execution-attempts.sql")
+    )
+    assert (
+        legacy_execution.sha256
+        == "49bc4c53da9c041c1f038a1521ea638a6002570295204c5b933b1be166b00f21"
+    )
+
+
+@pytest.mark.parametrize("prediction", [False, True])
+@pytest.mark.parametrize("legacy", [False, True])
+def test_archive_format_selects_exact_historical_or_current_sql(
+    tmp_path, monkeypatch, prediction, legacy
+):
+    import json
+
+    from deploy import prediction_recovery_profile as profile
+    from deploy.backups import generic
+
+    monkeypatch.setattr(generic, "validate", lambda directory: {"base_archive": "validated"})
+    (tmp_path / "manifest.json").write_text("{}")
+    kind = (
+        (profile.LEGACY_FORMAT if legacy else profile.FORMAT)
+        if prediction
+        else (extended_recovery.LEGACY_FORMAT if legacy else extended_recovery.FORMAT)
+    )
+    value = {
+        "format": kind,
+        "database_manifest_sha256": generic.hash_file(tmp_path / "manifest.json"),
+        "full_application_restore_qualified": False,
+        "production_rpo_rto_qualified": False,
+        "ordered_sql": completion_recovery.plan_receipt(
+            extended_recovery.frozen_plan(prediction=prediction, helper_acl=not legacy)
+        ),
+    }
+
+    def save():
+        raw = json.dumps(value).encode()
+        (tmp_path / "extended.json").write_bytes(raw)
+        (tmp_path / "extended.sha256").write_text(run.digest(raw))
+        (tmp_path / "extended.json").chmod(0o600)
+        (tmp_path / "extended.sha256").chmod(0o600)
+
+    save()
+    assert extended_recovery.validate(tmp_path)[1]["format"] == kind
+    value["ordered_sql"] = completion_recovery.plan_receipt(
+        extended_recovery.frozen_plan(prediction=prediction, helper_acl=legacy)
+    )
+    save()
+    with pytest.raises(run.BackupError, match="BINDING_CHANGED"):
+        extended_recovery.validate(tmp_path)

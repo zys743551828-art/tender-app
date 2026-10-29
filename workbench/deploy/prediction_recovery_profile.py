@@ -1,11 +1,12 @@
-"""Explicit /2 extension of the existing offline recovery, including private CAS refs."""
+"""Versioned extension of the existing offline recovery, including private CAS refs."""
 
 import re
 from uuid import NAMESPACE_URL, uuid5
 
 from deploy.backups import run
 
-FORMAT = "tender-extended-offline-recovery/2"
+LEGACY_FORMAT = "tender-extended-offline-recovery/2"
+FORMAT = "tender-extended-offline-recovery/4"
 SQL = tuple(
     "deploy/sql/" + name + ".sql"
     for name in (

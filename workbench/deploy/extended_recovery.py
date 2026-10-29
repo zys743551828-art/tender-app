@@ -29,7 +29,8 @@ from deploy import (
 from deploy.application_recovery import archive as definitions
 from deploy.backups import generic, run
 
-FORMAT = "tender-extended-offline-recovery/1"
+LEGACY_FORMAT = "tender-extended-offline-recovery/1"
+FORMAT = "tender-extended-offline-recovery/3"
 REQUIRED_RELATIONS = tuple("design." + name for name in authoring_candidate.TABLES) + (
     "technical_material_store.objects",
     "technical_material_store.records",
@@ -62,12 +63,12 @@ MATERIAL_SQL = (
     "deploy/sql/material-input-renewals.sql",
     "deploy/sql/material-judgment-jobs.sql",
     "deploy/sql/material-preparation-leases.sql",
-    "deploy/sql/material-execution-attempts.sql",
+    "deploy/sql/material-execution-attempts-v2.sql",
     "deploy/sql/material-execution-dispatch.sql",
 )
 
 
-def frozen_plan(*, prediction=False):
+def frozen_plan(*, prediction=False, helper_acl=True):
     previous = completion_recovery.frozen_plan()
     names = list(
         dict.fromkeys(
@@ -79,6 +80,11 @@ def frozen_plan(*, prediction=False):
             ]
         )
     )
+    if not helper_acl:
+        names = [
+            name.replace("material-execution-attempts-v2.sql", "material-execution-attempts.sql")
+            for name in names
+        ]
     return tuple(bootstrap_fresh.reviewed_sql(run.ROOT / name) for name in names)
 
 
@@ -288,13 +294,23 @@ def validate(directory):
         raise run.BackupError("EXTENDED_RECOVERY_MANIFEST_CHANGED")
     value = json.loads(raw)
     if (
-        value.get("format") not in (FORMAT, prediction_recovery_profile.FORMAT)
+        value.get("format")
+        not in (
+            FORMAT,
+            prediction_recovery_profile.FORMAT,
+            LEGACY_FORMAT,
+            prediction_recovery_profile.LEGACY_FORMAT,
+        )
         or value.get("database_manifest_sha256") != generic.hash_file(directory / "manifest.json")
         or value.get("full_application_restore_qualified") is not False
         or value.get("production_rpo_rto_qualified") is not False
         or value.get("ordered_sql")
         != completion_recovery.plan_receipt(
-            frozen_plan(prediction=value.get("format") == prediction_recovery_profile.FORMAT)
+            frozen_plan(
+                prediction=value.get("format")
+                in (prediction_recovery_profile.FORMAT, prediction_recovery_profile.LEGACY_FORMAT),
+                helper_acl=value.get("format") in (FORMAT, prediction_recovery_profile.FORMAT),
+            )
         )
     ):
         raise run.BackupError("EXTENDED_RECOVERY_BINDING_CHANGED")

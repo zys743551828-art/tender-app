@@ -37,7 +37,7 @@ from packages.model_governance import package_technical_complete_vision as visio
 from packages.model_governance import read_purpose
 from packages.storage.private_cas import is_digest, sha
 
-SQL_FILE = Path(__file__).parents[2] / "deploy/sql/material-execution-attempts.sql"
+SQL_FILE = Path(__file__).parents[2] / "deploy/sql/material-execution-attempts-v2.sql"
 GROUP = "tender_material_execution_worker"
 RPCS = (
     "material_execution.begin_attempt(jsonb,uuid,text,uuid,uuid,uuid)",
@@ -181,7 +181,7 @@ class SubmittedOutcome:
 def method_digest():
     return digest(
         {
-            "version": "material-execution-attempt-method/2",
+            "version": "material-execution-attempt-method/3",
             "source_digest": sha(Path(__file__).read_bytes()),
             "sql_source_digest": sha(SQL_FILE.read_bytes()),
             "live_sender_source_digest": sha(

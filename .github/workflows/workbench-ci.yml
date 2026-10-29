@@ -24,7 +24,8 @@ jobs:
   backend:
     name: Backend quality and default tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    # Budget includes pinned dependency/OCR assets and web build before the full suite.
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: workbench
