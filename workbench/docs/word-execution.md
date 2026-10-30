@@ -16,6 +16,9 @@ this transport automatically.
 
 ## Runtime materials
 
+See [application build materials](build-artifacts.md) for the matching locked
+frontend build and official Nginx reference used by the local deployment path.
+
 From `workbench/`, build the application dependency image:
 
 ```sh
