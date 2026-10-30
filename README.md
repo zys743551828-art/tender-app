@@ -18,3 +18,8 @@
 质量门：后端 `ruff`、`mypy`、`bandit`、`pytest`（真实 PostgreSQL）；前端 `npm run check`（格式、lint、类型、测试、构建）。契约文件由 `backend/tools/export_contracts.py` 生成，测试校验它们与代码一致。
 
 相关仓库：`tender-docs`（产品、研究与技术文档）、`tender-design`（设计稿）、`tender-research`（规则解析、评分预测实验）、`tender-datasets`（评测数据集）。
+
+
+## 团队运行反馈与配置边界
+
+[正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。

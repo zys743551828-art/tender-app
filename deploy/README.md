@@ -629,3 +629,8 @@ docker compose -f compose.yml -f compose.pgvector.yml exec worker-parse bidwb-ad
 回填分批提交、可重跑；未完全回填的查询保留关键词结果并声明缺口。索引可重建，不替代原件或核验结论。大库性能、真实工程检索质量与 Milvus 退出尚未验收。
 
 候选确认、订正或排除会追加整组新证据 ID，不在核验请求内编码向量。在已启用 pgvector 的环境中，核验后使用上述命令回填该项目，再通过检索接口请求 `mode=hybrid`，检查 `mode_used=hybrid,index_state=ready`。回填覆盖该项目各次解析，保留旧快照所需索引；查询仍只使用当前或指定快照允许的证据 ID。原解析产物中的 `retrieval_index=needs_rebuild` 是当次派生时的记录，不随回填改写，当前可用性以检索响应为准。默认 keyword 环境无需为核验安装模型或切换数据库镜像。
+
+
+## 团队运行反馈与配置边界
+
+[正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。

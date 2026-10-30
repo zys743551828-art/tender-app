@@ -13,9 +13,11 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
+from urllib.parse import urlsplit
 
 import boto3
 from botocore.config import Config
@@ -68,11 +70,27 @@ def artifact_key(artifact_id: str) -> str:
 
 
 class S3ObjectStore:
-    """boto3 实现。预签名使用对浏览器可达的公网端点，服务端读写使用内网端点。"""
+    """boto3 实现。兼容预签名使用公网端点；当前前端由同源 API 转传，服务端使用内部端点。"""
 
     def __init__(self, settings: Settings) -> None:
+        # A virtual client adds Bucket itself; bucket-qualified endpoints would
+        # produce bucket.bucket.region rather than a usable signed hostname.
+        if settings.storage_addressing_style == "virtual":
+            for name in ("storage_endpoint_url", "storage_public_endpoint_url"):
+                endpoint = getattr(settings, name)
+                host = urlsplit(endpoint).hostname if endpoint else None
+                service = r"(?:s3\.)?oss-[a-z0-9-]+\.aliyuncs\.com"
+                prefix = settings.storage_bucket.lower() + "."
+                # A bucket may itself be named 's3'; don't mistake the official
+                # s3.oss service endpoint for a bucket-qualified hostname.
+                if host and not re.fullmatch(service, host) and host.startswith(prefix) and re.fullmatch(service, host[len(prefix) :]):
+                    raise ValueError(f"{name}: virtual 寻址端点不能包含桶名前缀；请使用地域服务端点并单独配置 storage_bucket")
         cfg = Config(
             signature_version=settings.storage_signature_version,
+            # OSS/other compatible services may not implement AWS's optional
+            # aws-chunked trailer protocol. Required operation checksums remain.
+            request_checksum_calculation="when_required",
+            response_checksum_validation="when_required",
             s3={"addressing_style": settings.storage_addressing_style},
             retries={"max_attempts": 3, "mode": "standard"},
             connect_timeout=5,

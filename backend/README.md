@@ -156,3 +156,8 @@ bidwb-admin export-score-pairs --out 回流导出/
 逐项预测使用 `complete-chapters-2`（提示词 p4），保留完整标题层级与子节，不按 14000 字抽样。已核验非文字摘录的章节归属未知时按物理页使用完整冻结正文回退，不把编号表格行当标题；旧章节方法的校准模型不能静默复用。超长正文分节读取后综合，失败和覆盖清单写入明细；图页与表格结构仍未读取，分节摘要仍可能损失信息。报告展示具体性与有效性、前后一致性及相关证据。
 
 方法身份、覆盖清单、字段及资源边界以[评分产物契约](../contracts/prediction-artifacts.md)为准。当前方法只应用同方法、独立时间留出和融合验收均通过的校准模型；旧模型保留追溯，没有适用模型时保持未校准或超出适用范围。
+
+
+## 团队运行反馈与配置边界
+
+[正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。

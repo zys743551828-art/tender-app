@@ -119,7 +119,7 @@ class WorkerRunner:
             return
         except (ObjectStoreError, Unavailable) as exc:
             keeper.stop()
-            log.warning("job_transient_failure", error=type(exc).__name__, **structlog_ctx)
+            log.warning("job_transient_failure", stage="handler", error=type(exc).__name__, **structlog_ctx)
             self._release(claim, "dependency_unavailable")
             return
         except Exception as exc:
@@ -136,8 +136,10 @@ class WorkerRunner:
     def _succeed(self, claim: Claim, output: HandlerOutput) -> None:
         artifact_id = new_id("art")
         key = artifact_key(artifact_id)
+        stage = "artifact_store"
         try:
             self.ctr.store.put(key, output.artifact_bytes, output.media_type)
+            stage = "result_commit"
             with db.transaction(self.ctr.engine) as conn:
                 db.run(
                     conn,
@@ -164,7 +166,12 @@ class WorkerRunner:
                 output.finalize(conn, artifact_id)
         except Conflict as exc:  # 租约已丢/输入不符：整个事务回滚，旧尝试什么都没写进去
             log.warning("job_commit_rejected", job_id=claim.job_id, code=exc.code)
-        except (ObjectStoreError, Unavailable):
+        except (ObjectStoreError, Unavailable) as exc:
+            # Log classification only, never provider exception text, URL,
+            # credentials or document/model output.
+            log.warning(
+                "job_transient_failure", job_id=claim.job_id, kind=claim.kind, attempt=claim.attempt, stage=stage, error=type(exc).__name__
+            )
             self._release(claim, "dependency_unavailable")
         else:
             log.info("job_succeeded", job_id=claim.job_id, kind=claim.kind, attempt=claim.attempt)

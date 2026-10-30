@@ -17,6 +17,7 @@ from bidwb import checks, db, retrieval, term_conflicts
 from bidwb.ai import grounding, prompts
 from bidwb.ai.grounding import EvidenceText
 from bidwb.ai.llm import IncompleteGeneration, LlmClient, Usage, call_validated
+from bidwb.ai.rule_diagnostics import failed_rules_message
 from bidwb.checks import consistency, scope
 from bidwb.errors import Conflict
 from bidwb.logs import get_logger
@@ -250,7 +251,7 @@ def make_rules_handler(llm: LlmClient | None) -> Handler:  # noqa: PLR0915
         if not accepted:  # 不留下空的候选规则包：没有任何可确认的规则，后续流程无从继续
             return HandlerFailure(
                 "no_rules_extracted",
-                f"未能从招标文件中提取出任何可核对的规则（模型候选被丢弃 {len(dropped)} 条），请检查招标文件解析结果后重试",
+                failed_rules_message(dropped),
             )
         artifact = _dump(
             {

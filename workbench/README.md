@@ -123,3 +123,8 @@ QA使用独立配置`.local/qa.env`、独立数据库、Kafka及存储；通过`
 四组既有工作流的真实App/原生服务组合验收复用上述pricing聚合：`scripts/native-workspace-journeys.mjs`由原生pytest启动，不提供业务测试后门。覆盖实际报价写入、事实与知识状态、任务取消/通知恢复，以及生命周期API/页面显示；合成来源目录和队列准备不是实际上传/转换。详细范围、失败尝试和回执见[四组正式记录](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/工作台四组原生组合验收.md)。
 
 FR015 项目设置现提供“项目阶段与归档”：从既有服务器 allowed_actions 展示动作，原因与二次确认、旧版本冲突、原请求回执恢复、归档阻塞与同轮重开均复用原API。前端类型从现有LifecycleChangeRequest/ProjectLifecycleView快照生成，不新增权限、SQL或环境变量。真实App/PG/S3及连接截断恢复使用上述pricing原生聚合；详情见[FR015正式记录](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/FR015生命周期表单原生验收.md)。
+
+
+## 团队运行反馈与配置边界
+
+[正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。
