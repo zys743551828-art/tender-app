@@ -59,3 +59,9 @@ JavaScript APIs such as `Uint8Array.toHex` that Chromium134 does not provide.
 The compatibility implementation comes from the same locked vendor package;
 keep both entry points together rather than adding an application polyfill or
 silently raising the supported browser baseline.
+
+The Desktop `verify` command uses a fixed two-page synthetic PDF fixture,
+generated once with the existing locked ReportLab5.0.1 check tool. It does not
+require ReportLab in the application image. The verification still uploads
+and downloads real bytes through Nginx, Kafka and the ordinary Worker; the
+fixture is test material and gives no business or model qualification.

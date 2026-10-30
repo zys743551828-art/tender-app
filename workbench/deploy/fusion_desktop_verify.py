@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
-import io
 import json
 import os
 import re
@@ -56,15 +56,40 @@ def private_login(profile):
 
 
 def pdf():
-    from reportlab.pdfgen import canvas
-
-    stream = io.BytesIO()
-    document = canvas.Canvas(stream, pagesize=(420, 595))
-    document.drawString(30, 550, "Synthetic desktop transport acceptance. No official bid.")
-    document.showPage()
-    document.drawString(30, 550, "Second physical page. No model or score qualification.")
-    document.save()
-    return stream.getvalue()
+    # Fixed two-page synthetic fixture, produced with the existing ReportLab5.0.1
+    # check lock and invariant=1. Verification needs no PDF-authoring dependency.
+    return base64.b64decode(
+        "JVBERi0xLjMKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBv"
+        "YmoKPDwKL0YxIDIgMCBSCj4+CmVuZG9iagoyIDAgb2JqCjw8Ci9CYXNlRm9udCAvSGVsdmV0aWNhIC9FbmNvZGlu"
+        "ZyAvV2luQW5zaUVuY29kaW5nIC9OYW1lIC9GMSAvU3VidHlwZSAvVHlwZTEgL1R5cGUgL0ZvbnQKPj4KZW5kb2Jq"
+        "CjMgMCBvYmoKPDwKL0NvbnRlbnRzIDggMCBSIC9NZWRpYUJveCBbIDAgMCA0MjAgNTk1IF0gL1BhcmVudCA3IDAg"
+        "UiAvUmVzb3VyY2VzIDw8Ci9Gb250IDEgMCBSIC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMg"
+        "L0ltYWdlSSBdCj4+IC9Sb3RhdGUgMCAvVHJhbnMgPDwKCj4+IAogIC9UeXBlIC9QYWdlCj4+CmVuZG9iago0IDAg"
+        "b2JqCjw8Ci9Db250ZW50cyA5IDAgUiAvTWVkaWFCb3ggWyAwIDAgNDIwIDU5NSBdIC9QYXJlbnQgNyAwIFIgL1Jl"
+        "c291cmNlcyA8PAovRm9udCAxIDAgUiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFn"
+        "ZUkgXQo+PiAvUm90YXRlIDAgL1RyYW5zIDw8Cgo+PiAKICAvVHlwZSAvUGFnZQo+PgplbmRvYmoKNSAwIG9iago8"
+        "PAovUGFnZU1vZGUgL1VzZU5vbmUgL1BhZ2VzIDcgMCBSIC9UeXBlIC9DYXRhbG9nCj4+CmVuZG9iago2IDAgb2Jq"
+        "Cjw8Ci9BdXRob3IgKGFub255bW91cykgL0NyZWF0aW9uRGF0ZSAoRDoyMDAwMDEwMTAwMDAwMCswMCcwMCcpIC9D"
+        "cmVhdG9yIChhbm9ueW1vdXMpIC9LZXl3b3JkcyAoKSAvTW9kRGF0ZSAoRDoyMDAwMDEwMTAwMDAwMCswMCcwMCcp"
+        "IC9Qcm9kdWNlciAoUmVwb3J0TGFiIFBERiBMaWJyYXJ5IC0gXChvcGVuc291cmNlXCkpIAogIC9TdWJqZWN0ICh1"
+        "bnNwZWNpZmllZCkgL1RpdGxlICh1bnRpdGxlZCkgL1RyYXBwZWQgL0ZhbHNlCj4+CmVuZG9iago3IDAgb2JqCjw8"
+        "Ci9Db3VudCAyIC9LaWRzIFsgMyAwIFIgNCAwIFIgXSAvVHlwZSAvUGFnZXMKPj4KZW5kb2JqCjggMCBvYmoKPDwK"
+        "L0ZpbHRlciBbIC9BU0NJSTg1RGVjb2RlIC9GbGF0ZURlY29kZSBdIC9MZW5ndGggMTUyCj4+CnN0cmVhbQpHYXBA"
+        "RTVuOEsjJjRRPmBpXC0hU20wSHQ0NnMlQTtGK0gqUlRkam1dWmdtYWAwZ0JyQVFeOkxQcXJnT1FKMj81MS0tdXI8"
+        "NWI3L1QyZEVsSDRvTmpcVUAwW1lfLXFSOVNcN00vakw7JkwhYVQqYzhtVzYtYCMhUGZdWVFgVUxDYmNDKFdKRyYp"
+        "WjBSb2hkXVYtQDtAKzt+PmVuZHN0cmVhbQplbmRvYmoKOSAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNv"
+        "ZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAxNTAKPj4Kc3RyZWFtCkdhcEBFMGIyJlMmLVZtQ0BTMzpJNSJJa2Y2"
+        "bjFVQklEQmtDMFFRMDc1ZiluRCNkI3ImQlhFQENQOTlgJyNBKVdzWjlydTcyRG9nP1cpYEJZOlxVMFBaMDkhZyZw"
+        "dGBeVlY/SFNoQmFMbSU+SnE5YUJfP3RSRG4+TG45REpYcWlYJ08qbUdWOlVSVV4oZUhiRHIsLTF+PmVuZHN0cmVh"
+        "bQplbmRvYmoKeHJlZgowIDEwCjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDA2MSAwMDAwMCBuIAowMDAwMDAw"
+        "MDkyIDAwMDAwIG4gCjAwMDAwMDAxOTkgMDAwMDAgbiAKMDAwMDAwMDM5MiAwMDAwMCBuIAowMDAwMDAwNTg1IDAw"
+        "MDAwIG4gCjAwMDAwMDA2NTMgMDAwMDAgbiAKMDAwMDAwMDkxNCAwMDAwMCBuIAowMDAwMDAwOTc5IDAwMDAwIG4g"
+        "CjAwMDAwMDEyMjEgMDAwMDAgbiAKdHJhaWxlcgo8PAovSUQgCls8MWMxNzgxOThmYmRmYTUxYjI1OTk1ZDg5ZDQx"
+        "MDIwNDM+PDFjMTc4MTk4ZmJkZmE1MWIyNTk5NWQ4OWQ0MTAyMDQzPl0KJSBSZXBvcnRMYWIgZ2VuZXJhdGVkIFBE"
+        "RiBkb2N1bWVudCAtLSBkaWdlc3QgKG9wZW5zb3VyY2UpCgovSW5mbyA2IDAgUgovUm9vdCA1IDAgUgovU2l6ZSAx"
+        "MAo+PgpzdGFydHhyZWYKMTQ2MQolJUVPRgo=",
+        validate=True,
+    )
 
 
 def denied(callback):
