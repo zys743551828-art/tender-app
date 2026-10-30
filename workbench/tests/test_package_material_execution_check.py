@@ -173,6 +173,12 @@ def test_shared_frontend_fixture_is_exact_current_protocol(world):
         and fixture["request"] == world["body"]
     )
     contracts.validate("PackageMaterialExecutionReceipt", fixture["receipt"])
+    receipt = fixture["receipt"]
+    assert receipt["request"] == world["body"]
+    assert receipt["request_digest"] == sha(world["body"])
+    assert receipt["state"] == "blocked"
+    assert receipt["execution_authorized"] is receipt["fee_reserved"] is False
+    assert receipt["jobs_created"] == receipt["model_requests"] == 0
 
 
 @pytest.mark.parametrize("code", ["SOURCE_EXPIRED", "SOURCE_REVOKED"])
