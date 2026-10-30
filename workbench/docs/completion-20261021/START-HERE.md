@@ -1,6 +1,6 @@
 # 从这里开始：启动与操作验收
 
-当前开发分支为dev；首次启动先按[正式运行说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。本页保留阶段操作路径。检查点1—16已合入，默认v14预览与独立完整运行组均已有本机Compose实测；可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，完整文件链证据见[桌面Compose验收](desktop-runtime-acceptance.md)。
+当前开发分支为dev；首次启动先按[正式运行说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。本页保留阶段操作路径。检查点1—16已合入；历史检查点的v14预览与独立完整运行组已有本机Compose实测，当前dev全新环境人工签收以正式运行页为准；可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，完整文件链证据见[桌面Compose验收](desktop-runtime-acceptance.md)。
 
 ## 1. 先选运行环境
 

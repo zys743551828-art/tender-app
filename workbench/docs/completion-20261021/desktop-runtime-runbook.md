@@ -16,7 +16,7 @@ npm run build
 Pop-Location
 ```
 
-缺少dist/index.html时prepare以FULL_FRONTEND_BUILD_REQUIRED拒绝。Windows宿主负责编排；私有配置和初始化在Docker Linux卷执行，手工POSIX私有文件启动命令不直接用于Windows共享目录。
+缺少dist/index.html时，up的Linux私有配置阶段以FULL_FRONTEND_BUILD_REQUIRED拒绝；prepare只生成公开请求与Compose。Windows宿主负责编排；私有配置和初始化在Docker Linux卷执行，手工POSIX私有文件启动命令不直接用于Windows共享目录。
 
 ## 创建新候选
 
