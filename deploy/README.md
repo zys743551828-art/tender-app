@@ -634,3 +634,5 @@ docker compose -f compose.yml -f compose.pgvector.yml exec worker-parse bidwb-ad
 ## 团队运行反馈与配置边界
 
 [正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。
+
+旧 Compose 配置可先用标准库执行 `python -S ../workbench/deploy/configuration_check.py --entry legacy-compose --env-file .env`，只检查私有文件及必需变量名，不加载服务或输出值。它不会读取 secret 文件或替代现有 `scripts/preflight.sh` 的 Docker/资源/secret 检查。BIDWB_* 直启配置不能自动满足 Compose 的 OSS_* 插值。

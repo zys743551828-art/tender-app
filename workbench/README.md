@@ -128,3 +128,9 @@ FR015 项目设置现提供“项目阶段与归档”：从既有服务器 allo
 ## 团队运行反馈与配置边界
 
 [正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。
+
+## 启动前离线配置检查（不连接服务）
+
+在 `workbench/` 执行 `python -S deploy/configuration_check.py --entry workbench --role api --env-file .env`。只需标准库，检查所选私有普通文件、唯一赋值、入口变量族和必需项；输出不含配置值。旧根 Compose 则选择 `--entry legacy-compose`，直接启动旧后端选择 `--entry legacy-direct`。三者不可混用；检查成功不是依赖连通或业务验收。模型可保持未配置，不因此启用任何调用。
+
+本地 `deploy/run.py` 现在在执行子进程之前拒绝缺失文件、旧变量族、重复/畸形赋值或缺少显式角色 DSN，不能靠继承的 DSN 掩盖选错文件。POSIX 文件权限应为600；不自动修改文件、云配置或凭据。full Compose 仍使用既有固定 profile/source 校验，不替换其协议。

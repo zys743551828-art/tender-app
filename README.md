@@ -23,3 +23,5 @@
 ## 团队运行反馈与配置边界
 
 [正式排障说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)对照了旧 backend 与当前 workbench。根 deploy/Compose 是历史系统，不要混用 PG16/PG17 或 BIDWB_STORAGE/OBJECT_STORE 配置。根 Settings 不自动读取 .env；由已有启动器明确注入。virtual S3 兼容端点不能含桶名前缀；当前同源上传不要求开放桶 CORS。SDK仅必要 checksum、Worker安全阶段日志和严格规则失败分类由离线回归覆盖，未实际连接团队 OSS 或调用模型。不要提交或记录秘密及完整签名 URL。
+
+启动前可在 `workbench/` 使用标准库预检：`python -S deploy/configuration_check.py --entry workbench --role api --env-file .env`。旧入口须明确选 `legacy-compose` 或 `legacy-direct`，参见[配置排查](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)。检查仅针对配置，不表示云端、模型或用户验收。

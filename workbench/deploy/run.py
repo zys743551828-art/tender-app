@@ -6,7 +6,7 @@ import argparse
 import os
 from pathlib import Path
 
-from initialize_database import ROOT, file_configuration
+from configuration_check import ROOT, ConfigurationError, workbench
 
 
 def main() -> None:
@@ -25,7 +25,10 @@ def main() -> None:
     os.environ["WORKBENCH_ENV_FILE"] = str(arguments.env_file.resolve())
     environment = dict(os.environ)
     # An explicitly selected environment file takes precedence over inherited local defaults.
-    environment.update(file_configuration(arguments.env_file))
+    try:
+        environment.update(workbench(arguments.env_file, arguments.role))
+    except ConfigurationError as error:
+        raise SystemExit(str(error)) from None
     if arguments.role:
         environment["WORKBENCH_RUNTIME_ROLE"] = arguments.role
         permitted_dsn = f"{arguments.role.upper()}_DATABASE_DSN"
