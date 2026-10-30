@@ -1,4 +1,7 @@
-# 显式启用隔离 Word 转换；只给解析 worker 挂载输入及只读输出。
+# 历史旧 backend 供体恢复入口，非当前 workbench 推荐或交付步骤；保留 service 行为供追溯。
+# 当前 Word 路线见 ../workbench/deploy/word_prebuilt.py 与 tender-docs《工作台实现架构》ADR／《团队运行故障排查》。
+# Gotenberg HTTP 薄适配不是本文件目录队列协议的直接替代；本次不构建、删除镜像或处理数据。
+# 历史语义：显式启用隔离 Word 转换；只给解析 worker 挂载输入及只读输出。
 services:
   api:
     environment:

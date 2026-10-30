@@ -25,7 +25,9 @@ def test_selected_new_profile_is_validated_without_loading_legacy_assets(monkeyp
     path = tmp_path / "profile.json"
     path.write_text(json.dumps(expected), encoding="utf-8")
     monkeypatch.setenv("WORD_RENDER_PROFILE_PATH", str(path))
-    monkeypatch.setattr(renderer, "configured_profile", lambda: pytest.fail("legacy assets accessed"))
+    monkeypatch.setattr(
+        renderer, "configured_profile", lambda: pytest.fail("legacy assets accessed")
+    )
     assert conversion.configured_profile() == expected
     expected["identity"]["options"]["network"] = "bridge"
     expected["profile_digest"] = prebuilt.digest(expected["identity"])
@@ -36,10 +38,25 @@ def test_selected_new_profile_is_validated_without_loading_legacy_assets(monkeyp
 
 
 def qualified_new_result():
-    return {"protocol": prebuilt.PROTOCOL, "state": "succeeded", "coverage": "complete",
-            "conversion_attempted": True, "gaps": [],
-            "isolation": {"checks": {key: True for key in prebuilt.ISOLATION_CHECKS}},
-            "chain": {key: "a" * 64 for key in ("source_docx_digest", "pdf_digest", "profile_digest", "renderer_digest", "fontset_digest", "options_digest")}}
+    return {
+        "protocol": prebuilt.PROTOCOL,
+        "state": "succeeded",
+        "coverage": "complete",
+        "conversion_attempted": True,
+        "gaps": [],
+        "isolation": {"checks": {key: True for key in prebuilt.ISOLATION_CHECKS}},
+        "chain": {
+            key: "a" * 64
+            for key in (
+                "source_docx_digest",
+                "pdf_digest",
+                "profile_digest",
+                "renderer_digest",
+                "fontset_digest",
+                "options_digest",
+            )
+        },
+    }
 
 
 def test_new_receipt_needs_every_observed_safety_check_and_content_identity():
@@ -55,7 +72,11 @@ def test_new_receipt_needs_every_observed_safety_check_and_content_identity():
         changed = deepcopy(result)
         changed["chain"][key] = "not-a-digest"
         assert not controlled_qualified(changed), key
-    for key, value in (("coverage", "partial"), ("conversion_attempted", False), ("gaps", ["WORD_FONT_SUBSTITUTED"])):
+    for key, value in (
+        ("coverage", "partial"),
+        ("conversion_attempted", False),
+        ("gaps", ["WORD_FONT_SUBSTITUTED"]),
+    ):
         changed = deepcopy(result)
         changed[key] = value
         assert not controlled_qualified(changed)

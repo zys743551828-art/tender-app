@@ -1,8 +1,12 @@
-# 独立 DOCX 转换器
+# 历史独立 DOCX 转换器（旧 backend 恢复参考）
 
-用途及队列消息见 [转换契约](../../contracts/word-conversion.md)。这是独立运行的基础设施；产品接入使用上级 `compose.word.yml`，材料身份与采用见 [Word 材料契约](../../contracts/word-materials.md)。队列字节须先登记为业务档案并通过采用校验。
+本目录是根 backend 的历史供体实现，以下构建、部署和校验命令仅保留为旧系统恢复资料，**不是当前 workbench 的推荐路线或交付步骤**。当前路线使用官方 Gotenberg 预构建镜像与 [workbench 薄适配](../../workbench/deploy/word_prebuilt.py)，依据为[正式架构 ADR](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)及[团队运行页](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)。新 HTTP 转换 API 不等于旧目录队列／`BIDWB_*` 协议的直接替代；复杂布局资格不因此降级。
 
-在本目录执行 `docker compose build`，然后 `docker compose up -d`。默认创建本项目的输入、输出卷；不会启动或修改业务服务。输入目录所有者为业务 worker 的 UID 10001，输出为转换器 UID 65534。首次建卷后核实权限，再给业务端挂载输入可写、输出只读。不要挂载业务密钥、宿主 Docker socket 或真实资料根目录。
+本次仅标明历史入口：保留文件、镜像、卷、业务数据及原有权限／隔离行为，不构建、不删除，也不为该旧路线新增自建镜像步骤。
+
+旧路线用途及队列消息见 [转换契约](../../contracts/word-conversion.md)。它独立运行，历史产品接入使用上级 `compose.word.yml`，材料身份与采用见 [Word 材料契约](../../contracts/word-materials.md)。队列字节须先登记为业务档案并通过采用校验。
+
+历史恢复方式（非当前交付操作）：在本目录执行 `docker compose build`，然后 `docker compose up -d`。默认创建本项目的输入、输出卷；不会启动或修改业务服务。输入目录所有者为业务 worker 的 UID 10001，输出为转换器 UID 65534。首次建卷后核实权限，再给业务端挂载输入可写、输出只读。不要挂载业务密钥、宿主 Docker socket 或真实资料根目录。
 
 启动时核对网络、权限、只读根、公共临时目录和 Landlock 能力；未满足则退出。`renderer.json` 暴露构建时固定的程序、包版本及字体指纹；健康检查读取心跳，单次完整转换允许占用 65 秒，心跳超时为 120 秒。没有开放端口。
 

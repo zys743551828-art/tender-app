@@ -15,6 +15,7 @@ from packages.word_intake.inspection import inspect_docx
 def no_external(monkeypatch):
     def blocked(*args, **kwargs):
         raise AssertionError("No external execution in provider wrapper unit tests")
+
     monkeypatch.setattr(prebuilt, "_call", blocked)
     monkeypatch.setattr(prebuilt, "_Run", blocked)
     monkeypatch.setattr(prebuilt, "_render_generated", blocked)
@@ -33,8 +34,10 @@ def page_input():
 
 def test_new_profile_accepts_exact_page_without_old_word03_gate(page_input, monkeypatch):
     snapshot, source, manifest, profile = page_input
+
     def blocked(*args):
         raise AssertionError("New PAGE admission must not call the frozen old profile gate")
+
     monkeypatch.setattr(generated_renderer, "profile_for", blocked)
     value = prebuilt_generated.prepare(source, snapshot, manifest, profile)
     assert value["proof"]["source_docx_digest"] == prebuilt.digest(source)
@@ -53,25 +56,33 @@ def test_rehashed_foreign_docx_cannot_be_admitted(page_input):
         prebuilt_generated.prepare(source, snapshot, manifest, profile)
 
 
-@pytest.mark.parametrize("key,value", [
-    ("protocol", generated_renderer.PROTOCOL),
-    ("dynamic_field_policy", "all_fields"),
-    ("pdf_inspector_digest", "0" * 64),
-])
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("protocol", generated_renderer.PROTOCOL),
+        ("dynamic_field_policy", "all_fields"),
+        ("pdf_inspector_digest", "0" * 64),
+    ],
+)
 def test_rehashed_old_or_weakened_profile_rejected_before_port(page_input, tmp_path, key, value):
     snapshot, source, manifest, profile = page_input
     profile = deepcopy(profile)
     profile["identity"][key] = value
     profile["profile_digest"] = prebuilt.digest(profile["identity"])
-    result = prebuilt_generated.render(source, snapshot, manifest, profile, receipt=tmp_path / "r.json")
+    result = prebuilt_generated.render(
+        source, snapshot, manifest, profile, receipt=tmp_path / "r.json"
+    )
     assert result["state"] == "failed"
     assert result["error_code"] == "AUTHORING_PREBUILT_PROFILE_CHANGED"
     assert not result["conversion_attempted"]
 
 
-def test_existing_pdf_checker_and_source_proof_survive_provider_boundary(page_input, monkeypatch, tmp_path):
+def test_existing_pdf_checker_and_source_proof_survive_provider_boundary(
+    page_input, monkeypatch, tmp_path
+):
     snapshot, source, manifest, profile = page_input
     checker = generated_renderer.inspect_pdf
+
     def fake_port(data, provider, *, receipt, admit, inspect_pdf):
         assert data == source and inspect_pdf is checker
         prepared = admit()
@@ -79,11 +90,22 @@ def test_existing_pdf_checker_and_source_proof_survive_provider_boundary(page_in
         # A concurrent caller mutation cannot change the admitted expected body.
         snapshot["sections"].clear()
         assert prepared["proof"]["source_docx_digest"] == prebuilt.digest(source)
-        return {"state": "succeeded", "coverage": "partial", "gaps": ["AUTHORING_PAGE_NUMBER_OR_FOOTER_UNVERIFIED"],
-                "chain": {"profile_digest": provider["profile_digest"]}, "pdf": b"synthetic-only",
-                "measurements": {"page_count": 1, "gaps": ["AUTHORING_PAGE_NUMBER_OR_FOOTER_UNVERIFIED"]}}
+        return {
+            "state": "succeeded",
+            "coverage": "partial",
+            "gaps": ["AUTHORING_PAGE_NUMBER_OR_FOOTER_UNVERIFIED"],
+            "chain": {"profile_digest": provider["profile_digest"]},
+            "pdf": b"synthetic-only",
+            "measurements": {
+                "page_count": 1,
+                "gaps": ["AUTHORING_PAGE_NUMBER_OR_FOOTER_UNVERIFIED"],
+            },
+        }
+
     monkeypatch.setattr(prebuilt, "_render_generated", fake_port)
-    result = prebuilt_generated.render(source, snapshot, manifest, profile, receipt=tmp_path / "r.json")
+    result = prebuilt_generated.render(
+        source, snapshot, manifest, profile, receipt=tmp_path / "r.json"
+    )
     assert result["coverage"] == "partial"
     assert result["correspondence"]["gaps"] == result["gaps"]
     assert result["chain"]["generator_digest"] == profile["identity"]["generator_digest"]
@@ -91,13 +113,19 @@ def test_existing_pdf_checker_and_source_proof_survive_provider_boundary(page_in
     assert result["protocol"] == prebuilt_generated.PROTOCOL
 
 
-def test_provider_failure_stays_failed_without_creating_old_qualification(page_input, monkeypatch, tmp_path):
+def test_provider_failure_stays_failed_without_creating_old_qualification(
+    page_input, monkeypatch, tmp_path
+):
     snapshot, source, manifest, profile = page_input
+
     def failed(data, provider, **kwargs):
         kwargs["admit"]()
         return prebuilt._failure(data, provider, "WORD_CONVERSION_TIMEOUT", True)
+
     monkeypatch.setattr(prebuilt, "_render_generated", failed)
-    result = prebuilt_generated.render(source, snapshot, manifest, profile, receipt=tmp_path / "r.json")
+    result = prebuilt_generated.render(
+        source, snapshot, manifest, profile, receipt=tmp_path / "r.json"
+    )
     assert result["state"] == "failed" and result["pdf"] is None
     assert result["error_code"] == "WORD_CONVERSION_TIMEOUT"
     assert result["protocol"] != generated_renderer.PROTOCOL

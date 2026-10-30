@@ -1,7 +1,8 @@
-# 施组工作台 · 部署手册（Docker Compose）
+# 历史 backend 供体部署手册（Docker Compose，恢复参考）
 
-适用对象：负责把系统部署到一台 Linux 服务器并长期运维的工程师。本手册假设你**不熟悉本项目**，照着做即可；
-凡是我们在沙箱里无法验证的地方，都在文末“[未验证项](#10-未验证项)”如实列出，首次上线前请逐项在真机上确认。
+适用范围：本页保留根 `backend`／`deploy` 的历史供体部署和恢复资料，**不是当前 workbench 的交付步骤**；不能混用两套系统的配置、数据库或 Word 接口。历史方案未验证项保留在文末“[未验证项](#10-未验证项)”。
+
+当前 workbench 的 Word 推荐路线是官方 Gotenberg 预构建镜像与[薄适配入口](../workbench/deploy/word_prebuilt.py)，选型和资格边界以[正式架构 ADR](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)及[团队运行页](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/团队运行故障排查.md)为准。该入口不等于旧 backend 的目录队列／`BIDWB_*` 转换协议已被直接替换，也不代表生产集成或复杂版式资格全部通过。
 
 目录：[1 总览](#1-总览) · [2 先决条件](#2-先决条件) · [3 阿里云 OSS 准备](#3-阿里云-oss-准备) · [4 部署步骤](#4-部署步骤) ·
 [5 TLS 终止](#5-tls-终止) · [6 验证清单](#6-验证清单) · [7 日常运维](#7-日常运维) · [8 故障排查](#8-故障排查) ·
@@ -66,11 +67,7 @@ docker compose -f compose.yml -f compose.local-oss.yml up -d web relay reaper wo
 
 访问 `http://localhost:8080`。覆盖文件仅把 web 发布在 `127.0.0.1:8080`，API 使用开发环境的 HTTP 会话配置，数据库不发布端口，可与测试数据库并存。该命令启动核心评审服务，不启动尚未接入业务代码的 Milvus 和 MLflow；生产部署不要使用此覆盖文件。登录成员通过第 4 节的建号流程创建。
 
-外部 Word 转换可加 `-f compose.word.yml`。先按 `deploy/word/README.md` 核对并构建 `WORD_IMAGE`，登记实际 `WORD_RENDERER_FINGERPRINT`，备份业务库并执行 0004 迁移，再统一更新后端和前端。完整本机核心命令：
-
-```bash
-docker compose -f compose.yml -f compose.local-oss.yml -f compose.word.yml up -d web relay reaper worker-parse worker-ai worker-experiment worker-export word-converter
-```
+历史 Word 目录队列入口保留在 [word/README.md](word/README.md)、`compose.word.yml` 与 `word/compose.yml`，仅供旧 backend 恢复参考；构建旧 `WORD_IMAGE` 不再列为当前交付步骤。当前 workbench 请使用上文 Gotenberg 薄适配资料，不把新 HTTP 转换 API 当作旧协议的直接替代。本次归档说明不构建或删除任何文件、镜像、卷或业务数据。
 
 输入解析身份保护需要 0005 迁移：升级前备份并在独立数据库演练恢复与迁移，随后运行 `migrate`，统一更新后端和前端。新评审冻结 `input-v2` 的解析、证据集合与缺口；旧快照保留原校验值和历史报告，标记未冻结身份，不按时间补写。旧输入的新检索／重跑会被拒绝，应由用户发起新版评审；已登记的提交与成绩保留。详见[解析身份契约](../contracts/snapshot-parse-identity.md)。
 
@@ -78,7 +75,7 @@ docker compose -f compose.yml -f compose.local-oss.yml -f compose.word.yml up -d
 
 候选人工核验需要 0007 迁移，新增只追加核验表及来源外键。先独立恢复与迁移验收，再统一更新 API／worker／前端；解析 worker 需要新表的只读权限，以免晚到任务覆盖人工核验。核验入口在资料／原件页，产生新解析，保留旧依据；不会自动调用业务模型。详见[核验契约](../contracts/recognition-reviews.md)。
 
-只有解析 worker 挂载输入可写、输出只读队列；API 仅拿到方法指纹。转换器非 root、无网络／端口／业务密钥、只读根、逐任务 Landlock 隔离。不加载此覆盖文件时仍可保存 Word 并逐稿补交 PDF，不能自动转换。成功转换、复杂版式核对、失败补交与历史身份规则见 `contracts/word-materials.md`。普通页码、目录等动态域同样需要补交 PDF；生成 PDF 不等于 Word 原稿合格。
+以下为旧 backend Word 路线的历史边界：只有解析 worker 挂载输入可写、输出只读队列；API 仅拿到方法指纹。旧转换器非 root、无外部网络／端口／业务密钥、只读根、逐任务 Landlock 隔离。不加载旧覆盖文件时仍可保存 Word 并逐稿补交 PDF，不能自动转换。其转换、复杂版式核对、失败补交与历史身份规则见 `contracts/word-materials.md`，不要套用为当前 Gotenberg 的验收结论。生成 PDF 不等于 Word 原稿合格，原件、权限和既有资格边界继续保留。
 
 阿里云 OSS 的 boto3 兼容配置使用 `OSS_SIGNATURE_VERSION=s3`；AWS S3 等服务可设置 `s3v4`，MinIO 开发覆盖文件固定使用 `s3v4`。依据：[阿里云 AWS SDK 接入说明](https://www.alibabacloud.com/help/en/oss/developer-reference/use-aws-sdks-to-access-oss)。
 

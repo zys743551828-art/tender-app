@@ -199,7 +199,13 @@ def test_changed_behavior_source_rejects_qualification_before_container(
     ],
 )
 def test_image_identity_platform_and_anonymous_volume_rejected(monkeypatch, field, value):
-    image = {"Id": prebuilt.IMAGE_ID, "RepoDigests": [prebuilt.REPOSITORY_DIGEST], "Architecture": "amd64", "Os": "linux", "Config": {}}
+    image = {
+        "Id": prebuilt.IMAGE_ID,
+        "RepoDigests": [prebuilt.REPOSITORY_DIGEST],
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Config": {},
+    }
     image[field] = value
     monkeypatch.setattr(
         prebuilt, "_successful", lambda *args, **kwargs: json.dumps([image]).encode()
@@ -209,9 +215,19 @@ def test_image_identity_platform_and_anonymous_volume_rejected(monkeypatch, fiel
 
 
 @pytest.mark.parametrize("observed_id", [prebuilt.IMAGE_ID, prebuilt.MANIFEST_DIGEST])
-def test_standard_docker_and_containerd_image_ids_require_exact_repository_digest(monkeypatch, observed_id):
-    image = {"Id": observed_id, "RepoDigests": [prebuilt.REPOSITORY_DIGEST], "Architecture": "amd64", "Os": "linux", "Config": {}}
-    monkeypatch.setattr(prebuilt, "_successful", lambda *args, **kwargs: json.dumps([image]).encode())
+def test_standard_docker_and_containerd_image_ids_require_exact_repository_digest(
+    monkeypatch, observed_id
+):
+    image = {
+        "Id": observed_id,
+        "RepoDigests": [prebuilt.REPOSITORY_DIGEST],
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Config": {},
+    }
+    monkeypatch.setattr(
+        prebuilt, "_successful", lambda *args, **kwargs: json.dumps([image]).encode()
+    )
     assert prebuilt._image()["Id"] == observed_id
     image["RepoDigests"] = ["untrusted/other@" + prebuilt.MANIFEST_DIGEST]
     with pytest.raises(prebuilt.PrebuiltError, match="IMAGE_MISMATCH"):
@@ -262,7 +278,15 @@ def test_actual_runtime_isolation_drift_is_rejected(monkeypatch, kind, value):
         },
     }
     host[kind] = value
-    result = {"Image": prebuilt.IMAGE_ID, "Config": {"User": "65534:65534", "Image": prebuilt.IMAGE, "Env": ["HOME=/tmp", "TMPDIR=/tmp", "LANG=C.UTF-8"]}, "HostConfig": host}
+    result = {
+        "Image": prebuilt.IMAGE_ID,
+        "Config": {
+            "User": "65534:65534",
+            "Image": prebuilt.IMAGE,
+            "Env": ["HOME=/tmp", "TMPDIR=/tmp", "LANG=C.UTF-8"],
+        },
+        "HostConfig": host,
+    }
     monkeypatch.setattr(prebuilt, "_image", lambda: {"Config": {"Env": []}})
     monkeypatch.setattr(
         prebuilt, "_successful", lambda *args, **kwargs: json.dumps([result]).encode()
