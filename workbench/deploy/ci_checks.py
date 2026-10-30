@@ -136,6 +136,8 @@ def postgres_environment(
 def suite_files(suite: str) -> list[str]:
     if suite == "unit":
         return ["tests"]
+    if suite == "pricing":
+        return ["tests/test_package_pricing_pg.py", "tests/test_package_pricing_native_s3.py"]
     if suite == "authoring":
         return [
             "tests/test_authoring_exact_revisions_pg.py",
@@ -193,13 +195,13 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--suite",
-        choices=("unit", "postgres", "authoring", "scoring", "candidate", "dispatch"),
+        choices=("unit", "postgres", "authoring", "scoring", "candidate", "dispatch", "pricing"),
         required=True,
     )
     parser.add_argument("--report-dir", type=Path)
     parser.add_argument("--disposable-postgres", action="store_true")
     parser.add_argument(
-        "--weed", type=Path, help="Verified SeaweedFS binary; required for authoring"
+        "--weed", type=Path, help="Verified SeaweedFS binary; required for authoring/pricing"
     )
     parser.add_argument(
         "--kafka-home",
@@ -207,8 +209,8 @@ def main(argv=None) -> int:
         help="Verified Kafka 4.1.2 release directory; required for dispatch",
     )
     args = parser.parse_args(argv)
-    if args.suite == "authoring" and args.weed is None:
-        parser.error("authoring requires --weed pointing to the verified SeaweedFS binary")
+    if args.suite in {"authoring", "pricing"} and args.weed is None:
+        parser.error("authoring/pricing requires --weed pointing to the verified SeaweedFS binary")
     if args.suite == "dispatch" and args.kafka_home is None:
         parser.error("dispatch requires --kafka-home pointing to the verified Kafka 4.1.2 release")
     directory = (args.report_dir or ROOT / ".local" / "ci" / args.suite).resolve()
@@ -247,12 +249,20 @@ def main(argv=None) -> int:
                     temporary_kafka(args.kafka_home, service_environment, directory / "kafka.log")
                 )
             )
-        if args.suite == "authoring":
+        if args.suite in {"authoring", "pricing"}:
             from deploy.ci_object_store import temporary_object_store
 
-            environment["FUSION_AUTHORING_INPUT_ADMIN_DSN"] = environment.pop(
-                "FUSION_REQUIREMENTS_ADMIN_DSN"
-            )
+            if args.suite == "authoring":
+                environment["FUSION_AUTHORING_INPUT_ADMIN_DSN"] = environment.pop(
+                    "FUSION_REQUIREMENTS_ADMIN_DSN"
+                )
+            else:
+                environment["FUSION_PRICING_NATIVE_S3"] = "1"
+                environment["FUSION_PRICING_BROWSER"] = "1"
+                environment["FUSION_PRICING_BROWSER_REPORT"] = str(directory / "browser.json")
+                for key in ("PLAYWRIGHT_MODULE", "PLAYWRIGHT_BROWSERS_PATH", "CHROMIUM_EXECUTABLE"):
+                    if key in os.environ:
+                        environment[key] = os.environ[key]
             environment.update(
                 services.enter_context(
                     temporary_object_store(args.weed, test_environment(), directory / "s3.log")

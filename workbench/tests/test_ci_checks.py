@@ -47,7 +47,9 @@ def test_empty_or_unrelated_report_cannot_be_a_success(tmp_path, body):
         "<testcase><failure/></testcase>",
     ],
 )
-@pytest.mark.parametrize("suite", ["postgres", "authoring", "scoring", "candidate", "dispatch"])
+@pytest.mark.parametrize(
+    "suite", ["postgres", "authoring", "scoring", "candidate", "dispatch", "pricing"]
+)
 def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
     tmp_path, monkeypatch, body, suite
 ):
@@ -67,7 +69,9 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
 
     def run(args, **kwargs):
-        if suite == "scoring":
+        if suite == "pricing":
+            assert kwargs["env"]["FUSION_PRICING_NATIVE_S3"] == "1"
+        elif suite == "scoring":
             assert kwargs["env"]["FUSION_MATERIAL_REQUEST_PREFLIGHT_PG"] == "1"
             assert kwargs["env"]["FUSION_MATERIAL_EXECUTION_PG"] == "1"
         elif suite == "candidate":

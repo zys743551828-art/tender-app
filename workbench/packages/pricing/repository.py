@@ -538,9 +538,23 @@ def plan_view(c, *, bid, identity):
 
 def list_plans(c, *, bid, limit, cursor):
     sources.enabled_bid(c, bid)
+    boundary = None
+    if cursor is not None:
+        # UUIDs are opaque page anchors, never a substitute for save chronology.
+        boundary = fetch(
+            c, "SELECT created_at,id FROM pricing_plans WHERE bid_id=%s AND id=%s", (bid, cursor)
+        )
     rows = c.execute(
-        "SELECT id FROM pricing_plans WHERE bid_id=%s AND (%s::uuid IS NULL OR id>%s) ORDER BY id LIMIT %s",
-        (bid, cursor, cursor, limit + 1),
+        "SELECT id FROM pricing_plans WHERE bid_id=%s "
+        "AND (%s::timestamptz IS NULL OR (created_at,id)<(%s::timestamptz,%s::uuid)) "
+        "ORDER BY created_at DESC,id DESC LIMIT %s",
+        (
+            bid,
+            boundary["created_at"] if boundary else None,
+            boundary["created_at"] if boundary else None,
+            cursor,
+            limit + 1,
+        ),
     ).fetchall()
     return {
         "items": [plan_view(c, bid=bid, identity=row["id"]) for row in rows[:limit]],
