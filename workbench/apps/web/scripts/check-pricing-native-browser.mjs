@@ -43,6 +43,7 @@ createRoot(document.getElementById('root')).render(<PricingPanel bidId=${JSON.st
 let server, browser;
 const errors = [];
 const cases = [];
+let lifecycleAckDropped = false;
 try {
   await build({
     stdin: { contents: entry, resolveDir: root, loader: "tsx" },
@@ -84,6 +85,27 @@ try {
           headers: { ...request.headers, host: backend.host },
         },
         (upstream) => {
+          if (
+            !lifecycleAckDropped &&
+            config.journeys?.phase === "lifecycle_ack" &&
+            request.method === "POST" &&
+            request.url ===
+              `/api/v1/bids/${config.journeys.lifecycle_bid}/lifecycle` &&
+            upstream.statusCode === 200
+          ) {
+            lifecycleAckDropped = true;
+            // Forward actual status/headers and one actual body byte, then cut
+            // the connection. A zero-byte close may be transparently retried by
+            // Chromium; a truncated acknowledged response cannot be retried so.
+            let prefixSent = false;
+            upstream.on("data", (chunk) => {
+              if (prefixSent) return;
+              prefixSent = true;
+              response.writeHead(upstream.statusCode, upstream.headers);
+              response.write(chunk.subarray(0, 1), () => response.destroy());
+            });
+            return;
+          }
           response.writeHead(upstream.statusCode, upstream.headers);
           upstream.pipe(response);
         },

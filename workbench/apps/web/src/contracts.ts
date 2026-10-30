@@ -1,5 +1,41 @@
 // Generated from packages/contracts/fusion-implemented.openapi.json.gz. Run python scripts/generate-contracts.py.
 
+export type ProjectLifecycleView = {
+  bid_id: string;
+  phase: "preparation" | "working" | "submitted" | "closed" | "terminated";
+  archived_at: string | null;
+  revision: number;
+  allowed_actions: ("start" | "end" | "terminate" | "archive" | "reopen")[];
+  archive_blockers: (
+    | "OPERATIONS_IN_FLIGHT"
+    | "UPLOADS_UNFINISHED"
+    | "BATCHES_UNFINISHED"
+  )[];
+  active_operations: {
+    id: string;
+    kind: string;
+    state: "queued" | "running" | "cancel_requested";
+  }[];
+  unfinished_uploads: {
+    id: string;
+    batch_id: string;
+    state: string;
+    verified_version_id: string | null;
+    aborted_at: string | null;
+  }[];
+  unfinished_batches: {
+    id: string;
+    state: string;
+    revision: number;
+  }[];
+  batch_closure_available: boolean;
+};
+
+export type LifecycleChangeRequest = {
+  action: "start" | "end" | "terminate" | "archive" | "reopen";
+  reason: string;
+};
+
 export type PackageNextActions = {
   version: "package-next-actions/1";
   binding: {

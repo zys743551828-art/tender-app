@@ -1,5 +1,6 @@
 // Standalone recovery records use this registry for both their keys and account cleanup.
 const memberCommandKinds = [
+  "lifecycle",
   "fact-change",
   "fact-scope",
   "package-freeze",

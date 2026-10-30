@@ -1,7 +1,11 @@
 /* global console */
 // Actual App and actual native HTTP. No route interception, fetch stubs or model I/O.
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import {
+  lifecycleUi,
+  lifecycleAck,
+  lifecycleMember,
+} from "./native-lifecycle-journey.mjs";
 
 export async function journeys({ browser, origin, config }) {
   const context = await browser.newContext({
@@ -25,6 +29,24 @@ export async function journeys({ browser, origin, config }) {
   };
   const body = async () => page.locator("body").innerText();
   try {
+    if (config.journeys.phase === "lifecycle_ack")
+      return await lifecycleAck({
+        page,
+        context,
+        origin,
+        bid: config.journeys.lifecycle_bid,
+      });
+    if (
+      config.journeys.phase === "lifecycle_member" ||
+      config.journeys.phase === "lifecycle_inactive"
+    )
+      return await lifecycleMember({
+        page,
+        context,
+        origin,
+        bid: config.journeys.lifecycle_bid,
+        inactive: config.journeys.phase === "lifecycle_inactive",
+      });
     if (config.journeys.phase === "recover") {
       await goto("tasks");
       await page.getByRole("button", { name: "运行通知", exact: true }).click();
@@ -355,91 +377,16 @@ export async function journeys({ browser, origin, config }) {
         exact: true,
       })
       .waitFor();
-    // State changes use the real API: the existing UI displays lifecycle but
-    // has no lifecycle action form. These are explicitly API/display assertions.
-    const session = await (
-      await context.request.get(origin + "/api/v1/auth/session")
-    ).json();
-    const endpoint =
-      origin + "/api/v1/bids/" + config.journeys.lifecycle_bid + "/lifecycle";
-    const current = await context.request.get(endpoint);
-    const headers = {
-      Origin: origin,
-      "X-CSRF-Token": session.csrf_token,
-      "Idempotency-Key": randomUUID(),
-      "If-Match": current.headers().etag,
-    };
-    const data = { action: "terminate", reason: "隔离生命周期转换和丢ACK恢复" };
-    const changed = await context.request.post(endpoint, { headers, data });
-    assert.equal(changed.status(), 200);
-    const replay = await context.request.post(endpoint, { headers, data });
-    assert.equal(replay.status(), 200);
-    assert.deepEqual(await replay.json(), await changed.json());
-    const stale = await context.request.post(endpoint, {
-      headers: { ...headers, "Idempotency-Key": randomUUID() },
-      data: { action: "reopen", reason: "旧版本不得覆盖" },
+    const lifecycle = await lifecycleUi({
+      page,
+      context,
+      origin,
+      browser,
+      bid: config.journeys.lifecycle_bid,
+      template: run.frozen_manifest.configuration,
+      submitted: config.journeys.submitted_bid,
+      workBid: config.bid,
     });
-    assert.equal(stale.status(), 412);
-    await page.goto(
-      origin + "/bids/" + config.journeys.lifecycle_bid + "/overview",
-    );
-    await page
-      .locator(".project-meta")
-      .getByText("已终止", { exact: true })
-      .waitFor();
-    const terminated = await context.request.get(endpoint);
-    const archived = await context.request.post(endpoint, {
-      headers: {
-        ...headers,
-        "If-Match": terminated.headers().etag,
-        "Idempotency-Key": randomUUID(),
-      },
-      data: { action: "archive", reason: "隔离归档只读检查" },
-    });
-    assert.equal(archived.status(), 200);
-    assert.ok((await archived.json()).archived_at);
-    assert.equal(
-      (
-        await context.request.get(
-          origin +
-            "/api/v1/bids/" +
-            config.journeys.lifecycle_bid +
-            "/pricing-plans",
-        )
-      ).status(),
-      200,
-    );
-    const blocked = await context.request.post(
-      origin +
-        "/api/v1/bids/" +
-        config.journeys.lifecycle_bid +
-        "/task-definitions",
-      {
-        headers: { ...headers, "Idempotency-Key": randomUUID() },
-        data: run.frozen_manifest.configuration,
-      },
-    );
-    assert.equal(blocked.status(), 409);
-    assert.equal((await blocked.json()).code, "PROJECT_WORK_CLOSED");
-    const fresh = await context.request.get(endpoint);
-    const reopened = await context.request.post(endpoint, {
-      headers: {
-        ...headers,
-        "If-Match": fresh.headers().etag,
-        "Idempotency-Key": randomUUID(),
-      },
-      data: { action: "reopen", reason: "隔离恢复工作，不改变生产" },
-    });
-    assert.equal(reopened.status(), 200);
-    await page.reload();
-    await page
-      .locator(".project-meta")
-      .getByText("工作中", { exact: true })
-      .waitFor();
-    const anonymous = await browser.newContext();
-    const denied = await anonymous.request.get(endpoint);
-    assert.equal(denied.status(), 401);
-    await anonymous.close();
     assert.deepEqual(errors, []);
     return {
       run_id: run.id,
@@ -455,7 +402,7 @@ export async function journeys({ browser, origin, config }) {
       task_cancel_requested: true,
       archive_blocks_new_task: true,
       task_ui_local_success: true,
-      lifecycle_api_replay_stale_display: true,
+      ...lifecycle,
       anonymous_denied: true,
       model_calls: 0,
     };

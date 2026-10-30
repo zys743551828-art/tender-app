@@ -86,3 +86,18 @@ it("清理限定为已登记的成员命令，不删除偏好、未知命名空�
   ).toBeNull();
   for (const key of retained) expect(sessionStorage.getItem(key)).toBe("keep");
 });
+
+it("lifecycle recovery and idempotency keys follow the existing account cleanup policy", () => {
+  const own = "tender:command-record:lifecycle:member-a:bid";
+  const other = "tender:command-record:lifecycle:member-b:bid";
+  const key = own.replace("command-record", "command");
+  for (const name of [own, other, key])
+    sessionStorage.setItem(name, "private reason");
+  clearRecordedCommands("member-a");
+  expect(sessionStorage.getItem(own)).toBe("private reason");
+  expect(sessionStorage.getItem(key)).toBe("private reason");
+  expect(sessionStorage.getItem(other)).toBeNull();
+  clearRecordedCommands();
+  expect(sessionStorage.getItem(own)).toBeNull();
+  expect(sessionStorage.getItem(key)).toBeNull();
+});

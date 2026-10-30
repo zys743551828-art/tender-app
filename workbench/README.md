@@ -121,3 +121,5 @@ QA使用独立配置`.local/qa.env`、独立数据库、Kafka及存储；通过`
 报价历史按保存时间倒序，UUID游标按同项目的时间/ID继续。独立PG17/私有S3及实际PricingPanel验收使用`deploy/ci_checks.py --suite pricing --disposable-postgres --weed <已校验二进制>`，必须注入临时CI_POSTGRES_DSN和显式浏览器工具。公式与手算、保存/重放、API重建和桌面/窄屏回读均单列；详见[报价模块说明](packages/pricing/README.md)。合成工程验收不代替真实报价条款业务签收。
 
 四组既有工作流的真实App/原生服务组合验收复用上述pricing聚合：`scripts/native-workspace-journeys.mjs`由原生pytest启动，不提供业务测试后门。覆盖实际报价写入、事实与知识状态、任务取消/通知恢复，以及生命周期API/页面显示；合成来源目录和队列准备不是实际上传/转换。详细范围、失败尝试和回执见[四组正式记录](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/工作台四组原生组合验收.md)。
+
+FR015 项目设置现提供“项目阶段与归档”：从既有服务器 allowed_actions 展示动作，原因与二次确认、旧版本冲突、原请求回执恢复、归档阻塞与同轮重开均复用原API。前端类型从现有LifecycleChangeRequest/ProjectLifecycleView快照生成，不新增权限、SQL或环境变量。真实App/PG/S3及连接截断恢复使用上述pricing原生聚合；详情见[FR015正式记录](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/FR015生命周期表单原生验收.md)。

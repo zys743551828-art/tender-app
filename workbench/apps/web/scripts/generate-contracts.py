@@ -42,6 +42,8 @@ history_schemas = [
     "PackageHistoryJobDirectory",
 ]
 wanted = [
+    "ProjectLifecycleView",
+    "LifecycleChangeRequest",
     "PackageNextActions",
     "ProjectWorkSummary",
     "ProjectWorkSummaryBatch",

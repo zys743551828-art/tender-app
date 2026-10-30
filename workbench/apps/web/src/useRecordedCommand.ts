@@ -157,7 +157,7 @@ export function useRecordedCommand(
       etag: string,
       method: "POST" | "PUT" | "PATCH" = "POST",
     ) {
-      if (!session.active) return null;
+      if (!session.active || session.running) return null;
       if (session.record) {
         updateState({
           error: new Error(

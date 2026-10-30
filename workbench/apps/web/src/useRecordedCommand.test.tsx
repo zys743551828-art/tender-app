@@ -158,3 +158,32 @@ it("retains a received acknowledgement if the scope changes during asynchronous 
   rerender({ scope: "first" });
   expect(result.current.pending?.body).toEqual({ scope: "first" });
 });
+
+it("ignores a second in-flight submit without leaving a false failure after the first ACK", async () => {
+  let release!: (response: Response) => void;
+  const fetcher = vi.fn(
+    () =>
+      new Promise<Response>((resolve) => {
+        release = resolve;
+      }),
+  );
+  vi.stubGlobal("fetch", fetcher);
+  const { result } = renderHook(() => useRecordedCommand("double-submit"));
+  let first!: Promise<unknown>;
+  act(() => {
+    first = result.current.run(path, { action: "start" }, '"basis"');
+  });
+  await act(async () => {
+    expect(
+      await result.current.run(path, { action: "start" }, '"basis"'),
+    ).toBeNull();
+  });
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(result.current.error).toBeNull();
+  await act(async () => {
+    release(reply("ack"));
+    await first;
+  });
+  expect(result.current.error).toBeNull();
+  expect(result.current.pending).toBeNull();
+});

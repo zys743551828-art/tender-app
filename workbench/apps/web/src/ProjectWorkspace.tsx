@@ -42,6 +42,7 @@ import { ResourceState } from "./ResourceState";
 import { ReviewPanel } from "./ReviewPanel";
 import { RulesPanel } from "./RulesPanel";
 import { SettingsPanel } from "./SettingsPanel";
+import { ProjectLifecyclePanel } from "./ProjectLifecyclePanel";
 import { IdentityPanel } from "./Identity";
 import { useResource } from "./useResource";
 import { useProjectStream } from "./useProjectStream";
@@ -469,6 +470,12 @@ export function ProjectWorkspace({
           )}
           {page === "settings" && (
             <>
+              <ProjectLifecyclePanel
+                key={`${memberId}:${bid.id}`}
+                bidId={bid.id}
+                memberId={memberId}
+                onChanged={refresh}
+              />
               <IdentityPanel key={bid.id} bidId={bid.id} onSaved={refresh} />
               <SettingsPanel
                 bidId={bid.id}

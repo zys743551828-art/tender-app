@@ -319,9 +319,41 @@ def test_native_workspace_combined_journeys_and_notification_recovery(native):
     ).json()
     assert life["identity"]["lot_id"] == lot["id"]
     assert life["identity"]["engineering_project_id"] == project["id"]
-    result = browser_history(
-        w, [], {"phase": "write", "knowledge_id": knowledge, "lifecycle_bid": life["id"]}
+
+    def extra_bid(title):
+        _, _, extra_round, extra_bidder = catalog(w)
+        return post(
+            w,
+            "/bids",
+            {"title": title, "round_id": extra_round["id"], "bidder_id": extra_bidder["id"]},
+        ).json()["id"]
+
+    submitted = extra_bid("synthetic submitted-state UI fixture, not actual submission acceptance")
+    # Explicit test-only state setup to cover the existing submitted -> closed UI.
+    # No submission fact, real qualification or business acceptance is fabricated.
+    w["database"]["owner"].execute(
+        "UPDATE design.bid_profiles SET phase='submitted' WHERE bid_id=%s", (submitted,)
     )
+    ack_bid = extra_bid("synthetic lost-ACK lifecycle bid")
+    result = browser_history(
+        w,
+        [],
+        {
+            "phase": "write",
+            "knowledge_id": knowledge,
+            "lifecycle_bid": life["id"],
+            "submitted_bid": submitted,
+        },
+    )
+    ack = browser_history(w, [], {"phase": "lifecycle_ack", "lifecycle_bid": ack_bid})
+    with connection() as c:
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM audit_entries WHERE bid_id=%s AND event_type='project.lifecycle_changed' AND payload->>'action'='start'",
+                (ack_bid,),
+            ).fetchone()["n"]
+            == 1
+        )
     from packages.tasks import runs
 
     # The original bounded notification producer consumes the real local task result;
@@ -393,11 +425,29 @@ def test_native_workspace_combined_journeys_and_notification_recovery(native):
         assert other.get(w["pricing_base"]).status_code == 200
         notifications = other.get(w["pricing_base"] + "/task-notifications")
         assert notifications.status_code == 200 and notifications.json()["items"] == []
+        member_receipt = browser_history(
+            w | {"client": other}, [], {"phase": "lifecycle_member", "lifecycle_bid": life["id"]}
+        )
+        with connection() as c:
+            assert (
+                c.execute(
+                    "SELECT count(*) AS n FROM audit_entries WHERE bid_id=%s AND actor_id=%s AND event_type='project.lifecycle_changed'",
+                    (life["id"], actor),
+                ).fetchone()["n"]
+                == 2
+            )
+        owner.execute("UPDATE design.members SET active=false WHERE id=%s", (actor,))
+        inactive_receipt = browser_history(
+            w | {"client": other}, [], {"phase": "lifecycle_inactive", "lifecycle_bid": life["id"]}
+        )
     if report := os.environ.get("FUSION_PRICING_BROWSER_REPORT"):
         Path(report).with_name("workspace-journeys.json").write_text(
             json.dumps(
                 {
                     "write": result,
+                    "lifecycle_ack": ack,
+                    "active_member": member_receipt,
+                    "inactive_member": inactive_receipt,
                     "new_api_process": recovered,
                     "synthetic": True,
                     "model_calls": 0,
