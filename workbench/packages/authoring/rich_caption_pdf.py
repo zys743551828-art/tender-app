@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ctypes as C
 import math
+import re
 from typing import Any
 
 import pypdfium2 as pdfium
@@ -24,11 +25,26 @@ MAX_PIXELS = 64_000_000
 MAX_LINES = 100
 
 
-def _destinations(document):
+def _destinations(document, *, name_mapping=None):
+    # Optional producer-specific aliases, never a global spelling replacement.
+    allowed = None
+    if name_mapping is not None:
+        if not isinstance(name_mapping, dict) or any(
+            not isinstance(alias, str)
+            or not isinstance(name, str)
+            or re.fullmatch(r"(?:cap|sec)_[0-9a-f]{32}", name) is None
+            or alias != name[:3] + "5F" + name[4:]
+            for alias, name in name_mapping.items()
+        ):
+            raise ValueError("CAPTION_DESTINATION_MAPPING")
+        allowed = set(name_mapping.values())
+        if len(allowed) != len(name_mapping):
+            raise ValueError("CAPTION_DESTINATION_MAPPING")
     count = raw.FPDF_CountNamedDests(document)
     if count > MAX_NAMES:
         raise ValueError("CAPTION_DESTINATION_LIMIT")
     result = {}
+    seen = set()
     for index in range(count):
         length = C.c_long()
         if not raw.FPDF_GetNamedDest(document, index, None, length) or not 0 < length.value <= 2048:
@@ -38,6 +54,11 @@ def _destinations(document):
         if not dest or not 0 < length.value <= len(buffer):
             raise ValueError("CAPTION_DESTINATION_NAME")
         name = buffer.raw[: length.value].decode("utf-16-le").rstrip("\0")
+        if allowed is not None:
+            name = name_mapping.get(name, name)
+            if name not in allowed or name in seen:
+                raise ValueError("CAPTION_DESTINATION_MAPPING")
+            seen.add(name)
         if name.startswith("cap_"):
             if name in result:
                 raise ValueError("CAPTION_DESTINATION_DUPLICATE")
@@ -103,7 +124,7 @@ def _candidates(lines, text, destination, style, width, height, budget):
     return result
 
 
-def inspect_captions(data, snapshot, images, tables, style):
+def inspect_captions(data, snapshot, images, tables, style, *, name_mapping=None):
     """No external receipts; caller has already validated the frozen source."""
     expected = rich_captions.entries(snapshot)
     result: dict[str, Any] = {
@@ -144,7 +165,7 @@ def inspect_captions(data, snapshot, images, tables, style):
         document = pdfium.PdfDocument(data)
         if not 0 < len(document) <= geometry.MAX_PAGES:
             raise ValueError("CAPTION_PAGE_LIMIT")
-        destinations = _destinations(document)
+        destinations = _destinations(document, name_mapping=name_mapping)
         if set(destinations) != {item["anchor"] for item in expected}:
             raise ValueError("CAPTION_DESTINATION_SET")
         by_page: dict[int, list[Any]] = {}

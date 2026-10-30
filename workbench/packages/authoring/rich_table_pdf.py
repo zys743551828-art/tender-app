@@ -142,7 +142,36 @@ def _line(start, end):
     return None
 
 
-def _paths(page):
+def _stroke_cap_rectangle(records, path_count):
+    """Narrow provider representation: four single strokes overlap by half-width.
+
+    This is not a general tolerance increase. Unknown/multiple grids, extra paths,
+    unequal joins or excessive extensions retain the original measurements.
+    """
+    if path_count != 4 or len(records) != 4:
+        return None
+    horizontal = [item for item in records if item[0][0] == "h"]
+    vertical = [item for item in records if item[0][0] == "v"]
+    if len(horizontal) != 2 or len(vertical) != 2:
+        return None
+    bottom, top = sorted(item[0][1] for item in horizontal)
+    left, right = sorted(item[0][1] for item in vertical)
+    if right - left < 4 or top - bottom < 4:
+        return None
+    normalized = []
+    for line, stroke_width in records:
+        kind, coordinate, start, end = line
+        if not 0.25 <= stroke_width <= 1.5:
+            return None
+        low, high = (left, right) if kind == "h" else (bottom, top)
+        half = stroke_width / 2
+        if abs(start - (low - half)) > 0.001 or abs(end - (high + half)) > 0.001:
+            return None
+        normalized.append((kind, coordinate, low, high))
+    return normalized
+
+
+def _paths(page, *, stroke_cap_model=None):
     """Read native top-level strokes or thin solid rectangles, never OCR lines."""
     count = raw.FPDFPage_CountObjects(page)
     if not 0 <= count <= MAX_PAGE_OBJECTS:
@@ -150,6 +179,8 @@ def _paths(page):
     lines = []
     unsupported = False
     segment_count = 0
+    stroke_records = []
+    path_count = 0
     for index in range(count):
         obj = raw.FPDFPage_GetObject(page, index)
         kind = raw.FPDFPageObj_GetType(obj)
@@ -157,6 +188,7 @@ def _paths(page):
             unsupported = True
         if kind != raw.FPDF_PAGEOBJ_PATH:
             continue
+        path_count += 1
         matrix = _matrix(obj)
         fill, stroke = C.c_int(), C.c_int()
         if matrix is None or not raw.FPDFPath_GetDrawMode(obj, fill, stroke):
@@ -215,6 +247,13 @@ def _paths(page):
                 for start, end in zip(path, path[1:], strict=False):
                     if (line := _line(start, end)) is not None:
                         lines.append(line)
+            if (
+                len(paths) == 1
+                and len(paths[0]) == 2
+                and abs(matrix.a - matrix.d) <= 0.0001
+                and (single := _line(paths[0][0], paths[0][1])) is not None
+            ):
+                stroke_records.append((single, width.value * matrix.a))
         elif fill.value != raw.FPDF_FILLMODE_NONE and not stroke.value and _black(_color(obj)):
             # LibreOffice may export an opaque border as a thin filled rectangle.
             if len(paths) != 1:
@@ -236,6 +275,12 @@ def _paths(page):
                 lines.append(("h", sum(ys) / 2, xs[0], xs[1]))
             elif 0.25 <= xs[1] - xs[0] <= 1.5 and ys[1] - ys[0] >= 2:
                 lines.append(("v", sum(xs) / 2, ys[0], ys[1]))
+    if stroke_cap_model is not None:
+        if stroke_cap_model != "four_stroke_half_width_joins/1":
+            raise ValueError("TABLE_STROKE_CAP_MODEL_UNSUPPORTED")
+        normalized = _stroke_cap_rectangle(stroke_records, path_count)
+        if normalized is not None:
+            lines = normalized
     return _merge(lines), unsupported
 
 
@@ -517,7 +562,7 @@ def _visible(candidate, actual, text_layer, height):
     return True
 
 
-def inspect_tables(data, snapshot, roots, style):
+def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None):
     result: dict[str, Any] = {
         "protocol": PROTOCOL,
         "pdf_digest": sha(data) if isinstance(data, bytes) and len(data) <= MAX_BYTES else None,
@@ -558,7 +603,7 @@ def inspect_tables(data, snapshot, roots, style):
                 if page.get_rotation() != 0 or not 0 < width <= 1000 or not 0 < height <= 1500:
                     gaps.append("AUTHORING_TABLE_PAGE_GEOMETRY_UNSUPPORTED")
                     continue
-                lines, unsupported = _paths(page)
+                lines, unsupported = _paths(page, stroke_cap_model=stroke_cap_model)
                 if not lines:
                     continue
                 characters, count = _characters(page)

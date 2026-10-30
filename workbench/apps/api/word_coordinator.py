@@ -31,7 +31,7 @@ def tick(bid, source):
             return {"state": "not_ready"}
     verified = verify_candidate(value)
     parser = configured_parser()
-    from packages.word_intake.renderer import configured_profile
+    from packages.word_intake.conversion import configured_profile
 
     render_profile = configured_profile()
     with connection() as c:

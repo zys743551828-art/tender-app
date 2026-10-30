@@ -20,6 +20,11 @@ def configured():
         if not isinstance(value, dict) or not isinstance(value.get("identity"), dict):
             raise ValueError("profile shape")
         base = value["identity"].get("base_profile")
+        from packages.authoring import prebuilt_generated
+
+        if value["identity"].get("protocol") == prebuilt_generated.PROTOCOL:
+            prebuilt_generated.validate_profile(value)
+            return value
         if value != profile_for(base):
             raise ValueError("profile identity")
         return value

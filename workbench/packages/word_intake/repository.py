@@ -151,6 +151,8 @@ def publish_verified(c, message, upload, version_id, checked, *, render_profile=
 
 
 def controlled_qualified(result):
+    if result.get("protocol") not in {None, "word-docker-render/1", "word-prebuilt-gotenberg/1"}:
+        return False
     required = {
         "source_docx_digest",
         "pdf_digest",
@@ -159,15 +161,29 @@ def controlled_qualified(result):
         "fontset_digest",
         "options_digest",
     }
+    isolation = result.get("isolation")
+    if result.get("protocol") == "word-prebuilt-gotenberg/1":
+        from packages.word_intake.prebuilt import ISOLATION_CHECKS
+
+        checks = isolation.get("checks") if isinstance(isolation, dict) else None
+        safe_isolation = bool(
+            isinstance(checks, dict)
+            and ISOLATION_CHECKS <= checks.keys()
+            and all(value is True for value in checks.values())
+        )
+    else:
+        safe_isolation = bool(
+            isinstance(isolation, dict)
+            and isolation
+            and REQUIRED_ISOLATION <= isolation.keys()
+            and all(value is True for value in isolation.values())
+        )
     return bool(
         result.get("state") == "succeeded"
         and result.get("coverage") == "complete"
         and result.get("conversion_attempted") is True
         and result.get("gaps") == []
-        and isinstance(result.get("isolation"), dict)
-        and result["isolation"]
-        and REQUIRED_ISOLATION <= result["isolation"].keys()
-        and all(value is True for value in result["isolation"].values())
+        and safe_isolation
         and required <= result.get("chain", {}).keys()
         and all(
             isinstance(result["chain"][key], str)

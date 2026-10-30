@@ -37,7 +37,7 @@ def ensure_template(c):
 def configured_render_identity(formats, *, generated=False, rich=False):
     if "pdf" not in formats and not rich:
         return None
-    from packages.word_intake.renderer import configured_profile
+    from packages.word_intake.conversion import configured_profile
 
     try:
         if rich:
@@ -144,9 +144,9 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
         "writer_digest": generated_writer_digest() if structured else WRITER_DIGEST,
         "writer_kind": "generated_text/2" if structured else "strict_text/1",
         "generator_identity": generated_docx.generator_identity() if structured else None,
-        "render_protocol": "authoring-generated-sandbox/1"
-        if structured
-        else "word-docker-render/1",
+        "render_protocol": (renderer_identity or {})
+        .get("identity", {})
+        .get("protocol", "authoring-generated-sandbox/1" if structured else "word-docker-render/1"),
         "authoring_structure_digest": extension["digest"] if extension else None,
         "authoring_authority": authority if structured else None,
         "directory_template_version_id": extension["directory_template"]["id"]
@@ -179,7 +179,9 @@ def freeze_build(c, bid, body, actor, renderer_identity=None):
             writer_digest=rich_build.writer_digest(),
             writer_kind="generated_rich/3",
             generator_identity=rich_docx.identity(),
-            render_protocol=rich_renderer.PROTOCOL,
+            render_protocol=(renderer_identity or {})
+            .get("identity", {})
+            .get("protocol", rich_renderer.PROTOCOL),
             authoring_images_digest=(snapshot.get("authoring_images") or {}).get("digest"),
             pagination_mode=body["pagination_mode"],
         )
@@ -308,7 +310,7 @@ def compute_prepared_build(prepared):
             generated and info["manifest"].get("render_protocol") == "authoring-generated-sandbox/1"
         ):
             from packages.authoring.build import RenderResult
-            from packages.authoring.generated_renderer import render as render_generated
+            from packages.authoring.prebuilt_dispatch import generated as render_generated
 
             value = render_generated(
                 docx, snapshot, producer, info["manifest"]["renderer_identity"]
@@ -331,7 +333,7 @@ def compute_prepared_build(prepared):
             )
         else:
             from packages.authoring.build import RenderResult
-            from packages.word_intake.renderer import render
+            from packages.word_intake.conversion import render
 
             value = render(docx, info["manifest"]["renderer_identity"])
             rendered = RenderResult(

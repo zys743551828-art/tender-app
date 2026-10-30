@@ -806,7 +806,7 @@ def commit_batch(bid_id: UUID, batch_id: UUID, r: Request, body: dict = Body(...
         parser = configured_parser()  # HTTP identity在bid锁外读取，未配置保持保守字层解析。
         render_profile = None
         if ready_word_pdfs:
-            from packages.word_intake.renderer import configured_profile
+            from packages.word_intake.conversion import configured_profile
 
             try:
                 render_profile = configured_profile()

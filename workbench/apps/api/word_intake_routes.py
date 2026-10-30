@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from apps.api.auth import auth
 from packages.domain.runtime import Command, DomainError, accepted, connection, fetch
 from packages.lifecycle.service import assert_work_writable
-from packages.word_intake.renderer import configured_profile
+from packages.word_intake.conversion import configured_profile
 from packages.word_intake.repository import queue_render, word_etag, word_view
 
 router = APIRouter(prefix="/api/v1", tags=["word-intake"])

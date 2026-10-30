@@ -61,7 +61,7 @@ def summary(value):
 
 
 def compute(prepared):
-    from packages.authoring import rich_docx, rich_renderer, rich_snapshots
+    from packages.authoring import rich_docx, rich_snapshots
 
     info, snapshot = prepared["info"], prepared["snapshot"]
     manifest = info["manifest"]
@@ -89,7 +89,9 @@ def compute(prepared):
                 "bytes": read_checked(descriptor),
             }
         )
-    value = rich_renderer.render(
+    from packages.authoring.prebuilt_dispatch import rich as render_rich
+
+    value = render_rich(
         snapshot, materials, manifest["renderer_identity"], mode=manifest["pagination_mode"]
     )
     docx, pdf = value["docx"], value.get("pdf")

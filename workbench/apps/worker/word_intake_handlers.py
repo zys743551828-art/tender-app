@@ -4,8 +4,8 @@ from psycopg.types.json import Jsonb
 
 from packages.domain import storage
 from packages.domain.runtime import DomainError, audit, connection, fetch, sha, uid
+from packages.word_intake.conversion import render
 from packages.word_intake.inspection import DOCX, PDF
-from packages.word_intake.renderer import render
 from packages.word_intake.repository import controlled_qualified, current_word_adoption
 
 

@@ -37,7 +37,7 @@ def compute(message):
         checked = inspect_upload(u["filename"], data, u["declared_digest"], u["declared_size"])
         render_profile = None
         if checked["media_type"] == DOCX:
-            from packages.word_intake.renderer import configured_profile
+            from packages.word_intake.conversion import configured_profile
 
             try:
                 render_profile = configured_profile()
