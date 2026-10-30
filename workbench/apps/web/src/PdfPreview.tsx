@@ -4,7 +4,7 @@ import type {
   PDFDocumentLoadingTask,
   RenderTask,
 } from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 import { objectFetch } from "./api";
 import { ErrorNotice, Loading } from "./components";
 
@@ -42,7 +42,8 @@ export function PdfPreview({
           `原页读取失败（${response.status}）。请刷新原件访问地址后重试。`,
         );
       const data = new Uint8Array(await response.arrayBuffer());
-      const pdfjs = await import("pdfjs-dist");
+      // Use PDF.js's own compatibility build for the supported browser baseline.
+      const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
       if (!active) return;
       loadingTask = pdfjs.getDocument({

@@ -52,3 +52,10 @@ separate from this build recipe; see tender-docs for the actual tested topology.
 These fixed Linux/amd64 inputs and ecosystem lock files make versions explicit.
 They do not promise byte-identical output across arbitrary platforms, external
 model responses, different source revisions or application data.
+
+PDF original-page preview pairs PDF.js6.4.299's official `legacy/build/pdf.mjs`
+with its matching legacy Worker. The ordinary modern build requires native
+JavaScript APIs such as `Uint8Array.toHex` that Chromium134 does not provide.
+The compatibility implementation comes from the same locked vendor package;
+keep both entry points together rather than adding an application polyfill or
+silently raising the supported browser baseline.
