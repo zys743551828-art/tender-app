@@ -126,7 +126,7 @@ def test_invalid_configuration_and_schema_fail_before_network():
     with pytest.raises(DomainError):
         DeepSeekClient(api_key="synthetic", base_url="http://api.deepseek.com")
     with pytest.raises(DomainError):
-        DeepSeekClient(api_key="synthetic", model="deepseek-chat")
+        DeepSeekClient(api_key="synthetic", model="invalid model identity")
     seen = []
 
     def handler(request):

@@ -74,10 +74,10 @@ def capabilities(c, actor, bid=None):
         "SELECT 1 FROM assistant_jobs j LEFT JOIN assistant_budget_reservations r ON r.job_id=j.id WHERE r.job_id IS NULL AND (EXISTS(SELECT FROM assistant_global_calls c WHERE c.run_id=j.id AND c.state IN ('reserved','unknown')) OR EXISTS(SELECT FROM model_calls c WHERE c.operation_id=j.operation_id AND c.state IN ('reserved','unknown'))) LIMIT 1"
     ).fetchone():
         result["reasons"].append("ASSISTANT_UNPRICED_OBLIGATION")
-    from packages.domain.providers.deepseek import DeepSeekClient
+    from packages.assistant.provider import configured
 
     try:
-        price = budget.checked_price(c, DeepSeekClient.from_env())
+        price = budget.checked_price(c, configured())
         result["price"] = clean(
             {
                 key: price[key]

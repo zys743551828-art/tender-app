@@ -72,6 +72,8 @@ def test_default_profile_identity_reuse_and_cross_purpose_cache_isolation(monkey
         assert old_profile == sha(
             {
                 "provider": "deepseek",
+                "protocol": "deepseek-chat-completions/1",
+                "endpoint": "https://api.deepseek.com/v1",
                 "model": "deepseek-flash",
                 "port": "generation/1",
                 "purpose": "core_review",

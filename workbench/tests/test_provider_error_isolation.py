@@ -15,6 +15,10 @@ SYSTEM_KEYS = {"PATH", "SYSTEMROOT", "WINDIR", "TEMP", "TMP", "LANG", "LC_ALL", 
 @pytest.mark.parametrize(
     "module",
     [
+        "packages.domain.providers.generation",
+        "packages.domain.providers.factory",
+        "packages.domain.providers.deepseek",
+        "packages.assistant.provider",
         "packages.domain.providers.deepseek_vision",
         "packages.domain.providers.json_protocol",
         "packages.model_governance.package_current_sources",
@@ -79,7 +83,7 @@ def read(path,*args,**kwargs):
 with patch.object(Path,'exists',exists),patch.object(Path,'read_text',read):
     importlib.import_module(sys.argv[2])
 print(json.dumps({'runtime_loaded':'packages.domain.runtime' in sys.modules,
-                  'legacy_text_port_loaded':'packages.domain.providers.deepseek' in sys.modules,
+                  'legacy_text_port_loaded':'packages.domain.providers.deepseek' in sys.modules and sys.argv[2]!='packages.domain.providers.deepseek',
                   'profile_reads':len(reads),'profile_marker_present':'SHOULD_NOT_LOAD_BUSINESS_PROFILE' in os.environ}))
 """
     environment = {key: value for key, value in os.environ.items() if key in SYSTEM_KEYS}

@@ -7,7 +7,9 @@ import json
 from psycopg.types.json import Jsonb
 
 from packages.domain import storage
-from packages.domain.providers.deepseek import DeepSeekClient, ProviderError
+from packages.domain.providers import factory
+from packages.domain.providers.errors import ProviderError
+from packages.domain.providers.generation import execution_profile
 from packages.domain.runtime import DomainError, clean, connection, fetch, sha, uid
 
 PIPELINE_CALL_LIMIT = 10
@@ -70,8 +72,8 @@ def reserve(message, lease, *, logical_key, request_digest, profile_digest, max_
                 raise DomainError("MODEL_CALL_IDENTITY_CONFLICT", "既有调用与本次输入不一致", 409)
             return old, False
         unresolved = c.execute(
-            "SELECT mc.id FROM model_calls mc JOIN operations other ON other.id=mc.operation_id WHERE other.bid_id=%s AND mc.logical_call_key=%s AND mc.request_digest=%s AND mc.profile_digest=%s AND mc.state IN('reserved','unknown') ORDER BY mc.id LIMIT 1",
-            (op["bid_id"], logical_key, request_digest, profile_digest),
+            "SELECT mc.id FROM model_calls mc JOIN operations other ON other.id=mc.operation_id WHERE other.bid_id=%s AND mc.logical_call_key=%s AND mc.request_digest=%s AND mc.state IN('reserved','unknown') ORDER BY mc.id LIMIT 1",
+            (op["bid_id"], logical_key, request_digest),
         ).fetchone()
         if unresolved:
             raise DomainError(
@@ -143,7 +145,7 @@ def generate(
     """只让新预留的调用发请求；重复reserved/unknown永不自动补发。"""
     if purpose not in ("core_review", "assistant", "authoring"):
         raise DomainError("MODEL_PURPOSE_NOT_ALLOWED", "该模型调用用途不受支持", 422)
-    client = DeepSeekClient.from_env()
+    client = factory.from_env()
     request = {
         "messages": messages,
         "json_schema": json_schema,
@@ -151,13 +153,7 @@ def generate(
         "temperature": 0,
         "thinking": "disabled",
     }
-    profile = {
-        "provider": "deepseek",
-        "model": client.model,
-        "port": "generation/1",
-        "purpose": purpose,
-        "formal_scoring_eligible": False,
-    }
+    profile = execution_profile(client, purpose)
     call, created = reserve(
         message,
         lease,
@@ -200,6 +196,7 @@ def generate(
             "request_id": result.request_id,
             "response_id": result.response_id,
             "model": result.model,
+            "transport_profile": client.config.identity(),
         }
         raw = json.dumps(
             clean(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")

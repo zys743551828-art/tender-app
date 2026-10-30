@@ -5,35 +5,23 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from dataclasses import dataclass
-from typing import Any
 
 import httpx
 from jsonschema import Draft202012Validator, FormatChecker
 from referencing.exceptions import Unresolvable
 
+from packages.domain.errors import DomainError
 from packages.domain.providers.errors import ProviderError
+from packages.domain.providers.generation import Generation, GenerationConfig
 from packages.domain.providers.json_protocol import decode as _decode
 from packages.domain.providers.json_protocol import identifier as _identifier
 from packages.domain.providers.json_protocol import schema_check as _schema_check
-from packages.domain.runtime import DomainError
 
 ENDPOINTS = {"https://api.deepseek.com", "https://api.deepseek.com/v1"}
 MODELS = {"deepseek-flash", "deepseek-v4-pro"}
+# Historical frozen-method policy exports; generation transport does not use
+# these sets as a model capability or qualification registry.
 MAX_RESPONSE_BYTES = 1_048_576
-
-
-@dataclass(frozen=True)
-class Generation:
-    content: str
-    data: Any
-    usage: dict[str, int]
-    request_id: str
-    response_id: str
-    model: str
-    finish_reason: str
-    billing_state: str = "usage_reported"
-    formal_scoring_eligible: bool = False
 
 
 class DeepSeekClient:
@@ -48,24 +36,30 @@ class DeepSeekClient:
     ):
         if not isinstance(api_key, str) or not api_key.strip():
             raise DomainError("MODEL_NOT_CONFIGURED", "尚未配置DeepSeek凭据", 503)
-        if (
-            not isinstance(base_url, str)
-            or base_url.rstrip("/") not in ENDPOINTS
-            or model not in MODELS
-        ):
-            raise DomainError("MODEL_CONFIG_INVALID", "模型或官方HTTPS地址不受支持", 503)
-        if not isinstance(total_timeout, (int, float)) or not 0 < total_timeout <= 120:
+        self.config = GenerationConfig(model=model, base_url=base_url)
+        if type(total_timeout) not in (int, float) or not 0 < total_timeout <= 120:
             raise DomainError("MODEL_CONFIG_INVALID", "模型调用总时限不合法", 503)
-        self._api_key, self.model = api_key, model
-        self.base_url = base_url.rstrip("/")
+        self._api_key = api_key
         self.total_timeout, self._transport = total_timeout, transport
+
+    @property
+    def model(self):
+        return self.config.model
+
+    @property
+    def base_url(self):
+        return self.config.base_url
 
     @classmethod
     def from_env(cls):
+        from packages.domain.providers.factory import require_supported
+
+        config = GenerationConfig.from_mapping(os.environ)
+        require_supported(config)
         return cls(
             api_key=os.environ.get("DEEPSEEK_API_KEY"),
-            model=os.environ.get("DEEPSEEK_MODEL", "deepseek-flash"),
-            base_url=os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
+            model=config.model,
+            base_url=config.base_url,
         )
 
     def generate(self, *, messages, max_tokens=256, json_schema=None, temperature=0):
@@ -127,6 +121,7 @@ class DeepSeekClient:
                 }
             ] + prepared
             payload["response_format"] = {"type": "json_object"}
+        request_id = None
         try:
             # asyncio总deadline覆盖连接、上传、慢速逐块响应和整个响应读取。
             async with asyncio.timeout(self.total_timeout):
@@ -169,10 +164,14 @@ class DeepSeekClient:
                                     request_id=request_id,
                                 )
         except (TimeoutError, httpx.TimeoutException):
-            raise ProviderError("MODEL_TIMEOUT", "模型调用超时，计费结果未知，未自动重试") from None
+            raise ProviderError(
+                "MODEL_TIMEOUT", "模型调用超时，计费结果未知，未自动重试", request_id=request_id
+            ) from None
         except httpx.RequestError:
             raise ProviderError(
-                "MODEL_NETWORK_ERROR", "模型连接失败，计费结果未知，未自动重试"
+                "MODEL_NETWORK_ERROR",
+                "模型连接失败，计费结果未知，未自动重试",
+                request_id=request_id,
             ) from None
         try:
             envelope = _decode(raw)

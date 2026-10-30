@@ -10,16 +10,16 @@ from uuid import UUID
 from psycopg.types.json import Jsonb
 
 from packages.assistant import budget
+from packages.assistant import provider as generation_provider
 from packages.assistant.authority import assert_source_guards, lock_job_target
 from packages.assistant.generation import request_for, validate_answer
 from packages.assistant.jobs import job, require_schema
 from packages.domain import storage
-from packages.domain.providers.deepseek import DeepSeekClient
 from packages.domain.runtime import DomainError, clean, connection, fetch, sha, uid
 
 
 def provider():
-    return DeepSeekClient.from_env()
+    return generation_provider.configured()
 
 
 def checked_message(c, message):
@@ -283,6 +283,7 @@ def compute(message, lease):
             "request_id": result.request_id,
             "response_id": result.response_id,
             "model": result.model,
+            "transport_profile": client.config.identity(),
         }
         raw = json.dumps(
             clean(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")

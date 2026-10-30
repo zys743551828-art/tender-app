@@ -4,15 +4,15 @@ import json
 
 from psycopg.types.json import Jsonb
 
-from packages.assistant import budget
+from packages.assistant import budget, provider
 from packages.assistant.authority import assert_source_guards
 from packages.domain import model_calls, storage
-from packages.domain.providers.deepseek import DeepSeekClient, ProviderError
+from packages.domain.providers.errors import ProviderError
 from packages.domain.runtime import DomainError, clean, connection, fetch, sha, uid
 
 
 def generate_project(row, message, lease, *, messages, schema, max_tokens):
-    client = DeepSeekClient.from_env()
+    client = provider.configured()
     purpose = "assistant" if row["kind"] == "answer" else "authoring"
     request = {
         "messages": messages,
@@ -74,6 +74,7 @@ def generate_project(row, message, lease, *, messages, schema, max_tokens):
             "request_id": result.request_id,
             "response_id": result.response_id,
             "model": result.model,
+            "transport_profile": client.config.identity(),
         }
         raw = json.dumps(
             clean(value), ensure_ascii=False, sort_keys=True, separators=(",", ":")

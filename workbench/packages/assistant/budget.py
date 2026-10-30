@@ -131,6 +131,9 @@ def related_job(c, actor, body):
 
 
 def checked_price(c, client):
+    from packages.assistant.provider import require_budget_compatible
+
+    require_budget_compatible(client)
     price = c.execute(
         "SELECT * FROM assistant_price_versions WHERE provider='deepseek' AND model=%s AND valid_from<=clock_timestamp() AND valid_until>clock_timestamp() ORDER BY verified_at DESC,created_at DESC,id DESC LIMIT 1",
         (client.model,),
@@ -191,7 +194,7 @@ def _prepare(
     package_input=None,
 ):
     from packages.assistant import jobs
-    from packages.domain.providers.deepseek import DeepSeekClient
+    from packages.assistant.provider import configured
 
     require_read_committed(c)
     related = related_job(c, actor, body)
@@ -259,7 +262,7 @@ def _prepare(
             "已有待核清调用；接续必须关联原任务，新问题须明确新的业务对象／用途",
             409,
         )
-    price = checked_price(c, DeepSeekClient.from_env())
+    price = checked_price(c, configured())
     return {
         "id": str(uuid4()),
         "request_mode": "new_question",
@@ -319,6 +322,9 @@ def projection(c, job_id):
 
 
 def before_send(c, row, call_id, request, client):
+    from packages.assistant.provider import require_budget_compatible
+
+    require_budget_compatible(client)
     require(c)
     manifest = row["input_manifest"]
     frozen = manifest.get("logical_intent")

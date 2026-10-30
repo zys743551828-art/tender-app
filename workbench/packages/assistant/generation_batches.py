@@ -98,9 +98,9 @@ def reservation_estimate(price, tokens):
 
 
 def current_price(c):
-    from packages.domain.providers.deepseek import DeepSeekClient
+    from packages.assistant.provider import configured
 
-    return price_view(budget.checked_price(c, DeepSeekClient.from_env()))
+    return price_view(budget.checked_price(c, configured()))
 
 
 def capabilities(c):

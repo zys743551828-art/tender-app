@@ -4,7 +4,6 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 from time import monotonic
-from types import SimpleNamespace
 from uuid import UUID, uuid4
 
 import httpx
@@ -60,7 +59,7 @@ def world(live_database, monkeypatch, request):
     monkeypatch.setattr(
         DeepSeekClient,
         "from_env",
-        lambda: SimpleNamespace(model="deepseek-flash", _transport=transport),
+        lambda: DeepSeekClient(api_key="synthetic", transport=transport),
     )
     with connect(live_database) as c:
         try:
