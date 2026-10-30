@@ -1,6 +1,6 @@
 # 从这里开始：启动与操作验收
 
-本页对应fusion/bid-workbench主线。检查点1—16已合入，默认v14预览与独立完整运行组均已有本机Compose实测；可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，完整文件链证据见[桌面Compose验收](desktop-runtime-acceptance.md)。
+当前开发分支为dev；首次启动先按[正式运行说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。本页保留阶段操作路径。检查点1—16已合入，默认v14预览与独立完整运行组均已有本机Compose实测；可选研究能力仍须明确装配。先选运行环境，再按功能路径操作，以页面状态与实际回执为准。当前状态和剩余工作见[PROGRESS](PROGRESS.md)，完整文件链证据见[桌面Compose验收](desktop-runtime-acceptance.md)。
 
 ## 1. 先选运行环境
 
@@ -36,7 +36,7 @@ Windows Docker Desktop 使用[完整Compose操作](desktop-runtime-runbook.md)�
 
 以下为已有 QA 的手工启动方式；新完整配置的实际命令、固定组件及能力开关以其运行说明为准。
 
-依照 [README 的运行步骤](../../README.md#运行) 创建独立配置，启动基础设施，初始化**全新空库**、主题和私有 bucket，再创建成员并分别启动进程。该说明中的旧切片范围和 `execution-policy-07.json` 是历史记录；当前主题初始化默认策略是 [`execution-policy-10.json`](../../apps/worker/execution-policy-10.json)，当前数据库装配见 [注册验收](registration-acceptance.md)。已有资料库不能重复初始化；旧库升级需要单独的迁移方案。
+依照 [README 的运行步骤](../../README.md#运行) 创建独立配置，启动基础设施，初始化**全新空库**、主题和私有 bucket，再创建成员并分别启动进程。该说明中的旧切片范围和 `execution-policy-07.json` 是历史记录；当前主题初始化默认策略是 [`execution-policy-11.json`](../../apps/worker/execution-policy-11.json)（9个主题；检查分区、副本及保留配置），当前数据库装配见 [注册验收](registration-acceptance.md)。已有资料库不能重复初始化；旧库升级需要单独的迁移方案。
 
 以下入口均来自仓库 [Worker CLI](../../apps/worker/__main__.py) 和 README，必须在已经配置的环境中启动：
 

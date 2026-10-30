@@ -1,6 +1,6 @@
 # 本机融合验证环境
 
-融合入口为独立文档仓库的《标书工作台融合实施计划》，分支为 `fusion/bid-workbench`。本目录是Codex工作台主线；根部旧backend/frontend/deploy只保留供体或历史证据。当前规格以文档仓库的AI投标工作台PRD、融合技术方案及融合详细设计为准。
+融合入口为独立文档仓库的《标书工作台融合实施计划》，开发分支为 `dev`，`fusion/bid-workbench`保留来源历史。本目录是Codex工作台主线；根部旧backend/frontend/deploy只保留供体或历史证据。当前规格以文档仓库的AI投标工作台PRD、融合技术方案及融合详细设计为准。
 
 ## Windows运行时
 

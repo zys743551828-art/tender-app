@@ -2,6 +2,22 @@
 
 本入口复用已安装的 PowerShell 7、Docker Desktop、工作台 Python 和依赖镜像。私有身份保存在 Docker Linux 命名卷中；主机目录只保存公开请求、计划和清单。完整环境单独归入 `tender-fusion-full-<实例前缀>`，默认回环端口 5189。5188 仍是 API 预览环境。
 
+## 全新检出的前置步骤
+
+在workbench目录使用Python3.12创建专用环境，并在所有完整候选prepare之前构建当前前端。不能直接复用旧dist或把解析依赖覆盖到API环境：
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -r requirements-fusion-checks.txt
+.venv/Scripts/python.exe -m pip check
+Push-Location apps/web
+npm ci
+npm run build
+Pop-Location
+```
+
+缺少dist/index.html时prepare以FULL_FRONTEND_BUILD_REQUIRED拒绝。Windows宿主负责编排；私有配置和初始化在Docker Linux卷执行，手工POSIX私有文件启动命令不直接用于Windows共享目录。
+
 ## 创建新候选
 
 在 `workbench/` 中执行；下面 Python／Web digest 为本轮已有镜像，不应替换成浮动标签。基础设施镜像由源码固定，须先取得这些准确镜像。不得用不匹配的旧镜像冒充通过。
@@ -17,6 +33,10 @@
 ```
 
 `prepare` 不启动容器、不覆盖目录。`up` 冻结当前输入，先生成 Linux 私有配置，再启动基础设施、全新初始化、逐角色画像发布和业务服务。默认不启动付费模型或自动调度。强随机验收管理员口令只保留在私有卷内，不输出、不写公共描述；5188 原有账号不受影响。此入口首先用于独立交付验收，不是将现有预览项目迁入新库。
+
+## 人工登录的交付条件
+
+此完整组的admin随机口令保留在私有卷，现有verify自动读取专用validation-login完成HTTP验收。当前CLI没有面向业务人员的安全凭据交接命令；不应通过打印私有卷或把verify账号复制到公开日志来补齐。因而自动验收通过不表示新成员已完成完整组人工试用。首次人工界面演示使用正式运行页的5188预览及操作者自设口令；完整组人工签收须先明确受控凭据交接方式，不能沿用5188口令。
 
 ## 实际文件链路验收
 

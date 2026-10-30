@@ -4,13 +4,13 @@
 
 当前实现位于 `dev`（独立审查来源 `render-acceptance-20261026` 已整合）；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)为长期维护入口。本次正式文档审查提交为 `tender-docs@8157400fec306fe6a9156b218a576c67b46a469a`，含隔离PG12项和机制152项复验回执。下文首切片与历史启动说明不描述完整当前功能；真实执行默认关闭，代码完成不等于环境/模型效果通过。
 
-融合目标分支为 `fusion/bid-workbench`（本次独立实现分支见上方），以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/fusion/bid-workbench/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
+开发统一使用 `dev`（`fusion/bid-workbench`保留来源历史），以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/dev/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
 
-请先阅读 [完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
+新成员请先按[正式首次启动与工程演示](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。以下阶段交接只保留其检查点范围：[完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
 
 GitHub发布位置为`tender-app/workbench/`；文档主记录在独立`tender-docs`仓库。本次是用户要求的工作交接，非最终发布。
 
-2026-10-21 补全工作位于新分支 `work/bid-workbench-completion-20261021`。请从 [启动与操作验收](docs/completion-20261021/START-HERE.md) 进入，按 [当前进度与验证记录](docs/completion-20261021/PROGRESS.md) 核对编写、Word 导入、多章节 AI 候选、解析、范围核查、人工复核、对比和报告的实际交付。Fusion v10 预览与完整 Worker 运行环境有不同能力，具体启动条件和未完成项均在这两个入口说明。
+历史补全工作位于分支 `work/bid-workbench-completion-20261021`。请从 [启动与操作验收](docs/completion-20261021/START-HERE.md) 进入，按 [当前进度与验证记录](docs/completion-20261021/PROGRESS.md) 核对编写、Word 导入、多章节 AI 候选、解析、范围核查、人工复核、对比和报告的实际交付。Fusion v10 预览与完整 Worker 运行环境有不同能力，具体启动条件和未完成项均在这两个入口说明。
 
 当前实施版 OpenAPI 快照为 `packages/contracts/fusion-implemented.openapi.json.gz`，完整 schema 与路由未删减。更新命令为 `python -m apps.api.export_openapi --output packages/contracts/fusion-implemented.openapi.json.gz`；随后在 `apps/web` 执行 `npm run contracts:generate`。运行时 `/openapi.json` 和不带 `--output` 的导出仍返回普通 JSON；详细用法见 [后端说明](apps/api/README.md) 与 [前端契约生成](apps/web/README.md#契约与验证)。
 
