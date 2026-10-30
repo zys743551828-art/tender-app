@@ -8,45 +8,45 @@
 #
 # 设计要点
 #   1. 多阶段：builder 在 venv 里安装依赖与项目 wheel；runtime 只复制 venv，不含编译器、pip 缓存与测试。
-#      confluent-kafka、psycopg[binary]、pypdfium2、argon2-cffi 均有 manylinux wheel（x86_64 与 aarch64
-#      未在真实构建机上验证；其它架构会回退到源码编译并构建失败，这是期望的显式失败）。
+#      当前锁仅支持 Linux amd64 / CPython 3.11，依赖只安装已锁定 wheel，不回退到源码构建。
 #   2. 非 root（uid/gid 10001），只读根文件系统可运行：不写 .pyc（构建期已预编译），可写目录仅 /tmp（由
 #      compose 以 tmpfs 提供）。
 #   3. PID 1：镜像内不装 tini，由 compose 的 `init: true`（docker-init，即 tini）回收僵尸进程并转发信号；
 #      直接 `docker run` 时请加 `--init`。
 #   4. HEALTHCHECK 默认针对 API；其它角色在 compose 里覆盖（见 bidwb-healthcheck 的 proc 模式）。
-#   5. 可复现性：pyproject.toml 只有下限版本。若仓库根目录有 constraints.txt（pip freeze 或 pip-compile 产物），
-#      构建会自动用它锁定全部传递依赖——正式发版前应生成并提交（见 deploy/README.md“未验证项”）。
+#   5. requirements-build.lock.txt 与 requirements-runtime.lock.txt 分别固定构建与运行依赖，
+#      pip --require-hashes 校验；本项目 wheel 在已锁构建环境生成，不升级 pip、不隔离下载构建工具。
 # =============================================================================
 
-ARG PYTHON_IMAGE=python:3.11-slim-bookworm
+# 官方 Python 3.11.18 / slim-bookworm，Linux amd64 manifest（非跨架构 index）。
+# 外部覆盖此 ARG 的调用者负责平台、基础镜像与锁的重新验证；Compose 传参同样会覆盖默认值。
+ARG PYTHON_IMAGE=python:3.11.18-slim-bookworm@sha256:061c190f3d5815b341a18dfe8a45771f8ba68c15a607ea56997fde3009ac4eec
 
 # -----------------------------------------------------------------------------
 # builder：创建 venv 并安装项目
 # -----------------------------------------------------------------------------
 FROM ${PYTHON_IMAGE} AS builder
 
-# 国内网络可通过构建参数指定 PyPI 镜像，例如 --build-arg PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+# 兼容现有调用保留参数；锁内 index-url 为权威，不用构建参数绕过锁的来源与 hash。
 ARG PIP_INDEX_URL=""
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_INDEX_URL=${PIP_INDEX_URL}
+    PIP_NO_CACHE_DIR=1
 
-RUN python -m venv /opt/venv
+RUN python -m venv /opt/build-venv \
+ && python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:${PATH}"
 
 WORKDIR /build
-# constraints.tx[t] 的方括号写法让“文件不存在”也不报错（只要 pyproject.toml 匹配即可）
-COPY pyproject.toml constraints.tx[t] ./
+COPY pyproject.toml requirements-build.lock.txt requirements-runtime.lock.txt ./
 COPY src ./src
 
-# 先构建本项目 wheel（构建后端 hatchling 在隔离环境中安装），再用 --only-binary=:all: 安装 wheel 及全部依赖：
-# 任何依赖若没有当前平台的预编译包就让构建直接失败，而不是悄悄回退到源码编译（运行镜像不含编译器）。
-# 已在 Python 3.11 / linux x86_64 上验证 pyproject 中的全部依赖都能以纯 wheel 安装。
-RUN if [ -f constraints.txt ]; then export PIP_CONSTRAINT=/build/constraints.txt; fi \
- && pip install --upgrade pip \
- && pip wheel --no-deps --wheel-dir /build/wheels . \
- && for wheel in /build/wheels/bidwb-*.whl; do pip install --only-binary=:all: "${wheel}[parsing,retrieval]"; done \
+# 两个锁分别为 6 个构建包与包含 parsing/retrieval 的 74 个运行包；仅运行 venv 进入最终镜像。
+# 本地源码生成的项目 wheel 不属于外部包锁；--no-index --no-deps 禁止安装它时重新解析依赖。
+RUN /opt/build-venv/bin/python -m pip --isolated install --require-hashes --no-build-isolation -r requirements-build.lock.txt \
+ && /opt/build-venv/bin/python -m pip --isolated wheel --no-index --no-deps --no-build-isolation --wheel-dir /build/wheels . \
+ && python -m pip --isolated install --require-hashes --no-build-isolation -r requirements-runtime.lock.txt \
+ && for wheel in /build/wheels/bidwb-*.whl; do python -m pip --isolated install --no-index --no-deps --no-build-isolation "${wheel}[parsing,retrieval]"; done \
+ && python -m pip check \
  && python -c "import bidwb, fastapi, uvicorn, psycopg, confluent_kafka, pypdfium2, argon2, boto3; print('imports ok')"
 
 # -----------------------------------------------------------------------------
