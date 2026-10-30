@@ -2,7 +2,7 @@
 
 # AI投标工作台（当前开发检查点）
 
-当前独立审查实现位于 `render-acceptance-20261026`；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)为长期维护入口。本次正式文档审查提交为 `tender-docs@8157400fec306fe6a9156b218a576c67b46a469a`，含隔离PG12项和机制152项复验回执。下文首切片与历史启动说明不描述完整当前功能；真实执行默认关闭，代码完成不等于环境/模型效果通过。
+当前实现位于 `dev`（独立审查来源 `render-acceptance-20261026` 已整合）；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)为长期维护入口。本次正式文档审查提交为 `tender-docs@8157400fec306fe6a9156b218a576c67b46a469a`，含隔离PG12项和机制152项复验回执。下文首切片与历史启动说明不描述完整当前功能；真实执行默认关闭，代码完成不等于环境/模型效果通过。
 
 融合目标分支为 `fusion/bid-workbench`（本次独立实现分支见上方），以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/fusion/bid-workbench/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
 
@@ -119,3 +119,5 @@ QA使用独立配置`.local/qa.env`、独立数据库、Kafka及存储；通过`
 测试专用预测成功链使用独立且不可晋升的 `prediction-sandbox/1`：已登记测试库显式安装、独立HTTP应用/CLI、原任务与Worker、独立测试结果。业务API/正式报告Word/registry不消费测试资格；跨库恢复或数据库实例变更使旧资格失效。运行入口与版本边界见[正式协议](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/测试专用预测认证协议.md)。`python -m packages.prediction_sandbox.cli --help` 可查看测试消费入口；无需配置或调用真实模型。
 
 报价历史按保存时间倒序，UUID游标按同项目的时间/ID继续。独立PG17/私有S3及实际PricingPanel验收使用`deploy/ci_checks.py --suite pricing --disposable-postgres --weed <已校验二进制>`，必须注入临时CI_POSTGRES_DSN和显式浏览器工具。公式与手算、保存/重放、API重建和桌面/窄屏回读均单列；详见[报价模块说明](packages/pricing/README.md)。合成工程验收不代替真实报价条款业务签收。
+
+四组既有工作流的真实App/原生服务组合验收复用上述pricing聚合：`scripts/native-workspace-journeys.mjs`由原生pytest启动，不提供业务测试后门。覆盖实际报价写入、事实与知识状态、任务取消/通知恢复，以及生命周期API/页面显示；合成来源目录和队列准备不是实际上传/转换。详细范围、失败尝试和回执见[四组正式记录](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/工作台四组原生组合验收.md)。

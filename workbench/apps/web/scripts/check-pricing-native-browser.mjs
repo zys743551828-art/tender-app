@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+import { journeys } from "./native-workspace-journeys.mjs";
 
 let input = "";
 for await (const piece of process.stdin) input += piece;
@@ -20,7 +21,15 @@ const temporary = await fs.mkdtemp(
 );
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? "playwright");
-const entry = `
+const entry = config.journeys
+  ? `
+import React from "react";
+import {createRoot} from "react-dom/client";
+import {App} from "./src/App";
+import "./src/styles.css";
+createRoot(document.getElementById("root")).render(<App/>);
+`
+  : `
 import React from "react";
 import {createRoot} from "react-dom/client";
 import {setAuth} from "./src/api";
@@ -79,14 +88,16 @@ try {
           upstream.pipe(response);
         },
       );
+      response.on("close", () => forwarded.destroy());
       forwarded.on("error", () => {
-        response.writeHead(502);
+        if (response.destroyed) return;
+        if (!response.headersSent) response.writeHead(502);
         response.end("native API unavailable");
       });
       request.pipe(forwarded);
       return;
     }
-    if (request.url === "/") {
+    if (!path.extname(new URL(request.url, "http://localhost").pathname)) {
       response.setHeader("Content-Type", "text/html;charset=utf-8");
       response.end(
         '<!doctype html><html lang="zh-CN"><head><link rel="stylesheet" href="/app.css"></head><body><div id="root"></div><script type="module" src="/app.js"></script></body></html>',
@@ -122,83 +133,92 @@ try {
       ? { executablePath: process.env.CHROMIUM_EXECUTABLE }
       : {}),
   });
-  for (const width of [1280, 390]) {
-    const context = await browser.newContext({
-      viewport: { width, height: 1000 },
-    });
-    await context.addCookies([
-      {
-        name: "session",
-        value: config.cookie,
-        url: origin,
-        httpOnly: true,
-        sameSite: "Lax",
-      },
-    ]);
-    const page = await context.newPage();
-    page.on("pageerror", (error) => errors.push(error.message));
-    page.on("response", (response) => {
-      if (
-        new URL(response.url()).pathname.startsWith("/api/v1/") &&
-        response.status() >= 400
-      )
-        errors.push(`native HTTP ${response.status()}`);
-    });
-    await page.goto(origin);
-    try {
-      await page.getByLabel(/^本次投标包/).waitFor({ timeout: 10000 });
-    } catch (failure) {
-      throw new Error(
-        `Native pricing UI unavailable: ${JSON.stringify({ errors, body: (await page.locator("body").innerText()).slice(0, 1200) })}`,
-        { cause: failure },
+  if (config.journeys) {
+    cases.push(await journeys({ browser, origin, config }));
+  } else
+    for (const width of [1280, 390]) {
+      const context = await browser.newContext({
+        viewport: { width, height: 1000 },
+      });
+      await context.addCookies([
+        {
+          name: "session",
+          value: config.cookie,
+          url: origin,
+          httpOnly: true,
+          sameSite: "Lax",
+        },
+      ]);
+      const page = await context.newPage();
+      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("response", (response) => {
+        if (
+          new URL(response.url()).pathname.startsWith("/api/v1/") &&
+          response.status() >= 400
+        )
+          errors.push(`native HTTP ${response.status()}`);
+      });
+      await page.goto(origin);
+      try {
+        await page.getByLabel(/^本次投标包/).waitFor({ timeout: 10000 });
+      } catch (failure) {
+        throw new Error(
+          `Native pricing UI unavailable: ${JSON.stringify({ errors, body: (await page.locator("body").innerText()).slice(0, 1200) })}`,
+          { cause: failure },
+        );
+      }
+      await page
+        .getByLabel(/^本次投标包/)
+        .selectOption(
+          `${config.binding.package_id}:${config.binding.revision_id}`,
+        );
+      await page
+        .getByLabel(/^本次招标与补遗包/)
+        .selectOption(
+          `${config.binding.authority_package_id}:${config.binding.authority_revision_id}`,
+        );
+      await page
+        .getByRole("button", { name: "使用这两份修订继续报价" })
+        .click();
+      await page
+        .locator(".pricing-plan-summary")
+        .nth(config.expected.length - 1)
+        .waitFor();
+      const rows = await page
+        .locator(".pricing-plan-summary")
+        .allTextContents();
+      assert.equal(rows.length, config.expected.length);
+      rows.forEach((text, index) => {
+        assert.ok(
+          text.includes(config.expected[index].slice(0, 8)),
+          "native UI chronological order",
+        );
+        assert.ok(
+          text.includes("25.00"),
+          "native persisted hand-calculated score",
+        );
+      });
+      await page.reload();
+      await page
+        .locator(".pricing-plan-summary")
+        .nth(config.expected.length - 1)
+        .waitFor();
+      const after = await page
+        .locator(".pricing-plan-summary")
+        .allTextContents();
+      assert.deepEqual(
+        after,
+        rows,
+        "reload preserves package choice and persisted order",
       );
+      cases.push({
+        width,
+        plans: rows.length,
+        real_http: true,
+        reload_consistent: true,
+      });
+      await context.close();
     }
-    await page
-      .getByLabel(/^本次投标包/)
-      .selectOption(
-        `${config.binding.package_id}:${config.binding.revision_id}`,
-      );
-    await page
-      .getByLabel(/^本次招标与补遗包/)
-      .selectOption(
-        `${config.binding.authority_package_id}:${config.binding.authority_revision_id}`,
-      );
-    await page.getByRole("button", { name: "使用这两份修订继续报价" }).click();
-    await page
-      .locator(".pricing-plan-summary")
-      .nth(config.expected.length - 1)
-      .waitFor();
-    const rows = await page.locator(".pricing-plan-summary").allTextContents();
-    assert.equal(rows.length, config.expected.length);
-    rows.forEach((text, index) => {
-      assert.ok(
-        text.includes(config.expected[index].slice(0, 8)),
-        "native UI chronological order",
-      );
-      assert.ok(
-        text.includes("25.00"),
-        "native persisted hand-calculated score",
-      );
-    });
-    await page.reload();
-    await page
-      .locator(".pricing-plan-summary")
-      .nth(config.expected.length - 1)
-      .waitFor();
-    const after = await page.locator(".pricing-plan-summary").allTextContents();
-    assert.deepEqual(
-      after,
-      rows,
-      "reload preserves package choice and persisted order",
-    );
-    cases.push({
-      width,
-      plans: rows.length,
-      real_http: true,
-      reload_consistent: true,
-    });
-    await context.close();
-  }
   assert.deepEqual(errors, []);
   console.log(
     JSON.stringify({
@@ -211,6 +231,9 @@ try {
   );
 } finally {
   if (browser) await browser.close();
-  if (server) await new Promise((resolve) => server.close(resolve));
+  if (server) {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
   await fs.rm(temporary, { recursive: true, force: true });
 }
