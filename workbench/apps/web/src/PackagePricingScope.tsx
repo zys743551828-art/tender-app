@@ -97,14 +97,7 @@ export function PackagePricingScope({
       )}
       <button
         className="button primary"
-        disabled={
-          !target ||
-          !rules ||
-          own.loading ||
-          authority.loading ||
-          !!own.error ||
-          !!authority.error
-        }
+        disabled={!target || !rules || !!own.error || !!authority.error}
         onClick={() => {
           if (target && rules)
             onSelect({

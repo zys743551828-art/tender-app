@@ -83,7 +83,16 @@ export async function journeys({ browser, origin, config }) {
       .selectOption(
         `${config.binding.authority_package_id}:${config.binding.authority_revision_id}`,
       );
+    assert.equal(
+      await page.getByLabel(/^本次投标包/).inputValue(),
+      `${config.binding.package_id}:${config.binding.revision_id}`,
+    );
+    assert.equal(
+      await page.getByLabel(/^本次招标与补遗包/).inputValue(),
+      `${config.binding.authority_package_id}:${config.binding.authority_revision_id}`,
+    );
     await page.getByRole("button", { name: "使用这两份修订继续报价" }).click();
+    await page.getByRole("button", { name: "重新选择报价包修订" }).waitFor();
     await page.getByLabel("选择已确认公式").selectOption({ index: 1 });
     await page.getByLabel(/^本方候选报价/).fill("120");
     await page.getByLabel(/^对手报价假设/).fill("100\n100");
@@ -411,6 +420,9 @@ export async function journeys({ browser, origin, config }) {
       JSON.stringify({
         url: page.url(),
         body: (await body()).slice(-5000),
+        select_values: await page
+          .locator("select")
+          .evaluateAll((nodes) => nodes.map((node) => node.value)),
         errors,
       }),
     );

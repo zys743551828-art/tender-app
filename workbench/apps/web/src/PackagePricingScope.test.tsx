@@ -1,5 +1,5 @@
 import { PackagePricingScope } from "./PackagePricingScope";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { pricingScopeKey, samePricingBinding } from "./packagePricing";
@@ -100,6 +100,88 @@ it("requires explicit selections and freezes both exact revisions without auto-s
   );
   expect(selected).toHaveBeenCalledExactlyOnceWith(binding);
 });
+
+it("confirms the displayed exact revisions when a background refresh starts during the click", async () => {
+  const user = userEvent.setup();
+  const selected = vi.fn();
+  const pending: (() => void)[] = [];
+  let refreshing = false;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) => {
+      const kind = new URL(url, "http://test").searchParams.get("kind")!;
+      if (!refreshing) return Promise.resolve(json(packageList(kind)));
+      return new Promise<Response>((resolve) => {
+        pending.push(() => resolve(json(packageList(kind))));
+      });
+    }),
+  );
+  render(<PackagePricingScope bidId="bid" onSelect={selected} />);
+  await screen.findByRole("option", { name: /投标包 · 第 1 版/ });
+  await user.selectOptions(
+    screen.getByLabelText("本次投标包"),
+    "package:revision-1",
+  );
+  await user.selectOptions(
+    screen.getByLabelText("本次招标与补遗包"),
+    "rules:rules-2",
+  );
+  const confirm = screen.getByRole("button", {
+    name: "使用这两份修订继续报价",
+  });
+  await user.pointer({ target: confirm, keys: "[MouseLeft>]" });
+  refreshing = true;
+  act(() => window.dispatchEvent(new Event("server-snapshot-change")));
+  await waitFor(() => expect(pending).toHaveLength(2));
+  try {
+    await user.pointer({ target: confirm, keys: "[/MouseLeft]" });
+    expect(selected).toHaveBeenCalledExactlyOnceWith(binding);
+  } finally {
+    await act(async () => pending.forEach((resolve) => resolve()));
+  }
+});
+
+it.each(["removed", "error"])(
+  "rejects a selection when refreshed directory evidence is %s",
+  async (outcome) => {
+    const user = userEvent.setup();
+    const selected = vi.fn();
+    let refreshing = false;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const kind = new URL(url, "http://test").searchParams.get("kind")!;
+        if (refreshing && kind === "bid") {
+          if (outcome === "error")
+            throw new Error("synthetic directory unavailable");
+          const changed = packageList(kind);
+          changed.items[0].revision_id = "new-revision";
+          return json(changed);
+        }
+        return json(packageList(kind));
+      }),
+    );
+    render(<PackagePricingScope bidId="bid" onSelect={selected} />);
+    await screen.findByRole("option", { name: /投标包 · 第 1 版/ });
+    await user.selectOptions(
+      screen.getByLabelText("本次投标包"),
+      "package:revision-1",
+    );
+    await user.selectOptions(
+      screen.getByLabelText("本次招标与补遗包"),
+      "rules:rules-2",
+    );
+    const confirm = screen.getByRole("button", {
+      name: "使用这两份修订继续报价",
+    });
+    expect(confirm).toBeEnabled();
+    refreshing = true;
+    act(() => window.dispatchEvent(new Event("server-snapshot-change")));
+    await waitFor(() => expect(confirm).toBeDisabled());
+    await user.click(confirm);
+    expect(selected).not.toHaveBeenCalled();
+  },
+);
 
 it("uses exact context, filters another package and restores its editor draft after mode changes and reselection", async () => {
   const user = userEvent.setup();

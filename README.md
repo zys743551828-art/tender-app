@@ -1,6 +1,6 @@
 > 后续开发统一使用 `dev`，跟踪 `origin/dev`。应用源码主目录为 `workbench/`；旧供体及历史分支作为来源保留。跨仓维护策略见[正式交接](https://github.com/zys743551828-art/tender-docs/blob/dev/00-项目管理/工作交接.md)。
 
-> 当前工作交接请先读 [HANDOFF-20261017.md](HANDOFF-20261017.md)，该记录对应`handoff/2026-10-17`历史分支。以下历史说明保留原范围。
+> 当前工作交接见[正式dev交接](https://github.com/zys743551828-art/tender-docs/blob/dev/00-项目管理/工作交接.md)。[HANDOFF-20261017.md](HANDOFF-20261017.md)对应`handoff/2026-10-17`历史分支，保留原范围。
 
 当前新增系统在 [workbench](workbench/README.md)，当前开发分支 `dev`（保留 `render-acceptance-20261026` 来源历史）。正式[需求与实现追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)及[运行说明](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)与代码同步。以下旧交接及 backend/frontend 是历史来源，不要求切回旧分支。
 
