@@ -817,8 +817,10 @@ def test_sandbox_expiry_and_dump_restore_cannot_rebind(sandbox, database):
         body["bid"],
         uuid4(),
         certificate["request"]["source_ref"],
-        (datetime.now(timezone.utc) + timedelta(seconds=1)).isoformat(),
+        (datetime.now(timezone.utc) + timedelta(seconds=15)).isoformat(),
     )
-    time.sleep(1.05)
+    # Deadline is frozen before material verification; CI needs a verification budget.
+    # Still wait beyond the actual deadline and exercise the unmodified server clock.
+    time.sleep(15.05)
     with pytest.raises(DomainError):
         service.submit(body | {"certificate": expiring["id"]})
