@@ -436,6 +436,25 @@ jobs:
           SHA256
       - name: Exercise test-only qualification, worker and API restart and restore rejection
         run: python deploy/prediction_native_acceptance.py --seaweed-archive .local/ci/bin/seaweedfs.tar.gz --output .local/ci/prediction-sandbox
+      - name: Annotate isolated test failures without credentials
+        if: failure()
+        run: |
+          python - <<'PYTHON'
+          import re
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path(".local/ci/prediction-sandbox/tests.xml")
+          if path.is_file():
+              for case in ET.parse(path).iter("testcase"):
+                  for error in list(case):
+                      if error.tag not in {"failure", "error"}:
+                          continue
+                      lines = [line.strip() for line in (error.text or "").splitlines() if line.lstrip().startswith("E ")]
+                      message = "\n".join(lines)[-2500:] or error.get("type", "isolated acceptance failed")
+                      message = re.sub(r"(?i)(password|secret|token|access_key|secret_key)([=: ]+)[^\s]+", r"\1\2[REDACTED]", message)
+                      message = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                      print(f"::error title={case.get('name', 'isolated test')}::{message}")
+          PYTHON
       - name: Preserve nonsecret mechanism evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
