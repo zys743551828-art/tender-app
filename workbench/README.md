@@ -47,7 +47,7 @@ PG与Kafka健康后初始化**全新空库**。数据库初始化遇已有schema
 docker compose --file deploy/compose.yaml --env-file .env exec -T object-store weed shell -master=localhost:9333
 ```
 
-Kafka初始化默认读取已实施的`apps/worker/execution-policy-07.json`，创建并核验9个主题，包含独立比较、项目助手、全局助手运输。重复运行只补缺失主题，校验已有主题的分区、副本和保留配置，不覆盖配置或删除消息。`--check-only`只读核验，缺主题即失败；`--bootstrap`明确选择集群，`--expected-cluster-id`可防止误连后写入。需要某个明确快照时使用`--policy <策略文件路径>`；`packages/contracts/policies/execution-policy.json`保留目标快照，不能用其旧6主题配置代表当前全部运输。初始化主题不启动消费者，也不授予模型调用权限。
+Kafka初始化默认读取已实施的`apps/worker/execution-policy-11.json`，创建并核验9个主题，包含独立比较、项目助手、全局助手运输。重复运行只补缺失主题，校验已有主题的分区、副本和保留配置，不覆盖配置或删除消息。`check_environment.py`及`check_external.py`使用同一个默认协议，只读核验主题、分区、副本和保留配置，不会把旧6主题环境判为完整。`--check-only`只读核验，缺主题即失败；`--bootstrap`明确选择集群，`--expected-cluster-id`可防止误连后写入。需要某个明确快照时使用`--policy <策略文件路径>`；`packages/contracts/policies/execution-policy.json`保留目标快照，不能用其旧6主题配置代表当前全部运输。初始化主题不启动消费者，也不授予模型调用权限。
 
 在存储管理终端输入`s3.bucket.create -name=tender-private`，完成后用`Ctrl-D`退出。该管理动作创建私有bucket；应用存储身份只有此bucket的读写及列举权。然后执行：
 
@@ -111,6 +111,8 @@ npm run dev
 QA使用独立配置`.local/qa.env`、独立数据库、Kafka及存储；通过`deploy/run.py --env-file .local/qa.env -- <command>`注入配置，不在命令行传口令。对应端口为PG55440、Kafka19094、S3 19002、API8801和web5174。可用`python deploy/configure_local.py --profile qa`创建新QA配置，已有配置会拒绝覆盖。QA基础设施启动时给Compose传该配置，再按相同初始化步骤运行；前端用`API_PROXY_TARGET=http://127.0.0.1:8801 npm run dev -- --port 5174`连接QA API。
 
 所有测试资料为明确的合成输入。真实模型质量、真实投标人员试用、正式评分精度和生产运行恢复各自验收，机制验证不授予这些资格。
+
+一次性 Docker 测试须使用[资源规则与收尾入口](docs/docker-test-hygiene.md)，记录本轮容器/网络/卷，正常、失败及取消均精确回收；持久开发环境和历史资源不能混入自动清理。
 
 新增预测原生安装、传输及隔离恢复验收入口：`deploy/prediction_native_acceptance.py`。正式结果见文档仓[预测原生联合验证](https://github.com/zys743551828-art/tender-docs/blob/dev/04-验证与测试/预测原生联合验证.md)，区分拒绝链、恢复机制和未完成的正式预测正向链。
 

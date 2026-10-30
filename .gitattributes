@@ -2,3 +2,8 @@
 *.sh text eol=lf
 Dockerfile text eol=lf
 frontend/** text=auto eol=lf
+workbench/deploy/*.py text eol=lf
+workbench/tests/*.py text eol=lf
+workbench/packages/**/*.py text eol=lf
+workbench/apps/api/**/*.py text eol=lf
+workbench/apps/worker/**/*.py text eol=lf

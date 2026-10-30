@@ -137,3 +137,22 @@ def test_inconsistent_declared_policy_cannot_hide_a_real_lane():
     policy["consumer_lanes"]["comparison"]["topic"] = "tender.task.review.v1"
     with pytest.raises(ValueError, match="lane and topic"):
         topic_specifications(policy)
+
+
+def test_readiness_rejects_old_six_and_checks_current_nine_without_creation(monkeypatch):
+    from deploy import initialize_topics
+
+    admin = MetadataAdmin()
+    monkeypatch.setattr(initialize_topics, "AdminClient", lambda config: admin)
+    with pytest.raises(RuntimeError, match="incomplete"):
+        initialize_topics.verify_implemented_topics("synthetic-broker")
+    assert admin.requests == []
+    initialize(admin, load(DEFAULT_POLICY))
+    admin.requests.clear()
+    result = initialize_topics.verify_implemented_topics("synthetic-broker")
+    assert result["topics_verified"] == 9 and result["topics_created"] == []
+    assert admin.requests == []
+    admin.configs[GLOBAL_TOPIC]["retention.ms"] = "1"
+    with pytest.raises(RuntimeError, match="configuration mismatch"):
+        initialize_topics.verify_implemented_topics("synthetic-broker")
+    assert admin.requests == []

@@ -10,8 +10,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 import psycopg
-from confluent_kafka.admin import AdminClient
 from initialize_database import ROOT, file_configuration
+from initialize_topics import verify_implemented_topics
 
 
 def check(path: Path) -> dict:
@@ -48,18 +48,8 @@ def check(path: Path) -> dict:
             if not record or any(record[:3]) or not record[3] or record[4]:
                 raise ValueError("External runtime role violates nonowner capability boundary")
             roles.append({"capability": role, "nonowner_login": True})
-    policy = json.loads((ROOT / "packages/contracts/policies/execution-policy.json").read_text())
-    expected_topics = [item["topic"] for item in policy["topic_bindings"].values()]
-    expected_topics += [policy["domain_event_topic"], policy["dead_letter_topic"]]
-    metadata = AdminClient({"bootstrap.servers": values["KAFKA_BOOTSTRAP_SERVERS"]}).list_topics(
-        timeout=15
-    )
-    topics = []
-    for topic in expected_topics:
-        actual = metadata.topics.get(topic)
-        if not actual or actual.error or len(actual.partitions) != 6:
-            raise ValueError("External Kafka reviewed topology is incomplete")
-        topics.append({"name": topic, "partitions": len(actual.partitions)})
+    kafka = verify_implemented_topics(values["KAFKA_BOOTSTRAP_SERVERS"])
+    topics = [{"name": name, "partitions": 6} for name in kafka["topic_names"]]
     prefix = values.get("OBJECT_STORE_PREFIX", "")
     if (
         values.get("OBJECT_STORE_BACKEND") != "oss"
@@ -76,6 +66,7 @@ def check(path: Path) -> dict:
         "kafka_port": 19095,
         "roles": roles,
         "topics": topics,
+        "kafka": kafka,
         "object_store_backend": "oss",
         "object_namespace_isolated": True,
         "bucket_configuration_mutations": 0,

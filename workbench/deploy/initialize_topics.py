@@ -137,6 +137,12 @@ def initialize(admin, policy, *, create_missing=True, expected_cluster_id=None):
     }
 
 
+def verify_implemented_topics(bootstrap):
+    """Read-only readiness uses the same implemented policy as initialization."""
+    policy = json.loads(DEFAULT_POLICY.read_bytes())
+    return initialize(AdminClient({"bootstrap.servers": bootstrap}), policy, create_missing=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bootstrap")

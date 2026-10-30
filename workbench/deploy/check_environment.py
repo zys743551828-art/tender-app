@@ -9,8 +9,8 @@ from uuid import uuid4
 import boto3
 import psycopg
 from botocore.config import Config
-from confluent_kafka.admin import AdminClient
-from initialize_database import ROOT, local_configuration
+from initialize_database import local_configuration
+from initialize_topics import verify_implemented_topics
 
 
 def main() -> None:
@@ -40,18 +40,8 @@ def main() -> None:
         if not row or row[0]:
             raise RuntimeError("Formal scoring LOGIN can access official labels")
         checks.append("score_labels_forbidden")
-    policy = json.loads((ROOT / "packages/contracts/policies/execution-policy.json").read_text())
-    expected = {item["topic"] for item in policy["topic_bindings"].values()}
-    expected.update([policy["domain_event_topic"], policy["dead_letter_topic"]])
-    metadata = AdminClient({"bootstrap.servers": values["KAFKA_BOOTSTRAP_SERVERS"]}).list_topics(
-        timeout=20
-    )
-    if any(
-        name not in metadata.topics or len(metadata.topics[name].partitions) != 6
-        for name in expected
-    ):
-        raise RuntimeError("Missing development Kafka topic partitions")
-    checks.append("six_kafka_topics_with_six_partitions")
+    kafka = verify_implemented_topics(values["KAFKA_BOOTSTRAP_SERVERS"])
+    checks.append("implemented_kafka_topics_topology_and_retention")
     client = boto3.client(
         "s3",
         endpoint_url=values["OBJECT_STORE_ENDPOINT"],
@@ -90,6 +80,7 @@ def main() -> None:
             {
                 "passed": True,
                 "checks": checks,
+                "kafka": kafka,
                 "scope": "real local infrastructure probes; not application or production acceptance",
             }
         )
