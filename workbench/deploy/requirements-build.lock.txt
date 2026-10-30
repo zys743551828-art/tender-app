@@ -1,0 +1,3 @@
+# Build-only backend observed in existing crcmod/oss2 pure-wheel metadata.
+# Target: CPython3.12, Linux amd64. Runtime dependencies remain in their own lock.
+setuptools==84.0.0

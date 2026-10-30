@@ -59,6 +59,39 @@ function json(data: unknown, status = 200, etag?: string) {
 beforeEach(() => {
   sessionStorage.clear();
 });
+it("无转换结果显示可恢复说明，技术码留在折叠详情且不授予PDF或资格", async () => {
+  const failed: WordOriginalView = {
+    ...word,
+    conversion: {
+      ...word.conversion,
+      state: "failed",
+      conversion_attempted: false,
+      coverage: "failed",
+      gaps: ["WORD_CONVERSION_RESULT_MISSING"],
+      pdf_document_version_id: null,
+    },
+    converted_pdf_action: null,
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => json(failed)),
+  );
+  render(
+    <WordCard initial={failed} bidId="bid" disabled={false} onPdf={vi.fn()} />,
+  );
+  expect(
+    screen.getByText(
+      "本次转换未返回可用的PDF。Word原件仍保留，可重试转换或上传对应PDF。",
+    ),
+  ).toBeVisible();
+  expect(screen.getByText("Word交付未获对应检查资格")).toBeVisible();
+  expect(screen.getByText("WORD_CONVERSION_RESULT_MISSING")).not.toBeVisible();
+  expect(
+    screen.queryByRole("button", { name: "下载此Word转换的PDF" }),
+  ).not.toBeInTheDocument();
+  await userEvent.click(screen.getByText("查看转换状态详情"));
+  expect(screen.getByText("WORD_CONVERSION_RESULT_MISSING")).toBeVisible();
+});
 it("处理成功但转换partial仍保留未完成与Word无资格，迟到历史不称当前采用", async () => {
   vi.stubGlobal(
     "fetch",

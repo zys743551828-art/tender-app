@@ -9,7 +9,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from packages.domain.errors import DomainError
-from packages.word_intake import prebuilt, renderer
+from packages.word_intake import execution_transport, prebuilt, renderer
 
 
 def configured_profile():
@@ -33,6 +33,8 @@ def configured_profile():
 
 def render(source, profile):
     if profile.get("identity", {}).get("protocol") == prebuilt.PROTOCOL:
+        if execution_transport.enabled():
+            return execution_transport.call("external", source=source, profile=profile)
         test_directory = os.environ.get("WORD_RENDER_TEST_RECEIPT_DIRECTORY")
         if test_directory:
             directory = Path(test_directory)

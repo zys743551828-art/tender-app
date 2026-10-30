@@ -179,6 +179,9 @@ export function WordCard({
       </p>
     );
   const conversion = word.conversion;
+  const missingResult = conversion.gaps.includes(
+    "WORD_CONVERSION_RESULT_MISSING",
+  );
   const complete =
     conversion.state === "succeeded" &&
     conversion.coverage === "complete" &&
@@ -239,13 +242,17 @@ export function WordCard({
       )}
       {conversion.gaps.map((g, i) => (
         <p className="notice warning" key={i}>
-          {g}
+          {g === "WORD_CONVERSION_RESULT_MISSING"
+            ? "本次转换未返回可用的PDF。Word原件仍保留，可重试转换或上传对应PDF。"
+            : g}
         </p>
       ))}
-      {conversion.error_code && (
+      {(conversion.error_code || missingResult) && (
         <details>
           <summary>查看转换状态详情</summary>
-          <code>{conversion.error_code}</code>
+          <code>
+            {conversion.error_code ?? "WORD_CONVERSION_RESULT_MISSING"}
+          </code>
         </details>
       )}
       <ResourceState

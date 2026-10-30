@@ -8,6 +8,8 @@
 
 新成员请先按[正式首次启动与工程演示](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。以下阶段交接只保留其检查点范围：[完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
 
+Word 当前使用官方预构建 Gotenberg，原件保存、受控转换、当前 PDF 采用与对应检查资格分别显示。容器内 Worker 的本机隔离执行、依赖镜像构建及明确未接入原 full 入口的边界见 [Word 执行说明](docs/word-execution.md)；它不将历史 PDF 切片说明或合成样本通过改写为最终业务验收。
+
 GitHub发布位置为`tender-app/workbench/`；文档主记录在独立`tender-docs`仓库。本次是用户要求的工作交接，非最终发布。
 
 历史补全工作位于分支 `work/bid-workbench-completion-20261021`。请从 [启动与操作验收](docs/completion-20261021/START-HERE.md) 进入，按 [当前进度与验证记录](docs/completion-20261021/PROGRESS.md) 核对编写、Word 导入、多章节 AI 候选、解析、范围核查、人工复核、对比和报告的实际交付。Fusion v10 预览与完整 Worker 运行环境有不同能力，具体启动条件和未完成项均在这两个入口说明。

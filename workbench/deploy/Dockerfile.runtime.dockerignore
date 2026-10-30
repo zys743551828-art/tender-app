@@ -1,0 +1,6 @@
+**
+!requirements.lock.txt
+!deploy
+!deploy/Dockerfile.runtime
+!deploy/fusion_full_requirements.txt
+!deploy/requirements-build.lock.txt
