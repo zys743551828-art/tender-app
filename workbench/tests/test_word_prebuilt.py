@@ -9,7 +9,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from packages.word_intake import prebuilt
+from packages.domain.errors import DomainError
+from packages.word_intake import execution_transport, prebuilt
 
 REAL_CALL = prebuilt._call
 
@@ -21,6 +22,7 @@ def no_external_processes(monkeypatch):
 
     monkeypatch.setattr(prebuilt, "_call", blocked)
     monkeypatch.setattr(prebuilt, "_Run", blocked)
+    monkeypatch.setattr(execution_transport, "enabled", lambda: False)
 
 
 def docx(text="Synthetic 123", *, field=False, complex_layout=False):
@@ -88,9 +90,30 @@ def runtime(monkeypatch):
             events.append("cleanup")
 
     monkeypatch.setattr(prebuilt, "_Run", Run)
-    monkeypatch.setattr(prebuilt, "_start", lambda run: ("owned-container", {}))
-    monkeypatch.setattr(prebuilt, "_isolation", lambda identity: {})
-    monkeypatch.setattr(prebuilt, "_font_gaps", lambda identity, inspection: [])
+
+    def isolation(identity):
+        expected, temporary = prebuilt._isolation_requirements()
+        return expected | {
+            "image_id": prebuilt.IMAGE_ID,
+            "user": "65534:65534",
+            "cap_drop": "ALL",
+            "no_new_privileges": True,
+            "tmpfs": temporary,
+            "checks": {
+                key: key != "own_job_cleanup_confirmed" for key in prebuilt.ISOLATION_CHECKS
+            },
+        }
+
+    monkeypatch.setattr(prebuilt, "_start", lambda run: ("owned-container", isolation("owned")))
+    monkeypatch.setattr(prebuilt, "_isolation", isolation)
+    monkeypatch.setattr(
+        prebuilt,
+        "_font_facts",
+        lambda identity, names: {
+            "matches": [{"requested": name, "families": name} for name in names],
+            "charset": "0-10ffff\n",
+        },
+    )
 
     def convert(arguments, *, data=None, timeout=30):
         assert arguments == ["exec", "-i", "owned-container", "/bin/sh", "-c", prebuilt.CONVERT]
@@ -346,3 +369,226 @@ def test_cli_refuses_existing_outputs_before_runtime(tmp_path):
     assert result == 1
     assert output.read_bytes() == b"keep"
     assert not (tmp_path / "receipt.json").exists()
+
+
+def remote(monkeypatch, runtime, tmp_path):
+    source = docx()
+    facts = prebuilt.convert_in_isolation(source, [], receipt=tmp_path / "raw.json")
+    assert facts["error_code"] is None and facts["cleanup_confirmed"]
+    runtime.events.clear()
+    requests = []
+
+    def exchange(data, names):
+        assert data == source
+        requests.append(list(names))
+        return deepcopy(facts)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Worker must not invoke local Docker in remote mode")
+
+    monkeypatch.setattr(execution_transport, "enabled", lambda: True)
+    monkeypatch.setattr(execution_transport, "call_conversion", exchange, raising=False)
+    monkeypatch.setattr(prebuilt, "convert_in_isolation", forbidden)
+    monkeypatch.setattr(prebuilt, "_Run", forbidden)
+    return source, facts, requests
+
+
+def test_fixed_helper_returns_raw_facts_without_business_qualification(runtime, tmp_path):
+    source = docx()
+    facts = prebuilt.convert_in_isolation(
+        source, ["Noto Sans", "Noto Sans"], receipt=tmp_path / "raw.json"
+    )
+    assert set(facts) == {
+        "pdf",
+        "font_facts",
+        "isolation",
+        "conversion_attempted",
+        "error_code",
+        "source_docx_digest",
+        "image_reference",
+        "image_id",
+        "cleanup_confirmed",
+    }
+    assert facts["source_docx_digest"] == prebuilt.digest(source)
+    assert facts["pdf"] == pdf() and facts["cleanup_confirmed"]
+    assert (
+        facts["font_facts"]["matches"] == [{"requested": "Noto Sans", "families": "Noto Sans"}] * 2
+    )
+    assert runtime.events == ["enter", "cleanup"]
+
+
+@pytest.mark.parametrize("fonts", [["-option"], ["bad/font"], ["$(command)"], [None], "not a list"])
+def test_helper_rejects_nonexecutable_font_names_before_container(runtime, tmp_path, fonts):
+    facts = prebuilt.convert_in_isolation(docx(), fonts, receipt=tmp_path / "raw.json")
+    assert facts["error_code"] == "WORD_FONT_NAME_UNSUPPORTED"
+    assert not facts["conversion_attempted"] and facts["cleanup_confirmed"]
+    assert facts["pdf"] is None and runtime.events == []
+
+
+def test_remote_worker_parses_actual_pdf_and_preserves_receipt(runtime, monkeypatch, tmp_path):
+    source, facts, requests = remote(monkeypatch, runtime, tmp_path)
+    facts["resource_receipt"] = {
+        "closed": True,
+        "receipts": [{"receipt": "conversion-synthetic.json", "closed": True, "run_id": "1" * 32}],
+    }
+    outcome = prebuilt.render(source, runtime.profile, receipt=tmp_path / "unused.json")
+    assert outcome["coverage"] == "complete" and outcome["gaps"] == []
+    assert outcome["chain"]["pdf_digest"] == prebuilt.digest(pdf())
+    assert outcome["resource_receipt"] == facts["resource_receipt"]
+    assert requests == [[]] and runtime.events == []
+
+
+def test_remote_pdf_text_is_verified_by_worker_not_host_verdict(runtime, monkeypatch, tmp_path):
+    source, facts, requests = remote(monkeypatch, runtime, tmp_path)
+    facts["pdf"] = pdf("Synthetic 124")
+    outcome = prebuilt.render(source, runtime.profile, receipt=tmp_path / "unused.json")
+    assert outcome["coverage"] == "partial"
+    assert "WORD_TEXT_CORRESPONDENCE_UNVERIFIED" in outcome["gaps"]
+    assert requests == [[]] and runtime.events == []
+
+
+@pytest.mark.parametrize(
+    "attack,expected",
+    [
+        ("source", "WORD_PREBUILT_CONVERSION_FACTS_INVALID"),
+        ("image", "WORD_PREBUILT_CONVERSION_FACTS_INVALID"),
+        ("image_id", "WORD_PREBUILT_CONVERSION_FACTS_INVALID"),
+        ("business_verdict", "WORD_PREBUILT_CONVERSION_FACTS_INVALID"),
+        ("missing_fonts", "WORD_PREBUILT_FONT_FACTS_INVALID"),
+        ("extra_fonts", "WORD_PREBUILT_FONT_FACTS_INVALID"),
+        ("pdf", "WORD_PDF_INVALID"),
+        ("cleanup", "WORD_PREBUILT_CLEANUP_UNCONFIRMED"),
+        ("isolation", "WORD_PREBUILT_ISOLATION_MISMATCH"),
+        ("receipt", "WORD_PREBUILT_CLEANUP_UNCONFIRMED"),
+    ],
+)
+def test_remote_wrong_identity_missing_facts_and_unclean_results_never_complete(
+    runtime, monkeypatch, tmp_path, attack, expected
+):
+    source, facts, _ = remote(monkeypatch, runtime, tmp_path)
+    if attack == "source":
+        facts["source_docx_digest"] = "0" * 64
+    elif attack == "image":
+        facts["image_reference"] = "other:latest"
+    elif attack == "image_id":
+        facts["image_id"] = "sha256:" + "0" * 64
+    elif attack == "business_verdict":
+        facts["coverage"] = "complete"
+    elif attack == "missing_fonts":
+        facts["font_facts"] = None
+    elif attack == "extra_fonts":
+        facts["font_facts"]["matches"] = [{"requested": "other", "families": "other"}]
+    elif attack == "pdf":
+        facts["pdf"] = b"not PDF"
+    elif attack == "cleanup":
+        facts["cleanup_confirmed"] = False
+    elif attack == "isolation":
+        facts["isolation"]["checks"]["network_none"] = False
+    else:
+        facts["resource_receipt"] = {"closed": True, "receipts": [{"closed": False}]}
+    outcome = prebuilt.render(source, runtime.profile, receipt=tmp_path / "unused.json")
+    assert outcome["state"] == "failed" and outcome["pdf"] is None
+    assert outcome["error_code"] == expected and runtime.events == []
+
+
+def test_worker_keeps_original_invalid_name_substitution_and_glyph_gaps(
+    runtime, monkeypatch, tmp_path
+):
+    source, facts, requests = remote(monkeypatch, runtime, tmp_path)
+    names = ["Requested", "bad/font", "-option", "Requested"]
+    facts["font_facts"] = {
+        "matches": [{"requested": "Requested", "families": "Replacement"}] * 2,
+        "charset": "20-7e\n",
+    }
+    outcome = prebuilt._render_generated(
+        source,
+        runtime.profile,
+        receipt=tmp_path / "unused.json",
+        admit=lambda: {
+            "proof": {"source_docx_digest": prebuilt.digest(source)},
+            "font_inspection": {"requested_fonts": names, "paragraphs": ["中文123"]},
+        },
+        inspect_pdf=lambda data, prepared: {"page_count": 1, "gaps": []},
+    )
+    assert requests == [["Requested", "Requested"]]
+    assert outcome["gaps"] == [
+        "WORD_FONT_SUBSTITUTED",
+        "WORD_FONT_NAME_UNSUPPORTED",
+        "WORD_FONT_GLYPH_UNAVAILABLE",
+    ]
+    assert outcome["coverage"] == "partial"
+
+
+@pytest.mark.parametrize("attack", ["profile", "active_field", "source_proof"])
+def test_remote_request_cannot_precede_worker_admission(runtime, monkeypatch, tmp_path, attack):
+    source, _, requests = remote(monkeypatch, runtime, tmp_path)
+    profile = deepcopy(runtime.profile)
+    if attack == "profile":
+        profile["identity"]["image_id"] = "other"
+        profile["profile_digest"] = prebuilt.digest(profile["identity"])
+        outcome = prebuilt.render(source, profile, receipt=tmp_path / "unused.json")
+    elif attack == "active_field":
+        outcome = prebuilt.render(docx(field=True), profile, receipt=tmp_path / "unused.json")
+    else:
+        outcome = prebuilt._render_generated(
+            source,
+            profile,
+            receipt=tmp_path / "unused.json",
+            admit=lambda: {"proof": {"source_docx_digest": "0" * 64}},
+            inspect_pdf=lambda *args: pytest.fail("must not inspect"),
+        )
+    assert outcome["state"] == "failed" and not outcome["conversion_attempted"]
+    assert requests == [] and runtime.events == []
+
+
+def test_transport_timeout_propagates_without_generic_retry_regression(
+    runtime, monkeypatch, tmp_path
+):
+    source, _, _ = remote(monkeypatch, runtime, tmp_path)
+    error = DomainError("WORD_EXECUTION_TIMEOUT", "synthetic", 503, retryable=True)
+
+    def timeout(*args):
+        raise error
+
+    monkeypatch.setattr(execution_transport, "call_conversion", timeout)
+    with pytest.raises(DomainError) as actual:
+        prebuilt.render(source, runtime.profile, receipt=tmp_path / "unused.json")
+    assert actual.value is error and actual.value.retryable
+
+
+def test_nontransport_domain_error_keeps_native_failure_semantics(runtime, tmp_path):
+    def admit():
+        raise DomainError("SYNTHETIC_ADMISSION_FAILURE", "synthetic", 422)
+
+    outcome = prebuilt._render_generated(
+        docx(),
+        runtime.profile,
+        receipt=tmp_path / "unused.json",
+        admit=admit,
+        inspect_pdf=lambda *args: pytest.fail("must not inspect"),
+    )
+    assert outcome["error_code"] == "WORD_PREBUILT_CONVERSION_FAILED"
+    assert runtime.events == []
+
+
+def test_native_unconfirmed_cleanup_cannot_return_raw_pdf_or_complete(
+    runtime, monkeypatch, tmp_path
+):
+    class Unclosed:
+        closed = False
+
+        def __init__(self, receipt):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(prebuilt, "_Run", Unclosed)
+    facts = prebuilt.convert_in_isolation(docx(), [], receipt=tmp_path / "raw.json")
+    assert not facts["cleanup_confirmed"] and facts["pdf"] is None
+    assert facts["error_code"] == "WORD_PREBUILT_CLEANUP_UNCONFIRMED"
+    outcome = prebuilt.render(docx(), runtime.profile, receipt=tmp_path / "run.json")
+    assert outcome["state"] == "failed" and outcome["pdf"] is None

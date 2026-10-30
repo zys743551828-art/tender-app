@@ -2,13 +2,15 @@
 
 The official Gotenberg image remains the conversion engine. No custom Word
 image is built. Native API/Worker execution can still use the existing local
-Docker adapter. The optional `word-render-execution/1` transport lets an
+Docker adapter. The optional `word-conversion-execution/2` transport lets an
 explicitly owned **local test Worker** run without a Docker socket or Docker
 credentials inside that container.
 
-The topology has a trusted host executor and separate API, Worker, database,
-object-store and conversion containers. The executor remains a host process;
-this is not an all-container installation or a production service. The original
+The topology has a trusted host controller and separate API, Worker, database,
+object-store and conversion containers. Admission, document assembly, font/PDF
+qualification and the RICH convergence loop execute in the Worker. The host
+only performs fixed Docker conversion and returns raw font/isolation facts;
+it remains a host process, without a business qualification verdict. The original
 `fusion-full-local/1` role/profile allowlists are unchanged and do not install
 this transport automatically.
 
@@ -35,11 +37,12 @@ access to the checkout or mount a Docker socket to address generated state.
 
 ## Explicit test execution
 
-The Worker uses the existing versioned external/PAGE/RICH profiles and
+The Worker uses freshly generated versioned external/PAGE/RICH profiles and
 `WORD_RENDER_EXECUTION_DIRECTORY=/tmp/word-execution`. This environment variable
-is accepted only on Linux and at that exact tmpfs path. Only these three
-existing rendering operations are supported; callers cannot submit a command,
-image name, arbitrary URL or host path.
+is accepted only on Linux and at that exact tmpfs path. The transport has one
+fixed conversion operation accepting DOCX bytes and validated requested font
+names. Snapshots, materials, manifests and RICH iterations stay in the Worker.
+Callers cannot submit a command, image name, arbitrary URL or host path.
 
 The operator starts the host executor using an explicitly selected full Worker
 container ID and its exact `tender.test.run` UUID label:
@@ -55,18 +58,30 @@ other services. It clears business/model/proxy environment before importing
 rendering code, uses a private Docker configuration directory and exposes no
 listener. Database and model credentials are unnecessary for the host executor.
 
-The transport preserves the original source, frozen snapshot, producer manifest,
-materials, profiles, returned PDF/DOCX and RICH iteration bytes. Existing
-content/layout/source qualification checks run unchanged. HTTP or transport
-success cannot promote an unqualified document. Metadata receipts exclude
-document bodies; the Worker tmpfs holds source/response bytes only for execution.
+The controller returns the PDF, raw `fc-match` family/character-set facts,
+fixed image identity, source digest, isolation and confirmed cleanup. The Worker
+matches those facts to its request and applies the existing font, content,
+layout and source qualification checks. A missing fact, wrong identity or
+unconfirmed cleanup cannot become complete. HTTP or transport success alone
+does not qualify a document. Metadata receipts exclude document bodies; the
+Worker tmpfs holds source/response bytes only for execution.
+
+The previous high-level `word-render-execution/1` wire format is not accepted
+by this version. Its historical evidence remains unchanged. Source identity
+also changes when the adapter changes: use `deploy/word_prebuilt.py profile`
+separately with `--lane external`, `--lane page` and `--lane rich`, each with
+new private `--profile` and `--receipt` destinations. Generate these for the
+installed source rather than reusing earlier qualification profiles.
 
 ## Failure, cancellation and cleanup
 
 Requests and responses use private no-follow regular files, bounded sizes and
 atomic publication, and response identity is bound to the original request.
-External/PAGE waits are bounded at 120 seconds; RICH waits at 240 seconds.
-The single local executor runs one conversion at a time.
+Each conversion wait is bounded at 120 seconds. The business dispatchers also
+enforce total budgets of 120 seconds for external/PAGE and 240 seconds for
+RICH, including successful completion of local qualification. A depleted
+budget cannot publish another request. The single local executor runs one
+conversion at a time.
 
 Cancellation or timeout revokes the client's wait. It does not promise to
 interrupt LibreOffice immediately: an in-flight render retains the original

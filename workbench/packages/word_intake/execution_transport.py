@@ -18,57 +18,64 @@ import stat
 import sys
 import threading
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from uuid import uuid4
 
 from packages.domain.errors import DomainError
 
-PROTOCOL = "word-render-execution/1"
-# Fixed Linux tmpfs private directory, checked for mount/owner/mode/nofollow below.
+PROTOCOL = "word-conversion-execution/2"
+OPERATION = "convert_docx"
 DIRECTORY = Path("/tmp/word-execution")  # nosec B108
 ENVIRONMENT_KEY = "WORD_RENDER_EXECUTION_DIRECTORY"
 MAX_REQUEST_BYTES = 160 * 1024 * 1024
 MAX_RESPONSE_BYTES = 200 * 1024 * 1024
 MAX_SOURCE_BYTES = 100 * 1024 * 1024
 MAX_PDF_BYTES = 50 * 1024 * 1024
-MAX_MATERIAL_BYTES = 16 * 1024 * 1024
-MAX_REQUEST_BINARY_BYTES = 100 * 1024 * 1024
-MAX_RESPONSE_BINARY_BYTES = 140 * 1024 * 1024
-TIMEOUTS = {"external": 120, "page": 120, "rich": 240}
+MAX_FONTS = 4096
+MAX_FAMILIES_CHARS = 4096
+MAX_CHARSET_CHARS = 4 * 1024 * 1024
+CONVERSION_TIMEOUT = 120
 REQUEST_FILE = "request.json"
 RESPONSE_FILE = "response.json"
 CANCEL_FILE = "cancel"
 _LOCK = threading.Lock()
+_DEADLINE: ContextVar[float | None] = ContextVar("word_conversion_deadline", default=None)
 _ID = re.compile(r"[0-9a-f]{32}\Z")
 _CODE = re.compile(r"[A-Z][A-Z0-9_]{0,127}\Z")
-_ARGUMENTS = {
-    "external": {"source", "profile"},
-    "page": {"source", "snapshot", "producer_manifest", "profile"},
-    "rich": {"snapshot", "materials", "profile", "mode"},
-}
+_FONT = re.compile(r"[\w ,.-]{1,128}\Z")
 _RESULT_FIELDS = {
-    "state",
-    "coverage",
+    "pdf",
+    "font_facts",
+    "isolation",
     "conversion_attempted",
     "error_code",
-    "retryable",
-    "gaps",
-    "pdf",
-    "docx",
-    "protocol",
-    "isolation",
-    "measurements",
-    "chain",
-    "correspondence",
-    "producer_manifest",
-    "pagination",
-    "render_iterations",
-    "iteration_summaries",
-    "navigation_proof",
-    "navigation_history_proof",
-    "adjustment_hint",
-    "resource_receipt",
+    "source_docx_digest",
+    "image_reference",
+    "image_id",
+    "cleanup_confirmed",
 }
+
+
+@contextmanager
+def deadline_budget(seconds):
+    """Bound all conversions in one producer call; nested budgets never extend it."""
+    if not enabled():
+        yield
+        return
+    if type(seconds) not in {int, float} or not math.isfinite(seconds) or seconds <= 0:
+        _reject("WORD_EXECUTION_TIMEOUT")
+    previous = _DEADLINE.get()
+    deadline = time.monotonic() + seconds
+    deadline = min(previous, deadline) if previous is not None else deadline
+    token = _DEADLINE.set(deadline)
+    try:
+        yield
+        if time.monotonic() >= deadline:
+            _reject("WORD_EXECUTION_TIMEOUT")
+    finally:
+        _DEADLINE.reset(token)
 
 
 def _reject(code="WORD_EXECUTION_PROTOCOL_INVALID"):
@@ -179,48 +186,28 @@ def _binary(value, maximum, total, *, decode):
     }
 
 
-def _arguments(lane, arguments, *, decode):
-    if type(lane) is not str or lane not in _ARGUMENTS or type(arguments) is not dict:
+def _fonts(value):
+    if type(value) is not list or len(value) > MAX_FONTS:
+        _reject("WORD_EXECUTION_LIMIT")
+    if any(
+        type(name) is not str or not _FONT.fullmatch(name) or name.startswith("-") for name in value
+    ):
         _reject()
-    if set(arguments) != _ARGUMENTS[lane]:
-        _reject()
-    value = dict(arguments)
-    total = [0, MAX_REQUEST_BINARY_BYTES]
-    if "source" in value:
-        value["source"] = _binary(value["source"], MAX_SOURCE_BYTES, total, decode=decode)
-    for key in ("profile", "snapshot", "producer_manifest"):
-        if key in value and type(value[key]) is not dict:
-            _reject()
-    if lane == "rich":
-        if type(value["mode"]) is not str or value["mode"] not in {
-            "continuous",
-            "chapter_start_new_page",
-        }:
-            _reject()
-        if type(value["materials"]) is not list or len(value["materials"]) > 100:
-            _reject("WORD_EXECUTION_LIMIT")
-        materials = []
-        keys = {"asset_id", "asset_revision", "asset_version_id", "bytes", "normalization_proof"}
-        for item in value["materials"]:
-            if type(item) is not dict or set(item) != keys:
-                _reject()
-            materials.append(
-                item | {"bytes": _binary(item["bytes"], MAX_MATERIAL_BYTES, total, decode=decode)}
-            )
-        value["materials"] = materials
-    # Binary objects have already been transformed; the rest must be plain JSON.
-    check = (
-        value
-        if not decode
-        else {k: v for k, v in value.items() if k not in {"source", "materials"}}
-    )
-    _plain(check)
-    if decode and "materials" in value:
-        _plain([{k: v for k, v in item.items() if k != "bytes"} for item in value["materials"]])
-    return value
+    return list(value)
 
 
-def _request(lane, arguments, request_id=None):
+def _arguments(arguments, *, decode):
+    if type(arguments) is not dict or set(arguments) != {"source", "requested_fonts"}:
+        _reject()
+    return {
+        "source": _binary(
+            arguments["source"], MAX_SOURCE_BYTES, [0, MAX_SOURCE_BYTES], decode=decode
+        ),
+        "requested_fonts": _fonts(arguments["requested_fonts"]),
+    }
+
+
+def _request(arguments, request_id=None):
     identity = request_id or uuid4().hex
     if type(identity) is not str or _ID.fullmatch(identity) is None:
         _reject()
@@ -228,8 +215,8 @@ def _request(lane, arguments, request_id=None):
         {
             "protocol": PROTOCOL,
             "request_id": identity,
-            "lane": lane,
-            "arguments": _arguments(lane, arguments, decode=False),
+            "operation": OPERATION,
+            "arguments": _arguments(arguments, decode=False),
         },
         MAX_REQUEST_BYTES,
     )
@@ -237,81 +224,113 @@ def _request(lane, arguments, request_id=None):
 
 def decode_request(raw: bytes) -> dict:
     value = _loads(raw, MAX_REQUEST_BYTES)
-    if type(value) is not dict or set(value) != {"protocol", "request_id", "lane", "arguments"}:
+    if type(value) is not dict or set(value) != {
+        "protocol",
+        "request_id",
+        "operation",
+        "arguments",
+    }:
         _reject()
     if (
         value["protocol"] != PROTOCOL
+        or value["operation"] != OPERATION
         or type(value["request_id"]) is not str
-        or _ID.fullmatch(value["request_id"]) is None
+        or not _ID.fullmatch(value["request_id"])
     ):
         _reject()
     return {
         "request_id": value["request_id"],
-        "lane": value["lane"],
-        "arguments": _arguments(value["lane"], value["arguments"], decode=True),
+        "operation": OPERATION,
+        "arguments": _arguments(value["arguments"], decode=True),
     }
 
 
 def _result(result, *, decode):
-    if type(result) is not dict or set(result) - _RESULT_FIELDS:
-        _reject()
-    required = {
-        "state",
-        "coverage",
-        "conversion_attempted",
-        "error_code",
-        "retryable",
-        "gaps",
-        "chain",
-        "pdf",
-    }
-    if not required <= set(result):
-        _reject()
     if (
-        result["state"] not in ("succeeded", "failed")
-        or result["coverage"] not in ("complete", "partial", "failed")
-        or type(result["conversion_attempted"]) is not bool
-        or type(result["retryable"]) is not bool
-        or type(result["gaps"]) is not list
-        or any(type(gap) is not str for gap in result["gaps"])
-        or type(result["chain"]) is not dict
-        or (
-            result["error_code"] is not None
-            and (
-                type(result["error_code"]) is not str
-                or _CODE.fullmatch(result["error_code"]) is None
-            )
-        )
+        type(result) is not dict
+        or not _RESULT_FIELDS <= set(result)
+        or set(result) - (_RESULT_FIELDS | {"resource_receipt"})
     ):
         _reject()
     value = dict(result)
-    total = [0, MAX_RESPONSE_BINARY_BYTES]
-    for key, maximum in (("pdf", MAX_PDF_BYTES), ("docx", MAX_SOURCE_BYTES)):
-        if key in value and value[key] is not None:
-            value[key] = _binary(value[key], maximum, total, decode=decode)
-    if "render_iterations" in value:
-        if type(value["render_iterations"]) is not list or len(value["render_iterations"]) > 3:
+    if (
+        type(value["conversion_attempted"]) is not bool
+        or type(value["cleanup_confirmed"]) is not bool
+    ):
+        _reject()
+    code = value["error_code"]
+    if code is not None and (type(code) is not str or not _CODE.fullmatch(code)):
+        _reject()
+    if value["isolation"] is not None and type(value["isolation"]) is not dict:
+        _reject()
+    facts = value["font_facts"]
+    if facts is not None:
+        if type(facts) is not dict or set(facts) != {"matches", "charset"}:
             _reject()
-        iterations = []
-        for item in value["render_iterations"]:
-            if type(item) is not dict or set(item) != {"pdf_bytes", "docx_bytes", "entries"}:
+        if (
+            type(facts["charset"]) is not str
+            or not facts["charset"].isascii()
+            or len(facts["charset"]) > MAX_CHARSET_CHARS
+            or type(facts["matches"]) is not list
+            or len(facts["matches"]) > MAX_FONTS
+        ):
+            _reject("WORD_EXECUTION_LIMIT")
+        for match in facts["matches"]:
+            if type(match) is not dict or set(match) != {"requested", "families"}:
                 _reject()
-            iterations.append(
-                item
-                | {
-                    "pdf_bytes": _binary(item["pdf_bytes"], MAX_PDF_BYTES, total, decode=decode),
-                    "docx_bytes": _binary(
-                        item["docx_bytes"], MAX_SOURCE_BYTES, total, decode=decode
-                    ),
-                }
+            _fonts([match["requested"]])
+            if type(match["families"]) is not str or len(match["families"]) > MAX_FAMILIES_CHARS:
+                _reject("WORD_EXECUTION_LIMIT")
+    receipt = value.get("resource_receipt")
+    if receipt is not None:
+        if (
+            type(receipt) is not dict
+            or set(receipt) != {"closed", "receipts"}
+            or receipt["closed"] is not True
+            or type(receipt["receipts"]) is not list
+            or len(receipt["receipts"]) > 16
+            or any(
+                type(item) is not dict or item.get("closed") is not True
+                for item in receipt["receipts"]
             )
-        value["render_iterations"] = iterations
-    if decode:
-        _plain({k: v for k, v in value.items() if k not in {"pdf", "docx", "render_iterations"}})
-        _plain([item["entries"] for item in value.get("render_iterations", [])])
-    else:
-        _plain(value)
+        ):
+            _reject("WORD_EXECUTION_CLEANUP_UNCONFIRMED")
+    if code is None:
+        if (
+            value["pdf"] is None
+            or facts is None
+            or value["isolation"] is None
+            or not value["conversion_attempted"]
+        ):
+            _reject()
+        if not value["cleanup_confirmed"] or receipt is None or not receipt["receipts"]:
+            _reject("WORD_EXECUTION_CLEANUP_UNCONFIRMED")
+    elif value["pdf"] is not None:
+        _reject()
+    if value["pdf"] is not None:
+        value["pdf"] = _binary(value["pdf"], MAX_PDF_BYTES, [0, MAX_PDF_BYTES], decode=decode)
+        if decode and not value["pdf"].startswith(b"%PDF-"):
+            _reject()
+    _plain({k: v for k, v in value.items() if k != "pdf"} if decode else value)
     return value
+
+
+def _bound_result(request, result):
+    from packages.word_intake.prebuilt import IMAGE, IMAGE_ID
+
+    args = request["arguments"]
+    if (
+        result["source_docx_digest"] != _sha(args["source"])
+        or result["image_reference"] != IMAGE
+        or result["image_id"] != IMAGE_ID
+    ):
+        _reject("WORD_EXECUTION_RESPONSE_MISMATCH")
+    if result["font_facts"] is not None:
+        if [item["requested"] for item in result["font_facts"]["matches"]] != args[
+            "requested_fonts"
+        ]:
+            _reject("WORD_EXECUTION_RESPONSE_MISMATCH")
+    return result
 
 
 def _response(request_raw, *, result=None, code=None):
@@ -322,7 +341,7 @@ def _response(request_raw, *, result=None, code=None):
         {
             "protocol": PROTOCOL,
             "request_id": request["request_id"],
-            "lane": request["lane"],
+            "operation": request["operation"],
             "request_sha256": _sha(request_raw),
             "result": result,
             "error_code": code,
@@ -332,7 +351,9 @@ def _response(request_raw, *, result=None, code=None):
 
 
 def encode_response(request_raw: bytes, result: dict) -> bytes:
-    return _response(request_raw, result=_result(result, decode=False))
+    encoded = _result(result, decode=False)
+    _bound_result(decode_request(request_raw), result)
+    return _response(request_raw, result=encoded)
 
 
 def encode_error(request_raw: bytes, code: str) -> bytes:
@@ -345,7 +366,7 @@ def decode_response(request_raw: bytes, response_raw: bytes) -> dict:
     if type(value) is not dict or set(value) != {
         "protocol",
         "request_id",
-        "lane",
+        "operation",
         "request_sha256",
         "result",
         "error_code",
@@ -354,7 +375,7 @@ def decode_response(request_raw: bytes, response_raw: bytes) -> dict:
     if (
         value["protocol"] != PROTOCOL
         or value["request_id"] != request["request_id"]
-        or value["lane"] != request["lane"]
+        or value["operation"] != request["operation"]
         or value["request_sha256"] != _sha(request_raw)
     ):
         _reject("WORD_EXECUTION_RESPONSE_MISMATCH")
@@ -363,7 +384,7 @@ def decode_response(request_raw: bytes, response_raw: bytes) -> dict:
         if value["result"] is not None or type(code) is not str or _CODE.fullmatch(code) is None:
             _reject()
         _reject(code)
-    return _result(value["result"], decode=True)
+    return _bound_result(request, _result(value["result"], decode=True))
 
 
 def enabled() -> bool:
@@ -480,13 +501,23 @@ def _cancel(directory):
         _read(directory, CANCEL_FILE, 0)
 
 
-def call(lane: str, **arguments) -> dict:
+def call_conversion(source: bytes, requested_fonts: list[str]) -> dict:
     if not enabled():
         _reject("WORD_EXECUTION_NOT_CONFIGURED")
-    request_raw = _request(lane, arguments)
+    started = time.monotonic()
+    budget = _DEADLINE.get()
+    deadline = (
+        min(started + CONVERSION_TIMEOUT, budget)
+        if budget is not None
+        else started + CONVERSION_TIMEOUT
+    )
+    if started >= deadline:
+        _reject("WORD_EXECUTION_TIMEOUT")
+    request_raw = _request({"source": source, "requested_fonts": requested_fonts})
     identity = decode_request(request_raw)["request_id"]
-    timeout = TIMEOUTS[lane]
-    deadline = time.monotonic() + timeout
+    timeout = deadline - time.monotonic()
+    if timeout <= 0:
+        _reject("WORD_EXECUTION_TIMEOUT")
     if not _LOCK.acquire(timeout=timeout):
         _reject("WORD_EXECUTION_TIMEOUT")
     root = job = lock = None
@@ -512,9 +543,13 @@ def call(lane: str, **arguments) -> dict:
             < len(request_raw) + MAX_RESPONSE_BYTES + 8 * 1024 * 1024
         ):
             _reject("WORD_EXECUTION_LIMIT")
+        if time.monotonic() >= deadline:
+            _reject("WORD_EXECUTION_TIMEOUT")
         os.mkdir(identity, mode=0o700, dir_fd=root)
         job = os.open(identity, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
         _private(os.fstat(job), directory=True)
+        if time.monotonic() >= deadline:
+            _reject("WORD_EXECUTION_TIMEOUT")
         _publish(job, REQUEST_FILE, request_raw)
         while True:
             if time.monotonic() >= deadline:

@@ -33,8 +33,6 @@ def configured_profile():
 
 def render(source, profile):
     if profile.get("identity", {}).get("protocol") == prebuilt.PROTOCOL:
-        if execution_transport.enabled():
-            return execution_transport.call("external", source=source, profile=profile)
         test_directory = os.environ.get("WORD_RENDER_TEST_RECEIPT_DIRECTORY")
         if test_directory:
             directory = Path(test_directory)
@@ -56,7 +54,8 @@ def render(source, profile):
 
 
 def _prebuilt_render(source, profile, receipt):
-    result = prebuilt.render(source, profile, receipt=receipt)
+    with execution_transport.deadline_budget(120):
+        result = prebuilt.render(source, profile, receipt=receipt)
     if receipt.exists():
         record = json.loads(receipt.read_text(encoding="utf-8"))
         result["resource_receipt"] = {

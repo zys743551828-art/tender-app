@@ -17,66 +17,33 @@ LINUX = pytest.mark.skipif(
 )
 
 
-def arguments(lane):
-    common = {"profile": {"profile_digest": "frozen", "identity": {"protocol": "test-only"}}}
-    if lane in {"external", "page"}:
-        common["source"] = b"synthetic DOCX \x00\xff"
-    if lane in {"page", "rich"}:
-        common["snapshot"] = {"title": "中文 120", "sections": [{"content": []}]}
-    if lane == "page":
-        common["producer_manifest"] = {"source": "frozen"}
-    if lane == "rich":
-        common.update(
-            {
-                "mode": "continuous",
-                "materials": [
-                    {
-                        "asset_id": "asset",
-                        "asset_revision": 1,
-                        "asset_version_id": "version",
-                        "bytes": b"synthetic PNG\x00\xff",
-                        "normalization_proof": {"output_digest": "proof"},
-                    }
-                ],
-            }
-        )
-    return common
+def arguments():
+    return {
+        "source": b"synthetic DOCX \x00\xff",
+        "requested_fonts": ["Arial", "Noto Sans", "Arial"],
+    }
 
 
-def result(*, rich=False):
-    value = {
-        "state": "succeeded",
-        "coverage": "partial",
+def result():
+    from packages.word_intake import prebuilt
+
+    return {
+        "pdf": b"%PDF-synthetic\x00\xff",
+        "font_facts": {
+            "matches": [
+                {"requested": name, "families": name} for name in arguments()["requested_fonts"]
+            ],
+            "charset": "20-7e 4e00-9fff\n",
+        },
+        "isolation": {"checks": {"network_none": True}},
         "conversion_attempted": True,
         "error_code": None,
-        "retryable": False,
-        "gaps": ["SYNTHETIC_UNQUALIFIED"],
-        "pdf": b"%PDF-synthetic\x00\xff",
-        "chain": {"source_docx_digest": "frozen"},
-        "measurements": {"page_count": 2, "bbox": [1.25, 2.5, 3.0, 4.0]},
+        "source_docx_digest": transport._sha(arguments()["source"]),
+        "image_reference": prebuilt.IMAGE,
+        "image_id": prebuilt.IMAGE_ID,
+        "cleanup_confirmed": True,
+        "resource_receipt": {"closed": True, "receipts": [{"closed": True}]},
     }
-    if rich:
-        value.update(
-            {
-                "docx": b"final DOCX\x00\xff",
-                "producer_manifest": {"source": "final"},
-                "render_iterations": [
-                    {
-                        "docx_bytes": b"first DOCX",
-                        "pdf_bytes": b"%PDF-first",
-                        "entries": [{"expected_start_page": None}],
-                    },
-                    {
-                        "docx_bytes": b"final DOCX\x00\xff",
-                        "pdf_bytes": value["pdf"],
-                        "entries": [{"expected_start_page": 2}],
-                    },
-                ],
-                "navigation_proof": {"fixed_point": True},
-                "iteration_summaries": [{"gaps": ["INITIAL_UNKNOWN"]}],
-            }
-        )
-    return value
 
 
 def dump(value):
@@ -89,30 +56,28 @@ def rejected(code, function, *args, **kwargs):
     assert error.value.code == code
 
 
-@pytest.mark.parametrize("lane", ["external", "page", "rich"])
-def test_complete_explicit_binary_round_trip(lane):
-    supplied = arguments(lane)
-    raw = transport._request(lane, supplied)
+def test_complete_explicit_binary_round_trip():
+    supplied = arguments()
+    raw = transport._request(supplied)
     request = transport.decode_request(raw)
     assert request["arguments"] == supplied
+    assert request["operation"] == "convert_docx"
     assert len(request["request_id"]) == 32
-    expected = result(rich=lane == "rich")
-    encoded = transport.encode_response(raw, expected)
-    assert transport.decode_response(raw, encoded) == expected
-    assert supplied == arguments(lane) and expected == result(rich=lane == "rich")
+    expected = result()
+    assert transport.decode_response(raw, transport.encode_response(raw, expected)) == expected
 
 
 @pytest.mark.parametrize(
     "field,value",
     [
-        ("protocol", "wrong"),
+        ("protocol", "word-render-execution/1"),
         ("request_id", "../outside"),
-        ("lane", "shell"),
-        ("unknown", True),
+        ("operation", "shell"),
+        ("lane", "page"),
     ],
 )
 def test_request_envelope_is_closed(field, value):
-    wire = json.loads(transport._request("external", arguments("external")))
+    wire = json.loads(transport._request(arguments()))
     wire[field] = value
     rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport.decode_request, dump(wire))
 
@@ -133,29 +98,36 @@ def test_duplicate_keys_nonfinite_and_bad_json_rejected(raw):
 
 
 @pytest.mark.parametrize(
-    "attack", ["missing", "unknown", "bytes_elsewhere", "path", "bad_mode", "material_unknown"]
+    "slot",
+    [
+        "snapshot",
+        "profile",
+        "materials",
+        "producer_manifest",
+        "iterations",
+        "receipt",
+        "command",
+        "image",
+        "url",
+    ],
 )
-def test_arguments_have_only_lane_slots_and_never_coerce_objects(attack):
-    lane = "rich" if attack in {"bad_mode", "material_unknown"} else "external"
-    value = arguments(lane)
-    if attack == "missing":
-        value.pop("profile")
-    elif attack == "unknown":
-        value["command"] = "id"
-    elif attack == "bytes_elsewhere":
-        value["profile"]["blob"] = b"not an explicit slot"
-    elif attack == "path":
-        value["profile"]["path"] = Path("private")
-    elif attack == "bad_mode":
-        value["mode"] = {}
-    else:
-        value["materials"][0]["path"] = "private"
-    rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport._request, lane, value)
+def test_high_level_or_caller_control_slots_are_not_supported(slot):
+    value = arguments() | {slot: {}}
+    rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport._request, value)
+
+
+@pytest.mark.parametrize("fonts", [["-option"], ["bad/name"], ["a" * 129], [1], ["x\n"], "Arial"])
+def test_invalid_font_names_are_rejected(fonts):
+    rejected(
+        "WORD_EXECUTION_LIMIT" if type(fonts) is not list else "WORD_EXECUTION_PROTOCOL_INVALID",
+        transport._request,
+        arguments() | {"requested_fonts": fonts},
+    )
 
 
 @pytest.mark.parametrize("attack", ["digest", "size", "alphabet", "noncanonical", "unknown"])
 def test_binary_slot_length_digest_and_canonical_base64_are_checked(attack):
-    wire = json.loads(transport._request("external", {"source": b"a", "profile": {}}))
+    wire = json.loads(transport._request({"source": b"a", "requested_fonts": []}))
     slot = wire["arguments"]["source"]
     if attack == "digest":
         slot["sha256"] = "0" * 64
@@ -164,9 +136,9 @@ def test_binary_slot_length_digest_and_canonical_base64_are_checked(attack):
     elif attack == "alphabet":
         slot["base64"] = "!!!!"
     elif attack == "noncanonical":
-        slot["base64"] = "YR=="  # decodes to a, but has nonzero padding bits
+        slot["base64"] = "YR=="
     else:
-        slot["path"] = "ignored-is-not-allowed"
+        slot["path"] = "not allowed"
     rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport.decode_request, dump(wire))
 
 
@@ -175,12 +147,12 @@ def test_binary_slot_length_digest_and_canonical_base64_are_checked(attack):
     [
         ("protocol", "wrong"),
         ("request_id", "0" * 32),
-        ("lane", "page"),
+        ("operation", "page"),
         ("request_sha256", "0" * 64),
     ],
 )
 def test_response_identity_and_exact_raw_request_binding(field, value):
-    request = transport._request("external", arguments("external"))
+    request = transport._request(arguments())
     response = json.loads(transport.encode_response(request, result()))
     response[field] = value
     rejected("WORD_EXECUTION_RESPONSE_MISMATCH", transport.decode_response, request, dump(response))
@@ -193,8 +165,50 @@ def test_response_identity_and_exact_raw_request_binding(field, value):
     )
 
 
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("source_docx_digest", "0" * 64),
+        ("image_reference", "other"),
+        ("image_id", "other"),
+        ("font_facts", {"matches": [], "charset": "20-7e"}),
+    ],
+)
+def test_raw_result_is_bound_to_source_image_and_exact_font_requests(field, value):
+    request = transport._request(arguments())
+    response = json.loads(transport.encode_response(request, result()))
+    response["result"][field] = value
+    rejected("WORD_EXECUTION_RESPONSE_MISMATCH", transport.decode_response, request, dump(response))
+
+
+@pytest.mark.parametrize(
+    "field,value,code",
+    [
+        ("font_facts", None, "WORD_EXECUTION_PROTOCOL_INVALID"),
+        ("cleanup_confirmed", False, "WORD_EXECUTION_CLEANUP_UNCONFIRMED"),
+        ("resource_receipt", None, "WORD_EXECUTION_CLEANUP_UNCONFIRMED"),
+        (
+            "resource_receipt",
+            {"closed": True, "receipts": []},
+            "WORD_EXECUTION_CLEANUP_UNCONFIRMED",
+        ),
+        (
+            "resource_receipt",
+            {"closed": True, "receipts": [{"closed": False}]},
+            "WORD_EXECUTION_CLEANUP_UNCONFIRMED",
+        ),
+        ("coverage", "complete", "WORD_EXECUTION_PROTOCOL_INVALID"),
+        ("render_iterations", [], "WORD_EXECUTION_PROTOCOL_INVALID"),
+    ],
+)
+def test_raw_success_never_loses_facts_cleanup_or_accepts_qualification(field, value, code):
+    rejected(
+        code, transport.encode_response, transport._request(arguments()), result() | {field: value}
+    )
+
+
 def test_error_response_never_becomes_conversion_success():
-    request = transport._request("external", arguments("external"))
+    request = transport._request(arguments())
     raw = transport.encode_error(request, "WORD_CONVERSION_TIMEOUT")
     rejected("WORD_CONVERSION_TIMEOUT", transport.decode_response, request, raw)
     rejected(
@@ -203,79 +217,38 @@ def test_error_response_never_becomes_conversion_success():
     response = json.loads(raw)
     response["result"] = json.loads(transport.encode_response(request, result()))["result"]
     rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport.decode_response, request, dump(response))
+    failed = result() | {
+        "pdf": None,
+        "font_facts": None,
+        "isolation": None,
+        "error_code": "WORD_CONVERSION_TIMEOUT",
+    }
+    assert transport.decode_response(request, transport.encode_response(request, failed)) == failed
 
 
-def test_response_unknown_fields_and_nonfinite_metadata_are_rejected():
-    request = transport._request("external", arguments("external"))
-    response = json.loads(transport.encode_response(request, result()))
-    response["unknown"] = True
-    rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport.decode_response, request, dump(response))
-    del response["unknown"]
-    response["result"]["chain"]["unknown"] = float("inf")
-    rejected("WORD_EXECUTION_PROTOCOL_INVALID", transport.decode_response, request, dump(response))
-
-
-@pytest.mark.parametrize(
-    "attack",
-    [
-        "unknown",
-        "implicit_bytes",
-        "iteration_unknown",
-        "iteration_bytes_missing",
-        "too_many_passes",
-    ],
-)
-def test_result_cannot_drop_iteration_bytes_or_smuggle_other_slots(attack):
-    value = result(rich=True)
-    if attack == "unknown":
-        value["arbitrary"] = "not allowed"
-    elif attack == "implicit_bytes":
-        value["chain"]["bytes"] = b"not a slot"
-    elif attack == "iteration_unknown":
-        value["render_iterations"][0]["path"] = "not allowed"
-    elif attack == "iteration_bytes_missing":
-        del value["render_iterations"][0]["docx_bytes"]
-    else:
-        value["render_iterations"] *= 2
-    rejected(
-        "WORD_EXECUTION_PROTOCOL_INVALID",
-        transport.encode_response,
-        transport._request("rich", arguments("rich")),
-        value,
-    )
-
-
-def test_wire_individual_and_aggregate_binary_limits(monkeypatch):
-    request = transport._request("rich", arguments("rich"))
+def test_wire_and_font_fact_limits(monkeypatch):
+    request = transport._request(arguments())
     monkeypatch.setattr(transport, "MAX_REQUEST_BYTES", 10)
     rejected("WORD_EXECUTION_LIMIT", transport.decode_request, request)
     monkeypatch.setattr(transport, "MAX_REQUEST_BYTES", 160 * 1024 * 1024)
     monkeypatch.setattr(transport, "MAX_SOURCE_BYTES", 2)
-    rejected("WORD_EXECUTION_LIMIT", transport._request, "external", arguments("external"))
+    rejected("WORD_EXECUTION_LIMIT", transport._request, arguments())
     monkeypatch.setattr(transport, "MAX_SOURCE_BYTES", 100 * 1024 * 1024)
-    monkeypatch.setattr(transport, "MAX_RESPONSE_BINARY_BYTES", len(result(rich=True)["pdf"]) + 1)
-    rejected("WORD_EXECUTION_LIMIT", transport.encode_response, request, result(rich=True))
-    monkeypatch.setattr(transport, "MAX_RESPONSE_BINARY_BYTES", 140 * 1024 * 1024)
-    monkeypatch.setattr(transport, "MAX_RESPONSE_BYTES", 10)
+    monkeypatch.setattr(transport, "MAX_PDF_BYTES", 2)
     rejected("WORD_EXECUTION_LIMIT", transport.encode_response, request, result())
-
-
-def test_nested_json_and_multiple_materials_have_total_bounds(monkeypatch):
-    value = arguments("rich")
-    value["materials"] *= 2
-    monkeypatch.setattr(transport, "MAX_REQUEST_BINARY_BYTES", len(value["materials"][0]["bytes"]))
-    rejected("WORD_EXECUTION_LIMIT", transport._request, "rich", value)
-    deep = current = {}
-    for _ in range(70):
-        current["next"] = {}
-        current = current["next"]
-    rejected("WORD_EXECUTION_LIMIT", transport._plain, deep)
+    monkeypatch.setattr(transport, "MAX_PDF_BYTES", 50 * 1024 * 1024)
+    monkeypatch.setattr(transport, "MAX_CHARSET_CHARS", 2)
+    rejected("WORD_EXECUTION_LIMIT", transport.encode_response, request, result())
+    assert transport.MAX_SOURCE_BYTES == 100 * 1024 * 1024
+    assert transport.MAX_PDF_BYTES == 50 * 1024 * 1024
 
 
 def test_default_native_and_invalid_configuration(monkeypatch):
     monkeypatch.delenv(transport.ENVIRONMENT_KEY, raising=False)
     assert transport.enabled() is False
-    rejected("WORD_EXECUTION_NOT_CONFIGURED", transport.call, "external", **arguments("external"))
+    with transport.deadline_budget(0):
+        assert transport._DEADLINE.get() is None
+    rejected("WORD_EXECUTION_NOT_CONFIGURED", transport.call_conversion, **arguments())
     for path in ["", "/tmp/other", "/tmp/word-execution/", "relative"]:
         monkeypatch.setenv(transport.ENVIRONMENT_KEY, path)
         rejected("WORD_EXECUTION_DIRECTORY_INVALID", transport.enabled)
@@ -312,9 +285,7 @@ def host_once(root, *, attack=None):
                 target.write_bytes(b"")
                 target.chmod(0o600)
                 return
-            response = transport.encode_response(
-                request, result(rich=transport.decode_request(request)["lane"] == "rich")
-            )
+            response = transport.encode_response(request, result())
             if attack == "mismatch":
                 value = json.loads(response)
                 value["request_sha256"] = "0" * 64
@@ -328,12 +299,11 @@ def host_once(root, *, attack=None):
     raise AssertionError("No request published")
 
 
-@pytest.mark.parametrize("lane", ["external", "page", "rich"])
-def test_mailbox_roundtrip_and_exact_success_cleanup(mailbox, lane):
+def test_mailbox_roundtrip_and_exact_success_cleanup(mailbox):
     thread = threading.Thread(target=host_once, args=(mailbox,))
     thread.start()
     try:
-        assert transport.call(lane, **arguments(lane)) == result(rich=lane == "rich")
+        assert transport.call_conversion(**arguments()) == result()
     finally:
         thread.join(timeout=5)
     assert not thread.is_alive()
@@ -348,22 +318,22 @@ def test_bad_response_and_host_cancel_leave_revocation_marker(mailbox, attack, c
     thread = threading.Thread(target=host_once, args=(mailbox,), kwargs={"attack": attack})
     thread.start()
     try:
-        rejected(code, transport.call, "external", **arguments("external"))
+        rejected(code, transport.call_conversion, **arguments())
     finally:
         thread.join(timeout=5)
     assert len(list(mailbox.glob("*/cancel"))) == 1
 
 
 def test_timeout_never_accepts_late_response_or_claims_cleanup(mailbox, monkeypatch):
-    monkeypatch.setitem(transport.TIMEOUTS, "external", 0.03)
-    rejected("WORD_EXECUTION_TIMEOUT", transport.call, "external", **arguments("external"))
+    monkeypatch.setattr(transport, "CONVERSION_TIMEOUT", 0.03)
+    rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
     job = next(mailbox.glob("*/cancel")).parent
     raw = (job / "request.json").read_bytes()
     response = transport.encode_response(raw, result())
     (job / "response.json").write_bytes(response)
     assert (job / "cancel").exists()
     # A new UUID request cannot consume the previous job's late response.
-    rejected("WORD_EXECUTION_TIMEOUT", transport.call, "external", **arguments("external"))
+    rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
     assert len(list(mailbox.glob("*/cancel"))) == 2
 
 
@@ -373,7 +343,7 @@ def test_keyboard_interrupt_revokes_without_claiming_executor_stopped(mailbox, m
 
     monkeypatch.setattr(transport.time, "sleep", interrupted)
     with pytest.raises(KeyboardInterrupt):
-        transport.call("external", **arguments("external"))
+        transport.call_conversion(**arguments())
     assert len(list(mailbox.glob("*/cancel"))) == 1
     assert len(list(mailbox.glob("*/request.json"))) == 1
 
@@ -394,7 +364,7 @@ def test_response_decoded_after_deadline_is_revoked(mailbox, monkeypatch):
     thread = threading.Thread(target=host_once, args=(mailbox,))
     thread.start()
     try:
-        rejected("WORD_EXECUTION_TIMEOUT", transport.call, "external", **arguments("external"))
+        rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
     finally:
         thread.join(timeout=5)
     assert not thread.is_alive()
@@ -408,10 +378,77 @@ def test_other_process_lock_rejects_without_publishing_second_job(mailbox):
     lock = os.open(mailbox / ".client.lock", os.O_RDWR | os.O_CREAT, 0o600)
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        rejected("WORD_EXECUTION_BUSY", transport.call, "external", **arguments("external"))
+        rejected("WORD_EXECUTION_BUSY", transport.call_conversion, **arguments())
         assert not list(mailbox.glob("*/request.json"))
     finally:
         os.close(lock)
+
+
+def test_nested_budget_never_extends_and_expired_budget_publishes_nothing(mailbox, monkeypatch):
+    now = [100.0]
+    monkeypatch.setattr(transport.time, "monotonic", lambda: now[0])
+    with pytest.raises(DomainError) as expired:
+        with transport.deadline_budget(240):
+            assert transport._DEADLINE.get() == 340
+            with transport.deadline_budget(500):
+                assert transport._DEADLINE.get() == 340
+            with transport.deadline_budget(120):
+                assert transport._DEADLINE.get() == 220
+            now[0] = 341
+            rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
+            assert not list(mailbox.iterdir())
+    assert expired.value.code == "WORD_EXECUTION_TIMEOUT"
+    assert transport._DEADLINE.get() is None
+
+
+def test_budget_covers_local_work_and_preserves_original_exception(mailbox, monkeypatch):
+    now = [100.0]
+    monkeypatch.setattr(transport.time, "monotonic", lambda: now[0])
+    with pytest.raises(DomainError) as expired:
+        with transport.deadline_budget(120):
+            now[0] = 221
+    assert expired.value.code == "WORD_EXECUTION_TIMEOUT"
+    assert transport._DEADLINE.get() is None
+    with pytest.raises(ValueError, match="original"):
+        with transport.deadline_budget(120):
+            now[0] += 121
+            raise ValueError("original")
+    assert transport._DEADLINE.get() is None
+
+
+@pytest.mark.parametrize("remaining,expected", [(30, 30), (240, 120)])
+def test_conversion_wait_uses_smaller_remaining_budget_and_single_attempt_cap(
+    mailbox, monkeypatch, remaining, expected
+):
+    now = 100.0
+    monkeypatch.setattr(transport.time, "monotonic", lambda: now)
+    calls = []
+
+    class BusyLock:
+        def acquire(self, *, timeout):
+            calls.append(timeout)
+            return False
+
+    monkeypatch.setattr(transport, "_LOCK", BusyLock())
+    with transport.deadline_budget(remaining):
+        rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
+    assert calls == [expected]
+    assert not list(mailbox.iterdir())
+
+
+def test_request_encoding_time_consumes_budget_before_publication(mailbox, monkeypatch):
+    now = [100.0]
+    monkeypatch.setattr(transport.time, "monotonic", lambda: now[0])
+    original = transport._request
+
+    def slow_encode(*args, **kwargs):
+        raw = original(*args, **kwargs)
+        now[0] += 121
+        return raw
+
+    monkeypatch.setattr(transport, "_request", slow_encode)
+    rejected("WORD_EXECUTION_TIMEOUT", transport.call_conversion, **arguments())
+    assert not list(mailbox.iterdir())
 
 
 @LINUX

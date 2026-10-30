@@ -216,14 +216,30 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y openjdk-17-jre-headless
-      - name: Download and verify the official Kafka release
+      - name: Restore the official Kafka release archive
+        id: kafka-archive-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: workbench/.local/ci/bin/kafka.tgz
+          key: kafka-archive-${{ runner.os }}-${{ runner.arch }}-2.13-4.1.2-78ac6e488b1071122f9608dfdb363f6fe50e1dbbc492347002c0398dfbf77e0d8caa5bf794c5937379721004dfe92025937d238b0faf4eb715529417fd43b491-${{ hashFiles('workbench/deploy/ci_checks.py') }}
+      - name: Download the official Kafka release on cache miss
+        if: steps.kafka-archive-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p .local/ci/bin
-          curl --fail --location --retry 3 --output .local/ci/bin/kafka.tgz https://archive.apache.org/dist/kafka/4.1.2/kafka_2.13-4.1.2.tgz
+          curl --fail --location --retry 3 --output .local/ci/bin/kafka.tgz https://downloads.apache.org/kafka/4.1.2/kafka_2.13-4.1.2.tgz \
+            || curl --fail --location --retry 3 --output .local/ci/bin/kafka.tgz https://archive.apache.org/dist/kafka/4.1.2/kafka_2.13-4.1.2.tgz
+      - name: Verify and extract the official Kafka release on every run
+        run: |
           sha512sum --check <<'SHA512'
           78ac6e488b1071122f9608dfdb363f6fe50e1dbbc492347002c0398dfbf77e0d8caa5bf794c5937379721004dfe92025937d238b0faf4eb715529417fd43b491  .local/ci/bin/kafka.tgz
           SHA512
           tar --no-same-owner -xzf .local/ci/bin/kafka.tgz -C .local/ci/bin
+      - name: Cache only the verified Kafka release archive
+        if: steps.kafka-archive-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: workbench/.local/ci/bin/kafka.tgz
+          key: ${{ steps.kafka-archive-cache.outputs.cache-primary-key }}
       - name: Run native outbox, fenced consumer and real Kafka delivery tests
         env:
           CI_POSTGRES_DSN: postgresql://postgres:tender-ci-disposable@127.0.0.1:${{ job.services.postgres.ports['5432'] }}/postgres

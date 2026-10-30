@@ -298,29 +298,12 @@ class Executor:
         return result.stdout
 
     def _dispatch(self, request, receipt):
-        from packages.authoring import prebuilt_generated, prebuilt_rich
         from packages.word_intake import prebuilt
 
-        lane, args = request["lane"], request["arguments"]
-        if lane == "external":
-            return prebuilt.render(args["source"], args["profile"], receipt=receipt)
-        if lane == "page":
-            return prebuilt_generated.render(
-                args["source"],
-                args["snapshot"],
-                args["producer_manifest"],
-                args["profile"],
-                receipt=receipt,
-            )
-        if lane == "rich":
-            return prebuilt_rich.render(
-                args["snapshot"],
-                args["materials"],
-                args["profile"],
-                mode=args["mode"],
-                receipt=receipt,
-            )
-        raise HostError("WORD_EXECUTION_LANE_INVALID")
+        args = request["arguments"]
+        return prebuilt.convert_in_isolation(
+            args["source"], args["requested_fonts"], receipt=receipt
+        )
 
     def stopped(self):
         return self.stop_file is not None and self.stop_file.exists()
@@ -380,7 +363,11 @@ class Executor:
         directory = self.receipts / identity
         directory.mkdir(mode=0o700)
         receipt = directory / f"conversion-{identity}.json"
-        metadata = {"request_id": identity, "lane": request["lane"], "request_bytes": len(raw)}
+        metadata = {
+            "request_id": identity,
+            "operation": request["operation"],
+            "request_bytes": len(raw),
+        }
         result = None
         interrupted = False
         previously_closed = self.cleanup_closed
@@ -396,7 +383,12 @@ class Executor:
         finally:
             recovered = recover_conversion_receipts(directory)
             closed = all(item["closed"] for item in recovered)
-            if isinstance(result, dict) and result.get("state") == "succeeded" and not recovered:
+            if (
+                isinstance(result, dict)
+                and result.get("error_code") is None
+                and result.get("pdf") is not None
+                and (not recovered or result.get("cleanup_confirmed") is not True)
+            ):
                 closed = False
             self.cleanup_closed = previously_closed and closed
             metadata["cleanup_closed"] = closed

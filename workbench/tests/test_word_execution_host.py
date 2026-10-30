@@ -18,7 +18,6 @@ import pytest
 
 from deploy import word_execution_host as host
 from deploy import word_prebuilt_acceptance as acceptance
-from packages.authoring import prebuilt_generated, prebuilt_rich
 from packages.domain.errors import DomainError
 from packages.word_intake import execution_transport as codec
 from packages.word_intake import prebuilt
@@ -36,9 +35,7 @@ def no_real_docker(monkeypatch):
         raise AssertionError("Unit tests must not invoke Docker/providers")
 
     monkeypatch.setattr(subprocess, "run", blocked)
-    monkeypatch.setattr(prebuilt, "render", blocked)
-    monkeypatch.setattr(prebuilt_generated, "render", blocked)
-    monkeypatch.setattr(prebuilt_rich, "render", blocked)
+    monkeypatch.setattr(prebuilt, "convert_in_isolation", blocked)
 
 
 def peer():
@@ -54,35 +51,30 @@ def peer():
     }
 
 
-def arguments(lane):
-    if lane == "external":
-        return {"source": b"synthetic-source", "profile": {}}
-    if lane == "page":
-        return {
-            "source": b"synthetic-source",
-            "snapshot": {},
-            "producer_manifest": {},
-            "profile": {},
-        }
-    return {"snapshot": {}, "materials": [], "profile": {}, "mode": "continuous"}
+def arguments():
+    return {"source": b"synthetic-source", "requested_fonts": ["Arial"]}
 
 
 def result():
     return {
-        "state": "succeeded",
-        "coverage": "complete",
+        "pdf": b"%PDF-synthetic",
+        "font_facts": {
+            "matches": [{"requested": "Arial", "families": "Arial"}],
+            "charset": "20-7e",
+        },
+        "isolation": {},
         "conversion_attempted": True,
         "error_code": None,
-        "retryable": False,
-        "gaps": [],
-        "chain": {},
-        "pdf": b"%PDF-synthetic",
+        "source_docx_digest": codec._sha(arguments()["source"]),
+        "image_reference": prebuilt.IMAGE,
+        "image_id": prebuilt.IMAGE_ID,
+        "cleanup_confirmed": True,
     }
 
 
 class Mailbox:
-    def __init__(self, lane="external"):
-        self.raw = codec._request(lane, arguments(lane), REQUEST)
+    def __init__(self):
+        self.raw = codec._request(arguments(), REQUEST)
         self.metadata = peer()
         self.cancelled = False
         self.calls = []
@@ -132,29 +124,41 @@ def executor(tmp_path, monkeypatch, mailbox=None):
     return value, mailbox
 
 
-@pytest.mark.parametrize("lane", ["external", "page", "rich"])
-def test_allowlisted_lanes_use_existing_provider_and_host_owned_receipts(
-    tmp_path, monkeypatch, lane
-):
-    value, mailbox = executor(tmp_path, monkeypatch, Mailbox(lane))
+def test_fixed_conversion_uses_only_existing_helper_and_host_owned_receipts(tmp_path, monkeypatch):
+    value, mailbox = executor(tmp_path, monkeypatch)
     calls = []
 
-    def render(*args, receipt, **kwargs):
-        calls.append((args, kwargs, receipt))
+    def convert(source, fonts, *, receipt):
+        calls.append((source, fonts, receipt))
         assert receipt == value.receipts / REQUEST / f"conversion-{REQUEST}.json"
         receipt.write_text(json.dumps({"run_id": "d" * 32, "closed": True, "resources": []}))
-        return result()
+        return result() | {"resource_receipt": {"closed": False, "receipts": []}}
 
-    selected = {"external": prebuilt, "page": prebuilt_generated, "rich": prebuilt_rich}[lane]
-    monkeypatch.setattr(selected, "render", render)
+    monkeypatch.setattr(prebuilt, "convert_in_isolation", convert)
     observed = value.poll_once()
     assert observed["state"] == "published" and observed["cleanup_closed"] is True
-    assert codec.decode_response(mailbox.raw, mailbox.response)["pdf"] == b"%PDF-synthetic"
-    assert len(calls) == 1
-    assert sum(c[13] == "read" for c in mailbox.calls if c[0] == "exec") == 1
-    if lane == "rich":
-        assert calls[0][1] == {"mode": "continuous"}
+    decoded = codec.decode_response(mailbox.raw, mailbox.response)
+    assert decoded["pdf"] == b"%PDF-synthetic"
+    assert decoded["resource_receipt"]["closed"] is True
+    assert len(calls) == 1 and calls[0][:2] == (arguments()["source"], ["Arial"])
     assert value.poll_once() is None and len(calls) == 1
+
+
+@pytest.mark.parametrize("attack", ["missing_receipt", "unconfirmed"])
+def test_raw_success_requires_real_closed_receipt(tmp_path, monkeypatch, attack):
+    value, mailbox = executor(tmp_path, monkeypatch)
+
+    def convert(request, receipt):
+        if attack != "missing_receipt":
+            receipt.write_text(json.dumps({"run_id": "d" * 32, "closed": True, "resources": []}))
+        return result() | {"cleanup_confirmed": attack != "unconfirmed"}
+
+    monkeypatch.setattr(value, "_dispatch", convert)
+    observed = value.poll_once()
+    assert observed["cleanup_closed"] is False
+    with pytest.raises(DomainError) as error:
+        codec.decode_response(mailbox.raw, mailbox.response)
+    assert error.value.code == "WORD_EXECUTION_CLEANUP_UNCONFIRMED"
 
 
 @pytest.mark.parametrize(
@@ -354,7 +358,7 @@ def linux_job():
     identity = uuid4().hex
     directory = root / identity
     directory.mkdir(mode=0o700)
-    raw = codec._request("external", arguments("external"), identity)
+    raw = codec._request(arguments(), identity)
     path = directory / "request.json"
     path.write_bytes(raw)
     path.chmod(0o600)
@@ -419,7 +423,9 @@ def test_fixed_helper_atomic_publication_checks_frozen_job(linux_job, revocation
         (directory / "request.json").unlink()
         (directory / "request.json").write_bytes(raw)
         (directory / "request.json").chmod(0o600)
-    response = codec.encode_response(raw, result())
+    response = codec.encode_response(
+        raw, result() | {"resource_receipt": {"closed": True, "receipts": [{"closed": True}]}}
+    )
     published = helper(
         "publish", identity, options={"token": token, "size": len(response)}, data=response
     )
@@ -432,7 +438,9 @@ def test_fixed_helper_response_is_atomic_private_single_link(linux_job):
     read = helper("read", identity)
     assert read.returncode == 0
     token = json.loads(read.stdout.partition(b"\n")[0])
-    response = codec.encode_response(raw, result())
+    response = codec.encode_response(
+        raw, result() | {"resource_receipt": {"closed": True, "receipts": [{"closed": True}]}}
+    )
     published = helper(
         "publish", identity, options={"token": token, "size": len(response)}, data=response
     )
