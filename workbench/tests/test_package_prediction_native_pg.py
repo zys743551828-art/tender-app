@@ -578,7 +578,9 @@ def child(args, value, *, worker=False):
     return completed.stdout
 
 
-def test_test_only_success_restart_duplicates_and_formal_refusal(sandbox, api, database, mirror):
+def test_test_only_success_restart_duplicates_and_formal_refusal(
+    sandbox, api, database, mirror, monkeypatch
+):
     from test_stable_lot_identity import headers
 
     from packages.package_prediction_tasks.application import Jobs
@@ -606,6 +608,47 @@ def test_test_only_success_restart_duplicates_and_formal_refusal(sandbox, api, d
         message = c.execute(
             "SELECT payload FROM design.outbox WHERE operation_id=%s", (queued["operation_id"],)
         ).fetchone()["payload"]
+    # Positive computation uses a broker-delivered outbox message, not a fabricated
+    # direct transport. The uncommitted consumer ACK is deliberately recoverable.
+    import time
+
+    from confluent_kafka import Consumer
+
+    from apps.worker import engine
+
+    monkeypatch.setenv("WORKER_DATABASE_DSN", database["worker_dsn"])
+    consumer = Consumer(
+        {
+            "bootstrap.servers": os.environ["KAFKA_BOOTSTRAP_SERVERS"],
+            "group.id": "prediction-test-success-" + uuid4().hex,
+            "auto.offset.reset": "earliest",
+            "enable.auto.commit": False,
+        }
+    )
+    try:
+        consumer.subscribe(["tender.task.review.v1"])
+        engine.relay(once=True)
+        delivered_payload = None
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            delivered = consumer.poll(1)
+            if delivered is not None and not delivered.error():
+                candidate = json.loads(delivered.value())
+                if candidate["operation_id"] == queued["operation_id"]:
+                    delivered_payload = candidate
+                    break
+        assert delivered_payload == message
+        message = delivered_payload
+    finally:
+        consumer.close()
+    with connection() as c:
+        assert (
+            c.execute(
+                "SELECT published_at IS NOT NULL AS published FROM design.outbox WHERE operation_id=%s",
+                (queued["operation_id"],),
+            ).fetchone()["published"]
+            is True
+        )
     root, index, _ = mirror
     program = """
 import json,sys
