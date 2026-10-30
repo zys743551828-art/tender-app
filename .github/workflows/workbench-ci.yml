@@ -405,6 +405,50 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+  prediction-sandbox:
+    name: Test-only prediction publication on isolated PostgreSQL 17, Kafka and S3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: workbench
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            workbench/requirements.lock.txt
+            workbench/requirements-fusion-checks.txt
+      - name: Install locked Python dependencies
+        run: python -m pip install -r requirements-fusion-checks.txt
+      - name: Prepare existing pinned disposable services
+        run: |
+          docker pull pgvector/pgvector@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d
+          docker pull apache/kafka@sha256:5cc2a2fd93fa2687b44015eee04fb2c3edd9e526bd64bf8bec5ff1e268772e0e
+          mkdir -p .local/ci/bin
+          curl --fail --location --retry 3 --output .local/ci/bin/seaweedfs.tar.gz https://github.com/seaweedfs/seaweedfs/releases/download/4.48/linux_amd64.tar.gz
+          sha256sum --check <<'SHA256'
+          4a7d108384d044d95212d1342cdda9533fa55842c1c9b41f606ca3c8a9561124  .local/ci/bin/seaweedfs.tar.gz
+          SHA256
+      - name: Exercise test-only qualification, worker and API restart and restore rejection
+        run: python deploy/prediction_native_acceptance.py --seaweed-archive .local/ci/bin/seaweedfs.tar.gz --output .local/ci/prediction-sandbox
+      - name: Preserve nonsecret mechanism evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: prediction-sandbox-${{ github.sha }}
+          path: |
+            workbench/.local/ci/prediction-sandbox/tests.*
+            workbench/.local/ci/prediction-sandbox/result.json
+            workbench/.local/ci/prediction-sandbox/cleanup.txt
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
+
   frontend:
     name: Frontend quality, tests and build
     runs-on: ubuntu-24.04

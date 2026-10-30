@@ -156,7 +156,7 @@ def acceptance(archive: Path, output: Path) -> int:
                     "kafka_image": KAFKA,
                     "seaweed_archive_sha256": WEED_SHA,
                     "real_model_calls": 0,
-                    "scope": "native installation and refusal/transport; not certified positive prediction",
+                    "scope": "native installation, synthetic test-only publication and refusal/transport; not production qualification",
                 },
                 indent=2,
             )

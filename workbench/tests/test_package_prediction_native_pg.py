@@ -1,8 +1,13 @@
 """Disposable native prediction SQL acceptance; never a real model certification."""
 # ruff: noqa: F811 -- shared pytest fixtures
 
+import json
 import os
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from uuid import uuid4
 
 import psycopg
 import pytest
@@ -10,6 +15,13 @@ import test_package_history_pg as history
 from test_package_prediction_reports import cohort, material, mirror  # noqa: F401
 
 from deploy.extended_recovery import MATERIAL_SQL
+from packages.domain.errors import DomainError
+from packages.domain.runtime import connection
+from packages.model_governance.common import GovernanceError
+from packages.package_model_live.producer import Executor
+from packages.package_prediction_tasks.storage import Objects
+from packages.prediction_sandbox.application import Sandbox
+from packages.prediction_sandbox.native import Transactions as SandboxTransactions
 
 ROOT = Path(__file__).resolve().parents[1]
 pytestmark = pytest.mark.skipif(
@@ -512,3 +524,301 @@ with TestClient(app) as client:
         .fetchone()["n"]
         == 0
     )
+
+
+@pytest.fixture(scope="module")
+def installed(database):
+    database["owner"].execute((ROOT / "deploy/sql/prediction-sandbox.sql").read_text())
+    return database
+
+
+@pytest.fixture
+def sandbox(api, installed, mirror):
+    root, index, packet = mirror
+    bid = packet["source"]["bid_id"]
+    # Source and CAS identity are unchanged. Only this new disposable database is seeded.
+    template = native_bid(api)
+    owner = installed["owner"]
+    owner.execute(
+        "INSERT INTO design.bids(id,title,settings,created_by) SELECT %s,'synthetic sandbox',settings,created_by FROM design.bids WHERE id=%s ON CONFLICT DO NOTHING",
+        (bid, template),
+    )
+    owner.execute(
+        "INSERT INTO design.bid_profiles(bid_id,round_id,bidder_id,phase) SELECT %s,round_id,bidder_id,'working' FROM design.bid_profiles WHERE bid_id=%s ON CONFLICT DO NOTHING",
+        (bid, template),
+    )
+    service = Sandbox(SandboxTransactions(connection), Objects(), Executor(root, index))
+    certificate = service.issue(
+        api["actor"],
+        bid,
+        uuid4(),
+        Objects().put(packet),
+        (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
+    )
+    body = {
+        "actor": api["actor"],
+        "bid": bid,
+        "scope": packet["source"]["scope_id"],
+        "certificate": certificate["id"],
+        "command": str(uuid4()),
+    }
+    return service, certificate, body
+
+
+def child(args, value, *, worker=False):
+    completed = subprocess.run(
+        [sys.executable, *args],
+        input=json.dumps(value),
+        text=True,
+        capture_output=True,
+        env=os.environ | ({"WORKER_DATABASE_DSN": value["worker_dsn"]} if worker else {}),
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    return completed.stdout
+
+
+def test_test_only_success_restart_duplicates_and_formal_refusal(sandbox, api, database, mirror):
+    from test_stable_lot_identity import headers
+
+    from packages.package_prediction_tasks.application import Jobs
+    from packages.package_prediction_tasks.native import Transactions
+
+    service, certificate, body = sandbox
+    cancelled = body | {"command": str(uuid4())}
+    service.submit(cancelled)
+    assert service.cancel(cancelled)["state"] == "cancelled"
+    with pytest.raises((DomainError, GovernanceError)):
+        service.advance(cancelled)
+    assert (
+        service.issue(
+            body["actor"],
+            body["bid"],
+            certificate["request"]["command_id"],
+            certificate["request"]["source_ref"],
+            certificate["request"]["valid_until"],
+        )
+        == certificate
+    )
+    queued = service.submit(body)
+    assert service.submit(body) == queued  # lost submit ACK
+    with connection() as c:
+        message = c.execute(
+            "SELECT payload FROM design.outbox WHERE operation_id=%s", (queued["operation_id"],)
+        ).fetchone()["payload"]
+    root, index, _ = mirror
+    program = """
+import json,sys
+from apps.worker import engine
+from packages.package_model_live.producer import Executor
+from packages.package_prediction_tasks import worker
+v=json.loads(sys.stdin.read())
+worker.configure(Executor(v['root'],v['index']))
+engine.handle(v['message'])
+"""
+    for _ in range(2):
+        child(
+            ["-c", program],
+            {
+                "root": str(root),
+                "index": str(index),
+                "message": message,
+                "worker_dsn": database["worker_dsn"],
+            },
+            worker=True,
+        )
+    # Two fresh application consumers resume the persisted operation and publication.
+    arguments = [
+        "-m",
+        "packages.prediction_sandbox.cli",
+        "--store",
+        str(root),
+        "--index",
+        str(index),
+    ]
+    for key, value in body.items():
+        arguments += ["--" + key, value]
+    api_program = r"""
+import json,sys
+from fastapi.testclient import TestClient
+from apps.api.prediction_sandbox import create_app
+from packages.domain.runtime import connection
+from packages.package_model_live.producer import Executor
+from packages.package_prediction_tasks.storage import Objects
+from packages.prediction_sandbox.application import Sandbox
+from packages.prediction_sandbox.native import Transactions
+v=json.loads(sys.stdin.read());b=v['body']
+app=create_app(Sandbox(Transactions(connection),Objects(),Executor(v['root'],v['index'])))
+with TestClient(app) as client:
+    client.cookies.update(v['cookies'])
+    base=f"/test-only/bids/{b['bid']}/tasks"
+    payload={'command_id':b['command'],'scope_id':b['scope'],'certificate_id':b['certificate']}
+    if v['advance']:
+        response=client.post(base+'/advance',json=payload,headers={'Origin':'http://identity-v2.test','X-CSRF-Token':v['csrf']})
+    else:
+        response=client.get(base+'/'+b['command'],params={'scope_id':b['scope'],'certificate_id':b['certificate']})
+    assert response.status_code==200,response.text
+    assert response.headers['X-Prediction-Test-Only']=='true'
+    assert response.headers['Cache-Control']=='private, no-store'
+    print(json.dumps(response.json()))
+"""
+    application_input = {
+        "root": str(root),
+        "index": str(index),
+        "body": body,
+        "cookies": dict(api["client"].cookies),
+        "csrf": api["csrf"],
+    }
+    published = [
+        json.loads(child(["-c", api_program], application_input | {"advance": advance}))
+        for advance in (True, False)
+    ]
+    assert json.loads(child(arguments + ["advance"], {})) == published[0]
+
+    assert published[0] == published[1] == service.read(body)
+    assert published[0]["state"] == "test_published"
+    assert published[0]["result"]["test_only"] is True
+    assert published[0]["result"]["production_eligible"] is False
+    from packages.package_prediction.infrastructure import NativeTransactions
+    from packages.package_prediction_reports.application import Reports
+
+    for format in ("json", "docx"):
+        with pytest.raises(GovernanceError):
+            Reports(
+                NativeTransactions(connection),
+                lambda *args: pytest.fail("test result reached formal projector"),
+            ).render(
+                body["actor"],
+                body["bid"],
+                body["scope"],
+                body["command"],
+                format,
+            )
+    assert float(published[0]["result"]["value"]) >= 0
+    assert certificate["test_only"] and not certificate["production_eligible"]
+    with connection() as c:
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM design.effect_receipts WHERE operation_id=%s",
+                (queued["operation_id"],),
+            ).fetchone()["n"]
+            == 1
+        )
+    # Unmodified production consumer cannot promote the same task/certificate/result.
+    api["app"].state.package_prediction_jobs = Jobs(Transactions(connection), Objects())
+    path = f"/api/v1/bids/{body['bid']}/technical-scopes/{body['scope']}"
+    response = api["client"].post(
+        path + "/prediction-tasks",
+        json={"command_id": str(uuid4()), "certificate_id": certificate["id"]},
+        headers=headers(api),
+    )
+    assert response.status_code in {403, 409}
+    assert (
+        database["owner"]
+        .execute("SELECT count(*) AS n FROM package_prediction.results")
+        .fetchone()["n"]
+        == 0
+    )
+    assert (
+        database["owner"]
+        .execute("SELECT count(*) AS n FROM package_model_admission.certificates")
+        .fetchone()["n"]
+        == 0
+    )
+    command = str(uuid4())
+    service.revoke(body, command, "synthetic revocation")
+    service.revoke(body, command, "synthetic revocation")
+    assert service.read(body)["result"] is None
+    with pytest.raises(DomainError):
+        service.advance(body)
+
+
+def test_permissions_identity_closed_request_and_cancellation(sandbox, database):
+    service, certificate, body = sandbox
+    with psycopg.connect(database["worker_dsn"]) as c:
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            c.execute("SELECT * FROM prediction_sandbox.results")
+    with psycopg.connect(database["api_dsn"]) as c:
+        with pytest.raises(psycopg.errors.InsufficientPrivilege):
+            c.execute("INSERT INTO prediction_sandbox.results DEFAULT VALUES")
+    with pytest.raises(DomainError):
+        service.submit(body | {"actor": str(uuid4())})
+    with pytest.raises(DomainError):
+        service.submit(body | {"scope": str(uuid4())})
+    with service.transactions(body) as tx:
+        with pytest.raises(DomainError):
+            service.call(tx, body, "issue", {"verified": True})
+
+
+def test_sandbox_expiry_and_dump_restore_cannot_rebind(sandbox, database):
+    """Actual pg_dump/restore preserves evidence but cannot rebind its environment."""
+    from psycopg import sql
+    from psycopg.conninfo import make_conninfo
+    from psycopg.rows import dict_row
+
+    service, certificate, body = sandbox
+    container = os.environ["FUSION_PREDICTION_PG_CONTAINER"]
+    source_name = database["owner"].info.dbname
+    # No credentials in argv; tools use the disposable container's local socket.
+    dump = subprocess.run(
+        ["docker", "exec", container, "pg_dump", "-U", "postgres", "-Fc", source_name],
+        check=True,
+        capture_output=True,
+    ).stdout
+    target = "fusion_sandbox_restore_" + uuid4().hex[:10]
+    with psycopg.connect(os.environ["FUSION_REQUIREMENTS_ADMIN_DSN"], autocommit=True) as admin:
+        admin.execute(
+            sql.SQL("CREATE DATABASE {} TEMPLATE template0").format(sql.Identifier(target))
+        )
+        try:
+            subprocess.run(
+                [
+                    "docker",
+                    "exec",
+                    "-i",
+                    container,
+                    "pg_restore",
+                    "-U",
+                    "postgres",
+                    "--exit-on-error",
+                    "-d",
+                    target,
+                ],
+                input=dump,
+                check=True,
+                capture_output=True,
+            )
+            with psycopg.connect(
+                make_conninfo(database["api_dsn"], dbname=target), row_factory=dict_row
+            ) as restored:
+                with pytest.raises(
+                    psycopg.errors.ObjectNotInPrerequisiteState, match="sandbox_environment_changed"
+                ):
+                    restored.execute(
+                        "SELECT prediction_sandbox.operate(%s,%s,%s,'prepare','{}')",
+                        (body["actor"], body["bid"], certificate["id"]),
+                    )
+            with psycopg.connect(
+                make_conninfo(os.environ["FUSION_REQUIREMENTS_ADMIN_DSN"], dbname=target)
+            ) as restored:
+                assert restored.execute(
+                    "SELECT count(*) FROM package_prediction.results"
+                ).fetchone() == (0,)
+                assert restored.execute(
+                    "SELECT count(*) FROM package_model_admission.certificates"
+                ).fetchone() == (0,)
+        finally:
+            admin.execute(sql.SQL("DROP DATABASE {} WITH(FORCE)").format(sql.Identifier(target)))
+    # Expiry is tested with a server-evaluated deadline, not by changing authority rows.
+    import time
+
+    expiring = service.issue(
+        body["actor"],
+        body["bid"],
+        uuid4(),
+        certificate["request"]["source_ref"],
+        (datetime.now(timezone.utc) + timedelta(seconds=1)).isoformat(),
+    )
+    time.sleep(1.05)
+    with pytest.raises(DomainError):
+        service.submit(body | {"certificate": expiring["id"]})
