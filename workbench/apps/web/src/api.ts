@@ -184,6 +184,7 @@ export const parseNames: Record<string, string> = {
   failed: "解析失败",
 };
 export function sizeLabel(bytes: number) {
+  if (bytes === 0) return "0 B";
   return bytes < 1024 * 1024
     ? `${Math.max(1, Math.round(bytes / 1024))} KB`
     : `${(bytes / 1024 / 1024).toFixed(1)} MB`;

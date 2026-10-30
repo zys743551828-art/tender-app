@@ -170,7 +170,9 @@ def test_equal_timestamps_use_stable_id_tiebreaker_and_cursor_is_bid_scoped(nati
     assert w["client"].get(path, params={"cursor": foreign_plan}).status_code == 404
 
 
-def browser_history(w, expected, journeys=None):
+def browser_history(
+    w, expected, journeys=None, *, browser_script="scripts/check-pricing-native-browser.mjs"
+):
     import time
     import urllib.request
 
@@ -226,7 +228,7 @@ def browser_history(w, expected, journeys=None):
             }
         }
         completed = subprocess.run(
-            ["node", "scripts/check-pricing-native-browser.mjs"],
+            ["node", browser_script],
             cwd=ROOT / "apps/web",
             env=browser_env,
             input=json.dumps(
