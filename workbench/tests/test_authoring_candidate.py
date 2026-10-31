@@ -31,7 +31,8 @@ def test_explicit_authoring_plan_is_complete_ordered_and_still_optional():
     document = candidate.plan()
     frozen = candidate.checked(document)
     assert tuple(fresh.BASE_SQL) == base
-    assert len(base) == 37 and len(frozen) == 45
+    assert len(base) == 38 and len(frozen) == 46
+    assert "deploy/sql/word-adoption-command-receipts.sql" in base
     assert [item["path"] for item in document["base_sql"]] == list(base)
     assert tuple(item.path for item in frozen) == (*base, *candidate.OPTIONAL_SQL)
     assert not set(base) & set(candidate.OPTIONAL_SQL)
