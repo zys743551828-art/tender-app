@@ -96,10 +96,10 @@ export function ProjectLifecyclePanel({
     if (!value) return;
     setIntent(null);
     setReason("");
-    setSaved(true);
-    await resource.reload();
     onChanged();
     window.dispatchEvent(new Event("server-snapshot-change"));
+    await resource.reload();
+    setSaved(true);
   }
   async function refresh() {
     if (busy) return;

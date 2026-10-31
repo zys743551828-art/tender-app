@@ -329,6 +329,9 @@ def observe(path, action):
     ):
         raise spec.ConfigurationError("DESKTOP_TRANSPORT_BINDING_CHANGED")
     # Source edits must not prevent observing or stopping this exact saved group.
+    stop_arguments = (
+        ("--profile", "model", "stop") if request.get("model_configured", False) else ("stop",)
+    )
     word_result = None
     if request["version"] == compose.WORD_VERSION:
         from deploy import fusion_desktop_word
@@ -375,15 +378,15 @@ def observe(path, action):
                         path, request, peers_stopped=before["ready"] and drained
                     )
                 finally:
-                    _run(_command(path, request, "full.compose.json", "stop"), timeout=120)
+                    _run(_command(path, request, "full.compose.json", *stop_arguments), timeout=120)
             return {
                 "project": compose.project(request),
                 "action": action,
                 "volumes_deleted": False,
                 "word": word_result,
             }
-    arguments = ("ps", "--all") if action == "status" else ("stop",)
-    _run(_command(path, request, "full.compose.json", *arguments), timeout=120)
+    full_arguments = ("ps", "--all") if action == "status" else stop_arguments
+    _run(_command(path, request, "full.compose.json", *full_arguments), timeout=120)
     return {
         "project": compose.project(request),
         "action": action,
@@ -458,6 +461,18 @@ def main(argv=None):
         )
         print(json.dumps({"ok": False, "code": code}))
         return 2
+    if args.action == "stop" and "word" in result:
+        word = result["word"]
+        if (
+            not isinstance(word, dict)
+            or word.get("cleanup_closed") is not True
+            or not (
+                word.get("state") == "stopped"
+                or (word.get("state") == "not_started" and word.get("peers") == {})
+            )
+        ):
+            print(json.dumps({**result, "ok": False, "code": "DESKTOP_WORD_STOP_UNCONFIRMED"}))
+            return 2
     ready = args.action != "status" or result.get("word", {}).get("ready", True)
     print(json.dumps({"ok": ready, **result}))
     return 0 if ready else 2

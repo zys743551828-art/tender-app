@@ -12,7 +12,11 @@ type Snapshot<T> = {
 export function useResource<T>(path: string | null, pollMs = 0) {
   const [snapshot, setSnapshot] = useState<Snapshot<T> | null>(null);
   const generation = useRef(0);
-  const inFlight = useRef<{ path: string; generation: number } | null>(null);
+  const inFlight = useRef<{
+    path: string;
+    generation: number;
+    completion: Promise<void>;
+  } | null>(null);
   const invalidate = useCallback(() => {
     generation.current++;
     inFlight.current = null;
@@ -24,9 +28,14 @@ export function useResource<T>(path: string | null, pollMs = 0) {
       inFlight.current?.path === path &&
       inFlight.current.generation === generation.current
     )
-      return;
+      // A caller awaiting reload must also await an already active read.
+      return inFlight.current.completion;
     const current = ++generation.current;
-    inFlight.current = { path, generation: current };
+    let complete!: () => void;
+    const completion = new Promise<void>((resolve) => {
+      complete = resolve;
+    });
+    inFlight.current = { path, generation: current, completion };
     setSnapshot((old) => ({
       path,
       data: old?.path === path ? old.data : undefined,
@@ -54,7 +63,9 @@ export function useResource<T>(path: string | null, pollMs = 0) {
         }));
     } finally {
       if (inFlight.current?.generation === current) inFlight.current = null;
+      complete();
     }
+    return completion;
   }, [path, supported]);
   useEffect(() => {
     void reload();

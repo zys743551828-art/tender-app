@@ -297,3 +297,81 @@ it("foreign view and tampered stored target fail closed", async () => {
     screen.getByRole("button", { name: "恢复原状态变更回执" }),
   ).toBeDisabled();
 });
+
+it("announces success only after the shared refresh settles and still rejects a later stale reopen intent", async () => {
+  let finishRefresh!: (response: Response) => void;
+  let finishLaterRead!: (response: Response) => void;
+  const refresh = new Promise<Response>((resolve) => {
+    finishRefresh = resolve;
+  });
+  const laterRead = new Promise<Response>((resolve) => {
+    finishLaterRead = resolve;
+  });
+  const terminated: ProjectLifecycleView = {
+    ...initial,
+    phase: "terminated",
+    revision: 2,
+    allowed_actions: ["reopen"],
+  };
+  let gets = 0;
+  const writes: RequestInit[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        writes.push(options);
+        return json(terminated, 200, '"life:2"');
+      }
+      gets++;
+      return gets === 1 ? json(initial) : gets === 2 ? refresh : laterRead;
+    }),
+  );
+  const changed = vi.fn();
+  render(
+    <ProjectLifecyclePanel bidId="bid" memberId="member" onChanged={changed} />,
+  );
+  const user = userEvent.setup();
+  const terminate = await screen.findByRole("button", {
+    name: "终止本轮工作",
+  });
+  await waitFor(() => expect(terminate).toBeEnabled());
+  await user.click(terminate);
+  await user.type(screen.getByLabelText("本次状态变更原因"), "合成终止原因");
+  await user.click(screen.getByRole("button", { name: "确认终止本轮工作" }));
+  await waitFor(() => expect(gets).toBe(2));
+  expect(changed).toHaveBeenCalledTimes(1);
+  expect(screen.queryByText(/状态变更已记录/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "重新打开项目" }),
+  ).not.toBeInTheDocument();
+  await act(async () => {
+    finishRefresh(json(terminated, 200, '"life:2"'));
+  });
+  await screen.findByText(/状态变更已记录/);
+  expect(gets).toBe(2);
+  const reopen = screen.getByRole("button", {
+    name: "重新打开项目",
+  });
+  expect(reopen).toBeEnabled();
+  await user.click(reopen);
+  await user.type(
+    screen.getByLabelText("本次状态变更原因"),
+    "合成快速恢复原因",
+  );
+  const confirm = screen.getByRole("button", {
+    name: "确认重新打开项目",
+  });
+  expect(confirm).toBeEnabled();
+  act(() => {
+    window.dispatchEvent(new Event("server-snapshot-change"));
+  });
+  expect(confirm).toBeDisabled();
+  await act(async () => {
+    finishLaterRead(json({ ...terminated, revision: 3 }, 200, '"life:3"'));
+  });
+  await screen.findByText(/项目状态已变化/);
+  expect(confirm).toBeDisabled();
+  fireEvent.submit(screen.getByLabelText("本次状态变更原因").closest("form")!);
+  expect(writes).toHaveLength(1);
+  expect(JSON.parse(String(writes[0].body)).action).toBe("terminate");
+});

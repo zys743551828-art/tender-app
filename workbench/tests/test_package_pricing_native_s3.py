@@ -222,6 +222,8 @@ def browser_history(
                 "LANG",
                 "TMPDIR",
                 "TEMP",
+                "SYSTEMROOT",
+                "WINDIR",
                 "PLAYWRIGHT_MODULE",
                 "PLAYWRIGHT_BROWSERS_PATH",
                 "CHROMIUM_EXECUTABLE",

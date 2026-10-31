@@ -515,3 +515,47 @@ while not stop.exists() and time.monotonic()<deadline:time.sleep(.02)
     finally:
         stopfile.touch()
         assert process.wait(timeout=12) == 0
+
+
+@pytest.mark.parametrize(
+    "word,expected",
+    [
+        (None, 2),
+        ({}, 2),
+        ({"state": "stopped", "cleanup_closed": False}, 2),
+        ({"state": "unavailable", "cleanup_closed": True}, 2),
+        ({"state": "stopped", "cleanup_closed": True}, 0),
+        ({"state": "not_started", "cleanup_closed": True, "peers": {}}, 0),
+        ({"state": "not_started", "cleanup_closed": True}, 2),
+        ({"state": "unknown", "cleanup_closed": True, "peers": {}}, 2),
+    ],
+)
+def test_cli_stop_requires_confirmed_word_shutdown(monkeypatch, capsys, tmp_path, word, expected):
+    from deploy import fusion_desktop as cli
+
+    monkeypatch.setenv("WORKBENCH_ENV_FILE", "explicit-stop-command-unit")
+    observed = []
+
+    def observe(path, action):
+        observed.append((path, action))
+        return {"project": "synthetic-owned-group", "action": action, "word": word}
+
+    monkeypatch.setattr(cli, "observe", observe)
+    assert cli.main(["stop", "--directory", str(tmp_path)]) == expected
+    assert observed == [(tmp_path, "stop")]
+    result = json.loads(capsys.readouterr().out)
+    assert result["ok"] is (expected == 0)
+    assert result["word"] == word
+    if expected:
+        assert result["code"] == "DESKTOP_WORD_STOP_UNCONFIRMED"
+
+
+def test_cli_stop_without_word_overlay_keeps_legacy_success(monkeypatch, capsys, tmp_path):
+    from deploy import fusion_desktop as cli
+
+    monkeypatch.setenv("WORKBENCH_ENV_FILE", "explicit-stop-command-unit")
+    monkeypatch.setattr(
+        cli, "observe", lambda path, action: {"action": action, "bootstrap_only": True}
+    )
+    assert cli.main(["stop", "--directory", str(tmp_path)]) == 0
+    assert json.loads(capsys.readouterr().out)["ok"] is True

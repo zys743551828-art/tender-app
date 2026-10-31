@@ -326,11 +326,14 @@ def test_changed_word_bundle_is_rejected_for_start_but_saved_group_can_be_identi
 
 
 @pytest.mark.parametrize("worker_stop_fails", (False, True))
+@pytest.mark.parametrize("enable_model", (False, True))
 def test_word_stop_drains_before_executor_stop_and_always_stops_remaining_services(
-    word_request, plan, tmp_path, monkeypatch, worker_stop_fails
+    word_request, plan, tmp_path, monkeypatch, worker_stop_fails, enable_model
 ):
     from deploy import fusion_desktop_word as manager
 
+    if enable_model:
+        word_request["model_configured"] = plan["model_configured"] = True
     monkeypatch.setattr(desktop, "ROOT", tmp_path)
     path = tmp_path / ".local/full-desktop/wordstop"
     path.mkdir(parents=True)
@@ -349,6 +352,7 @@ def test_word_stop_drains_before_executor_stop_and_always_stops_remaining_servic
         )
     )
     events = []
+    final_profiles = []
     monkeypatch.setattr(manager, "status", lambda *_: {"ready": True})
 
     def stop(*_, peers_stopped=False):
@@ -358,6 +362,10 @@ def test_word_stop_drains_before_executor_stop_and_always_stops_remaining_servic
     def run(command, **_):
         arguments = command[command.index("stop") :]
         events.append(tuple(arguments))
+        if arguments == ["stop"]:
+            final_profiles.extend(
+                command[i + 1] for i, arg in enumerate(command[:-1]) if arg == "--profile"
+            )
         if worker_stop_fails and "worker-document" in arguments:
             raise spec.ConfigurationError("SYNTHETIC_STOP_FAILURE")
 
@@ -375,6 +383,8 @@ def test_word_stop_drains_before_executor_stop_and_always_stops_remaining_servic
         ("executor-stop", not worker_stop_fails),
         ("stop",),
     ]
+
+    assert final_profiles == (["model"] if enable_model else [])
 
 
 @pytest.mark.parametrize("enable_model", (False, True))
@@ -432,3 +442,9 @@ def test_explicit_model_file_has_no_error_value_disclosure(tmp_path):
         control._model_file(path)
     assert str(error.value) == "DESKTOP_MODEL_PROFILE_INVALID"
     assert "synthetic-secret" not in str(error.value)
+
+
+def test_legacy_model_flag_is_rejected_rather_than_treated_as_declared(request_value):
+    request_value["model_configured"] = True
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_REQUEST_INVALID"):
+        desktop.validate_request(request_value)
