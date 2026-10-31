@@ -110,7 +110,7 @@ def observe(c, bid, document, *, current=False, expected_digest=None):
             c,
             """SELECT a.id,a.payload,a.actor_id,cmd.command_kind,cmd.target_id,
             cmd.actor_id AS command_actor,cmd.request_digest,cmd.response
-            FROM design.audit_entries a JOIN design.commands cmd ON cmd.id=a.command_id
+            FROM design.audit_entries a LEFT JOIN design.word_adoption_command_receipts cmd ON cmd.id=a.command_id
             WHERE a.bid_id=%s
             AND event_type='word.material_adoption_recorded'
             AND payload->>'state'='adopted' AND payload->>'document_version_id'=%s

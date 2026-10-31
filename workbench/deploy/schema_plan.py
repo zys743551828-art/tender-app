@@ -32,6 +32,7 @@ BASE_SQL = (
     "deploy/sql/bid-package-fact-scope-runtime-grants.sql",
     "deploy/sql/bid-package-dependency-plan-runtime-grants.sql",
     "deploy/sql/bid-package-review-run-runtime-grants.sql",
+    "deploy/sql/word-adoption-command-receipts.sql",
     "packages/contracts/sql/bid-package-rule-corrections.sql",
     "deploy/sql/bid-package-review-decision-runtime-grants.sql",
     "deploy/sql/bid-package-report-runtime-grants.sql",

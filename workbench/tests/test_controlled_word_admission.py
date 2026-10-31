@@ -43,6 +43,14 @@ def world():
     }
     for table, columns in tables.items():
         db.execute(f"CREATE TABLE design.{table} ({columns})")
+    db.execute("""CREATE VIEW design.word_adoption_command_receipts AS
+        SELECT c.id,c.actor_id,c.command_kind,c.target_id,c.request_digest,
+               json_object('body',json_extract(c.response,'$.body')) AS response
+        FROM commands c WHERE c.command_kind='adopt_word_render' AND EXISTS (
+          SELECT 1 FROM audit_entries a WHERE a.command_id=c.id AND a.actor_id=c.actor_id
+          AND a.event_type='word.material_adoption_recorded'
+          AND json_extract(a.payload,'$.state')='adopted'
+          AND json_extract(a.payload,'$.source_document_version_id')=c.target_id)""")
     (
         bid,
         word,
@@ -235,6 +243,23 @@ def test_exact_current_and_historical_preserve_distinct_docx_pdf_id_size_digest(
     assert current["source_sha256"] == "a" * 64 != current["pdf_sha256"]
     assert current["source_byte_size"] == 5000 and current["pdf_byte_size"] == 2000
     assert admission.eligible(world.c, world.bid, world.pdf)
+
+
+def test_admission_reads_only_the_scoped_command_receipt_view(world):
+    observe(world)
+    assert any("design.word_adoption_command_receipts" in query for query in world.queries)
+    assert all("design.commands" not in query for query in world.queries)
+
+
+def test_invalid_adoption_is_not_hidden_by_a_valid_adoption(world):
+    world.db.execute(
+        """INSERT INTO design.audit_entries
+           SELECT ?,bid_id,event_type,payload,3,?,command_id FROM design.audit_entries
+           WHERE event_type='word.material_adoption_recorded'""",
+        (uid(90), uid(91)),
+    )
+    with pytest.raises(PackageError):
+        observe(world)
 
 
 @pytest.mark.parametrize(
