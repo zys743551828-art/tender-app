@@ -231,6 +231,7 @@ class NativeMemory:
     def put_object(self, key, data, headers):
         self.calls.append(("put", key, headers))
         assert headers["x-oss-forbid-overwrite"] == "true"
+        assert headers["x-oss-object-acl"] == "private"
         if key in self.objects:
             raise oss2.exceptions.ServerError(409, {}, "collision", {"Code": "FileAlreadyExists"})
         self.objects[key] = data
@@ -258,6 +259,41 @@ class NativeMemory:
         self.calls.append(("delete", key))
         self.objects.pop(key, None)
         return SimpleNamespace(headers={})
+
+
+def test_oss_storage_from_env_put_is_explicitly_private_without_bucket_mutation(monkeypatch):
+    oss_env(monkeypatch)
+    monkeypatch.setenv("OBJECT_STORE_PREFIX", "workbench-checks/private-policy/")
+    native = NativeMemory()
+    constructed = []
+
+    def bucket(auth, endpoint, bucket_name, **kwargs):
+        assert isinstance(auth, oss2.AuthV4)
+        assert endpoint == "https://oss-cn-hangzhou.aliyuncs.com"
+        assert bucket_name == "tender-base" and kwargs["region"] == "cn-hangzhou"
+        assert isinstance(kwargs["session"], SafeSession)
+        constructed.append(True)
+        return native
+
+    monkeypatch.setattr(oss2, "Bucket", bucket)
+    key, raw = "blobs/private-object", b"synthetic-private-original"
+    first = storage.put(key, raw, "application/pdf")
+    replay = storage.put(key, raw, "application/pdf")
+    with pytest.raises(DomainError) as conflict:
+        storage.put(key, b"different", "application/pdf")
+    assert conflict.value.code == "OBJECT_CONTENT_CONFLICT"
+    assert storage.get(key) == raw
+    assert not first["deduplicated"] and replay["deduplicated"]
+    puts = [call for call in native.calls if call[0] == "put"]
+    assert len(puts) == 3  # A collision is read/compared, never retried as an overwrite.
+    for call in puts:
+        assert call[1] == "workbench-checks/private-policy/" + key
+        assert call[2]["x-oss-object-acl"] == "private"
+        assert call[2]["x-oss-forbid-overwrite"] == "true"
+        assert call[2]["Content-Type"] == "application/pdf"
+    assert [call[0] for call in native.calls] == ["put", "put", "get", "put", "get", "get"]
+    assert len(constructed) == 4
+    assert native.objects == {"workbench-checks/private-policy/" + key: raw}
 
 
 def test_oss_immutable_dedup_actual_bytes_and_prefix():

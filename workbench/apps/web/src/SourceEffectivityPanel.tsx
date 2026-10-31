@@ -517,10 +517,20 @@ function SourceEffectivityForm({
                           maxLength={20000}
                           value={quote.quote}
                           onChange={(e) => {
+                            const value = e.target.value;
+                            // textarea exposes LF; restore only an exact substring
+                            // of this evidence, without normalizing its other text.
+                            const exact = [
+                              value,
+                              value.replace(/\n/g, "\r\n"),
+                              value.replace(/\n/g, "\r"),
+                            ].find((candidate) =>
+                              item.quote.includes(candidate),
+                            );
                             setQuotes((v) =>
                               v.map((q) =>
                                 q.evidence_id === item.id
-                                  ? { ...q, quote: e.target.value }
+                                  ? { ...q, quote: exact ?? value }
                                   : q,
                               ),
                             );

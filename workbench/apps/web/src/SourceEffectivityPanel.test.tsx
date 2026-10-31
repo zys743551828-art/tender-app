@@ -12,7 +12,8 @@ import { setAuth } from "./api";
 import { SourceEffectivityPanel } from "./SourceEffectivityPanel";
 
 const ambiguityIds = ["a".repeat(64), "b".repeat(64)];
-const quotation = "总工期改为90天；投标截止时间改为22日，其余条款不变。";
+const defaultQuotation = "总工期改为90天；投标截止时间改为22日，其余条款不变。";
+let quotation = defaultQuotation;
 const bid = (id = "bid-a") => ({ id, material_revision: 3 }) as Bid;
 const rule = (
   id: string,
@@ -109,6 +110,7 @@ beforeEach(() => {
   available = true;
   hasNewRules = true;
   mixedNewRule = false;
+  quotation = defaultQuotation;
   post = async () => json(result());
   setAuth({
     member: { id: "member-a", display_name: "合成", active: true },
@@ -245,6 +247,87 @@ it("requires every ambiguity and an exact source quote; cancel never sends", asy
   );
   expect(review).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "取消本次核对" }));
+  expect(writes).toHaveLength(0);
+});
+it.each([
+  ["CRLF", "\r\n"],
+  ["LF", "\n"],
+  ["CR", "\r"],
+])(
+  "submits the original %s bytes after editing a multiline excerpt in a textarea",
+  async (_, newline) => {
+    const user = userEvent.setup();
+    const lines = ["总工期改为90天；", "投标截止时间改为22日，其余条款不变。"];
+    const exactExcerpt = lines.join(newline);
+    quotation = ["原页标题", exactExcerpt, "原页末尾"].join(newline);
+    render(
+      <SourceEffectivityPanel
+        bid={bid()}
+        memberId="member-a"
+        onChanged={vi.fn()}
+      />,
+    );
+    await fill(user);
+    const input = screen.getByLabelText("引用原文（须与该证据逐字对应）");
+    fireEvent.change(input, { target: { value: lines.join("\n") } });
+    expect(input).toHaveValue(lines.join("\n"));
+    expect(
+      screen.getByRole("button", { name: "核对本次局部变更" }),
+    ).toBeEnabled();
+    await submit(user);
+    await screen.findByText(/已记录局部来源核对/);
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(writes[0].body as string).scope_basis).toEqual([
+      { evidence_id: "new-evidence", quote: exactExcerpt },
+    ]);
+  },
+);
+it.each([
+  ["edited character", "总工期改为91天；\n投标截止时间改为22日。"],
+  ["edited punctuation", "总工期改为90天,\n投标截止时间改为22日。"],
+  ["inserted space", "总工期 改为90天；\n投标截止时间改为22日。"],
+])(
+  "does not repair %s while adapting CRLF evidence input",
+  async (_, candidate) => {
+    quotation = "总工期改为90天；\r\n投标截止时间改为22日。";
+    const user = userEvent.setup();
+    render(
+      <SourceEffectivityPanel
+        bid={bid()}
+        memberId="member-a"
+        onChanged={vi.fn()}
+      />,
+    );
+    await fill(user);
+    fireEvent.change(screen.getByLabelText("引用原文（须与该证据逐字对应）"), {
+      target: { value: candidate },
+    });
+    expect(
+      screen.getByRole("button", { name: "核对本次局部变更" }),
+    ).toBeDisabled();
+    expect(writes).toHaveLength(0);
+  },
+);
+it("keeps an unresolvable mixed-line-ending edit invalid instead of inventing source text", async () => {
+  quotation =
+    "原页标题\r\n总工期改为90天；\r\n投标截止时间改为22日。\n其余条款不变。";
+  const user = userEvent.setup();
+  render(
+    <SourceEffectivityPanel
+      bid={bid()}
+      memberId="member-a"
+      onChanged={vi.fn()}
+    />,
+  );
+  await fill(user);
+  fireEvent.change(screen.getByLabelText("引用原文（须与该证据逐字对应）"), {
+    target: {
+      value: "总工期改为90天；\n投标截止时间改为22日。\n其余条款不变。",
+    },
+  });
+  expect(
+    screen.getByRole("button", { name: "核对本次局部变更" }),
+  ).toBeDisabled();
   expect(writes).toHaveLength(0);
 });
 it("unavailable resolution fails closed without exposing internal codes", async () => {

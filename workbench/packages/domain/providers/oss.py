@@ -160,6 +160,7 @@ class OssClient:
                 Body,
                 headers={
                     "Content-Type": ContentType,
+                    "x-oss-object-acl": "private",
                     "x-oss-forbid-overwrite": "true",
                     "x-oss-meta-sha256": digest,
                 },

@@ -18,6 +18,8 @@ Word 当前使用官方预构建 Gotenberg，原件保存、受控转换、当�
 
 隔离恢复验证入口 `deploy.extended_recovery_runtime --case migration` 新增两个独立 PG17 集群间的合成恢复及有限 API 烟测。它仅接受本轮生成的独立集群和备份，恢复隔离检查后才按源实际权限投影激活目标 API；不会开放其他运行角色，也不是生产迁移工具。实际登录、原件下载、幂等写与精确回收的证据及生产边界随正式使用说明维护，不能以此宣称在途任务或完整生产恢复已验收。
 
+补遗引用编辑只还原浏览器 textarea 对 CRLF／CR 的换行表示，且结果必须是原证据真实子串；不改写文字、标点或内部空格。原生 OSS 同源服务端单传及分片完成时显式创建 private 对象，保留独立前缀、禁止覆盖和实际字节校验；不修改桶策略。分片私有性在完成阶段设置，初始化头不能代替完成对象的实际 ACL 验证。
+
 历史补全工作位于分支 `work/bid-workbench-completion-20261021`。请从 [启动与操作验收](docs/completion-20261021/START-HERE.md) 进入，按 [当前进度与验证记录](docs/completion-20261021/PROGRESS.md) 核对编写、Word 导入、多章节 AI 候选、解析、范围核查、人工复核、对比和报告的实际交付。Fusion v10 预览与完整 Worker 运行环境有不同能力，具体启动条件和未完成项均在这两个入口说明。
 
 当前实施版 OpenAPI 快照为 `packages/contracts/fusion-implemented.openapi.json.gz`，完整 schema 与路由未删减。更新命令为 `python -m apps.api.export_openapi --output packages/contracts/fusion-implemented.openapi.json.gz`；随后在 `apps/web` 执行 `npm run contracts:generate`。运行时 `/openapi.json` 和不带 `--output` 的导出仍返回普通 JSON；详细用法见 [后端说明](apps/api/README.md) 与 [前端契约生成](apps/web/README.md#契约与验证)。

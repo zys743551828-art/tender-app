@@ -71,7 +71,7 @@ class NativeMultipart:
             self._key(key),
             provider_id,
             [oss2.models.PartInfo(p["part_number"], p["etag"]) for p in parts],
-            headers={"x-oss-forbid-overwrite": "true"},
+            headers={"x-oss-forbid-overwrite": "true", "x-oss-object-acl": "private"},
         )
 
     def abort(self, key, provider_id):

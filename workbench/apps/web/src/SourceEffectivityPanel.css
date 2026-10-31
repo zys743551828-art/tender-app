@@ -24,8 +24,18 @@
 }
 .source-effectivity-panel .source-effectivity-choice {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
   gap: 10px;
+}
+.source-effectivity-panel .source-effectivity-choice input[type="checkbox"] {
+  width: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  padding: 0;
+  flex-shrink: 0;
 }
 .source-effectivity-panel select,
 .source-effectivity-panel textarea {
