@@ -184,6 +184,30 @@ function workspace() {
     />,
   );
 }
+it("用可理解的原因说明未能从原文核对的条件", () => {
+  render(
+    <ReviewProgress
+      state={{
+        ...initial,
+        request: {
+          ...initial.request!,
+          state: "blocked",
+          error_code: "RULE_CONDITION_UNGROUNDED",
+        },
+      }}
+      loading={false}
+      unavailable={false}
+      onRetry={vi.fn()}
+      onNavigate={vi.fn()}
+    />,
+  );
+  expect(
+    screen.getByText(/提取的条件或例外未在所引用的原文中找到/),
+  ).toBeVisible();
+  expect(
+    screen.queryByText(/RULE_CONDITION_UNGROUNDED/),
+  ).not.toBeInTheDocument();
+});
 it("刷新后从服务端恢复准备请求与固定稿件，运行中不再次开始", async () => {
   workspace();
   expect(

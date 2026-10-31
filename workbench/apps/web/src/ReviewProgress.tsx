@@ -14,6 +14,13 @@ import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 import type { WorkspacePage } from "./workspaceTypes";
 
+const groundingErrors: Record<string, string> = {
+  RULE_CONDITION_UNGROUNDED:
+    "提取的条件或例外未在所引用的原文中找到，请核对原文后重试。",
+  RULE_STATEMENT_UNGROUNDED:
+    "提取的要求未在所引用的原文中找到，请核对原文后重试。",
+};
+
 export function ReviewProgress({
   state,
   loading,
@@ -164,7 +171,10 @@ export function ReviewProgress({
               </div>
             )}
             {request.error_code && (
-              <p className="small-note">处理原因：{request.error_code}</p>
+              <p className="small-note">
+                处理原因：
+                {groundingErrors[request.error_code] ?? request.error_code}
+              </p>
             )}
             {request.state === "blocked" && (
               <p className="small-note">
