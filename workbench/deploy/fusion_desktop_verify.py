@@ -137,6 +137,68 @@ def storage_checks(profile):
     }
 
 
+def parse_qualification(profile, selected, parsed, *, document, source_digest):
+    """Check the fixed text fixture against its actual frozen parser selection."""
+    from packages.parsing.physical_pdf import CONFIG_DIGEST, PARSER_DIGEST
+
+    try:
+        context = selected["context"]
+        method = context["method"]
+        result = parsed["result"]
+        configured = "parser" in profile["plan"]
+        if configured:
+            from deploy.fusion_parsing_spec import validate as validate_parser
+
+            validate_parser(profile["plan"]["parser"])
+        require(
+            context["document_version_id"] == document
+            and context["document"]["sha256"] == source_digest
+            and method["protocol"] == "document-parse-method/1"
+            and method["mode"] == ("configured_local" if configured else "physical_text_only")
+            and all(
+                isinstance(method[key], str) and re.fullmatch(r"[a-f0-9]{64}", method[key])
+                for key in ("parser_digest", "config_digest", "implementation_digest")
+            )
+            and (
+                method["parser_digest"] != PARSER_DIGEST
+                if configured
+                else (method["parser_digest"], method["config_digest"])
+                == (PARSER_DIGEST, CONFIG_DIGEST)
+            )
+            and parsed["document_version_id"] == document
+            and parsed["context"] == context
+            and parsed["context_digest"] == selected["context_digest"]
+            and parsed["operation"]["handler_version"] == "document-parse/1"
+            and parsed["operation"]["state"] == "succeeded"
+            and parsed["current_body_changed"] is False
+            and parsed["automatically_started_review"] is False
+            and result["document_version_id"] == document
+            and isinstance(result["parse_run_id"], str)
+            and re.fullmatch(r"[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}", result["parse_run_id"])
+            and result["source_digest"] == source_digest
+            and result["parser_digest"] == method["parser_digest"]
+            and result["config_digest"] == method["config_digest"]
+            and result["page_count"] == 2
+            and result["evidence_count"] >= 2
+            and result["word_coverage_claimed"] is False
+            and result["coverage"] == ("complete" if configured else "partial")
+            and result["gaps"]
+            == ([] if configured else ["TEXT_ONLY_TABLES_VISUAL_AND_LAYOUT_UNVERIFIED"])
+            and result["gap_count"] == (0 if configured else 1),
+            "DESKTOP_PARSE_QUALIFICATION_CHANGED",
+        )
+    except (KeyError, TypeError, AttributeError):
+        raise spec.ConfigurationError("DESKTOP_PARSE_QUALIFICATION_CHANGED") from None
+    return {
+        "coverage": result["coverage"],
+        "parser_mode": method["mode"],
+        "parser_digest": result["parser_digest"],
+        "config_digest": result["config_digest"],
+        "parse_run_id": result["parse_run_id"],
+        "gaps": result["gaps"],
+    }
+
+
 def run():
     profile = spec.load_private_json(Path("/runtime/profile.json"))
     ready = probe.check(profile)
@@ -289,9 +351,8 @@ def run():
             202,
         ).json()["request"]["id"]
         parsed = eventually(context_url + "/parse-requests/" + requested, "succeeded")
-        require(
-            parsed["result"]["coverage"] == "partial" and not parsed["current_body_changed"],
-            "DESKTOP_PARSE_QUALIFICATION_CHANGED",
+        parse_observation = parse_qualification(
+            profile, context.json(), parsed, document=document, source_digest=digest
         )
         signed = client.get(f"/api/v1/artifacts/{document}/download")
         require(signed.status_code == 200, "DESKTOP_DOWNLOAD_TICKET_FAILED")
@@ -341,7 +402,7 @@ def run():
         "kafka_worker_parse": True,
         "download_sha256": digest,
         "physical_pages": 2,
-        "coverage": "partial",
+        **parse_observation,
         "current_body_changed": False,
         "synthetic_bid_id": bid,
         "provider_calls": 0,
