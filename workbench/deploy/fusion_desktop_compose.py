@@ -25,6 +25,7 @@ BINDS = {
     "../apps/web/dist",
     ".",
     "../requirements.lock.txt",
+    "../requirements-parsing.lock.txt",
     "../pyproject.toml",
     "./nginx-fusion-full-main.conf",
     "./nginx-fusion-full.conf",
@@ -169,6 +170,7 @@ def _helper(template, request, directory, action):
             ("../apps/web/dist", "/workspace/apps/web/dist"),
             (".", "/workspace/deploy"),
             ("../requirements.lock.txt", "/workspace/requirements.lock.txt"),
+            ("../requirements-parsing.lock.txt", "/workspace/requirements-parsing.lock.txt"),
             ("../pyproject.toml", "/workspace/pyproject.toml"),
         )
     ]
@@ -280,6 +282,7 @@ def document(request, directory, plan=None):
             ("../apps/worker", "/workspace/apps/worker"),
             (".", "/workspace/deploy"),
             ("../requirements.lock.txt", "/workspace/requirements.lock.txt"),
+            ("../requirements-parsing.lock.txt", "/workspace/requirements-parsing.lock.txt"),
             ("../pyproject.toml", "/workspace/pyproject.toml"),
         )
     ] + [

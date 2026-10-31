@@ -361,6 +361,9 @@ def main():
     shutil.copyfile("/workspace/pyproject.toml", root / "pyproject.toml")
     if suite in {"delivery-pure", "desktop-pure"}:
         shutil.copyfile("/workspace/requirements.lock.txt", root / "requirements.lock.txt")
+        shutil.copyfile(
+            "/workspace/requirements-parsing.lock.txt", root / "requirements-parsing.lock.txt"
+        )
         shutil.copytree("/workspace/apps/web/dist", root / "apps/web/dist")
     environment = {
         "PATH": os.environ.get("PATH", ""),

@@ -2,6 +2,7 @@
 # ruff: noqa: F401,F811
 
 from copy import deepcopy
+from pathlib import Path, PurePosixPath
 
 import pytest
 from test_fusion_desktop_compose import plan, request_value, word_request
@@ -161,3 +162,86 @@ def test_exact_private_transport_preserves_identity_and_http_client_guards(monke
     response["parser_digest"] = "0" * 64
     with pytest.raises(http_port.ParsingUnavailable, match="PARSING_RUNTIME_IDENTITY_MISMATCH"):
         http_port.ParsingHttp()
+
+
+@pytest.mark.parametrize("with_parser", [False, True])
+def test_every_desktop_source_validator_sees_the_real_readonly_parsing_lock(
+    word_request, plan, tmp_path, with_parser
+):
+    request = word_request
+    current = plan
+    if with_parser:
+        request = request | {"parser": parsing.descriptor(IMAGE)}
+        current = current | {"parser": request["parser"]}
+    bootstrap = desktop.document(request, tmp_path)
+    full = desktop.document(request, tmp_path, current)
+    services = {"bootstrap-configure": bootstrap["services"]["configure"]} | full["services"]
+    required = {"bootstrap-configure", "configure", "publish", "init", "validation"} | set(
+        desktop.full.COMPONENTS
+    )
+    expected = desktop.bind(
+        spec.fresh.ROOT / "requirements-parsing.lock.txt",
+        "/workspace/requirements-parsing.lock.txt",
+    )
+    for name in required:
+        mounts = [m for m in services[name]["volumes"] if m["target"] == expected["target"]]
+        assert mounts == [expected], name
+        assert spec.digest(Path(mounts[0]["source"]).read_bytes()) == spec.digest(
+            (spec.fresh.ROOT / "requirements-parsing.lock.txt").read_bytes()
+        )
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_SOURCE_WRITABLE"):
+        desktop._mount(
+            "../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:rw"
+        )
+
+
+def test_normal_full_template_and_closed_contract_require_parsing_lock(
+    request_value, plan, tmp_path
+):
+    document = desktop._base(request_value, "A" * 22)
+    mount = "../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro"
+    assert mount in desktop.full.SOURCE_MOUNTS
+    for name in {"init"} | set(desktop.full.COMPONENTS):
+        assert document["services"][name]["volumes"].count(mount) == 1, name
+    desktop.full.structure(document, plan=plan, directory=PurePosixPath(desktop.PRIVATE))
+    broken = deepcopy(document)
+    broken["services"]["api"]["volumes"].remove(mount)
+    with pytest.raises(spec.ConfigurationError, match="FULL_COMPONENT_MOUNT_CHANGED"):
+        desktop.full.structure(broken, plan=plan, directory=PurePosixPath(desktop.PRIVATE))
+
+
+def test_configure_visible_sources_fail_if_required_parsing_lock_is_not_mounted(
+    request_value, tmp_path
+):
+    service = desktop.document(request_value, tmp_path)["services"]["configure"]
+    root = tmp_path / "container-visible"
+    required = [
+        "requirements.lock.txt",
+        "requirements-parsing.lock.txt",
+        "pyproject.toml",
+        "deploy/fusion_full_requirements.txt",
+        "deploy/Dockerfile.parsing",
+    ]
+    for relative in required:
+        target = "/workspace/" + relative
+        candidates = [
+            m
+            for m in service["volumes"]
+            if target == m["target"] or target.startswith(m["target"].rstrip("/") + "/")
+        ]
+        mount = max(candidates, key=lambda m: len(m["target"]))
+        assert mount["type"] == "bind" and mount["read_only"]
+        source = (
+            Path(mount["source"]) / target.removeprefix(mount["target"]).lstrip("/")
+            if target != mount["target"]
+            else Path(mount["source"])
+        )
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+    assert spec.sources(root)["requirements-parsing.lock.txt"] == spec.digest(
+        (spec.fresh.ROOT / "requirements-parsing.lock.txt").read_bytes()
+    )
+    (root / "requirements-parsing.lock.txt").unlink()
+    with pytest.raises(FileNotFoundError):
+        spec.sources(root)

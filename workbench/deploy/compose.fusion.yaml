@@ -163,6 +163,7 @@ services:
       - ../tests:/workspace/tests:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../apps/web/dist:/workspace/apps/web/dist:ro
       - checks_evidence:/evidence
 

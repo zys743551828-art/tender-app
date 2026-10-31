@@ -7,6 +7,7 @@ x-source: &source
   - ../apps/worker:/workspace/apps/worker:ro
   - .:/workspace/deploy:ro
   - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
   - ../pyproject.toml:/workspace/pyproject.toml:ro
 
 x-python: &python
@@ -45,6 +46,7 @@ x-worker-volumes: &worker-volumes
   - ../apps/worker:/workspace/apps/worker:ro
   - .:/workspace/deploy:ro
   - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
   - ../pyproject.toml:/workspace/pyproject.toml:ro
   - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/worker:/runtime:ro
 
@@ -54,6 +56,7 @@ x-controller-volumes: &controller-volumes
   - ../apps/worker:/workspace/apps/worker:ro
   - .:/workspace/deploy:ro
   - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
   - ../pyproject.toml:/workspace/pyproject.toml:ro
   - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/controller:/runtime:ro
 
@@ -63,6 +66,7 @@ x-paid-volumes: &paid-volumes
   - ../apps/worker:/workspace/apps/worker:ro
   - .:/workspace/deploy:ro
   - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+  - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
   - ../pyproject.toml:/workspace/pyproject.toml:ro
   - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/paid_worker:/runtime:ro
 
@@ -162,6 +166,7 @@ services:
       - ../apps/web/dist:/workspace/apps/web/dist:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}:/deployment
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/state:/workspace/.local
@@ -175,6 +180,7 @@ services:
       - ../apps/worker:/workspace/apps/worker:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/api:/runtime:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/application-state/api:/workspace/.local
@@ -220,6 +226,7 @@ services:
       - ../apps/worker:/workspace/apps/worker:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/relay:/runtime:ro
 
@@ -232,6 +239,7 @@ services:
       - ../apps/worker:/workspace/apps/worker:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/reconcile:/runtime:ro
 
@@ -284,6 +292,7 @@ services:
       - ../apps/worker:/workspace/apps/worker:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/paid_controller:/runtime:ro
 
@@ -303,6 +312,7 @@ services:
       - ../apps/worker:/workspace/apps/worker:ro
       - .:/workspace/deploy:ro
       - ../requirements.lock.txt:/workspace/requirements.lock.txt:ro
+      - ../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro
       - ../pyproject.toml:/workspace/pyproject.toml:ro
       - ${FUSION_FULL_DIRECTORY:?Private deployment directory required}/runtime/task_runner:/runtime:ro
 

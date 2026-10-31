@@ -37,6 +37,7 @@ SOURCE_MOUNTS = [
     "../apps/worker:/workspace/apps/worker:ro",
     ".:/workspace/deploy:ro",
     "../requirements.lock.txt:/workspace/requirements.lock.txt:ro",
+    "../requirements-parsing.lock.txt:/workspace/requirements-parsing.lock.txt:ro",
     "../pyproject.toml:/workspace/pyproject.toml:ro",
 ]
 _VARIABLE = re.compile(r"\$\{([A-Z_]+):\?[^}]+\}")
