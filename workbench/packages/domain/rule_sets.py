@@ -22,6 +22,23 @@ def current_decision(c, bid, kind, object_id):
     ).fetchone()
 
 
+def find_cross_block_proof(text, blocks, span_documents, cited_ids):
+    """Resolve against the same frozen blocks used by rule validation."""
+    from packages.domain.evidence_spans import unique_cross_block_span
+
+    by_id = {str(block["id"]): block for block in blocks}
+    consistent = all(
+        str(block.get("id")) in by_id
+        and all(
+            block.get(key) == by_id[str(block.get("id"))].get(key)
+            for key in ("text_content", "physical_page", "ordinal", "kind")
+        )
+        for doc in span_documents
+        for block in doc.get("blocks", [])
+    )
+    return unique_cross_block_span(span_documents, text, cited_ids) if consistent else None
+
+
 def validate_addition(addition, bid, blocks, *, model=False, span_documents=None, span_proofs=None):
     validate("RuleAddition", addition)
     if addition["scope"]["bid_id"] != str(bid):
@@ -41,18 +58,7 @@ def validate_addition(addition, bid, blocks, *, model=False, span_documents=None
     def cross_proof(text):
         if not model or span_documents is None or span_proofs is None:
             return None
-        from packages.domain.evidence_spans import unique_cross_block_span
-
-        consistent = all(
-            str(block.get("id")) in by_id
-            and all(
-                block.get(key) == by_id[str(block.get("id"))].get(key)
-                for key in ("text_content", "physical_page", "ordinal", "kind")
-            )
-            for doc in span_documents
-            for block in doc.get("blocks", [])
-        )
-        return unique_cross_block_span(span_documents, text, set(ids)) if consistent else None
+        return find_cross_block_proof(text, blocks, span_documents, set(ids))
 
     if model and not any(addition["statement"] in quote for quote in quotes):
         proof = cross_proof(addition["statement"])

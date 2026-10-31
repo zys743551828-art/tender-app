@@ -167,6 +167,32 @@ def test_feedback_only_reports_unproven_field_when_statement_span_is_valid():
     assert [error["field"] for error in feedback["errors"]] == ["conditions[0]"]
 
 
+def test_feedback_preserves_valid_condition_when_statement_fails_first():
+    docs = source()
+    result = extraction()
+    result["rules"][0]["statement"] = "不存在的正文。"
+    feedback = {}
+    with pytest.raises(DomainError, match="RULE_STATEMENT_UNGROUNDED"):
+        handlers._validated_extraction(
+            result, BID, docs[0]["blocks"], span_documents=docs, provenance=[], feedback=feedback
+        )
+    assert [error["field"] for error in feedback["errors"]] == ["statement"]
+
+
+def test_feedback_does_not_trust_changed_span_source():
+    docs = source()
+    altered = deepcopy(docs)
+    altered[0]["blocks"][1]["text_content"] += "伪造"
+    result = extraction()
+    result["rules"][0]["statement"] = "不存在的正文。"
+    feedback = {}
+    with pytest.raises(DomainError, match="RULE_STATEMENT_UNGROUNDED"):
+        handlers._validated_extraction(
+            result, BID, docs[0]["blocks"], span_documents=altered, provenance=[], feedback=feedback
+        )
+    assert [error["field"] for error in feedback["errors"]] == ["statement", "conditions[0]"]
+
+
 def test_cross_document_newline_does_not_gain_grounding_from_quote_join():
     result = extraction()
     result["rules"][0]["conditions"] = ["施工前\n完成检查。"]

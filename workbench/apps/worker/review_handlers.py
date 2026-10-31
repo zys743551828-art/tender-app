@@ -18,6 +18,7 @@ from packages.domain.review_data import (
 from packages.domain.rule_sets import (
     create_extracted_set,
     current_decision,
+    find_cross_block_proof,
     rules,
     semantic_key,
     validate_addition,
@@ -99,9 +100,20 @@ def _validated_extraction(
                     )
                 for name in ("conditions", "exceptions"):
                     for position, text in enumerate(item[name]):
-                        if not any(text in quote for quote in quotes) and not any(
+                        already_proven = any(
                             span["field"] == name and span["position"] == position for span in spans
+                        )
+                        if (
+                            not already_proven
+                            and provenance is not None
+                            and span_documents is not None
                         ):
+                            cited = {quote["evidence_id"] for quote in item["evidence_quotes"]}
+                            already_proven = (
+                                find_cross_block_proof(text, blocks, span_documents, cited)
+                                is not None
+                            )
+                        if not any(text in quote for quote in quotes) and not already_proven:
                             violations.append(
                                 {
                                     "error_code": "RULE_CONDITION_UNGROUNDED",
