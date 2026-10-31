@@ -911,3 +911,96 @@ def test_cli_binding_container_mismatch_precedes_report_creation(tmp_path):
         == 2
     )
     assert not report.exists()
+
+
+@pytest.mark.parametrize("service", ["worker-document", "worker-export"])
+def test_desktop_full_source_mount_projection_including_parsing_lock_is_a_valid_peer(
+    tmp_path, monkeypatch, service
+):
+    from deploy import fusion_full_control
+
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mounts = []
+    # Project the real full deployment code mount contract into the same fields
+    # observed from Docker Desktop; private parser/profile mounts remain volumes.
+    for raw in fusion_full_control.SOURCE_MOUNTS:
+        source, destination, mode = raw.rsplit(":", 2)
+        assert mode == "ro"
+        relative = "deploy" if source == "." else source.removeprefix("../")
+        mounts.append(
+            {
+                "Type": "bind",
+                "Source": "/run/desktop/mnt/host/c/task/.f/12345678/workbench/" + relative,
+                "Destination": destination,
+                "Mode": "ro",
+                "Propagation": "rprivate",
+                "RW": False,
+            }
+        )
+    assert {mount["Destination"] for mount in mounts} == host._DESKTOP_CODE_TARGETS
+    assert any(m["Destination"] == "/workspace/requirements-parsing.lock.txt" for m in mounts)
+    mounts += [
+        {
+            "Type": "volume",
+            "Source": "/var/lib/docker/volumes/synthetic_profile/_data",
+            "Destination": "/runtime",
+            "RW": False,
+        },
+        {
+            "Type": "volume",
+            "Source": "/var/lib/docker/volumes/synthetic_parser/_data",
+            "Destination": "/parser-private",
+            "RW": False,
+        },
+    ]
+    mailbox.metadata["Mounts"] = mounts
+    mailbox.metadata["Tmpfs"] = {"/tmp": "rw,nosuid,nodev,size=512m,mode=1777"}
+    binding = deployment_binding()
+    binding["service"] = service
+    value = host.Executor(PEER, None, tmp_path, deployment_binding=binding)
+    monkeypatch.setattr(value, "_invoke", mailbox.invoke)
+    mailbox.metadata["Labels"]["com.docker.compose.service"] = service
+    value.inspect_peer()
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "writable",
+        "missing_rw",
+        "unknown_target",
+        "runtime_source",
+        "socket",
+        "npipe",
+        "traversal",
+        "stopped",
+    ],
+)
+def test_parsing_lock_exception_keeps_each_existing_peer_boundary(tmp_path, monkeypatch, attack):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mount = {
+        "Type": "bind",
+        "Source": "/run/desktop/mnt/host/c/task/.f/12345678/workbench/requirements-parsing.lock.txt",
+        "Destination": "/workspace/requirements-parsing.lock.txt",
+        "RW": False,
+    }
+    if attack == "writable":
+        mount["RW"] = True
+    elif attack == "missing_rw":
+        del mount["RW"]
+    elif attack == "unknown_target":
+        mount["Destination"] += ".untrusted"
+    elif attack == "runtime_source":
+        mount["Source"] = "/var/run/private-runtime"
+    elif attack == "socket":
+        mount["Source"] = "/run/desktop/mnt/host/c/task/docker.sock"
+    elif attack == "npipe":
+        mount["Type"] = "npipe"
+        mount["Source"] = "synthetic-pipe"
+    elif attack == "traversal":
+        mount["Source"] = "/run/desktop/mnt/host/c/task/../private-runtime"
+    else:
+        mailbox.metadata["Running"] = False
+    mailbox.metadata["Mounts"].append(mount)
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.inspect_peer()

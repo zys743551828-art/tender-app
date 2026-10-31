@@ -27,6 +27,7 @@ _DESKTOP_CODE_TARGETS = frozenset(
         "/workspace/apps/worker",
         "/workspace/deploy",
         "/workspace/requirements.lock.txt",
+        "/workspace/requirements-parsing.lock.txt",
         "/workspace/pyproject.toml",
     }
 )
