@@ -1,4 +1,4 @@
-/* global document */
+/* global console, document */
 // Real App controls. Direct HTTP is used only for reads and a competing update.
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -36,19 +36,52 @@ async function change(page, action, reason, { double = false } = {}) {
   const view = panel(page);
   await view.getByRole("button", { name: action, exact: true }).click();
   await view.getByLabel("本次状态变更原因").fill(reason);
+  let requests = 0;
+  const observeRequest = (request) => {
+    if (request.method() === "POST" && request.url().endsWith("/lifecycle"))
+      requests++;
+  };
+  page.on("request", observeRequest);
   const response = page.waitForResponse(
     (r) => r.request().method() === "POST" && r.url().endsWith("/lifecycle"),
   );
-  if (double)
-    await view.locator("form").evaluate((form) => {
-      form.requestSubmit();
-      form.requestSubmit();
-    });
-  else
-    await view
-      .getByRole("button", { name: "确认" + action, exact: true })
-      .click();
-  const result = await response;
+  let result;
+  try {
+    if (double)
+      await view.locator("form").evaluate((form) => {
+        form.requestSubmit();
+        form.requestSubmit();
+      });
+    else
+      await view
+        .getByRole("button", { name: "确认" + action, exact: true })
+        .click();
+    result = await response;
+  } catch (error) {
+    // Keep the failure, but expose only control state, never the reason text or
+    // request headers, when a real click produced no observable response.
+    const diagnostic = await view
+      .locator("form")
+      .evaluate((form) => ({
+        textareas: [...form.querySelectorAll("textarea")].map((field) => ({
+          empty: !field.value.trim(),
+          disabled: field.disabled,
+          valid: field.validity.valid,
+        })),
+        buttons: [...form.querySelectorAll("button")].map((button) => ({
+          text: button.textContent,
+          disabled: button.disabled,
+        })),
+      }))
+      .catch(() => ({ unavailable: true }));
+    console.error(
+      "LIFECYCLE_NO_RESPONSE_CONTROL_STATE",
+      JSON.stringify({ requests, ...diagnostic }),
+    );
+    throw error;
+  } finally {
+    page.off("request", observeRequest);
+  }
   assert.equal(result.status(), 200, await result.text());
   await view.getByText(/状态变更已记录/).waitFor();
   return result;
