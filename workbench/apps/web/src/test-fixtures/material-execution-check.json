@@ -188,7 +188,7 @@
         "immutable_weights_verified": false
       },
       "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
-      "serializer_digest": "c8c78bd7556b06acd1d589449f60642f386a5af4ddebae91553dfd12c1901bc2",
+      "serializer_digest": "1f2bd21205db8318018b03b0d69ec90b588a78577be0d5794aea40aece6a1637",
       "judgment_method_digest": "96728067708cba419f952da4660ec2ad42c31b86a5f120e50a51c47c331383d1"
     },
     "execution_enabled": false,
@@ -267,12 +267,12 @@
       }
     ]
   },
-  "etag": "\"package-material-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:48c8b25045a90e6c15786f659faf3b2e6a5f85fcc80f86fa0c2555ceda4fd5e3\"",
+  "etag": "\"package-material-execution:9d39656c-3c7d-45c7-aba6-166a2e9c04d4:1ba3212040d4603291870044efa0114cffe4ede2579e0ad5d58bfd07217beaf5\"",
   "request": {
     "version": "package-material-execution-check/1",
     "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
     "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
-    "serializer_digest": "c8c78bd7556b06acd1d589449f60642f386a5af4ddebae91553dfd12c1901bc2",
+    "serializer_digest": "1f2bd21205db8318018b03b0d69ec90b588a78577be0d5794aea40aece6a1637",
     "judgment_method_digest": "96728067708cba419f952da4660ec2ad42c31b86a5f120e50a51c47c331383d1",
     "input_reference": null,
     "budget_usd": "0"
@@ -283,12 +283,12 @@
     "actor_id": "00000000-0000-0000-0000-000000002695",
     "scope_id": "9d39656c-3c7d-45c7-aba6-166a2e9c04d4",
     "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
-    "request_digest": "17618aad856017f8569d78fe9350edc20cda1061b6e96a1f6218c514a5ffaea5",
+    "request_digest": "8432d75e998d7733bac5d14398fdfa6bb01d8bd40c89ef30ba6e8e9acd571760",
     "request": {
       "version": "package-material-execution-check/1",
       "scope_digest": "3ecfc767a99b16ca811dac806e2b2c9cb520137bd82dd0747cd237188a232a0b",
       "profile_digest": "5462fe0bfe731512c7d6b680d677c23a3f742ff4df250b845e056e1807bea4e5",
-      "serializer_digest": "c8c78bd7556b06acd1d589449f60642f386a5af4ddebae91553dfd12c1901bc2",
+      "serializer_digest": "1f2bd21205db8318018b03b0d69ec90b588a78577be0d5794aea40aece6a1637",
       "judgment_method_digest": "96728067708cba419f952da4660ec2ad42c31b86a5f120e50a51c47c331383d1",
       "input_reference": null,
       "budget_usd": "0"

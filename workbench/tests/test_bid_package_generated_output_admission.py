@@ -64,7 +64,16 @@ def member_db(monkeypatch):
         def execute(self, sql, params=()):
             assert sql.lstrip().startswith("SELECT")
             assert "FOR UPDATE" not in sql and "FOR SHARE" not in sql
-            if "FROM design.document_versions" in sql:
+            if sql == (
+                "SELECT to_regclass('design.word_render_runs') IS NOT NULL AND "
+                "to_regclass('design.word_intake_receipts') IS NOT NULL AS ready, "
+                "to_regclass('design.build_outputs') IS NOT NULL AS authoring_ready"
+            ):
+                assert params == ()
+                # This fixture models authoring outputs without the optional
+                # Word runtime tables. Authoring admission still runs below.
+                result = [{"ready": False, "authoring_ready": True}]
+            elif "FROM design.document_versions" in sql:
                 result = [state["row"]] if params == (bid, document, parse) else []
             elif "FROM design.pages" in sql:
                 result = [{"physical_page": 1, "quality": "usable", "gaps": []}]
