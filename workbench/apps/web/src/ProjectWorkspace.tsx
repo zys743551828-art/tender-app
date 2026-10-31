@@ -32,6 +32,7 @@ const PricingPanel = lazy(() =>
 );
 import { OutcomesPanel } from "./Archives";
 import { FactsPanel } from "./FactsPanel";
+import { SourceEffectivityPanel } from "./SourceEffectivityPanel";
 import { MatrixPanel } from "./MatrixPanel";
 import { OperationCenter } from "./OperationCenter";
 import { ReviewProgress } from "./ReviewProgress";
@@ -450,7 +451,16 @@ export function ProjectWorkspace({
               />
             </Suspense>
           )}
-          {page === "rules" && <RulesPanel bid={bid} onChanged={refresh} />}
+          {page === "rules" && (
+            <>
+              <SourceEffectivityPanel
+                bid={bid}
+                memberId={memberId}
+                onChanged={refresh}
+              />
+              <RulesPanel bid={bid} onChanged={refresh} />
+            </>
+          )}
           {page === "facts" && <FactsPanel bid={bid} onChanged={refresh} />}
           {page === "outcomes" && (
             <>

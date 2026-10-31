@@ -44,6 +44,8 @@ history_schemas = [
 wanted = [
     "ProjectLifecycleView",
     "LifecycleChangeRequest",
+    "SourceEffectivityView",
+    "SourceEffectivityRequest",
     "PackageNextActions",
     "ProjectWorkSummary",
     "ProjectWorkSummaryBatch",

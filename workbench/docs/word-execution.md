@@ -144,6 +144,12 @@ Cancelled request files remain in the Worker's disposable tmpfs until that
 container exits. Do not treat this transport as a persistent queue. A cleanup
 failure prevents a qualified success response.
 
+External Word active-content policy failures remain blocked before rendering.
+The materials card explains the dynamic-field/macro/external-link restriction,
+retains the original and offers a corresponding PDF; the exact public error code
+remains in the expandable details. This explanation does not permit those fields
+or promote a failed/partial conversion to an adopted or qualified result.
+
 Stop the host executor with its operator stop file, wait for its cleanup summary,
 then close only the test run's recorded resources through `DockerTestRun`.
 Keep reports needed for acceptance. Do not prune unrelated containers, images,

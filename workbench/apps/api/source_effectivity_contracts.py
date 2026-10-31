@@ -27,19 +27,27 @@ def models(reference):
     quote = obj(
         {"evidence_id": UUID, "quote": {"type": "string", "minLength": 1, "maxLength": 20000}}
     )
+    request = obj(
+        {
+            "base_rule_set_id": UUID,
+            "action": {"enum": ["whole_replace", "partial_replace", "defer"]},
+            "old_document_version_id": UUID,
+            "new_document_version_id": NULL_UUID,
+            "rule_ids": IDS | {"maxItems": 500},
+            "scope_basis": {"type": "array", "items": quote, "maxItems": 100},
+            "additions": {"type": "array", "items": reference("RuleAddition"), "maxItems": 100},
+            "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+        }
+    )
+    # Add after obj freezes required: historical payloads keep their exact contract.
+    request["properties"]["acknowledged_ambiguity_ids"] = {
+        "type": "array",
+        "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "uniqueItems": True,
+        "maxItems": 50,
+    }
     return {
-        "SourceEffectivityRequest": obj(
-            {
-                "base_rule_set_id": UUID,
-                "action": {"enum": ["whole_replace", "partial_replace", "defer"]},
-                "old_document_version_id": UUID,
-                "new_document_version_id": NULL_UUID,
-                "rule_ids": IDS | {"maxItems": 500},
-                "scope_basis": {"type": "array", "items": quote, "maxItems": 100},
-                "additions": {"type": "array", "items": reference("RuleAddition"), "maxItems": 100},
-                "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
-            }
-        )
+        "SourceEffectivityRequest": request
         | {
             "allOf": [
                 {
@@ -89,6 +97,15 @@ def models(reference):
                 "source_authority_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
                 "last_decision_id": NULL_UUID,
                 "requires_review": {"type": "boolean"},
+                "ambiguities": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": obj(
+                        {"id": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "text": TEXT}
+                    ),
+                },
+                "ambiguity_resolution_available": {"type": "boolean"},
+                "ambiguity_resolution_error": {"type": ["string", "null"]},
             }
         ),
     }

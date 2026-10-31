@@ -1,0 +1,17 @@
+.project-lifecycle-panel {
+  padding: 22px 23px 23px;
+}
+
+.project-lifecycle-panel > .section-heading {
+  padding: 0 0 18px;
+}
+
+@media (max-width: 760px) {
+  .project-lifecycle-panel {
+    padding: 18px 16px;
+  }
+
+  .project-lifecycle-panel > .section-heading {
+    padding: 0 0 15px;
+  }
+}

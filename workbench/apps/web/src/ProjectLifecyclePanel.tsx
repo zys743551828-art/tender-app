@@ -4,6 +4,7 @@ import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useRecordedCommand } from "./useRecordedCommand";
 import { useResource } from "./useResource";
+import "./ProjectLifecyclePanel.css";
 
 type Action = LifecycleChangeRequest["action"];
 const actions: Record<Action, string> = {

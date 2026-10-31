@@ -4139,7 +4139,7 @@ textarea:focus-visible {
 
 .word-original-card {
   border-top: 1px solid var(--border-strong);
-  padding: 20px 0;
+  padding: 20px 24px;
   display: grid;
   gap: 12px;
 }
@@ -4493,5 +4493,11 @@ textarea:focus-visible {
   }
   .word-original-card .review-shortcuts > * {
     max-width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .word-original-card {
+    padding-inline: 16px;
   }
 }

@@ -1,0 +1,42 @@
+.source-effectivity-panel {
+  padding: 23px;
+  overflow-wrap: anywhere;
+}
+.source-effectivity-panel > .section-heading {
+  padding: 0 0 18px;
+  flex-wrap: wrap;
+}
+.source-effectivity-panel form,
+.source-effectivity-panel fieldset {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.source-effectivity-panel fieldset {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.source-effectivity-panel label {
+  display: grid;
+  gap: 8px;
+}
+.source-effectivity-panel .source-effectivity-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.source-effectivity-panel select,
+.source-effectivity-panel textarea {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .source-effectivity-panel {
+    padding: 18px 16px;
+  }
+  .source-effectivity-panel fieldset {
+    padding: 12px;
+  }
+}

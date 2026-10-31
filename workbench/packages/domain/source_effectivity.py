@@ -1,5 +1,9 @@
 """有据补遗效力：义务按条款结束，历史原件和其他条款保留。"""
 
+import re
+from typing import Any
+from uuid import UUID
+
 from botocore.exceptions import BotoCoreError, ClientError
 from psycopg.types.json import Jsonb
 
@@ -14,6 +18,107 @@ from packages.domain.runtime import DomainError, audit, clean, fetch, sha, uid
 
 EVENT = "sources.effectivity_decided"
 ACTIONS = ("whole_replace", "partial_replace", "defer")
+AMBIGUITY_HISTORY_LIMIT = 32
+
+
+def ambiguity_context(c, bid, rule_set_id):
+    """Read a bounded, unique extraction ancestry; never infer resolution from text."""
+    empty: dict[str, Any] = {"available": False, "error": None, "items": []}
+    if rule_set_id is None:
+        return empty
+    current, seen = str(rule_set_id), set()
+    for depth in range(AMBIGUITY_HISTORY_LIMIT):
+        if current in seen:
+            return empty | {"error": "SOURCE_AMBIGUITY_HISTORY_CYCLE"}
+        seen.add(current)
+        row = c.execute(
+            "SELECT id,coverage FROM rule_sets WHERE id=%s AND bid_id=%s",
+            (current, bid),
+        ).fetchone()
+        if row is None:
+            return empty | {"error": "SOURCE_AMBIGUITY_ORIGIN_UNKNOWN"}
+        if depth == 0 and row["coverage"] != "conflict":
+            return empty
+        origins = c.execute(
+            "SELECT e.operation_id,e.result FROM effect_receipts e JOIN operations o ON o.id=e.operation_id WHERE o.bid_id=%s AND o.handler_version='prepare/1' AND o.state='succeeded' AND e.effect_key='extract-rules' AND e.result->>'result_ref'=%s ORDER BY e.created_at DESC,e.operation_id LIMIT 2",
+            (bid, current),
+        ).fetchall()
+        if origins:
+            if len(origins) != 1:
+                return empty | {"error": "SOURCE_AMBIGUITY_ORIGIN_UNKNOWN"}
+            origin = origins[0]
+            result = origin["result"]
+            ambiguities = result.get("ambiguities") if isinstance(result, dict) else None
+            if (
+                not isinstance(ambiguities, list)
+                or not 1 <= len(ambiguities) <= 50
+                or any(not isinstance(text, str) or not text.strip() for text in ambiguities)
+            ):
+                return empty | {"error": "SOURCE_AMBIGUITY_ORIGIN_INVALID"}
+            result_digest = sha(result)
+            return {
+                "available": True,
+                "error": None,
+                "origin_rule_set_id": current,
+                "extraction_operation_id": str(origin["operation_id"]),
+                "extraction_result_digest": result_digest,
+                "items": [
+                    {
+                        "id": sha(
+                            {
+                                "extraction_operation_id": str(origin["operation_id"]),
+                                "extraction_result_digest": result_digest,
+                                "ordinal": index,
+                                "text": text,
+                            }
+                        ),
+                        "text": text,
+                    }
+                    for index, text in enumerate(ambiguities)
+                ],
+            }
+        parents = c.execute(
+            "SELECT payload->>'from_rule_set_id' AS parent FROM audit_entries WHERE bid_id=%s AND payload->>'rule_set_id'=%s AND event_type IN('rules.corrected','rules.interpretation_rejected','sources.effectivity_decided','rules.source_equivalent_cloned') ORDER BY created_at DESC,id DESC LIMIT 2",
+            (bid, current),
+        ).fetchall()
+        if len(parents) != 1:
+            return empty | {"error": "SOURCE_AMBIGUITY_ORIGIN_UNKNOWN"}
+        parent = parents[0]["parent"]
+        try:
+            current = str(UUID(parent))
+        except (ValueError, TypeError, AttributeError):
+            return empty | {"error": "SOURCE_AMBIGUITY_ORIGIN_UNKNOWN"}
+    return empty | {"error": "SOURCE_AMBIGUITY_HISTORY_LIMIT"}
+
+
+def _validate_ambiguity_ack(body, context):
+    ids = body.get("acknowledged_ambiguity_ids", [])
+    if (
+        not isinstance(ids, list)
+        or len(ids) > 50
+        or any(
+            not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value) for value in ids
+        )
+        or len(set(ids)) != len(ids)
+    ):
+        raise DomainError(
+            "SOURCE_AMBIGUITY_ACK_INVALID", "冲突核对标识无效，请重新读取当前清单", 422
+        )
+    if not ids:
+        return False
+    if body["action"] == "defer":
+        raise DomainError("SOURCE_AMBIGUITY_ACK_NOT_ALLOWED", "暂缓不能同时确认冲突已解决", 422)
+    if not context["available"]:
+        raise DomainError(
+            context["error"] or "SOURCE_AMBIGUITY_ACK_NOT_ALLOWED",
+            "当前冲突来源不可核验，未清除冲突状态",
+            422,
+        )
+    if set(ids) != {item["id"] for item in context["items"]}:
+        raise DomainError(
+            "SOURCE_AMBIGUITY_ACK_MISMATCH", "必须明确核对全部当前冲突，未清除其余冲突", 422
+        )
+    return True
 
 
 def verify_originals(objects):
@@ -159,6 +264,8 @@ def _quoted_basis(body, documents):
         marker in quote["quote"]
         for quote in body["scope_basis"]
         for marker in (
+            "其余招标要求保持",
+            "其余招标要求不变",
             "其他条款不变",
             "其余条款不变",
             "其他要求不变",
@@ -191,6 +298,8 @@ def decide(c, bid, actor, command_id, body):
         "SELECT * FROM rule_sets WHERE bid_id=%s AND id=%s",
         (bid, profile["current_rule_set_id"]),
     )
+    ambiguity = ambiguity_context(c, bid, previous["id"])
+    acknowledged = _validate_ambiguity_ack(body, ambiguity)
     originals = rules(c, previous["id"])
     old_version = body["old_document_version_id"]
     fetch(c, "SELECT id FROM document_versions WHERE bid_id=%s AND id=%s", (bid, old_version))
@@ -321,6 +430,22 @@ def decide(c, bid, actor, command_id, body):
         if key in existing:
             raise DomainError("RULE_ALREADY_EXISTS", "新增条款与保留条款重复，请核对影响清单", 409)
         existing.add(key)
+    needs_revalidation = bool(unresolved) or any(
+        value["provenance_status"] == "needs_revalidation" for _, value in prepared
+    )
+    if acknowledged and needs_revalidation:
+        raise DomainError(
+            "SOURCE_AMBIGUITY_UNRESOLVED_RULES",
+            "仍有条款效力待核对，未将冲突清单降为部分覆盖",
+            422,
+        )
+    if previous["coverage"] == "conflict":
+        # Neither an ordinary partial replacement nor defer resolves an extraction
+        # ambiguity implicitly. Explicit whole-set acknowledgement never upgrades
+        # model/human coverage to complete.
+        coverage = "partial" if acknowledged else "conflict"
+    else:
+        coverage = "partial" if needs_revalidation else previous["coverage"]
     c.execute(
         "INSERT INTO rule_sets(id,bid_id,material_id,revision,digest,coverage) VALUES(%s,%s,%s,%s,%s,%s)",
         (
@@ -329,10 +454,7 @@ def decide(c, bid, actor, command_id, body):
             profile["current_material_id"],
             previous["revision"] + 1,
             sha({"parent": str(previous["id"]), "decision": body, "rules": clean(prepared)}),
-            "partial"
-            if unresolved
-            or any(value["provenance_status"] == "needs_revalidation" for _, value in prepared)
-            else previous["coverage"],
+            coverage,
         ),
     )
     for new_id, value in prepared:
@@ -395,6 +517,20 @@ def decide(c, bid, actor, command_id, body):
             "rule_mappings": mappings,
             "added_rule_ids": added_ids,
             "automatic_review_started": False,
+            **(
+                {
+                    "ambiguity_resolution": {
+                        "acknowledged_ids": sorted(body["acknowledged_ambiguity_ids"]),
+                        "origin_rule_set_id": ambiguity["origin_rule_set_id"],
+                        "extraction_operation_id": ambiguity["extraction_operation_id"],
+                        "extraction_result_digest": ambiguity["extraction_result_digest"],
+                        "coverage_before": previous["coverage"],
+                        "coverage_after": coverage,
+                    }
+                }
+                if acknowledged
+                else {}
+            ),
         },
         command_id,
     )

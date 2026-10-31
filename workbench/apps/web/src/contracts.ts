@@ -36,6 +36,38 @@ export type LifecycleChangeRequest = {
   reason: string;
 };
 
+export type SourceEffectivityView = {
+  bid_id: string;
+  material_snapshot_id: string | null;
+  rule_set_id: string | null;
+  rules: RuleView[];
+  sources: SourceEffectivitySource[];
+  source_authority_digest: string;
+  last_decision_id: string | null;
+  requires_review: boolean;
+  ambiguities: {
+    id: string;
+    text: string;
+  }[];
+  ambiguity_resolution_available: boolean;
+  ambiguity_resolution_error: string | null;
+};
+
+export type SourceEffectivityRequest = {
+  base_rule_set_id: string;
+  action: "whole_replace" | "partial_replace" | "defer";
+  old_document_version_id: string;
+  new_document_version_id: string | null;
+  rule_ids: string[];
+  scope_basis: {
+    evidence_id: string;
+    quote: string;
+  }[];
+  additions: RuleAddition[];
+  reason: string;
+  acknowledged_ambiguity_ids?: string[];
+};
+
 export type PackageNextActions = {
   version: "package-next-actions/1";
   binding: {
@@ -9524,6 +9556,46 @@ export type UploadTarget =
       expected_file_revision: number;
     };
 
+export type RuleView = {
+  id: string;
+  rule_set_id: string;
+  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  statement: string;
+  conditions: string[];
+  exceptions: string[];
+  maximum: string | null;
+  evidence_ids: string[];
+  confirmation: "pending" | "confirmed" | "rejected" | "deferred";
+  decision_revision: number;
+  carryover: RuleCarryoverView | null;
+  scope: RuleScope;
+  bands: RuleBand[];
+  origin_kind: "model_extracted" | "human_added" | "carried_human";
+  manual_origin_rule_id: string | null;
+  provenance_status: "effective" | "needs_revalidation" | "superseded";
+};
+
+export type SourceEffectivitySource = {
+  document_version_id: string;
+  original_name: string;
+  roles: string[];
+  current: boolean;
+  parse_run_id: string | null;
+  coverage: "pending" | "complete" | "partial" | "failed";
+  evidence_ids: string[];
+};
+
+export type RuleAddition = {
+  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
+  statement: string;
+  conditions: string[];
+  exceptions: string[];
+  scope: RuleScope;
+  maximum: string | null;
+  bands: RuleBand[];
+  evidence_quotes: RuleEvidenceQuote[];
+};
+
 export type PackageHistorySelection = {
   admission_id: string;
   purpose: "fit" | "development" | "calibration" | "final";
@@ -11338,25 +11410,6 @@ export type ReviewCoverage = {
   human_confirmation_pending: number;
 };
 
-export type RuleView = {
-  id: string;
-  rule_set_id: string;
-  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
-  statement: string;
-  conditions: string[];
-  exceptions: string[];
-  maximum: string | null;
-  evidence_ids: string[];
-  confirmation: "pending" | "confirmed" | "rejected" | "deferred";
-  decision_revision: number;
-  carryover: RuleCarryoverView | null;
-  scope: RuleScope;
-  bands: RuleBand[];
-  origin_kind: "model_extracted" | "human_added" | "carried_human";
-  manual_origin_rule_id: string | null;
-  provenance_status: "effective" | "needs_revalidation" | "superseded";
-};
-
 export type FactView = {
   id: string;
   subject: string;
@@ -11466,17 +11519,6 @@ export type ValidationDiagnostic = {
   message: string;
 };
 
-export type RuleAddition = {
-  kind: "disqualification" | "mandatory" | "scoring" | "advisory";
-  statement: string;
-  conditions: string[];
-  exceptions: string[];
-  scope: RuleScope;
-  maximum: string | null;
-  bands: RuleBand[];
-  evidence_quotes: RuleEvidenceQuote[];
-};
-
 export type MemberView = {
   id: string;
   display_name: string;
@@ -11517,6 +11559,30 @@ export type DocumentRelation = {
   kind: "user_declared_same_draft" | "controlled_render";
   verification: "unverified" | "verified" | "rejected";
   evidence_ids: string[];
+};
+
+export type RuleCarryoverView = {
+  from_rule_id: string;
+  from_decision_id: string;
+  equivalence_digest: string;
+  adopted_at: string;
+};
+
+export type RuleScope = {
+  bid_id: string;
+  description: string;
+};
+
+export type RuleBand = {
+  label: string;
+  description: string;
+  points: string;
+  evidence_ids: string[];
+};
+
+export type RuleEvidenceQuote = {
+  evidence_id: string;
+  quote: string;
 };
 
 export type AuthoringHistoryAuthoringSourceReference = {
@@ -12057,25 +12123,6 @@ export type CoverageLayer = {
   gaps: string[];
 };
 
-export type RuleCarryoverView = {
-  from_rule_id: string;
-  from_decision_id: string;
-  equivalence_digest: string;
-  adopted_at: string;
-};
-
-export type RuleScope = {
-  bid_id: string;
-  description: string;
-};
-
-export type RuleBand = {
-  label: string;
-  description: string;
-  points: string;
-  evidence_ids: string[];
-};
-
 export type FactDecisionCarryover = {
   from_fact_id: string;
   from_decision_id: string;
@@ -12091,11 +12138,6 @@ export type DecisionView = {
   reason: string;
   actor_id: string;
   created_at: string;
-};
-
-export type RuleEvidenceQuote = {
-  evidence_id: string;
-  quote: string;
 };
 
 export type AuthoringHistoryAuthoringParagraph = {

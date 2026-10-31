@@ -182,6 +182,9 @@ export function WordCard({
   const missingResult = conversion.gaps.includes(
     "WORD_CONVERSION_RESULT_MISSING",
   );
+  const activeContentBlocked = conversion.gaps.includes(
+    "WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED",
+  );
   const complete =
     conversion.state === "succeeded" &&
     conversion.coverage === "complete" &&
@@ -242,14 +245,19 @@ export function WordCard({
         <p className="notice warning" key={i}>
           {g === "WORD_CONVERSION_RESULT_MISSING"
             ? "本次转换未返回可用的PDF。Word原件仍保留，可重试转换或上传对应PDF。"
-            : g}
+            : g === "WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED"
+              ? "此Word含动态域、宏或外部链接等不支持自动转换的内容。原件已保留；可移除相关内容后重新上传Word，或提供对应PDF。"
+              : g}
         </p>
       ))}
-      {(conversion.error_code || missingResult) && (
+      {(conversion.error_code || missingResult || activeContentBlocked) && (
         <details>
           <summary>查看转换状态详情</summary>
           <code>
-            {conversion.error_code ?? "WORD_CONVERSION_RESULT_MISSING"}
+            {conversion.error_code ??
+              (activeContentBlocked
+                ? "WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED"
+                : "WORD_CONVERSION_RESULT_MISSING")}
           </code>
         </details>
       )}

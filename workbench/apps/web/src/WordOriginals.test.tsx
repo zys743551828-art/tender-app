@@ -171,3 +171,59 @@ it("重试用Word GET实tag，202只受理，原件和未完成提示不冒变�
   );
   expect(screen.getByText("Word原件已保存／本次对应检查未完成")).toBeVisible();
 });
+
+it("安全拒绝说明可操作且真实码仅在详情中显示，不给PDF或授予资格", async () => {
+  const blocked: WordOriginalView = {
+    ...word,
+    inspection: {
+      ...word.inspection,
+      active_content_gaps: ["WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED"],
+      conversion_eligible: false,
+    },
+    conversion: {
+      ...word.conversion,
+      state: "failed",
+      conversion_attempted: false,
+      coverage: "failed",
+      error_code: null,
+      retryable: false,
+      gaps: ["WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED"],
+      pdf_document_version_id: null,
+    },
+    converted_pdf_action: null,
+  };
+  const fetch = vi.fn<typeof window.fetch>(async () => json(blocked));
+  const onPdf = vi.fn();
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <WordCard initial={blocked} bidId="bid" disabled={false} onPdf={onPdf} />,
+  );
+  expect(
+    screen.getByText(
+      "此Word含动态域、宏或外部链接等不支持自动转换的内容。原件已保留；可移除相关内容后重新上传Word，或提供对应PDF。",
+    ),
+  ).toBeVisible();
+  expect(screen.getByText("Word原件已保存／本次对应检查未完成")).toBeVisible();
+  expect(screen.getByText(word.delivery_check_message)).toBeVisible();
+  expect(
+    screen.getByRole("button", { name: "下载Word资料原件" }),
+  ).toBeVisible();
+  expect(screen.getByLabelText("上传此修改稿的PDF")).toBeEnabled();
+  expect(
+    screen.queryByRole("button", { name: "下载此Word转换的PDF" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "重试此原件的转换" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByText("WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED"),
+  ).not.toBeVisible();
+  await userEvent.click(screen.getByText("查看转换状态详情"));
+  expect(screen.getByText("WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED")).toBeVisible();
+  expect(onPdf).not.toHaveBeenCalled();
+  expect(
+    fetch.mock.calls.every(
+      (call) => !call[1]?.method || call[1].method === "GET",
+    ),
+  ).toBe(true);
+});

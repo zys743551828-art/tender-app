@@ -11,13 +11,14 @@ from apps.api.review_views import rule_set_view, rule_view
 from apps.api.source_effectivity_contracts import validate_request
 from packages.domain.rule_sets import rules
 from packages.domain.runtime import DomainError, clean, connection, fetch, sha
-from packages.domain.source_effectivity import EVENT, decide, verify_originals
+from packages.domain.source_effectivity import EVENT, ambiguity_context, decide, verify_originals
 
 router = APIRouter(prefix="/api/v1", tags=["source effectivity"])
 
 
 def source_effectivity_view(c, bid):
     profile = fetch(c, "SELECT * FROM bid_profiles WHERE bid_id=%s", (bid,))
+    ambiguity = ambiguity_context(c, bid, profile["current_rule_set_id"])
     items = rules(c, profile["current_rule_set_id"]) if profile["current_rule_set_id"] else []
     evidence_ids = sorted({str(identity) for item in items for identity in item["evidence_ids"]})
     versions = c.execute(
@@ -72,6 +73,9 @@ def source_effectivity_view(c, bid):
             "source_authority_digest": sha(authorities),
             "last_decision_id": last["id"] if last else None,
             "requires_review": requires_review,
+            "ambiguities": ambiguity["items"],
+            "ambiguity_resolution_available": ambiguity["available"],
+            "ambiguity_resolution_error": ambiguity["error"],
         }
     )
 

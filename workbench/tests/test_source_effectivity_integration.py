@@ -56,6 +56,9 @@ def context(request):
         variant = getattr(request, "param", None)
         if variant in ("whole", "mixed"):
             texts[1] = "本文件全文替代原招标文件，工期120天；质保24个月。"
+        if variant in ("remaining_keep", "remaining_unchanged"):
+            marker = "其余招标要求保持" if variant == "remaining_keep" else "其余招标要求不变"
+            texts[1] = f"本补遗明确替换以上两条，{marker}；虚构编制日期2030-01-10。"
         for index, text in enumerate(texts):
             blob, version, parse, evidence = [uuid4() for _ in range(4)]
             versions.append(version)
@@ -451,3 +454,230 @@ def test_actual_batch_500_explicit_selection_atomic_limit_and_replay(context):
                 ).fetchone()["n"]
                 == 500
             )
+
+
+def conflicting_extraction(context, *, unresolved_rule=False):
+    """Synthetic extraction receipt for real PG decision tests; no provider execution claim."""
+    from packages.domain.rule_corrections import COLUMNS, _insert
+
+    identity, operation_id = uuid4(), uuid4()
+    with connection() as c:
+        originals = rules(c, context["rule_set"])
+        c.execute(
+            "INSERT INTO rule_sets(id,bid_id,material_id,revision,digest,coverage) VALUES(%s,%s,%s,2,%s,'conflict')",
+            (identity, context["bid"], context["material"], sha("synthetic ambiguity origin")),
+        )
+        ids = []
+        for original in originals:
+            item_id = uuid4()
+            value = {key: original[key] for key in COLUMNS}
+            if unresolved_rule and original["statement"] == "质保24个月":
+                value["provenance_status"] = "needs_revalidation"
+            _insert(c, context["bid"], identity, item_id, value)
+            ids.append((original["id"], item_id))
+        command = Command(
+            c, context["actor"], "synthetic-extraction-fixture", context["bid"], uuid4().hex, {}
+        )
+        c.execute(
+            "INSERT INTO operations(id,bid_id,command_id,kind,input_digest,state,handler_version,finished_at) VALUES(%s,%s,%s,'synthetic-extraction',%s,'succeeded','prepare/1',now())",
+            (operation_id, context["bid"], command.id, sha(str(operation_id))),
+        )
+        command.finish({"synthetic_extraction_fixture": True})
+        c.execute(
+            "UPDATE bid_profiles SET current_rule_set_id=%s WHERE bid_id=%s",
+            (identity, context["bid"]),
+        )
+    # The ordinary Worker capability writes the immutable effect receipt.
+    with connection(True) as c:
+        c.execute(
+            "INSERT INTO effect_receipts(operation_id,effect_key,result) VALUES(%s,'extract-rules',%s)",
+            (
+                operation_id,
+                Jsonb(
+                    {
+                        "result_ref": str(identity),
+                        "ambiguities": ["SYNTHETIC 工期歧义", "SYNTHETIC 截止时间歧义"],
+                    }
+                ),
+            ),
+        )
+    mapping = dict(ids)
+    return context | {
+        "rule_set": identity,
+        "rules": [mapping[value] for value in context["rules"]],
+        "extraction_operation": operation_id,
+    }
+
+
+@pytest.mark.parametrize("action", ["partial_replace", "defer"])
+def test_conflict_old_payload_and_defer_do_not_silently_clear_ambiguities(context, action):
+    current = conflicting_extraction(context)
+    new_set = apply(current, body(current, action))
+    with connection() as c:
+        assert (
+            c.execute("SELECT coverage FROM rule_sets WHERE id=%s", (new_set,)).fetchone()[
+                "coverage"
+            ]
+            == "conflict"
+        )
+
+
+def test_exact_ambiguity_ack_downgrades_only_to_partial_with_originals_retained(context):
+    from packages.domain.source_effectivity import ambiguity_context
+
+    current = conflicting_extraction(context)
+    with connection() as c:
+        origin = ambiguity_context(c, current["bid"], current["rule_set"])
+    request = body(current) | {
+        "acknowledged_ambiguity_ids": [item["id"] for item in origin["items"]]
+    }
+    new_set = apply(current, request)
+    with connection() as c:
+        assert (
+            c.execute("SELECT coverage FROM rule_sets WHERE id=%s", (new_set,)).fetchone()[
+                "coverage"
+            ]
+            == "partial"
+        )
+        assert (
+            c.execute(
+                "SELECT coverage FROM rule_sets WHERE id=%s", (current["rule_set"],)
+            ).fetchone()["coverage"]
+            == "conflict"
+        )
+        items = rules(c, new_set)
+        assert (
+            next(item for item in items if item["statement"] == "工期90天")["provenance_status"]
+            == "superseded"
+        )
+        assert (
+            next(item for item in items if item["statement"] == "质保24个月")["provenance_status"]
+            == "effective"
+        )
+        assert (
+            next(item for item in items if item["statement"] == "工期120天")["provenance_status"]
+            == "effective"
+        )
+        row = c.execute(
+            "SELECT payload FROM audit_entries WHERE bid_id=%s AND event_type='sources.effectivity_decided' ORDER BY created_at DESC,id DESC LIMIT 1",
+            (current["bid"],),
+        ).fetchone()
+        resolution = row["payload"]["ambiguity_resolution"]
+        assert set(resolution["acknowledged_ids"]) == set(request["acknowledged_ambiguity_ids"])
+        assert resolution["extraction_operation_id"] == str(current["extraction_operation"])
+        assert row["payload"]["automatic_review_started"] is False
+        assert ambiguity_context(c, current["bid"], new_set)["items"] == []
+
+
+def test_full_ack_cannot_hide_another_rule_needing_revalidation(context):
+    from packages.domain.source_effectivity import ambiguity_context
+
+    current = conflicting_extraction(context, unresolved_rule=True)
+    with connection() as c:
+        origin = ambiguity_context(c, current["bid"], current["rule_set"])
+    request = body(current) | {
+        "acknowledged_ambiguity_ids": [item["id"] for item in origin["items"]]
+    }
+    with pytest.raises(DomainError) as error:
+        apply(current, request)
+    assert error.value.code == "SOURCE_AMBIGUITY_UNRESOLVED_RULES"
+    with connection() as c:
+        assert (
+            c.execute(
+                "SELECT current_rule_set_id FROM bid_profiles WHERE bid_id=%s", (current["bid"],)
+            ).fetchone()["current_rule_set_id"]
+            == current["rule_set"]
+        )
+
+
+@pytest.mark.skipif(
+    os.environ.get("RUN_SOURCE_EFFECTIVITY_HTTP") != "1",
+    reason="actual synthetic S3 originals required",
+)
+def test_http_exact_ack_requires_current_view_etag_and_all_ambiguities(context):
+    current = conflicting_extraction(context)
+    login, password = uuid4().hex, uuid4().hex
+    with connection() as c:
+        c.execute(
+            "INSERT INTO credentials(member_id,login_name,password_hash) VALUES(%s,%s,%s)",
+            (current["actor"], login, password_hash(password)),
+        )
+    with TestClient(app) as client:
+        logged = client.post(
+            "/api/v1/auth/login",
+            json={"login_name": login, "password": password},
+            headers={"Origin": required("APP_ORIGIN")},
+        )
+        assert logged.status_code == 200
+        path = f"/api/v1/bids/{current['bid']}/source-effectivity"
+        reading = client.get(path)
+        assert reading.status_code == 200 and reading.json()["ambiguity_resolution_available"]
+        ids = [item["id"] for item in reading.json()["ambiguities"]]
+        assert len(ids) == 2
+        request = body(current) | {"acknowledged_ambiguity_ids": ids}
+        headers = {
+            "Origin": required("APP_ORIGIN"),
+            "X-CSRF-Token": logged.json()["csrf_token"],
+            "Idempotency-Key": uuid4().hex,
+            "If-Match": reading.headers["etag"],
+        }
+        subset = client.post(
+            path + "-decisions",
+            json=request | {"acknowledged_ambiguity_ids": ids[:1]},
+            headers=headers,
+        )
+        assert (
+            subset.status_code == 422 and subset.json()["code"] == "SOURCE_AMBIGUITY_ACK_MISMATCH"
+        )
+        stale = client.post(
+            path + "-decisions",
+            json=request,
+            headers=headers | {"Idempotency-Key": uuid4().hex, "If-Match": '"stale"'},
+        )
+        assert stale.status_code == 412
+        committed_headers = headers | {"Idempotency-Key": uuid4().hex}
+        committed = client.post(path + "-decisions", json=request, headers=committed_headers)
+        assert committed.status_code == 200 and committed.json()["coverage"] == "partial"
+        repeated = client.post(path + "-decisions", json=request, headers=committed_headers)
+        assert repeated.status_code == 200 and repeated.json() == committed.json()
+        assert repeated.headers["Idempotent-Replayed"] == "true"
+        assert client.get(path).headers["etag"] != reading.headers["etag"]
+
+
+@pytest.mark.skipif(
+    os.environ.get("RUN_SOURCE_EFFECTIVITY_HTTP") != "1",
+    reason="actual synthetic S3 originals required",
+)
+@pytest.mark.parametrize("context", ["remaining_keep", "remaining_unchanged"], indirect=True)
+def test_http_remaining_tender_requirements_cannot_whole_replace(context):
+    login, password = uuid4().hex, uuid4().hex
+    with connection() as c:
+        c.execute(
+            "INSERT INTO credentials(member_id,login_name,password_hash) VALUES(%s,%s,%s)",
+            (context["actor"], login, password_hash(password)),
+        )
+    with TestClient(app) as client:
+        logged = client.post(
+            "/api/v1/auth/login",
+            json={"login_name": login, "password": password},
+            headers={"Origin": required("APP_ORIGIN")},
+        )
+        assert logged.status_code == 200
+        path = f"/api/v1/bids/{context['bid']}/source-effectivity"
+        reading = client.get(path)
+        request = body(context, "whole_replace") | {"additions": []}
+        response = client.post(
+            path + "-decisions",
+            json=request,
+            headers={
+                "Origin": required("APP_ORIGIN"),
+                "X-CSRF-Token": logged.json()["csrf_token"],
+                "Idempotency-Key": uuid4().hex,
+                "If-Match": reading.headers["etag"],
+            },
+        )
+        assert response.status_code == 422
+        assert response.json()["code"] == "SOURCE_EFFECTIVITY_SCOPE_CONFLICT"
+        unchanged = client.get(path)
+        assert unchanged.json()["rule_set_id"] == str(context["rule_set"])
+        assert unchanged.headers["etag"] == reading.headers["etag"]
