@@ -187,7 +187,7 @@ services:
     healthcheck:
       test: [CMD, python, -m, deploy.fusion_full_runtime, api, --check]
       interval: 30s
-      timeout: 15s
+      timeout: 40s
       retries: 3
       start_period: 20s
 

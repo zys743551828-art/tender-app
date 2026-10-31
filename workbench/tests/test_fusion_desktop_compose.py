@@ -283,6 +283,23 @@ def test_word_installation_is_versioned_and_only_four_components_get_word_entryp
     assert services["worker-comparison"]["stop_grace_period"] == "45s"
 
 
+@pytest.mark.parametrize("word_enabled", [False, True])
+def test_api_health_inherits_full_budget_without_weakening_probe(
+    request_value, word_request, plan, tmp_path, word_enabled
+):
+    request = word_request if word_enabled else request_value
+    api = desktop.document(request, tmp_path, plan)["services"]["api"]
+    module = "deploy.fusion_word_runtime" if word_enabled else "deploy.fusion_full_runtime"
+    assert api["healthcheck"] == {
+        "test": ["CMD", "python", "-m", module, "api", "--check"],
+        "interval": "30s",
+        "timeout": "40s",
+        "retries": 3,
+        "start_period": "20s",
+    }
+    assert api["user"] == "65532:65532" and api["cap_drop"] == ["ALL"]
+
+
 def test_legacy_descriptor_cannot_silently_install_word(word_request):
     word_request["version"] = desktop.VERSION
     with pytest.raises(spec.ConfigurationError, match="DESKTOP_REQUEST_INVALID"):

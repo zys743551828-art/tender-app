@@ -17,6 +17,22 @@ PYTHON_IMAGE = "synthetic-unexecuted-python@sha256:" + "a" * 64
 WEB_IMAGE = "synthetic-unexecuted-web@sha256:" + "b" * 64
 
 
+def test_api_health_keeps_full_probe_with_shared_forty_second_budget():
+    import yaml
+
+    document = yaml.safe_load(control.COMPOSE.read_bytes())
+    api = document["services"]["api"]
+    assert api["healthcheck"] == {
+        "test": ["CMD", "python", "-m", "deploy.fusion_full_runtime", "api", "--check"],
+        "interval": "30s",
+        "timeout": "40s",
+        "retries": 3,
+        "start_period": "20s",
+    }
+    assert api["healthcheck"]["timeout"] == document["x-python"]["healthcheck"]["timeout"]
+    assert api["user"] == "65532:65532" and api["cap_drop"] == ["ALL"]
+
+
 @pytest.fixture
 def configured(tmp_path):
     directory = tmp_path / "private"
