@@ -118,13 +118,15 @@ def test_one_correction_reports_exact_violation_and_original_sources(prepare, fi
     )
     assert json.loads(request[2]["content"]) == original
     feedback = json.loads(request[3]["content"][request[3]["content"].index("{") :])
-    assert feedback == {
-        "error_code": "RULE_STATEMENT_UNGROUNDED"
-        if field == "statement"
-        else "RULE_CONDITION_UNGROUNDED",
-        "rule_index": 0,
-        "field": "statement" if field == "statement" else f"{field}[0]",
-    }
+    assert feedback["errors"] == [
+        {
+            "error_code": "RULE_STATEMENT_UNGROUNDED"
+            if field == "statement"
+            else "RULE_CONDITION_UNGROUNDED",
+            "rule_index": 0,
+            "field": "statement" if field == "statement" else f"{field}[0]",
+        }
+    ]
     assert result["model_call_id"] == "call-2"
     assert result["items"][0]["conditions"] == extraction()["rules"][0]["conditions"]
 
@@ -210,8 +212,8 @@ def test_feedback_identifies_later_rule_and_exact_exception_index(prepare):
     run([bad, corrected])
     feedback_text = calls[1]["messages"][-1]["content"]
     feedback = json.loads(feedback_text[feedback_text.index("{") :])
-    assert feedback["rule_index"] == 1
-    assert feedback["field"] == "exceptions[1]"
+    assert feedback["errors"][0]["rule_index"] == 1
+    assert feedback["errors"][0]["field"] == "exceptions[1]"
 
 
 def test_same_frozen_inputs_recreate_identical_ledger_request_identities(prepare):
@@ -323,4 +325,144 @@ def test_quote_adjustment_still_must_match_actual_original_evidence(prepare):
     with pytest.raises(DomainError) as caught:
         run([bad, corrected])
     assert caught.value.code == "RULE_QUOTE_INVALID"
+    assert len(calls) == 2
+
+
+def multiple_grounding_failures():
+    corrected = extraction()
+    corrected["rules"] *= 3
+    corrected = deepcopy(corrected)
+    # Independent objects, with the same immutable structure as the bad response.
+    corrected["rules"] = [deepcopy(rule) for rule in corrected["rules"]]
+    corrected["rules"][1]["conditions"].append("必须书面批准。")
+    bad = deepcopy(corrected)
+    bad["rules"][0]["conditions"][0] = "首条推断条件"
+    bad["rules"][1]["statement"] = "第二条改写要求"
+    bad["rules"][1]["conditions"] = ["第二条推断条件一", "第二条推断条件二"]
+    bad["rules"][1]["exceptions"][0] = "第二条推断例外"
+    bad["rules"][2]["statement"] = "第三条改写要求"
+    return bad, corrected
+
+
+def test_one_correction_receives_all_bad_fields_across_all_rules(prepare):
+    run, calls = prepare
+    bad, corrected = multiple_grounding_failures()
+    original = deepcopy(bad)
+    result = run([bad, corrected])
+    text = calls[1]["messages"][-1]["content"]
+    errors = json.loads(text[text.index("{") :])["errors"]
+    assert [(error["rule_index"], error["field"], error["error_code"]) for error in errors] == [
+        (0, "conditions[0]", "RULE_CONDITION_UNGROUNDED"),
+        (1, "statement", "RULE_STATEMENT_UNGROUNDED"),
+        (1, "conditions[0]", "RULE_CONDITION_UNGROUNDED"),
+        (1, "conditions[1]", "RULE_CONDITION_UNGROUNDED"),
+        (1, "exceptions[0]", "RULE_CONDITION_UNGROUNDED"),
+        (2, "statement", "RULE_STATEMENT_UNGROUNDED"),
+    ]
+    assert len(calls) == 2
+    assert len(result["items"]) == 3
+    assert result["coverage"] == "complete"
+    assert bad == original
+
+
+def test_only_fixing_first_rule_still_fails_on_remaining_real_error(prepare):
+    run, calls = prepare
+    bad, corrected = multiple_grounding_failures()
+    partial = deepcopy(bad)
+    partial["rules"][0] = corrected["rules"][0]
+    with pytest.raises(DomainError) as caught:
+        run([bad, partial])
+    assert caught.value.code == "RULE_STATEMENT_UNGROUNDED"
+    assert len(calls) == 2
+
+
+def test_first_actual_grounding_error_is_preserved_while_collecting_all(monkeypatch):
+    bad, _ = multiple_grounding_failures()
+    blocks = [{"id": EVIDENCE, "text_content": SOURCE}]
+    actual_validate = handlers.validate_addition
+    errors = []
+
+    def record_error(*args, **kwargs):
+        try:
+            return actual_validate(*args, **kwargs)
+        except DomainError as error:
+            errors.append(error)
+            raise
+
+    monkeypatch.setattr(handlers, "validate_addition", record_error)
+    feedback = {}
+    with pytest.raises(DomainError) as caught:
+        handlers._validated_extraction(bad, BID, blocks, feedback=feedback)
+    assert caught.value is errors[0]
+    assert len(errors) == 3
+    assert len(feedback["errors"]) == 6
+
+
+@pytest.mark.parametrize("fault", ["scope", "quote", "schema", "points", "band"])
+def test_later_explicit_non_grounding_error_prevents_any_correction(prepare, fault):
+    run, calls = prepare
+    bad, _ = multiple_grounding_failures()
+    other = extraction()["rules"][0]
+    if fault == "scope":
+        other["scope"]["bid_id"] = EVIDENCE
+    elif fault == "quote":
+        other["evidence_quotes"][0]["quote"] = "不存在的原文"
+    elif fault == "schema":
+        other["statement"] = ""
+    elif fault == "points":
+        other.update(kind="scoring", maximum="10")
+    else:
+        other.update(
+            kind="scoring",
+            maximum="90",
+            bands=[
+                {
+                    "label": "合成档",
+                    "description": "虚构档次",
+                    "points": "90",
+                    "evidence_ids": [EVIDENCE],
+                }
+            ],
+        )
+    with pytest.raises(DomainError) as expected:
+        handlers.validate_addition(
+            other, BID, [{"id": EVIDENCE, "text_content": SOURCE}], model=True
+        )
+    assert (
+        expected.value.code
+        == {
+            "scope": "RULE_SCOPE_MISMATCH",
+            "quote": "RULE_QUOTE_INVALID",
+            "schema": "INVALID_REQUEST",
+            "points": "RULE_POINTS_UNGROUNDED",
+            "band": "RULE_BAND_INVALID",
+        }[fault]
+    )
+    bad["rules"].append(other)
+    with pytest.raises(DomainError) as caught:
+        run([bad])
+    assert caught.value.code == expected.value.code
+    assert len(calls) == 1
+
+
+def test_original_validator_still_rejects_band_error_hidden_by_first_statement_error(prepare):
+    run, calls = prepare
+    corrected = extraction()
+    corrected["rules"][0].update(
+        kind="scoring",
+        maximum="90",
+        bands=[
+            {
+                "label": "合成档",
+                "description": "虚构档次",
+                "points": "90",
+                "evidence_ids": [EVIDENCE],
+            }
+        ],
+    )
+    bad = deepcopy(corrected)
+    bad["rules"][0]["statement"] = "不是原文"
+    with pytest.raises(DomainError) as caught:
+        run([bad, corrected])
+    assert caught.value.code == "RULE_BAND_INVALID"
     assert len(calls) == 2

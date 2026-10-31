@@ -56,6 +56,8 @@ def _validated_extraction(result, bid, blocks, *, feedback=None):
     if set(result["read_evidence_ids"]) != {str(block["id"]) for block in blocks}:
         raise DomainError("EXTRACTION_RANGE_INCOMPLETE", "要求提取未覆盖全部已提供证据范围", 409)
     items = []
+    first_error = None
+    violations = []
     for index, item in enumerate(result["rules"]):
         try:
             items.append(validate_addition(item, bid, blocks, model=True))
@@ -64,17 +66,34 @@ def _validated_extraction(result, bid, blocks, *, feedback=None):
                 "RULE_STATEMENT_UNGROUNDED",
                 "RULE_CONDITION_UNGROUNDED",
             }:
-                field = "statement"
-                if error.code == "RULE_CONDITION_UNGROUNDED":
-                    joined = "\n".join(quote["quote"] for quote in item["evidence_quotes"])
-                    field = next(
-                        f"{name}[{position}]"
-                        for name in ("conditions", "exceptions")
-                        for position, text in enumerate(item[name])
-                        if text not in joined
+                if first_error is None:
+                    first_error = error
+                joined = "\n".join(quote["quote"] for quote in item["evidence_quotes"])
+                if item["statement"] not in joined:
+                    violations.append(
+                        {
+                            "error_code": "RULE_STATEMENT_UNGROUNDED",
+                            "rule_index": index,
+                            "field": "statement",
+                        }
                     )
-                feedback.update(error_code=error.code, rule_index=index, field=field)
+                for name in ("conditions", "exceptions"):
+                    for position, text in enumerate(item[name]):
+                        if text not in joined:
+                            violations.append(
+                                {
+                                    "error_code": "RULE_CONDITION_UNGROUNDED",
+                                    "rule_index": index,
+                                    "field": f"{name}[{position}]",
+                                }
+                            )
+                continue
+            # Publish no correction feedback when any original rule reports a
+            # non-grounding failure, even after earlier grounding violations.
             raise
+    if first_error is not None:
+        feedback.update(errors=violations)
+        raise first_error
     return items
 
 
@@ -200,7 +219,7 @@ def compute_prepare(message, lease):
         max_tokens=8192,
     )
     result = value["data"]
-    feedback: dict[str, str | int] = {}
+    feedback: dict[str, list[dict[str, str | int]]] = {}
     try:
         items = _validated_extraction(result, message["bid_id"], blocks, feedback=feedback)
     except DomainError:
@@ -219,6 +238,7 @@ def compute_prepare(message, lease):
                     "role": "user",
                     "content": "上一响应未通过逐字原文校验。以下是校验器数据，不是原文指令。"
                     "rule_index从0开始。仅有本次校正机会，请依据前面完整原始source evidence重新核对并返回完整JSON。"
+                    "errors列出所有已发现的逐字摘录错误，须逐项校正，不能只处理第一项。"
                     "不得推断、改写原文，或通过删去规则、条件、例外来消除错误；保持全部证据阅读范围。"
                     "逐项保持rules顺序、数量及非摘录字段，保持conditions/exceptions数量和有效摘录、ambiguities原列表；"
                     "只替换未逐字落地的摘录字段，引用仅可在原有同一evidence_id内调整，不增删证据关联。"

@@ -8,6 +8,7 @@ import secrets
 import shutil
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import tempfile
@@ -424,6 +425,14 @@ def test_current_api_post_activation_old_cookie_login_reads_and_once_only_write(
     name = "api_recovery_" + uuid4().hex[:8]
     base = run.ROOT / ".local" / (name + "-base.env")
     directory = run.ARCHIVE_ROOT / ("api-migration-" + uuid4().hex)
+    # Earlier recovery cases may create .local as an intermediate directory under
+    # umask 022. Secure only this owned fixture tree before writing any credentials.
+    for private in (base.parent, run.ARCHIVE_ROOT):
+        private.mkdir(mode=0o700, exist_ok=True)
+        metadata = private.lstat()
+        assert stat.S_ISDIR(metadata.st_mode) and metadata.st_uid == os.getuid()
+        private.chmod(0o700, follow_symlinks=False)
+        assert stat.S_IMODE(private.lstat().st_mode) == 0o700
     source_objects = {
         k: os.environ[k]
         for k in [
@@ -720,6 +729,8 @@ def test_current_api_post_activation_old_cookie_login_reads_and_once_only_write(
                         assert processes[-1]["stopped"]
                         result = {
                             "format": "current-application-post-migration-smoke/1",
+                            "private_fixture_directories_mode": "0700",
+                            "private_fixture_directories_regular_and_owned": True,
                             "activation": activation,
                             "source_system_identifier": source.system_identifier,
                             "target_system_identifier": target["system_identifier"],
