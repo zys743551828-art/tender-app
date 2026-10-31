@@ -89,6 +89,9 @@ def configuring(tmp_path, monkeypatch):
 
     def create(directory, **kwargs):
         captured.append(kwargs)
+        value["admin_password"] = kwargs["admin_password"]
+        value["model"] = kwargs.get("model")
+        value["plan"]["model_configured"] = kwargs.get("model") is not None
         directory.mkdir(mode=0o700)
         spec.write_private(directory / "operator.json", value)
         spec.write_private(directory / "owner-password", b"synthetic-owner-only")
@@ -197,3 +200,99 @@ def test_init_volume_with_nonroot_owner_is_rejected_without_repair(
         private._initial_state(directory)
     assert directory.stat().st_mode & 0o777 == 0o755
     assert bool(list(directory.iterdir())) is initialized
+
+
+@pytest.mark.parametrize("mode,accepted", ((0o700, True), (0o755, False)))
+def test_empty_application_state_is_not_repaired_after_ownership_transfer(
+    tmp_path, monkeypatch, mode, accepted
+):
+    state = tmp_path / "api-state"
+    state.mkdir()
+    state.chmod(mode)
+    original = Path.stat
+
+    def owned(path, *args, **kwargs):
+        info = original(path, *args, **kwargs)
+        if path == state:
+            fields = list(info)
+            fields[4] = fields[5] = private.UID
+            return os.stat_result(fields)
+        return info
+
+    monkeypatch.setattr(Path, "stat", owned)
+
+    def forbidden(*_):
+        raise AssertionError("An already transferred volume must not be chmod/chowned")
+
+    monkeypatch.setattr(Path, "chmod", forbidden)
+    monkeypatch.setattr(private.os, "chown", forbidden)
+    if accepted:
+        private._application_state(state)
+    else:
+        with pytest.raises(spec.ConfigurationError, match="DESKTOP_API_STATE_CHANGED"):
+            private._application_state(state)
+    assert state.stat().st_mode & 0o777 == mode
+
+
+def test_unknown_empty_api_state_owner_is_rejected_without_repair(tmp_path, monkeypatch):
+    state = tmp_path / "api-state"
+    state.mkdir(mode=0o700)
+    directory_owner(monkeypatch, state, 1234)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_API_STATE_CHANGED"):
+        private._application_state(state)
+
+
+def test_explicit_admin_is_private_and_never_resets_existing_secret(configuring):
+    path, public, request, value, captured = configuring
+    supplied = {"admin_password": "synthetic-bootstrap-password", "model": None}
+    private.configure(supplied)
+    assert captured[1]["admin_password"] == supplied["admin_password"]
+    assert "model" not in captured[1]
+    private.configure(supplied)
+    private.configure()
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_BOOTSTRAP_BINDING_CHANGED"):
+        private.configure(supplied | {"admin_password": "different-synthetic-password"})
+    assert len(captured) == 2
+    assert supplied["admin_password"] not in (public / "public-plan.json").read_text()
+
+
+def test_model_payload_is_required_only_for_new_declared_installation(configuring, monkeypatch):
+    path, public, request, value, captured = configuring
+    request["model_configured"] = True
+    # Root owns the new public schema; this test isolates private-stage handling.
+    monkeypatch.setattr(desktop, "validate_request", lambda value: request)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_BOOTSTRAP_MODEL_REQUIRED"):
+        private.configure()
+    assert not path.exists() and len(captured) == 1
+    model = {
+        "DEEPSEEK_API_KEY": "synthetic-not-a-real-key",
+        "DEEPSEEK_MODEL": "deepseek-flash",
+        "DEEPSEEK_BASE_URL": "https://api.deepseek.com/v1",
+    }
+    supplied = {"admin_password": None, "model": model}
+    private.configure(supplied)
+    assert captured[1]["model"] == model
+    private.configure()
+    private.configure(supplied)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_BOOTSTRAP_BINDING_CHANGED"):
+        private.configure(
+            {"admin_password": None, "model": model | {"DEEPSEEK_API_KEY": "other-synthetic-key"}}
+        )
+    assert len(captured) == 2
+    assert "synthetic-not-a-real-key" not in (public / "public-plan.json").read_text()
+
+
+def test_model_cannot_be_injected_into_undeclared_installation(configuring):
+    path, public, request, value, captured = configuring
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_BOOTSTRAP_MODEL_INTENT_MISMATCH"):
+        private.configure(
+            {
+                "admin_password": None,
+                "model": {
+                    "DEEPSEEK_API_KEY": "synthetic-key",
+                    "DEEPSEEK_MODEL": "deepseek-flash",
+                    "DEEPSEEK_BASE_URL": "https://api.deepseek.com/v1",
+                },
+            }
+        )
+    assert not path.exists() and len(captured) == 1

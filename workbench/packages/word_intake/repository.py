@@ -151,7 +151,12 @@ def publish_verified(c, message, upload, version_id, checked, *, render_profile=
 
 
 def controlled_qualified(result):
-    if result.get("protocol") not in {None, "word-docker-render/1", "word-prebuilt-gotenberg/1"}:
+    if result.get("protocol") not in {
+        None,
+        "word-docker-render/1",
+        "word-prebuilt-gotenberg/1",
+        "word-prebuilt-gotenberg/2",
+    }:
         return False
     required = {
         "source_docx_digest",
@@ -162,7 +167,7 @@ def controlled_qualified(result):
         "options_digest",
     }
     isolation = result.get("isolation")
-    if result.get("protocol") == "word-prebuilt-gotenberg/1":
+    if result.get("protocol") in {"word-prebuilt-gotenberg/1", "word-prebuilt-gotenberg/2"}:
         from packages.word_intake.prebuilt import ISOLATION_CHECKS
 
         checks = isolation.get("checks") if isinstance(isolation, dict) else None

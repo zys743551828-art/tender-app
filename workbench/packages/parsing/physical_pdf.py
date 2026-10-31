@@ -8,7 +8,7 @@ from packages.domain.runtime import DomainError, sha
 from packages.parsing.pdfium_guard import LOCK
 
 PARSER_DIGEST = sha(
-    {"parser": "pypdfium2", "version": "4.30.1", "purpose": "physical_page_text_only"}
+    {"parser": "pypdfium2", "version": "5.14.0", "purpose": "physical_page_text_only"}
 )
 CONFIG_DIGEST = sha({"bbox": None, "ocr": False, "tables": False, "visual": False})
 
@@ -26,7 +26,7 @@ def extract(data, *, max_pages=1000):
                     with closing(pdf[index]) as page:
                         width, height = page.get_size()
                         with closing(page.get_textpage()) as textpage:
-                            text = textpage.get_text_range()
+                            text = textpage.get_text_bounded()
                         gaps = ["OCR_NOT_CONFIGURED"] if len(text.strip()) < 20 else []
                         pages.append(
                             {

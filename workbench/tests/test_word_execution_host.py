@@ -327,6 +327,16 @@ def test_cli_sanitizes_before_constructing_executor(tmp_path, monkeypatch):
         def __init__(self, *args, **kwargs):
             captured.append(dict(os.environ))
 
+        def ready_record(self):
+            return {
+                "state": "ready",
+                "container_id": PEER,
+                "run_id": RUN,
+                "peer_mode": "test",
+                "deployment_binding": None,
+                "pid": os.getpid(),
+            }
+
         def stopped(self):
             return True
 
@@ -448,3 +458,456 @@ def test_fixed_helper_response_is_atomic_private_single_link(linux_job):
     path = directory / "response.json"
     assert path.read_bytes() == response
     assert stat.S_IMODE(path.stat().st_mode) == 0o600 and path.stat().st_nlink == 1
+
+
+def deployment_binding(service="worker-document"):
+    return {
+        "version": "word-execution-peer/2",
+        "container_id": PEER,
+        "instance_id": RUN,
+        "deployment_id": "d" * 32,
+        "project": "tender-fusion-full-" + RUN[:12],
+        "service": service,
+        "plan_digest": "e" * 64,
+    }
+
+
+def deployment_peer(binding):
+    value = peer()
+    value["Labels"] = {
+        "tender.desktop.instance": binding["instance_id"],
+        "tender.word.version": "word-conversion-execution/2",
+        "tender.word.plan": binding["plan_digest"],
+        "tender.word.deployment": binding["deployment_id"],
+        "com.docker.compose.project": binding["project"],
+        "com.docker.compose.service": binding["service"],
+    }
+    return value
+
+
+def deployment_executor(tmp_path, monkeypatch, service="worker-document"):
+    binding = deployment_binding(service)
+    directory = tmp_path / "deployment-report"
+    directory.mkdir()
+    value = host.Executor(PEER, None, directory, deployment_binding=binding)
+    mailbox = Mailbox()
+    mailbox.metadata = deployment_peer(binding)
+    monkeypatch.setattr(value, "_invoke", mailbox.invoke)
+    return value, mailbox, binding
+
+
+@pytest.mark.parametrize("service", ["worker-document", "worker-export"])
+def test_deployment_peer_does_not_need_test_labels_and_cannot_rebind(
+    tmp_path, monkeypatch, service
+):
+    value, mailbox, binding = deployment_executor(tmp_path, monkeypatch, service)
+    value.inspect_peer()
+    assert not any(k.startswith("tender.test.") for k in mailbox.metadata["Labels"])
+    assert value.run_id == RUN and value.peer_mode == "deployment"
+    assert value.ready_record() == {
+        "state": "ready",
+        "container_id": PEER,
+        "run_id": RUN,
+        "peer_mode": "deployment",
+        "deployment_binding": binding,
+        "pid": os.getpid(),
+    }
+    binding["plan_digest"] = "f" * 64
+    returned = value.deployment_binding
+    returned["plan_digest"] = "f" * 64
+    value.inspect_peer()
+    assert value.deployment_binding["plan_digest"] == "e" * 64
+
+
+@pytest.mark.parametrize(
+    "key,bad",
+    [
+        ("version", "old"),
+        ("container_id", "short"),
+        ("instance_id", "short"),
+        ("deployment_id", "short"),
+        ("plan_digest", "bad"),
+        ("project", "tender-fusion-full-other"),
+        ("service", "api"),
+        ("service", "worker-review"),
+        ("instance_id", 1),
+        ("command", "id"),
+        ("image", "other"),
+        ("path", "/private"),
+    ],
+)
+def test_deployment_binding_closed_schema_before_report_mutation(tmp_path, key, bad):
+    value = deployment_binding()
+    value[key] = bad
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.Executor(PEER, None, tmp_path, deployment_binding=value)
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("removed", list(deployment_binding()))
+def test_deployment_binding_all_identities_required(removed):
+    value = deployment_binding()
+    del value[removed]
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.validate_deployment_binding(value)
+
+
+def test_peer_modes_and_container_identity_are_mutually_bound(tmp_path):
+    for args, code in [
+        ((PEER, RUN), "WORD_EXECUTION_PEER_MODE_INVALID"),
+        (("f" * 64, None), "WORD_EXECUTION_PEER_INVALID"),
+    ]:
+        with pytest.raises(host.HostError, match=code):
+            host.Executor(*args, tmp_path, deployment_binding=deployment_binding())
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        host.Executor(PEER, None, tmp_path)
+
+
+@pytest.mark.parametrize("expected", ["f" * 64, "short", 1])
+def test_public_binding_validator_checks_optional_expected_container(expected):
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.validate_deployment_binding(deployment_binding(), container_id=expected)
+    assert (
+        host.validate_deployment_binding(deployment_binding(), container_id=PEER)
+        == deployment_binding()
+    )
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "tender.desktop.instance",
+        "tender.word.version",
+        "tender.word.plan",
+        "tender.word.deployment",
+        "com.docker.compose.project",
+        "com.docker.compose.service",
+    ],
+)
+@pytest.mark.parametrize("attack", ["missing", "wrong"])
+def test_deployment_labels_fail_closed_even_with_valid_test_labels(
+    tmp_path, monkeypatch, key, attack
+):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mailbox.metadata["Labels"].update({"tender.test.run": RUN, "tender.test.disposable": "true"})
+    if attack == "missing":
+        del mailbox.metadata["Labels"][key]
+    else:
+        mailbox.metadata["Labels"][key] = "wrong"
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.poll_once()
+    assert all(c[0] == "container" for c in mailbox.calls)
+
+
+@pytest.mark.parametrize(
+    "attack", ["id", "stopped", "uid", "readonly", "privileged", "socket", "tmpfs", "shadow"]
+)
+def test_deployment_mode_keeps_existing_isolation_guards(tmp_path, monkeypatch, attack):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    changes = {
+        "id": ("Id", "f" * 64),
+        "stopped": ("Running", False),
+        "uid": ("User", "0:0"),
+        "readonly": ("ReadonlyRootfs", False),
+        "privileged": ("Privileged", True),
+    }
+    if attack in changes:
+        key, bad = changes[attack]
+        mailbox.metadata[key] = bad
+    elif attack == "socket":
+        mailbox.metadata["Mounts"].append(
+            {"Type": "bind", "Source": "/var/run/docker.sock", "Destination": "/socket"}
+        )
+    elif attack == "tmpfs":
+        mailbox.metadata["Mounts"] = []
+    else:
+        mailbox.metadata["Tmpfs"] = {"/tmp": "rw", "/tmp/word-execution": "rw"}
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.inspect_peer()
+
+
+def test_deployment_actual_tmpfs_and_idle_peer_stop_are_rechecked(tmp_path, monkeypatch):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mailbox.filesystem_verified = False
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_TMPFS_INVALID"):
+        value.inspect_peer()
+    mailbox.filesystem_verified = True
+    monkeypatch.setattr(
+        value, "_mailbox", lambda action, **kwargs: b"verified" if action == "verify" else b"null"
+    )
+    assert value.poll_once() is None
+    mailbox.metadata["Running"] = False
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.poll_once()
+
+
+def test_desktop_linux_sharing_path_accepts_only_readonly_code_bind(tmp_path, monkeypatch):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mailbox.metadata["Mounts"].append(
+        {
+            "Type": "bind",
+            "Source": "/run/desktop/mnt/host/c/project/workbench/packages",
+            "Destination": "/workspace/packages",
+            "RW": False,
+        }
+    )
+    value.inspect_peer()
+
+
+@pytest.mark.parametrize("observation", ["active", "stopped", "other_id", "unavailable"])
+def test_mailbox_failure_is_peer_exit_only_after_exact_stopped_observation(
+    tmp_path, monkeypatch, observation
+):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+
+    def unavailable(action):
+        assert action == "verify"
+        mailbox.metadata["Running"] = observation == "active"
+        if observation == "other_id":
+            mailbox.metadata["Id"] = "f" * 64
+        elif observation == "unavailable":
+            monkeypatch.setattr(
+                value,
+                "_invoke",
+                lambda *args, **kwargs: SimpleNamespace(returncode=1, stdout=b""),
+            )
+        raise host.HostError("WORD_EXECUTION_MAILBOX_INVALID")
+
+    monkeypatch.setattr(value, "_mailbox", unavailable)
+    code = (
+        "WORD_EXECUTION_PEER_INVALID"
+        if observation == "stopped"
+        else "WORD_EXECUTION_PEER_TMPFS_INVALID"
+    )
+    with pytest.raises(host.HostError, match=code):
+        value.inspect_peer()
+
+
+@pytest.mark.parametrize("action", ["verify", "list", "read", "publish"])
+@pytest.mark.parametrize("stopped", [False, True])
+def test_each_mailbox_operation_rechecks_exact_peer_after_exec_failure(
+    tmp_path, monkeypatch, action, stopped
+):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mailbox.metadata["Running"] = not stopped
+    original = value._invoke
+
+    def invoke(arguments, **kwargs):
+        if arguments[0] == "exec":
+            return SimpleNamespace(returncode=1, stdout=b"")
+        return original(arguments, **kwargs)
+
+    monkeypatch.setattr(value, "_invoke", invoke)
+    expected = "WORD_EXECUTION_PEER_INVALID" if stopped else "WORD_EXECUTION_MAILBOX_INVALID"
+    with pytest.raises(host.HostError, match=expected):
+        value._mailbox(
+            action,
+            RUN if action in {"read", "publish"} else None,
+            token={"synthetic": True},
+            data=b"synthetic",
+        )
+
+
+@pytest.mark.parametrize(
+    "source,destination,writable",
+    [
+        ("/run/docker", "/workspace/packages", False),
+        ("/var/run", "/workspace/packages", False),
+        ("/run/desktop/mnt/host/c", "/workspace/packages", False),
+        ("/run/desktop/mnt/host/c/project", "/outside-code", False),
+        ("/run/desktop/mnt/host/c/project", "/workspace/packages", True),
+        ("/run/desktop/mnt/host/c/../run", "/workspace/packages", False),
+        ("/run/desktop/mnt/host/c/project/docker.sock", "/workspace/packages", False),
+    ],
+)
+def test_desktop_share_exception_preserves_runtime_bind_guards(
+    tmp_path, monkeypatch, source, destination, writable
+):
+    value, mailbox, _ = deployment_executor(tmp_path, monkeypatch)
+    mailbox.metadata["Mounts"].append(
+        {"Type": "bind", "Source": source, "Destination": destination, "RW": writable}
+    )
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.inspect_peer()
+
+
+def test_original_test_mode_never_accepts_deployment_labels_alone(tmp_path, monkeypatch):
+    value, mailbox = executor(tmp_path, monkeypatch)
+    mailbox.metadata = deployment_peer(deployment_binding())
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_PEER_INVALID"):
+        value.inspect_peer()
+
+
+@pytest.mark.parametrize(
+    "attack",
+    ["missing", "directory", "oversize", "duplicate", "invalid_utf8", "unknown", "changed"],
+)
+def test_binding_file_bounded_explicit_and_stable(tmp_path, monkeypatch, attack):
+    path = tmp_path / "binding.json"
+    path.write_text(json.dumps(deployment_binding()), encoding="utf-8")
+    if attack == "missing":
+        path.unlink()
+    elif attack == "directory":
+        path.unlink()
+        path.mkdir()
+    elif attack == "oversize":
+        path.write_bytes(b"x" * 16385)
+    elif attack == "duplicate":
+        path.write_bytes(b'{"version":1,"version":2}')
+    elif attack == "invalid_utf8":
+        path.write_bytes(b"\xff")
+    elif attack == "unknown":
+        path.write_text(json.dumps(deployment_binding() | {"url": "not allowed"}))
+    else:
+        original = host.os.fstat
+        calls = [0]
+
+        def changed(fd):
+            calls[0] += 1
+            if calls[0] == 2:
+                path.write_bytes(b"changed")
+            return original(fd)
+
+        monkeypatch.setattr(host.os, "fstat", changed)
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.load_deployment_binding(path)
+
+
+def test_binding_file_read_is_readonly(tmp_path):
+    path = tmp_path / "binding.json"
+    raw = json.dumps(deployment_binding()).encode()
+    path.write_bytes(raw)
+    assert host.load_deployment_binding(path) == deployment_binding()
+    assert path.read_bytes() == raw
+
+
+@pytest.mark.parametrize("handle_changed", [False, True])
+def test_binding_path_and_handle_ctime_are_checked_in_their_own_domains(
+    tmp_path, monkeypatch, handle_changed
+):
+    from types import SimpleNamespace
+
+    path = tmp_path / "binding.json"
+    path.write_text(json.dumps(deployment_binding()), encoding="utf-8")
+    original = host.os.fstat
+    calls = 0
+
+    def handle_stat(descriptor):
+        nonlocal calls
+        calls += 1
+        value = original(descriptor)
+        fields = {
+            name: getattr(value, name)
+            for name in ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns")
+        }
+        fields["st_ctime_ns"] = value.st_ctime_ns + 1000 + int(handle_changed and calls > 1)
+        return SimpleNamespace(**fields)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(host.os, "fstat", handle_stat)
+        if handle_changed:
+            with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+                host.load_deployment_binding(path)
+        else:
+            assert host.load_deployment_binding(path) == deployment_binding()
+
+
+def test_binding_path_ctime_change_is_rejected_with_unchanged_handle(tmp_path):
+    from types import SimpleNamespace
+
+    path = tmp_path / "binding.json"
+    path.write_text(json.dumps(deployment_binding()), encoding="utf-8")
+
+    class OperatorPath:
+        calls = 0
+
+        def __fspath__(self):
+            return str(path)
+
+        def is_symlink(self):
+            return False
+
+        def lstat(self):
+            self.calls += 1
+            value = path.lstat()
+            fields = {
+                name: getattr(value, name)
+                for name in ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns")
+            }
+            fields["st_ctime_ns"] = value.st_ctime_ns + int(self.calls > 1)
+            return SimpleNamespace(**fields)
+
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.load_deployment_binding(OperatorPath())
+
+
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Windows symlink creation requires OS privilege; no system changes",
+)
+def test_binding_file_never_follows_symlink(tmp_path):
+    target = tmp_path / "target.json"
+    target.write_text(json.dumps(deployment_binding()))
+    link = tmp_path / "binding.json"
+    link.symlink_to(target)
+    with pytest.raises(host.HostError, match="WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID"):
+        host.load_deployment_binding(link)
+
+
+@pytest.mark.parametrize(
+    "arguments", [[], ["--run-id", RUN, "--deployment-binding", "binding.json"]]
+)
+def test_cli_requires_exactly_one_peer_mode(tmp_path, arguments):
+    with pytest.raises(SystemExit) as error:
+        host.main(["--container-id", PEER, "--report-dir", str(tmp_path / "report"), *arguments])
+    assert error.value.code == 2
+
+
+def test_cli_deployment_ready_contains_bound_peer_and_pid(tmp_path, monkeypatch):
+    path = tmp_path / "binding.json"
+    path.write_text(json.dumps(deployment_binding()))
+    mailbox = Mailbox()
+    mailbox.metadata = deployment_peer(deployment_binding())
+    monkeypatch.setattr(host.os, "environ", {"PATH": "safe", "MODEL_API_KEY": "private"})
+    monkeypatch.setattr(
+        host.Executor, "_invoke", lambda self, *args, **kwargs: mailbox.invoke(*args, **kwargs)
+    )
+    monkeypatch.setattr(host.Executor, "stopped", lambda self: True)
+    monkeypatch.setattr(acceptance, "private_directory", lambda path: None)
+    report = tmp_path / "cli-deployment"
+    assert (
+        host.main(
+            ["--container-id", PEER, "--deployment-binding", str(path), "--report-dir", str(report)]
+        )
+        == 0
+    )
+    ready = json.loads((report / "ready.json").read_text())
+    assert ready == {
+        "state": "ready",
+        "container_id": PEER,
+        "run_id": RUN,
+        "peer_mode": "deployment",
+        "deployment_binding": deployment_binding(),
+        "pid": os.getpid(),
+    }
+    assert "MODEL_API_KEY" not in host.os.environ
+
+
+def test_cli_binding_container_mismatch_precedes_report_creation(tmp_path):
+    path = tmp_path / "binding.json"
+    path.write_text(json.dumps(deployment_binding()))
+    report = tmp_path / "no-report"
+    assert (
+        host.main(
+            [
+                "--container-id",
+                "f" * 64,
+                "--deployment-binding",
+                str(path),
+                "--report-dir",
+                str(report),
+            ]
+        )
+        == 2
+    )
+    assert not report.exists()

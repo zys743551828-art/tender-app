@@ -22,7 +22,7 @@ POSITION_EPSILON = 0.001
 
 
 def _reading_order(image):
-    left, bottom, right, top = image.get_pos()
+    left, bottom, right, top = image.get_bounds()
     if not all(math.isfinite(value) for value in (left, bottom, right, top)):
         return (math.inf, math.inf)
     return (-top, left)
@@ -123,7 +123,9 @@ def isolated_reference(pixels, width, height, bbox, box):
     whole = None
     try:
         page = document.new_page(width, height)
-        bitmap = pdfium.PdfBitmap.from_pil(pixels, recopy=True)
+        # PDFium v5 copies PIL bytes into an immutable, Python-owned bitmap.
+        # Keep it alive through image insertion and the complete raster read.
+        bitmap = pdfium.PdfBitmap.from_pil(pixels)
         image = pdfium.PdfImage.new(document)
         image.set_bitmap(bitmap)
         left, bottom, right, top = bbox
@@ -131,7 +133,8 @@ def isolated_reference(pixels, width, height, bbox, box):
         page.insert_obj(image)
         page.gen_content()
         rendered = page.render(scale=1)
-        whole = rendered.to_pil().convert("RGB")
+        with rendered.to_pil() as view:
+            whole = view.convert("RGB")
         return whole.crop(box)
     finally:
         if whole is not None:
@@ -232,7 +235,7 @@ def inspect_images(data, snapshot, materials, style):
                     if len(records) >= 500 or count > 500:
                         gaps.append("AUTHORING_PDF_IMAGE_COUNT_UNVERIFIED")
                         break
-                    size = image.get_size()
+                    size = image.get_px_size()
                     total_actual_pixels += size[0] * size[1]
                     if total_actual_pixels > 32_000_000:
                         gaps.append("AUTHORING_PDF_IMAGE_PIXEL_BUDGET")
@@ -244,7 +247,7 @@ def inspect_images(data, snapshot, materials, style):
                     ):
                         gaps.append("AUTHORING_PDF_IMAGE_PIXEL_LIMIT")
                         continue
-                    left, bottom, right, top = image.get_pos()
+                    left, bottom, right, top = image.get_bounds()
                     if (
                         not all(math.isfinite(v) for v in [left, bottom, right, top])
                         or not left < right
@@ -254,7 +257,8 @@ def inspect_images(data, snapshot, materials, style):
                         continue
                     bitmap = image.get_bitmap(render=False)
                     try:
-                        actual_pixels = bitmap.to_pil().convert("RGB")
+                        with bitmap.to_pil() as view:
+                            actual_pixels = view.convert("RGB")
                     finally:
                         bitmap.close()
                     try:
@@ -305,7 +309,8 @@ def inspect_images(data, snapshot, materials, style):
                         visibility_render_pixels += required
                         if rendered is None:
                             rendered = page.render(scale=1)
-                            page_pixels = rendered.to_pil().convert("RGB")
+                            with rendered.to_pil() as view:
+                                page_pixels = view.convert("RGB")
                         if page_pixels is None:
                             raise ValueError("PDF_PAGE_RASTER_UNAVAILABLE")
                         box = (

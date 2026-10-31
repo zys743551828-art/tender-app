@@ -2,15 +2,17 @@
 
 # AI投标工作台（当前开发检查点）
 
-当前实现位于 `dev`（独立审查来源 `render-acceptance-20261026` 已整合）；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)为长期维护入口。本次正式文档审查提交为 `tender-docs@8157400fec306fe6a9156b218a576c67b46a469a`，含隔离PG12项和机制152项复验回执。下文首切片与历史启动说明不描述完整当前功能；真实执行默认关闭，代码完成不等于环境/模型效果通过。
+当前安装与操作入口：[工作台使用说明](https://github.com/zys743551828-art/tender-docs/blob/dev/使用说明.md)。Desktop full/2 使用固定依赖配方、官方预构建 Gotenberg 和安装后的 Word 执行器；按说明中的实际验收记录选择已验证的应用提交。
+
+当前实现位于 `dev`；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)与使用说明共同维护实际能力、验证提交和剩余条件。下文早期检查点保留其原范围。
 
 开发统一使用 `dev`（`fusion/bid-workbench`保留来源历史），以本目录为唯一新系统主线，吸纳原dev机制与视觉。整份标书目标与任务以文档仓库[融合实施计划](https://github.com/zys743551828-art/tender-docs/blob/dev/00-项目管理/标书工作台融合实施计划.md)为准；Windows本机检查见[本机融合验证环境](docs/fusion-local-checks.md)。下方原交接和早期运行说明是来源记录，不替代融合目标或当前验收。
 
 新成员请先按[正式首次启动与工程演示](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md#首次启动与工程演示)选择环境。以下阶段交接只保留其检查点范围：[完整交接入口](docs/handoff-20261017/START_HERE.md)、[待办](docs/handoff-20261017/BACKLOG.json)与各角色交接。当前源码包含已验候选与尚未放行的增量，不能按下方历史首切片说明判断整体完成，亦不能直接执行未审初始化SQL。
 
-Word 当前使用官方预构建 Gotenberg，原件保存、受控转换、当前 PDF 采用与对应检查资格分别显示。容器内 Worker 的本机隔离执行、依赖镜像构建及明确未接入原 full 入口的边界见 [Word 执行说明](docs/word-execution.md)；它不将历史 PDF 切片说明或合成样本通过改写为最终业务验收。
+Word 当前使用官方预构建 Gotenberg，原件保存、受控转换、当前 PDF 采用与对应检查资格分别显示。Desktop full/2 的安装接线、容器内 Worker、本机执行器及生命周期见 [Word 执行说明](docs/word-execution.md)；full/1 保留原兼容契约。各项工程实测与正式业务验收的边界见使用说明。
 
-GitHub发布位置为`tender-app/workbench/`；文档主记录在独立`tender-docs`仓库。本次是用户要求的工作交接，非最终发布。
+源码交付位置为 `tender-app/workbench/`，正式使用说明与验收记录位于独立 `tender-docs` 仓库。生产发布与真人业务验收依其正式条件执行。
 
 历史补全工作位于分支 `work/bid-workbench-completion-20261021`。请从 [启动与操作验收](docs/completion-20261021/START-HERE.md) 进入，按 [当前进度与验证记录](docs/completion-20261021/PROGRESS.md) 核对编写、Word 导入、多章节 AI 候选、解析、范围核查、人工复核、对比和报告的实际交付。Fusion v10 预览与完整 Worker 运行环境有不同能力，具体启动条件和未完成项均在这两个入口说明。
 

@@ -32,7 +32,7 @@ def specimen(*, placements=((2, 600), (3, 600)), owners=(0, 1), left=72, **navig
             page = document[number - 1]
             try:
                 with Image.open(io.BytesIO(materials[index]["bytes"])) as pixels:
-                    bitmap = pdfium.PdfBitmap.from_pil(pixels, recopy=True)
+                    bitmap = pdfium.PdfBitmap.from_pil(pixels)
                 bitmaps.append(bitmap)
                 image = pdfium.PdfImage.new(document)
                 image.set_bitmap(bitmap)

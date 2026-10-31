@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import re
+import stat
 import subprocess  # nosec B404
 import sys
 import time
@@ -19,6 +20,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 _ID = re.compile(r"[0-9a-f]{32}\Z")
 _CONTAINER = re.compile(r"[0-9a-f]{64}\Z")
+_DESKTOP_CODE_TARGETS = frozenset(
+    {
+        "/workspace/packages",
+        "/workspace/apps/api",
+        "/workspace/apps/worker",
+        "/workspace/deploy",
+        "/workspace/requirements.lock.txt",
+        "/workspace/pyproject.toml",
+    }
+)
 _INSPECT = (
     '{"Id":{{json .Id}},"Running":{{json .State.Running}},'
     '"User":{{json .Config.User}},"Labels":{{json .Config.Labels}},'
@@ -178,13 +189,149 @@ def clean_environment(environment=None):
     return {key: value for key, value in values.items() if key.upper() in allowed}
 
 
+def validate_deployment_binding(value, container_id=None):
+    fields = {
+        "version",
+        "container_id",
+        "instance_id",
+        "deployment_id",
+        "project",
+        "service",
+        "plan_digest",
+    }
+    if (
+        type(value) is not dict
+        or set(value) != fields
+        or any(type(v) is not str for v in value.values())
+    ):
+        raise HostError("WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID")
+    if (
+        value["version"] != "word-execution-peer/2"
+        or not _CONTAINER.fullmatch(value["container_id"])
+        or not _ID.fullmatch(value["instance_id"])
+        or not _ID.fullmatch(value["deployment_id"])
+        or not _CONTAINER.fullmatch(value["plan_digest"])
+        or value["project"] != "tender-fusion-full-" + value["instance_id"][:12]
+        or value["service"] not in {"worker-document", "worker-export"}
+        or (
+            container_id is not None
+            and (type(container_id) is not str or value["container_id"] != container_id)
+        )
+    ):
+        raise HostError("WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID")
+    return dict(value)
+
+
+def load_deployment_binding(path: Path):
+    """Read one bounded explicit operator file; never resolve a peer by discovery."""
+
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError()
+            result[key] = value
+        return result
+
+    def signature(info):
+        return (
+            info.st_dev,
+            info.st_ino,
+            info.st_mode,
+            info.st_size,
+            info.st_mtime_ns,
+            info.st_ctime_ns,
+        )
+
+    descriptor = None
+    try:
+        before = path.lstat()
+        if (
+            not stat.S_ISREG(before.st_mode)
+            or path.is_symlink()
+            or getattr(before, "st_file_attributes", 0)
+            & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+            or not 0 < before.st_size <= 16384
+        ):
+            raise ValueError()
+        descriptor = os.open(
+            path,
+            os.O_RDONLY
+            | getattr(os, "O_NOFOLLOW", 0)
+            | getattr(os, "O_BINARY", 0)
+            | getattr(os, "O_NONBLOCK", 0),
+        )
+        opened = os.fstat(descriptor)
+        # Windows can report different ctime representations through path and
+        # handle APIs. Compare their common identity, then retain each API's
+        # complete before/after signature, including its own ctime.
+        if signature(opened)[:-1] != signature(before)[:-1]:
+            raise ValueError()
+        with os.fdopen(descriptor, "rb", closefd=False) as handle:
+            raw = handle.read(16385)
+        if (
+            len(raw) != before.st_size
+            or signature(os.fstat(descriptor)) != signature(opened)
+            or signature(path.lstat()) != signature(before)
+        ):
+            raise ValueError()
+        return validate_deployment_binding(json.loads(raw.decode("utf-8"), object_pairs_hook=pairs))
+    except (OSError, ValueError, TypeError, UnicodeError, RecursionError):
+        raise HostError("WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID") from None
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _unsafe_runtime_bind(item):
+    if item.get("Type") != "bind":
+        return False
+    source = str(item.get("Source", ""))
+    if not re.match(r"^/(?:var/)?run(?:/|$)", source):
+        return False
+    # Desktop can translate an ordinary Windows source bind to its Linux
+    # sharing directory. Only the installation's read-only code targets qualify;
+    # daemon directories, sockets and arbitrary runtime mounts remain rejected.
+    desktop_code = (
+        re.fullmatch(r"/run/desktop/mnt/host/[a-z]/[^\x00\r\n]+", source) is not None
+        and not {".", ".."}.intersection(source.split("/"))
+        and item.get("Destination") in _DESKTOP_CODE_TARGETS
+        and item.get("RW") is False
+    )
+    return not desktop_code
+
+
 class Executor:
-    def __init__(self, container_id: str, run_id: str, report_dir: Path, *, stop_file=None):
-        if not _CONTAINER.fullmatch(container_id) or not _ID.fullmatch(run_id):
+    def __init__(
+        self,
+        container_id: str,
+        run_id: str | None,
+        report_dir: Path,
+        *,
+        stop_file=None,
+        deployment_binding=None,
+    ):
+        binding = (
+            validate_deployment_binding(deployment_binding)
+            if deployment_binding is not None
+            else None
+        )
+        if binding is not None and run_id is not None:
+            raise HostError("WORD_EXECUTION_PEER_MODE_INVALID")
+        if (
+            type(container_id) is not str
+            or not _CONTAINER.fullmatch(container_id)
+            or (binding is None and (type(run_id) is not str or not _ID.fullmatch(run_id)))
+            or (binding is not None and binding["container_id"] != container_id)
+        ):
             raise HostError("WORD_EXECUTION_PEER_INVALID")
         if report_dir.is_symlink() or not report_dir.is_dir():
             raise HostError("WORD_EXECUTION_REPORT_INVALID")
-        self.container_id, self.run_id, self.report_dir = container_id, run_id, report_dir
+        self._deployment_binding = binding
+        self.peer_mode = "deployment" if binding is not None else "test"
+        self.container_id = container_id
+        self.run_id = binding["instance_id"] if binding is not None else run_id
+        self.report_dir = report_dir
         self.stop_file = stop_file
         self.docker_config = report_dir / ".docker"
         self.docker_config.mkdir(mode=0o700)
@@ -195,6 +342,39 @@ class Executor:
         self.cleanup_closed = True
         self.processed = 0
         self.handled: set[str] = set()
+
+    @property
+    def deployment_binding(self):
+        return dict(self._deployment_binding) if self._deployment_binding is not None else None
+
+    def ready_record(self):
+        return {
+            "state": "ready",
+            "container_id": self.container_id,
+            "run_id": self.run_id,
+            "peer_mode": self.peer_mode,
+            "deployment_binding": self.deployment_binding,
+            "pid": os.getpid(),
+        }
+
+    def _peer_labels(self, labels):
+        if type(labels) is not dict:
+            return False
+        if self._deployment_binding is None:
+            return (
+                labels.get("tender.test.run") == self.run_id
+                and labels.get("tender.test.disposable") == "true"
+            )
+        binding = self._deployment_binding
+        expected = {
+            "tender.desktop.instance": binding["instance_id"],
+            "tender.word.version": "word-conversion-execution/2",
+            "tender.word.plan": binding["plan_digest"],
+            "tender.word.deployment": binding["deployment_id"],
+            "com.docker.compose.project": binding["project"],
+            "com.docker.compose.service": binding["service"],
+        }
+        return all(labels.get(key) == value for key, value in expected.items())
 
     def _invoke(self, arguments, *, data=None, timeout=60):
         daemon = (
@@ -227,8 +407,7 @@ class Executor:
                 or value["User"] != "65532:65532"
                 or value["Privileged"] is not False
                 or value["ReadonlyRootfs"] is not True
-                or labels.get("tender.test.run") != self.run_id
-                or labels.get("tender.test.disposable") != "true"
+                or not self._peer_labels(labels)
                 or not isinstance(mounts, list)
                 or not isinstance(tmpfs, dict)
                 or not (
@@ -247,10 +426,7 @@ class Executor:
                 or any(
                     str(item.get("Destination", "")).startswith("/tmp/")  # nosec B108 - reject shadow mounts under fixed tmpfs
                     or item.get("Type") == "npipe"
-                    or (
-                        item.get("Type") == "bind"
-                        and re.match(r"^/(?:var/)?run(?:/|$)", str(item.get("Source", "")))
-                    )
+                    or _unsafe_runtime_bind(item)
                     for item in mounts
                 )
             ):
@@ -263,7 +439,33 @@ class Executor:
             if self._mailbox("verify") != b"verified":
                 raise HostError("WORD_EXECUTION_PEER_TMPFS_INVALID")
         except HostError:
+            # A peer can stop between metadata inspection and docker exec.
+            # Only a fresh, exact-ID stopped observation may classify that
+            # race as peer exit; an active peer's tmpfs failure stays invalid.
+            if self._peer_stopped():
+                raise HostError("WORD_EXECUTION_PEER_INVALID") from None
             raise HostError("WORD_EXECUTION_PEER_TMPFS_INVALID") from None
+
+    def _peer_stopped(self):
+        try:
+            result = self._invoke(
+                [
+                    "container",
+                    "inspect",
+                    "--format",
+                    '{"Id":{{json .Id}},"Running":{{json .State.Running}}}',
+                    self.container_id,
+                ]
+            )
+            value = json.loads(result.stdout)
+            return (
+                result.returncode == 0
+                and isinstance(value, dict)
+                and value.get("Id") == self.container_id
+                and value.get("Running") is False
+            )
+        except (OSError, subprocess.TimeoutExpired, ValueError, TypeError):
+            return False
 
     def _mailbox(self, action, identity=None, *, token=None, data=None):
         if action not in {"verify", "list", "read", "publish"} or (
@@ -294,6 +496,8 @@ class Executor:
         if result.returncode == 3:
             return None
         if result.returncode:
+            if self._peer_stopped():
+                raise HostError("WORD_EXECUTION_PEER_INVALID")
             raise HostError("WORD_EXECUTION_MAILBOX_INVALID")
         return result.stdout
 
@@ -424,19 +628,32 @@ class Executor:
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--container-id", required=True)
-    parser.add_argument("--run-id", required=True)
+    peer_mode = parser.add_mutually_exclusive_group(required=True)
+    peer_mode.add_argument("--run-id")
+    peer_mode.add_argument("--deployment-binding", type=Path)
     parser.add_argument("--report-dir", type=Path, required=True)
     parser.add_argument("--stop-file", type=Path)
     parser.add_argument("--poll-seconds", type=float, default=0.1)
     args = parser.parse_args(argv)
     if (
         not _CONTAINER.fullmatch(args.container_id)
-        or not _ID.fullmatch(args.run_id)
+        or (args.run_id is not None and not _ID.fullmatch(args.run_id))
         or not 0.05 <= args.poll_seconds <= 5
     ):
         print(
             json.dumps({"state": "failed", "error_code": "WORD_EXECUTION_OPERATOR_CONFIG_INVALID"})
         )
+        return 2
+    try:
+        binding = (
+            load_deployment_binding(args.deployment_binding)
+            if args.deployment_binding is not None
+            else None
+        )
+        if binding is not None and binding["container_id"] != args.container_id:
+            raise HostError("WORD_EXECUTION_DEPLOYMENT_BINDING_INVALID")
+    except HostError as error:
+        print(json.dumps({"state": "failed", "error_code": str(error)}))
         return 2
     directory = args.report_dir.resolve()
     try:
@@ -458,12 +675,17 @@ def main(argv=None):
     status = {"state": "stopped", "cleanup_closed": True}
     try:
         private_directory(directory)
-        executor = Executor(args.container_id, args.run_id, directory, stop_file=args.stop_file)
+        executor = Executor(
+            args.container_id,
+            args.run_id,
+            directory,
+            stop_file=args.stop_file,
+            deployment_binding=binding,
+        )
         executor.inspect_peer()
         write_private(
             directory / "ready.json",
-            json.dumps({"state": "ready", "container_id": args.container_id, "run_id": args.run_id})
-            + "\n",
+            json.dumps(executor.ready_record()) + "\n",
         )
         while not executor.stopped():
             executor.poll_once()

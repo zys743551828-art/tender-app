@@ -1,0 +1,4 @@
+# Host CLI: same application pins, plus declared Windows transitive dependencies.
+-r fusion_full_requirements.txt
+colorama==0.4.6; sys_platform == "win32"
+tzdata==2026.5; sys_platform == "win32"

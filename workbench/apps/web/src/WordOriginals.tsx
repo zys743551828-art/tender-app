@@ -236,9 +236,7 @@ export function WordCard({
       </Badge>
       <p className="small-note">{word.delivery_check_message}</p>
       {!conversion.conversion_attempted && (
-        <p className="small-note">
-          尚未实际运行转换，请按下列范围提示继续；Word原件仍保留。
-        </p>
+        <p className="small-note">请按下列范围提示继续；Word原件仍保留。</p>
       )}
       {conversion.gaps.map((g, i) => (
         <p className="notice warning" key={i}>

@@ -14,6 +14,7 @@ from deploy import fusion_full_control as full
 from deploy import fusion_full_spec as spec
 
 VERSION = "fusion-desktop-full/1"
+WORD_VERSION = "fusion-desktop-full/2"
 ROOT = spec.fresh.ROOT
 ROLES = ("api", "worker", "relay", "reconcile", "controller")
 PRIVATE = "/private/deployment"
@@ -30,11 +31,21 @@ BINDS = {
 }
 
 
-def validate_request(value):
+def roles(request):
+    return ROLES + (
+        ("paid_worker", "paid_controller") if request.get("model_configured", False) else ()
+    )
+
+
+def validate_request(value, *, check_word_sources=True):
+    word = isinstance(value, dict) and value.get("version") == WORD_VERSION
     if (
         not isinstance(value, dict)
-        or set(value) != {"version", "instance_id", "name", "origin", "python_image", "web_image"}
-        or value["version"] != VERSION
+        or set(value)
+        != {"version", "instance_id", "name", "origin", "python_image", "web_image"}
+        | ({"word"} if word else set())
+        | ({"model_configured"} if word and "model_configured" in value else set())
+        or value["version"] not in {VERSION, WORD_VERSION}
     ):
         raise spec.ConfigurationError("DESKTOP_REQUEST_INVALID")
     if (
@@ -60,11 +71,27 @@ def validate_request(value):
         valid = False
     if not valid:
         raise spec.ConfigurationError("DESKTOP_LOOPBACK_REQUIRED")
+    if "model_configured" in value and value["model_configured"] is not True:
+        raise spec.ConfigurationError("DESKTOP_MODEL_FLAG_INVALID")
+    if word and check_word_sources:
+        from deploy.fusion_word_spec import validate_bundle
+
+        validate_bundle(value["word"])
+    elif word and (
+        not isinstance(value["word"], dict)
+        or set(value["word"]) != {"version", "image", "profiles"}
+        or value["word"]["version"] != "word-conversion-installation/2"
+        or not spec.pinned_image(value["word"]["image"])
+        or not isinstance(value["word"]["profiles"], dict)
+        or set(value["word"]["profiles"]) != {"external", "page", "rich"}
+    ):
+        raise spec.ConfigurationError("DESKTOP_WORD_DESCRIPTOR_INVALID")
     return value
 
 
 def project(value):
-    validate_request(value)
+    # Observing/stopping the saved exact group remains possible after source edits.
+    validate_request(value, check_word_sources=False)
     return "tender-fusion-full-" + value["instance_id"][:12]
 
 
@@ -149,7 +176,9 @@ def _helper(template, request, directory, action):
         ]
     else:
         service["volumes"] += [volume("private_config", "/private", readonly=True)]
-        service["volumes"] += [volume("profile_" + role, "/profiles/" + role) for role in ROLES]
+        service["volumes"] += [
+            volume("profile_" + role, "/profiles/" + role) for role in roles(request)
+        ]
         service["volumes"].append(volume("api_state", "/api-state"))
         service["volumes"].append(volume("validation_login", "/validation-login"))
     return service
@@ -177,7 +206,7 @@ def document(request, directory, plan=None):
             or plan["origin"] != request["origin"]
             or plan["images"]["python"] != request["python_image"]
             or plan["images"]["web"] != request["web_image"]
-            or plan["model_configured"]
+            or plan["model_configured"] != request.get("model_configured", False)
             or plan["task_runner_enabled"]
         ):
             raise spec.ConfigurationError("DESKTOP_PLAN_BINDING_CHANGED")
@@ -248,6 +277,33 @@ def document(request, directory, plan=None):
         volume("validation_login", "/validation-login", readonly=True),
     ]
     services["validation"] = validation
+    if request["version"] == WORD_VERSION:
+        for name, component in {
+            "api": "api",
+            "worker-document": "document",
+            "worker-export": "export",
+            "word-controller": "word-controller",
+        }.items():
+            service = services[name]
+            service["command"] = ["python", "-m", "deploy.fusion_word_runtime", component]
+            service["healthcheck"] = deepcopy(service["healthcheck"])
+            service["healthcheck"]["test"] = [
+                "CMD",
+                "python",
+                "-m",
+                "deploy.fusion_word_runtime",
+                component,
+                "--check",
+            ]
+            service["labels"].update(
+                {
+                    "tender.word.version": "word-conversion-execution/2",
+                    "tender.word.plan": spec.digest(plan),
+                    "tender.word.deployment": plan["deployment_id"],
+                }
+            )
+        for name in ("worker-document", "worker-export"):
+            services[name]["stop_grace_period"] = "300s"
     return result
 
 

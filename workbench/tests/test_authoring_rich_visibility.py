@@ -59,7 +59,7 @@ def specimen(size, foreground, *, covered, fractional=False):
     document = pdfium.PdfDocument.new()
     page = document.new_page(11906 / 20, 16838 / 20)
     original = Image.open(io.BytesIO(normalized["bytes"]))
-    bitmap = pdfium.PdfBitmap.from_pil(original, recopy=True)
+    bitmap = pdfium.PdfBitmap.from_pil(original)
     try:
         image = pdfium.PdfImage.new(document)
         image.set_bitmap(bitmap)

@@ -1,5 +1,6 @@
 """Desktop transport declarations never expose host private profiles or paid channels."""
 
+import json
 from copy import deepcopy
 from types import SimpleNamespace
 
@@ -236,3 +237,198 @@ def test_store_security_argument_changes_are_rejected(
     monkeypatch.setattr(desktop, "_base", changed)
     with pytest.raises(spec.ConfigurationError, match="FULL_STORE_EXECUTION_PROFILE_CHANGED"):
         desktop.document(request_value, tmp_path, plan)
+
+
+@pytest.fixture
+def word_request(request_value, monkeypatch):
+    monkeypatch.setenv("WORKBENCH_ENV_FILE", "explicit-synthetic-full2-check")
+    from deploy import fusion_word_spec as word
+    from packages.word_intake import prebuilt
+
+    external = {"identity": prebuilt._fixed(), "profile_digest": prebuilt.digest(prebuilt._fixed())}
+    monkeypatch.setattr(prebuilt, "build_profile", lambda **_: external)
+    value = deepcopy(request_value)
+    value["version"] = desktop.WORD_VERSION
+    value["word"] = word.bundle(None)
+    return value
+
+
+def test_word_installation_is_versioned_and_only_four_components_get_word_entrypoints(
+    word_request, plan, tmp_path
+):
+    services = desktop.document(word_request, tmp_path, plan)["services"]
+    expected = {
+        "api": "api",
+        "worker-document": "document",
+        "worker-export": "export",
+        "word-controller": "word-controller",
+    }
+    for name, component in desktop.full.COMPONENTS.items():
+        service = services[name]
+        if name in expected:
+            assert service["command"] == ["python", "-m", "deploy.fusion_word_runtime", component]
+            assert service["healthcheck"]["test"][-2:] == [component, "--check"]
+            assert service["labels"]["tender.word.plan"] == spec.digest(plan)
+            assert service["labels"]["tender.word.deployment"] == plan["deployment_id"]
+        else:
+            assert "fusion_word_runtime" not in str(service["command"])
+            assert service["healthcheck"]["test"][-1] != "--check"
+            assert "tender.word.plan" not in service["labels"]
+        assert "tender.test.disposable" not in service["labels"]
+    assert all(
+        services[name]["stop_grace_period"] == "300s"
+        for name in expected
+        if name.startswith("worker")
+    )
+    assert services["worker-comparison"]["stop_grace_period"] == "45s"
+
+
+def test_legacy_descriptor_cannot_silently_install_word(word_request):
+    word_request["version"] = desktop.VERSION
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_REQUEST_INVALID"):
+        desktop.validate_request(word_request)
+
+
+def test_optional_model_is_an_explicit_public_flag_without_credentials(
+    word_request, plan, tmp_path
+):
+    word_request["model_configured"] = True
+    plan["model_configured"] = True
+    manifest = desktop.document(word_request, tmp_path, plan)
+    assert set(desktop.roles(word_request)) == set(desktop.ROLES) | {
+        "paid_worker",
+        "paid_controller",
+    }
+    publish = manifest["services"]["publish"]
+    assert desktop.volume("profile_paid_worker", "/profiles/paid_worker") in publish["volumes"]
+    assert (
+        desktop.volume("profile_paid_controller", "/profiles/paid_controller") in publish["volumes"]
+    )
+    assert "DEEPSEEK_API_KEY" not in str(word_request)
+    word_request["model_configured"] = False
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_MODEL_FLAG_INVALID"):
+        desktop.validate_request(word_request)
+
+
+def test_changed_word_bundle_is_rejected_for_start_but_saved_group_can_be_identified_for_stop(
+    word_request, monkeypatch
+):
+    from deploy import fusion_word_spec
+
+    def changed(_):
+        raise spec.ConfigurationError("FULL_WORD_BUNDLE_INVALID")
+
+    monkeypatch.setattr(fusion_word_spec, "validate_bundle", changed)
+    with pytest.raises(spec.ConfigurationError):
+        desktop.validate_request(word_request)
+    assert desktop.validate_request(word_request, check_word_sources=False) == word_request
+    assert desktop.project(word_request) == "tender-fusion-full-" + word_request["instance_id"][:12]
+
+
+@pytest.mark.parametrize("worker_stop_fails", (False, True))
+def test_word_stop_drains_before_executor_stop_and_always_stops_remaining_services(
+    word_request, plan, tmp_path, monkeypatch, worker_stop_fails
+):
+    from deploy import fusion_desktop_word as manager
+
+    monkeypatch.setattr(desktop, "ROOT", tmp_path)
+    path = tmp_path / ".local/full-desktop/wordstop"
+    path.mkdir(parents=True)
+    manifest = desktop.document(word_request, path, plan)
+    raw = desktop.encoded(manifest)
+    (path / "request.json").write_bytes(desktop.encoded(word_request))
+    (path / "full.compose.json").write_bytes(raw)
+    (path / "transport.json").write_bytes(
+        desktop.encoded(
+            {
+                "version": desktop.WORD_VERSION,
+                "request_digest": spec.digest(word_request),
+                "plan_digest": spec.digest(plan),
+                "compose_sha256": spec.digest(raw),
+            }
+        )
+    )
+    events = []
+    monkeypatch.setattr(manager, "status", lambda *_: {"ready": True})
+
+    def stop(*_, peers_stopped=False):
+        events.append(("executor-stop", peers_stopped))
+        return {"cleanup_closed": True, "ready": False}
+
+    def run(command, **_):
+        arguments = command[command.index("stop") :]
+        events.append(tuple(arguments))
+        if worker_stop_fails and "worker-document" in arguments:
+            raise spec.ConfigurationError("SYNTHETIC_STOP_FAILURE")
+
+    monkeypatch.setattr(manager, "stop", stop)
+    monkeypatch.setattr(control, "_run", run)
+    if worker_stop_fails:
+        with pytest.raises(spec.ConfigurationError, match="SYNTHETIC_STOP_FAILURE"):
+            control.observe(path, "stop")
+    else:
+        result = control.observe(path, "stop")
+        assert result["word"]["cleanup_closed"] and not result["volumes_deleted"]
+    assert events == [
+        ("stop", "web", "api", "word-controller", "build-controller", "relay"),
+        ("stop", "--timeout", "300", "worker-document", "worker-export"),
+        ("executor-stop", not worker_stop_fails),
+        ("stop",),
+    ]
+
+
+@pytest.mark.parametrize("enable_model", (False, True))
+def test_bootstrap_credentials_use_stdin_not_arguments_or_public_files(
+    word_request, plan, tmp_path, monkeypatch, enable_model
+):
+    from deploy import fusion_desktop_word as manager
+
+    if enable_model:
+        word_request["model_configured"] = plan["model_configured"] = True
+    monkeypatch.setattr(desktop, "ROOT", tmp_path)
+    path = tmp_path / ".local/full-desktop/bootstrap"
+    path.mkdir(parents=True)
+    (path / "request.json").write_bytes(desktop.encoded(word_request))
+    (path / "bootstrap.compose.json").write_bytes(
+        desktop.encoded(desktop.document(word_request, path))
+    )
+    (path / "public-plan.json").write_bytes(desktop.encoded(plan))
+    calls = []
+    monkeypatch.setattr(control, "_run", lambda command, **kwargs: calls.append((command, kwargs)))
+    monkeypatch.setattr(manager, "start", lambda *_: {"ready": True})
+    password = "synthetic-private-bootstrap-password"
+    model = (
+        {
+            "DEEPSEEK_API_KEY": "synthetic-not-a-real-key",
+            "DEEPSEEK_MODEL": "deepseek-flash",
+            "DEEPSEEK_BASE_URL": "https://api.deepseek.com",
+        }
+        if enable_model
+        else None
+    )
+    result = control.up(path, admin_password=password, model=model)
+    payload_calls = [
+        (command, kwargs) for command, kwargs in calls if kwargs.get("input") is not None
+    ]
+    assert len(payload_calls) == 1
+    command, kwargs = payload_calls[0]
+    assert "--bootstrap-stdin" in command and "-T" in command and "--interactive" in command
+    assert "--rm" in command and "--name" in command
+    assert json.loads(kwargs["input"]) == {"admin_password": password, "model": model}
+    assert password not in str([command for command, _ in calls])
+    assert "synthetic-not-a-real-key" not in str([command for command, _ in calls])
+    assert password not in str(result)
+    assert "--profile" in calls[-1][0] if enable_model else "--profile" not in calls[-1][0]
+    assert all(
+        password.encode() not in file.read_bytes() for file in path.iterdir() if file.is_file()
+    )
+
+
+def test_explicit_model_file_has_no_error_value_disclosure(tmp_path):
+    path = tmp_path / "model.json"
+    path.write_text('{"DEEPSEEK_API_KEY":"synthetic-secret-invalid-profile"}')
+    path.chmod(0o600)
+    with pytest.raises(spec.ConfigurationError) as error:
+        control._model_file(path)
+    assert str(error.value) == "DESKTOP_MODEL_PROFILE_INVALID"
+    assert "synthetic-secret" not in str(error.value)

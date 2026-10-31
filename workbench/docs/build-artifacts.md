@@ -13,8 +13,8 @@ docker image inspect tender-workbench-runtime:py3.12.16
 
 The source checkout is mounted read-only at runtime; record its Git revision
 alongside the resulting image reference. See [Word execution](word-execution.md)
-for the independently bounded local test transport and its remaining full
-deployment integration boundary.
+for the installed Desktop full/2 overlay, bounded host transport and lifecycle
+commands. Consult the usage manual for the actual tested deployment status.
 
 ## Frontend static files
 
@@ -40,9 +40,11 @@ docker pull nginx:1.30.5-alpine@sha256:8f84ed99befc3891b8f329c5c202785278a2cfb7c
 ```
 
 Use this repository digest as the explicit web image reference when configuring
-the existing full deployment. Its controller still requires a supported POSIX
-environment and its own private configuration, initialization and validation;
-building files alone does not start that deployment. The mounted main config
+the existing full deployment. The direct private-directory controller requires
+POSIX. The Desktop CLI uses a Windows or Linux host and Linux Docker volumes
+for its private configuration, initialization and validation; it does not
+require installing WSL on the user's host. Building files alone does not start
+either deployment. The mounted main config
 selects port8080, `/tmp` writable paths and only the mounted server config.
 Keep its UID65532, read-only filesystem, dropped capabilities and no-new-privileges
 settings. `/nginx-health` proxies API readiness, so an absent API does not count

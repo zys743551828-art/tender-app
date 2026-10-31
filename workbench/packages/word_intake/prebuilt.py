@@ -13,13 +13,14 @@ import re
 import subprocess  # nosec B404
 import tempfile
 import unicodedata
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
 from deploy.disposable_docker import DockerTestRun
 from packages.domain.errors import DomainError
 
-PROTOCOL = "word-prebuilt-gotenberg/1"
+PROTOCOL = "word-prebuilt-gotenberg/2"
 IMAGE = "gotenberg/gotenberg:8.39.0-libreoffice@sha256:298c3989049baf530afe7137b64374c22810bb863ef1ed91d256e33f335af161"
 IMAGE_ID = "sha256:e3d196d893aa14a70057f9b6e33c11f6120cb2f721fc6ee4f85150a48686060e"
 MANIFEST_DIGEST = IMAGE.rsplit("@", 1)[1]
@@ -300,6 +301,7 @@ def _fixed() -> dict:
     # These two source identities qualify behavior (OOXML rejection and output
     # checks), not the upstream release; they do not scan the repository/assets.
     adapter = digest(Path(__file__).read_bytes())
+    pdf_inspector = {"package": "pypdfium2", "version": version("pypdfium2")}
     return {
         "protocol": PROTOCOL,
         "image_reference": IMAGE,
@@ -307,7 +309,10 @@ def _fixed() -> dict:
         "platform": "linux/amd64",
         "options": dict(OPTIONS),
         "adapter_source_digest": adapter,
-        "renderer_digest": digest({"image": IMAGE, "adapter": adapter}),
+        "renderer_digest": digest(
+            {"image": IMAGE, "adapter": adapter, "pdf_inspector": pdf_inspector}
+        ),
+        "pdf_inspector": pdf_inspector,
         "fontset_digest": digest({"image": IMAGE, "policy": OPTIONS["font_policy"]}),
         "options_digest": digest(OPTIONS),
         "inspection_source_digest": digest(Path(__file__).with_name("inspection.py").read_bytes()),
@@ -572,7 +577,7 @@ def inspect_pdf(data: bytes, inspection: dict, gaps: list[str]) -> tuple[int, li
             page = document[index]
             textpage = page.get_textpage()
             try:
-                pieces.append(textpage.get_text_range())
+                pieces.append(textpage.get_text_bounded())
             finally:
                 textpage.close()
                 page.close()
@@ -659,12 +664,7 @@ def _render_generated(
                 "pdf_digest": digest(pdf),
                 "profile_digest": provider_profile["profile_digest"],
                 "page_count": measurements["page_count"],
-                "renderer_digest": digest(
-                    {
-                        "image": IMAGE,
-                        "adapter": provider_profile["identity"]["adapter_source_digest"],
-                    }
-                ),
+                "renderer_digest": provider_profile["identity"]["renderer_digest"],
                 "fontset_digest": digest({"image": IMAGE, "policy": OPTIONS["font_policy"]}),
                 "options_digest": digest(OPTIONS),
                 "image_reference": IMAGE,

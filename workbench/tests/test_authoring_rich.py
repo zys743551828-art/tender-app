@@ -407,7 +407,7 @@ def test_actual_synthetic_PDF_image_pixels_geometry_and_visibility(covered):
     doc = pdfium.PdfDocument.new()
     page = doc.new_page(11906 / 20, 16838 / 20)
     original = Image.open(io.BytesIO(normalized["bytes"]))
-    bitmap = pdfium.PdfBitmap.from_pil(original, recopy=True)
+    bitmap = pdfium.PdfBitmap.from_pil(original)
     try:
         image = pdfium.PdfImage.new(doc)
         image.set_bitmap(bitmap)

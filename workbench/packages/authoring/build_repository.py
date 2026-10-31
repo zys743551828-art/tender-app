@@ -307,7 +307,12 @@ def compute_prepared_build(prepared):
                 "failed", None, {"source_docx_digest": sha(docx)}, ("RENDERER_UNAVAILABLE",)
             )
         elif (
-            generated and info["manifest"].get("render_protocol") == "authoring-generated-sandbox/1"
+            generated
+            and info["manifest"].get("render_protocol")
+            in {"authoring-generated-sandbox/1", "authoring-prebuilt-generated/1"}
+            and isinstance(info["manifest"]["renderer_identity"].get("identity"), dict)
+            and info["manifest"]["render_protocol"]
+            == info["manifest"]["renderer_identity"]["identity"].get("protocol")
         ):
             from packages.authoring.build import RenderResult
             from packages.authoring.prebuilt_dispatch import generated as render_generated

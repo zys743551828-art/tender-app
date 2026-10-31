@@ -20,7 +20,7 @@ $env:NODE_OPTIONS='--use-system-ca'
 npm ci --no-audit --no-fund
 ```
 
-不关闭TLS校验。活跃前端源码通过 `.gitattributes` 固定LF，归档证据目录不批量格式化。构建产生的已跟踪tsbuildinfo不属于实现改动，应核对后恢复，不能混入业务提交。
+不关闭TLS校验。活跃前端源码通过 `.gitattributes` 固定LF，归档证据目录不批量格式化。`tsconfig.tsbuildinfo` 是可重建缓存，当前不再跟踪；它和生成产物不能混入业务提交。
 
 ## 隔离数据库
 

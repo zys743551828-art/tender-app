@@ -69,7 +69,7 @@ def specimen(
                 for position in indices:
                     source = 1 - position if swapped else position
                     with Image.open(io.BytesIO(materials[source]["bytes"])) as pixels:
-                        bitmap = pdfium.PdfBitmap.from_pil(pixels, recopy=True)
+                        bitmap = pdfium.PdfBitmap.from_pil(pixels)
                     bitmaps.append(bitmap)
                     image = pdfium.PdfImage.new(document)
                     image.set_bitmap(bitmap)
@@ -148,3 +148,29 @@ def test_same_asset_version_reused_at_two_distinct_nodes(separate_pages):
     assert proof["coverage"] == "complete", proof
     assert len({image["asset_version_id"] for image in proof["images"]}) == 1
     assert [image["node_id"] for image in proof["images"]] == ["image-0", "image-1"]
+
+
+def test_v5_bitmap_owns_copied_pixels_after_source_is_changed_and_closed():
+    original = Image.new("RGB", (40, 30), (17, 101, 231))
+    expected = original.tobytes()
+    bitmap = pdfium.PdfBitmap.from_pil(original)
+    original.paste((0, 0, 0), (0, 0, 40, 30))
+    original.close()
+    try:
+        with bitmap.to_pil() as view:
+            with view.convert("RGB") as actual:
+                assert actual.tobytes() == expected
+    finally:
+        bitmap.close()
+
+
+def test_isolated_reference_pixels_remain_owned_after_pdf_resources_close():
+    original = Image.new("RGB", (40, 30), (17, 101, 231))
+    expected = original.tobytes()
+    reference = rich_pdf.isolated_reference(original, 40, 30, (0, 0, 40, 30), (0, 0, 40, 30))
+    original.close()
+    try:
+        assert reference.mode == "RGB" and reference.size == (40, 30)
+        assert reference.tobytes() == expected
+    finally:
+        reference.close()

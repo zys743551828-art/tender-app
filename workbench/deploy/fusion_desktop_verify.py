@@ -44,7 +44,7 @@ def private_login(profile):
     require(
         isinstance(value, dict)
         and set(value) == {"version", "plan_digest", "origin", "login_name", "password"}
-        and value["version"] == desktop.VERSION
+        and value["version"] in {desktop.VERSION, desktop.WORD_VERSION}
         and value["plan_digest"] == profile["plan_digest"]
         and value["origin"] == profile["plan"]["origin"]
         and value["login_name"] == "admin"

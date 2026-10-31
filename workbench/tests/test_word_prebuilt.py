@@ -15,6 +15,19 @@ from packages.word_intake import execution_transport, prebuilt
 REAL_CALL = prebuilt._call
 
 
+def test_pdf_inspector_change_invalidates_the_old_qualification_profile(monkeypatch):
+    identity = prebuilt._fixed()
+    old = {"identity": identity, "profile_digest": prebuilt.digest(identity)}
+    monkeypatch.setattr(prebuilt, "version", lambda package: "synthetic-different-inspector")
+    changed = prebuilt._fixed()
+    assert identity["image_reference"] == changed["image_reference"]
+    assert identity["fontset_digest"] == changed["fontset_digest"]
+    assert identity["renderer_digest"] != changed["renderer_digest"]
+    assert old["profile_digest"] != prebuilt.digest(changed)
+    with pytest.raises(prebuilt.PrebuiltError, match="WORD_PREBUILT_PROFILE_CHANGED"):
+        prebuilt.validate_profile(old)
+
+
 @pytest.fixture(autouse=True)
 def no_external_processes(monkeypatch):
     def blocked(*args, **kwargs):
@@ -129,6 +142,7 @@ def test_real_ooxml_and_pdf_preserve_text_and_cleanup(runtime, tmp_path):
     result = prebuilt.render(docx(), runtime.profile, receipt=tmp_path / "run.json")
     assert result["coverage"] == "complete"
     assert result["chain"]["pdf_digest"] == prebuilt.digest(pdf())
+    assert result["chain"]["renderer_digest"] == runtime.profile["identity"]["renderer_digest"]
     assert result["isolation"]["own_job_cleanup_confirmed"]
     assert runtime.events == ["enter", "cleanup"]
 

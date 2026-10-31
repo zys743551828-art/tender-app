@@ -86,6 +86,10 @@ it("无转换结果显示可恢复说明，技术码留在折叠详情且不授�
   ).toBeVisible();
   expect(screen.getByText("Word交付未获对应检查资格")).toBeVisible();
   expect(screen.getByText("WORD_CONVERSION_RESULT_MISSING")).not.toBeVisible();
+  expect(screen.queryByText(/尚未实际运行转换/)).not.toBeInTheDocument();
+  expect(
+    screen.getByText("请按下列范围提示继续；Word原件仍保留。"),
+  ).toBeVisible();
   expect(
     screen.queryByRole("button", { name: "下载此Word转换的PDF" }),
   ).not.toBeInTheDocument();

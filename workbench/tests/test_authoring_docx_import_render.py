@@ -59,9 +59,9 @@ def test_imported_merged_table_and_embedded_image_survive_actual_pdf(tmp_path):
         for number in range(len(document)):
             with closing(document[number]) as page:
                 with closing(page.get_textpage()) as text_page:
-                    texts.append(text_page.get_text_range())
+                    texts.append(text_page.get_text_bounded())
                 for raster in page.get_objects(filter=[pdfium.raw.FPDF_PAGEOBJ_IMAGE], max_depth=2):
-                    left, bottom, right, top = raster.get_pos()
+                    left, bottom, right, top = raster.get_bounds()
                     assert 0 <= left < right <= page.get_width()
                     assert 0 <= bottom < top <= page.get_height()
                     image_positions.append([number + 1, left, bottom, right, top])
