@@ -45,9 +45,8 @@ def unique_cross_block_span(documents, text, cited_ids):
                 # A substring cut from the middle of a clause can discard a
                 # qualifier. Only complete sentence-like boundaries qualify.
                 previous = source[:start].rstrip()
-                start_boundary = (bool(previous) and previous[-1] in "。！？") or (
-                    not previous and group[0]["ordinal"] == 0
-                )
+                # A page start may continue a qualifier from the previous page.
+                start_boundary = bool(previous) and previous[-1] in "。！？"
                 end_boundary = text[-1] in "。！？"
                 position = 0
                 pieces = []

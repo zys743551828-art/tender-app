@@ -144,6 +144,13 @@ def test_exact_but_truncated_clause_is_not_accepted(text):
     assert unique_cross_block_span(source(), text, set(IDS)) is None
 
 
+def test_page_start_cannot_prove_no_earlier_qualifier():
+    docs = source()
+    docs[0]["blocks"][0].update(ordinal=0, text_content="施工前")
+    docs[0]["blocks"][1]["ordinal"] = 1
+    assert unique_cross_block_span(docs, "施工前完成检查。", set(IDS)) is None
+
+
 def test_spans_cannot_use_changed_source_blocks():
     docs = source()
     altered = deepcopy(docs)
