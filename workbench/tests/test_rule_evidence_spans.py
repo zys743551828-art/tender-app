@@ -20,8 +20,20 @@ def source():
             "document_version_id": "doc",
             "parse_id": "parse",
             "blocks": [
-                {"id": IDS[0], "physical_page": 1, "ordinal": 5, "text_content": "要求。施工前"},
-                {"id": IDS[1], "physical_page": 1, "ordinal": 6, "text_content": "完成检查。"},
+                {
+                    "id": IDS[0],
+                    "physical_page": 1,
+                    "ordinal": 5,
+                    "kind": "text",
+                    "text_content": "要求。施工前",
+                },
+                {
+                    "id": IDS[1],
+                    "physical_page": 1,
+                    "ordinal": 6,
+                    "kind": "text",
+                    "text_content": "完成检查。",
+                },
             ],
         }
     ]
@@ -72,7 +84,18 @@ def test_exact_adjacent_proof_preserves_raw_character_ranges_and_receipt_identit
 
 
 @pytest.mark.parametrize(
-    "fault", ["page", "ordinal", "document", "uncited", "ambiguous", "punctuation", "space"]
+    "fault",
+    [
+        "page",
+        "ordinal",
+        "document",
+        "uncited",
+        "ambiguous",
+        "punctuation",
+        "space",
+        "visual",
+        "table",
+    ],
 )
 def test_never_join_unproven_sources_or_alter_characters(fault):
     docs = source()
@@ -96,6 +119,8 @@ def test_never_join_unproven_sources_or_alter_characters(fault):
         text = "施工前完成检查，"
     elif fault == "space":
         text = "施工前 完成检查。"
+    elif fault in {"visual", "table"}:
+        docs[0]["blocks"][1]["kind"] = "visual_observation" if fault == "visual" else "table"
     assert unique_cross_block_span(docs, text, cited) is None
 
 

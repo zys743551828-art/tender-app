@@ -51,7 +51,7 @@ def validate_addition(addition, bid, blocks, *, model=False, span_documents=None
                     str(block.get("id")) in by_id
                     and all(
                         block.get(key) == by_id[str(block.get("id"))].get(key)
-                        for key in ("text_content", "physical_page", "ordinal")
+                        for key in ("text_content", "physical_page", "ordinal", "kind")
                     )
                     for doc in span_documents
                     for block in doc.get("blocks", [])

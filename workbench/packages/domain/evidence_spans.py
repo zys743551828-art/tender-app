@@ -23,6 +23,7 @@ def unique_cross_block_span(documents, text, cited_ids):
                 or not isinstance(block.get("ordinal"), int)
                 or not isinstance(block.get("text_content"), str)
                 or not block.get("id")
+                or block.get("kind") != "text"
             ):
                 groups.append([])
                 continue
