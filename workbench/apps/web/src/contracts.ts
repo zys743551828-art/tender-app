@@ -10462,6 +10462,7 @@ export type BidPackageDocument = {
     | "research_artifact";
   sha256: string;
   verified_upload: boolean;
+  controlled_word_source_verified?: boolean;
 };
 
 export type BidPackageParse = {

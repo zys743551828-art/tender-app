@@ -55,6 +55,9 @@ def read_member(
         row["digest"] == member["file_digest"] and row["page_count"] == member["page_count"],
         "PACKAGE_REVIEW_DOCUMENT_BINDING_MISMATCH",
     )
+    from packages.domain.controlled_word_admission import observe
+
+    observe(c, bid, member["document_version_id"], expected_digest=member["file_digest"])
     actual = read_parse_identity(
         c, bid, member["document_version_id"], frozen["parse_run_id"], lock=False
     )

@@ -91,6 +91,11 @@ def directory(
             (bid_id, document_id, last_id, last_id, limit + 1),
         )
     items = clean(rows[:limit])
+    if collection == "documents":
+        from packages.domain.controlled_word_admission import eligible
+
+        for item in items:
+            item["controlled_word_source_verified"] = eligible(c, bid_id, item["id"])
     return {
         "items": items,
         "has_more": len(rows) > limit,
@@ -252,9 +257,18 @@ def member(c, scope, kind, item):
     )
     if verified is None:
         from packages.authoring.package_outputs import admitted
+        from packages.domain.controlled_word_admission import observe
 
         require(
-            kind == PackageKind.BID and admitted(c, scope.bid_id, item["document_version_id"]),
+            observe(
+                c,
+                scope.bid_id,
+                item["document_version_id"],
+                current=True,
+                expected_digest=row["digest"],
+            )
+            is not None
+            or (kind == PackageKind.BID and admitted(c, scope.bid_id, item["document_version_id"])),
             "PACKAGE_VERIFIED_UPLOAD_REQUIRED",
         )
     parse_id = item.get("parse_run_id")

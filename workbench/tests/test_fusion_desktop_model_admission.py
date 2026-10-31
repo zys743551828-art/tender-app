@@ -30,7 +30,7 @@ def packet():
             "provider": "deepseek",
             "model": "deepseek-flash",
             "currency": "CNY",
-            "amount_scale": 1000000,
+            "amount_scale": 1000000000,
             "input_per_million_minor": 1,
             "output_per_million_minor": 2,
             "input_hard_ceiling": 1000,
@@ -118,6 +118,40 @@ def test_source_and_packet_budgets_are_bounded(tmp_path, packet):
     packet["source_base64"] = "x" * (admission.MAX_PACKET + 1)
     with pytest.raises(admission.spec.ConfigurationError):
         admission.validate(packet)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "code"),
+    [
+        ("amount_scale", 1_000_000, "AMOUNT_SCALE_INVALID"),
+        ("output_hard_ceiling", 384_000, "SCHEMA_LIMIT_INVALID"),
+        ("input_hard_ceiling", 2_097_153, "SCHEMA_LIMIT_INVALID"),
+        ("input_per_million_minor", 0, "SCHEMA_LIMIT_INVALID"),
+        ("output_per_million_minor", 1_000_000_000_001, "SCHEMA_LIMIT_INVALID"),
+    ],
+)
+def test_schema_quantities_rejected_before_database(packet, database, tmp_path, field, value, code):
+    packet["price"][field] = value
+    with pytest.raises(admission.spec.ConfigurationError, match=code):
+        admission.apply(tmp_path / "unused.env", packet, "deepseek-flash", database.identity)
+    assert database.opened == []
+
+
+def test_database_error_reports_only_public_type_and_sqlstate(monkeypatch, capsys):
+    from psycopg.errors import InsufficientPrivilege
+
+    def denied(*_):
+        raise InsufficientPrivilege("private profile and database detail must not escape")
+
+    monkeypatch.setattr(admission, "check_and_apply", denied)
+    assert admission.main(["--check"]) == 2
+    result = json.loads(capsys.readouterr().out)
+    assert result == {
+        "ok": False,
+        "code": "DESKTOP_MODEL_ADMISSION_DATABASE_FAILED",
+        "error_type": "InsufficientPrivilege",
+        "sqlstate": "42501",
+    }
 
 
 @pytest.mark.parametrize(

@@ -314,7 +314,12 @@ const SectionBody = forwardRef<
         completeCommand(scope);
         setConflict(null);
         if (
-          latest.current.eq(readAuthoringContent(content, !!richCapabilities))
+          // Capability loading can leave the editor on the ordinary schema.
+          // Compare complete documents in one schema, including attrs/marks/IDs.
+          readAuthoringContent(
+            serializeAuthoringContent(latest.current),
+            !!richCapabilities,
+          ).eq(readAuthoringContent(content, !!richCapabilities))
         )
           sessionStorage.removeItem(key);
         else persist(serializeAuthoringContent(latest.current));

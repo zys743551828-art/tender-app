@@ -537,6 +537,9 @@ a svg {
   overflow-x: auto;
   width: 100%;
 }
+.project-list .table-wrap {
+  position: relative;
+}
 table {
   border-collapse: collapse;
   width: 100%;

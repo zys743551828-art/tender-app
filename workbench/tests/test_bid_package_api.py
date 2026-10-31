@@ -110,7 +110,7 @@ def world(api, request):
     }
 
 
-def attach(c, bid, actor, member, role="body", *, verified=True):
+def attach(c, bid, actor, member, role="body", *, verified=True, filename="synthetic.pdf"):
     file, batch, upload = uid(), uid(), uid()
     size = c.execute(
         "SELECT b.byte_size FROM design.document_versions v JOIN design.blobs b ON b.id=v.blob_id WHERE v.id=%s",
@@ -130,11 +130,12 @@ def attach(c, bid, actor, member, role="body", *, verified=True):
     )
     c.execute(
         """INSERT INTO design.uploads(id,bid_id,batch_id,filename,role,declared_digest,declared_size,staging_key,state,expires_at,verified_version_id,verified_retain_until)
-    VALUES(%s,%s,%s,'synthetic.pdf',%s,%s,%s,%s,%s,now()+interval '1 day',%s,now()+interval '1 day')""",
+    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,now()+interval '1 day',%s,now()+interval '1 day')""",
         (
             upload,
             bid,
             batch,
+            filename,
             role,
             member.file_digest,
             size,
@@ -142,6 +143,170 @@ def attach(c, bid, actor, member, role="body", *, verified=True):
             "verified" if verified else "quarantined",
             member.document_version_id,
         ),
+    )
+
+
+@pytest.mark.parametrize("role", ["body", "tender", "supplement"])
+def test_controlled_word_pdf_has_distinct_source_admission_and_exact_frozen_history(world, role):
+    """Real PG/current schema/nonowner API; synthetic receipt fixture, no renderer claim."""
+    from types import SimpleNamespace
+
+    from psycopg.types.json import Jsonb
+
+    from apps.worker import word_intake_handlers
+    from deploy.schema_plan import ROOT
+    from packages.domain import word_materials
+    from packages.domain.runtime import Command, sha
+    from packages.word_intake.inspection import DOCX
+    from packages.word_intake.repository import REQUIRED_ISOLATION, queue_render
+
+    c, bid, actor = world["database"]["owner"], world["scope"].bid_id, world["actor"]
+    if not c.execute("SELECT to_regclass('design.word_render_runs') AS value").fetchone()["value"]:
+        c.execute((ROOT / "packages/word_intake/schema.sql").read_text(encoding="utf-8"))
+    fixture_pdf = world["member"].document_version_id
+    source, blob, source_snapshot, verify = [uid() for _ in range(4)]
+    source_digest = sha(source.encode())
+    identity = {"renderer_digest": "1" * 64, "fontset_digest": "2" * 64, "options_digest": "3" * 64}
+    profile = {"identity": identity, "profile_digest": sha(identity)}
+    with c.transaction():
+        c.execute("SET LOCAL search_path TO design,public")
+        c.execute(
+            "INSERT INTO blobs(id,digest,object_key,byte_size,media_type) VALUES(%s,%s,%s,5000,%s)",
+            (blob, source_digest, "synthetic-word/" + source, DOCX),
+        )
+        c.execute(
+            "INSERT INTO document_versions(id,bid_id,blob_id,original_name,obtained_at,artifact_kind,created_by) VALUES(%s,%s,%s,'synthetic.docx',now(),%s,%s)",
+            (source, bid, blob, "bid_body" if role == "body" else "source_original", actor),
+        )
+        attach(
+            c,
+            bid,
+            actor,
+            SimpleNamespace(document_version_id=source, file_digest=source_digest),
+            role=role,
+            filename="synthetic.docx",
+        )
+        upload = c.execute(
+            "SELECT id FROM uploads WHERE bid_id=%s AND verified_version_id=%s", (bid, source)
+        ).fetchone()["id"]
+        command = Command(c, actor, "synthetic_word_fixture", source, uid(), {})
+        c.execute(
+            "INSERT INTO operations(id,bid_id,command_id,kind,input_digest,state,handler_version,finished_at) VALUES(%s,%s,%s,'verify-upload',%s,'succeeded','document/1',now())",
+            (verify, bid, command.id, "4" * 64),
+        )
+        report = {"schema": "word-intake-inspection/1", "conversion_eligible": True}
+        c.execute(
+            "INSERT INTO word_intake_receipts(document_version_id,bid_id,upload_id,verify_operation_id,inspection_digest,inspection_report) VALUES(%s,%s,%s,%s,%s,%s)",
+            (source, bid, upload, verify, sha(report), Jsonb(report)),
+        )
+        operation = queue_render(c, bid, source, command.id, profile)
+        c.execute(
+            "UPDATE operations SET state='succeeded',finished_at=now() WHERE id=%s",
+            (operation["id"],),
+        )
+        outcome = {
+            "protocol": "word-docker-render/1",
+            "state": "succeeded",
+            "coverage": "complete",
+            "conversion_attempted": True,
+            "gaps": [],
+            "chain": identity
+            | {
+                "source_docx_digest": source_digest,
+                "pdf_digest": world["member"].file_digest,
+                "profile_digest": profile["profile_digest"],
+            },
+            "isolation": dict.fromkeys(REQUIRED_ISOLATION, True),
+        }
+        fixture_blob = c.execute(
+            "SELECT b.object_key,b.byte_size FROM document_versions v JOIN blobs b ON b.id=v.blob_id WHERE v.id=%s",
+            (fixture_pdf,),
+        ).fetchone()
+        published = word_intake_handlers.publish(
+            c,
+            {"operation_id": operation["id"], "bid_id": bid, "command_id": command.id},
+            {
+                "outcome": outcome,
+                "pdf_object_key": fixture_blob["object_key"],
+                "pdf_byte_size": fixture_blob["byte_size"],
+            },
+        )
+        target = published["pdf_document_version_id"]
+        # Parse/evidence are explicit fixtures; the normal publisher owns PDF IDs,
+        # file role, digest/size and controlled relation. This is not renderer IO.
+        parse = uid()
+        c.execute(
+            "INSERT INTO parse_runs(id,bid_id,document_version_id,parser_digest,config_digest,page_count,coverage,gaps) SELECT %s,bid_id,%s,parser_digest,config_digest,page_count,coverage,gaps FROM parse_runs WHERE id=%s",
+            (parse, target, world["member"].parse.parse_run_id),
+        )
+        c.execute(
+            "INSERT INTO pages(bid_id,parse_id,physical_page,width,height,rotation,quality,gaps) SELECT bid_id,%s,physical_page,width,height,rotation,quality,gaps FROM pages WHERE parse_id=%s",
+            (parse, world["member"].parse.parse_run_id),
+        )
+        c.execute(
+            "INSERT INTO evidence_blocks(id,bid_id,parse_id,physical_page,ordinal,kind,text_content,bbox,structure,digest) SELECT gen_random_uuid(),bid_id,%s,physical_page,ordinal,kind,text_content,bbox,structure,digest FROM evidence_blocks WHERE parse_id=%s",
+            (parse, world["member"].parse.parse_run_id),
+        )
+        source_file = c.execute(
+            "SELECT file_id FROM document_file_versions WHERE bid_id=%s AND version_id=%s",
+            (bid, source),
+        ).fetchone()["file_id"]
+        entries = [{"document_version_id": source, "file_id": str(source_file), "role": role}]
+        c.execute(
+            "INSERT INTO material_snapshots(id,bid_id,revision,manifest,digest) VALUES(%s,%s,1,%s,%s)",
+            (source_snapshot, bid, Jsonb({"documents": entries}), sha(entries)),
+        )
+        c.execute(
+            "INSERT INTO material_assignments(snapshot_id,bid_id,document_version_id,role,ordinal) VALUES(%s,%s,%s,%s,0)",
+            (source_snapshot, bid, source, role),
+        )
+        c.execute("UPDATE bids SET material_revision=1 WHERE id=%s", (bid,))
+        c.execute(
+            "UPDATE bid_profiles SET current_material_id=%s,current_body_id=NULL WHERE bid_id=%s",
+            (source_snapshot, bid),
+        )
+        word_materials.record_selection(c, bid, source, actor, command.id)
+        candidate = word_materials.candidate(c, bid, source)
+        adopted = word_materials.adopt(c, bid, source, candidate, None, render_profile=profile)
+        assert adopted["state"] == "adopted"
+    kind = "bid" if role == "body" else "authority"
+    docs = world["client"].get(f"/api/v1/bids/{bid}/package-documents?kind={kind}").json()["items"]
+    pdf = next(d for d in docs if d["id"] == target)
+    assert pdf["verified_upload"] is False and pdf["controlled_word_source_verified"] is True
+    item = world["item"] | {"document_version_id": target, "parse_run_id": parse}
+    body = {"kind": kind, "members": [item]}
+    response = create(world, body=body)
+    assert response.status_code == 201, response.text
+    value = response.json()
+    path = world["base"] + "/" + value["manifest"]["package_id"]
+    assert world["client"].get(path).status_code == 200
+    with c.transaction():
+        c.execute("SET LOCAL search_path TO design,public")
+        command = Command(c, actor, "synthetic_later_failure", source, uid(), {})
+        later = queue_render(c, bid, source, command.id, profile)
+        c.execute(
+            "UPDATE operations SET state='failed',finished_at=now() WHERE id=%s", (later["id"],)
+        )
+        c.execute(
+            "UPDATE word_render_runs SET outcome=%s,finished_at=now() WHERE operation_id=%s",
+            (
+                Jsonb(
+                    {
+                        "state": "failed",
+                        "coverage": "failed",
+                        "gaps": ["synthetic later failure"],
+                        "chain": {},
+                        "conversion_attempted": True,
+                    }
+                ),
+                later["id"],
+            ),
+        )
+    assert world["client"].get(path).json() == value
+    rejected = create(world, body=body)
+    assert (
+        rejected.status_code == 422
+        and rejected.json()["code"] == "PACKAGE_CONTROLLED_WORD_SOURCE_INVALID"
     )
 
 
@@ -229,6 +394,8 @@ def test_create_replay_conflict_and_rollback(world):
         ("source_kind", "authority"),
         ("page_count", 2),
         ("parse", {}),
+        ("verified_upload", True),
+        ("controlled_word_source_verified", True),
     ],
 )
 def test_client_cannot_inject_server_identity(world, field, value):

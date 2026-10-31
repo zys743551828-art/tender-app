@@ -145,7 +145,23 @@ SCHEMAS.update(
                 },
                 "sha256": {"type": "string"},
                 "verified_upload": {"type": "boolean"},
-            }
+                "controlled_word_source_verified": {
+                    "type": "boolean",
+                    "default": False,
+                    "readOnly": True,
+                },
+            },
+            required=[
+                "id",
+                "bid_id",
+                "file_id",
+                "file_revision",
+                "filename",
+                "role",
+                "artifact_kind",
+                "sha256",
+                "verified_upload",
+            ],
         ),
         "BidPackageParse": object_schema(
             {

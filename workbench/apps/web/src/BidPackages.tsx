@@ -898,7 +898,8 @@ function PackageWorkspace({
                 !!pending ||
                 recovery.blocked ||
                 busy ||
-                !document.verified_upload ||
+                (!document.verified_upload &&
+                  document.controlled_word_source_verified !== true) ||
                 conflict ||
                 childLocked ||
                 document.artifact_kind !==
@@ -923,7 +924,11 @@ function PackageWorkspace({
             <span>
               {document.filename} · {roleNames[document.role]} · 文件版本{" "}
               {document.file_revision}
-              {!document.verified_upload && " · 上传核验依据不足"}
+              {document.controlled_word_source_verified === true &&
+                " · 受控转换来源已核验"}
+              {!document.verified_upload &&
+                document.controlled_word_source_verified !== true &&
+                " · 上传核验依据不足"}
               {document.artifact_kind !==
                 (kind === "bid" ? "bid_body" : "source_original") &&
                 " · 不是此类原件"}

@@ -169,6 +169,15 @@ def _freeze_member(c: Any, member: PackageMember) -> None:
         version is not None and version["digest"] == member.file_digest,
         "PACKAGE_DOCUMENT_BINDING_MISMATCH",
     )
+    from packages.domain.controlled_word_admission import observe
+
+    observe(
+        c,
+        member.scope.bid_id,
+        member.document_version_id,
+        current=True,
+        expected_digest=member.file_digest,
+    )
     if member.parse.status == "not_frozen":
         return
     if member.parse.parse_run_id is None:
@@ -399,7 +408,12 @@ def load_revision(c: Any, bid_id: str, revision_id: str) -> PackageRevision:
             _manifest_validator().is_valid(value) and digest(value) == row["digest"],
             "PACKAGE_STORED_MANIFEST_CORRUPT",
         )
-        return _decode_manifest(value)
+        package = _decode_manifest(value)
+        from packages.domain.controlled_word_admission import observe
+
+        for member in package.members:
+            observe(c, bid_id, member.document_version_id, expected_digest=member.file_digest)
+        return package
     except (ValueError, TypeError, KeyError, AttributeError) as error:
         raise PackageError("PACKAGE_STORED_MANIFEST_CORRUPT") from error
 

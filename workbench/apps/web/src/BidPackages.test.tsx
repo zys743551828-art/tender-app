@@ -182,6 +182,60 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+it("受控Word派生来源单独显示并可选，不冒充上传核验", async () => {
+  const user = userEvent.setup();
+  const { writes } = install((url) =>
+    url.includes("/package-documents") && !url.includes("/parses")
+      ? json(
+          page([
+            {
+              ...document,
+              verified_upload: false,
+              controlled_word_source_verified: true,
+            },
+          ]),
+        )
+      : undefined,
+  );
+  render(<BidPackages bidId="bid" />);
+  const choice = await screen.findByRole("checkbox", {
+    name: `选择 ${document.filename} 版本 1`,
+  });
+  expect(choice).toBeEnabled();
+  expect(screen.getByText(/受控转换来源已核验/)).toBeInTheDocument();
+  expect(screen.queryByText(/上传核验依据不足/)).not.toBeInTheDocument();
+  await user.click(choice);
+  expect(choice).toBeChecked();
+  expect(writes).toHaveLength(0);
+});
+
+it.each([undefined, false, "true"])(
+  "没有真实布尔受控来源资格时保持禁选（%s）",
+  async (flag) => {
+    install((url) =>
+      url.includes("/package-documents") && !url.includes("/parses")
+        ? json(
+            page([
+              {
+                ...document,
+                verified_upload: false,
+                controlled_word_source_verified: flag,
+              },
+            ]),
+          )
+        : undefined,
+    );
+    render(<BidPackages bidId="bid" />);
+    expect(
+      await screen.findByRole("checkbox", {
+        name: `选择 ${document.filename} 版本 1`,
+      }),
+    ).toBeDisabled();
+    expect(screen.getByText(/上传核验依据不足/)).toBeInTheDocument();
+    expect(screen.queryByText(/受控转换来源已核验/)).not.toBeInTheDocument();
+  },
+);
+
 it("未明确选解析时保存未知原件，多用途逗号输入保留，未接正式评审", async () => {
   const user = userEvent.setup();
   const { writes } = install();

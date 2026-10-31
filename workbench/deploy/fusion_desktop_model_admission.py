@@ -15,6 +15,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 from uuid import UUID
 
+from psycopg import Error as DatabaseError
 from psycopg import IntegrityError, sql
 
 from deploy import fusion_full_probe as probe
@@ -190,6 +191,20 @@ def validate(packet, *, model=None, now=None):
         <= 0
     ):
         fail("DESKTOP_MODEL_ADMISSION_LIMIT_INVALID")
+    # Match the reviewed monetary/token contract before opening a connection.
+    # Never silently rescale a supplied budget or substitute provider ceilings
+    # for this application's bounded request output.
+    if price["amount_scale"] != 1_000_000_000:
+        fail("DESKTOP_MODEL_ADMISSION_AMOUNT_SCALE_INVALID")
+    if (
+        not 1 <= price["input_per_million_minor"] <= 1_000_000_000_000
+        or not 1 <= price["output_per_million_minor"] <= 1_000_000_000_000
+        or not 1 <= price["input_hard_ceiling"] <= 2_097_152
+        or not 1 <= price["output_hard_ceiling"] <= 8192
+        or limit["limit_minor"] > 9_000_000_000_000_000_000
+        or price["currency"] not in {"CNY", "USD"}
+    ):
+        fail("DESKTOP_MODEL_ADMISSION_SCHEMA_LIMIT_INVALID")
     current = now or datetime.now(timezone.utc)
     if (
         not timestamp(price["valid_from"]) <= current < timestamp(price["valid_until"])
@@ -381,8 +396,17 @@ def main(argv=None):
             )
         )
         return 3 if required else 2
-    except IntegrityError:
-        print(json.dumps({"ok": False, "code": "DESKTOP_MODEL_ADMISSION_CONFLICT"}))
+    except DatabaseError as error:
+        result = {
+            "ok": False,
+            "code": "DESKTOP_MODEL_ADMISSION_CONFLICT"
+            if isinstance(error, IntegrityError)
+            else "DESKTOP_MODEL_ADMISSION_DATABASE_FAILED",
+            "error_type": type(error).__name__,
+        }
+        if error.sqlstate and re.fullmatch("[A-Z0-9]{5}", error.sqlstate):
+            result["sqlstate"] = error.sqlstate
+        print(json.dumps(result))
         return 2
     except Exception:
         print(json.dumps({"ok": False, "code": "DESKTOP_MODEL_ADMISSION_FAILED"}))
