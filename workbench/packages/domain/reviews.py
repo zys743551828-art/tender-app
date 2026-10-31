@@ -62,6 +62,8 @@ def method_profile():
                     "packages/domain/content_checks.py",
                     "packages/domain/content_decision_basis.py",
                     "packages/domain/bid_package_extraction.py",
+                    "packages/domain/rule_sets.py",
+                    "packages/domain/evidence_spans.py",
                 )
             }
         ),

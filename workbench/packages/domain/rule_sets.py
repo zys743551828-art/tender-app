@@ -22,7 +22,7 @@ def current_decision(c, bid, kind, object_id):
     ).fetchone()
 
 
-def validate_addition(addition, bid, blocks, *, model=False):
+def validate_addition(addition, bid, blocks, *, model=False, span_documents=None, span_proofs=None):
     validate("RuleAddition", addition)
     if addition["scope"]["bid_id"] != str(bid):
         raise DomainError("RULE_SCOPE_MISMATCH", "条款适用范围必须属于当前项目", 422)
@@ -37,13 +37,32 @@ def validate_addition(addition, bid, blocks, *, model=False):
         quotes.append(item["quote"])
         ids.append(item["evidence_id"])
     joined = "\n".join(quotes)
-    if model and addition["statement"] not in joined:
+    if model and not any(addition["statement"] in quote for quote in quotes):
         raise DomainError("RULE_STATEMENT_UNGROUNDED", "模型条款正文没有逐字依据", 422)
-    for condition in addition["conditions"] + addition["exceptions"]:
-        if condition not in joined:
-            raise DomainError(
-                "RULE_CONDITION_UNGROUNDED", "条件或例外必须保留逐字依据，不能省略或推定", 422
-            )
+    for field in ("conditions", "exceptions"):
+        for position, condition in enumerate(addition[field]):
+            if any(condition in quote for quote in quotes):
+                continue
+            proof = None
+            if model and span_documents is not None and span_proofs is not None:
+                from packages.domain.evidence_spans import unique_cross_block_span
+
+                consistent = all(
+                    str(block.get("id")) in by_id
+                    and all(
+                        block.get(key) == by_id[str(block.get("id"))].get(key)
+                        for key in ("text_content", "physical_page", "ordinal")
+                    )
+                    for doc in span_documents
+                    for block in doc.get("blocks", [])
+                )
+                if consistent:
+                    proof = unique_cross_block_span(span_documents, condition, set(ids))
+            if proof is None:
+                raise DomainError(
+                    "RULE_CONDITION_UNGROUNDED", "条件或例外必须保留逐字依据，不能省略或推定", 422
+                )
+            span_proofs.append({"field": field, "position": position, **proof})
     maximum = Decimal(addition["maximum"]) if addition["maximum"] is not None else None
     if maximum is not None and not re.search(
         r"(?<![0-9.])" + re.escape(addition["maximum"]) + r"(?![0-9.])", joined
