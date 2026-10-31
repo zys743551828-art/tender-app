@@ -54,6 +54,35 @@ def extraction_schema():
     }
 
 
+def _correction_source_context(result, documents, errors, *, character_budget=12000):
+    """Repeat whole cited frozen blocks for failed rules, without proposing a correction."""
+    wanted = {entry["rule_index"] for entry in errors}
+    remaining = character_budget
+    context = []
+    for index in sorted(wanted):
+        cited = {quote["evidence_id"] for quote in result["rules"][index]["evidence_quotes"]}
+        selected = [
+            {
+                "document_version_id": str(doc["document_version_id"]),
+                "parse_id": str(doc.get("parse_id", "")),
+                "physical_page": block.get("physical_page"),
+                "ordinal": block.get("ordinal"),
+                "evidence_id": str(block["id"]),
+                "text": block["text_content"],
+            }
+            for doc in documents
+            for block in doc["blocks"]
+            if str(block["id"]) in cited
+        ]
+        size = sum(len(block["text"]) for block in selected)
+        if size <= remaining:
+            context.append({"rule_index": index, "cited_blocks": selected})
+            remaining -= size
+        else:
+            context.append({"rule_index": index, "cited_blocks_omitted": True})
+    return context
+
+
 def _validated_extraction(
     result, bid, blocks, *, feedback=None, span_documents=None, provenance=None
 ):
@@ -262,7 +291,7 @@ def compute_prepare(message, lease):
         max_tokens=8192,
     )
     result = value["data"]
-    feedback: dict[str, list[dict[str, str | int]]] = {}
+    feedback: dict = {}
     grounding_spans: list[dict] = []
     try:
         items = _validated_extraction(
@@ -276,6 +305,7 @@ def compute_prepare(message, lease):
     except DomainError:
         if not feedback:
             raise
+        feedback["source_context"] = _correction_source_context(result, sources, feedback["errors"])
         # One separately reserved call, with a stable identity for stored-result replay.
         # generate retains the same purpose, budget, lease and cancellation admission.
         value, call = model_calls.generate(
@@ -295,6 +325,8 @@ def compute_prepare(message, lease):
                     "只替换未逐字落地的摘录字段，引用仅可在原有同一evidence_id内调整，不增删证据关联。"
                     "statement、conditions和exceptions须逐字出自引用原文；"
                     "跨块只允许同文件同页相邻块按原文顺序连接，必须引用全部块，不额外添加空格或标点。"
+                    "source_context仅重复已冻结且已引用的完整证据块，按标识和顺序逐字核对；"
+                    "如被省略请使用前面的完整原文，不要推测或补字。"
                     + json.dumps(feedback, ensure_ascii=False, sort_keys=True),
                 },
             ],

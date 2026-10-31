@@ -34,6 +34,45 @@ def extraction():
     }
 
 
+def test_correction_context_repeats_only_whole_cited_frozen_blocks():
+    result = extraction()
+    documents = [
+        {
+            "document_version_id": "doc-1",
+            "parse_id": "parse-1",
+            "blocks": [
+                {"id": EVIDENCE, "text_content": SOURCE, "physical_page": 2, "ordinal": 7},
+                {
+                    "id": "unreferenced",
+                    "text_content": "private other",
+                    "physical_page": 2,
+                    "ordinal": 8,
+                },
+            ],
+        }
+    ]
+    errors = [{"rule_index": 0, "field": "conditions[0]"}]
+    context = handlers._correction_source_context(result, documents, errors)
+    assert context == [
+        {
+            "rule_index": 0,
+            "cited_blocks": [
+                {
+                    "document_version_id": "doc-1",
+                    "parse_id": "parse-1",
+                    "physical_page": 2,
+                    "ordinal": 7,
+                    "evidence_id": EVIDENCE,
+                    "text": SOURCE,
+                }
+            ],
+        }
+    ]
+    assert handlers._correction_source_context(result, documents, errors, character_budget=1) == [
+        {"rule_index": 0, "cited_blocks_omitted": True}
+    ]
+
+
 @pytest.fixture
 def prepare(monkeypatch):
     documents = [
