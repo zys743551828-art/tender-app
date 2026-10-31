@@ -37,27 +37,33 @@ def validate_addition(addition, bid, blocks, *, model=False, span_documents=None
         quotes.append(item["quote"])
         ids.append(item["evidence_id"])
     joined = "\n".join(quotes)
+
+    def cross_proof(text):
+        if not model or span_documents is None or span_proofs is None:
+            return None
+        from packages.domain.evidence_spans import unique_cross_block_span
+
+        consistent = all(
+            str(block.get("id")) in by_id
+            and all(
+                block.get(key) == by_id[str(block.get("id"))].get(key)
+                for key in ("text_content", "physical_page", "ordinal", "kind")
+            )
+            for doc in span_documents
+            for block in doc.get("blocks", [])
+        )
+        return unique_cross_block_span(span_documents, text, set(ids)) if consistent else None
+
     if model and not any(addition["statement"] in quote for quote in quotes):
-        raise DomainError("RULE_STATEMENT_UNGROUNDED", "模型条款正文没有逐字依据", 422)
+        proof = cross_proof(addition["statement"])
+        if proof is None:
+            raise DomainError("RULE_STATEMENT_UNGROUNDED", "模型条款正文没有逐字依据", 422)
+        span_proofs.append({"field": "statement", "position": 0, **proof})
     for field in ("conditions", "exceptions"):
         for position, condition in enumerate(addition[field]):
             if any(condition in quote for quote in quotes):
                 continue
-            proof = None
-            if model and span_documents is not None and span_proofs is not None:
-                from packages.domain.evidence_spans import unique_cross_block_span
-
-                consistent = all(
-                    str(block.get("id")) in by_id
-                    and all(
-                        block.get(key) == by_id[str(block.get("id"))].get(key)
-                        for key in ("text_content", "physical_page", "ordinal", "kind")
-                    )
-                    for doc in span_documents
-                    for block in doc.get("blocks", [])
-                )
-                if consistent:
-                    proof = unique_cross_block_span(span_documents, condition, set(ids))
+            proof = cross_proof(condition)
             if proof is None:
                 raise DomainError(
                     "RULE_CONDITION_UNGROUNDED", "条件或例外必须保留逐字依据，不能省略或推定", 422

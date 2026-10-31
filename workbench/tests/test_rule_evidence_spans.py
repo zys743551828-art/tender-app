@@ -132,6 +132,35 @@ def test_valid_span_cannot_be_changed_during_model_correction():
         handlers._check_correction_structure(before, after, span_documents=source())
 
 
+def test_statement_span_is_proven_and_cannot_be_changed():
+    docs = source()
+    before = extraction()
+    before["rules"][0]["statement"] = "施工前完成检查。"
+    before["rules"][0]["conditions"] = []
+    proofs = []
+    handlers._validated_extraction(
+        before, BID, docs[0]["blocks"], span_documents=docs, provenance=proofs
+    )
+    assert [(p["field"], p["position"]) for p in proofs] == [("statement", 0)]
+    after = deepcopy(before)
+    after["rules"][0]["statement"] = "施工前完成检查，"
+    with pytest.raises(DomainError, match="EXTRACTION_CORRECTION_STRUCTURE_CHANGED"):
+        handlers._check_correction_structure(before, after, span_documents=docs)
+
+
+def test_feedback_only_reports_unproven_field_when_statement_span_is_valid():
+    docs = source()
+    result = extraction()
+    result["rules"][0]["statement"] = "施工前完成检查。"
+    result["rules"][0]["conditions"] = ["不存在的条件。"]
+    feedback = {}
+    with pytest.raises(DomainError, match="RULE_CONDITION_UNGROUNDED"):
+        handlers._validated_extraction(
+            result, BID, docs[0]["blocks"], span_documents=docs, provenance=[], feedback=feedback
+        )
+    assert [error["field"] for error in feedback["errors"]] == ["conditions[0]"]
+
+
 def test_cross_document_newline_does_not_gain_grounding_from_quote_join():
     result = extraction()
     result["rules"][0]["conditions"] = ["施工前\n完成检查。"]
