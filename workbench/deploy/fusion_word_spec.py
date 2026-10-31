@@ -105,14 +105,21 @@ def installation(request, base_profile, role) -> dict:
         or set(request)
         != {"version", "instance_id", "name", "origin", "python_image", "web_image", "word"}
         | ({"model_configured"} if "model_configured" in request else set())
+        | ({"parser"} if "parser" in request else set())
         or request["version"] != DESKTOP_VERSION
         or request["name"] != base_profile["plan"]["name"]
         or request["origin"] != base_profile["plan"]["origin"]
         or request["python_image"] != base_profile["plan"]["images"]["python"]
         or request["web_image"] != base_profile["plan"]["images"]["web"]
         or request.get("model_configured", False) is not base_profile["plan"]["model_configured"]
+        or ("parser" in request) != ("parser" in base_profile["plan"])
+        or request.get("parser") != base_profile["plan"].get("parser")
     ):
         raise base.ConfigurationError("FULL_WORD_REQUEST_BINDING_INVALID")
+    if "parser" in request:
+        from deploy.fusion_parsing_spec import validate as validate_parser
+
+        validate_parser(request["parser"])
     result = {
         "version": INSTALLATION_VERSION,
         "instance_id": request["instance_id"],

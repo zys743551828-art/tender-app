@@ -150,3 +150,80 @@ assert 'packages.domain.runtime' not in sys.modules
         [sys.executable, "-B", "-c", script], env=environment, capture_output=True, check=False
     )
     assert result.returncode == 0, result.stderr.decode(errors="replace")
+
+
+@pytest.mark.parametrize("role", ["api", "worker", "controller"])
+@pytest.mark.parametrize("with_parser", [False, True])
+def test_real_word_profile_installation_preserves_each_role_with_optional_parser(
+    binding, role, with_parser
+):
+    from deploy import fusion_parsing_spec as parsing
+
+    request, profile, checked = binding
+    profile["role"] = role
+    if with_parser:
+        request["parser"] = parsing.descriptor("synthetic-parser@sha256:" + "e" * 64)
+        profile["plan"]["parser"] = deepcopy(request["parser"])
+    profile["plan_digest"] = word.base.digest(profile["plan"])
+    installed = word.installation(request, profile, role)
+    word.validate_installation(installed, profile, role)
+    assert installed == {
+        "version": word.INSTALLATION_VERSION,
+        "instance_id": request["instance_id"],
+        "base_plan_digest": profile["plan_digest"],
+        "role": role,
+        "bundle": request["word"],
+    }
+    assert checked == [profile, profile, profile]
+
+
+@pytest.mark.parametrize(
+    "attack", ["request_only", "plan_only", "different_image", "extra_request_field"]
+)
+def test_parser_request_cannot_bind_another_plan_or_expand_word_request(binding, attack):
+    from deploy import fusion_parsing_spec as parsing
+
+    request, profile, _ = binding
+    request["parser"] = parsing.descriptor("synthetic-parser@sha256:" + "e" * 64)
+    profile["plan"]["parser"] = deepcopy(request["parser"])
+    if attack == "request_only":
+        del profile["plan"]["parser"]
+    elif attack == "plan_only":
+        del request["parser"]
+    elif attack == "different_image":
+        request["parser"] = parsing.descriptor("different-parser@sha256:" + "f" * 64)
+    else:
+        request["parser_url"] = "http://other:8812"
+    profile["plan_digest"] = word.base.digest(profile["plan"])
+    with pytest.raises(word.base.ConfigurationError, match="FULL_WORD_REQUEST_BINDING_INVALID"):
+        word.installation(request, profile, "worker")
+
+
+@pytest.mark.parametrize(
+    "attack", ["url", "transport", "image", "version", "extra", "null", "list"]
+)
+def test_equal_but_malformed_parser_descriptors_do_not_bypass_word_installation(binding, attack):
+    from deploy import fusion_parsing_spec as parsing
+
+    request, profile, _ = binding
+    value = parsing.descriptor("synthetic-parser@sha256:" + "e" * 64)
+    if attack == "null":
+        value = None
+    elif attack == "list":
+        value = []
+    elif attack == "url":
+        value["url"] = "http://other:8812"
+    elif attack == "transport":
+        value["transport"] = "arbitrary"
+    elif attack == "image":
+        value["image"] = "parser:latest"
+    elif attack == "version":
+        value["version"] = "parsing-installation/unknown"
+    else:
+        value["token"] = "synthetic-unaccepted-inline-token"
+    request["parser"] = value
+    profile["plan"]["parser"] = deepcopy(value)
+    profile["plan_digest"] = word.base.digest(profile["plan"])
+    # Even exact request/plan equality cannot qualify an invalid descriptor.
+    with pytest.raises(word.base.ConfigurationError, match="FULL_PARSER_"):
+        word.installation(request, profile, "worker")
