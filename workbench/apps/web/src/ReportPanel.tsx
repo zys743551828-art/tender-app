@@ -13,6 +13,7 @@ import { rememberOperation } from "./operationStorage";
 import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useRecordedCommand } from "./useRecordedCommand";
+import "./ReportPanel.css";
 import { useResource } from "./useResource";
 
 export function ReportPanel({

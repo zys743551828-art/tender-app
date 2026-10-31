@@ -1,0 +1,22 @@
+.report-panel {
+  padding: 24px;
+}
+
+.report-panel > .section-heading {
+  padding: 0 0 22px;
+}
+
+.report-panel > h3 {
+  margin-top: 20px;
+}
+
+.report-panel .report-card > .section-heading {
+  padding: 0 0 16px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .report-panel {
+    padding: 18px 16px;
+  }
+}
