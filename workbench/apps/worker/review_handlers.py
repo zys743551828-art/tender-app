@@ -66,7 +66,12 @@ def _validated_extraction(
         try:
             spans: list[dict] = []
             validated = validate_addition(
-                item, bid, blocks, model=True, span_documents=span_documents, span_proofs=spans
+                item,
+                bid,
+                blocks,
+                model=True,
+                span_documents=span_documents if provenance is not None else None,
+                span_proofs=spans,
             )
             items.append(validated)
             if provenance is not None:

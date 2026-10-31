@@ -83,6 +83,12 @@ def test_exact_adjacent_proof_preserves_raw_character_ranges_and_receipt_identit
     }
 
 
+def test_cross_block_rule_is_rejected_without_provenance_destination():
+    docs = source()
+    with pytest.raises(DomainError, match="RULE_CONDITION_UNGROUNDED"):
+        handlers._validated_extraction(extraction(), BID, docs[0]["blocks"], span_documents=docs)
+
+
 @pytest.mark.parametrize(
     "fault",
     [
