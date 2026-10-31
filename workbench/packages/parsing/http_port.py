@@ -7,6 +7,8 @@ import json
 import math
 import os
 import re
+import stat
+import sys
 from urllib.parse import urlsplit
 
 import httpx
@@ -23,20 +25,77 @@ class ParsingUnavailable(Exception):
     pass
 
 
+def runtime_token():
+    mode = os.environ.get("PARSING_RUNTIME_TRANSPORT", "loopback")
+    if mode == "loopback" and not os.environ.get("PARSING_RUNTIME_TOKEN_FILE"):
+        return os.environ.get("PARSING_RUNTIME_TOKEN", "")
+    if (
+        mode != "compose-private"
+        or not sys.platform.startswith("linux")
+        or os.environ.get("PARSING_RUNTIME_TOKEN_FILE") != "/parser-private/token"
+        or os.environ.get("PARSING_RUNTIME_TOKEN")
+    ):
+        raise ParsingUnavailable("PARSING_RUNTIME_TOKEN_CONFIG_INVALID")
+    descriptor = None
+    try:
+        directory = os.stat("/parser-private", follow_symlinks=False)
+        if (
+            not stat.S_ISDIR(directory.st_mode)
+            or directory.st_uid != 65532
+            or directory.st_gid != 65532
+            or stat.S_IMODE(directory.st_mode) != 0o700
+        ):
+            raise ValueError()
+        descriptor = os.open("/parser-private/token", os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        info = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or stat.S_IMODE(info.st_mode) != 0o600
+            or info.st_uid != 65532
+            or info.st_gid != 65532
+            or info.st_nlink != 1
+            or not 32 <= info.st_size <= 256
+        ):
+            raise ValueError()
+        with os.fdopen(descriptor, "rb", closefd=False) as stream:
+            raw = stream.read(257)
+        after = os.fstat(descriptor)
+        if len(raw) != info.st_size or (info.st_size, info.st_mtime_ns, info.st_ctime_ns) != (
+            after.st_size,
+            after.st_mtime_ns,
+            after.st_ctime_ns,
+        ):
+            raise ValueError()
+        token = raw.decode("ascii")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{32,256}", token):
+            raise ValueError()
+        return token
+    except (OSError, UnicodeError, ValueError):
+        raise ParsingUnavailable("PARSING_RUNTIME_TOKEN_FILE_INVALID") from None
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
 class ParsingHttp:
     def __init__(self):
-        self.url = os.environ.get("PARSING_RUNTIME_URL", "http://127.0.0.1:8812").rstrip("/")
+        raw_url = os.environ.get("PARSING_RUNTIME_URL", "http://127.0.0.1:8812")
+        mode = os.environ.get("PARSING_RUNTIME_TRANSPORT", "loopback")
+        self.url = raw_url.rstrip("/")
         target = urlsplit(self.url)
         if (
             target.scheme != "http"
-            or target.hostname != "127.0.0.1"
+            or not (
+                (mode == "loopback" and target.hostname == "127.0.0.1")
+                or (mode == "compose-private" and raw_url == "http://parser:8812")
+            )
             or target.path
             or target.username
             or target.query
             or target.fragment
         ):
             raise ParsingUnavailable("PARSING_RUNTIME_CONFIG_INVALID")
-        self.token = os.environ.get("PARSING_RUNTIME_TOKEN", "")
+        self.token = runtime_token()
         if len(self.token) < 32:
             raise ParsingUnavailable("PARSING_RUNTIME_NOT_CONFIGURED")
         metadata = self._call("GET", "/identity")

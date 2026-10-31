@@ -1,0 +1,8 @@
+**
+!requirements-parsing.lock.txt
+!packages
+!packages/parsing
+!packages/parsing/*.py
+!packages/parsing/assets.json
+!deploy
+!deploy/Dockerfile.parsing

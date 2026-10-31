@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import argparse
 import hmac
+import json
 import os
 import threading
 from contextlib import asynccontextmanager
+from http.client import HTTPConnection
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from packages.parsing.core import MAX_BYTES, LocalParser, ParseError
+from packages.parsing.http_port import digest, runtime_token
 
 parser: LocalParser | None = None
 lock = threading.Lock()
@@ -21,7 +24,7 @@ lock = threading.Lock()
 @asynccontextmanager
 async def lifespan(app):
     global parser
-    if len(os.environ.get("PARSING_RUNTIME_TOKEN", "")) < 32:
+    if len(runtime_token()) < 32:
         raise RuntimeError("PARSING_RUNTIME_TOKEN_REQUIRED")
     parser = LocalParser()
     yield
@@ -32,7 +35,7 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
 
 @app.middleware("http")
 async def private_runtime(request: Request, call_next):
-    token = os.environ.get("PARSING_RUNTIME_TOKEN", "")
+    token = runtime_token()
     if not token or not hmac.compare_digest(
         request.headers.get("authorization", ""), "Bearer " + token
     ):
@@ -95,8 +98,44 @@ def main():
 
     arguments = argparse.ArgumentParser()
     arguments.add_argument("--port", type=int, default=8812)
+    arguments.add_argument(
+        "--transport", choices=("loopback", "compose-private"), default="loopback"
+    )
+    arguments.add_argument("--check", action="store_true")
     args = arguments.parse_args()
-    uvicorn.run(app, host="127.0.0.1", port=args.port, access_log=False, workers=1)
+    if args.transport == "compose-private" and (
+        args.port != 8812 or os.environ.get("PARSING_RUNTIME_TRANSPORT") != "compose-private"
+    ):
+        raise SystemExit("PARSING_RUNTIME_CONFIG_INVALID")
+    if args.check:
+        connection = HTTPConnection("127.0.0.1", args.port, timeout=3)
+        try:
+            connection.request(
+                "GET", "/identity", headers={"Authorization": "Bearer " + runtime_token()}
+            )
+            response = connection.getresponse()
+            raw = response.read(65537)
+            value = json.loads(raw)
+            if (
+                response.status != 200
+                or len(raw) > 65536
+                or value.get("protocol_version") != 1
+                or digest(value["identity"]) != value["parser_digest"]
+            ):
+                raise ValueError()
+        except Exception:
+            raise SystemExit("PARSING_RUNTIME_NOT_READY") from None
+        finally:
+            connection.close()
+        print("PARSING_RUNTIME_READY")
+        return
+    uvicorn.run(
+        app,
+        host="0.0.0.0" if args.transport == "compose-private" else "127.0.0.1",  # nosec B104 # explicit private Compose transport; default remains loopback.
+        port=args.port,
+        access_log=False,
+        workers=1,
+    )
 
 
 if __name__ == "__main__":

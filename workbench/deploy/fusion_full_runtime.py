@@ -11,6 +11,7 @@ from pathlib import Path
 
 from deploy import fusion_full_probe as probe
 from deploy import fusion_full_spec as spec
+from deploy.fusion_parsing_spec import environment as parsing_environment
 
 MODEL_COMPONENTS = {"review", "assistant", "review-controller", "assistant-controller"}
 
@@ -64,6 +65,7 @@ def environment(profile, component):
         if "WORKER_DATABASE_DSN" in profile["environment"]
         else "api",
         **profile["environment"],
+        **parsing_environment(profile["plan"], component),
     }
 
 

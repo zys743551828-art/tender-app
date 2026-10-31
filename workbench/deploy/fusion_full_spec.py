@@ -154,7 +154,13 @@ def sources(root=None):
             if path.is_symlink() or not path.is_file():
                 raise ConfigurationError("FULL_RUNTIME_SOURCE_INVALID")
             selected[str(relative)] = digest(path.read_bytes())
-    for name in ("requirements.lock.txt", "pyproject.toml", "deploy/fusion_full_requirements.txt"):
+    for name in (
+        "requirements.lock.txt",
+        "pyproject.toml",
+        "deploy/fusion_full_requirements.txt",
+        "requirements-parsing.lock.txt",
+        "deploy/Dockerfile.parsing",
+    ):
         selected[name] = digest((root / name).read_bytes())
     if not selected or len(selected) > 5000:
         raise ConfigurationError("FULL_RUNTIME_SOURCE_LIMIT")
@@ -259,6 +265,11 @@ def validate_plan(plan, *, check_sources=True, check_frontend=False):
         "model_configured",
         "task_runner_enabled",
     }
+    if isinstance(plan, dict) and "parser" in plan:
+        from deploy.fusion_parsing_spec import validate as validate_parser
+
+        validate_parser(plan["parser"])
+        keys.add("parser")
     if not isinstance(plan, dict) or set(plan) != keys or plan["version"] != VERSION:
         raise ConfigurationError("FULL_PLAN_SHAPE_INVALID")
     if (
@@ -303,6 +314,8 @@ def validate_plan(plan, *, check_sources=True, check_frontend=False):
     if any(plan["images"][key] != value for key, value in IMAGES.items()):
         raise ConfigurationError("FULL_INFRASTRUCTURE_IMAGE_CHANGED")
     validate_topology(plan["topology"])
+    if "parser" in plan and plan["topology"]["mode"] != "compose":
+        raise ConfigurationError("FULL_PARSER_COMPOSE_REQUIRED")
     actual_sql = [{"path": item.path, "sha256": item.sha256} for item in ordered_sql()]
     if plan["ordered_sql"] != actual_sql or plan["policy_sha256"] != digest(
         (fresh.ROOT / POLICY).read_bytes()

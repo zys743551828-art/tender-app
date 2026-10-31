@@ -23,6 +23,7 @@ def configure(
     model=None,
     task_runner=False,
     topology=None,
+    parser=None,
 ):
     directory = Path(directory).absolute()
     if (
@@ -62,6 +63,10 @@ def configure(
         "model_configured": model is not None,
         "task_runner_enabled": task_runner,
     }
+    if parser is not None:
+        from deploy.fusion_parsing_spec import validate as validate_parser
+
+        plan["parser"] = dict(validate_parser(parser))
     spec.validate_plan(plan)
     actors = {
         name: {
@@ -95,6 +100,8 @@ def configure(
         "csrf_secret": secrets.token_urlsafe(48),
         "model": model,
     }
+    if parser is not None:
+        operator["parser_token"] = secrets.token_urlsafe(48)
     directory.mkdir(mode=0o700, parents=True)
     directory.chmod(0o700)
     for part in ("state", "runtime", "application-state"):

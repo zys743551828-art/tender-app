@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1.7@sha256:b5f3b260a9678e1d83d2fce86eeddf79420b79147eaba2a25986f47133d73720
+# Build context: workbench. Supported platform: linux/amd64 only.
+FROM python:3.12.16-slim-bookworm@sha256:623674a14ef93d052bb9b0de4dbf5f28eb578a35263838941cc8aa43213c1487
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONNOUSERSITE=1 \
+    HOME=/tmp \
+    PARSING_ASSET_DIRECTORY=/opt/parsing-assets \
+    OMP_THREAD_LIMIT=1
+# A signed, dated Debian repository fixes the native dependency solver's universe.
+RUN rm -f /etc/apt/sources.list /etc/apt/sources.list.d/* \
+    && printf '%s\n' 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20261030T000000Z bookworm main' > /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y \
+        tesseract-ocr=5.3.0-2 fonts-noto-cjk=1:20220127+repack1-1 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /workspace
+COPY requirements-parsing.lock.txt ./requirements-parsing.lock.txt
+RUN python -m pip --isolated install --no-cache-dir --no-deps --only-binary=:all: \
+        -r requirements-parsing.lock.txt \
+    && python -m pip --isolated check
+COPY packages/parsing/*.py packages/parsing/assets.json ./packages/parsing/
+# Existing fetcher accepts only the official immutable GitHub revision and checks
+# both dictionary byte length and SHA256 from the existing assets.json contract.
+RUN python -m packages.parsing.fetch_assets --directory /opt/parsing-assets \
+    && chown -R 65532:65532 /opt/parsing-assets
+USER 65532:65532
+CMD ["python", "-m", "packages.parsing.server"]

@@ -300,7 +300,11 @@ def _fixed() -> dict:
     # Docker's immutable manifest/config identities cover bundled tools and fonts.
     # These two source identities qualify behavior (OOXML rejection and output
     # checks), not the upstream release; they do not scan the repository/assets.
-    adapter = digest(Path(__file__).read_bytes())
+    from packages.word_intake import static_layout
+
+    adapter = digest(
+        {"port": digest(Path(__file__).read_bytes()), "static_inspector": static_layout.identity()}
+    )
     pdf_inspector = {"package": "pypdfium2", "version": version("pypdfium2")}
     return {
         "protocol": PROTOCOL,
@@ -689,16 +693,29 @@ def render(source: bytes, profile: dict, *, receipt: Path) -> dict:
     from packages.word_intake.inspection import inspect_docx
 
     def admit():
+        from packages.word_intake import static_layout
+
         inspection = inspect_docx(source)
         if not inspection["conversion_eligible"]:
             raise PrebuiltError("WORD_PACKAGE_ACTIVE_CONTENT_BLOCKED")
+        static = static_layout.prepare(source)
+        font_inspection = inspection
+        if static is not None:
+            font_inspection = inspection | {
+                "paragraphs": [*inspection["paragraphs"], *static["stories"].values()]
+            }
         return {
             "proof": {"source_docx_digest": digest(source)},
-            "font_inspection": inspection,
+            "font_inspection": font_inspection,
             "inspection": inspection,
+            "static_layout": static,
         }
 
     def inspect_output(pdf, prepared):
+        from packages.word_intake import static_layout
+
+        if prepared["static_layout"] is not None:
+            return static_layout.inspect_pdf(pdf, prepared["static_layout"], prepared["inspection"])
         pages, gaps = inspect_pdf(pdf, prepared["inspection"], [])
         return {"page_count": pages, "gaps": gaps}
 
@@ -719,9 +736,9 @@ def capabilities() -> dict:
         "options": dict(OPTIONS),
         "formats": ["OOXML DOCX"],
         "external_fields_macros_links": "blocked_by_existing_inspection",
-        "layout_qualification": "existing_complex_layout_gaps_preserved; HTTP200 is not complete",
+        "layout_qualification": "bounded_static_stories_fixed_tables_inline_opaque_rasters; unknown_layouts_remain_partial",
         "fonts": "frozen image fonts only; custom runtime font installation not implemented",
-        "generated_PAGE_RICH": "not connected or qualified by this candidate module",
+        "generated_PAGE_RICH": "separate_producer_adapters_required; external_fields_stay_blocked",
         "native_status": "requires explicit per-platform real acceptance; unit tests do not qualify it",
         "transport": "fixed local daemon, per-document network-none container; in-image curl over loopback",
     }

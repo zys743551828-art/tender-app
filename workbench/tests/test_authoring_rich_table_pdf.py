@@ -4,6 +4,7 @@ import copy
 import io
 import json
 from pathlib import Path
+from xml.etree import ElementTree as ET  # nosec B405 - constructs trusted test XML only
 
 import pypdfium2 as pdfium
 import pytest
@@ -64,14 +65,27 @@ def source(blocks):
     return snapshot, source, roots
 
 
-def pdf(block, *, attack=None, top=720, left=72, duplicate=False, filled=False):
+def pdf(
+    block,
+    *,
+    attack=None,
+    top=720,
+    left=72,
+    duplicate=False,
+    filled=False,
+    border_rgb=(0, 0, 0),
+    border_width=0.5,
+    header_rgb=(231, 230, 230),
+    cap_grid=False,
+    width_scale=1,
+):
     """Draw an explicit synthetic table independently from the inspector."""
     buffer = io.BytesIO()
     output = canvas.Canvas(buffer, pagesize=(11906 / 20, 16838 / 20), invariant=1)
 
     def draw(top):
         checked = rich_content.table_grid(block)
-        widths = [value / 20 for value in checked["column_widths_twips"]]
+        widths = [value / 20 * width_scale for value in checked["column_widths_twips"]]
         if attack == "column_width":
             widths[0] += 12
             widths[1] -= 12
@@ -86,7 +100,7 @@ def pdf(block, *, attack=None, top=720, left=72, duplicate=False, filled=False):
             x0, x1 = columns[col], columns[col + attrs["colspan"]]
             y1, y0 = rows[row], rows[row + attrs["rowspan"]]
             if attrs["header"]:
-                output.setFillColorRGB(231 / 255, 230 / 255, 230 / 255)
+                output.setFillColorRGB(*(channel / 255 for channel in header_rgb))
                 output.rect(x0, y0, x1 - x0, y1 - y0, stroke=0, fill=1)
             borders.update([(x0, y0, x1, y0), (x0, y1, x1, y1), (x0, y0, x0, y1), (x1, y0, x1, y1)])
             text = origin["cell"]["content"][0]["content"][0]["text"]
@@ -110,15 +124,45 @@ def pdf(block, *, attack=None, top=720, left=72, duplicate=False, filled=False):
             textobject.textOut(text)
             output.drawText(textobject)
             output.restoreState()
-        output.setStrokeColorRGB(0, 0, 0)
-        output.setFillColorRGB(0, 0, 0)
-        output.setLineWidth(0.5)
+        if attack == "extra_text":
+            output.setFillColorRGB(0, 0, 0)
+            output.drawString(left + 60, top - 30, "EXTRA")
+        output.setStrokeColorRGB(*(channel / 255 for channel in border_rgb))
+        output.setFillColorRGB(*(channel / 255 for channel in border_rgb))
+        output.setLineWidth(border_width)
         if attack == "dashed":
             output.setDash(2, 2)
+        if cap_grid:
+            half = border_width / 2
+            borders = {
+                (
+                    columns[0] + (-half if y in {rows[0], rows[-1]} else half),
+                    y,
+                    columns[-1] + (half if y in {rows[0], rows[-1]} else -half),
+                    y,
+                )
+                for y in rows
+            } | {
+                (
+                    x,
+                    rows[-1] + (-half if x in {columns[0], columns[-1]} else half),
+                    x,
+                    rows[0] + (half if x in {columns[0], columns[-1]} else -half),
+                )
+                for x in columns
+            }
         for x0, y0, x1, y1 in sorted(borders):
             if attack == "missing_vertical" and x0 == x1 == columns[1]:
                 continue
             if attack == "missing_horizontal" and y0 == y1 == rows[1]:
+                continue
+            if attack == "cap_split" and y0 == y1 == rows[0]:
+                middle = (x0 + x1) / 2
+                output.line(x0, y0, middle, y1)
+                output.line(middle, y0, x1, y1)
+                continue
+            if attack == "cap_cross" and x0 == x1 == columns[1]:
+                output.line(x0 + 5, y0, x1, y1)
                 continue
             if filled:
                 if x0 == x1:
@@ -132,6 +176,9 @@ def pdf(block, *, attack=None, top=720, left=72, duplicate=False, filled=False):
         if attack == "covered_border":
             output.setFillColorRGB(1, 1, 1)
             output.rect(columns[1] - 1, rows[-1] + 10, 2, 15, fill=1, stroke=0)
+        if attack == "black_border_cover":
+            output.setFillColorRGB(0, 0, 0)
+            output.rect(columns[1] - 0.25, rows[-1], 0.5, top - rows[-1], fill=1, stroke=0)
         if attack in {"white_cover", "black_cover", "sparse_cover"}:
             white = attack != "black_cover"
             output.setFillColorRGB(1 if white else 0, 1 if white else 0, 1 if white else 0)
@@ -168,6 +215,163 @@ def test_actual_grid_spans_cell_text_and_pixels_are_measured(merged, header, fil
     assert len(row["cells"]) == (4 if merged else 6)
     assert result["render_pixels"] > 0
     assert "Cell1" not in json.dumps(result)
+
+
+SOURCE_BORDER = (100, 116, 139)
+SOURCE_HEADER = (226, 232, 240)
+WORD = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+
+
+def colored_source(block):
+    snapshot, _, roots = source([block])
+    table_xml = next(roots["word/document.xml"].iter(WORD + "tbl"))
+    props = table_xml.find(WORD + "tblPr")
+    assert props is not None
+    for old in props.findall(WORD + "tblBorders"):
+        props.remove(old)
+    borders = ET.SubElement(props, WORD + "tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        ET.SubElement(
+            borders,
+            WORD + edge,
+            {WORD + "val": "single", WORD + "sz": "4", WORD + "color": "64748B"},
+        )
+    cells = list(table_xml.iter(WORD + "tc"))
+    origins = rich_content.table_grid(block)["origins"]
+    assert len(cells) == len(origins)
+    for cell, origin in zip(cells, origins, strict=True):
+        cell_props = cell.find(WORD + "tcPr")
+        assert cell_props is not None
+        for old in list(cell_props):
+            if old.tag in {WORD + "shd", WORD + "tcBorders"}:
+                cell_props.remove(old)
+        if origin["cell"]["attrs"]["header"]:
+            ET.SubElement(cell_props, WORD + "shd", {WORD + "fill": "E2E8F0"})
+    return snapshot, roots
+
+
+@pytest.mark.parametrize("cap_grid", [False, True])
+def test_source_visuals_measure_actual_ooxml_colors_without_changing_default(cap_grid):
+    block = table(header=True)
+    snapshot, roots = colored_source(block)
+    data = pdf(block, border_rgb=SOURCE_BORDER, header_rgb=SOURCE_HEADER, cap_grid=cap_grid)
+    default = rich_table_pdf.inspect_tables(data, snapshot, roots, STYLE)
+    assert default["coverage"] == "partial"
+    result = rich_table_pdf.inspect_tables(data, snapshot, roots, STYLE, source_visuals=True)
+    assert result["coverage"] == "complete", result
+    assert result["expected_tables"] == result["matched_tables"] == 1
+    expected = rich_table_pdf._expected(snapshot, roots, source_visuals=True)[0]
+    assert expected["source_visual"] == {"border_rgb": SOURCE_BORDER, "border_width_pt": 0.5}
+    assert expected["cells"][0]["source_fill"] == (*SOURCE_HEADER, 255)
+
+
+@pytest.mark.parametrize(
+    "attack",
+    [
+        "wrong_color",
+        "wrong_fill",
+        "wrong_width",
+        "missing_vertical",
+        "hidden_text",
+        "white_cover",
+        "covered_border",
+        "black_border_cover",
+        "extra_text",
+        "cell_swap",
+        "digit",
+    ],
+)
+def test_source_visual_defects_cannot_pass(attack):
+    block = table(header=True)
+    snapshot, roots = colored_source(block)
+    data = pdf(
+        block,
+        border_rgb=(0, 0, 0) if attack == "wrong_color" else SOURCE_BORDER,
+        header_rgb=(231, 230, 230) if attack == "wrong_fill" else SOURCE_HEADER,
+        border_width=1 if attack == "wrong_width" else 0.5,
+        attack=attack,
+    )
+    result = rich_table_pdf.inspect_tables(data, snapshot, roots, STYLE, source_visuals=True)
+    assert result["coverage"] == "partial", (attack, result)
+
+
+@pytest.mark.parametrize(
+    "attack",
+    ["missing_vertical", "missing_horizontal", "cap_split", "cap_cross", "cell_swap", "extra_text"],
+)
+def test_source_cap_grid_does_not_invent_edges_or_cell_correspondence(attack):
+    block = table(header=True)
+    snapshot, roots = colored_source(block)
+    result = rich_table_pdf.inspect_tables(
+        pdf(
+            block, border_rgb=SOURCE_BORDER, header_rgb=SOURCE_HEADER, cap_grid=True, attack=attack
+        ),
+        snapshot,
+        roots,
+        STYLE,
+        source_visuals=True,
+    )
+    assert result["coverage"] == "partial", (attack, result)
+
+
+@pytest.mark.parametrize("width_scale", [1, 0.5])
+def test_source_cap_multiple_wrong_grids_cannot_be_combined_or_reused(width_scale):
+    block = table(header=True)
+    snapshot, roots = colored_source(block)
+    result = rich_table_pdf.inspect_tables(
+        pdf(
+            block,
+            border_rgb=SOURCE_BORDER,
+            header_rgb=SOURCE_HEADER,
+            cap_grid=True,
+            duplicate=True,
+            width_scale=width_scale,
+        ),
+        snapshot,
+        roots,
+        STYLE,
+        source_visuals=True,
+    )
+    assert result["coverage"] == "partial", result
+
+
+@pytest.mark.parametrize("change", ["theme", "mixed_border", "invisible", "pattern", "style"])
+def test_unproven_source_visuals_are_not_expected_color_overrides(change):
+    block = table(header=True)
+    snapshot, roots = colored_source(block)
+    table_xml = next(roots["word/document.xml"].iter(WORD + "tbl"))
+    props = table_xml.find(WORD + "tblPr")
+    assert props is not None
+    borders = props.find(WORD + "tblBorders")
+    assert borders is not None
+    if change == "theme":
+        borders[0].set(WORD + "themeColor", "accent1")
+    elif change == "mixed_border":
+        borders[0].set(WORD + "color", "000000")
+    elif change == "invisible":
+        for edge in borders:
+            edge.set(WORD + "color", "FFFFFF")
+    elif change == "pattern":
+        next(table_xml.iter(WORD + "shd")).set(WORD + "val", "pct50")
+    else:
+        ET.SubElement(props, WORD + "tblStyle", {WORD + "val": "unknown-inherited"})
+    result = rich_table_pdf.inspect_tables(
+        pdf(block, border_rgb=SOURCE_BORDER, header_rgb=SOURCE_HEADER),
+        snapshot,
+        roots,
+        STYLE,
+        source_visuals=True,
+    )
+    assert result["gaps"] == ["AUTHORING_TABLE_SOURCE_UNVERIFIED"]
+
+
+def test_source_visual_mode_cannot_be_an_arbitrary_expected_color_dict():
+    block = table()
+    snapshot, _, roots = source([block])
+    result = rich_table_pdf.inspect_tables(
+        pdf(block), snapshot, roots, STYLE, source_visuals={"border_rgb": (0, 0, 0)}
+    )
+    assert result["gaps"] == ["AUTHORING_TABLE_SOURCE_UNVERIFIED"]
 
 
 @pytest.mark.parametrize(

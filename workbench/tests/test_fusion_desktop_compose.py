@@ -429,6 +429,24 @@ def test_bootstrap_credentials_use_stdin_not_arguments_or_public_files(
     assert "synthetic-not-a-real-key" not in str([command for command, _ in calls])
     assert password not in str(result)
     assert "--profile" in calls[-1][0] if enable_model else "--profile" not in calls[-1][0]
+    admission_calls = [
+        i
+        for i, (command, _) in enumerate(calls)
+        if "deploy.fusion_desktop_model_admission" in command
+    ]
+    if enable_model:
+        assert len(admission_calls) == 1 and "--check" in calls[admission_calls[0]][0]
+        init = next(
+            i for i, (command, _) in enumerate(calls) if command[-1] == "init" and "run" in command
+        )
+        infrastructure = next(
+            i
+            for i, (command, _) in enumerate(calls)
+            if command[-3:] == ["postgres", "object-store", "kafka"]
+        )
+        assert infrastructure < init < admission_calls[0] < len(calls) - 1
+    else:
+        assert not admission_calls
     assert all(
         password.encode() not in file.read_bytes() for file in path.iterdir() if file.is_file()
     )
@@ -448,3 +466,113 @@ def test_legacy_model_flag_is_rejected_rather_than_treated_as_declared(request_v
     request_value["model_configured"] = True
     with pytest.raises(spec.ConfigurationError, match="DESKTOP_REQUEST_INVALID"):
         desktop.validate_request(request_value)
+
+
+def test_model_admission_required_fails_before_any_paid_start(word_request, tmp_path, monkeypatch):
+    import subprocess
+
+    word_request["model_configured"] = True
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append(command)
+        if "deploy.fusion_desktop_model_admission" in command:
+            raise subprocess.CalledProcessError(3, command)
+
+    monkeypatch.setattr(control, "_run", run)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_MODEL_ADMISSION_REQUIRED"):
+        control._model_admission(tmp_path, word_request, None)
+    assert len(calls) == 3
+    assert not any("--profile" in command for command in calls)
+    assert calls[0][-3:] == ["postgres", "object-store", "kafka"]
+    assert calls[1][-1] == "init" and "--no-deps" in calls[1]
+
+
+def test_model_admission_packet_uses_only_existing_init_stdin(word_request, tmp_path, monkeypatch):
+    word_request["model_configured"] = True
+    packet = {"synthetic_public_transport": True}
+    calls = []
+    monkeypatch.setattr(control, "_run", lambda command, **kwargs: calls.append((command, kwargs)))
+    control._model_admission(tmp_path, word_request, packet)
+    command, kwargs = calls[-1]
+    assert "--apply-stdin" in command and "--interactive" in command and "--no-deps" in command
+    assert "init" in command and "--rm" in command
+    assert json.loads(kwargs["input"]) == packet
+    assert "synthetic_public_transport" not in str(command)
+    assert not any("--mount" in command or "--volume" in command for command, _ in calls)
+
+
+def test_cli_forwards_public_admission_file_without_loading_a_secret(monkeypatch, tmp_path, capsys):
+    seen = []
+    monkeypatch.setenv("WORKBENCH_ENV_FILE", "explicit-cli-unit")
+    monkeypatch.setattr(
+        control,
+        "up",
+        lambda path, **kwargs: seen.append((path, kwargs)) or {"project": "synthetic"},
+    )
+    public = tmp_path / "admission.json"
+    assert (
+        control.main(["up", "--directory", str(tmp_path), "--model-admission-file", str(public)])
+        == 0
+    )
+    assert seen[0][1]["model_admission_file"] == public
+    assert json.loads(capsys.readouterr().out)["ok"] is True
+
+
+def test_cli_forwards_optional_parser_descriptor_inputs(monkeypatch, tmp_path, capsys):
+    seen = []
+    monkeypatch.setenv("WORKBENCH_ENV_FILE", "explicit-cli-unit")
+    monkeypatch.setattr(
+        control, "prepare", lambda path, **kwargs: seen.append(kwargs) or {"services_started": 0}
+    )
+    image = "parser@sha256:" + "a" * 64
+    assert (
+        control.main(
+            [
+                "prepare",
+                "--directory",
+                str(tmp_path),
+                "--name",
+                "synthetic",
+                "--parser",
+                "--parser-image",
+                image,
+            ]
+        )
+        == 0
+    )
+    assert seen[0]["parser"] is True and seen[0]["parser_image"] == image
+    assert json.loads(capsys.readouterr().out)["services_started"] == 0
+
+
+def test_nonmodel_rejects_admission_before_read_or_docker(request_value, monkeypatch, tmp_path):
+    monkeypatch.setattr(control, "directory", lambda path: path)
+    monkeypatch.setattr(control, "_request", lambda path: request_value)
+    monkeypatch.setattr(
+        control.admission, "load_file", lambda *_: pytest.fail("nonmodel must not read admission")
+    )
+    monkeypatch.setattr(
+        control, "_run", lambda *_a, **_k: pytest.fail("nonmodel rejection must not contact Docker")
+    )
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_MODEL_NOT_DECLARED"):
+        control.up(tmp_path, model_admission_file=tmp_path / "not-read.json")
+
+
+@pytest.mark.parametrize(
+    "enabled,image", [(False, ""), (False, "parser@sha256:" + "a" * 64), (True, None)]
+)
+def test_parser_option_requires_explicit_matching_image_before_preparation(
+    monkeypatch, tmp_path, enabled, image
+):
+    monkeypatch.setattr(control, "directory", lambda path: path)
+    with pytest.raises(spec.ConfigurationError, match="DESKTOP_PARSER_IMAGE_REQUIRED_WITH_OPTION"):
+        control.prepare(
+            tmp_path / "not-created",
+            name="synthetic",
+            origin="http://127.0.0.1:5189",
+            python_image="python",
+            web_image="web",
+            parser=enabled,
+            parser_image=image,
+        )
+    assert not (tmp_path / "not-created").exists()

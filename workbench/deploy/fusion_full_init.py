@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import time
 from pathlib import Path
 from urllib.parse import quote
@@ -36,7 +37,11 @@ def operator(directory):
         "session_secret",
         "csrf_secret",
         "model",
-    }:
+    } | (
+        {"parser_token"}
+        if isinstance(value.get("plan"), dict) and "parser" in value["plan"]
+        else set()
+    ):
         raise spec.ConfigurationError("FULL_OPERATOR_PROFILE_INVALID")
     plan = value["plan"]
     spec.validate_plan(plan, check_frontend=True)
@@ -46,6 +51,11 @@ def operator(directory):
     ):
         raise spec.ConfigurationError("FULL_OPERATOR_BINDING_INVALID")
     spec.validate_model(value["model"])
+    if "parser" in plan and (
+        not isinstance(value["parser_token"], str)
+        or not re.fullmatch(r"[A-Za-z0-9_-]{32,256}", value["parser_token"])
+    ):
+        raise spec.ConfigurationError("FULL_PARSER_TOKEN_INVALID")
     if plan["model_configured"] != (value["model"] is not None):
         raise spec.ConfigurationError("FULL_MODEL_BINDING_INVALID")
     if any(

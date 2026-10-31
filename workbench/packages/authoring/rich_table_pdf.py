@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ctypes as C
 import math
+import re
 import unicodedata
 from pathlib import Path
 from typing import Any, cast
@@ -65,7 +66,84 @@ def _normalized(text):
     return "".join(unicodedata.normalize("NFC", text).split())
 
 
-def _expected(snapshot, roots):
+def _source_visual(table, roots):
+    """Direct same-source OOXML facts, never caller-provided expected colors.
+
+    The caller must bind roots to its admitted source. Inherited/conditional table
+    styles are outside this narrow adapter, as are mixed or non-solid borders.
+    """
+    word = "{" + W + "}"
+    for name in ("word/styles.xml", "word/settings.xml"):
+        root = roots.get(name)
+        if root is None:
+            continue
+        if any(
+            node.tag == word + "defaultTableStyle"
+            or (node.tag == word + "style" and node.get(word + "type") == "table")
+            for node in root.iter()
+        ):
+            raise ValueError("TABLE_SOURCE_STYLE_INHERITANCE")
+    props = table.find(word + "tblPr")
+    if props is None or any(
+        props.find(word + local) is not None for local in ("tblStyle", "shd", "tblLook")
+    ):
+        raise ValueError("TABLE_SOURCE_STYLE_INHERITANCE")
+    if any(
+        node.tag in {word + "tblPrEx", word + "tcBorders", word + "cnfStyle"}
+        for node in table.iter()
+    ):
+        raise ValueError("TABLE_SOURCE_STYLE_OVERRIDE")
+    borders = props.findall(word + "tblBorders")
+    if len(borders) != 1 or len(borders[0]) != 6:
+        raise ValueError("TABLE_SOURCE_BORDERS")
+    names = {"top", "left", "bottom", "right", "insideH", "insideV"}
+    values = []
+    for border in borders[0]:
+        name = border.tag.removeprefix(word)
+        if name not in names:
+            raise ValueError("TABLE_SOURCE_BORDERS")
+        names.remove(name)
+        attrs = {key.removeprefix(word): value for key, value in border.attrib.items()}
+        color, size = attrs.get("color", ""), attrs.get("sz", "")
+        if (
+            set(attrs) - {"val", "color", "sz", "space"}
+            or attrs.get("val") != "single"
+            or attrs.get("space", "0") != "0"
+            or re.fullmatch(r"[0-9A-Fa-f]{6}", color) is None
+            or re.fullmatch(r"[0-9]+", size) is None
+            or not 2 <= int(size) <= 12
+        ):
+            raise ValueError("TABLE_SOURCE_BORDERS")
+        values.append((tuple(int(color[i : i + 2], 16) for i in (0, 2, 4)), int(size) / 8))
+    if len(set(values)) != 1:
+        raise ValueError("TABLE_SOURCE_MIXED_BORDERS")
+    if min(values[0][0]) > 208:
+        raise ValueError("TABLE_SOURCE_BORDER_CONTRAST")
+    return {"border_rgb": values[0][0], "border_width_pt": values[0][1]}
+
+
+def _source_fill(cell):
+    word = "{" + W + "}"
+    shades = cell.findall(word + "tcPr/" + word + "shd")
+    if not shades:
+        return (255, 255, 255, 255)
+    if len(shades) != 1:
+        raise ValueError("TABLE_SOURCE_CELL_FILL")
+    attrs = {key.removeprefix(word): value for key, value in shades[0].attrib.items()}
+    fill = attrs.get("fill", "")
+    if (
+        set(attrs) - {"fill", "val", "color"}
+        or attrs.get("val", "clear") != "clear"
+        or attrs.get("color", "auto") != "auto"
+        or re.fullmatch(r"[0-9A-Fa-f]{6}", fill) is None
+    ):
+        raise ValueError("TABLE_SOURCE_CELL_FILL")
+    return (*tuple(int(fill[i : i + 2], 16) for i in (0, 2, 4)), 255)
+
+
+def _expected(snapshot, roots, *, source_visuals=False):
+    if type(source_visuals) is not bool:
+        raise ValueError("TABLE_SOURCE_VISUAL_MODE")
     blocks = [
         block
         for section in snapshot["sections"]
@@ -77,6 +155,7 @@ def _expected(snapshot, roots):
         raise ValueError("TABLE_SOURCE_COUNT")
     result = []
     for block, table in zip(blocks, native, strict=True):
+        visual = _source_visual(table, roots) if source_visuals else None
         checked = rich_content.table_grid(block)
         cells = [
             cell
@@ -93,7 +172,16 @@ def _expected(snapshot, roots):
                     {"word/document.xml": cell, "word/numbering.xml": roots["word/numbering.xml"]}
                 )
             )
-            expected.append(origin | {"text": text})
+            extra = {}
+            if visual is not None:
+                fill = _source_fill(cell)
+                if (
+                    max(abs(a - b) for a, b in zip(fill[:3], visual["border_rgb"], strict=True))
+                    <= 47
+                ):
+                    raise ValueError("TABLE_SOURCE_BORDER_CONTRAST")
+                extra["source_fill"] = fill
+            expected.append(origin | {"text": text} | extra)
         result.append(
             {
                 "node_id": block["attrs"]["id"],
@@ -101,8 +189,20 @@ def _expected(snapshot, roots):
                 "rows": len(checked["grid"]),
                 "repeat_header": "pagination" in block["attrs"],
                 "cells": expected,
+                **({"source_visual": visual} if source_visuals else {}),
             }
         )
+    if (
+        source_visuals
+        and result
+        and any(table["source_visual"] != result[0]["source_visual"] for table in result)
+    ):
+        raise ValueError("TABLE_SOURCE_MIXED_DOCUMENT_BORDERS")
+    if (
+        source_visuals
+        and len({cell["source_fill"] for table in result for cell in table["cells"]}) > 8
+    ):
+        raise ValueError("TABLE_SOURCE_FILL_PALETTE_LIMIT")
     return result
 
 
@@ -171,7 +271,72 @@ def _stroke_cap_rectangle(records, path_count):
     return normalized
 
 
-def _paths(page, *, stroke_cap_model=None):
+def _source_cap_grids(records, lines, width):
+    """Normalize only complete single-stroke grids with exact half-width caps.
+
+    No line is added, joined or given geometric slack. Components must each be a
+    complete rectangular grid; adjacent partial grids cannot make one full grid.
+    PDF paint order is intentionally irrelevant to this representation check.
+    """
+    if not 4 <= len(records) <= 512 or len(records) != len(lines):
+        return None
+    epsilon, half = 0.001, width / 2
+    if any(abs(stroke_width - width) > epsilon for _, stroke_width in records):
+        return None
+    normalized = []
+    for line, _ in records:
+        kind, coordinate, low, high = line
+        snapped = []
+        for endpoint in (low, high):
+            candidates = {
+                other[1]
+                for other, _ in records
+                if other[0] != kind
+                and abs(abs(other[1] - endpoint) - half) <= epsilon
+                and other[2] - half - epsilon <= coordinate <= other[3] + half + epsilon
+            }
+            if len(candidates) != 1:
+                return None
+            snapped.append(candidates.pop())
+        if snapped[0] >= snapped[1]:
+            return None
+        normalized.append((kind, coordinate, *snapped))
+
+    remaining = set(range(len(normalized)))
+    while remaining:
+        component = {remaining.pop()}
+        pending = list(component)
+        while pending:
+            line = normalized[pending.pop()]
+            joined = {
+                index
+                for index in remaining
+                if normalized[index][0] != line[0]
+                and line[2] - epsilon <= normalized[index][1] <= line[3] + epsilon
+                and normalized[index][2] - epsilon <= line[1] <= normalized[index][3] + epsilon
+            }
+            remaining.difference_update(joined)
+            component.update(joined)
+            pending.extend(joined)
+        horizontal = [normalized[i] for i in component if normalized[i][0] == "h"]
+        vertical = [normalized[i] for i in component if normalized[i][0] == "v"]
+        if len(horizontal) < 2 or len(vertical) < 2:
+            return None
+        xs = sorted(line[1] for line in vertical)
+        ys = sorted(line[1] for line in horizontal)
+        if (
+            any(b - a <= epsilon for a, b in zip(xs, xs[1:], strict=False))
+            or any(b - a <= epsilon for a, b in zip(ys, ys[1:], strict=False))
+            or any(
+                abs(a - xs[0]) > epsilon or abs(b - xs[-1]) > epsilon for _, _, a, b in horizontal
+            )
+            or any(abs(a - ys[0]) > epsilon or abs(b - ys[-1]) > epsilon for _, _, a, b in vertical)
+        ):
+            return None
+    return normalized
+
+
+def _paths(page, *, stroke_cap_model=None, source_visual=None):
     """Read native top-level strokes or thin solid rectangles, never OCR lines."""
     count = raw.FPDFPage_CountObjects(page)
     if not 0 <= count <= MAX_PAGE_OBJECTS:
@@ -181,6 +346,15 @@ def _paths(page, *, stroke_cap_model=None):
     segment_count = 0
     stroke_records = []
     path_count = 0
+
+    def border_color(color):
+        return (
+            _black(color) if source_visual is None else color == (*source_visual["border_rgb"], 255)
+        )
+
+    def border_width(width):
+        return source_visual is None or abs(width - source_visual["border_width_pt"]) <= 0.001
+
     for index in range(count):
         obj = raw.FPDFPage_GetObject(page, index)
         kind = raw.FPDFPageObj_GetType(obj)
@@ -233,13 +407,15 @@ def _paths(page, *, stroke_cap_model=None):
         if (
             stroke.value
             and fill.value == raw.FPDF_FILLMODE_NONE
-            and _black(_color(obj, stroke=True))
+            and border_color(_color(obj, stroke=True))
         ):
             width = C.c_float()
             if (
                 not raw.FPDFPageObj_GetStrokeWidth(obj, width)
                 or not 0.25 <= width.value * min(matrix.a, matrix.d)
                 or width.value * max(matrix.a, matrix.d) > 1.5
+                or not border_width(width.value * min(matrix.a, matrix.d))
+                or not border_width(width.value * max(matrix.a, matrix.d))
                 or raw.FPDFPageObj_GetDashCount(obj) != 0
             ):
                 continue
@@ -254,7 +430,9 @@ def _paths(page, *, stroke_cap_model=None):
                 and (single := _line(paths[0][0], paths[0][1])) is not None
             ):
                 stroke_records.append((single, width.value * matrix.a))
-        elif fill.value != raw.FPDF_FILLMODE_NONE and not stroke.value and _black(_color(obj)):
+        elif (
+            fill.value != raw.FPDF_FILLMODE_NONE and not stroke.value and border_color(_color(obj))
+        ):
             # LibreOffice may export an opaque border as a thin filled rectangle.
             if len(paths) != 1:
                 continue
@@ -271,14 +449,20 @@ def _paths(page, *, stroke_cap_model=None):
                     for a, b in zip(path, path[1:], strict=False)
                 ):
                     continue
-            if 0.25 <= ys[1] - ys[0] <= 1.5 and xs[1] - xs[0] >= 2:
+            if 0.25 <= ys[1] - ys[0] <= 1.5 and border_width(ys[1] - ys[0]) and xs[1] - xs[0] >= 2:
                 lines.append(("h", sum(ys) / 2, xs[0], xs[1]))
-            elif 0.25 <= xs[1] - xs[0] <= 1.5 and ys[1] - ys[0] >= 2:
+            elif (
+                0.25 <= xs[1] - xs[0] <= 1.5 and border_width(xs[1] - xs[0]) and ys[1] - ys[0] >= 2
+            ):
                 lines.append(("v", sum(xs) / 2, ys[0], ys[1]))
     if stroke_cap_model is not None:
         if stroke_cap_model != "four_stroke_half_width_joins/1":
             raise ValueError("TABLE_STROKE_CAP_MODEL_UNSUPPORTED")
         normalized = _stroke_cap_rectangle(stroke_records, path_count)
+        if normalized is not None:
+            lines = normalized
+    if source_visual is not None:
+        normalized = _source_cap_grids(stroke_records, lines, source_visual["border_width_pt"])
         if normalized is not None:
             lines = normalized
     return _merge(lines), unsupported
@@ -500,8 +684,31 @@ def _rasters(document, page, index):
         isolated.close()
 
 
-def _visible(candidate, actual, text_layer, height):
+def _source_ink(pixel, rgb, backgrounds):
+    # Preserve the existing visible-ink floor. Only source-colored antialias
+    # compositing over an actual declared cell background is accepted, with the
+    # same 3-channel quantization slack as the existing isolated cell raster.
+    if max(pixel) > 208:
+        return False
+    for background in backgrounds:
+        channel = max(range(3), key=lambda index: abs(background[index] - rgb[index]))
+        contrast = rgb[channel] - background[channel]
+        if abs(contrast) <= 47:
+            continue
+        alpha = (pixel[channel] - background[channel]) / contrast
+        if 47 / 255 <= alpha <= 1 and all(
+            abs(observed - (base + alpha * (ink - base))) <= 3
+            for observed, base, ink in zip(pixel, background, rgb, strict=True)
+        ):
+            return True
+    return False
+
+
+def _visible(candidate, actual, text_layer, height, *, source_visual=None):
     pixels = actual.load()
+    backgrounds = {(255, 255, 255)} | {
+        cell["source_fill"][:3] for cell in candidate["cells"] if "source_fill" in cell
+    }
     for kind, coordinate, low, high in candidate["edges"]:
         # Every pixel-length along every border must retain visible black ink.
         center = round((height - coordinate if kind == "h" else coordinate) * SCALE)
@@ -512,7 +719,13 @@ def _visible(candidate, actual, text_layer, height):
                 for p in range(center - 1, center + 2)
             ]
             if not any(
-                0 <= x < actual.width and 0 <= y < actual.height and max(pixels[x, y]) <= 208
+                0 <= x < actual.width
+                and 0 <= y < actual.height
+                and (
+                    max(pixels[x, y]) <= 208
+                    if source_visual is None
+                    else _source_ink(pixels[x, y], source_visual["border_rgb"], backgrounds)
+                )
                 for x, y in samples
             ):
                 return False
@@ -533,7 +746,10 @@ def _visible(candidate, actual, text_layer, height):
             or box[3] <= box[1]
         ):
             return False
-        color = (231, 230, 230, 255) if cell["cell"]["attrs"]["header"] else (255, 255, 255, 255)
+        color = cell.get(
+            "source_fill",
+            (231, 230, 230, 255) if cell["cell"]["attrs"]["header"] else (255, 255, 255, 255),
+        )
         base = Image.new("RGBA", (box[2] - box[0], box[3] - box[1]), color)
         layer = text_layer.crop(box)
         observed = actual.crop(box)
@@ -562,7 +778,7 @@ def _visible(candidate, actual, text_layer, height):
     return True
 
 
-def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None):
+def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None, source_visuals=False):
     result: dict[str, Any] = {
         "protocol": PROTOCOL,
         "pdf_digest": sha(data) if isinstance(data, bytes) and len(data) <= MAX_BYTES else None,
@@ -576,13 +792,14 @@ def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None):
     }
     gaps = []
     try:
-        expected = _expected(snapshot, roots)
+        expected = _expected(snapshot, roots, source_visuals=source_visuals)
     except (KeyError, TypeError, ValueError):
         result["gaps"] = ["AUTHORING_TABLE_SOURCE_UNVERIFIED"]
         return result
     result["expected_tables"] = len(expected)
     if not expected:
         return result | {"coverage": "complete"}
+    source_visual = expected[0].get("source_visual") if source_visuals else None
     if not isinstance(data, bytes) or not 0 < len(data) <= MAX_BYTES:
         return result | {"gaps": ["AUTHORING_TABLE_PDF_BYTES_INVALID"]}
     matches: list[list[dict]] = [[] for _ in expected]
@@ -603,7 +820,9 @@ def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None):
                 if page.get_rotation() != 0 or not 0 < width <= 1000 or not 0 < height <= 1500:
                     gaps.append("AUTHORING_TABLE_PAGE_GEOMETRY_UNSUPPORTED")
                     continue
-                lines, unsupported = _paths(page, stroke_cap_model=stroke_cap_model)
+                lines, unsupported = _paths(
+                    page, stroke_cap_model=stroke_cap_model, source_visual=source_visual
+                )
                 if not lines:
                     continue
                 characters, count = _characters(page)
@@ -642,7 +861,9 @@ def inspect_tables(data, snapshot, roots, style, *, stroke_cap_model=None):
                                     raise ValueError("TABLE_RASTER_LIMIT")
                                 result["render_pixels"] += area
                                 actual, text_layer = _rasters(document, page, page_index)
-                            if not _visible(candidate, actual, text_layer, height):
+                            if not _visible(
+                                candidate, actual, text_layer, height, source_visual=source_visual
+                            ):
                                 continue
                             if "source_rows" in table:
                                 low, high = continuation.edge_band(candidate, table, height, style)

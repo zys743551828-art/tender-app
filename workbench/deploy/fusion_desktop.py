@@ -13,6 +13,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from deploy import fusion_desktop_compose as compose
+from deploy import fusion_desktop_model_admission as admission
 from deploy import fusion_full_spec as spec
 
 
@@ -35,10 +36,28 @@ def _write(path, value):
         handle.write(compose.encoded(value))
 
 
-def prepare(path, *, name, origin, python_image, web_image, word=False, model=False):
+def prepare(
+    path,
+    *,
+    name,
+    origin,
+    python_image,
+    web_image,
+    word=False,
+    model=False,
+    parser=False,
+    parser_image=None,
+):
     path = directory(path)
     if model and not word:
         raise spec.ConfigurationError("DESKTOP_WORD_VERSION_REQUIRED_FOR_MODEL")
+    if bool(parser) != (parser_image is not None):
+        raise spec.ConfigurationError("DESKTOP_PARSER_IMAGE_REQUIRED_WITH_OPTION")
+    parser_descriptor = None
+    if parser:
+        from deploy.fusion_parsing_spec import descriptor
+
+        parser_descriptor = descriptor(parser_image)
     if path.exists():
         raise spec.ConfigurationError("DESKTOP_NEW_DIRECTORY_REQUIRED")
     request = {
@@ -58,6 +77,8 @@ def prepare(path, *, name, origin, python_image, web_image, word=False, model=Fa
         request["word"] = fusion_word_spec.bundle(path / "word-image-preparation.json")
         if model:
             request["model_configured"] = True
+    if parser_descriptor is not None:
+        request["parser"] = parser_descriptor
     compose.validate_request(request)
     _write(path / "request.json", request)
     (path / "compose.public.env").write_bytes(b"# Explicit public-only Compose environment.\n")
@@ -154,11 +175,61 @@ def _model_file(path):
         raise spec.ConfigurationError("DESKTOP_MODEL_PROFILE_INVALID") from None
 
 
-def up(path, *, word_restart=False, admin_password=None, model=None):
+def _model_admission(path, request, packet):
+    _run(
+        _command(
+            path,
+            request,
+            "full.compose.json",
+            "up",
+            "-d",
+            "--wait",
+            "--wait-timeout",
+            "120",
+            "postgres",
+            "object-store",
+            "kafka",
+        ),
+        timeout=180,
+    )
+    _run(
+        _command(path, request, "full.compose.json", "run", "--rm", "--no-deps", "init"),
+        timeout=240,
+    )
+    arguments = ["run", "--rm", "--no-deps", "-T"]
+    if packet is not None:
+        arguments.append("--interactive")
+    arguments += [
+        "init",
+        "python",
+        "-B",
+        "-m",
+        "deploy.fusion_desktop_model_admission",
+        "--apply-stdin" if packet is not None else "--check",
+    ]
+    try:
+        _run(
+            _command(path, request, "full.compose.json", *arguments),
+            timeout=120,
+            input=json.dumps(packet).encode("utf-8") if packet is not None else None,
+        )
+    except subprocess.CalledProcessError as error:
+        code = (
+            "DESKTOP_MODEL_ADMISSION_REQUIRED"
+            if error.returncode == 3
+            else "DESKTOP_MODEL_ADMISSION_FAILED"
+        )
+        raise spec.ConfigurationError(code) from None
+
+
+def up(path, *, word_restart=False, admin_password=None, model=None, model_admission_file=None):
     path = directory(path)
     request = _request(path)
-    if model is not None and not request.get("model_configured", False):
+    if (model is not None or model_admission_file is not None) and not request.get(
+        "model_configured", False
+    ):
         raise spec.ConfigurationError("DESKTOP_MODEL_NOT_DECLARED")
+    packet = admission.load_file(model_admission_file) if model_admission_file is not None else None
     if word_restart and request["version"] != compose.WORD_VERSION:
         raise spec.ConfigurationError("DESKTOP_WORD_INSTALLATION_REQUIRED")
     bootstrap = json.loads((path / "bootstrap.compose.json").read_bytes())
@@ -223,6 +294,8 @@ def up(path, *, word_restart=False, admin_password=None, model=None):
             },
         )
     _run(_command(path, request, "full.compose.json", "config", "--quiet"), timeout=30)
+    if request.get("model_configured", False):
+        _model_admission(path, request, packet)
     _run(
         _command(
             path,
@@ -414,6 +487,10 @@ def main(argv=None):
         "--model", action="store_true", help="Declare an optional DeepSeek profile at preparation"
     )
     parser.add_argument(
+        "--parser", action="store_true", help="Install the explicit private parser service"
+    )
+    parser.add_argument("--parser-image", help="Explicit pinned parser image; requires --parser")
+    parser.add_argument(
         "--ask-admin-password",
         action="store_true",
         help="Prompt privately for the bootstrap admin password",
@@ -423,12 +500,24 @@ def main(argv=None):
         type=Path,
         help="Explicit existing private JSON with the three DeepSeek settings",
     )
+    parser.add_argument(
+        "--model-admission-file",
+        type=Path,
+        help="Public official price/global-limit JSON and relative retained source snapshot; required for first model admission",
+    )
     args = parser.parse_args(argv)
     try:
         if (
-            (args.ask_admin_password or args.model_profile is not None)
+            (
+                args.ask_admin_password
+                or args.model_profile is not None
+                or args.model_admission_file is not None
+            )
             and args.action not in {"up", "restart-word"}
-        ) or ((args.word or args.model) and args.action != "prepare"):
+        ) or (
+            (args.word or args.model or args.parser or args.parser_image is not None)
+            and args.action != "prepare"
+        ):
             raise spec.ConfigurationError("DESKTOP_OPTION_ACTION_MISMATCH")
         if args.action == "prepare":
             result = prepare(
@@ -439,6 +528,8 @@ def main(argv=None):
                 web_image=args.web_image,
                 word=args.word,
                 model=args.model,
+                parser=args.parser,
+                parser_image=args.parser_image,
             )
         elif args.action in {"up", "restart-word"}:
             password = (
@@ -450,6 +541,7 @@ def main(argv=None):
                 word_restart=args.action == "restart-word",
                 admin_password=password,
                 model=model,
+                model_admission_file=args.model_admission_file,
             )
         elif args.action == "verify":
             result = verify(args.directory)
@@ -459,7 +551,12 @@ def main(argv=None):
         code = (
             str(error) if isinstance(error, spec.ConfigurationError) else "DESKTOP_CONTROL_FAILED"
         )
-        print(json.dumps({"ok": False, "code": code}))
+        public = {"ok": False, "code": code}
+        if code == "DESKTOP_MODEL_ADMISSION_REQUIRED":
+            public["next_action"] = (
+                "Provide --model-admission-file with a current official price, explicit global limit and retained source snapshot."
+            )
+        print(json.dumps(public))
         return 2
     if args.action == "stop" and "word" in result:
         word = result["word"]

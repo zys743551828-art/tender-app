@@ -38,6 +38,7 @@ def _binding():
         or plan["images"]["python"] != request["python_image"]
         or plan["images"]["web"] != request["web_image"]
         or plan["model_configured"] != request.get("model_configured", False)
+        or plan.get("parser") != request.get("parser")
         or plan["task_runner_enabled"]
     ):
         raise spec.ConfigurationError("DESKTOP_PRIVATE_BINDING_CHANGED")
@@ -140,6 +141,7 @@ def configure(bootstrap=None):
             web_image=request["web_image"],
             admin_password=password if password is not None else secrets.token_urlsafe(32),
             **({"model": model} if model is not None else {}),
+            **({"parser": request["parser"]} if "parser" in request else {}),
         )
         value = spec.load_private_json(PRIVATE / "operator.json")
         spec.write_private(
@@ -225,6 +227,10 @@ def publish():
         if profile["role"] != role or profile["plan_digest"] != value["plan_digest"]:
             raise spec.ConfigurationError("DESKTOP_ROLE_BINDING_CHANGED")
         _profile(Path("/profiles") / role, raw)
+    if "parser" in value["plan"]:
+        from deploy.fusion_parsing_spec import publish_token
+
+        publish_token(value, Path("/parser-private"))
     if binding["request"]["version"] == desktop.WORD_VERSION:
         from deploy import fusion_word_spec as word
 

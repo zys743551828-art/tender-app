@@ -45,6 +45,7 @@ def validate_request(value, *, check_word_sources=True):
         != {"version", "instance_id", "name", "origin", "python_image", "web_image"}
         | ({"word"} if word else set())
         | ({"model_configured"} if word and "model_configured" in value else set())
+        | ({"parser"} if word and "parser" in value else set())
         or value["version"] not in {VERSION, WORD_VERSION}
     ):
         raise spec.ConfigurationError("DESKTOP_REQUEST_INVALID")
@@ -73,6 +74,10 @@ def validate_request(value, *, check_word_sources=True):
         raise spec.ConfigurationError("DESKTOP_LOOPBACK_REQUIRED")
     if "model_configured" in value and value["model_configured"] is not True:
         raise spec.ConfigurationError("DESKTOP_MODEL_FLAG_INVALID")
+    if "parser" in value:
+        from deploy.fusion_parsing_spec import validate as validate_parser
+
+        validate_parser(value["parser"])
     if word and check_word_sources:
         from deploy.fusion_word_spec import validate_bundle
 
@@ -180,6 +185,8 @@ def _helper(template, request, directory, action):
             volume("profile_" + role, "/profiles/" + role) for role in roles(request)
         ]
         service["volumes"].append(volume("api_state", "/api-state"))
+        if "parser" in request:
+            service["volumes"].append(volume("parser_secret", "/parser-private"))
         service["volumes"].append(volume("validation_login", "/validation-login"))
     return service
 
@@ -207,6 +214,7 @@ def document(request, directory, plan=None):
             or plan["images"]["python"] != request["python_image"]
             or plan["images"]["web"] != request["web_image"]
             or plan["model_configured"] != request.get("model_configured", False)
+            or plan.get("parser") != request.get("parser")
             or plan["task_runner_enabled"]
         ):
             raise spec.ConfigurationError("DESKTOP_PLAN_BINDING_CHANGED")
@@ -232,6 +240,8 @@ def document(request, directory, plan=None):
     }
     result.pop("secrets", None)
     result["volumes"] = volumes
+    if "parser" in request:
+        volumes["parser_secret"] = {}
     if plan is None:
         result["services"] = {"configure": configure}
         return result
@@ -304,6 +314,68 @@ def document(request, directory, plan=None):
             )
         for name in ("worker-document", "worker-export"):
             services[name]["stop_grace_period"] = "300s"
+    if "parser" in request:
+        result["networks"]["parsing"] = {"internal": True}
+        services["parser"] = {
+            "image": request["parser"]["image"],
+            "pull_policy": "never",
+            "user": "65532:65532",
+            "read_only": True,
+            "restart": "no",
+            "init": True,
+            "working_dir": "/workspace",
+            "mem_limit": "2g",
+            "cpus": 2,
+            "pids_limit": 128,
+            "cap_drop": ["ALL"],
+            "security_opt": ["no-new-privileges:true"],
+            "tmpfs": ["/tmp:rw,nosuid,nodev,size=512m,mode=1777"],  # nosec B108 # isolated bounded container tmpfs.
+            "environment": {
+                "PYTHONPATH": "/workspace",
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "PYTHONNOUSERSITE": "1",
+                "PYTHONUNBUFFERED": "1",
+                "HOME": "/tmp",  # nosec B108 # isolated container tmpfs, not a shared host path.
+                "PARSING_RUNTIME_TRANSPORT": "compose-private",
+                "PARSING_RUNTIME_TOKEN_FILE": "/parser-private/token",
+                "PARSING_ASSET_DIRECTORY": "/opt/parsing-assets",
+            },
+            "command": [
+                "python",
+                "-m",
+                "packages.parsing.server",
+                "--transport",
+                "compose-private",
+            ],
+            "volumes": [
+                bind(ROOT / "packages/parsing", "/workspace/packages/parsing"),
+                volume("parser_secret", "/parser-private", readonly=True),
+            ],
+            "networks": ["parsing"],
+            "depends_on": {"publish": {"condition": "service_completed_successfully"}},
+            "labels": {"tender.desktop.instance": request["instance_id"]},
+            "healthcheck": {
+                "test": [
+                    "CMD",
+                    "python",
+                    "-m",
+                    "packages.parsing.server",
+                    "--transport",
+                    "compose-private",
+                    "--check",
+                ],
+                "interval": "15s",
+                "timeout": "5s",
+                "retries": 3,
+                "start_period": "30s",
+            },
+        }
+        for name in ("api", "worker-document", "word-controller"):
+            services[name]["networks"] = [*services[name]["networks"], "parsing"]
+            services[name]["volumes"].append(
+                volume("parser_secret", "/parser-private", readonly=True)
+            )
+            services[name]["depends_on"]["parser"] = {"condition": "service_healthy"}
     return result
 
 

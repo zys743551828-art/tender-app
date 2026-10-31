@@ -7,7 +7,9 @@ from packages.parsing.http_port import ParsingHttp, ParsingUnavailable
 
 
 def configured_parser():
-    if not os.environ.get("PARSING_RUNTIME_TOKEN"):
+    if not os.environ.get("PARSING_RUNTIME_TOKEN") and not os.environ.get(
+        "PARSING_RUNTIME_TOKEN_FILE"
+    ):
         return None
     try:
         return ParsingHttp()
