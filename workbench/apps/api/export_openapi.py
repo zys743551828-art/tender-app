@@ -12,6 +12,7 @@ from fastapi.openapi.utils import get_openapi
 
 from apps.api.comparison_contracts import extend_openapi as extend_comparisons
 from apps.api.human_contracts import extend_openapi as extend_human
+from apps.api.partial_page_selection_contracts import extend_openapi as extend_partial_pages
 from apps.api.report_contracts import extend_openapi as extend_reports
 from apps.api.review_contracts import extend_openapi as extend_reviews
 from apps.api.source_effectivity_contracts import extend_openapi as extend_effectivity
@@ -163,6 +164,7 @@ def implemented_openapi(app):
     extend_authoring_input_catalog(actual)
     extend_research(actual)
     extend_human(actual)
+    extend_partial_pages(actual)
     extend_uploads(actual)
     extend_effectivity(actual)
     extend_knowledge(actual)

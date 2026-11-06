@@ -170,6 +170,7 @@ def suite_files(suite: str) -> list[str]:
     ]
     files.append("tests/test_package_submission_preflight_pg.py")
     files.append("tests/test_manual_rule_initial_pg.py")
+    files.append("tests/test_partial_page_selection_pg.py")
     return list(dict.fromkeys(files))
 
 
@@ -229,6 +230,8 @@ def main(argv=None) -> int:
             require_tcp_password=args.suite == "candidate",
         )
     )
+    if args.suite == "postgres":
+        environment["FUSION_PACKAGE_API_ADMIN_DSN"] = environment["FUSION_REQUIREMENTS_ADMIN_DSN"]
     if args.suite == "scoring":
         environment["FUSION_MATERIAL_REQUEST_PREFLIGHT_PG"] = "1"
         environment["FUSION_MATERIAL_EXECUTION_PG"] = "1"

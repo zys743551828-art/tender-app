@@ -10,6 +10,7 @@ from threading import Event
 
 import psycopg
 import pytest
+from psycopg import sql
 from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
 from test_stable_lot_identity import (  # noqa: F401
@@ -50,11 +51,16 @@ def database():
                     assert owner.info.dbname == "fusion_package_api"
                     for _, source in plan:
                         owner.execute(source)
+                    api_password = uid()
                     admin.execute(
-                        "CREATE ROLE fusion_package_service_api LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS"
+                        sql.SQL(
+                            "CREATE ROLE fusion_package_service_api LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS PASSWORD {}"
+                        ).format(sql.Literal(api_password))
                     )
                     admin.execute("GRANT tender_api TO fusion_package_service_api")
-                    api_dsn = make_conninfo(owner_dsn, user="fusion_package_service_api")
+                    api_dsn = make_conninfo(
+                        owner_dsn, user="fusion_package_service_api", password=api_password
+                    )
                     patch.setenv("API_DATABASE_DSN", api_dsn)
                     yield {"owner": owner, "api_dsn": api_dsn}
                     owner.execute("DROP OWNED BY fusion_package_service_api")

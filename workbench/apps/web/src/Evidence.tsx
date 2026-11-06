@@ -16,6 +16,7 @@ import { SourceSurface } from "./SourceSurface";
 import { api, objectFetch, parseNames, roleNames } from "./api";
 import { Badge, ErrorNotice, Icon, Loading } from "./components";
 import { contentClues } from "./contentClues";
+import { PartialPageSelection } from "./PartialPageSelection";
 
 export function Evidence({
   document,
@@ -258,6 +259,22 @@ export function Evidence({
               </div>
             </div>
           )}
+          {evidence &&
+            document.role !== "official_result" &&
+            ["source_original", "bid_body"].includes(document.artifact_kind) &&
+            ["partial", "complete"].includes(evidence.coverage) && (
+              <PartialPageSelection
+                key={`${document.id}:${evidence.parse_run_id}`}
+                document={document}
+                evidence={evidence}
+                page={page}
+                pageCount={pageCount}
+                onPage={(number) => {
+                  setPage(number);
+                  setView("original");
+                }}
+              />
+            )}
           <div className="evidence-error">
             <ErrorNotice
               error={error}

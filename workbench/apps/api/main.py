@@ -39,6 +39,7 @@ from apps.api.metrics_routes import router as metrics_router
 from apps.api.multipart_routes import router as multipart_router
 from apps.api.object_transfer import make_download_url, make_upload_url
 from apps.api.object_transfer import router as transfer_router
+from apps.api.partial_page_selection_routes import router as partial_page_selection_router
 from apps.api.package_historical_directory import router as package_history_directory_router
 from apps.api.package_historical_research import router as package_historical_research_router
 from apps.api.package_history_exposure_errors import (
@@ -154,6 +155,7 @@ app.include_router(effectivity_router)
 app.include_router(multipart_router)
 app.include_router(upload_layout_router)
 app.include_router(identity_router)
+app.include_router(partial_page_selection_router)
 app.include_router(bid_package_router)
 app.include_router(bid_package_requirement_router)
 app.include_router(package_review_comparison_router)
