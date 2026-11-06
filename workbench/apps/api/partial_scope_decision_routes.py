@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/v1/bids/{bid_id}/partial-page-selections", tags=
 EVENT = "partial_pages.human_observation.v1"
 
 
-class DecisionRequest(BaseModel):
+class PartialScopeObservationRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     item_id: UUID | None = None
     expected_revision: int = Field(ge=0, strict=True)
@@ -31,7 +31,7 @@ class DecisionRequest(BaseModel):
     confirmed: StrictBool
 
 
-class DecisionView(BaseModel):
+class PartialScopeObservationView(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: UUID
     item_id: UUID
@@ -56,7 +56,7 @@ class DecisionView(BaseModel):
 
 
 class DecisionHistory(BaseModel):
-    items: list[DecisionView]
+    items: list[PartialScopeObservationView]
     scope_revalidated: bool
     has_more: bool
 
@@ -87,10 +87,16 @@ def _lock_proofs(c, bid_id, context):
 
 
 @router.post(
-    "/{selection_id}/compare/{other_id}/decisions", status_code=201, response_model=DecisionView
+    "/{selection_id}/compare/{other_id}/decisions",
+    status_code=201,
+    response_model=PartialScopeObservationView,
 )
 def save_observation(
-    bid_id: UUID, selection_id: UUID, other_id: UUID, r: Request, body: DecisionRequest
+    bid_id: UUID,
+    selection_id: UUID,
+    other_id: UUID,
+    r: Request,
+    body: PartialScopeObservationRequest,
 ):
     actor = auth(r, True)
     if not body.confirmed or not body.reason.strip():
