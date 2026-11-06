@@ -44,7 +44,7 @@ import { BidPackages } from "./BidPackages";
 type DraftFile = {
   key: string;
   file: File;
-  role: UploadRequest["role"] | null;
+  role: UploadRequest["role"] | "" | null;
   target: string;
   state: string;
   error?: unknown;
@@ -199,7 +199,7 @@ export function Project({
         key: crypto.randomUUID(),
         uploadKey: crypto.randomUUID(),
         file,
-        role: "tender",
+        role: "",
         target: "",
         state: "待上传",
       }),
@@ -224,6 +224,8 @@ export function Project({
           uploadMediaType(item.file.name);
           if (item.file.size === 0 || item.file.size > 100 * 1024 * 1024)
             throw new Error("单文件需大于0且不超过100 MiB，请拆分后上传。");
+          if (!item.grant && !item.role)
+            throw new Error("请先根据文件内容选择资料用途。");
           patchFile(item.key, { state: "正在核对文件…", error: undefined });
           const digest = item.digest ?? (await fileSha256(item.file));
           if (!currentRun()) return;
@@ -253,15 +255,11 @@ export function Project({
                 expected_file_revision: targetDoc.file_head_revision,
               }
             : { kind: "new_file" };
-          if (!item.grant && !item.role)
-            throw new Error(
-              "新上传需明确资料用途；已建上传的用途与目标保持固定。",
-            );
           const request: UploadRequest | null = item.grant
             ? null
             : {
                 batch_id: currentBatch,
-                role: item.role!,
+                role: item.role as UploadRequest["role"],
                 filename: item.file.name,
                 byte_size: item.file.size,
                 declared_sha256: digest,
@@ -581,7 +579,8 @@ export function Project({
           <div>
             <h2>添加项目资料</h2>
             <p className="muted">
-              先选择文件，再核对用途。单文件不超过100 MiB，原件保存在私有存储。
+              先选择文件，再按内容确认主要用途。一个文件可能包含多类内容；系统当前不会自动拆分，入库后可查看原文核对。单文件不超过100
+              MiB，原件保存在私有存储。
             </p>
           </div>
           <Badge>PDF 快速路径</Badge>
@@ -650,11 +649,14 @@ export function Project({
                         disabled={busy || !!item.grant || !!item.declaredSource}
                         onChange={(event) =>
                           patchFile(item.key, {
-                            role: event.target.value as UploadRequest["role"],
+                            role: event.target.value as
+                              | UploadRequest["role"]
+                              | "",
                             target: "",
                           })
                         }
                       >
+                        <option value="">请选择资料用途</option>
                         {Object.entries(roleNames)
                           .filter(
                             ([role]) =>

@@ -212,6 +212,40 @@ it("资料包412冲突保留verified原件，刷新后由人重新确认且不�
   ).toHaveLength(0);
 });
 
+it("混合文件须确认用途，不能按名称默认分类或提前创建批次", async () => {
+  localStorage.removeItem("tender:batch:bid-1");
+  const writes: RequestInit[] = [];
+  fetchMock.mockImplementation(async (url, options) => {
+    if (options?.method === "POST") writes.push(options);
+    if (url === "/api/v1/bids/bid-1") return json(bid, 200, { ETag: '"bid"' });
+    if (String(url).endsWith("/materials"))
+      return json({ documents: [], conflicts: [] });
+    return json({
+      items: [],
+      has_more: false,
+      next_after: null,
+      next_cursor: null,
+    });
+  });
+  render(<Project id="bid-1" onBack={vi.fn()} />);
+  await screen.findByRole("heading", { name: "滨河路工程" });
+  await userEvent.upload(
+    document.querySelector<HTMLInputElement>("#project-files")!,
+    new File(["local"], "资审.pdf", { type: "application/pdf" }),
+  );
+  expect(screen.getByLabelText("资审.pdf的资料用途")).toHaveValue("");
+  await userEvent.click(screen.getByRole("button", { name: "上传并核验原件" }));
+  expect(
+    await screen.findByText("请先根据文件内容选择资料用途。"),
+  ).toBeVisible();
+  expect(writes).toHaveLength(0);
+  await userEvent.selectOptions(
+    screen.getByLabelText("资审.pdf的资料用途"),
+    "body",
+  );
+  expect(screen.getByLabelText("资审.pdf的资料用途")).toHaveValue("body");
+});
+
 it("空文件本地拒绝不创建空服务端批次，不留下关闭项目的无效阻断", async () => {
   localStorage.removeItem("tender:batch:bid-1");
   const writes: RequestInit[] = [];

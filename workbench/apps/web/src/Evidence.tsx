@@ -15,6 +15,7 @@ import { PdfPreview } from "./PdfPreview";
 import { SourceSurface } from "./SourceSurface";
 import { api, objectFetch, parseNames, roleNames } from "./api";
 import { Badge, ErrorNotice, Icon, Loading } from "./components";
+import { contentClues } from "./contentClues";
 
 export function Evidence({
   document,
@@ -217,6 +218,46 @@ export function Evidence({
               </button>
             )}
           </div>
+          {evidence && evidence.coverage !== "pending" && (
+            <div className="notice evidence-gaps">
+              <div>
+                <strong>内容线索（请核对原文）</strong>
+                <p>
+                  以下来自已解析文字或
+                  OCR，仅用于定位，可能遗漏或误识别；不会自动分类、拆分文件或改变资料用途。
+                </p>
+                {contentClues(evidence.items).length ? (
+                  <ul>
+                    {contentClues(evidence.items).map((clue) => (
+                      <li key={clue.label}>
+                        {clue.label}：
+                        <details>
+                          <summary>
+                            查看 {clue.pages.length} 个可能相关页
+                          </summary>
+                          {clue.pages.map((number) => (
+                            <button
+                              key={number}
+                              type="button"
+                              className="text-button"
+                              onClick={() => {
+                                setPage(number);
+                                setView("text");
+                              }}
+                            >
+                              第 {number} 页
+                            </button>
+                          ))}
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>未找到上述关键词；不能据此判断文件不包含相关内容。</p>
+                )}
+              </div>
+            </div>
+          )}
           <div className="evidence-error">
             <ErrorNotice
               error={error}
