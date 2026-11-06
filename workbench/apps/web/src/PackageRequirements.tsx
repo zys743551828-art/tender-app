@@ -1264,6 +1264,15 @@ function Workspace({
                 </h5>
                 <p>{text(binding.rule_snapshot.statement)}</p>
                 <p>
+                  条款来源：
+                  {binding.rule_snapshot.origin_kind === "model_extracted"
+                    ? "模型提取"
+                    : binding.rule_snapshot.origin_kind === "human_added" ||
+                        binding.rule_snapshot.origin_kind === "carried_human"
+                      ? "人工补入"
+                      : "未记录"}
+                </p>
+                <p>
                   来源绑定：
                   {binding.source_bound ? "有精确引用关联" : "未知／未绑定"} ·
                   原规则决定：

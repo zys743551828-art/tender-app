@@ -780,6 +780,25 @@ it("loads only after opening and reads exact frozen rule, unknown flags and hist
   ).toBeInTheDocument();
 });
 
+it.each([
+  ["human_added", "人工补入"],
+  ["carried_human", "人工补入"],
+  ["model_extracted", "模型提取"],
+  [undefined, "未记录"],
+])("shows the recorded rule origin %s as %s", async (origin, label) => {
+  const value = structuredClone(frozen);
+  value.manifest.requirements[0].rule_snapshot.origin_kind = origin;
+  install((url) =>
+    url === base + "/" + inventoryId ? json(value) : undefined,
+  );
+  mount();
+  await expand();
+  await userEvent.click(
+    await screen.findByRole("button", { name: /读取清单 1/ }),
+  );
+  expect(await screen.findByText(`条款来源：${label}`)).toBeInTheDocument();
+});
+
 it("reads mapped history with the original reason, zero, translated checks and exact frozen target pages", async () => {
   const mapped = structuredClone(frozen);
   const binding = mapped.manifest.requirements[0];
