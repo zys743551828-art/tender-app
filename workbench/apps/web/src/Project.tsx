@@ -582,6 +582,10 @@ export function Project({
               先选择文件，再按内容确认主要用途。一个文件可能包含多类内容；系统当前不会自动拆分，入库后可查看原文核对。单文件不超过100
               MiB，原件保存在私有存储。
             </p>
+            <p className="small-note">
+              同一 PDF
+              可按不同用途分别确认，系统分别核验并建立记录；在材料包中选择物理页范围。页范围用于证据定位，不等于已将原件拆分或保证模型只接收所选页。
+            </p>
           </div>
           <Badge>PDF 快速路径</Badge>
         </div>
@@ -624,7 +628,7 @@ export function Project({
         </label>
         {files.length > 0 && (
           <div className="draft-files">
-            {files.map((item) => (
+            {files.map((item, index) => (
               <div className="draft-file" key={item.key}>
                 <div className="file-summary">
                   <Icon name="file" />
@@ -644,7 +648,7 @@ export function Project({
                     <label>
                       资料用途
                       <select
-                        aria-label={`${item.file.name}的资料用途`}
+                        aria-label={`${item.file.name}的资料用途${files.findIndex((entry) => entry.file === item.file) === index ? "" : `（用途${index + 1}）`}`}
                         value={item.role}
                         disabled={busy || !!item.grant || !!item.declaredSource}
                         onChange={(event) =>
@@ -708,6 +712,31 @@ export function Project({
                     此PDF由你声明对应指定Word修改稿，作为独立PDF保存。对应关系尚未核验，不继承Word检查资格。
                   </p>
                 )}
+                {!item.grant &&
+                  !item.declaredSource &&
+                  item.file.name.toLowerCase().endsWith(".pdf") && (
+                    <button
+                      type="button"
+                      className="text-button"
+                      disabled={busy}
+                      aria-label={`为${item.file.name}添加另一用途`}
+                      onClick={() =>
+                        setFiles((old) => [
+                          ...old,
+                          {
+                            key: crypto.randomUUID(),
+                            uploadKey: crypto.randomUUID(),
+                            file: item.file,
+                            role: "",
+                            target: "",
+                            state: "待上传",
+                          },
+                        ])
+                      }
+                    >
+                      为同一原件添加另一用途
+                    </button>
+                  )}
                 {!item.grant && (
                   <button
                     className="text-button"

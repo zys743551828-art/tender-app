@@ -219,6 +219,12 @@ def test_unselected_same_package_appendix_remains_visible_and_required_range_gap
             row["part_ids"] = ["body"]
     result = policy.prepare(snapshot, request)
     assert len(result["manifest"]["parts"]) == 2
+    selected, omitted = result["manifest"]["parts"]
+    assert selected["read_physical_pages"] == [1]
+    assert selected["block_ids"] == [uid(301)]
+    assert omitted["read_physical_pages"] == [2]
+    assert uid(302) not in selected["block_ids"]
+    assert result["manifest"]["coverage"]["state"] == "partial"
     assert result["manifest"]["parts"][1]["selected"] is False
     assert {"PACKAGE_PART_NOT_SELECTED", "DECLARED_RULE_RANGE_OMITTED"} <= codes(result)
     assert result["manifest"]["rules"][0]["declared_target_part_ids"] == ["body", "appendix/table"]

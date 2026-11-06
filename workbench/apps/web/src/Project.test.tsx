@@ -244,6 +244,19 @@ it("混合文件须确认用途，不能按名称默认分类或提前创建批�
     "body",
   );
   expect(screen.getByLabelText("资审.pdf的资料用途")).toHaveValue("body");
+  await userEvent.click(
+    screen.getByRole("button", { name: "为资审.pdf添加另一用途" }),
+  );
+  expect(screen.getByLabelText("资审.pdf的资料用途（用途2）")).toHaveValue("");
+  expect(screen.getByLabelText("资审.pdf的资料用途")).toHaveValue("body");
+  await userEvent.selectOptions(
+    screen.getByLabelText("资审.pdf的资料用途（用途2）"),
+    "other",
+  );
+  expect(screen.getByLabelText("资审.pdf的资料用途（用途2）")).toHaveValue(
+    "other",
+  );
+  expect(writes).toHaveLength(0);
 });
 
 it("空文件本地拒绝不创建空服务端批次，不留下关闭项目的无效阻断", async () => {
