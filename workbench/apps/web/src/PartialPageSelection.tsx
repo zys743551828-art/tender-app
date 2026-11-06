@@ -2,8 +2,9 @@ import { useState } from "react";
 import { api, commandKey } from "./api";
 import type { DocumentEvidenceView, DocumentView } from "./contracts";
 import { ErrorNotice } from "./components";
+import { PartialPageComparison } from "./PartialPageComparison";
 
-type Selection = {
+export type Selection = {
   id: string;
   current_material: boolean;
   source_effectivity: "not_verified";
@@ -151,6 +152,12 @@ export function PartialPageSelection({
           formal_qualification: false;
         }>(`${path}/${selection.id}/evidence`)
       ).data;
+      const expected = new Map(
+        selection.proof.manifest.selected_blocks.map((block) => [
+          block.id,
+          block.physical_page,
+        ]),
+      );
       if (
         value.selection_id !== selection.id ||
         value.proof_digest !== selection.proof.digest ||
@@ -160,14 +167,7 @@ export function PartialPageSelection({
           selection.proof.manifest.selected_blocks.length ||
         new Set(value.items.map((item) => item.id)).size !==
           value.items.length ||
-        value.items.some(
-          (item) =>
-            !selection.proof.manifest.selected_blocks.some(
-              (block) =>
-                block.id === item.id &&
-                block.physical_page === item.physical_page,
-            ),
-        )
+        value.items.some((item) => expected.get(item.id) !== item.physical_page)
       )
         throw new Error("选中证据与确认记录不一致，请重新核对。");
       setScopedEvidence(value.items);
@@ -184,7 +184,7 @@ export function PartialPageSelection({
     first <= last &&
     last <= pageCount;
   return (
-    <details className="notice evidence-gaps">
+    <details className="notice partial-page-selection">
       <summary>人工确认部分页范围</summary>
       <p>
         先对照原页核对。此记录保留原件、解析、页码和缺口；不改变材料用途、不接入模型，也不授予完整评审资格。
@@ -278,6 +278,11 @@ export function PartialPageSelection({
           <p>
             来源有效性及原件字节未重新验证；不可据此调用模型或认定正式资格。
           </p>
+          <PartialPageComparison
+            key={selection.id}
+            path={path}
+            selection={selection}
+          />
           <details>
             <summary>查看所选范围的解析依据</summary>
             <p>点击物理页对照原件和解析文本；不把 OCR 摘录当作原文确认。</p>

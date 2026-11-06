@@ -25,6 +25,8 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
         owner.execute("SET LOCAL search_path TO design,public")
         official = add_document(owner, world["scope"], world["actor"])
         attach(owner, bid, world["actor"], official, role="official_result")
+        tender = add_document(owner, world["scope"], world["actor"])
+        attach(owner, bid, world["actor"], tender, role="tender")
         owner.execute(
             "INSERT INTO design.material_snapshots(id,bid_id,revision,manifest,digest) VALUES(%s,%s,1,%s,%s)",
             (material, bid, Jsonb({}), "d" * 64),
@@ -36,6 +38,10 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
         owner.execute(
             "INSERT INTO design.material_assignments(snapshot_id,bid_id,document_version_id,role,ordinal) VALUES(%s,%s,%s,'official_result',0)",
             (material, bid, official.document_version_id),
+        )
+        owner.execute(
+            "INSERT INTO design.material_assignments(snapshot_id,bid_id,document_version_id,role,ordinal) VALUES(%s,%s,%s,'tender',0)",
+            (material, bid, tender.document_version_id),
         )
         owner.execute(
             "UPDATE design.bid_profiles SET current_material_id=%s WHERE bid_id=%s", (material, bid)
@@ -127,11 +133,75 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
         item["id"] for item in proof["selected_blocks"]
     }
     assert all(item["physical_page"] == 1 for item in evidence["items"])
+    # The scoped retrieval itself filters by project, parse and explicit block
+    # IDs in PostgreSQL, including when the requested source contains other pages.
+    from apps.api.views import evidence_views_selected
+
+    with owner.transaction():
+        outside_id = str(
+            owner.execute(
+                "SELECT id FROM design.evidence_blocks WHERE parse_id=%s AND physical_page=2 LIMIT 1",
+                (partial_parse,),
+            ).fetchone()["id"]
+        )
+    selected_ids = [item["id"] for item in proof["selected_blocks"]]
+    with world["database"]["owner"].transaction():
+        view = evidence_views_selected(owner, bid, partial_parse, selected_ids)
+        assert {item["id"] for item in view} == set(selected_ids)
+        assert outside_id not in {item["id"] for item in view}
+        assert evidence_views_selected(owner, uid(), partial_parse, selected_ids) == []
     listing = client.get(base, params={"document_version_id": member.document_version_id})
     assert listing.status_code == 200 and [item["id"] for item in listing.json()["items"]] == [
         record["id"]
     ]
     assert client.get(base.replace(bid, uid()) + "/" + record["id"]).status_code == 404
+    requirement = client.post(
+        base,
+        json=body
+        | {
+            "purpose": "requirement_reference",
+            "document_version_id": tender.document_version_id,
+            "parse_run_id": tender.parse.parse_run_id,
+        },
+        headers=headers(world),
+    )
+    assert requirement.status_code == 201
+    req_id = requirement.json()["id"]
+    candidates = client.get(base + "/candidates")
+    assert candidates.status_code == 200
+    assert {item["id"] for item in candidates.json()["items"]} == {req_id, record["id"]}
+    assert all(item["filename"] == "synthetic.pdf" for item in candidates.json()["items"])
+    comparison = client.get(base + "/" + req_id + "/compare/" + record["id"])
+    assert comparison.status_code == 200, comparison.text
+    compare_body = comparison.json()
+    assert compare_body["coverage"] == "partial" and compare_body["overall_result"] == "unknown"
+    assert compare_body["model_execution_allowed"] is compare_body["formal_qualification"] is False
+    assert all(
+        item["physical_page"] == 1
+        for side in ("requirement", "technical")
+        for item in compare_body[side]["evidence"]["items"]
+    )
+    assert "synthetic page 2" not in json.dumps(compare_body)
+    assert client.get(base + "/" + record["id"] + "/compare/" + req_id).status_code == 409
+    assert (
+        client.get(base.replace(bid, uid()) + "/" + req_id + "/compare/" + record["id"]).status_code
+        == 404
+    )
+    from packages.rag.indexing import ensure_parse_sources, parse_source_id
+
+    owner.autocommit = False
+    try:
+        with owner.transaction():
+            ensure_parse_sources(owner, bid, partial_parse)
+            owner.execute(
+                "UPDATE retrieval.source_heads SET status='withdrawn', revision=revision+1 WHERE source_id=%s",
+                (parse_source_id(partial_parse),),
+            )
+    finally:
+        owner.autocommit = True
+    withdrawn = client.get(base + "/" + req_id + "/compare/" + record["id"])
+    assert withdrawn.status_code == 409
+    assert withdrawn.json()["code"] == "PARTIAL_COMPARISON_SOURCE_WITHDRAWN"
     from fastapi.testclient import TestClient
 
     with TestClient(world["app"]) as anonymous:
@@ -144,9 +214,21 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
             (replacement, bid, Jsonb({}), "f" * 64),
         )
         owner.execute(
+            "INSERT INTO design.material_assignments(snapshot_id,bid_id,document_version_id,role,ordinal) VALUES(%s,%s,%s,'body',0),(%s,%s,%s,'tender',0)",
+            (
+                replacement,
+                bid,
+                member.document_version_id,
+                replacement,
+                bid,
+                tender.document_version_id,
+            ),
+        )
+        owner.execute(
             "UPDATE design.bid_profiles SET current_material_id=%s WHERE bid_id=%s",
             (replacement, bid),
         )
     old = client.get(base + "/" + record["id"])
     assert old.status_code == 200 and old.json()["current_material"] is False
-    assert client.post(base, json=body, headers=headers(world)).status_code == 409
+    assert client.get(base + "/" + req_id + "/compare/" + record["id"]).status_code == 409
+    assert client.post(base, json=body, headers=headers(world)).status_code == 201

@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 from apps.api.auth import auth
 from apps.api.identity_routes import command, saved
-from apps.api.views import evidence_views
+from apps.api.views import evidence_views_selected
 from packages.domain import partial_page_selection_repository as repository
 from packages.domain.bid_package_service import lock_bid
 from packages.domain.runtime import DomainError, audit, clean, connection
@@ -140,6 +140,35 @@ class ScopedEvidence(ClosedModel):
     formal_qualification: Literal[False] = False
 
 
+class ComparisonCandidate(ClosedModel):
+    id: UUID
+    document_version_id: UUID
+    filename: str
+    purpose: Literal["technical_reference", "requirement_reference"]
+    first_page: int
+    last_page: int
+    created_at: datetime
+
+
+class ComparisonCandidates(ClosedModel):
+    items: list[ComparisonCandidate]
+    has_more: bool
+
+
+class ComparisonSide(ClosedModel):
+    selection: SelectionView
+    evidence: ScopedEvidence
+
+
+class PartialComparison(ClosedModel):
+    requirement: ComparisonSide
+    technical: ComparisonSide
+    coverage: Literal["partial"] = "partial"
+    overall_result: Literal["unknown"] = "unknown"
+    model_execution_allowed: Literal[False] = False
+    formal_qualification: Literal[False] = False
+
+
 @router.post("", status_code=201, response_model=SelectionView)
 def confirm_selection(bid_id: UUID, r: Request, body: SelectionRequest):
     actor = auth(r, True)
@@ -185,6 +214,27 @@ def confirm_selection(bid_id: UUID, r: Request, body: SelectionRequest):
         return saved(cmd.finish(result, 201, {}))
 
 
+@router.get("/candidates", response_model=ComparisonCandidates)
+def comparison_candidates(bid_id: UUID, r: Request):
+    """List references for choosing two scopes; load/revalidate before use."""
+    auth(r)
+    with connection() as c:
+        rows = c.execute(
+            """SELECT a.payload->>'id' AS id,
+            a.payload#>>'{proof,manifest,source,document_version_id}' AS document_version_id,
+            d.original_name AS filename,
+            a.payload#>>'{proof,manifest,purpose}' AS purpose,
+            (a.payload#>>'{proof,manifest,selection,first_page}')::int AS first_page,
+            (a.payload#>>'{proof,manifest,selection,last_page}')::int AS last_page,a.created_at
+            FROM design.audit_entries a JOIN design.document_versions d
+              ON d.bid_id=a.bid_id AND d.id=(a.payload#>>'{proof,manifest,source,document_version_id}')::uuid
+            WHERE a.bid_id=%s AND a.event_type=%s
+            ORDER BY a.created_at DESC,a.id DESC LIMIT 101""",
+            (bid_id, EVENT),
+        ).fetchall()
+        return {"items": clean(rows[:100]), "has_more": len(rows) > 100}
+
+
 @router.get("/{selection_id}", response_model=SelectionView)
 def get_selection(bid_id: UUID, selection_id: UUID, r: Request):
     auth(r)
@@ -204,7 +254,7 @@ def _load_selection(c, bid_id: UUID, selection_id: UUID):
     result = rows[0]["payload"]
     source = result["proof"]["manifest"]["source"]
     selection = result["proof"]["manifest"]["selection"]
-    proof, current, _ = repository.observe(
+    proof, current, current_material_id = repository.observe(
         c,
         bid_id,
         source["document_version_id"],
@@ -216,7 +266,7 @@ def _load_selection(c, bid_id: UUID, selection_id: UUID):
     )
     if proof != result["proof"]:
         raise DomainError("PARTIAL_SCOPE_SOURCE_CHANGED", "原件或解析依据已变化，请重新核对。", 409)
-    return result | {"current_material": current}
+    return result | {"current_material": current and result["material_id"] == current_material_id}
 
 
 @router.get("/{selection_id}/evidence", response_model=ScopedEvidence)
@@ -226,21 +276,69 @@ def get_scoped_evidence(bid_id: UUID, selection_id: UUID, r: Request):
     with connection() as c:
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
         result = _load_selection(c, bid_id, selection_id)
-        manifest = result["proof"]["manifest"]
-        expected = {item["id"]: item for item in manifest["selected_blocks"]}
-        all_items = evidence_views(c, manifest["source"]["parse_run_id"])
-        selected = [item for item in all_items if item["id"] in expected]
-        if len(selected) != len(expected) or any(
-            item["physical_page"] != expected[item["id"]]["physical_page"]
-            or hashlib.sha256(item["quote"].encode("utf-8")).hexdigest()
-            != expected[item["id"]]["digest"]
-            for item in selected
+        return _scoped_evidence(c, bid_id, selection_id, result)
+
+
+def _scoped_evidence(c, bid_id, selection_id, result):
+    manifest = result["proof"]["manifest"]
+    expected = {item["id"]: item for item in manifest["selected_blocks"]}
+    selected = evidence_views_selected(
+        c, bid_id, manifest["source"]["parse_run_id"], sorted(expected)
+    )
+    if len(selected) != len(expected) or any(
+        item["physical_page"] != expected[item["id"]]["physical_page"]
+        or hashlib.sha256(item["quote"].encode("utf-8")).hexdigest()
+        != expected[item["id"]]["digest"]
+        for item in selected
+    ):
+        raise DomainError("PARTIAL_SCOPE_SOURCE_CHANGED", "选中证据已改变，请重新核对。", 409)
+    return {
+        "selection_id": selection_id,
+        "proof_digest": result["proof"]["digest"],
+        "items": selected,
+    }
+
+
+@router.get("/{selection_id}/compare/{other_id}", response_model=PartialComparison)
+def compare_scopes(bid_id: UUID, selection_id: UUID, other_id: UUID, r: Request):
+    """Present two proven page selections side by side; never decide compliance."""
+    auth(r)
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        requirement = _load_selection(c, bid_id, selection_id)
+        technical = _load_selection(c, bid_id, other_id)
+        if (
+            not requirement["current_material"]
+            or not technical["current_material"]
+            or requirement["proof"]["manifest"]["purpose"] != "requirement_reference"
+            or technical["proof"]["manifest"]["purpose"] != "technical_reference"
         ):
-            raise DomainError("PARTIAL_SCOPE_SOURCE_CHANGED", "选中证据已改变，请重新核对。", 409)
+            raise DomainError(
+                "PARTIAL_COMPARISON_STALE_OR_WRONG_PURPOSE", "请选择当前要求范围和技术范围。", 409
+            )
+        requirement_evidence = _scoped_evidence(c, bid_id, selection_id, requirement)
+        technical_evidence = _scoped_evidence(c, bid_id, other_id, technical)
+        if not requirement_evidence["items"] or not technical_evidence["items"]:
+            raise DomainError(
+                "PARTIAL_COMPARISON_NO_EVIDENCE", "所选范围缺少可对照的解析依据。", 409
+            )
+        if any(
+            item["source_status"] == "withdrawn"
+            for evidence in (requirement_evidence, technical_evidence)
+            for item in evidence["items"]
+        ):
+            raise DomainError(
+                "PARTIAL_COMPARISON_SOURCE_WITHDRAWN", "所选依据已撤回，请重新核对来源。", 409
+            )
         return {
-            "selection_id": selection_id,
-            "proof_digest": result["proof"]["digest"],
-            "items": selected,
+            "requirement": {
+                "selection": requirement,
+                "evidence": requirement_evidence,
+            },
+            "technical": {
+                "selection": technical,
+                "evidence": technical_evidence,
+            },
         }
 
 

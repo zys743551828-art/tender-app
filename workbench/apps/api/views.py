@@ -286,3 +286,19 @@ def evidence_views(c, parse_id):
     return [
         _evidence_projection(row, sources[str(parse_source_id(row["parse_id"]))]) for row in rows
     ]
+
+
+def evidence_views_selected(c, bid_id, parse_id, evidence_ids):
+    """Read only explicitly selected evidence rows from the specified source."""
+    if not evidence_ids:
+        return []
+    rows = c.execute(
+        _EVIDENCE_ROWS
+        + " WHERE e.bid_id=%s AND e.parse_id=%s AND e.id=ANY(%s::uuid[]) "
+        + "ORDER BY e.physical_page,e.ordinal,e.id",
+        (bid_id, parse_id, evidence_ids),
+    ).fetchall()
+    sources = _evidence_sources(c, rows)
+    return [
+        _evidence_projection(row, sources[str(parse_source_id(row["parse_id"]))]) for row in rows
+    ]

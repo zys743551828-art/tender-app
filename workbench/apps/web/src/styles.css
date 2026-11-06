@@ -1166,6 +1166,13 @@ tbody tr:hover {
   font-size: 11px;
   padding: 10px 14px;
 }
+.partial-page-selection {
+  margin: 10px 20px;
+  max-height: min(45vh, 420px);
+  overflow: auto;
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
 .evidence-body {
   display: grid;
   grid-template-columns: 58% 42%;
