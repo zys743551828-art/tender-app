@@ -531,3 +531,216 @@ it("矩阵默认将否决和强制要求置前，不因原始返回顺序让一�
       .map((heading) => heading.textContent),
   ).toEqual(["规则 否决失败", "规则 强制待核对", "规则 普通评分"]);
 });
+
+it("offers explicitly partial manual initial entry when no rules are ready", async () => {
+  fetchMock.mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.endsWith("/rules"))
+      return json({ code: "RULE_SET_NOT_READY", message: "尚未准备完成" }, 409);
+    if (url.endsWith("/materials"))
+      return json({
+        bid_id: bid.id,
+        material_revision: 1,
+        snapshot_id: "snapshot",
+        documents: [],
+        conflicts: [],
+      });
+    if (url.endsWith(`/bids/${bid.id}`)) return json(bid, 200, '"bid-1"');
+    throw new Error(`Unexpected route ${url}`);
+  });
+  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  await userEvent.click(
+    await screen.findByRole("button", { name: "人工建立要求清单" }),
+  );
+  expect(
+    await screen.findByRole("heading", { name: "人工建立要求清单" }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/整体覆盖未知，不代表模型提取成功或全部合规/),
+  ).toBeInTheDocument();
+});
+
+it("labels an all-human partial rule list without claiming model completeness", async () => {
+  fetchMock.mockResolvedValue(
+    json(
+      {
+        id: "rules-1",
+        bid_id: bid.id,
+        material_revision: 1,
+        coverage: "partial",
+        revision: 2,
+        rules: [
+          {
+            ...rule("manual", "confirmed"),
+            origin_kind: "human_added",
+            manual_origin_rule_id: "manual",
+          },
+        ],
+      },
+      200,
+      '"ruleset:rules-1:2"',
+    ),
+  );
+  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  expect(
+    await screen.findByText(/本清单由人工逐条录入，整体覆盖未知/),
+  ).toBeInTheDocument();
+});
+
+it("submits a source-bound manual initial rule with the current bid ETag", async () => {
+  let posted: RequestInit | undefined;
+  const human = {
+    ...rule("manual", "confirmed"),
+    origin_kind: "human_added",
+    manual_origin_rule_id: "manual",
+  };
+  const result = {
+    id: "rules-1",
+    bid_id: bid.id,
+    material_revision: 1,
+    coverage: "partial",
+    revision: 2,
+    rules: [human],
+  };
+  fetchMock.mockImplementation(async (input, options) => {
+    const url = String(input);
+    if (url.endsWith("/manual-rule-set")) {
+      posted = options;
+      return json(result, 201, '"ruleset-2"');
+    }
+    if (url.endsWith("/rules"))
+      return posted
+        ? json(result, 200, '"ruleset-2"')
+        : json({ code: "RULE_SET_NOT_READY", message: "尚未准备完成" }, 409);
+    if (url.endsWith("/materials"))
+      return json({
+        bid_id: bid.id,
+        material_revision: 1,
+        snapshot_id: "snapshot",
+        documents: [
+          {
+            id: "doc-1",
+            role: "tender",
+            filename: "SYNTHETIC.pdf",
+            file_revision: 1,
+          },
+        ],
+        conflicts: [],
+      });
+    if (url.endsWith("/documents/doc-1/evidence"))
+      return json({
+        document_version_id: "doc-1",
+        parse_run_id: "parse-1",
+        coverage: "complete",
+        gaps: [],
+        items: [
+          {
+            id: "ev-1",
+            physical_page: 1,
+            quote: "原文证据",
+            source_status: "effective",
+          },
+        ],
+      });
+    if (url.endsWith(`/bids/${bid.id}`)) return json(bid, 200, '"bid-1"');
+    throw new Error(`Unexpected route ${url}`);
+  });
+  const user = userEvent.setup();
+  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  await user.click(
+    await screen.findByRole("button", { name: "人工建立要求清单" }),
+  );
+  await user.type(screen.getByLabelText("条款解释"), "人工核对条款");
+  await user.type(screen.getByLabelText("适用范围"), "合成项目");
+  await user.type(screen.getByLabelText("补充原因"), "合成核对");
+  await user.selectOptions(
+    await screen.findByLabelText("招标／补遗来源"),
+    "doc-1",
+  );
+  await user.click(await screen.findByRole("button", { name: "加入此页依据" }));
+  await user.click(screen.getByRole("button", { name: "补充并确认此条款" }));
+  await waitFor(() => expect(posted).toBeDefined());
+  expect((posted?.headers as Record<string, string>)["If-Match"]).toBe(
+    '"bid-1"',
+  );
+  const body = JSON.parse(String(posted?.body));
+  expect(body.material_revision).toBe(1);
+  expect(body.additions[0].evidence_quotes).toEqual([
+    { evidence_id: "ev-1", quote: "原文证据" },
+  ]);
+  expect(
+    await screen.findByText(/本清单由人工逐条录入，整体覆盖未知/),
+  ).toBeInTheDocument();
+});
+
+it("keeps manual input after stale ETag and requires explicit source reselection", async () => {
+  let attempted = false;
+  fetchMock.mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.endsWith("/manual-rule-set")) {
+      attempted = true;
+      return json({ code: "REVISION_CONFLICT", message: "版本已变" }, 412);
+    }
+    if (url.endsWith("/rules"))
+      return json({ code: "RULE_SET_NOT_READY", message: "尚未准备完成" }, 409);
+    if (url.endsWith("/materials"))
+      return json({
+        bid_id: bid.id,
+        material_revision: 1,
+        snapshot_id: "snapshot",
+        documents: [
+          {
+            id: "doc-1",
+            role: "tender",
+            filename: "SYNTHETIC.pdf",
+            file_revision: 1,
+          },
+        ],
+        conflicts: [],
+      });
+    if (url.endsWith("/documents/doc-1/evidence"))
+      return json({
+        document_version_id: "doc-1",
+        parse_run_id: "parse-1",
+        coverage: "complete",
+        gaps: [],
+        items: [
+          {
+            id: "ev-1",
+            physical_page: 1,
+            quote: "原文证据",
+            source_status: "effective",
+          },
+        ],
+      });
+    if (url.endsWith(`/bids/${bid.id}`))
+      return json(bid, 200, attempted ? '"bid-2"' : '"bid-1"');
+    throw new Error(`Unexpected route ${url}`);
+  });
+  const user = userEvent.setup();
+  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  await user.click(
+    await screen.findByRole("button", { name: "人工建立要求清单" }),
+  );
+  await user.type(screen.getByLabelText("条款解释"), "人工核对条款");
+  await user.type(screen.getByLabelText("适用范围"), "合成项目");
+  await user.type(screen.getByLabelText("补充原因"), "合成核对");
+  await user.selectOptions(
+    await screen.findByLabelText("招标／补遗来源"),
+    "doc-1",
+  );
+  await user.click(await screen.findByRole("button", { name: "加入此页依据" }));
+  await user.click(screen.getByRole("button", { name: "补充并确认此条款" }));
+  await user.click(
+    await screen.findByRole("button", { name: "刷新当前资料与规则包" }),
+  );
+  await user.click(
+    await screen.findByRole("button", {
+      name: "已查看新材料版本，重新选择原文依据",
+    }),
+  );
+  expect(screen.getByLabelText("条款解释")).toHaveValue("人工核对条款");
+  expect(
+    screen.getByRole("button", { name: "补充并确认此条款" }),
+  ).toBeDisabled();
+});

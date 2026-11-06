@@ -6106,6 +6106,21 @@
         }
       ]
     },
+    "ManualRuleSetInitialRequest": {
+      "type": "object",
+      "properties": {
+        "material_revision": {"type": "integer", "minimum": 1},
+        "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "additions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/RuleAddition"},
+          "minItems": 1,
+          "maxItems": 100
+        }
+      },
+      "required": ["material_revision", "reason", "additions"],
+      "additionalProperties": false
+    },
     "RuleSetCorrectionRequest": {
       "type": "object",
       "properties": {

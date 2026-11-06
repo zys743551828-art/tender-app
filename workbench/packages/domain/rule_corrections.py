@@ -45,6 +45,66 @@ def _insert(c, bid, set_id, rule_id, value):
     )
 
 
+def initialize_manual_rules(c, bid, actor, command_id, body):
+    """Start a human-only partial inventory, then use the normal correction path.
+
+    The caller holds the bid lock and checks the material revision.  The empty
+    predecessor and its first correction are committed together; neither is an
+    extraction receipt or a claim that all requirements were found.
+    """
+    profile = fetch(c, "SELECT * FROM bid_profiles WHERE bid_id=%s", (bid,))
+    if profile["current_rule_set_id"] is not None:
+        raise DomainError("RULE_SET_ALREADY_EXISTS", "要求清单已存在，请使用现有清单补充", 409)
+    if profile["current_material_id"] is None:
+        raise DomainError("RULE_SOURCE_MISSING", "请先准备并冻结要求来源材料", 409)
+    base = uid()
+    revision = c.execute(
+        "SELECT coalesce(max(revision),0)+1 AS next FROM rule_sets WHERE bid_id=%s", (bid,)
+    ).fetchone()["next"]
+    c.execute(
+        "INSERT INTO rule_sets(id,bid_id,material_id,revision,digest,coverage) VALUES(%s,%s,%s,%s,%s,%s)",
+        (
+            base,
+            bid,
+            profile["current_material_id"],
+            revision,
+            sha(
+                {
+                    "origin": "human_initial",
+                    "bid_id": str(bid),
+                    "material_id": str(profile["current_material_id"]),
+                    "revision": revision,
+                }
+            ),
+            "partial",
+        ),
+    )
+    c.execute("UPDATE bid_profiles SET current_rule_set_id=%s WHERE bid_id=%s", (base, bid))
+    result = correct_rules(
+        c,
+        bid,
+        actor,
+        command_id,
+        {"base_rule_set_id": str(base), "reason": body["reason"], "additions": body["additions"]},
+    )
+    audit(
+        c,
+        actor,
+        bid,
+        "rules.manual_initialized",
+        {
+            "rule_set_id": str(result),
+            "initial_rule_set_id": str(base),
+            "material_id": str(profile["current_material_id"]),
+            "coverage": "partial",
+            "origin": "human",
+            "model_extraction_claimed": False,
+        },
+        command_id,
+    )
+    return result
+
+
 def correct_rules(c, bid, actor, command_id, body):
     """调用者已在bid锁下校验当前RuleSetView强ETag；失败由领域事务整体回滚。"""
     validate("RuleSetCorrectionRequest", body)

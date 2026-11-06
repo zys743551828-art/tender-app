@@ -4504,3 +4504,8 @@ textarea:focus-visible {
     padding-inline: 16px;
   }
 }
+
+.manual-rule-close {
+  white-space: nowrap;
+  flex-shrink: 0;
+}

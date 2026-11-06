@@ -305,6 +305,61 @@ def decide_finding(finding_id: UUID, r: Request, body: dict = Body(...)):
         return saved(cmd.finish(decision_view(decision)))
 
 
+@router.post("/bids/{bid_id}/manual-rule-set")
+def initialize_manual_rule_set(bid_id: UUID, r: Request, body: dict = Body(...)):
+    from apps.api.review_views import rule_set_view
+    from apps.api.views import bid_etag
+    from packages.domain.review_data import read_bundle, verify_bytes
+    from packages.domain.reviews import _locked
+    from packages.domain.rule_corrections import initialize_manual_rules
+
+    actor = auth(r, True)
+    validate("ManualRuleSetInitialRequest", body)
+    with connection() as c:
+        # The existing command permission and bid lock are shared with manual corrections.
+        cmd = command(c, r, actor, "correct_rule_set", bid_id, body)
+        if cmd.replay:
+            return saved(cmd.replay, True)
+        bid, slot = _locked(c, bid_id)
+        check_tag(r, bid_etag(c, bid_id))
+        if bid["material_revision"] != body["material_revision"]:
+            raise DomainError("RULE_SOURCE_STALE", "材料版本已变化，请重新核对来源", 409)
+        intent = slot["pending_intent"] or {}
+        if (
+            intent.get("state") != "blocked"
+            or intent.get("preparation_kind") != "rules"
+            or intent.get("material_snapshot_id") != str(bid["current_material_id"])
+            or not intent.get("prepare_operation_id")
+        ):
+            raise DomainError(
+                "MANUAL_RULE_INITIAL_NOT_AVAILABLE", "当前没有可核对的提取失败记录", 409
+            )
+        operation = fetch(
+            c,
+            "SELECT state,kind FROM operations WHERE id=%s AND bid_id=%s",
+            (
+                intent["prepare_operation_id"],
+                bid_id,
+            ),
+        )
+        if operation["state"] != "failed" or operation["kind"] != "prepare-review":
+            raise DomainError("MANUAL_RULE_INITIAL_NOT_AVAILABLE", "原要求提取尚未失败", 409)
+        documents = read_bundle(c, bid_id, bid["current_material_id"])
+        verify_bytes(documents)
+        identity = initialize_manual_rules(c, bid_id, actor["member_id"], cmd.id, body)
+        value = rule_set_view(c, identity)
+        return saved(
+            cmd.finish(
+                value,
+                201,
+                {
+                    "ETag": tag("rule-set", identity, value),
+                    "Location": f"/api/v1/bids/{bid_id}/rules",
+                },
+            )
+        )
+
+
 @router.post("/bids/{bid_id}/rule-set-corrections")
 def correct_rule_set(bid_id: UUID, r: Request, body: dict = Body(...)):
     from apps.api.review_views import rule_set_view

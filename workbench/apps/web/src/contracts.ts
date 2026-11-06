@@ -12813,6 +12813,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/facts/{fact_id}/withdrawals",
   "POST /api/v1/rules/{rule_id}/decisions",
   "POST /api/v1/findings/{finding_id}/decisions",
+  "POST /api/v1/bids/{bid_id}/manual-rule-set",
   "POST /api/v1/bids/{bid_id}/rule-set-corrections",
   "POST /api/v1/bids/{bid_id}/rules/decisions",
   "POST /api/v1/knowledge",

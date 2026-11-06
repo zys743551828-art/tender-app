@@ -169,6 +169,7 @@ def suite_files(suite: str) -> list[str]:
         for name in SUITES[group]
     ]
     files.append("tests/test_package_submission_preflight_pg.py")
+    files.append("tests/test_manual_rule_initial_pg.py")
     return list(dict.fromkeys(files))
 
 

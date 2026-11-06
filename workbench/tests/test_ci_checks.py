@@ -103,6 +103,10 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
     )
 
 
+def test_postgres_suite_includes_manual_rule_native_test():
+    assert "tests/test_manual_rule_initial_pg.py" in ci_checks.suite_files("postgres")
+
+
 @pytest.mark.parametrize("suite", ["authoring", "dispatch"])
 def test_native_requires_explicit_verified_service_binary_before_connecting(monkeypatch, suite):
     def forbidden(**_):

@@ -30,6 +30,15 @@ def paragraphs(lines):
     return result or [{"type": "paragraph", "attrs": {"id": "report-empty"}, "content": []}]
 
 
+def rule_origin_label(rule):
+    origin = rule.get("origin_kind")
+    if origin in {"human_added", "carried_human"}:
+        return "人工来源"
+    if origin == "model_extracted":
+        return "模型提取"
+    return "来源未知"
+
+
 def report_document(plan, evidence_manifest):
     value = plan["content"]
     manifest = value["manifest"]
@@ -62,6 +71,7 @@ def report_document(plan, evidence_manifest):
         lines.extend(
             [
                 f"条款 {rule['id']}（{rule['kind']}）：{rule['statement']}",
+                f"条款来源：{rule_origin_label(rule)}；逐条核对不代表整体覆盖完整。",
                 f"条件：{rule['conditions']}；例外：{rule['exceptions']}；适用：{rule['scope']}",
                 f"条款效力：{rule['provenance_status']}；人工确认：{rule['confirmation']}；核对状态：{row['check_status']}；结论：{row['verdict'] or '未判断'}",
             ]

@@ -25,7 +25,7 @@ export function ManualRuleForm({
   onClose,
 }: {
   bid: Bid;
-  ruleSet: RuleSetView;
+  ruleSet: RuleSetView | null;
   ruleSetETag: string | null;
   onSaved: () => void;
   onClose: () => void;
@@ -33,8 +33,8 @@ export function ManualRuleForm({
   const material = useResource<MaterialView>(`/bids/${bid.id}/materials`);
   const project = useResource<Bid>(`/bids/${bid.id}`);
   const [base, setBase] = useState({
-    ruleSetId: ruleSet.id,
-    materialRevision: ruleSet.material_revision,
+    ruleSetId: ruleSet?.id ?? null,
+    materialRevision: ruleSet?.material_revision ?? bid.material_revision,
   });
   const [documentId, setDocumentId] = useState("");
   const evidence = useResource<DocumentEvidenceView>(
@@ -54,12 +54,16 @@ export function ManualRuleForm({
   >([]);
   const [reason, setReason] = useState("");
   const [saved, setSaved] = useState(false);
-  const command = useCommand(`rule:manual:${bid.id}:${ruleSet.id}`);
+  const [lastInitialETag, setLastInitialETag] = useState<string | null>(null);
+  const command = useCommand(
+    `rule:manual:${bid.id}:${ruleSet?.id ?? "initial"}`,
+  );
   const stale =
     project.data &&
     (project.data.material_revision !== base.materialRevision ||
-      ruleSet.id !== base.ruleSetId ||
-      ruleSet.material_revision !== project.data.material_revision);
+      (ruleSet?.id ?? null) !== base.ruleSetId ||
+      (ruleSet !== null &&
+        ruleSet.material_revision !== project.data.material_revision));
   async function submit() {
     const addition: RuleAddition = {
       kind,
@@ -77,14 +81,23 @@ export function ManualRuleForm({
           : [],
       evidence_quotes: quotes,
     };
+    if (!ruleSet) setLastInitialETag(project.etag);
     const result = await command.run<RuleSetView>(
-      `/bids/${bid.id}/rule-set-corrections`,
-      {
-        base_rule_set_id: base.ruleSetId,
-        reason: reason.trim(),
-        additions: [addition],
-      },
-      ruleSetETag,
+      ruleSet
+        ? `/bids/${bid.id}/rule-set-corrections`
+        : `/bids/${bid.id}/manual-rule-set`,
+      ruleSet
+        ? {
+            base_rule_set_id: base.ruleSetId,
+            reason: reason.trim(),
+            additions: [addition],
+          }
+        : {
+            material_revision: base.materialRevision,
+            reason: reason.trim(),
+            additions: [addition],
+          },
+      ruleSet ? ruleSetETag : project.etag,
     );
     if (result) {
       setSaved(true);
@@ -95,12 +108,17 @@ export function ManualRuleForm({
     <section className="panel manual-rule-panel">
       <div className="section-heading">
         <div>
-          <h2>补充并确认条款</h2>
+          <h2>{ruleSet ? "补充并确认条款" : "人工建立要求清单"}</h2>
+          {!ruleSet && (
+            <p className="notice warning">
+              本清单由人工逐条核对，整体覆盖未知，不代表模型提取成功或全部合规。
+            </p>
+          )}
           <p className="muted">
             一次明确提交：新增规则包并记录此条款解释的人工确认。旧评审将过期，不代表正文满足，也不自动复评。
           </p>
         </div>
-        <button className="text-button" onClick={onClose}>
+        <button className="text-button manual-rule-close" onClick={onClose}>
           收起
         </button>
       </div>
@@ -376,29 +394,52 @@ export function ManualRuleForm({
               >
                 刷新当前资料与规则包
               </button>
-              {(ruleSet.id !== base.ruleSetId ||
-                ruleSet.material_revision !== base.materialRevision) && (
-                <button
-                  type="button"
-                  className="button secondary"
-                  onClick={() => {
-                    setBase({
-                      ruleSetId: ruleSet.id,
-                      materialRevision: ruleSet.material_revision,
-                    });
-                    command.clearError();
-                  }}
-                >
-                  已查看当前规则包，保留输入继续核对
-                </button>
-              )}
+              {ruleSet &&
+                (ruleSet.id !== base.ruleSetId ||
+                  ruleSet.material_revision !== base.materialRevision) && (
+                  <button
+                    type="button"
+                    className="button secondary"
+                    onClick={() => {
+                      setBase({
+                        ruleSetId: ruleSet.id,
+                        materialRevision: ruleSet.material_revision,
+                      });
+                      command.clearError();
+                    }}
+                  >
+                    已查看当前规则包，保留输入继续核对
+                  </button>
+                )}
+              {!ruleSet &&
+                project.data &&
+                !project.loading &&
+                (project.data.material_revision !== base.materialRevision ||
+                  (command.conflict && project.etag !== lastInitialETag)) && (
+                  <button
+                    type="button"
+                    className="button secondary"
+                    onClick={() => {
+                      setBase({
+                        ruleSetId: null,
+                        materialRevision: project.data!.material_revision,
+                      });
+                      setDocumentId("");
+                      setQuotes([]);
+                      void material.reload();
+                      command.clearError();
+                    }}
+                  >
+                    已查看新材料版本，重新选择原文依据
+                  </button>
+                )}
             </div>
           )}
           <button
             className="button primary"
             disabled={
               command.busy ||
-              !ruleSetETag ||
+              !(ruleSet ? ruleSetETag : project.etag) ||
               !statement.trim() ||
               !scope.trim() ||
               !reason.trim() ||

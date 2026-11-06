@@ -62,6 +62,11 @@ def extend_openapi(actual):
             "reason": {"type": "string", "minLength": 1, "maxLength": 2000},
         }
     )
+    manual_initial = deepcopy(schemas["RuleSetCorrectionRequest"])
+    manual_initial["properties"].pop("base_rule_set_id")
+    manual_initial["properties"]["material_revision"] = {"type": "integer", "minimum": 1}
+    manual_initial["required"] = ["material_revision", "reason", "additions"]
+    schemas["ManualRuleSetInitialRequest"] = manual_initial
     specs = [
         ("/api/v1/facts/{fact_id}", "get", "getFact", None, "FactView"),
         (
@@ -69,6 +74,13 @@ def extend_openapi(actual):
             "post",
             "confirmSelectedRules",
             "BatchRuleConfirmation",
+            "RuleSetView",
+        ),
+        (
+            "/api/v1/bids/{bid_id}/manual-rule-set",
+            "post",
+            "initializeManualRuleSet",
+            "ManualRuleSetInitialRequest",
             "RuleSetView",
         ),
     ]
@@ -87,7 +99,7 @@ def extend_openapi(actual):
                 "content": {"application/json": {"schema": ref(request_model)}},
             }
         op["responses"] = {
-            "200": {
+            "201" if op_id == "initializeManualRuleSet" else "200": {
                 "description": "已实现的人工核对资源",
                 "headers": {"ETag": {"schema": {"type": "string"}}},
                 "content": {"application/json": {"schema": ref(response_model)}},

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { BatchRuleConfirmation, Bid, RuleSetView } from "./contracts";
-import { supportsApi } from "./api";
+import { ApiError, supportsApi } from "./api";
 import { ruleConfirmationLimit } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
 import { DecisionForm } from "./DecisionForm";
@@ -52,8 +52,32 @@ export function RulesPanel({
           hasData={!!resource.data}
           onRetry={() => void resource.reload()}
         />
+        {resource.error instanceof ApiError &&
+          resource.error.code === "RULE_SET_NOT_READY" && (
+            <div className="notice warning">
+              <p>
+                要求提取失败时，可按冻结原文人工逐条建立清单；整体覆盖仍为未知。
+              </p>
+              <button
+                className="button secondary"
+                disabled={
+                  !supportsApi("POST", `/bids/${bid.id}/manual-rule-set`)
+                }
+                onClick={() => setManual(!manual)}
+                aria-expanded={manual}
+              >
+                人工建立要求清单
+              </button>
+            </div>
+          )}
         {resource.data && (
           <div className="rules-intro">
+            {rules.length > 0 &&
+              rules.every((rule) => rule.origin_kind !== "model_extracted") && (
+                <p className="notice warning">
+                  本清单由人工逐条录入，整体覆盖未知；不代表模型提取成功或全部合规。
+                </p>
+              )}
             <p className="muted">
               规则包对应资料修订 {resource.data.material_revision} · 包内共{" "}
               {rules.length} 项。已识别清单不代表原文零漏提。
@@ -87,15 +111,18 @@ export function RulesPanel({
           </div>
         )}
       </section>
-      {manual && resource.data && (
-        <ManualRuleForm
-          bid={bid}
-          ruleSet={resource.data}
-          ruleSetETag={resource.etag}
-          onSaved={refresh}
-          onClose={() => setManual(false)}
-        />
-      )}
+      {manual &&
+        (resource.data ||
+          (resource.error instanceof ApiError &&
+            resource.error.code === "RULE_SET_NOT_READY")) && (
+          <ManualRuleForm
+            bid={bid}
+            ruleSet={resource.data ?? null}
+            ruleSetETag={resource.etag}
+            onSaved={refresh}
+            onClose={() => setManual(false)}
+          />
+        )}
       {rules.length > 0 && (
         <div className="batch-rule-toolbar">
           <span>
