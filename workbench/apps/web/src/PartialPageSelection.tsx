@@ -228,7 +228,7 @@ export function PartialPageSelection({
           <option value="requirement_reference">招标要求参考</option>
         </select>
       </label>
-      <label>
+      <label className="partial-checkbox">
         <input
           type="checkbox"
           checked={confirmed}

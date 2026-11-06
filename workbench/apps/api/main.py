@@ -52,6 +52,7 @@ from apps.api.package_technical_eligibility import router as package_technical_e
 from apps.api.package_technical_execution import router as package_technical_execution_router
 from apps.api.package_technical_scope import router as package_technical_scope_router
 from apps.api.partial_page_selection_routes import router as partial_page_selection_router
+from apps.api.partial_scope_decision_routes import router as partial_scope_decision_router
 from apps.api.pricing_routes import router as pricing_router
 from apps.api.project_summary_routes import router as project_summary_router
 from apps.api.rag_routes import router as rag_router
@@ -156,6 +157,7 @@ app.include_router(multipart_router)
 app.include_router(upload_layout_router)
 app.include_router(identity_router)
 app.include_router(partial_page_selection_router)
+app.include_router(partial_scope_decision_router)
 app.include_router(bid_package_router)
 app.include_router(bid_package_requirement_router)
 app.include_router(package_review_comparison_router)

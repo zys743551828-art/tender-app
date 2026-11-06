@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api } from "./api";
 import { ErrorNotice } from "./components";
+import { PartialScopeObservations } from "./PartialScopeObservations";
 import type { Selection } from "./PartialPageSelection";
 
 type Candidate = {
@@ -21,7 +22,7 @@ type Side = {
     formal_qualification: false;
   };
 };
-type Comparison = {
+export type Comparison = {
   requirement: Side;
   technical: Side;
   coverage: "partial";
@@ -134,11 +135,19 @@ export function PartialPageComparison({
       setBusy(false);
     }
   }
+  const requirement =
+    selection.proof.manifest.purpose === "requirement_reference"
+      ? selection.id
+      : other;
+  const technical =
+    selection.proof.manifest.purpose === "technical_reference"
+      ? selection.id
+      : other;
   return (
     <div>
       <button
         type="button"
-        disabled={busy || !selection.current_material}
+        disabled={busy}
         onClick={() => void loadCandidates()}
       >
         选择另一份已确认范围进行人工对照
@@ -172,12 +181,21 @@ export function PartialPageComparison({
           </label>
           <button
             type="button"
-            disabled={busy || !other}
+            disabled={busy || !other || !selection.current_material}
             onClick={() => void compare()}
           >
             打开范围对照
           </button>
         </div>
+      )}
+      {other && (
+        <PartialScopeObservations
+          key={`${requirement}:${technical}`}
+          path={path}
+          requirement={requirement}
+          technical={technical}
+          comparison={comparison}
+        />
       )}
       {comparison && (
         <section aria-label="人工范围对照">

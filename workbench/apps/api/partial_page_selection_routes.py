@@ -305,41 +305,43 @@ def compare_scopes(bid_id: UUID, selection_id: UUID, other_id: UUID, r: Request)
     auth(r)
     with connection() as c:
         c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
-        requirement = _load_selection(c, bid_id, selection_id)
-        technical = _load_selection(c, bid_id, other_id)
-        if (
-            not requirement["current_material"]
-            or not technical["current_material"]
-            or requirement["proof"]["manifest"]["purpose"] != "requirement_reference"
-            or technical["proof"]["manifest"]["purpose"] != "technical_reference"
-        ):
-            raise DomainError(
-                "PARTIAL_COMPARISON_STALE_OR_WRONG_PURPOSE", "请选择当前要求范围和技术范围。", 409
-            )
-        requirement_evidence = _scoped_evidence(c, bid_id, selection_id, requirement)
-        technical_evidence = _scoped_evidence(c, bid_id, other_id, technical)
-        if not requirement_evidence["items"] or not technical_evidence["items"]:
-            raise DomainError(
-                "PARTIAL_COMPARISON_NO_EVIDENCE", "所选范围缺少可对照的解析依据。", 409
-            )
-        if any(
-            item["source_status"] == "withdrawn"
-            for evidence in (requirement_evidence, technical_evidence)
-            for item in evidence["items"]
-        ):
-            raise DomainError(
-                "PARTIAL_COMPARISON_SOURCE_WITHDRAWN", "所选依据已撤回，请重新核对来源。", 409
-            )
-        return {
-            "requirement": {
-                "selection": requirement,
-                "evidence": requirement_evidence,
-            },
-            "technical": {
-                "selection": technical,
-                "evidence": technical_evidence,
-            },
-        }
+        return _comparison_context(c, bid_id, selection_id, other_id)
+
+
+def _comparison_context(c, bid_id, selection_id, other_id):
+    requirement = _load_selection(c, bid_id, selection_id)
+    technical = _load_selection(c, bid_id, other_id)
+    if (
+        not requirement["current_material"]
+        or not technical["current_material"]
+        or requirement["proof"]["manifest"]["purpose"] != "requirement_reference"
+        or technical["proof"]["manifest"]["purpose"] != "technical_reference"
+    ):
+        raise DomainError(
+            "PARTIAL_COMPARISON_STALE_OR_WRONG_PURPOSE", "请选择当前要求范围和技术范围。", 409
+        )
+    requirement_evidence = _scoped_evidence(c, bid_id, selection_id, requirement)
+    technical_evidence = _scoped_evidence(c, bid_id, other_id, technical)
+    if not requirement_evidence["items"] or not technical_evidence["items"]:
+        raise DomainError("PARTIAL_COMPARISON_NO_EVIDENCE", "所选范围缺少可对照的解析依据。", 409)
+    if any(
+        item["source_status"] == "withdrawn"
+        for evidence in (requirement_evidence, technical_evidence)
+        for item in evidence["items"]
+    ):
+        raise DomainError(
+            "PARTIAL_COMPARISON_SOURCE_WITHDRAWN", "所选依据已撤回，请重新核对来源。", 409
+        )
+    return {
+        "requirement": {
+            "selection": requirement,
+            "evidence": requirement_evidence,
+        },
+        "technical": {
+            "selection": technical,
+            "evidence": technical_evidence,
+        },
+    }
 
 
 @router.get("", response_model=SelectionHistory)

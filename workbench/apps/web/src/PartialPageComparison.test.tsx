@@ -9,6 +9,9 @@ vi.mock("./api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./api")>()),
   api: mocks.api,
 }));
+vi.mock("./PartialScopeObservations", () => ({
+  PartialScopeObservations: () => null,
+}));
 const selection = (
   id: string,
   purpose: "technical_reference" | "requirement_reference",

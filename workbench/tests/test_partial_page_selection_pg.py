@@ -3,6 +3,7 @@
 
 import json
 import os
+from hashlib import sha256
 
 import pytest
 from psycopg.types.json import Jsonb
@@ -27,6 +28,19 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
         attach(owner, bid, world["actor"], official, role="official_result")
         tender = add_document(owner, world["scope"], world["actor"])
         attach(owner, bid, world["actor"], tender, role="tender")
+        owner.execute(
+            """INSERT INTO design.evidence_blocks(id,bid_id,parse_id,physical_page,ordinal,kind,text_content,bbox,structure,digest)
+            VALUES(%s,%s,%s,1,1,'text',%s,%s,%s,%s)""",
+            (
+                uid(),
+                bid,
+                tender.parse.parse_run_id,
+                "SYNTHETIC alternate requirement",
+                Jsonb([0.1, 0.2, 0.8, 0.9]),
+                Jsonb({}),
+                sha256(b"SYNTHETIC alternate requirement").hexdigest(),
+            ),
+        )
         owner.execute(
             "INSERT INTO design.material_snapshots(id,bid_id,revision,manifest,digest) VALUES(%s,%s,1,%s,%s)",
             (material, bid, Jsonb({}), "d" * 64),
@@ -182,6 +196,120 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
         for item in compare_body[side]["evidence"]["items"]
     )
     assert "synthetic page 2" not in json.dumps(compare_body)
+    decision_path = base + "/" + req_id + "/compare/" + record["id"] + "/decisions"
+    req_evidence = compare_body["requirement"]["evidence"]["items"][0]["id"]
+    tech_evidence = compare_body["technical"]["evidence"]["items"][0]["id"]
+    decision_body = {
+        "item_id": None,
+        "expected_revision": 0,
+        "requirement_evidence_id": req_evidence,
+        "technical_evidence_id": tech_evidence,
+        "outcome": "observed_support",
+        "reason": "SYNTHETIC human observation",
+        "confirmed": True,
+    }
+    with owner.transaction():
+        counts_before = tuple(
+            owner.execute(
+                f"SELECT count(*) AS n FROM design.{table} WHERE bid_id=%s", (bid,)
+            ).fetchone()["n"]
+            for table in ("rule_sets", "review_runs", "operations")
+        )
+    assert (
+        client.post(
+            decision_path, json=decision_body, headers={"Origin": "http://identity-v2.test"}
+        ).status_code
+        == 403
+    )
+    assert (
+        client.post(
+            decision_path, json=decision_body | {"confirmed": False}, headers=headers(world)
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            decision_path,
+            json=decision_body | {"technical_evidence_id": None},
+            headers=headers(world),
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            decision_path,
+            json=decision_body | {"technical_evidence_id": outside_id},
+            headers=headers(world),
+        ).status_code
+        == 422
+    )
+    decision_key = uid()
+    decision = client.post(
+        decision_path, json=decision_body, headers=headers(world, key=decision_key)
+    )
+    assert decision.status_code == 201, decision.text
+    observation = decision.json()
+    assert observation["origin"] == "human_observation" and observation["coverage"] == "partial"
+    assert (
+        observation["overall_result"] == "unknown" and observation["formal_qualification"] is False
+    )
+    assert (
+        client.post(
+            decision_path, json=decision_body, headers=headers(world, key=decision_key)
+        ).json()["id"]
+        == observation["id"]
+    )
+    second_scope = client.post(base, json=body | {"last_page": 2}, headers=headers(world))
+    assert second_scope.status_code == 201
+    second_path = base + "/" + req_id + "/compare/" + second_scope.json()["id"] + "/decisions"
+    assert (
+        client.post(
+            second_path, json=decision_body, headers=headers(world, key=decision_key)
+        ).status_code
+        == 409
+    )
+    revision_body = decision_body | {
+        "item_id": observation["item_id"],
+        "expected_revision": 1,
+        "outcome": "needs_review",
+    }
+    alternate_req = compare_body["requirement"]["evidence"]["items"][1]["id"]
+    assert (
+        client.post(
+            decision_path,
+            json=revision_body | {"requirement_evidence_id": alternate_req},
+            headers=headers(world),
+        ).status_code
+        == 409
+    )
+    assert (
+        client.post(decision_path, json=revision_body, headers=headers(world)).json()["revision"]
+        == 2
+    )
+    assert client.post(decision_path, json=revision_body, headers=headers(world)).status_code == 409
+    unresolved = client.post(
+        decision_path,
+        json=decision_body | {"technical_evidence_id": None, "outcome": "needs_review"},
+        headers=headers(world),
+    )
+    assert unresolved.status_code == 201 and unresolved.json()["overall_result"] == "unknown"
+    history = client.get(decision_path)
+    assert history.status_code == 200 and history.json()["scope_revalidated"] is True
+    assert {item["revision"] for item in history.json()["items"]} == {1, 2}
+    with owner.transaction():
+        counts_after = tuple(
+            owner.execute(
+                f"SELECT count(*) AS n FROM design.{table} WHERE bid_id=%s", (bid,)
+            ).fetchone()["n"]
+            for table in ("rule_sets", "review_runs", "operations")
+        )
+    assert counts_after == counts_before
+    assert all(
+        item["actor_id"] == world["actor"]
+        and item["requirement_evidence_id"] == req_evidence
+        and item["formal_qualification"] is False
+        for item in history.json()["items"]
+    )
     assert client.get(base + "/" + record["id"] + "/compare/" + req_id).status_code == 409
     assert (
         client.get(base.replace(bid, uid()) + "/" + req_id + "/compare/" + record["id"]).status_code
@@ -202,11 +330,21 @@ def test_partial_confirmation_rechecks_and_never_grants_review_or_model(world):
     withdrawn = client.get(base + "/" + req_id + "/compare/" + record["id"])
     assert withdrawn.status_code == 409
     assert withdrawn.json()["code"] == "PARTIAL_COMPARISON_SOURCE_WITHDRAWN"
+    assert client.get(decision_path).json()["scope_revalidated"] is False
+    assert client.post(decision_path, json=decision_body, headers=headers(world)).status_code == 409
+    assert (
+        client.post(
+            decision_path, json=decision_body, headers=headers(world, key=decision_key)
+        ).status_code
+        == 409
+    )
     from fastapi.testclient import TestClient
 
     with TestClient(world["app"]) as anonymous:
         assert anonymous.get(base + "/" + record["id"]).status_code == 401
         assert anonymous.get(base + "/" + record["id"] + "/evidence").status_code == 401
+        assert anonymous.get(decision_path).status_code == 401
+        assert anonymous.post(decision_path, json=decision_body).status_code == 401
     replacement = uid()
     with owner.transaction():
         owner.execute(

@@ -12860,6 +12860,8 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/partial-page-selections/{selection_id}",
   "GET /api/v1/bids/{bid_id}/partial-page-selections/{selection_id}/evidence",
   "GET /api/v1/bids/{bid_id}/partial-page-selections/{selection_id}/compare/{other_id}",
+  "POST /api/v1/bids/{bid_id}/partial-page-selections/{selection_id}/compare/{other_id}/decisions",
+  "GET /api/v1/bids/{bid_id}/partial-page-selections/{selection_id}/compare/{other_id}/decisions",
   "POST /api/v1/bids/{bid_id}/packages",
   "GET /api/v1/bids/{bid_id}/packages",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions",

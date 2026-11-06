@@ -10,6 +10,16 @@ def extend_openapi(actual):
         (base + "/{selection_id}/evidence", "get", "getPartialPageSelectionEvidence"),
         (base + "/candidates", "get", "listPartialComparisonCandidates"),
         (base + "/{selection_id}/compare/{other_id}", "get", "comparePartialPageSelections"),
+        (
+            base + "/{selection_id}/compare/{other_id}/decisions",
+            "get",
+            "listPartialScopeObservations",
+        ),
+        (
+            base + "/{selection_id}/compare/{other_id}/decisions",
+            "post",
+            "recordPartialScopeObservation",
+        ),
     ):
         operation = actual.get("paths", {}).get(path, {}).get(method)
         if operation is None:
