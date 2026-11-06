@@ -118,7 +118,26 @@ def initialize_store(value, *, marker, create):
         client.put_object(
             Bucket=bucket, Key=marker["key"], Body=marker["bytes"], ContentType="application/json"
         )
-    response = client.get_object(Bucket=bucket, Key=marker["key"])
+    # The S3 listener can accept list_buckets before a restarted SeaweedFS
+    # volume has registered with its master.  Retry only its temporary 500
+    # response, with a fixed deadline; authorization, missing objects and
+    # every other error still fail immediately.
+    deadline = time.monotonic() + 35
+    while True:
+        try:
+            response = client.get_object(Bucket=bucket, Key=marker["key"])
+            break
+        except ClientError as error:
+            metadata = error.response.get("ResponseMetadata", {})
+            code = error.response.get("Error", {}).get("Code")
+            if (
+                create
+                or metadata.get("HTTPStatusCode") != 500
+                or code != "InternalError"
+                or time.monotonic() >= deadline
+            ):
+                raise
+            time.sleep(0.5)
     with response["Body"] as stream:
         actual = stream.read(len(marker["bytes"]) + 1)
     if actual != marker["bytes"]:
