@@ -141,6 +141,15 @@ export function PartialScopeObservations({
       value.item_id,
       Math.max(latest.get(value.item_id) ?? 0, value.revision),
     );
+  function evidenceLabel(side: "requirement" | "technical", id: string | null) {
+    if (!id) return "未选择";
+    const match = comparison?.[side].evidence.items.find(
+      (entry) => entry.id === id,
+    );
+    return scopeValid && match
+      ? `第 ${match.physical_page} 页 · ${match.quote}（依据 ${id}）`
+      : `历史依据 ${id}（当前无法核验原文）`;
+  }
   return (
     <section aria-label="人工逐项记录">
       <h4>人工逐项记录 · 整体仍未知</h4>
@@ -173,6 +182,13 @@ export function PartialScopeObservations({
             {names[value.outcome]} · 第 {value.revision} 版 ·{" "}
             {new Date(value.created_at).toLocaleString()} ·{" "}
             {value.actor_id.slice(0, 8)}：{value.reason}
+          </p>
+          <p>
+            要求依据：
+            {evidenceLabel("requirement", value.requirement_evidence_id)}
+          </p>
+          <p>
+            技术依据：{evidenceLabel("technical", value.technical_evidence_id)}
           </p>
           {value.revision === latest.get(value.item_id) && (
             <button

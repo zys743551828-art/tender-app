@@ -93,6 +93,8 @@ it("shows history but prevents edits when the scope requires revalidation", asyn
     />,
   );
   expect(await screen.findByText(/SYNTHETIC past/)).toBeVisible();
+  expect(screen.getByText(/历史依据 r（当前无法核验原文）/)).toBeVisible();
+  expect(screen.getByText(/历史依据 t（当前无法核验原文）/)).toBeVisible();
   expect(screen.getByText(/历史可查看/)).toBeVisible();
   expect(screen.getByRole("button", { name: "修改此项" })).toBeDisabled();
   expect(
@@ -130,6 +132,12 @@ it("revises the latest item without letting its requirement evidence change", as
     />,
   );
   const user = userEvent.setup();
+  expect(
+    await screen.findByText(/要求依据：第 1 页 · SYNTHETIC requirement/),
+  ).toBeVisible();
+  expect(
+    screen.getByText(/技术依据：第 2 页 · SYNTHETIC technical/),
+  ).toBeVisible();
   await user.click(await screen.findByRole("button", { name: "修改此项" }));
   expect(screen.getByLabelText("要求依据")).toBeDisabled();
   await user.clear(screen.getByLabelText("核对理由"));
