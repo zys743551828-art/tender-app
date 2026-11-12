@@ -16,6 +16,7 @@ function ImportImage({
   alt,
   caption,
   width,
+  height,
   onStatus,
 }: {
   scope: WordImportScope;
@@ -24,6 +25,7 @@ function ImportImage({
   alt: string;
   caption: string;
   width: number;
+  height: number;
   onStatus: (key: string, state: WordImportImageState) => void;
 }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -90,7 +92,10 @@ function ImportImage({
         <img
           src={url}
           alt={alt}
-          style={{ width: `${width / 15}px` }}
+          style={{
+            width: `${width / 15}px`,
+            aspectRatio: `${width} / ${height}`,
+          }}
           onLoad={(event) => {
             const loaded = event.currentTarget;
             if (
@@ -236,6 +241,7 @@ export function WordImportRichPreview({
             alt={node.attrs.alt}
             caption={node.attrs.caption}
             width={node.attrs.width_twips}
+            height={node.attrs.height_twips}
             onStatus={onImageStatus}
           />
         );

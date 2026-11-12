@@ -94,7 +94,7 @@ export function SourceEditor({
                 image.alt = String(node.attrs.alt);
                 image.src = `/api/v1/bids/${encodeURIComponent(initial.current.bidId!)}/authoring-images/${encodeURIComponent(String(node.attrs.asset_id))}/versions/${encodeURIComponent(String(node.attrs.asset_version_id))}/bytes/normalized`;
                 image.style.width = `${Number(node.attrs.width_twips) / 15}px`;
-                image.style.height = `${Number(node.attrs.height_twips) / 15}px`;
+                image.style.aspectRatio = `${Number(node.attrs.width_twips)} / ${Number(node.attrs.height_twips)}`;
                 const caption = document.createElement("figcaption");
                 caption.textContent = `${node.attrs.caption || node.attrs.alt} · 图片版本 ${node.attrs.asset_revision}`;
                 figure.append(image, caption);

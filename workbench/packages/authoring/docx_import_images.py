@@ -225,6 +225,30 @@ def picture(ctx, drawing, path):
     nonvisual = one(nv, PIC_NAMESPACES, "cNvPr") if nv is not None else None
     if nonvisual is not None and list(nonvisual):
         ctx.issue("IMAGE_ACTION_UNSUPPORTED", "blocker", path, "图片含动作或链接，不能静默删除")
+    if (
+        len(matching(inline, WP_NAMESPACES, "docPr")) > 1
+        or len(matching(pic, PIC_NAMESPACES, "nvPicPr")) > 1
+        or (nv is not None and len(matching(nv, PIC_NAMESPACES, "cNvPr")) > 1)
+    ):
+        ctx.issue(
+            "DRAWING_CONTENT_UNSUPPORTED",
+            "blocker",
+            path,
+            "图片属性容器重复，无法核对可见性或原始说明",
+        )
+        return None
+    # Visibility is independent of which description supplies the alt text.
+    # Check both property containers before reading/normalizing image bytes.
+    for properties in (docpr, nonvisual):
+        if properties is not None:
+            if properties.get("hidden", "0") not in {"0", "false", "off"}:
+                ctx.issue(
+                    "IMAGE_HIDDEN_UNSUPPORTED",
+                    "blocker",
+                    path,
+                    "图片标记为隐藏，不能直接显示到编辑稿",
+                )
+                return None
     if ctx.blocker_count != before:
         return None
     source_part = relation["resolved"]
@@ -287,14 +311,6 @@ def picture(ctx, drawing, path):
     alt = ""
     for properties in (docpr, nonvisual):
         if properties is not None:
-            if properties.get("hidden", "0") not in {"0", "false", "off"}:
-                ctx.issue(
-                    "IMAGE_HIDDEN_UNSUPPORTED",
-                    "blocker",
-                    path,
-                    "图片标记为隐藏，不能直接显示到编辑稿",
-                )
-                return None
             alt = properties.get("descr") or properties.get("title") or alt
             if alt:
                 break

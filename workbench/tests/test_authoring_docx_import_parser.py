@@ -626,3 +626,117 @@ def test_imported_table_image_and_text_build_into_actual_existing_rich_docx():
         entries["word/media/" + asset["normalization_proof"]["output_digest"] + ".png"]
         == asset["bytes"]
     )
+
+
+@pytest.mark.parametrize("hidden", ["true", "1", "on"])
+def test_inner_picture_hidden_flag_is_not_bypassed_by_outer_alt_text(hidden):
+    xml = ET.fromstring(image_paragraph())
+    xml.find(".//{" + rich_docx.PIC + "}cNvPr").set("hidden", hidden)
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert not result["can_apply"]
+    assert "IMAGE_HIDDEN_UNSUPPORTED" in codes(result)
+    assert not any(
+        node["type"] == "image"
+        for section in result["sections"]
+        for node in section["content"]["content"]
+    )
+
+
+@pytest.mark.parametrize("properties", ["outer", "inner"])
+@pytest.mark.parametrize("visible", ["0", "false", "off"])
+def test_explicit_visible_picture_flags_keep_outer_alt_priority(properties, visible):
+    xml = ET.fromstring(image_paragraph())
+    outer = xml.find(".//{" + rich_docx.WP + "}docPr")
+    inner = xml.find(".//{" + rich_docx.PIC + "}cNvPr")
+    inner.set("descr", "different inner description")
+    (outer if properties == "outer" else inner).set("hidden", visible)
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert result["can_apply"]
+    image = next(
+        node for node in result["sections"][0]["content"]["content"] if node["type"] == "image"
+    )
+    assert image["attrs"]["alt"] == "施工示意图"
+
+
+@pytest.mark.parametrize("properties", ["outer", "inner"])
+def test_hidden_picture_is_blocked_before_normalization(monkeypatch, properties):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("A hidden drawing must not be normalized or promoted")
+
+    monkeypatch.setattr(rich_images, "normalize", forbidden)
+    xml = ET.fromstring(image_paragraph())
+    namespace, name = (rich_docx.WP, "docPr") if properties == "outer" else (rich_docx.PIC, "cNvPr")
+    xml.find(".//{" + namespace + "}" + name).set("hidden", "true")
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert not result["can_apply"]
+    assert "IMAGE_HIDDEN_UNSUPPORTED" in codes(result)
+    assert not result["images"]
+
+
+@pytest.mark.parametrize("target", ["outer", "inner", "container"])
+def test_ambiguous_picture_properties_cannot_hide_visibility_flags(target):
+    xml = ET.fromstring(image_paragraph())
+    inline = xml.find(".//{" + rich_docx.WP + "}inline")
+    pic = xml.find(".//{" + rich_docx.PIC + "}pic")
+    nv = xml.find(".//{" + rich_docx.PIC + "}nvPicPr")
+    if target == "outer":
+        hidden = copy.deepcopy(xml.find(".//{" + rich_docx.WP + "}docPr"))
+        hidden.set("hidden", "true")
+        hidden.set("id", "2")
+        inline.append(hidden)
+    elif target == "inner":
+        hidden = copy.deepcopy(xml.find(".//{" + rich_docx.PIC + "}cNvPr"))
+        hidden.set("hidden", "true")
+        hidden.set("id", "2")
+        nv.append(hidden)
+    else:
+        hidden = copy.deepcopy(nv)
+        hidden.find("{" + rich_docx.PIC + "}cNvPr").set("hidden", "true")
+        hidden.find("{" + rich_docx.PIC + "}cNvPr").set("id", "2")
+        pic.append(hidden)
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert not result["can_apply"]
+    assert "DRAWING_CONTENT_UNSUPPORTED" in codes(result)
+
+
+def test_visible_then_hidden_reuse_of_one_image_does_not_bypass_visibility():
+    hidden = ET.fromstring(image_paragraph())
+    hidden.find(".//{" + rich_docx.PIC + "}cNvPr").set("hidden", "true")
+    result = parser.parse_docx(
+        image_package(
+            heading("Image") + image_paragraph() + ET.tostring(hidden, encoding="unicode")
+        )
+    )
+    assert not result["can_apply"]
+    assert "IMAGE_HIDDEN_UNSUPPORTED" in codes(result)
+    assert sum(node["type"] == "image" for node in result["sections"][0]["content"]["content"]) == 1
+
+
+@pytest.mark.parametrize("width,height", [(2400, 2400), (12000, 6000)])
+def test_imported_picture_keeps_declared_placement_for_native_export(width, height):
+    xml = ET.fromstring(image_paragraph())
+    for namespace, name in [(rich_docx.WP, "extent"), (rich_docx.A, "ext")]:
+        extent = xml.find(".//{" + namespace + "}" + name)
+        extent.set("cx", str(width * 635))
+        extent.set("cy", str(height * 635))
+    source = image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    result = parser.parse_docx(source)
+    assert result["can_apply"] and result["source_digest"] == sha(source)
+    node = next(
+        node for node in result["sections"][0]["content"]["content"] if node["type"] == "image"
+    )
+    assert (node["attrs"]["width_twips"], node["attrs"]["height_twips"]) == (width, height)
+    assert result["images"][0]["normalization_proof"]["width_px"] == 12
+    assert result["images"][0]["normalization_proof"]["height_px"] == 8
+    drawing = rich_docx.picture(node["attrs"], "roundtrip", 2)
+    for namespace, name in [(rich_docx.WP, "extent"), (rich_docx.A, "ext")]:
+        extent = drawing.find(".//{" + namespace + "}" + name)
+        assert (extent.get("cx"), extent.get("cy")) == (str(width * 635), str(height * 635))
