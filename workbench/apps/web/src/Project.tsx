@@ -217,6 +217,10 @@ export function Project({
     setBusy(true);
     setError(null);
     try {
+      if (files.filter((file) => file.role === "body").length > 1)
+        throw new Error(
+          "同一批次只能选择一份投标正文。请保留本轮要评审的正文，并根据文件内容为其他资料选择真实用途；不要仅按文件名判断。尚未开始上传的原件不会申请授权。",
+        );
       let currentBatch = batch?.state === "committed" ? null : batchId;
       for (const item of files.filter((file) => file.state !== "已提交核验")) {
         if (!currentRun()) return;
@@ -579,7 +583,7 @@ export function Project({
           <div>
             <h2>添加项目资料</h2>
             <p className="muted">
-              先选择文件，再按内容确认主要用途。一个文件可能包含多类内容；系统当前不会自动拆分，入库后可查看原文核对。单文件不超过100
+              先选择文件，再按内容确认主要用途。同一批次只能选择一份投标正文，其他资料请按内容选择真实用途。一个文件可能包含多类内容；系统当前不会自动拆分，入库后可查看原文核对。单文件不超过100
               MiB，原件保存在私有存储。
             </p>
             <p className="small-note">
