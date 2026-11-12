@@ -1,3 +1,4 @@
+import { ParseGapSummary } from "./ParseGapSummary";
 import { useState } from "react";
 import { api, commandKey } from "./api";
 import type { DocumentEvidenceView, DocumentView } from "./contracts";
@@ -272,6 +273,7 @@ export function PartialPageSelection({
               .join("、") || "无"}
             。
           </p>
+          <ParseGapSummary pages={selection.proof.manifest.selected_pages} />
           {!selection.current_material && (
             <p>这是历史资料范围，当前材料已变化。</p>
           )}

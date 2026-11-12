@@ -90,6 +90,10 @@ it("requires explicit confirmation and shows only the selected evidence with its
   await user.click(submit);
   expect(await screen.findByText("人工确认记录 · 部分覆盖")).toBeVisible();
   expect(mocks.api).toHaveBeenCalledTimes(2);
+  await user.click(screen.getByText("查看缺口原因与核查建议"));
+  expect(screen.getByText(/部分 OCR 文字置信度偏低/)).toBeVisible();
+  await user.click(screen.getByText("查看缺口原因与核查建议"));
+  expect(screen.getByText(/部分 OCR 文字置信度偏低/)).not.toBeVisible();
   await user.click(screen.getByText("查看所选范围的解析依据"));
   const status = screen.getByRole("status");
   mocks.api.mockResolvedValueOnce({
