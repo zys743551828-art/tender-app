@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { ErrorNotice } from "./components";
 import { PartialScopeObservations } from "./PartialScopeObservations";
@@ -55,13 +55,23 @@ function consistent(side: Side, id: string) {
   );
 }
 
-export function PartialPageComparison({
-  path,
-  selection,
-}: {
-  path: string;
-  selection: Selection;
-}) {
+type Props = { path: string; selection: Selection };
+
+export function PartialPageComparison(props: Props) {
+  return (
+    <ScopedComparison
+      key={JSON.stringify([
+        props.path,
+        props.selection.id,
+        props.selection.proof.digest,
+        props.selection.current_material,
+      ])}
+      {...props}
+    />
+  );
+}
+
+function ScopedComparison({ path, selection }: Props) {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [other, setOther] = useState("");
   const [comparison, setComparison] = useState<Comparison | null>(null);
@@ -69,8 +79,33 @@ export function PartialPageComparison({
   const [error, setError] = useState<unknown>(null);
   const [loaded, setLoaded] = useState(false);
 
-  async function loadCandidates() {
+  const active = useRef(false);
+  const generation = useRef(0);
+  const working = useRef(false);
+  useEffect(() => {
+    active.current = true;
+    const requests = generation;
+    return () => {
+      active.current = false;
+      requests.current++;
+    };
+  }, []);
+  function begin() {
+    if (!active.current || working.current) return null;
+    working.current = true;
     setBusy(true);
+    const request = ++generation.current;
+    return () => active.current && generation.current === request;
+  }
+  function finish(current: () => boolean) {
+    if (current()) {
+      working.current = false;
+      setBusy(false);
+    }
+  }
+  async function loadCandidates() {
+    const current = begin();
+    if (!current) return;
     setError(null);
     setComparison(null);
     setOther("");
@@ -80,6 +115,7 @@ export function PartialPageComparison({
           `${path}/candidates`,
         )
       ).data;
+      if (!current()) return;
       setCandidates(
         value.items.filter(
           (item) =>
@@ -91,14 +127,19 @@ export function PartialPageComparison({
       if (value.has_more)
         setError(new Error("只显示最近 100 条范围记录，较早记录未列出。"));
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   async function compare() {
-    if (!candidates.some((item) => item.id === other)) return;
-    setBusy(true);
+    if (
+      !selection.current_material ||
+      !candidates.some((item) => item.id === other)
+    )
+      return;
+    const current = begin();
+    if (!current) return;
     setError(null);
     setComparison(null);
     try {
@@ -113,6 +154,7 @@ export function PartialPageComparison({
       const value = (
         await api<Comparison>(`${path}/${requirement}/compare/${technical}`)
       ).data;
+      if (!current()) return;
       if (
         value.coverage !== "partial" ||
         value.overall_result !== "unknown" ||
@@ -130,9 +172,9 @@ export function PartialPageComparison({
         throw new Error("对照范围或依据已变化，请重新核对。");
       setComparison(value);
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   const requirement =
@@ -163,6 +205,10 @@ export function PartialPageComparison({
             <select
               value={other}
               onChange={(event) => {
+                generation.current++;
+                working.current = false;
+                setBusy(false);
+                setError(null);
                 setOther(event.target.value);
                 setComparison(null);
               }}

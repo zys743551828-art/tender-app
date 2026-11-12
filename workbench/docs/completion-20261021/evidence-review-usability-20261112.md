@@ -55,3 +55,25 @@ These are synthetic race-condition checks, not new real-document export acceptan
 Actual Chrome also passed the delayed-metadata version-switch and leave-page cases
 using the real ArtifactActions component with synthetic HTTP. No late grant was
 requested after either invalidation. This is not a real artifact download test.
+
+## Interrupted scope comparison
+
+An additional race was reproduced with two failing regression cases: selecting a
+new counterpart while an earlier comparison was loading allowed the old success
+or error to replace the current view. The old comparison could also be passed to
+the new pair's observation editor. Scope comparison now invalidates pending
+responses synchronously when the counterpart changes and resets by project path,
+selection identity, proof digest and current-material state. A synchronous lock
+suppresses duplicate starts; an invalidated request cannot unlock or overwrite a
+newer request. Existing network requests are not cancelled.
+
+Eight new regression cases cover late success/error, newer-before-older completion,
+scope changes, duplicate clicks in StrictMode and unmount. The comparison test
+file's ten checks pass. An independent source review found no blocker. Actual
+Chrome at 1440 and 390 pixels exercised the real comparison and observation
+components against local synthetic HTTP: the new comparison and evidence options
+remained aligned after old success and error responses. This is not a new
+real-document, persistence, model or business acceptance result.
+
+The final frontend suite passed 2,076 tests in 210 files. Formatting, lint, type
+checks and the production build passed; existing chunk-size warnings remain.
