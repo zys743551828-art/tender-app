@@ -4,6 +4,7 @@
 
 - [解析证据查找、取件与人工范围竞态保护](evidence-review-usability-20261112.md)。
 - [章节本地恢复与 Word 候选的新选择保护](editing-recovery-stability-20261112.md)。
+- [Manual task refresh and explicit-version activation](task-manual-refresh-20261112.md).
 - [Word 图片可见性与声明放置比例](word-image-integrity-20261112.md)。
 - [实际隔离 PAGE/RICH Word-PDF 合成烟测及精确回收](native-word-smoke-20261112.md)。
 

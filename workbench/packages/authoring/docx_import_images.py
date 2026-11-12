@@ -77,6 +77,14 @@ def picture(ctx, drawing, path):
                 path,
                 "图片含未支持的绘图节点：" + local(nested.tag),
             )
+    if len(matching(inline, WP_NAMESPACES, "effectExtent")) > 1:
+        ctx.issue(
+            "DRAWING_CONTENT_UNSUPPORTED",
+            "blocker",
+            path,
+            "图片周边几何重复，不能把歧义当作未设置间距",
+        )
+        return None
     padding = one(inline, WP_NAMESPACES, "effectExtent")
     if any(inline.get(k, "0") != "0" for k in ("distT", "distB", "distL", "distR")) or (
         padding is not None and any(v != "0" for v in padding.attrib.values())
@@ -171,6 +179,14 @@ def picture(ctx, drawing, path):
         if namespace(item.tag) not in A_NAMESPACES:
             ctx.issue("IMAGE_EFFECT_UNSUPPORTED", "blocker", path, "图片包含未支持的形状扩展")
         elif name == "xfrm":
+            if any(len(matching(item, A_NAMESPACES, node)) > 1 for node in ("off", "ext")):
+                ctx.issue(
+                    "DRAWING_CONTENT_UNSUPPORTED",
+                    "blocker",
+                    path,
+                    "图片变换几何重复，无法核对内部偏移或尺寸",
+                )
+                return None
             if any(
                 item.get(k, "0") not in {"0", "false", "off"} for k in ("rot", "flipH", "flipV")
             ):

@@ -196,6 +196,14 @@ async function recoveryChoice(invalid = false) {
       pending: null,
     }),
   );
+  // These tests control request order, not native Body-stream scheduling.
+  // Keep both readHead bodies as microtask-only promises so act can drain
+  // the complete stale chain before the final negative assertions.
+  function choiceResponse(value: unknown, etag?: string) {
+    const result = response(value, etag);
+    result.json = async () => structuredClone(value);
+    return result;
+  }
   const reads: {
     finish: (value: Response) => void;
     fail: (error: Error) => void;
@@ -211,6 +219,12 @@ async function recoveryChoice(invalid = false) {
         return new Promise<Response>((finish, fail) => {
           reads.push({ finish, fail });
         });
+      }
+      if (
+        String(input) === `/api/v1/sections/${section.id}` &&
+        (!options?.method || options.method === "GET")
+      ) {
+        return choiceResponse(structuredClone(fixture.state.sections[0]));
       }
       return fixture.fetcher(input, options);
     }),
@@ -236,7 +250,7 @@ async function recoveryChoice(invalid = false) {
     reads: () => reads.length,
     finish: (index = 0) =>
       reads[index].finish(
-        response(structuredClone(fixture.state.draft), '"draft:1"'),
+        choiceResponse(structuredClone(fixture.state.draft), '"draft:1"'),
       ),
     fail: (error: Error, index = 0) => reads[index].fail(error),
   };
@@ -313,11 +327,23 @@ it.each(["old-first", "new-first"])(
       await act(async () => {
         f.finish(1);
       });
+      // Establish the complete newer readHead choice, not just fetch delivery,
+      // before releasing the stale read.
+      await waitFor(() => {
+        expect(f.onSaved).toHaveBeenCalledTimes(1);
+        expect(sessionStorage.getItem(f.key)).toBeNull();
+        expect(
+          screen.queryByRole("button", { name: "恢复本地内容并继续保存" }),
+        ).not.toBeInTheDocument();
+      });
       await act(async () => {
         f.finish(0);
       });
     }
-    expect(sessionStorage.getItem(f.key)).toBeNull();
+    await waitFor(() => {
+      expect(f.onSaved).toHaveBeenCalledTimes(1);
+      expect(sessionStorage.getItem(f.key)).toBeNull();
+    });
     expect(
       screen.queryByRole("button", { name: "恢复本地内容并继续保存" }),
     ).not.toBeInTheDocument();

@@ -740,3 +740,41 @@ def test_imported_picture_keeps_declared_placement_for_native_export(width, heig
     for namespace, name in [(rich_docx.WP, "extent"), (rich_docx.A, "ext")]:
         extent = drawing.find(".//{" + namespace + "}" + name)
         assert (extent.get("cx"), extent.get("cy")) == (str(width * 635), str(height * 635))
+
+
+@pytest.mark.parametrize("target", ["offset", "extent", "padding"])
+def test_duplicate_optional_picture_geometry_is_not_treated_as_absent(target):
+    xml = ET.fromstring(image_paragraph())
+    if target == "padding":
+        inline = xml.find(".//{" + rich_docx.WP + "}inline")
+        for value in ("0", "635"):
+            ET.SubElement(
+                inline,
+                "{" + rich_docx.WP + "}effectExtent",
+                {"l": value, "t": "0", "r": "0", "b": "0"},
+            )
+    else:
+        transform = xml.find(".//{" + rich_docx.A + "}xfrm")
+        name = "off" if target == "offset" else "ext"
+        duplicate = copy.deepcopy(transform.find("{" + rich_docx.A + "}" + name))
+        duplicate.set("x" if target == "offset" else "cx", "635")
+        transform.append(duplicate)
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert not result["can_apply"]
+    assert "DRAWING_CONTENT_UNSUPPORTED" in codes(result)
+
+
+@pytest.mark.parametrize("target", ["offset", "extent", "padding"])
+def test_absent_optional_picture_geometry_remains_supported(target):
+    xml = ET.fromstring(image_paragraph())
+    if target != "padding":
+        transform = xml.find(".//{" + rich_docx.A + "}xfrm")
+        name = "off" if target == "offset" else "ext"
+        transform.remove(transform.find("{" + rich_docx.A + "}" + name))
+    result = parser.parse_docx(
+        image_package(heading("Image") + ET.tostring(xml, encoding="unicode"))
+    )
+    assert result["can_apply"]
+    assert "DRAWING_CONTENT_UNSUPPORTED" not in codes(result)

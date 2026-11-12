@@ -79,3 +79,22 @@ copies were reconstructed from Git and precisely removed after the comparison.
 Before committing this image correction, f66e276 completed all eleven jobs in
 [Workbench CI 43241847387](https://github.com/zys743551828-art/tender-app/actions/runs/43241847387).
 That result covers the prior recovery fixes, not the image changes above.
+
+
+## Optional geometry ambiguity follow-up
+
+After the visibility correction, reviewing the remaining optional `one()` reads
+reproduced three additional malformed-package cases: duplicate `effectExtent`
+suppressed the padding-loss warning, while duplicate `off` or `ext` made internal
+translation or conflicting size appear absent. The importer cannot infer which
+conflicting node a Word implementation might use.
+
+Each of these duplicate optional geometries is now explicitly blocked before it
+can be interpreted as a missing field. Zero occurrences retain the previously
+supported default behavior; no new geometry or transformation was enabled. Three
+failing counterexamples and three valid-absence counterparts bring the focused
+parser/API/import set to 98 passing tests. Changed Python Ruff, formatting,
+Linux-target mypy and Bandit checks pass. This follow-up is accompanied by a
+separate task-run interaction correction described in
+[the manual-run stability record](task-manual-refresh-20261112.md). Both changes
+require their own exact-commit CI; older successful runs do not certify them.

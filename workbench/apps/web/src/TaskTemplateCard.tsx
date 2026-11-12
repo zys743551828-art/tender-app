@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ApiError } from "./api";
 import type { RunView } from "./contracts";
 import type { TemplateView, TaskKindPage } from "./taskTriggerContracts";
@@ -47,6 +47,19 @@ export function TaskTemplateCard({
     resource.data?.id === id && resource.data.bid_id === bidId
       ? resource.data
       : undefined;
+  const manualActivation = useRef<{
+    identity: string;
+    kind: "pointer" | "keyboard";
+    pointerId?: number;
+  } | null>(null);
+  const manualIdentity = JSON.stringify([
+    bidId,
+    memberId,
+    id,
+    item?.version_id,
+    item?.digest,
+    resource.etag,
+  ]);
   const pause = useRecordedCommand(`task-pause:${memberId}:${bidId}:${id}`);
   const run = useRecordedCommand(`task-run:${memberId}:${bidId}:${id}:start`);
   const [edit, setEdit] = useState(false);
@@ -97,7 +110,24 @@ export function TaskTemplateCard({
     onChanged();
   }
   return (
-    <article className="panel task-template-card">
+    <article
+      className="panel task-template-card"
+      onPointerDownCapture={(event) => {
+        const target =
+          event.target instanceof Element
+            ? event.target.closest<HTMLButtonElement>("button[data-manual-run]")
+            : null;
+        if (target && !target.disabled)
+          manualActivation.current = {
+            identity: manualIdentity,
+            kind: "pointer",
+            pointerId: event.pointerId > 0 ? event.pointerId : undefined,
+          };
+      }}
+      onPointerCancelCapture={() => {
+        manualActivation.current = null;
+      }}
+    >
       <ResourceState
         {...resource}
         hasData={!!item}
@@ -217,9 +247,13 @@ export function TaskTemplateCard({
             </button>
             {!exact && !authoring && (
               <button
+                key={JSON.stringify([
+                  item.version_id,
+                  item.digest,
+                  resource.etag,
+                ])}
                 className="button primary"
                 disabled={
-                  resource.loading ||
                   !!resource.error ||
                   item.paused ||
                   unavailable ||
@@ -228,15 +262,47 @@ export function TaskTemplateCard({
                   !!run.pending ||
                   !resource.etag
                 }
-                onClick={() =>
+                data-manual-run="true"
+                onKeyDown={(event) => {
+                  if (
+                    !event.repeat &&
+                    (event.key === "Enter" || event.key === " ")
+                  )
+                    manualActivation.current = {
+                      identity: manualIdentity,
+                      kind: "keyboard",
+                    };
+                }}
+                onClick={(event) => {
+                  const activation = manualActivation.current;
+                  manualActivation.current = null;
+                  const physical =
+                    event.detail > 0 ||
+                    !!(event.nativeEvent as PointerEvent).pointerType;
+                  if (physical) {
+                    if (
+                      activation?.kind !== "pointer" ||
+                      activation.identity !== manualIdentity ||
+                      (activation.pointerId !== undefined &&
+                        (event.nativeEvent as PointerEvent).pointerId > 0 &&
+                        activation.pointerId !==
+                          (event.nativeEvent as PointerEvent).pointerId)
+                    )
+                      return;
+                  } else if (
+                    activation?.kind === "keyboard" &&
+                    activation.identity !== manualIdentity
+                  ) {
+                    return;
+                  }
                   void run
                     .run<RunView>(
                       `/bids/${bidId}/task-definitions/${id}/runs`,
                       { rerun: false },
                       resource.etag ?? "",
                     )
-                    .then((value) => accept(value?.data))
-                }
+                    .then((value) => accept(value?.data));
+                }}
               >
                 手动运行当前版本
               </button>
