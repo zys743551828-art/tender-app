@@ -8,6 +8,7 @@ import type {
   AuthoringStructurePreview,
   AuthoringStylePreview,
   AuthoringStructureResult,
+  AuthoringPlanSaved,
   AuthoringStructureHistory,
   AuthoringTemplateCatalog,
   AuthoringTemplateVersionView,
@@ -42,7 +43,9 @@ type StructureProps = {
   onContinue?: () => void;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   onChanged: (
-    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+    applied?:
+      | Extract<AuthoringStructureResult, { state: "applied" }>
+      | AuthoringPlanSaved,
   ) => Promise<unknown>;
   onBusy: (busy: boolean) => void;
 };
@@ -170,7 +173,9 @@ function ScopedAuthoringStructure({
   ]);
   const valid = tree.data?.draft_id === draftId ? tree.data : undefined;
   async function refresh(
-    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+    applied?:
+      | Extract<AuthoringStructureResult, { state: "applied" }>
+      | AuthoringPlanSaved,
   ) {
     await onChanged(applied);
     await tree.reload();

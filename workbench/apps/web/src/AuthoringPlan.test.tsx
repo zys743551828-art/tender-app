@@ -47,7 +47,13 @@ it("人工预算保存走plan revision 0与draft11，不借section10冒充plan�
         return json({
           draft_id: "draft",
           draft_revision: 12,
-          plan: { section_id: "section", revision: 1 },
+          snapshot_id: "snapshot-12",
+          plan: {
+            bid_id: "bid",
+            draft_id: "draft",
+            section_id: "section",
+            revision: 1,
+          },
         });
       }
       if (url.endsWith("/rules")) return json({ rules: [] });
@@ -133,7 +139,13 @@ it("只读状态仍可恢复原计划请求，不以新草稿头重建body、key
         return json({
           draft_id: "draft",
           draft_revision: 12,
-          plan: { section_id: "section", revision: 1 },
+          snapshot_id: "snapshot-12",
+          plan: {
+            bid_id: "bid",
+            draft_id: "draft",
+            section_id: "section",
+            revision: 1,
+          },
         });
       }
       return json(url.endsWith("/rules") ? { rules: [] } : { documents: [] });

@@ -32,7 +32,7 @@ export function AuthoringPlan({
   draftRevision: number;
   disabled: boolean;
   prepare: () => Promise<ApiResult<DraftView> | null>;
-  onSaved: () => Promise<void>;
+  onSaved: (saved?: AuthoringPlanSaved) => Promise<void>;
   onBusy?: (busy: boolean) => void;
 }) {
   const [form, setForm] = useKnowledgeInput(
@@ -41,6 +41,27 @@ export function AuthoringPlan({
   );
   const cmd = useRecordedCommand(
     `authoring-plan:${memberId}:${draftId}:${node.section_id}`,
+    (response) => {
+      const saved = response.data as AuthoringPlanSaved | null;
+      const plan = saved?.plan;
+      if (
+        !saved ||
+        saved.draft_id !== draftId ||
+        !Number.isSafeInteger(saved.draft_revision) ||
+        saved.draft_revision < 1 ||
+        typeof saved.snapshot_id !== "string" ||
+        !saved.snapshot_id.trim() ||
+        !plan ||
+        plan.bid_id !== bidId ||
+        plan.draft_id !== draftId ||
+        plan.section_id !== node.section_id ||
+        !Number.isSafeInteger(plan.revision) ||
+        plan.revision < 1
+      )
+        throw new Error(
+          "计划保存回执无法核对，请恢复原保存结果；输入与原请求已保留。",
+        );
+    },
   );
   const [error, setError] = useState<unknown>(null);
   const [saved, setSaved] = useState(false);
@@ -75,17 +96,12 @@ export function AuthoringPlan({
         );
       }
       if (r) {
-        if (
-          r.data.plan.section_id !== node.section_id ||
-          r.data.draft_id !== draftId
-        )
-          throw new Error("计划保存身份不一致，请读取当前计划核对。");
         setForm((old) => ({
           ...old,
           base_plan_revision: r.data.plan.revision,
         }));
         setSaved(true);
-        await onSaved();
+        await onSaved(r.data);
       }
     } catch (e) {
       setError(e);

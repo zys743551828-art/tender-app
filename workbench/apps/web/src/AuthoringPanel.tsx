@@ -7,6 +7,7 @@ import type {
   AuthoringRichCapabilities,
   AuthoringDraftPage,
   AuthoringStructureResult,
+  AuthoringPlanSaved,
   CreateDraftRequest,
   DraftView,
 } from "./contracts";
@@ -308,7 +309,9 @@ function DraftEditor({
   const [structureBusy, setStructureBusy] = useState(false);
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [structureSync, setStructureSync] = useState<{
-    applied: Extract<AuthoringStructureResult, { state: "applied" }>;
+    applied:
+      | Extract<AuthoringStructureResult, { state: "applied" }>
+      | AuthoringPlanSaved;
     loading: boolean;
     message: string;
   } | null>(null);
@@ -350,18 +353,21 @@ function DraftEditor({
     ? selected!
     : view?.sections[0]?.id;
   async function structureChanged(
-    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+    applied?:
+      | Extract<AuthoringStructureResult, { state: "applied" }>
+      | AuthoringPlanSaved,
     explicitLatest = false,
   ) {
     if (!applied) return reloadHead();
     if (syncReading.current) return;
     syncReading.current = true;
+    const operation = "plan" in applied ? "章节计划" : "目录";
     const originalEditor = editor.current;
     const clean = !sectionId || !!originalEditor?.isSavedAndClean?.();
     setStructureSync({
       applied,
       loading: true,
-      message: "已取得目录应用回执，正在重新核对本章保存版本…",
+      message: `已取得${operation}${"plan" in applied ? "保存" : "应用"}回执，正在重新核对本章保存版本…`,
     });
     try {
       if (!clean)
@@ -376,18 +382,18 @@ function DraftEditor({
           next.data.snapshot_id !== applied.snapshot_id)
       )
         throw new Error(
-          "目录回执与当前草稿无法核对，未替换编辑器或清除本地内容。",
+          `${operation}回执与当前草稿无法核对，未替换编辑器或清除本地内容。`,
         );
       if (!explicitLatest && next.data.revision !== applied.draft_revision)
         throw new Error(
-          "目录已应用，但当前草稿又有更新。请核对后重新读取已保存正文。",
+          `${operation}${"plan" in applied ? "已保存" : "已应用"}，但当前草稿又有更新。请核对后重新读取已保存正文。`,
         );
       if (originalEditor && originalEditor === editor.current) {
         if (!originalEditor.isSavedAndClean?.())
           throw new Error(
             "本章出现了新的待保存或恢复内容，已保留原稿，未自动替换。",
           );
-        // Only a confirmed structure ACK and a clean, unchanged editor can
+        // Only a verified structure/plan ACK and a clean, unchanged editor can
         // replace the outer loader. Pure folding, rejection and 412 do not.
         setEditorEpoch((value) => value + 1);
       }
