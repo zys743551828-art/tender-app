@@ -2,6 +2,7 @@
 
 ## 2026-11-12 本机工程稳定性补验
 
+- [Word 追加回执与同章继续编辑](word-append-continuation-20261112.md)。
 - [章节计划回执与同章继续编辑](plan-save-continuation-20261112.md)。
 - [章节树折叠、直接移动与确认后继续编辑](chapter-tree-direct-move-20261112.md)。
 - [解析证据查找、取件与人工范围竞态保护](evidence-review-usability-20261112.md)。

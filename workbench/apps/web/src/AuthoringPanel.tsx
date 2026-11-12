@@ -8,6 +8,7 @@ import type {
   AuthoringDraftPage,
   AuthoringStructureResult,
   AuthoringPlanSaved,
+  AuthoringWordImportResult,
   CreateDraftRequest,
   DraftView,
 } from "./contracts";
@@ -28,7 +29,16 @@ import {
   announceWorkspaceAuxiliary,
   listenWorkspaceAuxiliary,
 } from "./workspaceAuxiliary";
+import { executionId } from "./executionInputValidation";
 import "./AuthoringLayout.css";
+
+type SavedAuthoringChange =
+  | Extract<AuthoringStructureResult, { state: "applied" }>
+  | AuthoringPlanSaved
+  | (AuthoringWordImportResult & {
+      draft_revision: number;
+      snapshot_id: string;
+    });
 
 export function AuthoringPanel({
   bidId,
@@ -309,9 +319,7 @@ function DraftEditor({
   const [structureBusy, setStructureBusy] = useState(false);
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [structureSync, setStructureSync] = useState<{
-    applied:
-      | Extract<AuthoringStructureResult, { state: "applied" }>
-      | AuthoringPlanSaved;
+    applied: SavedAuthoringChange;
     loading: boolean;
     message: string;
   } | null>(null);
@@ -353,15 +361,18 @@ function DraftEditor({
     ? selected!
     : view?.sections[0]?.id;
   async function structureChanged(
-    applied?:
-      | Extract<AuthoringStructureResult, { state: "applied" }>
-      | AuthoringPlanSaved,
+    applied?: SavedAuthoringChange,
     explicitLatest = false,
   ) {
     if (!applied) return reloadHead();
     if (syncReading.current) return;
     syncReading.current = true;
-    const operation = "plan" in applied ? "章节计划" : "目录";
+    const operation =
+      "decision" in applied
+        ? "Word追加"
+        : "plan" in applied
+          ? "章节计划"
+          : "目录";
     const originalEditor = editor.current;
     const clean = !sectionId || !!originalEditor?.isSavedAndClean?.();
     setStructureSync({
@@ -393,7 +404,7 @@ function DraftEditor({
           throw new Error(
             "本章出现了新的待保存或恢复内容，已保留原稿，未自动替换。",
           );
-        // Only a verified structure/plan ACK and a clean, unchanged editor can
+        // Only a verified draft-write ACK and a clean, unchanged editor can
         // replace the outer loader. Pure folding, rejection and 412 do not.
         setEditorEpoch((value) => value + 1);
       }
@@ -412,6 +423,22 @@ function DraftEditor({
     } finally {
       syncReading.current = false;
     }
+  }
+  async function wordImportChanged(applied?: AuthoringWordImportResult) {
+    if (!applied) return reloadHead();
+    const { draft_revision, snapshot_id } = applied;
+    if (
+      applied.bid_id !== bidId ||
+      applied.draft_id !== draftId ||
+      applied.decision !== "append" ||
+      applied.state !== "applied" ||
+      typeof draft_revision !== "number" ||
+      !Number.isSafeInteger(draft_revision) ||
+      draft_revision < 1 ||
+      !executionId(snapshot_id)
+    )
+      throw new Error("Word追加回执与当前草稿无法核对，未替换正文。");
+    return structureChanged({ ...applied, draft_revision, snapshot_id });
   }
   async function choose(id: string) {
     if (
@@ -449,6 +476,22 @@ function DraftEditor({
       setSwitching(false);
     }
   }
+  const syncNotice = structureSync && (
+    <div className="notice warning" role="status">
+      <p>{structureSync.message}</p>
+      {!structureSync.loading && (
+        <button
+          type="button"
+          className="button secondary"
+          onClick={() =>
+            void structureChanged(structureSync.applied, true).catch(setError)
+          }
+        >
+          核对并重新读取已保存正文
+        </button>
+      )}
+    </div>
+  );
   if (view && (view.id !== draftId || view.bid_id !== bidId))
     return (
       <div className="notice error" role="alert">
@@ -463,6 +506,7 @@ function DraftEditor({
         onRetry={() => void draft.reload()}
       />
       {!directoryOpen && <ErrorNotice error={error} />}
+      {!directoryOpen && syncNotice}
       <ErrorNotice error={exact.error} onRetry={() => void exact.refresh()} />
       {exact.unavailable && (
         <p className="notice warning" role="status">
@@ -538,7 +582,7 @@ function DraftEditor({
               {view.sections.find((section) => section.id === sectionId)
                 ?.title ?? "请选择章节"}
             </span>
-            {(structureBusy || structureSync) && (
+            {structureBusy && !structureSync && (
               <span role="status">目录操作待确认或处理中，打开目录继续。</span>
             )}
           </div>
@@ -567,25 +611,7 @@ function DraftEditor({
                 </button>
               </header>
               <ErrorNotice error={error} />
-              {structureSync && (
-                <div className="notice warning" role="status">
-                  <p>{structureSync.message}</p>
-                  {!structureSync.loading && (
-                    <button
-                      type="button"
-                      className="button secondary"
-                      onClick={() =>
-                        void structureChanged(
-                          structureSync.applied,
-                          true,
-                        ).catch(setError)
-                      }
-                    >
-                      核对并重新读取已保存正文
-                    </button>
-                  )}
-                </div>
-              )}
+              {directoryOpen && syncNotice}
               <AuthoringStructure
                 bidId={bidId}
                 memberId={memberId}
@@ -702,7 +728,7 @@ function DraftEditor({
               generating ||
               manualEditing
             }
-            onChanged={reloadHead}
+            onChanged={wordImportChanged}
             onBusy={setImporting}
             onPackages={onPackages}
             prepare={async () => {

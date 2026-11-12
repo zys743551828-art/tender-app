@@ -78,7 +78,7 @@ export function AuthoringWordImport({
   draftRevision: number;
   disabled: boolean;
   prepare: () => Promise<ApiResult<DraftView> | null>;
-  onChanged: () => Promise<unknown>;
+  onChanged: (applied?: AuthoringWordImportResult) => Promise<unknown>;
   onBusy: (busy: boolean) => void;
   onPackages?: () => void;
 }) {
@@ -417,7 +417,7 @@ export function AuthoringWordImport({
           can_apply: false,
           resolution: value,
         });
-        if (value.decision === "append") await onChanged();
+        if (value.decision === "append") await onChanged(value);
       }
       if (active.current && showHistory) {
         setMoreHistory([]);
@@ -440,8 +440,15 @@ export function AuthoringWordImport({
               failure.code === "AUTHORING_WORD_IMPORT_ALREADY_RESOLVED" &&
               recordRef.current.lastCandidateId
             ) {
-              await loadCandidate(recordRef.current.lastCandidateId);
-              await onChanged();
+              const resolved = await loadCandidate(
+                recordRef.current.lastCandidateId,
+              );
+              if (!active.current) return;
+              await onChanged(
+                resolved?.resolution?.decision === "append"
+                  ? resolved.resolution
+                  : undefined,
+              );
             }
           }
         } catch (storageFailure) {
