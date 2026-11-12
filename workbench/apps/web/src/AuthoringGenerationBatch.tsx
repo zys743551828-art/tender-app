@@ -119,7 +119,7 @@ type Props = {
   draft: DraftView;
   disabled: boolean;
   prepare: () => Promise<ApiResult<DraftView> | null>;
-  onChanged: () => Promise<unknown>;
+  onChanged: (applied?: AuthoringGenerationBatchReceipt) => Promise<unknown>;
   onBusy: (busy: boolean) => void;
 };
 export function AuthoringGenerationBatch(props: Props) {
@@ -588,7 +588,7 @@ function GenerationBatchPanel({
               ? "所选章节已一次应用，本批已结束。未选章节保持原样。"
               : "批次已关闭；运行中的任务已请求取消，已有费用和待核清敞口仍保留。",
       );
-      if (receipt.kind === "applied") await onChanged();
+      if (receipt.kind === "applied") await onChanged(receipt);
       // A metadata GET started before the write must not stand in for its fresh receipt read.
       readTicket.current++;
       inFlight.current = null;

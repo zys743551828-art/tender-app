@@ -8,6 +8,9 @@ import type {
   AuthoringDraftPage,
   AuthoringStructureResult,
   AuthoringPlanSaved,
+  AuthoringGenerationBatchReceipt,
+  AuthoringExactTextEditResult,
+  AuthoringExactMultiTextEditResult,
   AuthoringWordImportResult,
   CreateDraftRequest,
   DraftView,
@@ -35,7 +38,13 @@ import "./AuthoringLayout.css";
 type SavedAuthoringChange =
   | Extract<AuthoringStructureResult, { state: "applied" }>
   | AuthoringPlanSaved
+  | AuthoringExactTextEditResult
+  | AuthoringExactMultiTextEditResult
   | (AuthoringWordImportResult & {
+      draft_revision: number;
+      snapshot_id: string;
+    })
+  | (AuthoringGenerationBatchReceipt & {
       draft_revision: number;
       snapshot_id: string;
     });
@@ -368,11 +377,15 @@ function DraftEditor({
     if (syncReading.current) return;
     syncReading.current = true;
     const operation =
-      "decision" in applied
-        ? "Word追加"
-        : "plan" in applied
-          ? "章节计划"
-          : "目录";
+      "qualification" in applied
+        ? "固定来源文字修订"
+        : "kind" in applied
+          ? "批量采纳"
+          : "decision" in applied
+            ? "Word追加"
+            : "plan" in applied
+              ? "章节计划"
+              : "目录";
     const originalEditor = editor.current;
     const clean = !sectionId || !!originalEditor?.isSavedAndClean?.();
     setStructureSync({
@@ -399,6 +412,10 @@ function DraftEditor({
         throw new Error(
           `${operation}${"plan" in applied ? "已保存" : "已应用"}，但当前草稿又有更新。请核对后重新读取已保存正文。`,
         );
+      if ("qualification" in applied) {
+        await exact.refresh();
+        window.dispatchEvent(new Event("server-snapshot-change"));
+      }
       if (originalEditor && originalEditor === editor.current) {
         if (!originalEditor.isSavedAndClean?.())
           throw new Error(
@@ -423,6 +440,45 @@ function DraftEditor({
     } finally {
       syncReading.current = false;
     }
+  }
+  async function exactTextChanged(
+    applied?: AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
+  ) {
+    if (!applied) {
+      await reloadHead();
+      await exact.refresh();
+      window.dispatchEvent(new Event("server-snapshot-change"));
+      return;
+    }
+    if (
+      applied.bid_id !== bidId ||
+      applied.draft_id !== draftId ||
+      ![
+        "authoring-exact-text-edit-result/1",
+        "authoring-exact-text-edit-result/2",
+      ].includes(applied.protocol) ||
+      !Number.isSafeInteger(applied.draft_revision) ||
+      applied.draft_revision < 1 ||
+      !executionId(applied.snapshot_id)
+    )
+      throw new Error("固定来源文字修订回执与当前草稿无法核对，未替换正文。");
+    return structureChanged(applied);
+  }
+  async function generationChanged(applied?: AuthoringGenerationBatchReceipt) {
+    if (!applied) return reloadHead();
+    const { draft_revision, snapshot_id } = applied;
+    if (
+      applied.bid_id !== bidId ||
+      applied.draft_id !== draftId ||
+      applied.kind !== "applied" ||
+      applied.batch_state !== "applied" ||
+      typeof draft_revision !== "number" ||
+      !Number.isSafeInteger(draft_revision) ||
+      draft_revision < 1 ||
+      !executionId(snapshot_id)
+    )
+      throw new Error("批量采纳回执与当前草稿无法核对，未替换正文。");
+    return structureChanged({ ...applied, draft_revision, snapshot_id });
   }
   async function wordImportChanged(applied?: AuthoringWordImportResult) {
     if (!applied) return reloadHead();
@@ -556,11 +612,7 @@ function DraftEditor({
                   exact.checking
                 }
                 onEditingChange={setManualEditing}
-                onSaved={async () => {
-                  await reloadHead();
-                  await exact.refresh();
-                  window.dispatchEvent(new Event("server-snapshot-change"));
-                }}
+                onSaved={exactTextChanged}
               />
             )}
           <div className="authoring-task-toolbar">
@@ -698,7 +750,7 @@ function DraftEditor({
               importing ||
               manualEditing
             }
-            onChanged={reloadHead}
+            onChanged={generationChanged}
             onBusy={setGenerating}
             prepare={async () => {
               if (

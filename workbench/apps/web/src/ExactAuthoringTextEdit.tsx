@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
-import type { AuthoringDocument, AuthoringExactDraftStatus } from "./contracts";
+import type {
+  AuthoringDocument,
+  AuthoringExactDraftStatus,
+  AuthoringExactTextEditResult,
+  AuthoringExactMultiTextEditResult,
+} from "./contracts";
 import { ErrorNotice } from "./components";
 import { jsonDigest } from "./editorSchema";
 import {
@@ -40,7 +45,9 @@ function ExactAuthoringTextEditor({
   status: AuthoringExactDraftStatus | null;
   etag: string;
   disabled: boolean;
-  onSaved: () => Promise<unknown>;
+  onSaved: (
+    saved?: AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
+  ) => Promise<unknown>;
   onEditingChange: (value: boolean) => void;
 }) {
   const command = useExactAuthoringTextEdit({ memberId, bidId, draftId });
@@ -162,7 +169,7 @@ function ExactAuthoringTextEditor({
       `人工文字修订已保存为草稿修订 ${result.data.draft_revision}，原稿及来源链均已保留。`,
     );
     try {
-      await onSaved();
+      await onSaved(result.data);
       setRefresh((n) => n + 1);
     } catch (failure) {
       setError(failure);

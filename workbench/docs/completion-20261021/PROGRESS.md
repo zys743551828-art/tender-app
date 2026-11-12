@@ -2,6 +2,8 @@
 
 ## 2026-11-12 本机工程稳定性补验
 
+- [固定来源文字修订后主正文显示同步](exact-text-display-sync-20261112.md)。
+- [批量采纳回执与当前章节继续编辑](generation-apply-continuation-20261112.md)。
 - [Word 追加回执与同章继续编辑](word-append-continuation-20261112.md)。
 - [章节计划回执与同章继续编辑](plan-save-continuation-20261112.md)。
 - [章节树折叠、直接移动与确认后继续编辑](chapter-tree-direct-move-20261112.md)。
