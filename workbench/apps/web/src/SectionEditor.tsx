@@ -166,6 +166,16 @@ const SectionBody = forwardRef<
   );
   const latest = useRef(value);
   latest.current = value;
+  const choice = useRef(0);
+  const active = useRef(false);
+  useEffect(() => {
+    active.current = true;
+    const choices = choice;
+    return () => {
+      active.current = false;
+      choices.current++;
+    };
+  }, []);
   const [recovery, setRecovery] = useState<LocalDraft | null>(() => {
     try {
       const saved = JSON.parse(
@@ -351,6 +361,7 @@ const SectionBody = forwardRef<
       !(failure instanceof ApiError && [400, 422].includes(failure.status)),
   );
   function change(node: EditorNode) {
+    choice.current++;
     latest.current = node;
     setValue(node);
     const content = serializeAuthoringContent(node);
@@ -393,9 +404,11 @@ const SectionBody = forwardRef<
     return () => window.removeEventListener("beforeunload", unload);
   }, [queue]);
   async function adoptRemote() {
+    const ticket = ++choice.current;
+    const currentChoice = () => active.current && choice.current === ticket;
     try {
       const current = conflict ?? (await readHead());
-      if (!queue.discard()) return;
+      if (!currentChoice() || !queue.discard()) return;
       head.current = current;
       pending.current = null;
       completeCommand(scope);
@@ -414,12 +427,13 @@ const SectionBody = forwardRef<
       setNotice(null);
       onSaved();
     } catch (failure) {
-      setNotice(failure);
+      if (currentChoice()) setNotice(failure);
     }
   }
   function restoreLocal() {
     if (!recovery) return;
     if (readOnly && !recovery.pending) return;
+    choice.current++;
     try {
       const restored = readAuthoringContent(recovery.value, !!richCapabilities);
       head.current = {
@@ -450,6 +464,7 @@ const SectionBody = forwardRef<
   }
   async function saveMerged() {
     if (readOnly || !conflict || !queue.discard()) return;
+    choice.current++;
     head.current = conflict;
     pending.current = null;
     completeCommand(scope);
@@ -460,6 +475,7 @@ const SectionBody = forwardRef<
     await queue.flush();
   }
   async function refreshAfterAction() {
+    choice.current++;
     if (!queue.discard())
       throw new Error("还有保存正在进行，请等待保存确认后恢复当前正文。");
     const current = await readHead();

@@ -154,6 +154,7 @@ export function AuthoringWordImport({
     active.current = true;
     return () => {
       active.current = false;
+      reading.current += 1;
     };
   }, []);
   useEffect(() => {
@@ -169,6 +170,9 @@ export function AuthoringWordImport({
   }, [candidateId]);
 
   const acceptCandidate = useCallback((value: AuthoringWordImportCandidate) => {
+    // An accepted command/read supersedes any older candidate request.
+    reading.current += 1;
+    setLoadingCandidate(false);
     candidateRef.current = value;
     setCandidate(value);
     if (value.resolution) setResult(value.resolution);

@@ -586,3 +586,60 @@ it("图片读取期间离开页面，迟到字节不会创建未清理的Blob UR
   });
   expect(urls.create).not.toHaveBeenCalled();
 });
+
+it.each(["success", "failure", "unmounted"])(
+  "新候选接管后忽略旧候选读取的迟到 %s",
+  async (outcome) => {
+    const old = importCandidate();
+    const next = { ...importCandidate(), candidate_id: importId(88) };
+    const server = setup(next);
+    remember(old);
+    const fetchNext = globalThis.fetch;
+    let release!: (value: Response) => void;
+    const delayed = new Promise<Response>((resolve) => {
+      release = resolve;
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, options?: RequestInit) => {
+        if (String(input) === `${base}/${old.candidate_id}`) return delayed;
+        return fetchNext(input, options);
+      }),
+    );
+    const view = mount();
+    await createCandidate();
+    expect(readWordImportRecovery(importScope).lastCandidateId).toBe(
+      next.candidate_id,
+    );
+    if (outcome === "unmounted") view.unmount();
+    await act(async () => {
+      release(
+        outcome !== "failure"
+          ? response(old)
+          : response(
+              {
+                code: "OLD_READ_FAILED",
+                message: "OLD_READ_FAILED",
+              },
+              500,
+            ),
+      );
+    });
+    expect(readWordImportRecovery(importScope).lastCandidateId).toBe(
+      next.candidate_id,
+    );
+    if (outcome === "unmounted") {
+      expect(view.container).toBeEmptyDOMElement();
+      return;
+    }
+    expect(
+      screen.getByRole("heading", { name: importOriginal.original_name }),
+    ).toBeVisible();
+    expect(screen.queryByText(/OLD_READ_FAILED/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "明确追加这些新章节" }),
+    ).toBeDisabled();
+    expect(server.resolves).toHaveLength(0);
+    expect(view.props.onChanged).not.toHaveBeenCalled();
+  },
+);
