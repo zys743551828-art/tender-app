@@ -114,7 +114,7 @@ it("a failed save prevents chapter changes, retains the actual editor, and retri
   await user.click(screen.getByRole("button", { name: "章节目录与计划" }));
   const directory = screen.getByRole("dialog", { name: "章节目录与编写计划" });
   await user.click(
-    within(directory).getByRole("button", { name: /质量保障措施/ }),
+    within(directory).getByRole("button", { name: /^章\s+质量保障措施/ }),
   );
   await within(directory).findByText(/本章保存尚未确认，未切换章节/);
   expect(writing.getByLabelText("章节名称")).toBe(title);
@@ -131,7 +131,7 @@ it("a failed save prevents chapter changes, retains the actual editor, and retri
   expect(fixture.state.appliedSaves).toBe(1);
   await user.click(screen.getByRole("button", { name: "章节目录与计划" }));
   await user.click(
-    within(directory).getByRole("button", { name: /质量保障措施/ }),
+    within(directory).getByRole("button", { name: /^章\s+质量保障措施/ }),
   );
   await waitFor(() =>
     expect(writing.getByLabelText("章节名称")).toHaveValue("质量保障措施"),

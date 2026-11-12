@@ -4188,6 +4188,81 @@ textarea:focus-visible {
 .chapter-tree .chapter-link {
   width: 100%;
 }
+.authoring-chapter-tree {
+  min-width: 0;
+}
+.authoring-chapter-tree .chapter-tree ol {
+  list-style: none;
+  margin: 0 0 4px 0;
+  padding: 0 0 0 12px;
+  border-inline-start: 1px solid var(--line);
+}
+.chapter-tree-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: start;
+  gap: 4px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.chapter-tree-row .chapter-link {
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 4px;
+}
+.chapter-tree-row .chapter-fold,
+.chapter-tree-row .chapter-move-handle,
+.chapter-fold-spacer {
+  width: 44px;
+  min-height: 44px;
+}
+.chapter-tree-row .chapter-fold,
+.chapter-tree-row .chapter-move-handle {
+  padding: 4px;
+  font-size: 12px;
+}
+.chapter-tree-row .chapter-move-handle[draggable="true"] {
+  cursor: grab;
+}
+.chapter-tree-row .chapter-move-handle:active {
+  cursor: grabbing;
+}
+.chapter-tree-row.drop-target {
+  outline: 2px solid var(--primary);
+  background: var(--primary-soft);
+}
+.authoring-chapter-tree form {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.authoring-chapter-tree fieldset {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.authoring-chapter-tree legend {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.authoring-chapter-tree label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.authoring-chapter-tree select {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+.authoring-chapter-tree form p {
+  font-size: 12px;
+  line-height: 1.6;
+}
 .structure-preview {
   background: var(--primary-soft);
   border: 1px solid var(--primary);

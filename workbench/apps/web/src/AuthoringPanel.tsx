@@ -6,6 +6,7 @@ import type {
   AuthoringCapabilities,
   AuthoringRichCapabilities,
   AuthoringDraftPage,
+  AuthoringStructureResult,
   CreateDraftRequest,
   DraftView,
 } from "./contracts";
@@ -305,6 +306,13 @@ function DraftEditor({
   const [switching, setSwitching] = useState(false);
   const [building, setBuilding] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
+  const [editorEpoch, setEditorEpoch] = useState(0);
+  const [structureSync, setStructureSync] = useState<{
+    applied: Extract<AuthoringStructureResult, { state: "applied" }>;
+    loading: boolean;
+    message: string;
+  } | null>(null);
+  const syncReading = useRef(false);
   const [manualEditing, setManualEditing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -341,6 +349,64 @@ function DraftEditor({
   const sectionId = view?.sections.some((section) => section.id === selected)
     ? selected!
     : view?.sections[0]?.id;
+  async function structureChanged(
+    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+    explicitLatest = false,
+  ) {
+    if (!applied) return reloadHead();
+    if (syncReading.current) return;
+    syncReading.current = true;
+    const originalEditor = editor.current;
+    const clean = !sectionId || !!originalEditor?.isSavedAndClean?.();
+    setStructureSync({
+      applied,
+      loading: true,
+      message: "已取得目录应用回执，正在重新核对本章保存版本…",
+    });
+    try {
+      if (!clean)
+        throw new Error(
+          "本章仍有待处理的保存或本地恢复内容，已保留原稿。请先处理，再重新读取已保存正文。",
+        );
+      const next = await reloadHead();
+      if (
+        applied.draft_id !== draftId ||
+        next.data.revision < applied.draft_revision ||
+        (next.data.revision === applied.draft_revision &&
+          next.data.snapshot_id !== applied.snapshot_id)
+      )
+        throw new Error(
+          "目录回执与当前草稿无法核对，未替换编辑器或清除本地内容。",
+        );
+      if (!explicitLatest && next.data.revision !== applied.draft_revision)
+        throw new Error(
+          "目录已应用，但当前草稿又有更新。请核对后重新读取已保存正文。",
+        );
+      if (originalEditor && originalEditor === editor.current) {
+        if (!originalEditor.isSavedAndClean?.())
+          throw new Error(
+            "本章出现了新的待保存或恢复内容，已保留原稿，未自动替换。",
+          );
+        // Only a confirmed structure ACK and a clean, unchanged editor can
+        // replace the outer loader. Pure folding, rejection and 412 do not.
+        setEditorEpoch((value) => value + 1);
+      }
+      setStructureSync(null);
+      return next;
+    } catch (failure) {
+      setStructureSync({
+        applied,
+        loading: false,
+        message:
+          failure instanceof Error
+            ? failure.message
+            : "重新读取本章未完成，原稿仍保留。",
+      });
+      throw failure;
+    } finally {
+      syncReading.current = false;
+    }
+  }
   async function choose(id: string) {
     if (
       switching ||
@@ -348,6 +414,7 @@ function DraftEditor({
       importing ||
       generating ||
       structureBusy ||
+      !!structureSync ||
       manualEditing
     )
       return;
@@ -435,6 +502,7 @@ function DraftEditor({
                   importing ||
                   generating ||
                   structureBusy ||
+                  !!structureSync ||
                   exact.checking
                 }
                 onEditingChange={setManualEditing}
@@ -464,7 +532,7 @@ function DraftEditor({
               {view.sections.find((section) => section.id === sectionId)
                 ?.title ?? "请选择章节"}
             </span>
-            {structureBusy && (
+            {(structureBusy || structureSync) && (
               <span role="status">目录操作待确认或处理中，打开目录继续。</span>
             )}
           </div>
@@ -493,6 +561,25 @@ function DraftEditor({
                 </button>
               </header>
               <ErrorNotice error={error} />
+              {structureSync && (
+                <div className="notice warning" role="status">
+                  <p>{structureSync.message}</p>
+                  {!structureSync.loading && (
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={() =>
+                        void structureChanged(
+                          structureSync.applied,
+                          true,
+                        ).catch(setError)
+                      }
+                    >
+                      核对并重新读取已保存正文
+                    </button>
+                  )}
+                </div>
+              )}
               <AuthoringStructure
                 bidId={bidId}
                 memberId={memberId}
@@ -501,6 +588,7 @@ function DraftEditor({
                 sectionId={sectionId}
                 disabled={
                   disabled ||
+                  !!structureSync ||
                   switching ||
                   building ||
                   importing ||
@@ -511,9 +599,11 @@ function DraftEditor({
                 onChoose={choose}
                 onContinue={continueWriting}
                 onBusy={setStructureBusy}
-                onChanged={reloadHead}
+                onChanged={structureChanged}
                 prepare={async () => {
-                  if (editor.current && !(await editor.current.flush()))
+                  if (editor.current && !(await editor.current.flush(true)))
+                    return null;
+                  if (editor.current && !editor.current.isSavedAndClean?.())
                     return null;
                   return reloadHead();
                 }}
@@ -528,7 +618,7 @@ function DraftEditor({
             >
               {sectionId ? (
                 <SectionEditor
-                  key={sectionId}
+                  key={`${sectionId}:${editorEpoch}`}
                   ref={editor}
                   bidId={bidId}
                   memberId={memberId}
@@ -542,6 +632,7 @@ function DraftEditor({
                     switching ||
                     building ||
                     structureBusy ||
+                    !!structureSync ||
                     importing ||
                     generating ||
                     manualEditing
@@ -571,6 +662,7 @@ function DraftEditor({
               switching ||
               building ||
               structureBusy ||
+              !!structureSync ||
               importing ||
               manualEditing
             }
@@ -600,6 +692,7 @@ function DraftEditor({
               switching ||
               building ||
               structureBusy ||
+              !!structureSync ||
               generating ||
               manualEditing
             }
@@ -629,6 +722,7 @@ function DraftEditor({
             exact.buildBlocked ||
             switching ||
             structureBusy ||
+            !!structureSync ||
             importing ||
             generating ||
             manualEditing

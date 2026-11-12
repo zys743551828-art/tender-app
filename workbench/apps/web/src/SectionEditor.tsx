@@ -40,6 +40,7 @@ import { useNavigationGuard } from "./navigationGuard";
 
 export type SectionEditorHandle = {
   flush: (requireLocalChoice?: boolean) => Promise<boolean>;
+  isSavedAndClean?: () => boolean;
 };
 type PendingSave = { body: SaveDraft; etag: string; key: string };
 type LocalDraft = {
@@ -78,6 +79,7 @@ export const SectionEditor = forwardRef<
     () => ({
       flush: (required) =>
         child.current?.flush(required) ?? Promise.resolve(!required),
+      isSavedAndClean: () => child.current?.isSavedAndClean?.() ?? false,
     }),
     [],
   );
@@ -381,7 +383,19 @@ const SectionBody = forwardRef<
   guard.current = () => queue.flush();
   useNavigationGuard(guard);
   useImperativeHandle(ref, () => ({
+    isSavedAndClean: () =>
+      active.current &&
+      !extensionBusy &&
+      !recovery &&
+      !pending.current &&
+      !queue.isDirty(),
     flush: async (required) => {
+      if (required && extensionBusy) {
+        setNotice(
+          new Error("当前章节操作尚未完成，请等待后再变更目录或生成版本。"),
+        );
+        return false;
+      }
       if (required && recovery) {
         setNotice(
           new Error(

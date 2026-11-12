@@ -1,6 +1,6 @@
 import { AuthoringTemplateEditor } from "./AuthoringTemplateEditor";
 import { AuthoringFormatBindings } from "./AuthoringFormatBindings";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { api, type ApiResult } from "./api";
 import type {
   AuthoringTreeView,
@@ -21,10 +21,42 @@ import { useKnowledgeInput } from "./knowledgeStorage";
 import { ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
+import { AuthoringChapterTree } from "./AuthoringChapterTree";
+import {
+  treeMoveKey,
+  resolveTreeMove,
+  type TreeMoveIntent,
+} from "./authoringTreeMoves";
 
 type Change = AuthoringTreeChangeRequest["changes"][number];
 type Held = { value: AuthoringStylePreview; etag: string };
-export function AuthoringStructure({
+type StructureProps = {
+  bidId: string;
+  memberId: string;
+  draftId: string;
+  draftRevision: number;
+  sectionId: string | undefined;
+  disabled: boolean;
+  readOnly?: boolean;
+  onChoose: (id: string) => Promise<void>;
+  onContinue?: () => void;
+  prepare: () => Promise<ApiResult<DraftView> | null>;
+  onChanged: (
+    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+  ) => Promise<unknown>;
+  onBusy: (busy: boolean) => void;
+};
+
+export function AuthoringStructure(props: StructureProps) {
+  return (
+    <ScopedAuthoringStructure
+      key={JSON.stringify([props.memberId, props.bidId, props.draftId])}
+      {...props}
+    />
+  );
+}
+
+function ScopedAuthoringStructure({
   bidId,
   memberId,
   draftId,
@@ -37,20 +69,7 @@ export function AuthoringStructure({
   prepare,
   onChanged,
   onBusy,
-}: {
-  bidId: string;
-  memberId: string;
-  draftId: string;
-  draftRevision: number;
-  sectionId: string | undefined;
-  disabled: boolean;
-  readOnly?: boolean;
-  onChoose: (id: string) => Promise<void>;
-  onContinue?: () => void;
-  prepare: () => Promise<ApiResult<DraftView> | null>;
-  onChanged: () => Promise<unknown>;
-  onBusy: (busy: boolean) => void;
-}) {
+}: StructureProps) {
   const path = `/bids/${bidId}/drafts/${draftId}`;
   const tree = useResource<AuthoringTreeView>(path + "/structure");
   const reloadTree = tree.reload;
@@ -68,6 +87,21 @@ export function AuthoringStructure({
     null,
   );
   const [working, setWorking] = useState(false);
+  const active = useRef(false);
+  const requestEpoch = useRef(0);
+  const previewWorking = useRef(false);
+  const permissions = useRef({ disabled, readOnly });
+  useLayoutEffect(() => {
+    permissions.current = { disabled, readOnly };
+  }, [disabled, readOnly]);
+  useEffect(() => {
+    active.current = true;
+    const epoch = requestEpoch;
+    return () => {
+      active.current = false;
+      epoch.current++;
+    };
+  }, []);
   const [planWorking, setPlanWorking] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [title, setTitle] = useKnowledgeInput(
@@ -135,17 +169,37 @@ export function AuthoringStructure({
     onBusy,
   ]);
   const valid = tree.data?.draft_id === draftId ? tree.data : undefined;
-  async function refresh() {
-    await onChanged();
+  async function refresh(
+    applied?: Extract<AuthoringStructureResult, { state: "applied" }>,
+  ) {
+    await onChanged(applied);
     await tree.reload();
     if (showHistory) await history.reload();
   }
   async function begin(
     suffix: string,
-    body: (revision: number) => unknown,
+    body: (
+      revision: number,
+      head: ApiResult<DraftView>,
+      current: () => boolean,
+    ) => unknown | Promise<unknown>,
     retry = false,
   ) {
-    if (disabled || (!retry && readOnly) || working) return;
+    if (
+      !active.current ||
+      disabled ||
+      (!retry && readOnly) ||
+      previewWorking.current ||
+      working
+    )
+      return;
+    previewWorking.current = true;
+    const epoch = ++requestEpoch.current;
+    const currentScope = () => active.current && requestEpoch.current === epoch;
+    const canSend = () =>
+      currentScope() &&
+      !permissions.current.disabled &&
+      (retry || !permissions.current.readOnly);
     setWorking(true);
     setError(null);
     try {
@@ -153,25 +207,60 @@ export function AuthoringStructure({
       let tag = held?.etag ?? "";
       if (retry) {
         tag = preview.pending?.etag ?? "";
+        if (!canSend()) return;
         response = await preview.retry<AuthoringStylePreview>();
       } else {
         const head = await prepare();
-        if (!head?.etag) return;
+        if (!head?.etag || !canSend()) return;
         tag = head.etag;
+        const request = await body(head.data.revision, head, canSend);
+        if (!canSend()) return;
         response = await preview.run<AuthoringStylePreview>(
           path + suffix,
-          body(head.data.revision),
+          request,
           tag,
         );
       }
-      if (response) {
+      if (response && currentScope()) {
         setHeld({ value: response.data, etag: tag });
       }
     } catch (e) {
-      setError(e);
+      if (currentScope()) setError(e);
     } finally {
-      setWorking(false);
+      previewWorking.current = false;
+      if (currentScope()) setWorking(false);
     }
+  }
+  async function moveChapter(intent: TreeMoveIntent, expectedTreeKey: string) {
+    if (!valid || locked || tree.error || !tree.etag) return;
+    await begin("/structure/preview", async (revision, head, current) => {
+      if (treeMoveKey(valid) !== expectedTreeKey) {
+        void tree.reload();
+        throw new Error("章节目录已变化，请核对当前目录后重新选择移动位置。");
+      }
+      // Saving pending text may advance the draft without changing its tree.
+      // Re-read the exact acknowledged head before deriving a relative ordinal.
+      const latest = await api<AuthoringTreeView>(path + "/structure");
+      if (!current()) return undefined;
+      if (
+        head.data.id !== draftId ||
+        head.data.bid_id !== bidId ||
+        latest.data.draft_id !== draftId ||
+        latest.data.draft_revision !== revision ||
+        latest.data.snapshot_id !== head.data.snapshot_id ||
+        latest.etag !== head.etag ||
+        treeMoveKey(latest.data) !== expectedTreeKey
+      ) {
+        void tree.reload();
+        throw new Error(
+          "保存后的章节目录或版本已变化，未创建移动预览。请核对后重试。",
+        );
+      }
+      return {
+        base_draft_revision: revision,
+        changes: [resolveTreeMove(latest.data.nodes, intent)],
+      } satisfies AuthoringTreeChangeRequest;
+    });
   }
   async function change(op: Change) {
     await begin(
@@ -185,9 +274,26 @@ export function AuthoringStructure({
   }
   async function decide(decision: "confirm" | "reject", retry = false) {
     if (!held?.value.action_id && !resolve.pending) return;
+    if (working || previewWorking.current) return;
     if (!retry && decision === "confirm" && (disabled || readOnly)) return;
+    previewWorking.current = true;
+    const epoch = ++requestEpoch.current;
+    const currentScope = () => active.current && requestEpoch.current === epoch;
     setWorking(true);
+    setError(null);
     try {
+      if (!retry && decision === "confirm") {
+        // A restored preview must not bypass an unresolved local recovery copy.
+        const head = await prepare();
+        if (
+          !head?.etag ||
+          !currentScope() ||
+          permissions.current.disabled ||
+          permissions.current.readOnly
+        )
+          return;
+      }
+      if (!currentScope()) return;
       const r = retry
         ? await resolve.retry<AuthoringStructureResult>()
         : await resolve.run<AuthoringStructureResult>(
@@ -195,15 +301,16 @@ export function AuthoringStructure({
             { decision },
             held!.etag,
           );
-      if (r) {
+      if (r && currentScope()) {
         setHeld(null);
         setStyleRequest(null);
-        await refresh();
+        await refresh(r.data.state === "applied" ? r.data : undefined);
       }
     } catch (e) {
-      setError(e);
+      if (currentScope()) setError(e);
     } finally {
-      setWorking(false);
+      previewWorking.current = false;
+      if (currentScope()) setWorking(false);
     }
   }
   async function nextHistory() {
@@ -239,35 +346,15 @@ export function AuthoringStructure({
             {valid.page_budget.unknown_section_ids.length}{" "}
             章未填预算。实际总页与章页范围尚未测得，目录页码未核完。
           </p>
-          <ol className="chapter-tree" aria-label="当前章节层级">
-            {treeOrder(valid.nodes).map(({ node: n, depth }) => (
-              <li
-                key={n.section_id}
-                style={{ paddingInlineStart: `${Math.min(depth, 8) * 12}px` }}
-              >
-                <button
-                  className={`chapter-link${n.section_id === sectionId ? " selected" : ""}`}
-                  aria-current={n.section_id === sectionId ? "true" : undefined}
-                  disabled={navigationLocked}
-                  onClick={() => void onChoose(n.section_id)}
-                >
-                  <span>{n.node_type === "appendix" ? "附" : "章"}</span>
-                  <div>
-                    {n.title}
-                    <small>
-                      修订 {n.section_revision} ·{" "}
-                      {n.plan?.planned_pages ?? "未填"} 预算页 ·{" "}
-                      {n.plan_content_basis_state === "section_changed"
-                        ? "计划基准已变化"
-                        : n.plan
-                          ? "已有编写计划"
-                          : "未建计划"}
-                    </small>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ol>
+          <AuthoringChapterTree
+            tree={valid}
+            sectionId={sectionId}
+            navigationLocked={navigationLocked}
+            moveDisabled={locked || !!tree.error || !tree.etag}
+            onChoose={onChoose}
+            onMove={moveChapter}
+            storageKey={`tender:chapter-tree:${JSON.stringify([memberId, bidId, draftId])}`}
+          />
           {sectionId && onContinue && (
             <button
               className="button secondary"

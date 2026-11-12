@@ -29,7 +29,7 @@ it("reads the exact snapshot and qualification, protects edits, and leaves chapt
   const writing = within(screen.getByRole("region", { name: "正文编写" }));
   expect(writing.getByLabelText("章节名称")).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "章节目录与计划" }));
-  const next = screen.getByRole("button", { name: /质量保障措施/ });
+  const next = screen.getByRole("button", { name: /^章\s+质量保障措施/ });
   expect(next).toBeEnabled();
   await user.click(next);
   await waitFor(() =>

@@ -2,6 +2,7 @@
 
 ## 2026-11-12 本机工程稳定性补验
 
+- [章节树折叠、直接移动与确认后继续编辑](chapter-tree-direct-move-20261112.md)。
 - [解析证据查找、取件与人工范围竞态保护](evidence-review-usability-20261112.md)。
 - [章节本地恢复与 Word 候选的新选择保护](editing-recovery-stability-20261112.md)。
 - [Manual task refresh and explicit-version activation](task-manual-refresh-20261112.md).
