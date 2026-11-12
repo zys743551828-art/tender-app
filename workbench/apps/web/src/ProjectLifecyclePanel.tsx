@@ -63,6 +63,7 @@ export function ProjectLifecyclePanel({
   );
   const [reason, setReason] = useState("");
   const [saved, setSaved] = useState(false);
+  const [settling, setSettling] = useState(false);
   const command = useRecordedCommand(
     `lifecycle:${memberId}:${bidId}`,
     ({ data }) => {
@@ -88,18 +89,25 @@ export function ProjectLifecyclePanel({
       typeof pendingBody.reason === "string" &&
       !!pendingBody.reason.trim() &&
       pendingBody.reason.length <= 4000);
-  const busy = command.busy || !!command.pending;
+  const busy = settling || command.busy || !!command.pending;
   const stale = !!intent && intent.etag !== resource.etag;
-  const ready =
-    !!current && !!resource.etag && !resource.loading && !resource.error;
+  // A background read must not disable a confirmed mouse gesture. The captured
+  // ETag remains mandatory; a server-side change is rejected by CAS as before.
+  const ready = !!current && !!resource.etag && !resource.error;
   async function accept(value: unknown) {
     if (!value) return;
+    setSettling(true);
     setIntent(null);
     setReason("");
-    onChanged();
-    window.dispatchEvent(new Event("server-snapshot-change"));
-    await resource.reload();
-    setSaved(true);
+    try {
+      const refreshed = resource.reloadFresh();
+      onChanged();
+      window.dispatchEvent(new Event("server-snapshot-change"));
+      await refreshed;
+      setSaved(true);
+    } finally {
+      setSettling(false);
+    }
   }
   async function refresh() {
     if (busy) return;

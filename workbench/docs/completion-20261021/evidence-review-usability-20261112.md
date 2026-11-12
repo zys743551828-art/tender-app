@@ -101,3 +101,37 @@ persistence acceptance. Independent source review found no blocker.
 Eleven new history/identity regressions pass. Final frontend checks passed 2,087
 tests in 210 files, formatting, lint, types and production build; existing build
 chunk-size warnings remain.
+
+## Lifecycle confirmation during snapshot refresh
+
+CI run 43234648709 on d3a8eed failed its native pricing/workspace journey while
+waiting for a reopen response: the diagnostic recorded no POST, a valid reason
+and an enabled button after the timeout. Run 43235738155 on a7fd35c passed that
+same job before the lifecycle correction below. The exact original runner timing
+is not recovered, so this is not proof of every condition behind that CI failure.
+
+A matching failure mechanism was independently identified in source and then
+reproduced in local Chrome at 1440 and 390 pixels: dispatching a background
+snapshot refresh between real mouse-down and mouse-up temporarily disabled the
+confirmation button, emitted no POST, then left the button enabled again after
+refresh. This check retained real pointer events rather than forcing form submit.
+
+Lifecycle confirmation now remains usable during a background refresh only when
+a valid existing project snapshot and ETag are present and no read error exists.
+The explicit intent and its captured ETag still bind the request; a changed ETag,
+conflict, wrong project or initial missing snapshot still blocks acceptance. A
+successful write starts a fresh read instead of joining a read initiated before
+the write. Old read success and failure cannot replace this newer state. During
+that post-write read, a separate settling lock prevents a second action from the
+old snapshot. Default shared read coalescing remains unchanged for other callers.
+
+The same interrupted mouse gesture then sent exactly one POST at both sizes and
+retained the post-write state after the older read arrived. Focused regressions
+also retain CAS conflict rejection and the explicit reason, check fresh/old read
+errors, and prevent a success notice before the post-write refresh settles. These
+are actual-component synthetic HTTP checks, not a new full native-system or
+real-document acceptance result. No external model or Docker service was used.
+
+Final lifecycle checks passed 2,092 frontend tests in 210 files, formatting, lint,
+types and production build. Eighteen focused lifecycle/resource/recorded-command
+checks passed, including five new regressions; existing build warnings remain.

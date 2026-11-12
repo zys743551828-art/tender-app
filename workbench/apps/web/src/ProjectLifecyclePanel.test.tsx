@@ -340,6 +340,7 @@ it("announces success only after the shared refresh settles and still rejects a 
   await user.click(screen.getByRole("button", { name: "确认终止本轮工作" }));
   await waitFor(() => expect(gets).toBe(2));
   expect(changed).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "终止本轮工作" })).toBeDisabled();
   expect(screen.queryByText(/状态变更已记录/)).not.toBeInTheDocument();
   expect(
     screen.queryByRole("button", { name: "重新打开项目" }),
@@ -365,7 +366,8 @@ it("announces success only after the shared refresh settles and still rejects a 
   act(() => {
     window.dispatchEvent(new Event("server-snapshot-change"));
   });
-  expect(confirm).toBeDisabled();
+  // An in-flight read alone does not revoke the captured CAS confirmation.
+  expect(confirm).toBeEnabled();
   await act(async () => {
     finishLaterRead(json({ ...terminated, revision: 3 }, 200, '"life:3"'));
   });
@@ -374,4 +376,117 @@ it("announces success only after the shared refresh settles and still rejects a 
   fireEvent.submit(screen.getByLabelText("本次状态变更原因").closest("form")!);
   expect(writes).toHaveLength(1);
   expect(JSON.parse(String(writes[0].body)).action).toBe("terminate");
+});
+
+it("submits with the captured ETag during a background refresh and reads a post-write snapshot", async () => {
+  let finishOld!: (response: Response) => void;
+  const old = new Promise<Response>((resolve) => {
+    finishOld = resolve;
+  });
+  let reads = 0;
+  const writes: RequestInit[] = [];
+  const working = {
+    ...initial,
+    phase: "working",
+    revision: 2,
+    allowed_actions: ["terminate"],
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        writes.push(options);
+        return json(working, 200, '"life:2"');
+      }
+      reads++;
+      if (reads === 2) return old;
+      return json(
+        reads === 1 ? initial : working,
+        200,
+        reads === 1 ? '"life:1"' : '"life:2"',
+      );
+    }),
+  );
+  const user = userEvent.setup();
+  render(
+    <ProjectLifecyclePanel
+      bidId="bid"
+      memberId="member"
+      onChanged={() => {}}
+    />,
+  );
+  await user.click(await screen.findByRole("button", { name: "开始本轮工作" }));
+  await user.type(screen.getByLabelText("本次状态变更原因"), "明确人工开始");
+  act(() => {
+    window.dispatchEvent(new Event("server-snapshot-change"));
+  });
+  await waitFor(() => expect(reads).toBe(2));
+  const submit = screen.getByRole("button", {
+    name: "确认开始本轮工作",
+  });
+  expect(submit).toBeEnabled();
+  await user.click(submit);
+  await screen.findByText(/状态变更已记录/);
+  expect(reads).toBe(3);
+  expect(writes).toHaveLength(1);
+  expect(new Headers(writes[0].headers).get("If-Match")).toBe('"life:1"');
+  expect(screen.getByText("工作中", { exact: true })).toBeInTheDocument();
+  await act(async () => {
+    finishOld(json(initial));
+  });
+  expect(screen.getByText("工作中", { exact: true })).toBeInTheDocument();
+});
+
+it("keeps CAS conflict refusal and the explicit reason when a refresh overlaps submission", async () => {
+  let finishRead!: (response: Response) => void;
+  const read = new Promise<Response>((resolve) => {
+    finishRead = resolve;
+  });
+  let gets = 0;
+  const writes: RequestInit[] = [];
+  const changed = vi.fn();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        writes.push(options);
+        return json({ code: "REVISION_CONFLICT", message: "旧版本拒绝" }, 412);
+      }
+      gets++;
+      return gets === 1 ? json(initial) : read;
+    }),
+  );
+  const user = userEvent.setup();
+  render(
+    <ProjectLifecyclePanel bidId="bid" memberId="member" onChanged={changed} />,
+  );
+  await user.click(await screen.findByRole("button", { name: "开始本轮工作" }));
+  await user.type(screen.getByLabelText("本次状态变更原因"), "保留明确原因");
+  act(() => {
+    window.dispatchEvent(new Event("server-snapshot-change"));
+  });
+  await user.click(screen.getByRole("button", { name: "确认开始本轮工作" }));
+  await screen.findByText(/项目状态已变化/);
+  expect(writes).toHaveLength(1);
+  expect(new Headers(writes[0].headers).get("If-Match")).toBe('"life:1"');
+  expect(screen.getByLabelText("本次状态变更原因")).toHaveValue("保留明确原因");
+  expect(
+    screen.getByRole("button", { name: "确认开始本轮工作" }),
+  ).toBeDisabled();
+  expect(changed).not.toHaveBeenCalled();
+  await act(async () => {
+    finishRead(
+      json(
+        {
+          ...initial,
+          phase: "working",
+          revision: 2,
+          allowed_actions: ["terminate"],
+        },
+        200,
+        '"life:2"',
+      ),
+    );
+  });
+  expect(screen.queryByText(/状态变更已记录/)).not.toBeInTheDocument();
 });

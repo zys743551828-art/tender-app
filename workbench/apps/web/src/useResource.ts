@@ -67,6 +67,11 @@ export function useResource<T>(path: string | null, pollMs = 0) {
     }
     return completion;
   }, [path, supported]);
+  const reloadFresh = useCallback(() => {
+    // A read started before a successful write cannot certify its new snapshot.
+    invalidate();
+    return reload();
+  }, [invalidate, reload]);
   useEffect(() => {
     void reload();
     const changed = () => void reload();
@@ -88,5 +93,6 @@ export function useResource<T>(path: string | null, pollMs = 0) {
     error: current?.error,
     unavailable: path !== null && !supported,
     reload,
+    reloadFresh,
   };
 }
