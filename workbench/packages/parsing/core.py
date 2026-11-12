@@ -34,7 +34,13 @@ MAX_BYTES = 100 * 1024 * 1024
 MAX_PAGES = 1000
 MAX_PIXELS = 12_000_000
 MAX_DOCUMENT_SECONDS = 300
-HEADING = re.compile(r"^(?:第[一二三四五六七八九十百\d]+[章节篇]|\d+(?:\.\d+){0,3}[、.\s])")
+# OCR token boundaries may insert spaces within a Chinese chapter ordinal.
+# Tolerate only horizontal spacing in that prefix, never rewrite evidence text.
+HEADING = re.compile(
+    r"^(?:第[ \t]*[一二三四五六七八九十百\d]+"
+    r"(?:[ \t]+[一二三四五六七八九十百\d]+)*[ \t]*[章节篇]"
+    r"|\d+(?:\.\d+){0,3}[、.\s])"
+)
 
 
 class ParseError(Exception):

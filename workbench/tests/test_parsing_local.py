@@ -64,12 +64,19 @@ def test_chinese_scanned_page_real_ocr_and_explicit_visual_gaps(parser):
     )
     painter.text((100, 160), "施工工期 120 天", font=font, fill="black")
     painter.text((100, 280), "质量要求：合格", font=font, fill="black")
+    painter.text((100, 400), "第一章施工方案", font=font, fill="black")
     data = pdf_bytes(lambda page: page.drawImage(ImageReader(image), 0, 0, width=420, height=595))
     result = parser.parse(data)
     page = result["pages"][0]
     assert page["method"] == "tesseract_ocr"
     assert "120" in page["text"]
     assert "施工" in page["text"].replace(" ", "")
+    chapter = next(
+        c for c in result["chapters"] if c["title"].replace(" ", "").startswith("第一章")
+    )
+    source = next(b for b in page["blocks"] if b["id"] == chapter["evidence_id"])
+    assert chapter["title"] == source["text_content"].strip()
+    assert chapter["inferred"] is True
     assert "SCAN_LAYOUT_TABLES_AND_VISUALS_UNVERIFIED" in page["gaps"]
     assert result["coverage"] == "partial"
     assert page["blocks"] and all(block["bbox"] for block in page["blocks"])
