@@ -1,5 +1,13 @@
 # Desktop continuation, 2026-11-12
 
+> Historical checkpoint, superseded later on 2026-11-12: the user successfully
+> started Docker Desktop and the Linux engine was verified healthy. The startup
+> failure below was specific to the attempted automation context, not proof of a
+> broken installation. Real case01 no-model upload, selected-page comparison and
+> history workflows subsequently passed. Both documents retain partial parsing;
+> see `case01-extraction-quality-20261112.md` and
+> `case01-structure-review-20261112.md` for the later quality boundaries.
+
 ## Scope and baseline
 
 Work resumed on the Windows desktop from `dev` at `5ff120a`, one commit ahead of `origin/dev` (`c75178b`). The older D-drive `fusion/bid-workbench` checkout was not reset or overwritten. Existing docs changes and private originals remain untouched.

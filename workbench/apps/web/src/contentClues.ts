@@ -5,8 +5,14 @@ import type { EvidenceView } from "./contracts";
 const clues = [
   { label: "招标要求", terms: ["招标文件", "评标办法", "技术标准和要求"] },
   {
-    label: "施工或维护方案",
-    terms: ["施工组织设计", "施工方案", "维护和服务", "维保方案"],
+    label: "施工组织或施工方案",
+    terms: ["施工组织设计", "施工方案"],
+  },
+  {
+    // Maintenance content is not proof of a complete construction submission.
+    // A page can contain both clues; neither clue implies compliance.
+    label: "维护服务方案",
+    terms: ["维护和服务", "维保方案"],
   },
   { label: "商务或资格材料", terms: ["商务文件", "资格审查", "营业执照"] },
 ] as const;

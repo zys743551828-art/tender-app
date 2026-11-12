@@ -16,6 +16,7 @@ import { SourceSurface } from "./SourceSurface";
 import { api, objectFetch, parseNames, roleNames } from "./api";
 import { Badge, ErrorNotice, Icon, Loading } from "./components";
 import { contentClues } from "./contentClues";
+import { EvidenceSearch } from "./EvidenceSearch";
 import { PartialPageSelection } from "./PartialPageSelection";
 
 export function Evidence({
@@ -48,9 +49,18 @@ export function Evidence({
   const [view, setView] = useState<"original" | "text">("original");
   const closeButton = useRef<HTMLButtonElement>(null);
   const request = useRef(0);
+  const downloadRequest = useRef(0);
+  const downloadActive = useRef(false);
+  const downloadWorking = useRef(false);
   const invalidate = useCallback(() => {
     request.current++;
+    downloadRequest.current++;
+    downloadActive.current = false;
   }, []);
+  const close = useCallback(() => {
+    invalidate();
+    onClose();
+  }, [invalidate, onClose]);
   const load = useCallback(async () => {
     const current = ++request.current;
     setError(null);
@@ -78,6 +88,11 @@ export function Evidence({
     } else setError(results[1].reason);
   }, [document.id]);
   async function downloadOriginal() {
+    if (!downloadActive.current || downloadWorking.current) return;
+    downloadWorking.current = true;
+    const ticket = ++downloadRequest.current;
+    const current = () =>
+      downloadActive.current && ticket === downloadRequest.current;
     setDownloading(true);
     setError(null);
     setErrorAction("download");
@@ -85,35 +100,48 @@ export function Evidence({
       const { data } = await api<DownloadGrant>(
         `/artifacts/${document.id}/download`,
       );
+      if (!current()) return;
       if (data.artifact_id !== document.id)
         throw new Error("原件下载身份不一致，未下载其他文件。");
       const response = await objectFetch(data.download_url);
+      if (!current()) return;
       if (!response.ok)
         throw new Error(
           `原件取回失败（${response.status}）。已保存的原件仍保留，请重试取件。`,
         );
-      const url = URL.createObjectURL(await response.blob());
+      const blob = await response.blob();
+      if (!current()) return;
+      const url = URL.createObjectURL(blob);
       const link = window.document.createElement("a");
       link.href = url;
       link.download = data.filename;
       link.style.display = "none";
-      window.document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      try {
+        window.document.body.appendChild(link);
+        link.click();
+      } finally {
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
     } catch (failure) {
-      setError(failure);
+      if (current()) setError(failure);
     } finally {
-      setDownloading(false);
+      if (current()) {
+        downloadWorking.current = false;
+        setDownloading(false);
+      }
     }
   }
   useEffect(() => {
+    downloadActive.current = true;
+    downloadWorking.current = false;
+    setDownloading(false);
     setPage(initialPage);
     setPageCount(0);
     setView("original");
     void load().catch(setError);
     return invalidate;
-  }, [load, initialPage, invalidate]);
+  }, [load, initialPage, invalidate, document.bid_id]);
   useEffect(() => {
     if (evidence?.coverage !== "pending") return;
     let active = true;
@@ -156,7 +184,7 @@ export function Evidence({
       labelledBy="evidence-title"
       initialFocus={closeButton}
       returnFocus={returnFocus}
-      onClose={onClose}
+      onClose={close}
     >
       {(singlePane) => (
         <>
@@ -175,7 +203,7 @@ export function Evidence({
               type="button"
               ref={closeButton}
               className="button secondary"
-              onClick={onClose}
+              onClick={close}
             >
               关闭原件
             </button>
@@ -219,6 +247,16 @@ export function Evidence({
               </button>
             )}
           </div>
+          {evidence && evidence.coverage !== "pending" && (
+            <EvidenceSearch
+              key={`search:${document.id}:${evidence.parse_run_id}`}
+              items={evidence.items}
+              onPage={(number) => {
+                setPage(number);
+                setView("text");
+              }}
+            />
+          )}
           {evidence && evidence.coverage !== "pending" && (
             <div className="notice evidence-gaps">
               <div>

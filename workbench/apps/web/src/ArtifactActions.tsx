@@ -1,20 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, objectFetch } from "./api";
 import type { DocumentView, DownloadGrant } from "./contracts";
 import { ErrorNotice } from "./components";
 import { Evidence } from "./Evidence";
 
-/** Read and bind metadata before offering any output as a downloadable artifact. */
-export function ArtifactActions({
-  bidId,
-  documentId,
-  isPdf,
-  downloadLabel = "下载生成文件",
-  suggestedFilename,
-  expectedArtifactKind,
-  expectedMediaType,
-  previewNotice,
-}: {
+type Props = {
   bidId: string;
   documentId: string;
   isPdf: boolean;
@@ -23,13 +13,57 @@ export function ArtifactActions({
   expectedArtifactKind?: DocumentView["artifact_kind"];
   expectedMediaType?: string;
   previewNotice?: string;
-}) {
+};
+
+/** A changed output or qualification must not retain another file's preview/request. */
+export function ArtifactActions(props: Props) {
+  return (
+    <ScopedArtifactActions
+      key={JSON.stringify([
+        props.bidId,
+        props.documentId,
+        props.isPdf,
+        props.expectedArtifactKind,
+        props.expectedMediaType,
+        props.suggestedFilename,
+        props.previewNotice,
+      ])}
+      {...props}
+    />
+  );
+}
+
+/** Read and bind metadata before offering any output as a downloadable artifact. */
+function ScopedArtifactActions({
+  bidId,
+  documentId,
+  isPdf,
+  downloadLabel = "下载生成文件",
+  suggestedFilename,
+  expectedArtifactKind,
+  expectedMediaType,
+  previewNotice,
+}: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [preview, setPreview] = useState<DocumentView | null>(null);
   const previewTrigger = useRef<HTMLElement | null>(null);
+  const active = useRef(false);
+  const working = useRef(false);
+  const generation = useRef(0);
+  useEffect(() => {
+    active.current = true;
+    const requests = generation;
+    return () => {
+      active.current = false;
+      requests.current++;
+    };
+  }, []);
   async function open(download: boolean) {
-    if (busy) return;
+    if (!active.current || working.current) return;
+    working.current = true;
+    const request = ++generation.current;
+    const current = () => active.current && generation.current === request;
     if (!download)
       previewTrigger.current = document.activeElement as HTMLElement | null;
     setBusy(true);
@@ -38,6 +72,7 @@ export function ArtifactActions({
       const { data: document } = await api<DocumentView>(
         `/documents/${documentId}`,
       );
+      if (!current()) return;
       if (document.id !== documentId || document.bid_id !== bidId)
         throw new Error("生成文件身份无法核对，未打开其他项目原件。");
       if (
@@ -57,23 +92,33 @@ export function ArtifactActions({
       const { data: grant } = await api<DownloadGrant>(
         `/artifacts/${documentId}/download`,
       );
+      if (!current()) return;
       if (grant.artifact_id !== documentId)
         throw new Error("取件授权与生成文件身份不一致，请重试。");
       const response = await objectFetch(grant.download_url);
+      if (!current()) return;
       if (!response.ok)
         throw new Error(`生成文件取回失败（${response.status}），请重试取件。`);
-      const url = URL.createObjectURL(await response.blob());
+      const blob = await response.blob();
+      if (!current()) return;
+      const url = URL.createObjectURL(blob);
       const link = window.document.createElement("a");
       link.href = url;
       link.download = suggestedFilename ?? grant.filename;
-      window.document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      try {
+        window.document.body.appendChild(link);
+        link.click();
+      } finally {
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
     } catch (failure) {
-      setError(failure);
+      if (current()) setError(failure);
     } finally {
-      setBusy(false);
+      if (current()) {
+        working.current = false;
+        setBusy(false);
+      }
     }
   }
   return (
