@@ -1,5 +1,5 @@
 import { ParseGapSummary } from "./ParseGapSummary";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, commandKey } from "./api";
 import type { DocumentEvidenceView, DocumentView } from "./contracts";
 import { ErrorNotice } from "./components";
@@ -33,19 +33,35 @@ export type Selection = {
   };
 };
 
-export function PartialPageSelection({
-  document,
-  evidence,
-  page,
-  pageCount,
-  onPage,
-}: {
+type Props = {
   document: DocumentView;
   evidence: DocumentEvidenceView;
   page: number;
   pageCount: number;
   onPage: (page: number) => void;
-}) {
+};
+
+export function PartialPageSelection(props: Props) {
+  return (
+    <ScopedSelection
+      key={JSON.stringify([
+        props.document.bid_id,
+        props.document.id,
+        props.document.sha256,
+        props.evidence.parse_run_id,
+      ])}
+      {...props}
+    />
+  );
+}
+
+function ScopedSelection({
+  document,
+  evidence,
+  page,
+  pageCount,
+  onPage,
+}: Props) {
   const [first, setFirst] = useState(page);
   const [last, setLast] = useState(page);
   const [purpose, setPurpose] = useState<
@@ -67,6 +83,34 @@ export function PartialPageSelection({
     { id: string; confirmed_by: string; created_at: string }[]
   >([]);
   const path = `/bids/${document.bid_id}/partial-page-selections`;
+  const active = useRef(false);
+  const generation = useRef(0);
+  const working = useRef<string | null>(null);
+  useEffect(() => {
+    active.current = true;
+    const requests = generation;
+    return () => {
+      active.current = false;
+      requests.current++;
+    };
+  }, []);
+  function begin(key: string, replace = false) {
+    if (
+      !active.current ||
+      (working.current !== null && (!replace || working.current === key))
+    )
+      return null;
+    working.current = key;
+    const request = ++generation.current;
+    setBusy(true);
+    return () => active.current && generation.current === request;
+  }
+  function finish(current: () => boolean) {
+    if (current()) {
+      working.current = null;
+      setBusy(false);
+    }
+  }
   async function save() {
     if (!evidence.parse_run_id || !confirmed) return;
     const body = {
@@ -77,7 +121,8 @@ export function PartialPageSelection({
       purpose,
       confirmed: true,
     };
-    setBusy(true);
+    const current = begin("save");
+    if (!current) return;
     setError(null);
     try {
       const created = await api<Selection>(path, {
@@ -85,7 +130,9 @@ export function PartialPageSelection({
         body,
         key: commandKey(`partial-pages:${document.id}`, body),
       });
+      if (!current()) return;
       const checked = await api<Selection>(`${path}/${created.data.id}`);
+      if (!current()) return;
       if (
         checked.data.proof.digest !== created.data.proof.digest ||
         checked.data.id !== created.data.id ||
@@ -99,33 +146,38 @@ export function PartialPageSelection({
       setSelection(checked.data);
       setScopedEvidence([]);
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   async function loadHistory() {
-    setBusy(true);
+    const current = begin("history");
+    if (!current) return;
     setError(null);
     try {
       const result = await api<{ items: typeof history; has_more: boolean }>(
         `${path}?document_version_id=${encodeURIComponent(document.id)}`,
       );
+      if (!current()) return;
       setHistory(result.data.items);
       if (result.data.has_more)
         setError(new Error("仅显示最近 100 条记录，较早记录未列出。"));
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   async function show(id: string) {
-    setBusy(true);
+    const current = begin(`show:${id}`, true);
+    if (!current) return;
     setError(null);
     try {
       const value = (await api<Selection>(`${path}/${id}`)).data;
+      if (!current()) return;
       if (
+        value.id !== id ||
         value.proof.manifest.source.document_version_id !== document.id ||
         value.proof.manifest.source.parse_run_id !== evidence.parse_run_id ||
         value.proof.manifest.source.file_digest !== document.sha256
@@ -134,14 +186,15 @@ export function PartialPageSelection({
       setSelection(value);
       setScopedEvidence([]);
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   async function loadScopedEvidence() {
     if (!selection) return;
-    setBusy(true);
+    const current = begin(`evidence:${selection.id}`);
+    if (!current) return;
     setError(null);
     try {
       const value = (
@@ -153,6 +206,7 @@ export function PartialPageSelection({
           formal_qualification: false;
         }>(`${path}/${selection.id}/evidence`)
       ).data;
+      if (!current()) return;
       const expected = new Map(
         selection.proof.manifest.selected_blocks.map((block) => [
           block.id,
@@ -173,9 +227,9 @@ export function PartialPageSelection({
         throw new Error("选中证据与确认记录不一致，请重新核对。");
       setScopedEvidence(value.items);
     } catch (value) {
-      setError(value);
+      if (current()) setError(value);
     } finally {
-      setBusy(false);
+      finish(current);
     }
   }
   const valid =

@@ -77,3 +77,27 @@ real-document, persistence, model or business acceptance result.
 
 The final frontend suite passed 2,076 tests in 210 files. Formatting, lint, type
 checks and the production build passed; existing chunk-size warnings remain.
+
+## Interrupted history navigation
+
+Three more failures were reproduced before fixing the selected-page panel: old
+scope evidence or an old error could arrive after a different history record was
+opened, and an unmounted save continued into a follow-up verification GET. The
+panel now resets by project, document, file digest and parse identity, guards each
+async stage, and lets a different history navigation supersede pending work. The
+same in-flight action cannot be started twice synchronously. Historical record
+identity is checked as well as document and parse identity.
+
+Navigating away does not cancel a POST already sent to the server or undo a saved
+record; it suppresses stale UI and unnecessary follow-up reads. History can be
+reloaded to inspect saved records. No backend authorization or eligibility boundary
+was relaxed.
+
+Actual Chrome at 1440 and 390 pixels passed old-evidence success/error after
+history navigation and save-after-unmount with zero late verification GETs. These
+were local synthetic HTTP checks with the real panel, not real-document or
+persistence acceptance. Independent source review found no blocker.
+
+Eleven new history/identity regressions pass. Final frontend checks passed 2,087
+tests in 210 files, formatting, lint, types and production build; existing build
+chunk-size warnings remain.
