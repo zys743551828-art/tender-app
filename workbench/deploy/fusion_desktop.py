@@ -13,7 +13,6 @@ from pathlib import Path
 from uuid import uuid4
 
 from deploy import fusion_desktop_compose as compose
-from deploy import fusion_desktop_model_admission as admission
 from deploy import fusion_full_spec as spec
 
 
@@ -229,7 +228,11 @@ def up(path, *, word_restart=False, admin_password=None, model=None, model_admis
         "model_configured", False
     ):
         raise spec.ConfigurationError("DESKTOP_MODEL_NOT_DECLARED")
-    packet = admission.load_file(model_admission_file) if model_admission_file is not None else None
+    packet = None
+    if model_admission_file is not None:
+        from deploy import fusion_desktop_model_admission as admission
+
+        packet = admission.load_file(model_admission_file)
     if word_restart and request["version"] != compose.WORD_VERSION:
         raise spec.ConfigurationError("DESKTOP_WORD_INSTALLATION_REQUIRED")
     bootstrap = json.loads((path / "bootstrap.compose.json").read_bytes())

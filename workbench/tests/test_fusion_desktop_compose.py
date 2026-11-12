@@ -1,5 +1,7 @@
 """Desktop transport declarations never expose host private profiles or paid channels."""
 
+import builtins
+import importlib
 import json
 from copy import deepcopy
 from types import SimpleNamespace
@@ -565,9 +567,7 @@ def test_cli_forwards_optional_parser_descriptor_inputs(monkeypatch, tmp_path, c
 def test_nonmodel_rejects_admission_before_read_or_docker(request_value, monkeypatch, tmp_path):
     monkeypatch.setattr(control, "directory", lambda path: path)
     monkeypatch.setattr(control, "_request", lambda path: request_value)
-    monkeypatch.setattr(
-        control.admission, "load_file", lambda *_: pytest.fail("nonmodel must not read admission")
-    )
+    monkeypatch.setattr(builtins, "__import__", _guard_model_imports(builtins.__import__))
     monkeypatch.setattr(
         control, "_run", lambda *_a, **_k: pytest.fail("nonmodel rejection must not contact Docker")
     )
@@ -593,3 +593,21 @@ def test_parser_option_requires_explicit_matching_image_before_preparation(
             parser_image=image,
         )
     assert not (tmp_path / "not-created").exists()
+
+
+def _guard_model_imports(original):
+    def guarded(name, globals=None, locals=None, fromlist=(), level=0):
+        if (
+            name.startswith("confluent_kafka")
+            or "fusion_desktop_model_admission" in name
+            or (name == "deploy" and "fusion_desktop_model_admission" in fromlist)
+        ):
+            raise AssertionError("nonmodel path must not import model admission or Kafka")
+        return original(name, globals, locals, fromlist, level)
+
+    return guarded
+
+
+def test_desktop_control_import_does_not_load_optional_model_or_kafka(monkeypatch):
+    monkeypatch.setattr(builtins, "__import__", _guard_model_imports(builtins.__import__))
+    importlib.reload(control)
