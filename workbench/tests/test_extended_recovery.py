@@ -139,3 +139,13 @@ def test_archive_format_selects_exact_historical_or_current_sql(
     save()
     with pytest.raises(run.BackupError, match="BINDING_CHANGED"):
         extended_recovery.validate(tmp_path)
+
+
+def test_default_extended_recovery_includes_native_b5_b6_b7_history():
+    assert extended_recovery_runtime.CASES == {
+        "schema": "tests/test_extended_recovery_pg.py",
+        "authoring": "tests/test_extended_recovery_authoring_pg.py",
+        "authoring-marked": "tests/test_authoring_exact_marked_recovery_pg.py",
+        "material": "tests/test_extended_recovery_material_pg.py",
+        "migration": "tests/test_extended_recovery_migration_runtime.py",
+    }

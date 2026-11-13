@@ -31,6 +31,7 @@ from deploy.ci_object_store import temporary_object_store
 CASES = {
     "schema": "tests/test_extended_recovery_pg.py",
     "authoring": "tests/test_extended_recovery_authoring_pg.py",
+    "authoring-marked": "tests/test_authoring_exact_marked_recovery_pg.py",
     "material": "tests/test_extended_recovery_material_pg.py",
     "migration": "tests/test_extended_recovery_migration_runtime.py",
 }
