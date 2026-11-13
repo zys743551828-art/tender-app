@@ -1,4 +1,13 @@
+import {
+  editableMarkedTextNodes,
+  replaceMarkedText,
+  validMarkedReplacement,
+  validMarkedReason,
+} from "./authoringExactMarkedTextEditProtocol";
 import type {
+  AuthoringExactMarkedTextEditRequest,
+  AuthoringExactMarkedTextEditResult,
+  AuthoringExactMarkedManualRevisionView,
   AuthoringDocument,
   AuthoringNode,
   AuthoringExactDraftStatus,
@@ -35,7 +44,8 @@ export type ExactTextEditBase = {
   qualification:
     | AuthoringExactRevisionView
     | AuthoringExactManualRevisionView
-    | AuthoringExactMultiManualRevisionView;
+    | AuthoringExactMultiManualRevisionView
+    | AuthoringExactMarkedManualRevisionView;
 };
 export type ExactTextEditPending = {
   key: string;
@@ -45,7 +55,8 @@ export type ExactTextEditPending = {
 };
 export type ExactTextEditRequest =
   | AuthoringExactTextEditRequest
-  | AuthoringExactMultiTextEditRequest;
+  | AuthoringExactMultiTextEditRequest
+  | AuthoringExactMarkedTextEditRequest;
 export function textEditChanges(body: ExactTextEditRequest) {
   return "edits" in body
     ? body.edits
@@ -168,6 +179,7 @@ async function verifyQualification(
       "authoring-exact-revision/1",
       "authoring-exact-manual-revision/1",
       "authoring-exact-manual-revision/2",
+      "authoring-exact-manual-revision/3",
     ].includes(String(m.protocol)) ||
     m.id !== binding.qualification_id ||
     m.bid_id !== scope.bidId ||
@@ -197,9 +209,11 @@ async function verifyQualification(
     !object(m.method) ||
     !exactKeys(m.method, ["protocol", "supported_content", "source_sha256"]) ||
     m.method.supported_content !==
-      (m.protocol === "authoring-exact-manual-revision/2"
-        ? "plain_text_stable_nodes"
-        : "plain_text_stable_node") ||
+      (m.protocol === "authoring-exact-manual-revision/3"
+        ? "single_marked_text_leaf_preserve_marks"
+        : m.protocol === "authoring-exact-manual-revision/2"
+          ? "plain_text_stable_nodes"
+          : "plain_text_stable_node") ||
     !object(m.method.source_sha256) ||
     !Object.keys(m.method.source_sha256).length ||
     !Object.values(m.method.source_sha256).every(sha) ||
@@ -234,6 +248,7 @@ async function verifyQualification(
     )
       fail();
   } else {
+    const marked = m.protocol === "authoring-exact-manual-revision/3";
     const batch = m.protocol === "authoring-exact-manual-revision/2";
     const origin = m.origin;
     const fields = [
@@ -249,17 +264,26 @@ async function verifyQualification(
     ];
     if (
       m.candidate_adopted !== false ||
-      origin.kind !== (batch ? "manual_multi_text_edit" : "manual_text_edit") ||
+      origin.kind !==
+        (marked
+          ? "manual_marked_text_edit"
+          : batch
+            ? "manual_multi_text_edit"
+            : "manual_text_edit") ||
       m.method.protocol !==
-        (batch
-          ? "authoring-exact-text-edit-policy/2"
-          : "authoring-exact-text-edit-policy/1") ||
+        (marked
+          ? "authoring-exact-text-edit-policy/3"
+          : batch
+            ? "authoring-exact-text-edit-policy/2"
+            : "authoring-exact-text-edit-policy/1") ||
       !exactKeys(origin, [
         ...fields,
+        ...(marked ? ["preserved_marks_digest"] : []),
         ...(batch
           ? ["edits"]
           : ["node_id", "before_node_digest", "replacement_text_digest"]),
       ]) ||
+      (marked && !sha(origin.preserved_marks_digest)) ||
       ![origin.parent_qualification_id, origin.root_qualification_id].every(
         uuid,
       ) ||
@@ -268,7 +292,7 @@ async function verifyQualification(
         origin.root_qualification_digest,
       ].every(sha) ||
       typeof origin.reason !== "string" ||
-      !origin.reason.trim()
+      (marked ? !validMarkedReason(origin.reason) : !origin.reason.trim())
     )
       fail();
     const edits = batch ? origin.edits : [origin];
@@ -362,12 +386,14 @@ export async function verifyTextEditPending(
     fail();
   const base = await verifyTextEditBase(value.base, scope),
     b = value.body;
+  const marked = b.protocol === "authoring-exact-marked-text-edit/1";
   const batch = b.protocol === "authoring-exact-multi-text-edit/1";
   if (
     !exactKeys(b, [
       "base_draft_revision",
       "section_revision_id",
       "reason",
+      ...(marked ? ["protocol"] : []),
       ...(batch
         ? ["protocol", "edits"]
         : ["node_id", "before_node_digest", "replacement_text"]),
@@ -376,7 +402,7 @@ export async function verifyTextEditPending(
     b.section_revision_id !== base.qualification.manifest.section_revision_id ||
     value.etag !== `"draft:${scope.draftId}:${base.status.draft_revision}"` ||
     typeof b.reason !== "string" ||
-    !b.reason.trim() ||
+    (marked ? !validMarkedReason(b.reason) : !b.reason.trim()) ||
     Array.from(b.reason).length > 1000 ||
     hasControls(b.reason)
   )
@@ -388,7 +414,9 @@ export async function verifyTextEditPending(
     edits.length > 20
   )
     fail();
-  const nodes = editableTextNodes(base.section.content as AuthoringDocument);
+  const nodes = (marked ? editableMarkedTextNodes : editableTextNodes)(
+    base.section.content as AuthoringDocument,
+  );
   const ids = new Set<string>();
   let length = 0;
   for (const edit of edits) {
@@ -406,7 +434,9 @@ export async function verifyTextEditPending(
       ids.has(edit.node_id) ||
       !sha(edit.before_node_digest) ||
       typeof edit.replacement_text !== "string" ||
-      hasControls(edit.replacement_text)
+      (marked
+        ? !validMarkedReplacement(edit.replacement_text)
+        : hasControls(edit.replacement_text))
     )
       fail();
     ids.add(edit.node_id);
@@ -426,6 +456,15 @@ function replaced(
   base: ExactTextEditBase,
   body: ExactTextEditRequest,
 ): AuthoringDocument {
+  if (
+    "protocol" in body &&
+    body.protocol === "authoring-exact-marked-text-edit/1"
+  )
+    return replaceMarkedText(
+      base.section.content as AuthoringDocument,
+      body.node_id,
+      body.replacement_text,
+    );
   const content = structuredClone(base.section.content) as AuthoringDocument;
   for (const edit of textEditChanges(body)) {
     const node = editableTextNodes(content).find(
@@ -452,10 +491,17 @@ export async function verifyTextEditACK(
   etag: string | null,
   pending: ExactTextEditPending,
   scope: ExactTextEditScope,
-): Promise<AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult> {
+): Promise<
+  | AuthoringExactTextEditResult
+  | AuthoringExactMultiTextEditResult
+  | AuthoringExactMarkedTextEditResult
+> {
   const p = await verifyTextEditPending(pending, scope),
     parent = p.base.qualification,
     pm = parent.manifest;
+  const marked =
+    "protocol" in p.body &&
+    p.body.protocol === "authoring-exact-marked-text-edit/1";
   if (
     !object(value) ||
     !exactKeys(value, [
@@ -471,9 +517,11 @@ export async function verifyTextEditACK(
       "qualification",
     ]) ||
     value.protocol !==
-      ("edits" in p.body
-        ? "authoring-exact-text-edit-result/2"
-        : "authoring-exact-text-edit-result/1") ||
+      (marked
+        ? "authoring-exact-text-edit-result/3"
+        : "edits" in p.body
+          ? "authoring-exact-text-edit-result/2"
+          : "authoring-exact-text-edit-result/1") ||
     value.bid_id !== scope.bidId ||
     value.draft_id !== scope.draftId ||
     value.draft_revision !== p.body.base_draft_revision + 1 ||
@@ -512,9 +560,11 @@ export async function verifyTextEditACK(
   );
   if (
     q.manifest.protocol !==
-    ("edits" in p.body
-      ? "authoring-exact-manual-revision/2"
-      : "authoring-exact-manual-revision/1")
+    (marked
+      ? "authoring-exact-manual-revision/3"
+      : "edits" in p.body
+        ? "authoring-exact-manual-revision/2"
+        : "authoring-exact-manual-revision/1")
   )
     fail();
   const a = q.manifest,
@@ -566,7 +616,20 @@ export async function verifyTextEditACK(
       }))
   )
     fail();
+  if (marked) {
+    const target = editableMarkedTextNodes(
+      p.base.section.content as AuthoringDocument,
+    ).find((n) => n.id === textEditChanges(p.body)[0].node_id)!.node;
+    if (
+      !("content" in target) ||
+      target.content[0].type !== "text" ||
+      !("preserved_marks_digest" in o) ||
+      o.preserved_marks_digest !== (await jsonDigest(target.content[0].marks))
+    )
+      fail();
+  }
   return value as unknown as
+    | AuthoringExactMarkedTextEditResult
     | AuthoringExactTextEditResult
     | AuthoringExactMultiTextEditResult;
 }

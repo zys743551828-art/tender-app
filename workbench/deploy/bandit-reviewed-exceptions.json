@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "reviewed_exceptions": [
+    {
+      "filename": "packages/domain/partial_page_selection_repository.py",
+      "test_id": "B608",
+      "line_number": 12,
+      "issue_severity": "MEDIUM",
+      "issue_confidence": "MEDIUM",
+      "source_sha256": "0458182f803a18f40e89b8042fd0867c404bc2b47d0d29b3d3a2fe4ad6193fda",
+      "reason": "Reviewed unchanged source from Git 58eb81f: observe builds constant SELECT SQL plus only the literal ' FOR SHARE OF p' or an empty literal. bid_id, document_id and parse_id remain bound parameters in execute; no external value enters the SQL text. This exception covers only this exact B608 location, severity/confidence and complete source-byte hash."
+    },
+    {
+      "filename": "packages/model_governance/material_qualification_registry.py",
+      "test_id": "B608",
+      "line_number": 38,
+      "issue_severity": "MEDIUM",
+      "issue_confidence": "LOW",
+      "source_sha256": "3b7b23845616ca1b1e91dcbbf64ca6978d990657e5f77ed0c12fe12af1f782b3",
+      "reason": "Reviewed unchanged source from Git 58eb81f: _row builds constant SELECT SQL plus only the literal ' FOR UPDATE OF h' or an empty literal. scope_id and record_id remain bound parameters passed to fetch and execute; no external value enters the SQL text. This exception covers only this exact B608 location, severity/confidence and complete source-byte hash."
+    }
+  ]
+}

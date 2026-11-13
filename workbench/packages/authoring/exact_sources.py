@@ -34,9 +34,16 @@ class ExactAdoption:
 
 def check_adoption(c, admission, bid, draft, actor, body):
     from packages.assistant import actions
-    from packages.authoring import exact_text_edits, package_generation, package_proposals
+    from packages.authoring import (
+        exact_marked_text_edits,
+        exact_text_edits,
+        package_generation,
+        package_proposals,
+    )
     from packages.authoring.package_job_authority import assert_job
 
+    if isinstance(admission, exact_marked_text_edits.ExactMarkedManualEdit):
+        return exact_marked_text_edits.check(c, admission, bid, draft, actor, body)
     if isinstance(admission, exact_text_edits.ExactManualEdit):
         return exact_text_edits.check(c, admission, bid, draft, actor, body)
     if not isinstance(admission, ExactAdoption):
@@ -81,8 +88,12 @@ def check_adoption(c, admission, bid, draft, actor, body):
 
 def append_adoption(c, admission, bid, draft, section, revision, content, actor, schema_digest):
     """Recheck all authority immediately before the shared section INSERT."""
-    from packages.authoring import exact_text_edits
+    from packages.authoring import exact_marked_text_edits, exact_text_edits
 
+    if isinstance(admission, exact_marked_text_edits.ExactMarkedManualEdit):
+        return exact_marked_text_edits.append(
+            c, admission, bid, draft, section, revision, content, actor, schema_digest
+        )
     if isinstance(admission, exact_text_edits.ExactManualEdit):
         return exact_text_edits.append(
             c, admission, bid, draft, section, revision, content, actor, schema_digest
@@ -110,9 +121,11 @@ def append_adoption(c, admission, bid, draft, section, revision, content, actor,
 
 
 def bind_adoption(c, admission, actual, job, content, schema_digest):
-    from packages.authoring import exact_text_edits
+    from packages.authoring import exact_marked_text_edits, exact_text_edits
     from packages.authoring.package_proposals import policy
 
+    if isinstance(admission, exact_marked_text_edits.ExactMarkedManualEdit):
+        return exact_marked_text_edits.bind(c, admission, actual, job, content, schema_digest)
     if isinstance(admission, exact_text_edits.ExactManualEdit):
         return exact_text_edits.bind(c, admission, actual, job, content, schema_digest)
     target = job["input_manifest"]["plan"]["target"]
@@ -284,6 +297,9 @@ def assert_ordinary_edit(c, bid, draft):
 def load(c, bid, revision):
     require_schema(c)
     from packages.authoring import exact_text_edits
+    from packages.authoring.exact_marked_text_edit_contracts import (
+        AuthoringExactMarkedManualRevisionView,
+    )
     from packages.authoring.exact_text_edit_contracts import (
         AuthoringExactManualRevisionView,
         AuthoringExactMultiManualRevisionView,
@@ -306,6 +322,8 @@ def load(c, bid, revision):
         AuthoringExactManualRevisionView.model_validate(value)
     elif row["manifest"].get("protocol") == "authoring-exact-manual-revision/2":
         AuthoringExactMultiManualRevisionView.model_validate(value)
+    elif row["manifest"].get("protocol") == "authoring-exact-manual-revision/3":
+        AuthoringExactMarkedManualRevisionView.model_validate(value)
     else:
         AuthoringExactRevisionView.model_validate(value)
     m = row["manifest"]

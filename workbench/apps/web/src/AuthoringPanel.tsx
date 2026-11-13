@@ -11,6 +11,7 @@ import type {
   AuthoringGenerationBatchReceipt,
   AuthoringExactTextEditResult,
   AuthoringExactMultiTextEditResult,
+  AuthoringExactMarkedTextEditResult,
   AuthoringWordImportResult,
   CreateDraftRequest,
   DraftView,
@@ -40,6 +41,7 @@ type SavedAuthoringChange =
   | AuthoringPlanSaved
   | AuthoringExactTextEditResult
   | AuthoringExactMultiTextEditResult
+  | AuthoringExactMarkedTextEditResult
   | (AuthoringWordImportResult & {
       draft_revision: number;
       snapshot_id: string;
@@ -442,7 +444,10 @@ function DraftEditor({
     }
   }
   async function exactTextChanged(
-    applied?: AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
+    applied?:
+      | AuthoringExactTextEditResult
+      | AuthoringExactMultiTextEditResult
+      | AuthoringExactMarkedTextEditResult,
   ) {
     if (!applied) {
       await reloadHead();
@@ -456,6 +461,7 @@ function DraftEditor({
       ![
         "authoring-exact-text-edit-result/1",
         "authoring-exact-text-edit-result/2",
+        "authoring-exact-text-edit-result/3",
       ].includes(applied.protocol) ||
       !Number.isSafeInteger(applied.draft_revision) ||
       applied.draft_revision < 1 ||

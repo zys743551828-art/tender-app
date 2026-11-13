@@ -144,6 +144,8 @@ def suite_files(suite: str) -> list[str]:
             "tests/test_authoring_exact_builds_pg.py",
             "tests/test_authoring_exact_text_edits_pg.py",
             "tests/test_authoring_exact_multi_text_edits_pg.py",
+            "tests/test_authoring_exact_marked_install_pg.py",
+            "tests/test_authoring_exact_marked_text_edits_pg.py",
         ]
     if suite == "scoring":
         return [

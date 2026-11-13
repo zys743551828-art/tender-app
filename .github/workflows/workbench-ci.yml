@@ -57,7 +57,7 @@ jobs:
       - name: Types
         run: python -m mypy apps/api apps/worker packages deploy
       - name: Security checks
-        run: python -m bandit -q -ll -r apps/api,apps/worker,packages,deploy -x packages/parsing/qa
+        run: python -m deploy.security_checks
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "24.22.2"

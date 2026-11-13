@@ -1401,6 +1401,45 @@ export type AuthoringExactMultiManualRevisionView = {
   digest: string;
 };
 
+export type AuthoringExactMarkedTextEditRequest = {
+  protocol: "authoring-exact-marked-text-edit/1";
+  base_draft_revision: number;
+  section_revision_id: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text: string;
+  reason: string;
+};
+
+export type AuthoringExactMarkedTextEditResult = {
+  protocol: "authoring-exact-text-edit-result/3";
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  snapshot_id: string;
+  snapshot_digest: string;
+  parent_section_revision_id: string;
+  section_revision_id: string;
+  section_digest: string;
+  qualification: AuthoringExactMarkedManualRevisionView;
+};
+
+export type AuthoringExactMarkedTextEditCapabilities = {
+  protocol: "authoring-exact-text-edit-capabilities/3";
+  available: boolean;
+  supported_content: "single_marked_text_leaf_preserve_marks";
+  preserves_source_refs: true;
+  preserves_rule_ids: true;
+  preserves_marks: true;
+  ordinary_edit_available: false;
+  blocking_reasons: string[];
+};
+
+export type AuthoringExactMarkedManualRevisionView = {
+  manifest: AuthoringExactMarkedManualRevisionManifest;
+  digest: string;
+};
+
 export type AuthoringExactSectionBinding = {
   section_id: string;
   section_revision_id: string;
@@ -9697,6 +9736,31 @@ export type AuthoringExactMultiManualRevisionManifest = {
   content_correctness_certified: false;
 };
 
+export type AuthoringExactMarkedManualRevisionManifest = {
+  protocol: "authoring-exact-manual-revision/3";
+  id: string;
+  bid_id: string;
+  draft_id: string;
+  draft_revision: number;
+  section_id: string;
+  section_revision_id: string;
+  section_revision: number;
+  section_digest: string;
+  schema_digest: string;
+  parent_section_revision_id: string;
+  parent_section_revision: number;
+  parent_section_digest: string;
+  input: AuthoringExactInputIdentity;
+  origin: AuthoringExactMarkedTextEditOrigin;
+  source_scope: "exact_package_context";
+  source_refs_digest: string;
+  rule_ids_digest: string;
+  method: AuthoringExactMarkedTextEditMethod;
+  method_digest: string;
+  candidate_adopted: false;
+  content_correctness_certified: false;
+};
+
 export type PackageContext = {
   target: PackageReference;
   authority: PackageReference;
@@ -11691,6 +11755,28 @@ export type AuthoringExactMultiTextEditMethod = {
   source_sha256: { [key: string]: string };
 };
 
+export type AuthoringExactMarkedTextEditOrigin = {
+  kind: "manual_marked_text_edit";
+  parent_qualification_id: string;
+  parent_qualification_digest: string;
+  root_qualification_id: string;
+  root_qualification_digest: string;
+  command_id: string;
+  actor_id: string;
+  before_action_digest: string;
+  node_id: string;
+  before_node_digest: string;
+  replacement_text_digest: string;
+  preserved_marks_digest: string;
+  reason: string;
+};
+
+export type AuthoringExactMarkedTextEditMethod = {
+  protocol: "authoring-exact-text-edit-policy/3";
+  supported_content: "single_marked_text_leaf_preserve_marks";
+  source_sha256: { [key: string]: string };
+};
+
 export type PackageReference = {
   package_id: string;
   revision_id: string;
@@ -12770,6 +12856,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
   "GET /api/v1/authoring/exact-text-edit-capabilities",
+  "GET /api/v1/authoring/exact-marked-text-edit-capabilities",
   "POST /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/revisions/{revision}",
   "GET /api/v1/bids/{bid_id}/authoring/input-catalog/draft-snapshots/{snapshot_id}/sections/{section_id}/nodes",

@@ -1,0 +1,242 @@
+{
+  "fixture_kind": "synthetic source/model content; native non-owner PG17/API/Worker/private S3",
+  "member_id": "e8562e20-5d82-4ff9-83a1-df33c662859a",
+  "bid_id": "4ca27256-afcf-4f59-8819-c6e9efda4386",
+  "parent_section": {
+    "id": "b4d9c554-dec4-406a-ab53-1f17e1a74fe6",
+    "draft_id": "ac73d9de-fd12-4c82-b4ef-cd0958354d20",
+    "revision": 2,
+    "schema_digest": "9e22e5a83d21e688ce1acf28484e960d89a78c5fb14ea9c2a0ee8e05d2508f3c",
+    "content": {
+      "type": "doc",
+      "attrs": {
+        "title": "技术方案",
+        "ordinal": 0,
+        "rule_ids": [],
+        "source_refs": [
+          {
+            "source_id": "958ef9a7-25b7-5be1-b670-67393e3c2508",
+            "evidence_id": "16542004-0bcb-4c43-802c-5b16cb955e98",
+            "source_revision": 2,
+            "document_version_id": "f9975d52-5fd6-4fe4-bb69-0b0c617d89a9"
+          }
+        ]
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "02e8a42f-9ebc-42f3-946c-6cbb11848591"
+          },
+          "content": [
+            {
+              "text": "来自合成完整整包的可审阅修改建议；尚未采用。",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "3e53b7d1-7e3f-41b8-9740-a77030a3ce52"
+          },
+          "content": [
+            {
+              "text": "Synthetic plain node 0",
+              "type": "text",
+              "marks": [
+                {
+                  "type": "italic"
+                },
+                {
+                  "type": "bold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "attrs": {
+            "id": "e65f9d4e-5566-4979-8047-a09bebe30f4c"
+          },
+          "content": [
+            {
+              "text": "Synthetic plain node 1",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    "writing_plan_id": null
+  },
+  "parent_status": {
+    "protocol": "authoring-exact-draft-status/1",
+    "bid_id": "4ca27256-afcf-4f59-8819-c6e9efda4386",
+    "draft_id": "ac73d9de-fd12-4c82-b4ef-cd0958354d20",
+    "draft_revision": 2,
+    "snapshot_id": "370ac188-aa2d-4fb0-a9fd-b6fbc5977eda",
+    "snapshot_digest": "9c46cb1c3e6e6d5023fd1c24b7899b93e3dec03ab7cc449a510d84a0b6a4aa42",
+    "exact_sections": [
+      {
+        "section_id": "b4d9c554-dec4-406a-ab53-1f17e1a74fe6",
+        "section_revision_id": "e6e870e8-340c-48e9-9194-e03c8198c42b",
+        "section_revision": 2,
+        "section_digest": "3957ba955c2d54082d165da518cab8a08413075d03525d979c29c7f1373aaeb0",
+        "qualification_id": "1d524ef7-5874-459d-a749-6db02303ce17",
+        "qualification_digest": "e9dc4b4e617d7ee50533b7a21c481941be857113ae0f016abf1be01e44d0e5bc",
+        "authoring_input_id": "a07f2da0-0e61-4402-9bad-ba5d6ec9d176",
+        "authoring_input_digest": "49013dfd8687cd15e09c3caa61141d5e9d35779a531ad2497f4432a35354b507",
+        "source_scope": "exact_package_context"
+      }
+    ],
+    "ordinary_edit_available": false,
+    "build_available": true,
+    "blocking_reasons": ["AUTHORING_EXACT_REVISION_OPERATION_UNSUPPORTED"]
+  },
+  "parent_qualification": {
+    "manifest": {
+      "id": "1d524ef7-5874-459d-a749-6db02303ce17",
+      "input": {
+        "id": "a07f2da0-0e61-4402-9bad-ba5d6ec9d176",
+        "digest": "49013dfd8687cd15e09c3caa61141d5e9d35779a531ad2497f4432a35354b507",
+        "context_digest": "30c0901b21bf99d3683c2410df54f5d9e9e87bd52873c79017ea3ae615e861ff"
+      },
+      "bid_id": "4ca27256-afcf-4f59-8819-c6e9efda4386",
+      "method": {
+        "protocol": "authoring-exact-adoption-policy/1",
+        "source_sha256": {
+          "packages/authoring/repository.py": "cb716904c186f7934cd020ddcc7d9fd5ff8df79c8d43aacd5116649c5b1676ae",
+          "packages/authoring/exact_sources.py": "3a0bdea13e5411c787c3e8a0d1b946756c894ca9fd6472bd09a06a64ae36d5c0",
+          "packages/authoring/package_proposals.py": "5f3bb6180cdcfd02c362c06f60d96eb75eaaee5cfdf6c90d4a7665cd201dc1ba",
+          "packages/authoring/snapshot_structure.py": "f65377fefd29f1fa9f5107da3d077fe6de731a4c538c969d6baad38a996a9ffc",
+          "packages/authoring/exact_revision_contracts.py": "732f2162e9c83e42517f57b12a896b65aa4bba503f0853cecb91186d71c698d7",
+          "packages/contracts/sql/authoring-exact-revisions.sql": "114d1c0fd353a25c26780350ec773d4a5b6ad9b63577899043614cba6e4b756d"
+        },
+        "supported_content": "plain_text_stable_node"
+      },
+      "origin": {
+        "kind": "model_candidate_adoption",
+        "job_id": "d1ab4123-193a-4b1b-8091-ef8d49f47bd5",
+        "actor_id": "e8562e20-5d82-4ff9-83a1-df33c662859a",
+        "action_id": "e8a3a72d-a2e2-4526-aa65-0bedb0b961af",
+        "command_id": "9ed96671-3d0c-475c-83b8-71775bc09081",
+        "action_digest": "2cc3a786f1b5fef843d32cbe16121db5386347bf770efd6e48d46ce9436806ec",
+        "candidate_digest": "9be4e551387e3987d32892242882743fcff57be9d1c25d95317c86e7300b0c4f",
+        "job_input_digest": "7805f460d7d5adbed1aabb32a81448507be9c7fcfd7dac4e2f891af9623a05f7",
+        "before_action_digest": "dcd32e4425c7ba4e418ee27dc609fc5a7fc8e6df30fbb3887b4f0cbe7fa9155b"
+      },
+      "draft_id": "ac73d9de-fd12-4c82-b4ef-cd0958354d20",
+      "protocol": "authoring-exact-revision/1",
+      "section_id": "b4d9c554-dec4-406a-ab53-1f17e1a74fe6",
+      "source_scope": "exact_package_context",
+      "method_digest": "a8f360a77025ea69d4c6fd98e6dbdefe3db6368110d18e13e91cf091039c4fb6",
+      "schema_digest": "9e22e5a83d21e688ce1acf28484e960d89a78c5fb14ea9c2a0ee8e05d2508f3c",
+      "draft_revision": 2,
+      "section_digest": "3957ba955c2d54082d165da518cab8a08413075d03525d979c29c7f1373aaeb0",
+      "rule_ids_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "section_revision": 2,
+      "candidate_adopted": true,
+      "source_refs_digest": "d58ad6af2464a882001ce662d183045c0fbd3245e7fe32761c0ce6188aa2838a",
+      "section_revision_id": "e6e870e8-340c-48e9-9194-e03c8198c42b",
+      "parent_section_digest": "b54fc86838aec25cbc911130ecd4a050923b39b55173cfdf685369f118fa0f98",
+      "parent_section_revision": 1,
+      "parent_section_revision_id": "178739fb-12f9-4162-8afd-af7b3914deee",
+      "content_correctness_certified": false
+    },
+    "digest": "e9dc4b4e617d7ee50533b7a21c481941be857113ae0f016abf1be01e44d0e5bc"
+  },
+  "request": {
+    "base_draft_revision": 2,
+    "section_revision_id": "e6e870e8-340c-48e9-9194-e03c8198c42b",
+    "node_id": "3e53b7d1-7e3f-41b8-9740-a77030a3ce52",
+    "before_node_digest": "c1bf679e2d7f15e5fc10d4e5b90bcd41edc9a4b44674975c96bbd0076026269f",
+    "replacement_text": "Synthetic human replacement retaining original marks",
+    "reason": "Synthetic explicit correction, not model/real-document acceptance",
+    "protocol": "authoring-exact-marked-text-edit/1"
+  },
+  "request_key": "dfe0c706-294d-4869-872c-e2cce639e77c",
+  "request_etag": "\"draft:ac73d9de-fd12-4c82-b4ef-cd0958354d20:2\"",
+  "ack": {
+    "protocol": "authoring-exact-text-edit-result/3",
+    "bid_id": "4ca27256-afcf-4f59-8819-c6e9efda4386",
+    "draft_id": "ac73d9de-fd12-4c82-b4ef-cd0958354d20",
+    "draft_revision": 3,
+    "snapshot_id": "3c5a27da-29db-40e6-8ce2-947d30758033",
+    "snapshot_digest": "db15d1cb15a351bde1861f99f7c69fe110cfe54a06a43acd3cecf2bc6692346a",
+    "parent_section_revision_id": "e6e870e8-340c-48e9-9194-e03c8198c42b",
+    "section_revision_id": "00280859-09f3-4052-9d28-fcab3de26941",
+    "section_digest": "8cda2bf0a6782f5ad1cdd5c3e07114d159a6b7300f1ac6e654c84acc93927ece",
+    "qualification": {
+      "manifest": {
+        "id": "ebb80d97-766f-44f8-9eb8-905318484f25",
+        "input": {
+          "id": "a07f2da0-0e61-4402-9bad-ba5d6ec9d176",
+          "digest": "49013dfd8687cd15e09c3caa61141d5e9d35779a531ad2497f4432a35354b507",
+          "context_digest": "30c0901b21bf99d3683c2410df54f5d9e9e87bd52873c79017ea3ae615e861ff"
+        },
+        "bid_id": "4ca27256-afcf-4f59-8819-c6e9efda4386",
+        "method": {
+          "protocol": "authoring-exact-text-edit-policy/3",
+          "source_sha256": {
+            "packages/authoring/content.py": "1d669a42ae40c2dc2272b6027fc4e23e16212f2e62b13488ed8e9e9d90d28974",
+            "packages/authoring/repository.py": "cb716904c186f7934cd020ddcc7d9fd5ff8df79c8d43aacd5116649c5b1676ae",
+            "packages/authoring/exact_sources.py": "3a0bdea13e5411c787c3e8a0d1b946756c894ca9fd6472bd09a06a64ae36d5c0",
+            "packages/authoring/exact_text_edits.py": "194974dc4479249e122d078d02383faa2c02bec91b1ad5eb92b2d051b6bb7908",
+            "packages/authoring/exact_marked_text_edits.py": "67ebffb059e09a7444bc16af668516a44fe594d3470d867591710ebe0969bb2a",
+            "packages/authoring/exact_text_edit_service.py": "f6e838d90e4336349f7ed58eb6f67bb403f8a23343762ed991a92ac972f268ec",
+            "packages/contracts/sql/authoring-exact-text-edits.sql": "409a614e1008614b4428290d1d9842800495e278f9920ec5820cd3787a387f90",
+            "packages/authoring/exact_marked_text_edit_contracts.py": "081992beab06a377e67735cb1c2a14b7eee8fdb3dd7923dc3436dae0f4145195",
+            "packages/contracts/sql/authoring-exact-marked-text-edits.sql": "021a805675b893eb0f5975101ee39dd774d15d739269d406285d8f1496d2218b"
+          },
+          "supported_content": "single_marked_text_leaf_preserve_marks"
+        },
+        "origin": {
+          "kind": "manual_marked_text_edit",
+          "reason": "Synthetic explicit correction, not model/real-document acceptance",
+          "node_id": "3e53b7d1-7e3f-41b8-9740-a77030a3ce52",
+          "actor_id": "e8562e20-5d82-4ff9-83a1-df33c662859a",
+          "command_id": "413f49f5-ee93-46ac-abad-342edec765bc",
+          "before_node_digest": "c1bf679e2d7f15e5fc10d4e5b90bcd41edc9a4b44674975c96bbd0076026269f",
+          "before_action_digest": "be785afb7a05c9e139f6919ac35987893b2385e58a84864127f40408c0ca3803",
+          "root_qualification_id": "1d524ef7-5874-459d-a749-6db02303ce17",
+          "preserved_marks_digest": "9307443fce86c136b7a4d84736557709ea859f2897cd6f831307afa385e8d363",
+          "parent_qualification_id": "1d524ef7-5874-459d-a749-6db02303ce17",
+          "replacement_text_digest": "5bfb48458adf8c34853ff17ae2cdaed856fcfda4b317d87251cb4241768429e4",
+          "root_qualification_digest": "e9dc4b4e617d7ee50533b7a21c481941be857113ae0f016abf1be01e44d0e5bc",
+          "parent_qualification_digest": "e9dc4b4e617d7ee50533b7a21c481941be857113ae0f016abf1be01e44d0e5bc"
+        },
+        "draft_id": "ac73d9de-fd12-4c82-b4ef-cd0958354d20",
+        "protocol": "authoring-exact-manual-revision/3",
+        "section_id": "b4d9c554-dec4-406a-ab53-1f17e1a74fe6",
+        "source_scope": "exact_package_context",
+        "method_digest": "b8971eebb009f519fe41ca95624ab8e659be246d1727033133ba1f0e5e4a045b",
+        "schema_digest": "9e22e5a83d21e688ce1acf28484e960d89a78c5fb14ea9c2a0ee8e05d2508f3c",
+        "draft_revision": 3,
+        "section_digest": "8cda2bf0a6782f5ad1cdd5c3e07114d159a6b7300f1ac6e654c84acc93927ece",
+        "rule_ids_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "section_revision": 3,
+        "candidate_adopted": false,
+        "source_refs_digest": "d58ad6af2464a882001ce662d183045c0fbd3245e7fe32761c0ce6188aa2838a",
+        "section_revision_id": "00280859-09f3-4052-9d28-fcab3de26941",
+        "parent_section_digest": "3957ba955c2d54082d165da518cab8a08413075d03525d979c29c7f1373aaeb0",
+        "parent_section_revision": 2,
+        "parent_section_revision_id": "e6e870e8-340c-48e9-9194-e03c8198c42b",
+        "content_correctness_certified": false
+      },
+      "digest": "d58355f8ec9a1732df96475877c4cb3630fd0a720b35344bd3f91fb30b5e1695"
+    }
+  },
+  "ack_etag": "\"draft:ac73d9de-fd12-4c82-b4ef-cd0958354d20:3\"",
+  "capabilities": {
+    "protocol": "authoring-exact-text-edit-capabilities/3",
+    "available": true,
+    "supported_content": "single_marked_text_leaf_preserve_marks",
+    "preserves_source_refs": true,
+    "preserves_rule_ids": true,
+    "preserves_marks": true,
+    "ordinary_edit_available": false,
+    "blocking_reasons": []
+  }
+}

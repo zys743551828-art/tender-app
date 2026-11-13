@@ -2,7 +2,14 @@
 
 from uuid import UUID
 
-from packages.authoring import exact_builds, exact_sources, exact_text_edits, repository
+from packages.authoring import (
+    exact_builds,
+    exact_marked_text_edits,
+    exact_sources,
+    exact_text_edits,
+    repository,
+)
+from packages.authoring.exact_marked_text_edit_contracts import AuthoringExactMarkedTextEditResult
 from packages.authoring.exact_text_edit_contracts import (
     AuthoringExactMultiTextEditResult,
     AuthoringExactTextEditResult,
@@ -25,6 +32,28 @@ def capabilities(c):
         "ordinary_edit_available": False,
         "blocking_reasons": [] if ready else ["AUTHORING_EXACT_TEXT_EDIT_NOT_CONFIGURED"],
     }
+
+
+def marked_capabilities(c):
+    ready = exact_marked_text_edits.available(c)
+    return {
+        "protocol": "authoring-exact-text-edit-capabilities/3",
+        "available": ready,
+        "supported_content": "single_marked_text_leaf_preserve_marks",
+        "preserves_source_refs": True,
+        "preserves_rule_ids": True,
+        "preserves_marks": True,
+        "ordinary_edit_available": False,
+        "blocking_reasons": [] if ready else ["AUTHORING_EXACT_MARKED_TEXT_EDIT_NOT_CONFIGURED"],
+    }
+
+
+def module_for(body):
+    return (
+        exact_marked_text_edits
+        if body.get("protocol") == "authoring-exact-marked-text-edit/1"
+        else exact_text_edits
+    )
 
 
 def _scope(c, bid, draft):
@@ -64,7 +93,8 @@ def _replay(c, bid, draft, actor, key, body, condition):
 
 
 def _capture(c, bid, draft, body, condition):
-    exact_text_edits.require_available(c)
+    implementation = module_for(body)
+    implementation.require_available(c)
     if exact_text_edits.multi(body) and not exact_text_edits.multi_installed(c):
         raise DomainError(
             "AUTHORING_EXACT_TEXT_EDIT_NOT_CONFIGURED", "原子多节点修订扩展尚未安装", 503
@@ -92,7 +122,7 @@ def _capture(c, bid, draft, body, condition):
     original = fetch(
         c, "SELECT * FROM design.section_revisions WHERE id=%s", (p["section_revision_id"],)
     )
-    content = exact_text_edits.materialize(original["content"], body)
+    content = implementation.materialize(original["content"], body)
     saved = repository.snapshot_content(c, bid, snapshot["id"])
     packet = exact_builds.capture(c, bid, saved, current=True)
     if packet is None or not any(
@@ -113,6 +143,8 @@ def _capture(c, bid, draft, body, condition):
 
 
 def result_model(body):
+    if module_for(body) is exact_marked_text_edits:
+        return AuthoringExactMarkedTextEditResult
     return (
         AuthoringExactMultiTextEditResult
         if exact_text_edits.multi(body)
@@ -121,7 +153,8 @@ def result_model(body):
 
 
 def save(actor, bid, draft, key, condition, request, *, final_auth):
-    body = exact_text_edits.parse_request(request)
+    implementation = module_for(request)
+    body = implementation.parse_request(request)
     if not key or not isinstance(key, str) or len(key) > 128:
         raise DomainError("IDEMPOTENCY_REQUIRED", "请提供有效的文字修订操作键", 428)
     actor, bid, draft = UUID(str(actor)), UUID(str(bid)), UUID(str(draft))
@@ -169,7 +202,12 @@ def save(actor, bid, draft, key, condition, request, *, final_auth):
             )
         q = current["qualification"]
         p = q["manifest"]
-        admission = exact_text_edits.ExactManualEdit(
+        admission_type = (
+            exact_marked_text_edits.ExactMarkedManualEdit
+            if implementation is exact_marked_text_edits
+            else exact_text_edits.ExactManualEdit
+        )
+        admission = admission_type(
             command.id,
             actor,
             condition,
@@ -203,7 +241,9 @@ def save(actor, bid, draft, key, condition, request, *, final_auth):
         )
         result = clean(
             {
-                "protocol": "authoring-exact-text-edit-result/2"
+                "protocol": "authoring-exact-text-edit-result/3"
+                if implementation is exact_marked_text_edits
+                else "authoring-exact-text-edit-result/2"
                 if exact_text_edits.multi(body)
                 else "authoring-exact-text-edit-result/1",
                 "bid_id": bid,

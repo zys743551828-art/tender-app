@@ -103,6 +103,21 @@ def test_native_zero_exit_still_fails_when_report_contains_missing_coverage(
     )
 
 
+def test_authoring_suite_retains_old_proofs_and_requires_marked_install_and_runtime():
+    files = ci_checks.suite_files("authoring")
+    assert files[:4] == [
+        "tests/test_authoring_exact_revisions_pg.py",
+        "tests/test_authoring_exact_builds_pg.py",
+        "tests/test_authoring_exact_text_edits_pg.py",
+        "tests/test_authoring_exact_multi_text_edits_pg.py",
+    ]
+    assert files[4:] == [
+        "tests/test_authoring_exact_marked_install_pg.py",
+        "tests/test_authoring_exact_marked_text_edits_pg.py",
+    ]
+    assert len(files) == len(set(files))
+
+
 def test_postgres_suite_includes_manual_rule_native_test():
     assert "tests/test_manual_rule_initial_pg.py" in ci_checks.suite_files("postgres")
 

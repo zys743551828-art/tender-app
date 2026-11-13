@@ -7,6 +7,12 @@ from fastapi import APIRouter, Request
 from apps.api.auth import auth
 from packages.authoring import exact_revision_contracts as models
 from packages.authoring import exact_sources, exact_text_edit_service
+from packages.authoring.exact_marked_text_edit_contracts import (
+    AuthoringExactMarkedManualRevisionView,
+    AuthoringExactMarkedTextEditCapabilities,
+    AuthoringExactMarkedTextEditRequest,
+    AuthoringExactMarkedTextEditResult,
+)
 from packages.authoring.exact_text_edit_contracts import (
     AuthoringExactManualRevisionView,
     AuthoringExactMultiManualRevisionView,
@@ -47,7 +53,8 @@ def draft_status(bid_id: UUID, draft_id: UUID, r: Request):
     "/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
     response_model=models.AuthoringExactRevisionView
     | AuthoringExactManualRevisionView
-    | AuthoringExactMultiManualRevisionView,
+    | AuthoringExactMultiManualRevisionView
+    | AuthoringExactMarkedManualRevisionView,
 )
 def qualification(bid_id: UUID, revision_id: UUID, r: Request):
     auth(r)
@@ -66,15 +73,29 @@ def text_edit_capabilities(r: Request):
         return exact_text_edit_service.capabilities(c)
 
 
+@router.get(
+    "/authoring/exact-marked-text-edit-capabilities",
+    response_model=AuthoringExactMarkedTextEditCapabilities,
+)
+def marked_text_edit_capabilities(r: Request):
+    auth(r)
+    with connection() as c:
+        return exact_text_edit_service.marked_capabilities(c)
+
+
 @router.post(
     "/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
-    response_model=AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
+    response_model=AuthoringExactTextEditResult
+    | AuthoringExactMultiTextEditResult
+    | AuthoringExactMarkedTextEditResult,
 )
 def edit_text(
     bid_id: UUID,
     draft_id: UUID,
     r: Request,
-    body: AuthoringExactTextEditRequest | AuthoringExactMultiTextEditRequest,
+    body: AuthoringExactTextEditRequest
+    | AuthoringExactMultiTextEditRequest
+    | AuthoringExactMarkedTextEditRequest,
 ):
     from apps.api.authoring import response
 

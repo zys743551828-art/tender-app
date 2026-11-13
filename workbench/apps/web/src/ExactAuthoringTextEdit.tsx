@@ -1,6 +1,13 @@
+import {
+  editableMarkedTextNodes,
+  readMarkedTextEditCapabilities,
+  validMarkedReplacement,
+  validMarkedReason,
+} from "./authoringExactMarkedTextEditProtocol";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import type {
+  AuthoringExactMarkedTextEditResult,
   AuthoringDocument,
   AuthoringExactDraftStatus,
   AuthoringExactTextEditResult,
@@ -46,7 +53,10 @@ function ExactAuthoringTextEditor({
   etag: string;
   disabled: boolean;
   onSaved: (
-    saved?: AuthoringExactTextEditResult | AuthoringExactMultiTextEditResult,
+    saved?:
+      | AuthoringExactTextEditResult
+      | AuthoringExactMultiTextEditResult
+      | AuthoringExactMarkedTextEditResult,
   ) => Promise<unknown>;
   onEditingChange: (value: boolean) => void;
 }) {
@@ -56,6 +66,7 @@ function ExactAuthoringTextEditor({
     base: ExactTextEditBase | null;
     available: boolean;
     multi: boolean;
+    marked: boolean;
   } | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [refresh, setRefresh] = useState(0);
@@ -63,6 +74,7 @@ function ExactAuthoringTextEditor({
   const [nodeId, setNodeId] = useState("");
   const [replacement, setReplacement] = useState("");
   const [texts, setTexts] = useState<Record<string, string>>({});
+  const [marked, setMarked] = useState(false);
   const [multi, setMulti] = useState(false);
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -73,6 +85,34 @@ function ExactAuthoringTextEditor({
   const identity = `${status?.snapshot_id ?? ""}:${binding?.qualification_digest ?? ""}:${sectionId ?? ""}`;
   const base = loaded?.identity === identity ? loaded.base : null;
   const available = loaded?.identity === identity && loaded.available;
+  const formIdentity = JSON.stringify({
+    nodeId,
+    replacement,
+    texts,
+    reason,
+    confirmed,
+    marked,
+  });
+  const currentEdit = useRef({
+    identity,
+    editing,
+    disabled,
+    active: true,
+    formIdentity,
+  });
+  currentEdit.current = {
+    identity,
+    editing,
+    disabled,
+    active: true,
+    formIdentity,
+  };
+  useEffect(
+    () => () => {
+      currentEdit.current.active = false;
+    },
+    [],
+  );
   const dirty = !!editing;
   const unsettled =
     dirty ||
@@ -103,9 +143,23 @@ function ExactAuthoringTextEditor({
     void api<unknown>("/authoring/exact-text-edit-capabilities")
       .then(async (caps) => {
         const capability = readTextEditCapabilities(caps.data);
+        const markedCapability = await api<unknown>(
+          "/authoring/exact-marked-text-edit-capabilities",
+        )
+          .then(
+            (response) =>
+              readMarkedTextEditCapabilities(response.data).available,
+          )
+          .catch(() => false);
         if (!active) return;
-        if (!capability.available) {
-          setLoaded({ identity, base: null, available: false, multi: false });
+        if (!capability.available && !markedCapability) {
+          setLoaded({
+            identity,
+            base: null,
+            available: false,
+            multi: false,
+            marked: false,
+          });
           setError(null);
           return;
         }
@@ -124,6 +178,7 @@ function ExactAuthoringTextEditor({
             identity,
             base: verified,
             available: capability.available,
+            marked: markedCapability,
             multi:
               capability.protocol ===
               "authoring-exact-text-edit-capabilities/2",
@@ -142,7 +197,9 @@ function ExactAuthoringTextEditor({
     };
   }, [memberId, bidId, draftId, sectionId, identity, status, binding, refresh]);
   const nodes = editing
-    ? editableTextNodes(editing.section.content as AuthoringDocument)
+    ? (marked ? editableMarkedTextNodes : editableTextNodes)(
+        editing.section.content as AuthoringDocument,
+      )
     : [];
   const node = nodes.find((n) => n.id === nodeId);
   const changes = Object.entries({
@@ -152,12 +209,16 @@ function ExactAuthoringTextEditor({
   const validChanges =
     changes.length > 0 &&
     changes.length <= (multi ? 20 : 1) &&
-    changes.every(([id]) => nodes.some((n) => n.id === id)) &&
+    changes.every(
+      ([id, text]) =>
+        nodes.some((n) => n.id === id) &&
+        (!marked || validMarkedReplacement(text)),
+    ) &&
     changes.reduce((total, [, text]) => total + Array.from(text).length, 0) <=
       20000;
   const canStart =
     !disabled &&
-    available &&
+    (available || (loaded?.identity === identity && loaded.marked)) &&
     !!base &&
     etag === `"draft:${draftId}:${base.status.draft_revision}"` &&
     !unsettled;
@@ -180,6 +241,9 @@ function ExactAuthoringTextEditor({
       !editing ||
       !node ||
       !confirmed ||
+      (marked ? !loaded?.marked : !available) ||
+      editing.status.snapshot_id !== status?.snapshot_id ||
+      editing.qualification.digest !== binding?.qualification_digest ||
       disabled ||
       command.busy ||
       command.pending ||
@@ -189,7 +253,8 @@ function ExactAuthoringTextEditor({
       return;
     setError(null);
     try {
-      if (!validChanges) return;
+      if (!validChanges || loaded?.identity !== identity) return;
+      const startedIdentity = identity;
       const edits = await Promise.all(
         changes.map(async ([id, text]) => ({
           node_id: id,
@@ -206,8 +271,22 @@ function ExactAuthoringTextEditor({
       };
       const body: ExactTextEditRequest =
         edits.length === 1
-          ? { ...common, ...edits[0] }
+          ? marked
+            ? {
+                ...common,
+                ...edits[0],
+                protocol: "authoring-exact-marked-text-edit/1",
+              }
+            : { ...common, ...edits[0] }
           : { ...common, protocol: "authoring-exact-multi-text-edit/1", edits };
+      if (
+        !currentEdit.current.active ||
+        currentEdit.current.disabled ||
+        currentEdit.current.identity !== startedIdentity ||
+        currentEdit.current.editing !== editing ||
+        currentEdit.current.formIdentity !== formIdentity
+      )
+        return;
       await completed(
         await command.run(
           editing,
@@ -219,14 +298,15 @@ function ExactAuthoringTextEditor({
       setError(failure);
     }
   }
-  function begin() {
+  function begin(markedMode = false) {
     if (
       !canStart ||
       !base ||
+      (markedMode ? !loaded?.marked : !available) ||
       etag !== `"draft:${draftId}:${base.status.draft_revision}"`
     )
       return;
-    const first = editableTextNodes(
+    const first = (markedMode ? editableMarkedTextNodes : editableTextNodes)(
       base.section.content as AuthoringDocument,
     )[0];
     if (!first) {
@@ -234,7 +314,8 @@ function ExactAuthoringTextEditor({
       return;
     }
     setEditing(base);
-    setMulti(!!loaded?.multi);
+    setMarked(markedMode);
+    setMulti(!markedMode && !!loaded?.multi);
     setTexts({});
     setNodeId(first.id);
     setReplacement(first.text);
@@ -248,6 +329,10 @@ function ExactAuthoringTextEditor({
     if (!old) return;
     setEditing(base);
     const edits = textEditChanges(old);
+    const markedMode =
+      "protocol" in old &&
+      old.protocol === "authoring-exact-marked-text-edit/1";
+    setMarked(markedMode);
     setMulti("edits" in old);
     setTexts(
       Object.fromEntries(
@@ -334,11 +419,20 @@ function ExactAuthoringTextEditor({
         <>
           <button
             className="button secondary"
-            disabled={!canStart}
-            onClick={begin}
+            disabled={!canStart || !available}
+            onClick={() => begin(false)}
           >
             修改本章固定来源文字
           </button>
+          {loaded?.identity === identity && loaded.marked && (
+            <button
+              className="button secondary"
+              disabled={!canStart}
+              onClick={() => begin(true)}
+            >
+              保留格式修改本章文字
+            </button>
+          )}
           {!available && (
             <p className="small-note">
               {loaded?.identity === identity
@@ -350,6 +444,11 @@ function ExactAuthoringTextEditor({
       )}
       {editing && (
         <div className="form-stack">
+          {marked && (
+            <p className="notice">
+              仅替换单一文字片段，完整保留原有加粗、斜体及顺序；不能更改格式、混合文字片段或换行。
+            </p>
+          )}
           <label>
             修改段落或标题
             <select
@@ -500,7 +599,7 @@ function ExactAuthoringTextEditor({
                 !confirmed ||
                 !node ||
                 !validChanges ||
-                !reason.trim() ||
+                (marked ? !validMarkedReason(reason) : !reason.trim()) ||
                 Array.from(replacement).length > 20000 ||
                 command.busy ||
                 command.pending ||

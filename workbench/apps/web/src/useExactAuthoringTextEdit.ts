@@ -258,7 +258,9 @@ export function useExactAuthoringTextEdit(scope: ExactTextEditScope) {
     update({ busy: true, error: null });
     return send(session.raw, epoch);
   }
-  async function acknowledgeConflict(base: ExactTextEditBase) {
+  async function acknowledgeConflict(
+    base: ExactTextEditBase,
+  ): Promise<ExactTextEditRequest | null> {
     if (!ready() || session.recovery?.state !== "conflict" || !session.raw)
       return null;
     const raw = session.raw,
