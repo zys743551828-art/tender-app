@@ -4,7 +4,7 @@ import {
   validMarkedReplacement,
   validMarkedReason,
 } from "./authoringExactMarkedTextEditProtocol";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "./api";
 import type {
   AuthoringExactMarkedTextEditResult,
@@ -26,6 +26,58 @@ import {
 } from "./authoringExactTextEditProtocol";
 import { useExactAuthoringTextEdit } from "./useExactAuthoringTextEdit";
 import { useNavigationGuard } from "./navigationGuard";
+import { TextChangePreview } from "./TextChangePreview";
+
+function TextEditDifference({
+  before,
+  after,
+  index,
+  requestState,
+  children,
+}: {
+  before: string | undefined;
+  after: string;
+  index: number;
+  requestState: string;
+  children?: ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <details onToggle={(event) => setExpanded(event.currentTarget.open)}>
+      <summary>
+        {requestState}节点 {index + 1}：
+        {before?.slice(0, 60) || "原节点已不存在或为空"}
+      </summary>
+      {expanded &&
+        (before === undefined ? (
+          <>
+            <p className="notice warning">
+              当前编辑基准中已无此节点，不能核对修改前文字；保留拟稿，未替换为其他节点。
+            </p>
+            <div className="text-change-preview__panes">
+              <section
+                aria-label={`节点 ${index + 1} 未核对的保留拟稿`}
+                style={{ gridColumn: "1 / -1" }}
+              >
+                <h4>未核对的保留拟稿 · 尚未重新确认</h4>
+                <pre tabIndex={0} aria-label="未核对的保留拟稿全文">
+                  {after}
+                </pre>
+              </section>
+            </div>
+          </>
+        ) : (
+          <TextChangePreview
+            before={before}
+            after={after}
+            beforeLabel={`节点 ${index + 1} 编辑基准文字`}
+            afterLabel={`节点 ${index + 1} 拟修改文字 · 尚未核验保存`}
+          />
+        ))}
+      {children}
+    </details>
+  );
+}
 
 export function ExactAuthoringTextEdit(
   props: Parameters<typeof ExactAuthoringTextEditor>[0],
@@ -506,54 +558,70 @@ function ExactAuthoringTextEditor({
               }}
             />
           </label>
-          {multi && (
-            <div>
-              <p role="status" className="small-note">
-                本次已修改 {changes.length} 个节点（最多 20 个，合计 20000
-                字符），切换段落保留修改；确认后全部成功或全部不改。
+          {(multi || changes.length > 0) && (
+            <section aria-label="本次文字修改对照">
+              <p className="small-note">
+                编辑基准：草稿修订 {editing.status.draft_revision}，章节修订{" "}
+                {editing.section.revision}
+                。展开节点可查看完整文字及增删标记；对照不保存正文，也不核验内容正确性或版式。
               </p>
+              {multi && (
+                <p role="status" className="small-note">
+                  本次已修改 {changes.length} 个节点（最多 20 个，合计 20000
+                  字符），切换段落保留修改；确认后全部成功或全部不改。
+                </p>
+              )}
               {changes.map(([id, text], index) => (
-                <details key={id}>
-                  <summary>
-                    待保存节点 {index + 1}：
-                    {nodes.find((n) => n.id === id)?.text.slice(0, 60) ||
-                      "原节点已不存在或为空"}
-                  </summary>
-                  <pre className="small-note">{text}</pre>
-                  <button
-                    type="button"
-                    className="button secondary"
-                    disabled={
-                      command.busy ||
-                      command.pending ||
-                      command.conflict ||
-                      command.blocked
-                    }
-                    onClick={() => {
-                      setTexts((previous) => {
-                        const next = { ...previous };
-                        delete next[id];
-                        return next;
-                      });
-                      if (nodeId === id) {
-                        const next = nodes.find((n) => n.id === id) ?? nodes[0];
-                        setNodeId(next?.id ?? "");
-                        setReplacement(
-                          next
-                            ? next.id === id
-                              ? next.text
-                              : (texts[next.id] ?? next.text)
-                            : "",
-                        );
+                <TextEditDifference
+                  key={id}
+                  index={index}
+                  before={nodes.find((n) => n.id === id)?.text}
+                  after={text}
+                  requestState={
+                    command.conflict
+                      ? "被拒绝请求"
+                      : command.pending || command.busy
+                        ? "原请求"
+                        : "待保存"
+                  }
+                >
+                  {multi && (
+                    <button
+                      type="button"
+                      className="button secondary"
+                      disabled={
+                        command.busy ||
+                        command.pending ||
+                        command.conflict ||
+                        command.blocked
                       }
-                      setConfirmed(false);
-                    }}
-                  >
-                    撤销节点 {index + 1} 的修改
-                  </button>
-                </details>
+                      onClick={() => {
+                        setTexts((previous) => {
+                          const next = { ...previous };
+                          delete next[id];
+                          return next;
+                        });
+                        if (nodeId === id) {
+                          const next =
+                            nodes.find((n) => n.id === id) ?? nodes[0];
+                          setNodeId(next?.id ?? "");
+                          setReplacement(
+                            next
+                              ? next.id === id
+                                ? next.text
+                                : (texts[next.id] ?? next.text)
+                              : "",
+                          );
+                        }
+                        setConfirmed(false);
+                      }}
+                    >
+                      撤销节点 {index + 1} 的修改
+                    </button>
+                  )}
+                </TextEditDifference>
               ))}
-            </div>
+            </section>
           )}
           <label>
             修订说明
