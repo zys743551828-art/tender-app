@@ -37,6 +37,7 @@ window.fetch = async (input, options = {}) => {
  calls.push({route, method, headers, body});
  if (method === "GET") {
   if (route === "/authoring/exact-text-edit-capabilities") return json(native.capabilities);
+  if (route === "/authoring/exact-marked-text-edit-capabilities") return json({protocol: "authoring-exact-text-edit-capabilities/3", available: false, supported_content: "single_marked_text_leaf_preserve_marks", preserves_source_refs: true, preserves_rule_ids: true, preserves_marks: true, ordinary_edit_available: false, blocking_reasons: ["AUTHORING_EXACT_MARKED_TEXT_EDIT_NOT_CONFIGURED"]});
   if (route.startsWith("/sections/")) return json(native.parent_section);
   if (route.endsWith("/exact-qualification")) return json(native.parent_qualification);
  }
