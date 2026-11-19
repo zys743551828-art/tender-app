@@ -13150,6 +13150,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/technical-scales/{scale_id}",
   "POST /api/v1/technical-scales/{scale_id}/corrections",
   "POST /api/v1/technical-scales/{scale_id}/withdrawals",
+  "POST /api/v1/bids/{bid_id}/builds/{build_id}/technical-docx-check",
   "GET /api/v1/bids/{bid_id}/lifecycle",
   "POST /api/v1/bids/{bid_id}/lifecycle",
   "GET /api/v1/bids/{bid_id}/upload-batches/{batch_id}/closure-state",

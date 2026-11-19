@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { supportsApi } from "./api";
+import { TechnicalDocxCheck } from "./TechnicalDocxCheck";
 import type { AuthoringSnapshot, BuildView, Operation } from "./contracts";
 import { ArtifactActions } from "./ArtifactActions";
 import { generatedFilename } from "./artifactNames";
@@ -261,6 +263,32 @@ export function AuthoringBuildResult({
                       projectTitle,
                       verified.draft_snapshot_id,
                       output.format,
+                    )}
+                  />
+                )}
+              {op?.state === "succeeded" &&
+                output.format === "docx" &&
+                output.state === "succeeded" &&
+                output.document_version_id &&
+                supportsApi(
+                  "POST",
+                  "/bids/" +
+                    bidId +
+                    "/builds/" +
+                    verified.id +
+                    "/technical-docx-check",
+                ) && (
+                  <TechnicalDocxCheck
+                    key={output.document_version_id}
+                    bidId={bidId}
+                    buildId={verified.id}
+                    documentId={output.document_version_id}
+                    snapshotId={verified.draft_snapshot_id}
+                    snapshotDigest={verified.identity.snapshot_digest}
+                    suggestedFilename={generatedFilename(
+                      projectTitle,
+                      verified.draft_snapshot_id,
+                      "docx",
                     )}
                   />
                 )}
