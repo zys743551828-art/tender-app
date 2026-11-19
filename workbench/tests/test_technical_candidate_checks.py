@@ -1,6 +1,8 @@
 """Synthetic packages validating candidate-level blocking and review gaps."""
 
+from copy import deepcopy
 from io import BytesIO
+from uuid import UUID
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
@@ -8,7 +10,14 @@ from PIL import Image, PngImagePlugin
 
 from packages.authoring.build import assemble_docx
 from packages.authoring.content import empty_content
-from packages.authoring.technical_candidate_checks import inspect_candidate_docx
+from packages.authoring.technical_candidate_checks import (
+    MARGIN_MISMATCH,
+    MARGIN_NO_BASIS,
+    MARGIN_UNINSPECTABLE,
+    FrozenPageMargins,
+    frozen_page_margins,
+    inspect_candidate_docx,
+)
 from packages.domain.runtime import DomainError, sha
 from packages.word_intake.inspection import CONTENT_NS, DOCX, REL_NS
 
@@ -62,8 +71,126 @@ def png(text=None):
     return data.getvalue()
 
 
-def check(data, *, name="技术标.docx", prohibited=(NAME,)):
-    return inspect_candidate_docx(data, filename=name, prohibited_names=prohibited)
+def check(data, *, name="技术标.docx", prohibited=(NAME,), margins=None):
+    return inspect_candidate_docx(
+        data, filename=name, prohibited_names=prohibited, page_margins=margins
+    )
+
+
+def margin_snapshot(*field_values):
+    rule, decision, evidence, source, document = (str(UUID(int=i)) for i in range(1, 6))
+    ref = {
+        "source_id": source,
+        "source_revision": 1,
+        "evidence_id": evidence,
+        "document_version_id": document,
+    }
+    basis = {
+        "rule_id": rule,
+        "rule_semantic_digest": "a" * 64,
+        "decision_id": decision,
+        "decision_revision": 1,
+        "evidence_basis": {"references": [ref], "source_closure_digest": "b" * 64},
+    }
+    declared = [
+        {"rule_id": rule, "field": field, "value": value, "source_refs": [ref], "reason": "合成值"}
+        for field, value in field_values
+    ]
+    frozen = [
+        deepcopy(row)
+        | {
+            "basis": deepcopy(basis),
+            "interpretation": "human_bound_field_semantics_not_automatically_verified",
+        }
+        for row in declared
+    ]
+    return {
+        "authoring_structure": {
+            "metadata": {
+                "format_bindings": declared,
+                "format_binding_manifest": frozen,
+                "format_review_ack": "c" * 64,
+                "effective_style": dict(field_values),
+            }
+        }
+    }
+
+
+def section(top="1440", right="720"):
+    return f'<w:sectPr><w:pgMar w:top="{top}" w:right="{right}"/></w:sectPr>'
+
+
+def test_frozen_margin_basis_vs_no_project_requirement_and_policy_identity():
+    generated = assemble_docx({"sections": [empty_content("编制范围", 0)]})
+    unbound = check(
+        generated, margins=frozen_page_margins(margin_snapshot(("font_size_halfpoints", 24)))
+    )
+    assert MARGIN_NO_BASIS in unbound.manual_check_codes
+    assert unbound.blocking_codes == ()
+    assert frozen_page_margins({}) == FrozenPageMargins()
+    assert unbound.policy_sha256 != check(generated).policy_sha256
+
+    snapshot = margin_snapshot(("margin_top_twips", 1440))
+    bound = frozen_page_margins(snapshot)
+    assert bound.expected_twips == (("top", 1440),)
+    assert bound.basis_digest is not None and not bound.malformed_basis
+    exact = check(generated, margins=bound)
+    assert exact.blocking_codes == () and MARGIN_NO_BASIS not in exact.manual_check_codes
+    assert "FORMAT_AND_RENDER_REVIEW" in exact.manual_check_codes
+    snapshot["authoring_structure"]["metadata"]["format_review_ack"] = "d" * 64
+    retraced = check(generated, margins=frozen_page_margins(snapshot))
+    assert exact.artifact_sha256 == retraced.artifact_sha256
+    assert exact.policy_sha256 != retraced.policy_sha256
+
+
+@pytest.mark.parametrize("broken", ["ack", "ref", "style", "duplicate", "missing", "fractional"])
+def test_invalid_or_incomplete_frozen_basis_is_not_a_template_default(broken):
+    snapshot = margin_snapshot(("margin_top_twips", 1440))
+    metadata = snapshot["authoring_structure"]["metadata"]
+    frozen = metadata["format_binding_manifest"]
+    if broken == "ack":
+        metadata["format_review_ack"] = None
+    if broken == "ref":
+        frozen[0]["basis"]["evidence_basis"]["references"] = []
+    if broken == "style":
+        metadata["effective_style"]["margin_top_twips"] = 800
+    if broken == "duplicate":
+        frozen.append(deepcopy(frozen[0]))
+    if broken == "missing":
+        frozen.clear()
+    if broken == "fractional":
+        frozen[0]["value"] = 1440.0
+    basis = frozen_page_margins(snapshot)
+    assert basis.malformed_basis and basis.basis_digest is None
+    result = check(fixture(body=section()), margins=basis)
+    assert result.blocking_codes == (MARGIN_UNINSPECTABLE,)
+    assert MARGIN_NO_BASIS not in result.manual_check_codes
+
+
+@pytest.mark.parametrize(
+    ("body", "codes"),
+    [
+        (f"<w:p><w:pPr>{section()}</w:pPr></w:p>{section()}", ()),
+        (f"<w:p><w:pPr>{section(right='721')}</w:pPr></w:p>{section()}", (MARGIN_MISMATCH,)),
+        (f"<w:p><w:pPr>{section(top='1cm')}</w:pPr></w:p>{section()}", (MARGIN_UNINSPECTABLE,)),
+        (
+            f"<w:sdt><w:p><w:pPr>{section()}</w:pPr></w:p></w:sdt>{section()}",
+            (MARGIN_UNINSPECTABLE,),
+        ),
+        ('<w:sectPr><w:pgMar w:top="1440"/></w:sectPr>', (MARGIN_UNINSPECTABLE,)),
+        ("<w:sectPr/>", (MARGIN_UNINSPECTABLE,)),
+        (section() + section(), (MARGIN_UNINSPECTABLE,)),
+        (section() + "<w:p/>", (MARGIN_UNINSPECTABLE,)),
+        ("<w:p/>", (MARGIN_UNINSPECTABLE,)),
+    ],
+)
+def test_word_margin_scalars_are_read_in_each_supported_section(body, codes):
+    basis = frozen_page_margins(
+        margin_snapshot(("margin_top_twips", 1440), ("margin_right_twips", 720))
+    )
+    checked = check(fixture(body=body), margins=basis)
+    assert checked.blocking_codes == codes
+    assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
 
 
 def test_generated_word_output_remains_editable_and_has_unchecked_dimensions():

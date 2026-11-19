@@ -13,6 +13,7 @@ from packages.authoring.generated_docx import MAX_DOCX_BYTES
 from packages.authoring.technical_candidate_checks import (
     MAX_NAME_LENGTH,
     MAX_NAMES,
+    frozen_page_margins,
     inspect_candidate_docx,
 )
 from packages.domain.runtime import DomainError, connection, sha
@@ -94,7 +95,10 @@ def check_technical_docx(
     if len(data) != proof["byte_size"] or sha(data) != proof["sha256"]:
         raise DomainError("BUILD_OBJECT_CORRUPT", "构建对象实际字节与冻结摘要不符", 503)
     checked = inspect_candidate_docx(
-        data, filename=body.filename, prohibited_names=body.prohibited_names
+        data,
+        filename=body.filename,
+        prohibited_names=body.prohibited_names,
+        page_margins=frozen_page_margins(packet["snapshot"]),
     )
     # Observe a historical packet only, and do not infer current review eligibility.
     # Session and CSRF must still be valid after off-transaction I/O and parsing.

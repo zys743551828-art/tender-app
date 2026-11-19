@@ -38,6 +38,12 @@ const known: Record<string, string> = {
   TRACKED_CHANGES: "文档保留了修订记录",
   HIDDEN_CONTENT: "文档含隐藏内容",
   CANDIDATE_DOCX_INVALID: "不是可核验的标准 DOCX",
+  DOCX_PAGE_MARGINS_MISMATCH:
+    "检测到 Word 页面边距与本稿冻结的已确认要求不一致",
+  DOCX_PAGE_MARGINS_UNINSPECTABLE:
+    "冻结的页边距依据或 Word 分节参数不完整，无法可靠核对",
+  DOCX_PAGE_MARGINS_NO_FROZEN_BASIS:
+    "没有可用于对照的已确认冻结页边距要求，须按招标原文人工核对",
 };
 function message(code: string) {
   return (
@@ -153,6 +159,8 @@ export function TechnicalDocxCheck({
       <summary>技术标 Word 检查（送审前）</summary>
       <p className="small-note">
         检查本构建的实际文件，不改稿、不自动提交。请按招标要求输入要检查的名称和别名；留空不会检查项目禁用标识。
+        页边距只对照本构建快照中人工确认并绑定来源的字段，不代替打开 Word
+        检查版面。
       </p>
       <form
         onSubmit={(event) => {
@@ -205,7 +213,7 @@ export function TechnicalDocxCheck({
           <p>
             {report.blocking_codes.length
               ? "发现需处理项。修改或重新构建后请再检查。"
-              : "这次机器检查未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
+              : "这次机器检查在可核范围内未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
           </p>
           {report.blocking_codes.length > 0 && (
             <ul>

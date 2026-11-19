@@ -88,3 +88,37 @@ it("never shows a stale or publication-authorized result as an advisory pass", a
   expect(await screen.findByText(/固定快照不一致/)).toBeInTheDocument();
   expect(screen.queryByRole("status")).not.toBeInTheDocument();
 });
+
+it("distinguishes a measured page-margin mismatch from required manual visual review", async () => {
+  mock({ ...response, blocking_codes: ["DOCX_PAGE_MARGINS_MISMATCH"] });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const region = await screen.findByRole("status");
+  expect(
+    within(region).getByText(/页面边距与本稿冻结的已确认要求不一致/),
+  ).toBeInTheDocument();
+  expect(
+    within(region).getByText(/打开 Word 核对实际排版/),
+  ).toBeInTheDocument();
+  expect(within(region).queryByText(/未发现问题/)).not.toBeInTheDocument();
+});
+
+it("makes missing frozen page-margin basis an explicit manual check", async () => {
+  mock({
+    ...response,
+    manual_check_codes: [
+      ...response.manual_check_codes,
+      "DOCX_PAGE_MARGINS_NO_FROZEN_BASIS",
+    ],
+  });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const region = await screen.findByRole("status");
+  expect(within(region).getByText(/须按招标原文人工核对/)).toBeInTheDocument();
+  expect(
+    within(region).getByText(/在可核范围内未发现问题/),
+  ).toBeInTheDocument();
+  expect(
+    within(region).getByText(/也不代表已通过独立审核/),
+  ).toBeInTheDocument();
+});

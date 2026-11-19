@@ -7,6 +7,7 @@ from uuid import UUID
 import pytest
 from botocore.exceptions import BotoCoreError, ClientError
 from fastapi.testclient import TestClient
+from test_technical_candidate_checks import margin_snapshot
 
 from apps.api import auth as session_auth
 from apps.api import technical_candidate_routes as routes
@@ -47,6 +48,7 @@ def ports(monkeypatch):
         read_error=None,
         proof=proof,
         descriptor=descriptor,
+        snapshot={},
         events=events,
     )
 
@@ -73,7 +75,7 @@ def ports(monkeypatch):
         events.append(("observe", bid_id, build_id, document_version_id))
         if (bid_id, build_id, document_version_id) != (BID, BUILD, VERSION):
             raise DomainError("AUTHORING_OUTPUT_NOT_QUALIFIED", "该生成件无匹配项", 409)
-        return {"proof": proof, "documents": [descriptor]}
+        return {"proof": proof, "documents": [descriptor], "snapshot": config.snapshot}
 
     def read(held):
         assert not config.open and held == descriptor
@@ -127,8 +129,29 @@ def test_checks_exact_bytes_with_transactions_closed_and_no_sensitive_echo(ports
     assert value["document_version_id"] == str(VERSION)
     assert value["blocking_codes"] == ["PROHIBITED_NAME_CONTENT"]
     assert "FORMAT_AND_RENDER_REVIEW" in value["manual_check_codes"]
+    assert "DOCX_PAGE_MARGINS_NO_FROZEN_BASIS" in value["manual_check_codes"]
     assert value["historical_advisory"] is True and value["publication_authorized"] is False
     assert "示例单位" not in result.text and "private-synthetic" not in result.text
+
+
+def test_only_snapshot_bound_margin_controls_check_of_same_download_bytes(ports):
+    client = TestClient(app)
+    ports.snapshot = margin_snapshot(("margin_top_twips", 1440))
+    match = client.post(URL, json=BODY)
+    assert match.status_code == 200
+    assert match.json()["blocking_codes"] == ["PROHIBITED_NAME_CONTENT"]
+    assert "FORMAT_AND_RENDER_REVIEW" in match.json()["manual_check_codes"]
+    ports.events.clear()
+    ports.snapshot = margin_snapshot(("margin_top_twips", 1337))
+    mismatch = client.post(URL, json=BODY)
+    assert mismatch.status_code == 200
+    assert mismatch.json()["blocking_codes"] == [
+        "DOCX_PAGE_MARGINS_MISMATCH",
+        "PROHIBITED_NAME_CONTENT",
+    ]
+    assert match.json()["artifact_sha256"] == mismatch.json()["artifact_sha256"] == sha(DOCX)
+    assert match.json()["policy_sha256"] != mismatch.json()["policy_sha256"]
+    assert mismatch.json()["publication_authorized"] is False
 
 
 def test_real_session_auth_rejects_anonymous_request_before_observation(ports, monkeypatch):
@@ -232,6 +255,7 @@ def test_provider_errors_are_normalized_without_private_details(ports, provider_
 def test_extra_or_oversize_policy_fields_are_rejected(ports):
     for invalid in (
         {**BODY, "approved": True},
+        {**BODY, "margin_top_twips": 1440},
         {**BODY, "prohibited_names": ["a"] * 101},
     ):
         result = TestClient(app).post(URL, json=invalid)
