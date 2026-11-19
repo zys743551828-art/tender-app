@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { ErrorNotice } from "./components";
 import type { PackageReviewHumanDecisionCurrent } from "./contracts";
 import type { PackageReviewRow } from "./packageReviewProtocol";
@@ -12,6 +12,10 @@ import { packageReviewDecisionScope } from "./packageReviewDecisionRecovery";
 import { usePackageReviewDecisions } from "./usePackageReviewDecisions";
 import PackageReviewReport from "./PackageReviewReport";
 import PackageReviewDecisionHistory from "./PackageReviewDecisionHistory";
+import {
+  TechnicalDraftContext,
+  technicalDisposition,
+} from "./technicalAuthoringHandoff";
 
 type Controller = ReturnType<typeof usePackageReviewDecisions>;
 type HeadItem = PackageReviewHumanDecisionCurrent["items"][number];
@@ -39,7 +43,7 @@ function DecisionRow({
     quotes = packageReviewDecisionQuotes(row),
     fieldId = `review-human-reason-${p.run.id}-${row.requirement_id}`;
   return (
-    <section className="package-review__decision" aria-label="此项独立人工判断">
+    <section className="package-review__decision" aria-label="此项人工判断">
       <div className="package-review__heading">
         <div>
           <strong>人工判断</strong>
@@ -190,6 +194,7 @@ export default function PackageReviewHumanDecisions(p: Props) {
   );
 }
 function HumanDecisions(p: Props) {
+  const technical = useContext(TechnicalDraftContext);
   const controller = usePackageReviewDecisions(p),
     [selected, setSelected] = useState<string | null>(null),
     heads = useMemo(
@@ -202,6 +207,15 @@ function HumanDecisions(p: Props) {
     );
   const pending = controller.record?.pending,
     receipt = controller.receipt;
+  const progress = technical
+    ? technicalDisposition(
+        technical,
+        p.run,
+        controller.reading || controller.error || pending
+          ? null
+          : controller.heads,
+      )
+    : null;
   return (
     <div className="package-review__human">
       <section
@@ -229,6 +243,32 @@ function HumanDecisions(p: Props) {
             已读取 {controller.heads.items.length}{" "}
             条要求的人工状态；保存时仍须通过版本核对。
           </p>
+        )}
+        {technical && (
+          <div className="small-note" aria-label="此技术稿在本次核查中的记录">
+            {progress ? (
+              <>
+                <p>
+                  本次保存的核查结果里，有 {progress.scoped}{" "}
+                  条记录明确列出对此文件的检查范围，不能当作技术分册覆盖率。未列出的条款不推定为已检查。
+                </p>
+                {progress.scoped > 0 && (
+                  <p>
+                    {progress.counts
+                      ? `最近读取的意见（不是合规结果）：确认原判断 ${progress.counts.confirmed}，不采用 ${progress.counts.rejected}，需复查 ${progress.counts.needs_review}，未记录 ${progress.counts.unrecorded}。`
+                      : "这部分人工意见尚未读取或无法核对。可用上方按钮重读。"}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>
+                本次核查未能与交接文件的确切版本、字节摘要及解析对应，不能读取为此技术稿的审阅进度。
+              </p>
+            )}
+            <p>
+              仅为本次核查记录，不能继承到其他修订；正式独立审批与候选件下载尚未开放。
+            </p>
+          </div>
         )}
         {pending && (
           <div className="package-review__notice">

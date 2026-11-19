@@ -18,6 +18,10 @@ import {
   storePackageReviewDecisionRecord,
 } from "./packageReviewDecisionRecovery";
 import { frozenManifestDigest } from "./packageFrozenInput";
+import {
+  TechnicalDraftContext,
+  type TechnicalAuthoringFocus,
+} from "./technicalAuthoringHandoff";
 
 let f: Awaited<ReturnType<typeof packageReviewFixture>>;
 const json = (data: unknown, status = 200) =>
@@ -61,6 +65,95 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
+
+function focus(run = f.completed): TechnicalAuthoringFocus {
+  const doc = run.result!.manifest.submitted_documents[0];
+  return {
+    protocol: "technical-authoring-handoff/1",
+    bid_id: run.scope.bid_id,
+    package_id: run.scope.package_id,
+    revision_id: run.scope.revision_id,
+    package_digest: "d".repeat(64),
+    revision_status: "historical",
+    record: {
+      member_id: doc.member_id,
+      document_version_id: doc.document_version_id,
+      artifact_sha256: doc.file_digest,
+      parse_run_id: doc.parse_run_id,
+      format: "pdf",
+      build_id: id(200),
+      snapshot_id: id(201),
+      snapshot_digest: "e".repeat(64),
+    },
+    independent_approval_available: false,
+    publication_authorized: false,
+  };
+}
+
+it("summarizes only exact report rows and still cannot approve even if every row is human-confirmed", async () => {
+  const body = await packageReviewDecisionBody(f);
+  const head = await packageReviewDecisionReply(f, body);
+  const remainingBody = await packageReviewDecisionBody(f, 1);
+  const remaining = await packageReviewDecisionReply(f, remainingBody, 1);
+  const partial = await packageReviewDecisionCurrent(f, [head]);
+  const complete = await packageReviewDecisionCurrent(f, [head, remaining]);
+  const unrelated = { ...complete, run_id: id(888) };
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(json(partial))
+    .mockResolvedValueOnce(json(complete))
+    .mockResolvedValueOnce(json(unrelated));
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <TechnicalDraftContext.Provider value={focus()}>
+      <HumanDecisions {...f.props} run={f.completed} />
+    </TechnicalDraftContext.Provider>,
+  );
+  expect(screen.getByText(/有 2 条记录明确列出/)).toBeInTheDocument();
+  expect(screen.getByText(/意见尚未读取或无法核对/)).toBeInTheDocument();
+  expect(fetch).not.toHaveBeenCalled();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取当前人工状态" }),
+  );
+  expect(await screen.findByText(/确认原判断 1.*未记录 1/)).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取当前人工状态" }),
+  );
+  expect(await screen.findByText(/确认原判断 2.*未记录 0/)).toBeInTheDocument();
+  expect(screen.getByText(/独立审批与候选件下载尚未开放/)).toBeInTheDocument();
+  await userEvent.click(
+    screen.getByRole("button", { name: "读取当前人工状态" }),
+  );
+  expect(await screen.findByText(/意见尚未读取或无法核对/)).toBeInTheDocument();
+  expect(screen.queryByText(/确认原判断 2.*未记录 0/)).not.toBeInTheDocument();
+  expect(fetch.mock.calls.map((entry) => entry[1].method)).toEqual([
+    "GET",
+    "GET",
+    "GET",
+  ]);
+});
+
+it.each(["different-hash", "different-revision"])(
+  "never shows a similarly named technical file's review state: %s",
+  (wrong) => {
+    const selected = focus();
+    if (wrong === "different-hash")
+      selected.record.artifact_sha256 = "f".repeat(64);
+    else selected.revision_id = id(203);
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    render(
+      <TechnicalDraftContext.Provider value={selected}>
+        <HumanDecisions {...f.props} run={f.completed} />
+      </TechnicalDraftContext.Provider>,
+    );
+    expect(
+      screen.getByText(/不能读取为此技术稿的审阅进度/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/有 2 条记录明确列出/)).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  },
+);
 
 it("ignores a late current-head read superseded by recovery of the original request", async () => {
   const p = { ...f.props, run: f.completed },

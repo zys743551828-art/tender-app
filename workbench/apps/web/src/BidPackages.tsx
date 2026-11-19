@@ -14,6 +14,7 @@ import { ResourceState } from "./ResourceState";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
 import { PackageRequirements } from "./PackageRequirements";
+import { PackageTechnicalDraftHandoff } from "./PackageTechnicalDraftHandoff";
 import DocumentParseWorkspace from "./DocumentParseWorkspace";
 import { NavigationGuardContext } from "./navigationGuard";
 import { PackageScopeGuardProvider } from "./PackageScopeGuardProvider";
@@ -765,37 +766,42 @@ function PackageWorkspace({
                 基于当前修订编辑
               </button>
               {verifiedView.manifest.kind === "bid" && (
-                <PackageRequirements
-                  key={`${bidId}:${memberId}:${verifiedView.manifest.package_id}:${verifiedView.manifest.revision_id}`}
-                  bidId={bidId}
-                  memberId={memberId}
+                <PackageTechnicalDraftHandoff
+                  key={`${bidId}:${memberId}:${verifiedView.manifest.package_id}:${verifiedView.manifest.revision_id}:${verifiedView.digest}`}
                   packageView={verifiedView}
-                  disabled={
-                    disabled ||
-                    viewUnavailable ||
-                    (!!navigation &&
-                      (busy ||
-                        !!pending ||
-                        recovery.blocked ||
-                        !!draft.length ||
-                        !!base))
-                  }
-                  navigation={
-                    navigation
-                      ? {
-                          inventoryId: navigation.target?.inventoryId ?? null,
-                          onInventory: (inventoryId, replace) =>
-                            selectTarget(
-                              selected,
-                              revision,
-                              inventoryId,
-                              replace,
-                            ),
-                          onState: onRequirementsState,
-                        }
-                      : undefined
-                  }
-                />
+                  disabled={viewUnavailable}
+                >
+                  <PackageRequirements
+                    bidId={bidId}
+                    memberId={memberId}
+                    packageView={verifiedView}
+                    disabled={
+                      disabled ||
+                      viewUnavailable ||
+                      (!!navigation &&
+                        (busy ||
+                          !!pending ||
+                          recovery.blocked ||
+                          !!draft.length ||
+                          !!base))
+                    }
+                    navigation={
+                      navigation
+                        ? {
+                            inventoryId: navigation.target?.inventoryId ?? null,
+                            onInventory: (inventoryId, replace) =>
+                              selectTarget(
+                                selected,
+                                revision,
+                                inventoryId,
+                                replace,
+                              ),
+                            onState: onRequirementsState,
+                          }
+                        : undefined
+                    }
+                  />
+                </PackageTechnicalDraftHandoff>
               )}
             </>
           )}

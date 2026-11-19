@@ -2,6 +2,7 @@ import {
   lazy,
   Suspense,
   useCallback,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -30,6 +31,7 @@ import {
   type PackageNavigationState,
 } from "./packageNavigation";
 import { usePackageScopeState } from "./packageScopeGuard";
+import { TechnicalDraftContext } from "./technicalAuthoringHandoff";
 import {
   RequirementCheckPlan,
   type CheckPlanValue,
@@ -347,6 +349,7 @@ function Workspace({
   disabled = false,
   navigation,
 }: Props) {
+  const technical = useContext(TechnicalDraftContext);
   const deepState = usePackageScopeState();
   const deepLocked =
     !!navigation && (deepState.busy || deepState.pending || deepState.dirty);
@@ -850,6 +853,17 @@ function Workspace({
       <p role="note">
         历史规则集与新清单的抽取身份应按原版本核对。清单完整性未知，仍须单独验收。人工范围声明不等于系统独立验收或合规结论。
       </p>
+      {technical &&
+        technical.revision_id === m.revision_id &&
+        technical.package_digest === packageView.digest && (
+          <p className="small-note">
+            技术稿交接：
+            {inventoryValid && !selectedReadUnverified
+              ? "已读取本修订明确选择的要求清单；尚未验证完整性。"
+              : "本修订的要求清单尚未选定或无法核对。"}
+            保存清单、机器核查、人工逐条意见与独立批准是不同步骤。
+          </p>
+        )}
       {routeChanging && localScopeLocked && (
         <p role="alert">
           当前清单仍有未保存或待核操作，未切换到链接中的另一清单。原输入与原请求仍保留。

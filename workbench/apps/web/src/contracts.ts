@@ -12962,6 +12962,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/manifest",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-authoring-handoff",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/evidence",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",

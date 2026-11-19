@@ -1,14 +1,16 @@
 """Whole-bid immutable package storage API; no review or paid execution implied."""
 
 from contextlib import contextmanager
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel, StringConstraints
 
 from apps.api.auth import auth
 from apps.api.identity_routes import command, saved
+from packages.authoring import technical_handoff
 from packages.contracts.bid_package_api import validate
 from packages.domain import bid_package_service as service
 from packages.domain.bid_packages import PackageError
@@ -18,6 +20,30 @@ router = APIRouter(prefix="/api/v1/bids/{bid_id}/packages", tags=["bid-packages"
 discovery_router = APIRouter(
     prefix="/api/v1/bids/{bid_id}/package-documents", tags=["bid-packages"]
 )
+Digest = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
+class TechnicalAuthoringReceipt(BaseModel):
+    member_id: str
+    document_version_id: UUID
+    artifact_sha256: Digest
+    format: Literal["docx", "pdf"]
+    build_id: UUID
+    snapshot_id: UUID
+    snapshot_digest: Digest
+    parse_run_id: UUID | None
+
+
+class TechnicalAuthoringHandoffView(BaseModel):
+    protocol: Literal["technical-authoring-handoff/1"]
+    bid_id: UUID
+    package_id: UUID
+    revision_id: UUID
+    package_digest: Digest
+    revision_status: Literal["head_at_read", "historical"]
+    record: TechnicalAuthoringReceipt | None
+    independent_approval_available: Literal[False]
+    publication_authorized: Literal[False]
 
 
 @contextmanager
@@ -156,6 +182,22 @@ def get_manifest(bid_id: UUID, package_id: UUID, revision_id: UUID, r: Request):
                 "X-Manifest-SHA256": digest,
             },
         )
+
+
+@router.get(
+    "/{package_id}/revisions/{revision_id}/technical-authoring-handoff",
+    operation_id="getTechnicalAuthoringHandoff",
+    response_model=TechnicalAuthoringHandoffView,
+    openapi_extra={"security": [{"SessionCookie": []}]},
+)
+def get_technical_authoring_handoff(
+    bid_id: UUID, package_id: UUID, revision_id: UUID, r: Request, response: Response
+):
+    auth(r)
+    response.headers["Cache-Control"] = "private,no-store"
+    with package_errors(), connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+        return technical_handoff.read(c, bid_id, package_id, revision_id)
 
 
 @router.get("/{package_id}/revisions/{revision_id}/evidence")

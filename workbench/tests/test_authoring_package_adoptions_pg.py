@@ -292,6 +292,72 @@ def test_exact_ack_replays_after_closed_and_without_object_reverification(env, m
     assert old and replayed == accepted
 
 
+def test_read_technical_handoff_does_not_inherit_revisions_or_reread_bytes(env, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from apps.api import bid_package_routes
+    from apps.api.main import app
+
+    build_id, body, _ = build(env)
+    adopted, _ = adopt(env, build_id, body)
+    receipt = adopted["body"]
+    package = receipt["package"]["manifest"]
+    root = f"/api/v1/bids/{env['bid']}/packages/{package['package_id']}/revisions"
+
+    def counts():
+        with connection() as c:
+            return tuple(
+                c.execute(sql, (env["bid"],)).fetchone()["n"]
+                for sql in (
+                    "SELECT count(*) AS n FROM operations WHERE bid_id=%s",
+                    "SELECT count(*) AS n FROM audit_entries WHERE bid_id=%s",
+                    "SELECT count(*) AS n FROM stream_events e JOIN stream_heads h ON e.stream_id=h.id WHERE h.bid_id=%s",
+                )
+            )
+
+    path = f"{root}/{package['revision_id']}/technical-authoring-handoff"
+    client = TestClient(app)
+    assert client.get(path).status_code == 401
+    monkeypatch.setattr(bid_package_routes, "auth", lambda _r: {"member_id": env["actor"]})
+    monkeypatch.setattr(
+        storage, "client", lambda: pytest.fail("this history read must not access object storage")
+    )
+    before = counts()
+    first = client.get(path)
+    assert first.status_code == 200 and first.headers["Cache-Control"] == "private,no-store"
+    value = first.json()
+    assert value["revision_status"] == "head_at_read"
+    assert value["package_digest"] == receipt["package"]["digest"]
+    assert value["record"] == {
+        "member_id": "authored-word",
+        "document_version_id": body["member"]["document_version_id"],
+        "artifact_sha256": receipt["output"]["sha256"],
+        "format": "docx",
+        "build_id": str(build_id),
+        "snapshot_id": body["snapshot_id"],
+        "snapshot_digest": body["snapshot_digest"],
+        "parse_run_id": None,
+    }
+    assert value["independent_approval_available"] is value["publication_authorized"] is False
+    assert body["reason"] not in first.text and "proof_digest" not in first.text
+    foreign_bid = client.get(path.replace(str(env["bid"]), str(uuid4())))
+    foreign_package = client.get(path.replace(package["package_id"], str(uuid4())))
+    assert foreign_bid.status_code == foreign_package.status_code == 404
+    assert counts() == before
+    with connection() as c:
+        bid_package_service.lock_bid(c, env["bid"])
+        previous = bid_package_service.head(c, env["bid"], package["package_id"])
+        copied = bid_package_service.create_revision(
+            c, env["bid"], {"kind": "bid", "members": [body["member"]]}, previous
+        )
+    before = counts()
+    assert client.get(path).json() == {**value, "revision_status": "historical"}
+    new = client.get(f"{root}/{copied.revision_id}/technical-authoring-handoff")
+    assert new.status_code == 200
+    assert new.json()["revision_status"] == "head_at_read" and new.json()["record"] is None
+    assert counts() == before
+
+
 def test_blob_corruption_and_actor_change_do_not_leave_qualification_or_package(env):
     build_id, body, computed = build(env)
     object_key = computed["outputs"][0]["object_key"]
