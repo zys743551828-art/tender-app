@@ -2,6 +2,8 @@
 
 # 标事台（当前开发检查点）
 
+设计提案：[生成标书（单标段技术标）](docs/bid-generation-design.md)。仅为功能分支设计，尚未实现。
+
 标事台是面向整份标书的 AI 投标工作台。当前安装与操作入口：[工作台使用说明](https://github.com/zys743551828-art/tender-docs/blob/dev/使用说明.md)。Desktop full/2 使用固定依赖配方、官方预构建 Gotenberg 和安装后的 Word 执行器；按说明中的实际验收记录选择已验证的应用提交。
 
 当前实现位于 `dev`；[正式实现架构](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台实现架构.md)、[运行与验收](https://github.com/zys743551828-art/tender-docs/blob/dev/05-技术与设计/工作台运行与验收.md)、[需求追溯](https://github.com/zys743551828-art/tender-docs/blob/dev/02-业务与产品/实现追溯矩阵.md)与使用说明共同维护实际能力、验证提交和剩余条件。下文早期检查点保留其原范围。
