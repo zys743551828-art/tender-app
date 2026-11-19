@@ -1,3 +1,4 @@
+import { validAuthoringFeeCap } from "./packageAuthoringFeeQuote";
 import type {
   AssistantAction,
   ExactPackageAuthoringSelection,
@@ -242,7 +243,11 @@ export function validatePackageAuthoringPending(
     if (
       !exactKeys(e, ["kind", "template"]) ||
       !object(value.body) ||
-      !exactKeys(value.body, ["rerun"]) ||
+      (!exactKeys(value.body, ["rerun"]) &&
+        !(
+          exactKeys(value.body, ["rerun", "authoring_fee"]) &&
+          validAuthoringFeeCap(value.body.authoring_fee)
+        )) ||
       value.body.rerun !== false
     )
       fail();

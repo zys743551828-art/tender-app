@@ -7163,6 +7163,7 @@ export type TemplateVersionView = {
 
 export type RunRequest = {
   rerun?: boolean;
+  authoring_fee?: AuthoringFeeApproval | null;
 };
 
 export type TaskAuthoringResult = {
@@ -10755,6 +10756,11 @@ export type TemplateSnapshotConfig = {
   formal_decisions_allowed: false;
 };
 
+export type AuthoringFeeApproval = {
+  price_version_id: string;
+  max_reserved_minor: number;
+};
+
 export type TaskKindView = {
   task_kind:
     | "denial_check"
@@ -13100,6 +13106,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/word-originals/{version_id}",
   "POST /api/v1/bids/{bid_id}/word-originals/{version_id}/retry-conversion",
   "GET /api/v1/bids/{bid_id}/word-materials/{version_id}",
+  "GET /api/v1/bids/{bid_id}/task-definitions/{definition_id}/authoring-fee-quote",
   "GET /api/v1/authoring/generation-batch-capabilities",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",

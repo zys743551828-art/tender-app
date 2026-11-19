@@ -10,6 +10,7 @@ from apps.api.auth import auth
 from apps.api.views import match_bid
 from packages.domain.runtime import (
     Command,
+    DomainError,
     clean,
     connection,
     decode_cursor,
@@ -161,20 +162,33 @@ def get_template_version(bid_id: UUID, definition_id: UUID, version_id: UUID, r:
 )
 def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest):
     actor = auth(r, True)
+    from packages.authoring.package_fee_quote import fee_limit
     from packages.tasks import package_authoring_runs, package_runs
 
-    authoring_result = package_authoring_runs.start(
-        actor["member_id"],
-        bid_id,
-        definition_id,
-        r.headers.get("idempotency-key"),
-        r.headers.get("if-match"),
-        body.model_dump(mode="json"),
-        final_auth=lambda: auth(r, True)["member_id"],
-    )
+    # The fee is a request-local admission guard, not a worker method or task
+    # semantic input. Existing receipt and reuse matching remains unchanged.
+    canonical = body.model_dump(mode="json", exclude={"authoring_fee"})
+    approval = body.authoring_fee
+    with fee_limit(
+        approval.price_version_id if approval is not None else None,
+        approval.max_reserved_minor if approval is not None else None,
+    ):
+        authoring_result = package_authoring_runs.start(
+            actor["member_id"],
+            bid_id,
+            definition_id,
+            r.headers.get("idempotency-key"),
+            r.headers.get("if-match"),
+            canonical,
+            final_auth=lambda: auth(r, True)["member_id"],
+        )
     if authoring_result is not None:
         saved, replay = authoring_result
         return response(saved, replay)
+    if approval is not None:
+        raise DomainError(
+            "AUTHORING_PACKAGE_QUOTE_UNSUPPORTED", "仅固定整包章节任务支持此报价", 422
+        )
 
     package_result = package_runs.start(
         actor["member_id"],
@@ -182,7 +196,7 @@ def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest
         definition_id,
         r.headers.get("idempotency-key"),
         r.headers.get("if-match"),
-        body.model_dump(mode="json"),
+        canonical,
         final_auth=lambda: auth(r, True)["member_id"],
     )
     if package_result is not None:
@@ -191,9 +205,7 @@ def run_template(bid_id: UUID, definition_id: UUID, r: Request, body: RunRequest
     with connection() as c:
         lock(c, bid_id)
         row = templates.current(c, bid_id, definition_id)
-        cmd = command(
-            c, bid_id, actor, r, "task-run-manual", definition_id, body.model_dump(mode="json")
-        )
+        cmd = command(c, bid_id, actor, r, "task-run-manual", definition_id, canonical)
         if cmd.replay:
             original = cmd.replay["body"]
             value = task_runs.view(c, bid_id, UUID(original["id"]))

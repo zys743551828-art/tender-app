@@ -962,3 +962,56 @@ def test_closed_project_runner_notifies_original_terminal_once(queued, publicati
         ).fetchall()
         assert [n["payload"]["state"] for n in notices] == [expected]
     assert len(w["calls"]) == calls
+
+
+def test_current_fee_quote_guards_native_reservation_without_new_effect_on_replay(case):
+    w = case
+    base = f"/api/v1/bids/{w['bid']}/task-definitions/{w['template']['id']}"
+    quoted = w["client"].get(base + "/authoring-fee-quote")
+    assert quoted.status_code == 200, quoted.text
+    price = quoted.json()
+    assert price["definition_version_id"] == w["template"]["version_id"]
+    assert price["template_etag"] == w["template_response"].headers["etag"]
+    assert price["reserved_minor"] > 0
+    assert price["estimate_not_provider_spend_cap"] is True
+
+    def send(price_id, limit, key=None):
+        return w["client"].post(
+            base + "/runs",
+            json={
+                "rerun": False,
+                "authoring_fee": {"price_version_id": price_id, "max_reserved_minor": limit},
+            },
+            headers=headers(w, key=key, etag=price["template_etag"]),
+        )
+
+    mismatch = send(str(uuid4()), price["reserved_minor"])
+    assert mismatch.status_code == 409, mismatch.text
+    assert mismatch.json()["code"] == "AUTHORING_PACKAGE_PRICE_CHANGED"
+    limited = send(price["price_version_id"], price["reserved_minor"] - 1)
+    assert limited.status_code == 409, limited.text
+    assert limited.json()["code"] == "AUTHORING_PACKAGE_FEE_LIMIT"
+    with connection() as c:
+        assert not c.execute(
+            "SELECT 1 FROM design.task_runs WHERE bid_id=%s", (w["bid"],)
+        ).fetchone()
+    assert w["calls"] == []
+
+    key = uuid4().hex
+    accepted = send(price["price_version_id"], price["reserved_minor"], key=key)
+    assert accepted.status_code == 202, accepted.text
+    job_id = accepted.json()["frozen_manifest"]["assistant_job_id"]
+    with connection() as c:
+        held = c.execute(
+            "SELECT reserved_minor, price_id, state FROM design.assistant_budget_reservations "
+            "WHERE job_id=%s",
+            (job_id,),
+        ).fetchone()
+    assert held["reserved_minor"] == price["reserved_minor"]
+    assert str(held["price_id"]) == price["price_version_id"]
+    assert held["state"] == "held"
+    # Reopening the historical receipt does not reserve another fee even if the
+    # advisory request cap no longer matches current pricing.
+    replayed = send(str(uuid4()), 0, key=key)
+    assert replayed.status_code == 202 and replayed.json() == accepted.json()
+    assert w["calls"] == []
