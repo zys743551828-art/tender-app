@@ -13,6 +13,7 @@ import { ResourceState } from "./ResourceState";
 import DocumentParseWorkspace from "./DocumentParseWorkspace";
 import { useDirectory } from "./useDirectory";
 import { useResource } from "./useResource";
+import { packageLocation } from "./packageNavigation";
 import {
   adoptionStorageKey,
   checkedAdoptionBase,
@@ -613,7 +614,19 @@ function AdoptionForm({
               ? "此文件尚未冻结解析与页范围。"
               : "已冻结本次明确选择的解析与分册。"}
           </p>
-          <p>资料包保存结果不代表评审完成或内容通过。</p>
+          <p>
+            已保存这份资料，不会自动送审或提交。可打开刚保存的修订，
+            再单独核对适用规则、证据与正文。
+          </p>
+          <a
+            href={packageLocation(scope.bidId, {
+              packageId: received.package.manifest.package_id,
+              revisionId: received.package.manifest.revision_id,
+              inventoryId: null,
+            })}
+          >
+            打开本次包修订，继续内部核查
+          </a>
         </div>
       )}
       {received && output?.format === "pdf" && (
