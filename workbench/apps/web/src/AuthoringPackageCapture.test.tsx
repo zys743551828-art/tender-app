@@ -213,3 +213,24 @@ it("preserves recovery and local input when the ACK belongs to a different actor
     f.draft.uses[0].reason,
   );
 });
+
+it("does not save a restored input from another chapter in the scoped authoring entry", async () => {
+  restoreDraft();
+  const calls = transport();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={{
+        ...f.request.target_section,
+        section_id: crypto.randomUUID(),
+      }}
+    />,
+  );
+  expect(
+    await screen.findByText(/本章入口只接受当前草稿及当前章节修订/),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "保存这份固定编写输入" }),
+  ).toBeDisabled();
+  expect(calls.writes).toHaveLength(0);
+});

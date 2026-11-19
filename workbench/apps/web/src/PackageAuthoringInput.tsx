@@ -214,10 +214,12 @@ export function PackageAuthoringInputPicker({
   bidId,
   disabled = false,
   onSelect,
+  accept,
 }: {
   bidId: string;
   disabled?: boolean;
   onSelect: (input: VerifiedAuthoringInput) => void;
+  accept?: (input: VerifiedAuthoringInput) => boolean;
 }) {
   const [items, setItems] = useState<VerifiedAuthoringInput[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -305,6 +307,7 @@ export function PackageAuthoringInputPicker({
         setBusy(false);
     }
   }
+  const visible = accept ? items.filter(accept) : items;
   return (
     <section aria-label="明确选择已保存的编写输入">
       <p>
@@ -323,6 +326,7 @@ export function PackageAuthoringInputPicker({
       {loaded && (
         <p className="small-note">
           本次已读 {items.length} 条，按服务器稳定标识顺序显示。
+          {accept && " 只显示当前编写章节及草稿修订的输入。"}
           {cursor
             ? "还有后续记录。"
             : "本次分页已读完；这不表示所有记录仍具备运行资格。"}
@@ -333,7 +337,12 @@ export function PackageAuthoringInputPicker({
           尚无已保存的固定编写输入。需要先明确包、清单、事实与正文快照并保存完整输入，才能建立这类模板。
         </p>
       )}
-      {items.map((item) => (
+      {accept && loaded && !!items.length && !visible.length && (
+        <p className="small-empty">
+          已读范围没有本章本修订的固定输入。可继续查看后续记录或采集一份新的输入。
+        </p>
+      )}
+      {visible.map((item) => (
         <article className="panel" key={item.manifest.id}>
           <AuthoringInputSummary input={item} />
           <button

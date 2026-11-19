@@ -9,7 +9,11 @@ import { exactKeys, recordObject } from "./executionInputValidation";
 import { historicalSame } from "./historicalImportProtocol";
 import { knowledgeStorageKey, useKnowledgeInput } from "./knowledgeStorage";
 import { AuthoringInputSummary } from "./PackageAuthoringInput";
-import type { VerifiedAuthoringInput } from "./packageAuthoringInputProtocol";
+import {
+  matchesFixedAuthoringTarget,
+  type FixedAuthoringChapter,
+  type VerifiedAuthoringInput,
+} from "./packageAuthoringInputProtocol";
 import { usePackageScopeGuard } from "./packageScopeGuard";
 import type { PackageNavigationState } from "./packageNavigation";
 import { validateWorkContextChoices } from "./workContextDirectoryProtocol";
@@ -53,6 +57,7 @@ export type AuthoringPackageCaptureProps = {
   disabled?: boolean;
   onSaved?: (input: VerifiedAuthoringInput) => void;
   onStateChange?: (state: PackageNavigationState) => void;
+  targetChapter?: FixedAuthoringChapter;
 };
 function capabilities(v: unknown): PackageAuthoringInputCapabilities {
   if (
@@ -109,6 +114,7 @@ function CaptureWorkspace({
   disabled = false,
   onSaved,
   onStateChange,
+  targetChapter,
 }: AuthoringPackageCaptureProps) {
   const formKey =
     knowledgeStorageKey(memberId, bidId) + "authoring-package-capture:draft";
@@ -127,6 +133,13 @@ function CaptureWorkspace({
     draftError = error;
   }
   const command = useAuthoringCaptureCommand({ memberId, bidId });
+  const pendingMatches =
+    !command.pending ||
+    matchesFixedAuthoringTarget(
+      command.pending.request.body.target_section,
+      targetChapter,
+    );
+
   const locked =
     disabled ||
     !!saved ||
@@ -226,6 +239,9 @@ function CaptureWorkspace({
     `/bids/${bidId}/work-contexts/choices?kind=draft_snapshot&limit=20`,
     verifySnapshots,
   );
+  const chapterSnapshots = targetChapter
+    ? snapshots.items.filter((item) => item.id === targetChapter.snapshot_id)
+    : snapshots.items;
   const verifySnapshot = useCallback(
     (v: unknown) =>
       draft.snapshot
@@ -334,7 +350,7 @@ function CaptureWorkspace({
     facts.page
   ) {
     try {
-      request = buildCaptureRequest(draft, {
+      const built = buildCaptureRequest(draft, {
         target: target.value,
         authority: authority.value,
         inventory: inventory.value,
@@ -343,6 +359,11 @@ function CaptureWorkspace({
         facts: facts.page,
         items: facts.items,
       });
+      if (!matchesFixedAuthoringTarget(built.target_section, targetChapter))
+        throw new Error(
+          "本章入口只接受当前草稿及当前章节修订，尚未保存其他固定输入。",
+        );
+      request = built;
     } catch (error) {
       missing = error instanceof Error ? error.message : missing;
     }
@@ -363,7 +384,11 @@ function CaptureWorkspace({
     }
   }
   function chooseSnapshot(item: WorkContextChoicePage["items"][number]) {
-    if (item.selection.kind !== "draft_snapshot") return;
+    if (
+      item.selection.kind !== "draft_snapshot" ||
+      (targetChapter && item.id !== targetChapter.snapshot_id)
+    )
+      return;
     change({
       ...draft,
       snapshot: {
@@ -436,7 +461,7 @@ function CaptureWorkspace({
           <button
             type="button"
             className="button secondary"
-            disabled={command.busy || command.blocked}
+            disabled={command.busy || command.blocked || !pendingMatches}
             onClick={() =>
               command.rejected
                 ? refreshSelected()
@@ -445,6 +470,11 @@ function CaptureWorkspace({
           >
             {command.rejected ? "保留草稿并重新核对" : "恢复原保存请求"}
           </button>
+          {!pendingMatches && (
+            <p>
+              待恢复的是其他章节的已记录请求。请在通用“可复用任务”入口恢复，不能在本章重发。
+            </p>
+          )}
         </section>
       )}
       {saved ? (
@@ -590,7 +620,7 @@ function CaptureWorkspace({
                 disabled={locked || !snapshots.ready}
                 value={draft.snapshot?.id ?? ""}
                 onChange={(e) => {
-                  const item = snapshots.items.find(
+                  const item = chapterSnapshots.find(
                     (i) => i.id === e.target.value,
                   );
                   if (item) chooseSnapshot(item);
@@ -605,12 +635,14 @@ function CaptureWorkspace({
               >
                 <option value="">明确选择已保存快照</option>
                 {draft.snapshot &&
-                  !snapshots.items.some((i) => i.id === draft.snapshot!.id) && (
+                  !chapterSnapshots.some(
+                    (i) => i.id === draft.snapshot!.id,
+                  ) && (
                     <option value={draft.snapshot.id}>
                       保留：{draft.snapshot.label}
                     </option>
                   )}
-                {snapshots.items.map((i) => (
+                {chapterSnapshots.map((i) => (
                   <option key={i.id} value={i.id}>
                     {i.label} · {i.id.slice(0, 8)}
                   </option>
@@ -652,11 +684,19 @@ function CaptureWorkspace({
                   }}
                 >
                   <option value="">明确选择章节</option>
-                  {snapshot.value.document.sections.map((s) => (
-                    <option key={s.section_id} value={s.section_id}>
-                      {s.title} · 原修订 {s.section_revision}
-                    </option>
-                  ))}
+                  {snapshot.value.document.sections
+                    .filter(
+                      (s) =>
+                        !targetChapter ||
+                        (s.section_id === targetChapter.section_id &&
+                          s.section_revision ===
+                            targetChapter.base_section_revision),
+                    )
+                    .map((s) => (
+                      <option key={s.section_id} value={s.section_id}>
+                        {s.title} · 原修订 {s.section_revision}
+                      </option>
+                    ))}
                 </select>
               </label>
             )}

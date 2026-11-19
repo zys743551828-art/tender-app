@@ -1,5 +1,6 @@
 import { AuthoringStructure } from "./AuthoringStructure";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TechnicalBidChapter } from "./TechnicalBidChapter";
 import { api, supportsApi } from "./api";
 import type { ApiResult } from "./api";
 import type {
@@ -327,6 +328,7 @@ function DraftEditor({
   });
   const [switching, setSwitching] = useState(false);
   const [building, setBuilding] = useState(false);
+  const [technicalPreparing, setTechnicalPreparing] = useState(false);
   const [structureBusy, setStructureBusy] = useState(false);
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [structureSync, setStructureSync] = useState<{
@@ -505,6 +507,7 @@ function DraftEditor({
   async function choose(id: string) {
     if (
       switching ||
+      technicalPreparing ||
       building ||
       importing ||
       generating ||
@@ -721,6 +724,7 @@ function DraftEditor({
                   disabled={
                     disabled ||
                     switching ||
+                    technicalPreparing ||
                     building ||
                     structureBusy ||
                     !!structureSync ||
@@ -740,6 +744,34 @@ function DraftEditor({
           </div>
         </>
       )}
+      {view && current.etag && sectionId && (
+        <TechnicalBidChapter
+          key={sectionId}
+          bidId={bidId}
+          memberId={memberId}
+          draft={view}
+          sectionId={sectionId}
+          disabled={
+            disabled ||
+            exact.checking ||
+            exact.unavailable ||
+            switching ||
+            technicalPreparing ||
+            building ||
+            structureBusy ||
+            !!structureSync ||
+            importing ||
+            generating ||
+            manualEditing
+          }
+          prepare={async () => {
+            if (!editor.current || !(await editor.current.flush(true)))
+              return null;
+            return reloadHead();
+          }}
+          onPreparing={setTechnicalPreparing}
+        />
+      )}
       {view &&
         current.etag &&
         supportsApi("GET", "/authoring/generation-batch-capabilities") && (
@@ -751,6 +783,7 @@ function DraftEditor({
               disabled ||
               exact.ordinaryEditBlocked ||
               switching ||
+              technicalPreparing ||
               building ||
               structureBusy ||
               !!structureSync ||
@@ -781,6 +814,7 @@ function DraftEditor({
               disabled ||
               exact.ordinaryEditBlocked ||
               switching ||
+              technicalPreparing ||
               building ||
               structureBusy ||
               !!structureSync ||

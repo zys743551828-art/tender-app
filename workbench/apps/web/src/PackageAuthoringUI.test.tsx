@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { setAuth } from "./api";
 import { PackageAuthoringTemplateEditor } from "./PackageAuthoringTemplateEditor";
+import { TechnicalBidChapter } from "./TechnicalBidChapter";
+import { validateAuthoringInput } from "./packageAuthoringInputProtocol";
 import { PackageAuthoringRunControl } from "./PackageAuthoringRunControl";
 import { AssistantActionCard } from "./AssistantActionCard";
 import { TaskRunCard } from "./TaskRunCard";
@@ -376,3 +378,106 @@ it.each([false, true])(
     expect(calls.unexpected).toEqual([]);
   },
 );
+
+it("prepares the selected technical chapter, saves a handoff, and only then permits an explicit exact run", async () => {
+  const calls = transport({
+    writes: (path) =>
+      path.endsWith("/task-definitions")
+        ? json(f.template, f.template_etag, 201)
+        : json(f.runs.queued, undefined, 202),
+  });
+  const verified = await validateAuthoringInput(f.input, bidId);
+  const section = verified.manifest.selection.target_section;
+  const draft = {
+    id: section.draft_id,
+    bid_id: bidId,
+    revision: section.base_draft_revision,
+    snapshot_id: section.snapshot_id,
+    sections: [
+      {
+        id: section.section_id,
+        revision: section.base_section_revision,
+        title: "合成技术章节",
+        ordinal: 0,
+        rule_ids: [],
+        save_state: "saved" as const,
+      },
+    ],
+  };
+  const user = userEvent.setup();
+  const chapter = render(
+    <TechnicalBidChapter
+      bidId={bidId}
+      memberId={memberId}
+      draft={draft}
+      sectionId={section.section_id}
+      disabled={false}
+      onPreparing={vi.fn()}
+      prepare={vi
+        .fn()
+        .mockResolvedValue({ data: draft, etag: '"trusted-draft-head"' })}
+    />,
+  );
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "读取固定输入目录" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: /选择这份编写输入/ }),
+  );
+  await user.type(
+    screen.getByLabelText("固定整包编写模板名称"),
+    f.template.configuration.name,
+  );
+  await user.type(
+    screen.getByLabelText("固定整包编写要求"),
+    f.template.configuration.instructions,
+  );
+  const save = screen.getByRole("button", {
+    name: "保存固定整包编写模板，不运行",
+  });
+  await waitFor(() => expect(save).toBeEnabled());
+  expect(calls.sent).toHaveLength(0);
+  await user.click(save);
+  expect(
+    await screen.findByRole("link", { name: "打开本次模板，核对后手动运行" }),
+  ).toHaveAttribute(
+    "href",
+    "/bids/" + bidId + "/tasks?task_template=" + f.template.id,
+  );
+  expect(calls.sent).toHaveLength(1);
+  expect(
+    screen.getByRole("button", { name: "重新准备一份本章候选" }),
+  ).toBeEnabled();
+  expect(calls.sent[0].path.endsWith("/task-definitions")).toBe(true);
+  expect(JSON.parse(String(calls.sent[0].init.body))).toEqual(
+    f.template.configuration,
+  );
+  chapter.unmount();
+  const onRun = vi.fn();
+  render(
+    <PackageAuthoringRunControl
+      bidId={bidId}
+      memberId={memberId}
+      id={f.template.id}
+      template={f.template}
+      etag={f.template_etag}
+      kinds={f.kinds}
+      disabled={false}
+      onRun={onRun}
+      onChanged={vi.fn()}
+    />,
+  );
+  const run = screen.getByRole("button", { name: "手动生成固定整包章节候选" });
+  await waitFor(() => expect(run).toBeEnabled());
+  expect(calls.sent).toHaveLength(1);
+  await user.click(run);
+  await waitFor(() => expect(onRun).toHaveBeenCalledWith(f.runs.queued.id));
+  expect(calls.sent[1].path).toBe(
+    "/api/v1/bids/" + bidId + "/task-definitions/" + f.template.id + "/runs",
+  );
+  expect(JSON.parse(String(calls.sent[1].init.body))).toEqual({ rerun: false });
+  expect(calls.unexpected).toEqual([]);
+});

@@ -192,6 +192,39 @@ export function validateAuthoringInputRequest(
   }
   return v as unknown as PackageAuthoringInputRequest;
 }
+/** Scope chosen in the saved editor, not inferred from the most recent input. */
+export type FixedAuthoringChapter = Pick<
+  PackageAuthoringInputRequest["target_section"],
+  | "draft_id"
+  | "snapshot_id"
+  | "base_draft_revision"
+  | "section_id"
+  | "base_section_revision"
+>;
+export function matchesFixedAuthoringTarget(
+  node: PackageAuthoringInputRequest["target_section"],
+  target?: FixedAuthoringChapter,
+) {
+  if (!target) return true;
+  return (
+    node.draft_id === target.draft_id &&
+    node.snapshot_id === target.snapshot_id &&
+    node.base_draft_revision === target.base_draft_revision &&
+    node.section_id === target.section_id &&
+    node.base_section_revision === target.base_section_revision
+  );
+}
+
+export function matchesFixedAuthoringChapter(
+  input: VerifiedAuthoringInput,
+  target?: FixedAuthoringChapter,
+) {
+  return matchesFixedAuthoringTarget(
+    input.manifest.selection.target_section,
+    target,
+  );
+}
+
 export type VerifiedAuthoringInput = PackageAuthoringInputView & {
   manifest: {
     protocol: "package-authoring-input/1";
