@@ -106,8 +106,20 @@ def test_package_only_app_exports_all_registered_operations_and_schemas():
         "listBidPackageDocuments",
         "listBidPackageParses",
         "listBidPackageFrozenEvidence",
+        "getTechnicalAuthoringHandoff",
     }
     base = "/api/v1/bids/{bid_id}/packages"
+    handoff = actual["paths"][
+        base + "/{package_id}/revisions/{revision_id}/technical-authoring-handoff"
+    ]
+    assert set(handoff) == {"get"}
+    assert handoff["get"]["security"] == [{"SessionCookie": []}]
+    assert handoff["get"]["responses"]["200"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/TechnicalAuthoringHandoffView"
+    }
+    view = actual["components"]["schemas"]["TechnicalAuthoringHandoffView"]
+    for name in ("independent_approval_available", "publication_authorized"):
+        assert view["properties"][name]["const"] is False
     for path, request_schema in (
         (base, "CreateBidPackage"),
         (base + "/{package_id}/revisions", "AppendBidPackage"),
