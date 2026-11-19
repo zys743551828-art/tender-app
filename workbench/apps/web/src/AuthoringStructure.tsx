@@ -23,6 +23,12 @@ import { ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
+import { TechnicalBidOutline } from "./TechnicalBidOutline";
+import {
+  appendOutline,
+  verifyCurrentOutline,
+  type OutlineBasis,
+} from "./technicalBidOutlinePlan";
 import {
   treeMoveKey,
   resolveTreeMove,
@@ -41,6 +47,7 @@ type StructureProps = {
   readOnly?: boolean;
   onChoose: (id: string) => Promise<void>;
   onContinue?: () => void;
+  onPackages?: () => void;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   onChanged: (
     applied?:
@@ -69,6 +76,7 @@ function ScopedAuthoringStructure({
   readOnly = false,
   onChoose,
   onContinue,
+  onPackages,
   prepare,
   onChanged,
   onBusy,
@@ -277,6 +285,43 @@ function ScopedAuthoringStructure({
         }) satisfies AuthoringTreeChangeRequest,
     );
   }
+  function previewOutline(
+    chapters: Parameters<typeof appendOutline>[1],
+    basis: OutlineBasis,
+  ) {
+    if (!valid || locked || tree.error) return;
+    void begin("/structure/preview", async (revision, head, current) => {
+      await verifyCurrentOutline(bidId, basis);
+      if (!current()) return undefined;
+      const latest = await api<AuthoringTreeView>(path + "/structure");
+      if (!current()) return undefined;
+      if (
+        latest.data.draft_id !== draftId ||
+        latest.data.draft_revision !== revision ||
+        latest.data.snapshot_id !== head.data.snapshot_id ||
+        latest.etag !== head.etag ||
+        treeMoveKey(latest.data) !== treeMoveKey(valid)
+      ) {
+        void tree.reload();
+        throw new Error("草稿目录已变化，未覆盖现有章节；请重新核对后预览。");
+      }
+      const request = appendOutline(
+        latest.data,
+        chapters,
+        basis.inventory.digest,
+      );
+      // Recover the exact source selection with this existing preview receipt.
+      // It is not an authoritative plan or generation authorization.
+      sessionStorage.setItem(
+        outlineBasisKey(basis.inventory.digest),
+        JSON.stringify(basis),
+      );
+      return request;
+    });
+  }
+  function outlineBasisKey(digest: string) {
+    return `tender:knowledge:${memberId}:technical-outline:${bidId}:${draftId}:${digest}`; // Workspace-local selection, not approval state.
+  }
   async function decide(decision: "confirm" | "reject", retry = false) {
     if (!held?.value.action_id && !resolve.pending) return;
     if (working || previewWorking.current) return;
@@ -297,6 +342,37 @@ function ScopedAuthoringStructure({
           permissions.current.readOnly
         )
           return;
+      }
+      // An uncertain confirm reuses the original structural command and ETag.
+      // It can only recover/append the same empty chapters; authority must still
+      // be frozen separately before exact generation to avoid hiding a good ACK.
+      if (!retry && decision === "confirm" && held?.value.action_id) {
+        const keys = Object.keys(held.value.created_ids);
+        const technicalKeys = keys.filter((key) =>
+          key.startsWith("technical-bid-"),
+        );
+        if (technicalKeys.length > 0) {
+          const digest = /^technical-bid-([a-f0-9]{64})-/.exec(
+            technicalKeys[0],
+          )?.[1];
+          const raw = digest
+            ? sessionStorage.getItem(outlineBasisKey(digest))
+            : null;
+          const basis = raw ? (JSON.parse(raw) as OutlineBasis) : null;
+          if (
+            !basis ||
+            !digest ||
+            basis.inventory?.digest !== digest ||
+            technicalKeys.length !== keys.length ||
+            technicalKeys.some(
+              (key) => !key.startsWith("technical-bid-" + digest + "-"),
+            )
+          )
+            throw new Error(
+              "缺少这个大纲预览的原始依据，未应用。请放弃预览并重新选择资料。",
+            );
+          await verifyCurrentOutline(bidId, basis);
+        }
       }
       if (!currentScope()) return;
       const r = retry
@@ -369,6 +445,12 @@ function ScopedAuthoringStructure({
               {readOnly ? "查看本章正文" : "继续编写本章"}
             </button>
           )}
+          <TechnicalBidOutline
+            bidId={bidId}
+            disabled={locked || !!tree.error || !tree.etag}
+            onPackages={onPackages}
+            onPreview={previewOutline}
+          />
           <details>
             <summary>新增或调整章节目录</summary>
             <fieldset disabled={locked}>
@@ -614,6 +696,14 @@ function ScopedAuthoringStructure({
                 ，确认时仍核对原修订。后续编辑不会被静默覆盖。
               </p>
               <Preview value={held.value} />
+              {Object.keys(held.value.created_ids).some((key) =>
+                key.startsWith("technical-bid-"),
+              ) && (
+                <p className="small-note">
+                  这是空章节建议，不会把依据写入正文或授予生成资格。
+                  若应用回执丢失，可恢复同一目录请求；开始编写前仍需另行固定当前依据。
+                </p>
+              )}
               <div className="review-shortcuts">
                 <button
                   className="button primary"

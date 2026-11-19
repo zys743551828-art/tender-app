@@ -688,6 +688,7 @@ function DraftEditor({
                 readOnly={exact.ordinaryEditBlocked}
                 onChoose={choose}
                 onContinue={continueWriting}
+                onPackages={onPackages}
                 onBusy={setStructureBusy}
                 onChanged={structureChanged}
                 prepare={async () => {
