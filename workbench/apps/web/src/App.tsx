@@ -526,7 +526,7 @@ function Login({
             <Brand />
           </div>
           <span className="eyebrow">欢迎回到工作区</span>
-          <h2>{expired ? "登录已过期" : "登录投标工作台"}</h2>
+          <h2>{expired ? "登录已过期" : "登录标事台"}</h2>
           <p className="muted">
             {expired
               ? "当前页面和待处理资料已保留。登录后请核对当前版本，再继续操作。"

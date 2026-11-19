@@ -78,6 +78,6 @@ it("未能保存时不退出会话，显式成功退出清理本地章节缓存�
   await userEvent.click(screen.getByRole("button", { name: "退出登录" }));
   await waitFor(() => expect(sessionStorage.getItem(current)).toBeNull());
   expect(
-    await screen.findByRole("heading", { name: "登录投标工作台" }),
+    await screen.findByRole("heading", { name: "登录标事台" }),
   ).toBeVisible();
 });

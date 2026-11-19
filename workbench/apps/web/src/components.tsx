@@ -6,10 +6,10 @@ export function Brand() {
   return (
     <div className="brand">
       <span className="brand-mark" aria-hidden="true">
-        投
+        标
       </span>
       <span>
-        投标工作台<small>整份标书 · AI 辅助</small>
+        标事台<small>整份标书 · AI 辅助</small>
       </span>
     </div>
   );
