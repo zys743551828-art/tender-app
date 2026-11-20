@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type {
   DraftView,
@@ -48,6 +48,8 @@ const old = {
   template_id: "dafe815f-d0da-497f-abc9-504e5aff1555",
   template_version_id: "dafe815f-d0da-497f-abc9-504e5aff1557",
   name: "合成历史模板",
+  input_id: "dafe815f-d0da-497f-abc9-504e5aff1559",
+  input_digest: "f".repeat(64),
   input_snapshot_id: "dafe815f-d0da-497f-abc9-504e5aff1558",
   bound_to_observed_chapter: false,
 };
@@ -64,6 +66,7 @@ const page: TechnicalChapterTemplatePage = {
 };
 const path = `/api/v1/bids/${f.bidId}/drafts/${draft.id}/sections/${ref.section_id}/technical-authoring-templates`;
 const runsPath = path + "/" + activeTemplate.template_version_id + "/runs";
+const oldRunsPath = path + "/" + old.template_version_id + "/runs";
 const runId = "ad1531d9-4bb8-4793-8fb9-5609f456a436";
 const publishedRun = "ad1531d9-4bb8-4793-8fb9-5609f456a437";
 const unknownRun = "ad1531d9-4bb8-4793-8fb9-5609f456a438";
@@ -101,12 +104,12 @@ const link = "到任务页核对模板当前版本";
 function fixture(
   response: () => unknown,
   navigationDisabled = false,
-  runResponse?: () => unknown,
+  runResponse?: (path: string) => unknown,
 ) {
   const read = vi.fn(async (input: string, options: RequestInit) => {
     expect(options.method).toBe("GET");
-    if (runResponse && input === runsPath)
-      return new Response(JSON.stringify(runResponse()), { status: 200 });
+    if (runResponse && (input === runsPath || input === oldRunsPath))
+      return new Response(JSON.stringify(runResponse(input)), { status: 200 });
     expect(input).toBe(path);
     return new Response(JSON.stringify(response()), { status: 200 });
   });
@@ -239,4 +242,60 @@ it("does not retain another input's run results when the selected-version read c
   expect(
     screen.queryByText(/候选已发布，不代表已采纳/),
   ).not.toBeInTheDocument();
+});
+
+it("reopens the exact old run after selecting a different template, with read-only navigation", async () => {
+  const priorRun = "ad1531d9-4bb8-4793-8fb9-5609f456a439";
+  const oldPage = {
+    ...runPage,
+    template_id: old.template_id,
+    template_version_id: old.template_version_id,
+    template_digest: old.template_digest,
+    input_id: old.input_id,
+    input_digest: old.input_digest,
+    items: [
+      {
+        run_id: priorRun,
+        recorded_at: "2026-06-28T17:10:06Z",
+        stage: "cancelled",
+      },
+    ],
+  };
+  const { user, read } = fixture(
+    () => page,
+    false,
+    (requested) => (requested === oldRunsPath ? oldPage : runPage),
+  );
+  await user.click(screen.getByRole("button", { name: open }));
+  await screen.findByText(old.name);
+  const openRuns = (name: string) =>
+    within(screen.getByText(name).closest("li")!).getByRole("button", {
+      name: "查看此版本运行",
+    });
+  const label = "在任务页核对这次运行";
+  await user.click(openRuns(old.name));
+  expect(await screen.findByRole("link", { name: label })).toHaveAttribute(
+    "href",
+    `/bids/${f.bidId}/tasks?run=${priorRun}`,
+  );
+  await user.click(openRuns(activeTemplate.name));
+  await screen.findByText(/模型费用或回执待核对/);
+  expect(
+    screen
+      .getAllByRole("link", { name: label })
+      .some((link) => link.getAttribute("href")?.endsWith(priorRun)),
+  ).toBe(false);
+  await user.click(openRuns(old.name));
+  expect(await screen.findByRole("link", { name: label })).toHaveAttribute(
+    "href",
+    `/bids/${f.bidId}/tasks?run=${priorRun}`,
+  );
+  expect(
+    read.mock.calls.map(([url, options]) => [url, options.method]),
+  ).toEqual([
+    [path, "GET"],
+    [oldRunsPath, "GET"],
+    [runsPath, "GET"],
+    [oldRunsPath, "GET"],
+  ]);
 });
