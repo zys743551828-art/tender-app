@@ -911,7 +911,8 @@ def test_deleted_section_rejects_old_save_generation_and_patch_and_order_bypass(
 
 
 @pytest.mark.parametrize(
-    ("field", "value"), [("font_size_halfpoints", 24), ("margin_top_twips", 1200)]
+    ("field", "value"),
+    [("font_size_halfpoints", 24), ("margin_top_twips", 1200), ("paragraph_after_twips", 240)],
 )
 def test_project_format_binding_requires_current_confirmation_and_overrides_enterprise(
     structured, field, value
@@ -1023,6 +1024,16 @@ def test_project_format_binding_requires_current_confirmation_and_overrides_ente
             )
             assert checker.MARGIN_MISMATCH not in checked.blocking_codes
             assert checker.MARGIN_UNINSPECTABLE not in checked.blocking_codes
+            assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+        elif field in {"font_size_halfpoints", "paragraph_after_twips"}:
+            checker = technical_candidate_checks
+            defaults = checker.frozen_text_defaults(frozen)
+            assert defaults.expected == ((field, value),) and not defaults.malformed_basis
+            checked = checker.inspect_candidate_docx(
+                structured_docx.assemble(frozen), filename="合成技术标.docx", text_defaults=defaults
+            )
+            assert checker.TEXT_DEFAULTS_MISMATCH not in checked.blocking_codes
+            assert checker.TEXT_DEFAULTS_UNINSPECTABLE not in checked.blocking_codes
             assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
     with connection() as c:
         append_decision(

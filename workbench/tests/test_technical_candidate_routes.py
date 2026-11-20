@@ -279,3 +279,24 @@ def test_placeholder_read_checks_bound_generated_bytes_and_never_returns_the_tex
     assert result.json()["blocking_codes"] == ["DOCX_EXPLICIT_PLACEHOLDER"]
     assert result.json()["publication_authorized"] is False
     assert "synthetic-private-key-not-a-secret" not in result.text
+
+
+def test_snapshot_bound_text_defaults_compared_to_exact_built_word_and_no_raw_values(ports):
+    client = TestClient(app)
+    ports.snapshot = margin_snapshot(("font_size_halfpoints", 22))
+    same = client.post(URL, json=BODY)
+    assert same.status_code == 200, same.text
+    assert same.json()["blocking_codes"] == ["PROHIBITED_NAME_CONTENT"]
+    assert "FORMAT_AND_RENDER_REVIEW" in same.json()["manual_check_codes"]
+    assert "DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS" not in same.json()["manual_check_codes"]
+    ports.snapshot = margin_snapshot(("font_size_halfpoints", 24))
+    difference = client.post(URL, json=BODY)
+    assert difference.status_code == 200, difference.text
+    assert difference.json()["blocking_codes"] == [
+        "DOCX_TEXT_DEFAULTS_MISMATCH",
+        "PROHIBITED_NAME_CONTENT",
+    ]
+    assert difference.json()["artifact_sha256"] == same.json()["artifact_sha256"] == sha(DOCX)
+    assert difference.json()["policy_sha256"] != same.json()["policy_sha256"]
+    assert "font_size_halfpoints" not in difference.text
+    assert difference.json()["publication_authorized"] is False

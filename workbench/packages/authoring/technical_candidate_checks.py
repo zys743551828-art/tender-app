@@ -46,6 +46,18 @@ MARGIN_NAMES = {f"margin_{side}_twips": side for side in ("top", "right", "botto
 MARGIN_UNINSPECTABLE = "DOCX_PAGE_MARGINS_UNINSPECTABLE"
 MARGIN_MISMATCH = "DOCX_PAGE_MARGINS_MISMATCH"
 MARGIN_NO_BASIS = "DOCX_PAGE_MARGINS_NO_FROZEN_BASIS"
+TEXT_DEFAULT_FIELDS = {
+    "font_size_halfpoints": "font_size_halfpoints",
+    "paragraph_after_twips": "paragraph_after_twips",
+}
+TEXT_DEFAULTS_MISMATCH = "DOCX_TEXT_DEFAULTS_MISMATCH"
+TEXT_DEFAULTS_UNINSPECTABLE = "DOCX_TEXT_DEFAULTS_UNINSPECTABLE"
+TEXT_DEFAULTS_NO_BASIS = "DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS"
+TEXT_DEFAULTS_POLICY = "active-canonical-styles-doc-defaults/1"
+_OFFICE_REL = {
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "http://purl.oclc.org/ooxml/officeDocument/relationships",
+}
 PLACEHOLDER_FOUND = "DOCX_EXPLICIT_PLACEHOLDER"
 PLACEHOLDER_POLICY = "literal-markers/1"
 _WORD_STORIES = {
@@ -60,12 +72,20 @@ _PLACEHOLDER = re.compile(
 
 _HEX = re.compile(r"[a-f0-9]{64}")
 _MEASUREMENT = re.compile(r"[+-]?[0-9]{1,10}")
+_UNSIGNED = re.compile(r"[0-9]{1,10}")
 _FORMAT_BINDING = Draft202012Validator(FORMAT_BINDING, format_checker=FormatChecker())
 
 
 @dataclass(frozen=True)
 class FrozenPageMargins:
     expected_twips: tuple[tuple[str, int], ...] = ()
+    malformed_basis: bool = False
+    basis_digest: str | None = None
+
+
+@dataclass(frozen=True)
+class FrozenTextDefaults:
+    expected: tuple[tuple[str, int], ...] = ()
     malformed_basis: bool = False
     basis_digest: str | None = None
 
@@ -83,7 +103,7 @@ def _uuid(value: object) -> bool:
         return False
 
 
-def _confirmed_margin(binding: dict) -> bool:
+def _confirmed_numeric_binding(binding: dict) -> bool:
     body = {key: value for key, value in binding.items() if key not in {"basis", "interpretation"}}
     if not _FORMAT_BINDING.is_valid(body):
         return False
@@ -119,7 +139,9 @@ def _confirmed_margin(binding: dict) -> bool:
     )
 
 
-def frozen_page_margins(snapshot: Mapping[str, object]) -> FrozenPageMargins:
+def _frozen_numeric_fields(
+    snapshot: Mapping[str, object], fields: Mapping[str, str]
+) -> tuple[tuple[tuple[str, int], ...], bool, str | None]:
     """Read only human-bound fields from a structurally validated frozen snapshot.
 
     The repository's capture validates the immutable snapshot digest, extension,
@@ -128,59 +150,64 @@ def frozen_page_margins(snapshot: Mapping[str, object]) -> FrozenPageMargins:
     """
     extension = snapshot.get("authoring_structure")
     if extension is None:
-        return FrozenPageMargins()
+        return (), False, None
     metadata = extension.get("metadata") if isinstance(extension, dict) else None
     if not isinstance(metadata, dict):
-        return FrozenPageMargins(malformed_basis=True)
+        return (), True, None
     frozen = metadata.get("format_binding_manifest", [])
     declared = metadata.get("format_bindings", [])
     if not isinstance(frozen, list) or not isinstance(declared, list):
-        return FrozenPageMargins(malformed_basis=True)
+        return (), True, None
 
-    def margins(rows):
-        return [
-            item for item in rows if isinstance(item, dict) and item.get("field") in MARGIN_NAMES
-        ]
+    def matching(rows):
+        return [item for item in rows if isinstance(item, dict) and item.get("field") in fields]
 
     def is_shaped(item):
         return isinstance(item, dict) and isinstance(item.get("field"), str)
 
     if not all(is_shaped(item) for item in (*frozen, *declared)):
-        return FrozenPageMargins(malformed_basis=True)
-    frozen_margins = margins(frozen)
-    declared_margins = margins(declared)
-    if not frozen_margins and not declared_margins:
-        return FrozenPageMargins()
+        return (), True, None
+    frozen_rows = matching(frozen)
+    declared_rows = matching(declared)
+    if not frozen_rows and not declared_rows:
+        return (), False, None
     effective = metadata.get("effective_style")
     ack = metadata.get("format_review_ack")
     malformed = not _digest(ack) or not isinstance(effective, dict)
     result: dict[str, int] = {}
-    for item in frozen_margins:
+    for item in frozen_rows:
         field = item["field"]
-        side = MARGIN_NAMES[field]
+        selector = fields[field]
         if (
-            side in result
-            or not _confirmed_margin(item)
+            selector in result
+            or not _confirmed_numeric_binding(item)
             or not isinstance(effective, dict)
             or type(effective.get(field)) is not int
             or effective[field] != item["value"]
             or {k: v for k, v in item.items() if k not in {"basis", "interpretation"}}
-            not in declared_margins
+            not in declared_rows
         ):
             malformed = True
             continue
-        result[side] = item["value"]
-    if len(declared_margins) != len(result):
+        result[selector] = item["value"]
+    if len(declared_rows) != len(result):
         malformed = True
     # Partial matches never silently validate an incomplete frozen declaration.
     basis_digest = (
         None
         if malformed
-        else sha(
-            {"review_ack": ack, "binding_rows": sorted(frozen_margins, key=lambda r: r["field"])}
-        )
+        else sha({"review_ack": ack, "binding_rows": sorted(frozen_rows, key=lambda r: r["field"])})
     )
-    return FrozenPageMargins(tuple(sorted(result.items())), malformed, basis_digest)
+    return tuple(sorted(result.items())), malformed, basis_digest
+
+
+def frozen_page_margins(snapshot: Mapping[str, object]) -> FrozenPageMargins:
+    return FrozenPageMargins(*_frozen_numeric_fields(snapshot, MARGIN_NAMES))
+
+
+def frozen_text_defaults(snapshot: Mapping[str, object]) -> FrozenTextDefaults:
+    """Only sourced, human-acknowledged raw default fields, never template fallback."""
+    return FrozenTextDefaults(*_frozen_numeric_fields(snapshot, TEXT_DEFAULT_FIELDS))
 
 
 @dataclass(frozen=True)
@@ -313,12 +340,82 @@ def _inspect_page_margins(
                 blocking.add(MARGIN_MISMATCH)
 
 
+def _unique_path(node: Element, ns: str, *parts: str) -> Element | None:
+    for part in parts:
+        children = node.findall(ns + part)
+        if len(children) != 1:
+            return None
+        node = children[0]
+    return node
+
+
+def _inspect_text_defaults(
+    archive: zipfile.ZipFile, expected: tuple[tuple[str, int], ...], blocking: set[str]
+) -> None:
+    # The writer's canonical stylesheet must be demonstrably active. Do not
+    # use an orphan styles.xml or follow unknown alternate/compatibility parts.
+    try:
+        relationships = inspection._xml(archive.read("word/_rels/document.xml.rels"))
+        types = inspection._xml(archive.read("[Content_Types].xml"))
+        root = inspection._xml(archive.read("word/styles.xml"))
+    except KeyError:
+        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
+        return
+    styles_types = [
+        part.get("ContentType")
+        for part in types.findall(f"{{{inspection.CONTENT_NS}}}Override")
+        if part.get("PartName") == "/word/styles.xml"
+    ]
+    style_links = [
+        link
+        for link in relationships
+        if link.get("Type", "").rsplit("/", 1)[-1] in {"styles", "stylesWithEffects"}
+    ]
+    if (
+        styles_types
+        != ["application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"]
+        or len(style_links) != 1
+        or style_links[0].get("Type") not in {base + "/styles" for base in _OFFICE_REL}
+        or style_links[0].get("Target") != "styles.xml"
+        or style_links[0].get("TargetMode", "Internal") != "Internal"
+        or root.tag not in {f"{{{namespace}}}styles" for namespace in inspection.WORD_NS}
+    ):
+        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
+        return
+    ns = root.tag.rsplit("}", 1)[0] + "}"
+    defaults = _unique_path(root, ns, "docDefaults")
+    if defaults is None or any(_local(node.tag) == "AlternateContent" for node in root.iter()):
+        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
+        return
+    for field, value in expected:
+        if field == "font_size_halfpoints":
+            node = _unique_path(defaults, ns, "rPrDefault", "rPr", "sz")
+            raw = node.get(ns + "val", "") if node is not None else ""
+        elif field == "paragraph_after_twips":
+            node = _unique_path(defaults, ns, "pPrDefault", "pPr", "spacing")
+            if (
+                node is None
+                or ns + "afterLines" in node.attrib
+                or node.get(ns + "afterAutospacing", "0").casefold() not in {"0", "false", "off"}
+            ):
+                raw = ""
+            else:
+                raw = node.get(ns + "after", "")
+        else:
+            raw = ""
+        if _UNSIGNED.fullmatch(raw) is None:
+            blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
+        elif int(raw) != value:
+            blocking.add(TEXT_DEFAULTS_MISMATCH)
+
+
 def inspect_candidate_docx(
     data: bytes,
     *,
     filename: str,
     prohibited_names: Sequence[str] = (),
     page_margins: FrozenPageMargins | None = None,
+    text_defaults: FrozenTextDefaults | None = None,
 ) -> DocxCandidateCheck:
     """Return blocking signals and outstanding human checks; neither means approval.
 
@@ -326,6 +423,8 @@ def inspect_candidate_docx(
     check does not attest visual/OCR content, style compliance or factual coverage.
     Placeholder checks cover only explicit supported marks in individual readable
     Word paragraphs, not missing values, diagrams, or project semantics.
+    Text defaults compare only declared scalars, not real fonts, paragraphs,
+    style overrides, text runs or the rendered layout.
     Callers must retain the reviewed basis and compare the hash of delivered bytes.
     """
     names = _names(prohibited_names)
@@ -337,6 +436,11 @@ def inspect_candidate_docx(
             blocking.add(MARGIN_UNINSPECTABLE)
         elif not page_margins.expected_twips:
             manual.add(MARGIN_NO_BASIS)
+    if text_defaults is not None:
+        if text_defaults.malformed_basis:
+            blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
+        elif not text_defaults.expected:
+            manual.add(TEXT_DEFAULTS_NO_BASIS)
 
     def flagged(value: str) -> bool:
         return pattern is not None and bool(pattern.search(_normalize(value)))
@@ -357,6 +461,16 @@ def inspect_candidate_docx(
                         "frozen_margin_basis_sha256": page_margins.basis_digest,
                     }
                     if page_margins is not None
+                    else {}
+                )
+                | (
+                    {
+                        "text_defaults_policy": TEXT_DEFAULTS_POLICY,
+                        "expected_text_defaults": text_defaults.expected,
+                        "malformed_text_defaults_basis": text_defaults.malformed_basis,
+                        "frozen_text_defaults_basis_sha256": text_defaults.basis_digest,
+                    }
+                    if text_defaults is not None
                     else {}
                 )
             ),
@@ -385,6 +499,8 @@ def inspect_candidate_docx(
     blocking.update(flags - {"FIELD_EVALUATION_UNSUPPORTED"})
     found_field = False
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        if text_defaults is not None and text_defaults.expected:
+            _inspect_text_defaults(archive, text_defaults.expected, blocking)
         if archive.comment:
             blocking.add("ARCHIVE_METADATA")
         for item in archive.infolist():

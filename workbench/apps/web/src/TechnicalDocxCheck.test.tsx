@@ -224,3 +224,17 @@ it("does not leave the previous summary visible if the immutable build context c
     screen.queryByText("内部核查摘要（单独留存）"),
   ).not.toBeInTheDocument();
 });
+
+it("reports a raw default typography mismatch without claiming per-paragraph or visual checks", async () => {
+  mock({ ...response, blocking_codes: ["DOCX_TEXT_DEFAULTS_MISMATCH"] });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const status = await screen.findByRole("status");
+  expect(
+    within(status).getByText(/实际 Word 声明的默认字号或段后间距/),
+  ).toBeInTheDocument();
+  expect(
+    within(status).getByText(/打开 Word 核对实际排版/),
+  ).toBeInTheDocument();
+  expect(within(status).queryByText(/未发现问题/)).not.toBeInTheDocument();
+});

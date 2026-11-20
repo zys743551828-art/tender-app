@@ -14,6 +14,7 @@ from packages.authoring.technical_candidate_checks import (
     MAX_NAME_LENGTH,
     MAX_NAMES,
     frozen_page_margins,
+    frozen_text_defaults,
     inspect_candidate_docx,
 )
 from packages.domain.runtime import DomainError, connection, sha
@@ -99,6 +100,7 @@ def check_technical_docx(
         filename=body.filename,
         prohibited_names=body.prohibited_names,
         page_margins=frozen_page_margins(packet["snapshot"]),
+        text_defaults=frozen_text_defaults(packet["snapshot"]),
     )
     # Observe a historical packet only, and do not infer current review eligibility.
     # Session and CSRF must still be valid after off-transaction I/O and parsing.

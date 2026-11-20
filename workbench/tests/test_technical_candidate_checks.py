@@ -14,8 +14,13 @@ from packages.authoring.technical_candidate_checks import (
     MARGIN_MISMATCH,
     MARGIN_NO_BASIS,
     MARGIN_UNINSPECTABLE,
+    TEXT_DEFAULTS_MISMATCH,
+    TEXT_DEFAULTS_NO_BASIS,
+    TEXT_DEFAULTS_UNINSPECTABLE,
     FrozenPageMargins,
+    FrozenTextDefaults,
     frozen_page_margins,
+    frozen_text_defaults,
     inspect_candidate_docx,
 )
 from packages.domain.runtime import DomainError, sha
@@ -71,9 +76,13 @@ def png(text=None):
     return data.getvalue()
 
 
-def check(data, *, name="技术标.docx", prohibited=(NAME,), margins=None):
+def check(data, *, name="技术标.docx", prohibited=(NAME,), margins=None, defaults=None):
     return inspect_candidate_docx(
-        data, filename=name, prohibited_names=prohibited, page_margins=margins
+        data,
+        filename=name,
+        prohibited_names=prohibited,
+        page_margins=margins,
+        text_defaults=defaults,
     )
 
 
@@ -353,3 +362,119 @@ def test_technical_word_from_real_assembler_flags_only_the_unchanged_marker():
     filled = assemble_docx({"sections": [section]})
     assert check(unfilled).blocking_codes == ("DOCX_EXPLICIT_PLACEHOLDER",)
     assert check(filled).blocking_codes == ()
+
+
+def text_style_fixture(*, size="24", spacing='w:after="180"', tweak=None):
+    source = assemble_docx({"sections": [empty_content("合成技术编写", 0)]})
+    with ZipFile(BytesIO(source)) as original:
+        data = {n: original.read(n) for n in original.namelist()}
+    style = (
+        f'<w:styles xmlns:w="{W}"><w:docDefaults>'
+        f'<w:rPrDefault><w:rPr><w:sz w:val="{size}"/></w:rPr></w:rPrDefault>'
+        f"<w:pPrDefault><w:pPr><w:spacing {spacing}/></w:pPr></w:pPrDefault>"
+        "</w:docDefaults></w:styles>"
+    )
+    data["word/styles.xml"] = style.encode()
+    if tweak:
+        tweak(data, style)
+    target = BytesIO()
+    with ZipFile(target, "w", compression=ZIP_DEFLATED) as archive:
+        for name, content in data.items():
+            archive.writestr(name, content)
+    return target.getvalue()
+
+
+def test_text_defaults_are_separate_scoped_policy_and_unbound_never_uses_enterprise_default():
+    snapshot = margin_snapshot(("font_size_halfpoints", 24), ("paragraph_after_twips", 180))
+    defaults = frozen_text_defaults(snapshot)
+    assert defaults.expected == (("font_size_halfpoints", 24), ("paragraph_after_twips", 180))
+    assert defaults.basis_digest and not defaults.malformed_basis
+    assert frozen_text_defaults(margin_snapshot(("margin_top_twips", 1440))) == FrozenTextDefaults()
+
+    data = text_style_fixture()
+    unbound = check(data, defaults=FrozenTextDefaults())
+    assert TEXT_DEFAULTS_NO_BASIS in unbound.manual_check_codes
+    assert not unbound.blocking_codes
+    exact = check(data, defaults=defaults)
+    assert exact.artifact_sha256 == unbound.artifact_sha256 == sha(data)
+    assert exact.policy_sha256 != unbound.policy_sha256
+    assert exact.blocking_codes == ()
+    assert "FORMAT_AND_RENDER_REVIEW" in exact.manual_check_codes
+    assert TEXT_DEFAULTS_NO_BASIS not in exact.manual_check_codes
+
+    snapshot["authoring_structure"]["metadata"]["format_binding_manifest"].pop()
+    partial = frozen_text_defaults(snapshot)
+    assert partial.malformed_basis and not partial.basis_digest
+    assert TEXT_DEFAULTS_UNINSPECTABLE in check(data, defaults=partial).blocking_codes
+
+
+@pytest.mark.parametrize(
+    ("size", "spacing", "code"),
+    [
+        ("22", 'w:after="180"', TEXT_DEFAULTS_MISMATCH),
+        ("24", 'w:after="100"', TEXT_DEFAULTS_MISMATCH),
+        ("12pt", 'w:after="180"', TEXT_DEFAULTS_UNINSPECTABLE),
+        ("24", 'w:after="3mm"', TEXT_DEFAULTS_UNINSPECTABLE),
+        ("24", 'w:after="180" w:afterAutospacing="1"', TEXT_DEFAULTS_UNINSPECTABLE),
+        ("24", 'w:after="180" w:afterLines="100"', TEXT_DEFAULTS_UNINSPECTABLE),
+        ("24", 'w:after="180" w:afterAutospacing="0"', None),
+    ],
+)
+def test_raw_default_scalars_are_not_per_paragraph_or_rendered_compliance(size, spacing, code):
+    defaults = frozen_text_defaults(
+        margin_snapshot(("font_size_halfpoints", 24), ("paragraph_after_twips", 180))
+    )
+    checked = check(text_style_fixture(size=size, spacing=spacing), defaults=defaults)
+    assert checked.blocking_codes == ((code,) if code else ())
+    assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+
+
+@pytest.mark.parametrize("mode", ["duplicate_value", "orphan", "alternate", "wrong_type"])
+def test_missing_or_ambiguous_active_styles_are_not_a_confirmed_value(mode):
+    def tweak(data, style):
+        if mode == "duplicate_value":
+            data["word/styles.xml"] = style.replace(
+                '<w:sz w:val="24"/>', '<w:sz w:val="24"/><w:sz w:val="24"/>'
+            ).encode()
+        elif mode in {"orphan", "alternate"}:
+            data["word/other.xml"] = style.encode()
+            relation = data["word/_rels/document.xml.rels"]
+            if mode == "orphan":
+                data["word/_rels/document.xml.rels"] = relation.replace(
+                    b'Target="styles.xml"', b'Target="other.xml"'
+                )
+            else:
+                data["word/_rels/document.xml.rels"] = relation.replace(
+                    b"</Relationships>",
+                    f'<Relationship Id="extra" Type="{R}/stylesWithEffects" Target="other.xml"/></Relationships>'.encode(),
+                )
+        else:
+            data["[Content_Types].xml"] = data["[Content_Types].xml"].replace(
+                b"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml",
+                b"application/xml",
+            )
+
+    defaults = frozen_text_defaults(margin_snapshot(("font_size_halfpoints", 24)))
+    checked = check(text_style_fixture(tweak=tweak), defaults=defaults)
+    assert TEXT_DEFAULTS_UNINSPECTABLE in checked.blocking_codes
+    assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+
+
+def test_present_paragraph_override_does_not_erase_manual_rendering_requirement():
+    def override(data, _style):
+        path = "word/document.xml"
+        before = data[path]
+        data[path] = before.replace(
+            b"<w:body>",
+            b'<w:body><w:p><w:r><w:rPr><w:sz w:val="36"/></w:rPr><w:t>override</w:t></w:r></w:p>',
+        )
+        assert data[path] != before
+
+    checked = check(
+        text_style_fixture(tweak=override),
+        defaults=frozen_text_defaults(
+            margin_snapshot(("font_size_halfpoints", 24), ("paragraph_after_twips", 180))
+        ),
+    )
+    assert not checked.blocking_codes
+    assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes

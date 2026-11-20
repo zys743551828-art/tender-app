@@ -47,6 +47,12 @@ const known: Record<string, string> = {
     "冻结的页边距依据或 Word 分节参数不完整，无法可靠核对",
   DOCX_PAGE_MARGINS_NO_FROZEN_BASIS:
     "没有可用于对照的已确认冻结页边距要求，须按招标原文人工核对",
+  DOCX_TEXT_DEFAULTS_MISMATCH:
+    "实际 Word 声明的默认字号或段后间距不符合已绑定字段；不判断各段真实显示",
+  DOCX_TEXT_DEFAULTS_UNINSPECTABLE:
+    "字号或段后间距的冻结依据或 Word 样式声明不明确，须人工核对",
+  DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS:
+    "没有已确认冻结的默认字号或段后间距字段，须按招标原文人工核对",
 };
 function message(code: string) {
   return (
@@ -254,8 +260,8 @@ function ScopedTechnicalDocxCheck({
       <summary>技术标 Word 检查（送审前）</summary>
       <p className="small-note">
         检查本构建的实际文件，不改稿、不自动提交。请按招标要求输入要检查的名称和别名；留空不会检查项目禁用标识。
-        页边距只对照本构建快照中人工确认并绑定来源的字段，不代替打开 Word
-        检查版面。
+        页边距、默认字号和段后间距只对照本构建快照中人工确认并绑定来源的字段。
+        Word 声明值不代替打开文件检查逐段样式或实际版面。
       </p>
       <form
         onSubmit={(event) => {
