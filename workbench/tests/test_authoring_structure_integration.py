@@ -1034,7 +1034,12 @@ def test_project_format_binding_requires_current_confirmation_and_overrides_ente
             )
             assert checker.TEXT_DEFAULTS_MISMATCH not in checked.blocking_codes
             assert checker.TEXT_DEFAULTS_UNINSPECTABLE not in checked.blocking_codes
-            assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+            [unbound] = set(checker.TEXT_DEFAULT_CODES) - {field}
+            assert {
+                checker.TEXT_DEFAULT_CODES[field] + "_RAW_MATCH",
+                checker.TEXT_DEFAULT_CODES[unbound] + "_NO_FROZEN_BASIS",
+                "FORMAT_AND_RENDER_REVIEW",
+            } <= set(checked.manual_check_codes)
     with connection() as c:
         append_decision(
             c,

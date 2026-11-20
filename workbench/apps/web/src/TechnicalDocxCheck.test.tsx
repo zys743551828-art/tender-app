@@ -238,3 +238,95 @@ it("reports a raw default typography mismatch without claiming per-paragraph or 
   ).toBeInTheDocument();
   expect(within(status).queryByText(/未发现问题/)).not.toBeInTheDocument();
 });
+
+it("distinguishes a checked default font from an unbound paragraph setting, including the internal note", async () => {
+  mock({
+    ...response,
+    manual_check_codes: [
+      ...response.manual_check_codes,
+      "DOCX_DEFAULT_FONT_RAW_MATCH",
+      "DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS",
+    ],
+  });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const fieldList = await screen.findByRole("list", {
+    name: "Word 默认文字样式逐字段核对",
+  });
+  const [font, paragraph] = within(fieldList).getAllByRole("listitem");
+  expect(font).toHaveTextContent(/默认字号.*原始声明与已确认冻结字段一致/);
+  expect(paragraph).toHaveTextContent(
+    /默认段后距.*缺少已确认冻结依据.*未作对照/,
+  );
+  expect(
+    within(screen.getByRole("status")).getByText(/打开 Word 核对实际排版/),
+  ).toBeInTheDocument();
+  await user.click(screen.getByText("内部核查摘要（单独留存）"));
+  const notes = screen.getByLabelText(
+    "本次 Word 内部核查摘要",
+  ) as HTMLTextAreaElement;
+  expect(notes.value).toMatch(/默认段后距：缺少已确认冻结依据/);
+  expect(notes.value).toContain("DOCX_DEFAULT_FONT_RAW_MATCH");
+  expect(notes.value).not.toContain(scope.suggestedFilename);
+});
+
+it("assigns mismatch and inspection uncertainty to their own fields without claiming machine-clean", async () => {
+  mock({
+    ...response,
+    blocking_codes: [
+      "DOCX_DEFAULT_FONT_RAW_MISMATCH",
+      "DOCX_DEFAULT_PARAGRAPH_AFTER_UNINSPECTABLE",
+      "DOCX_TEXT_DEFAULTS_MISMATCH",
+      "DOCX_TEXT_DEFAULTS_UNINSPECTABLE",
+    ],
+  });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const fieldList = await screen.findByRole("list", {
+    name: "Word 默认文字样式逐字段核对",
+  });
+  const [font, paragraph] = within(fieldList).getAllByRole("listitem");
+  expect(font).toHaveTextContent(/默认字号.*不一致/);
+  expect(paragraph).toHaveTextContent(/默认段后距.*无法可靠核对/);
+  expect(
+    screen.queryByText(/本次机器检查.*未发现问题/),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(/默认字号或段后间距不符合/),
+  ).not.toBeInTheDocument();
+});
+
+it.each([
+  { blocking: [], manual: ["DOCX_DEFAULT_FONT_RAW_MATCH"] },
+  {
+    blocking: ["DOCX_DEFAULT_FONT_RAW_MATCH"],
+    manual: ["DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS"],
+  },
+  {
+    blocking: ["DOCX_TEXT_DEFAULTS_MISMATCH"],
+    manual: [
+      "DOCX_DEFAULT_FONT_RAW_MATCH",
+      "DOCX_DEFAULT_PARAGRAPH_AFTER_RAW_MATCH",
+    ],
+  },
+  {
+    blocking: ["DOCX_DEFAULT_FONT_RAW_MISMATCH", "DOCX_TEXT_DEFAULTS_MISMATCH"],
+    manual: [
+      "DOCX_DEFAULT_FONT_RAW_MATCH",
+      "DOCX_DEFAULT_PARAGRAPH_AFTER_RAW_MATCH",
+    ],
+  },
+])(
+  "refuses missing, misplaced or contradictory field observations",
+  async ({ blocking, manual }) => {
+    mock({
+      ...response,
+      blocking_codes: blocking,
+      manual_check_codes: [...response.manual_check_codes, ...manual],
+    });
+    const user = await open();
+    await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+    expect(await screen.findByText(/固定快照不一致/)).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  },
+);

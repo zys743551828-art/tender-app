@@ -289,10 +289,14 @@ def test_snapshot_bound_text_defaults_compared_to_exact_built_word_and_no_raw_va
     assert same.json()["blocking_codes"] == ["PROHIBITED_NAME_CONTENT"]
     assert "FORMAT_AND_RENDER_REVIEW" in same.json()["manual_check_codes"]
     assert "DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS" not in same.json()["manual_check_codes"]
+    assert {"DOCX_DEFAULT_FONT_RAW_MATCH", "DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS"} <= set(
+        same.json()["manual_check_codes"]
+    )
     ports.snapshot = margin_snapshot(("font_size_halfpoints", 24))
     difference = client.post(URL, json=BODY)
     assert difference.status_code == 200, difference.text
     assert difference.json()["blocking_codes"] == [
+        "DOCX_DEFAULT_FONT_RAW_MISMATCH",
         "DOCX_TEXT_DEFAULTS_MISMATCH",
         "PROHIBITED_NAME_CONTENT",
     ]

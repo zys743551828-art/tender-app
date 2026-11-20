@@ -9,6 +9,7 @@ import warnings
 import zipfile
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+from typing import Literal
 from uuid import UUID
 from xml.etree.ElementTree import Element  # nosec B405
 
@@ -53,7 +54,12 @@ TEXT_DEFAULT_FIELDS = {
 TEXT_DEFAULTS_MISMATCH = "DOCX_TEXT_DEFAULTS_MISMATCH"
 TEXT_DEFAULTS_UNINSPECTABLE = "DOCX_TEXT_DEFAULTS_UNINSPECTABLE"
 TEXT_DEFAULTS_NO_BASIS = "DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS"
-TEXT_DEFAULTS_POLICY = "active-canonical-styles-doc-defaults/1"
+TEXT_DEFAULTS_POLICY = "active-canonical-styles-doc-defaults/2"
+TEXT_DEFAULT_CODES = {
+    "font_size_halfpoints": "DOCX_DEFAULT_FONT",
+    "paragraph_after_twips": "DOCX_DEFAULT_PARAGRAPH_AFTER",
+}
+TextDefaultState = Literal["RAW_MATCH", "RAW_MISMATCH", "NO_FROZEN_BASIS", "UNINSPECTABLE"]
 _OFFICE_REL = {
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
     "http://purl.oclc.org/ooxml/officeDocument/relationships",
@@ -88,6 +94,8 @@ class FrozenTextDefaults:
     expected: tuple[tuple[str, int], ...] = ()
     malformed_basis: bool = False
     basis_digest: str | None = None
+    malformed_fields: tuple[str, ...] = ()
+    partial_basis_digests: tuple[tuple[str, str], ...] = ()
 
 
 def _digest(value: object) -> bool:
@@ -207,7 +215,20 @@ def frozen_page_margins(snapshot: Mapping[str, object]) -> FrozenPageMargins:
 
 def frozen_text_defaults(snapshot: Mapping[str, object]) -> FrozenTextDefaults:
     """Only sourced, human-acknowledged raw default fields, never template fallback."""
-    return FrozenTextDefaults(*_frozen_numeric_fields(snapshot, TEXT_DEFAULT_FIELDS))
+    expected, malformed, basis = _frozen_numeric_fields(snapshot, TEXT_DEFAULT_FIELDS)
+    invalid: tuple[str, ...] = ()
+    partial_basis: tuple[tuple[str, str], ...] = ()
+    if malformed:
+        # A malformed binding neither supplies an expected value nor erases a
+        # separately verified field. Malformed whole-snapshot metadata affects both.
+        fields = {
+            name: _frozen_numeric_fields(snapshot, {name: name}) for name in TEXT_DEFAULT_FIELDS
+        }
+        invalid = tuple(name for name, (_, bad, _) in fields.items() if bad)
+        partial_basis = tuple(
+            (name, digest) for name, (_, bad, digest) in fields.items() if not bad and digest
+        )
+    return FrozenTextDefaults(expected, malformed, basis, invalid, partial_basis)
 
 
 @dataclass(frozen=True)
@@ -350,8 +371,9 @@ def _unique_path(node: Element, ns: str, *parts: str) -> Element | None:
 
 
 def _inspect_text_defaults(
-    archive: zipfile.ZipFile, expected: tuple[tuple[str, int], ...], blocking: set[str]
-) -> None:
+    archive: zipfile.ZipFile, expected: tuple[tuple[str, int], ...]
+) -> dict[str, TextDefaultState]:
+    values: dict[str, TextDefaultState] = {field: "UNINSPECTABLE" for field, _ in expected}
     # The writer's canonical stylesheet must be demonstrably active. Do not
     # use an orphan styles.xml or follow unknown alternate/compatibility parts.
     try:
@@ -359,8 +381,7 @@ def _inspect_text_defaults(
         types = inspection._xml(archive.read("[Content_Types].xml"))
         root = inspection._xml(archive.read("word/styles.xml"))
     except KeyError:
-        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
-        return
+        return values
     styles_types = [
         part.get("ContentType")
         for part in types.findall(f"{{{inspection.CONTENT_NS}}}Override")
@@ -380,13 +401,11 @@ def _inspect_text_defaults(
         or style_links[0].get("TargetMode", "Internal") != "Internal"
         or root.tag not in {f"{{{namespace}}}styles" for namespace in inspection.WORD_NS}
     ):
-        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
-        return
+        return values
     ns = root.tag.rsplit("}", 1)[0] + "}"
     defaults = _unique_path(root, ns, "docDefaults")
     if defaults is None or any(_local(node.tag) == "AlternateContent" for node in root.iter()):
-        blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
-        return
+        return values
     for field, value in expected:
         if field == "font_size_halfpoints":
             node = _unique_path(defaults, ns, "rPrDefault", "rPr", "sz")
@@ -403,10 +422,32 @@ def _inspect_text_defaults(
                 raw = node.get(ns + "after", "")
         else:
             raw = ""
-        if _UNSIGNED.fullmatch(raw) is None:
-            blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
-        elif int(raw) != value:
-            blocking.add(TEXT_DEFAULTS_MISMATCH)
+        if _UNSIGNED.fullmatch(raw) is not None:
+            values[field] = "RAW_MATCH" if int(raw) == value else "RAW_MISMATCH"
+    return values
+
+
+def _initial_text_defaults(
+    frozen: FrozenTextDefaults,
+) -> tuple[dict[str, TextDefaultState], tuple[tuple[str, int], ...]]:
+    # A field without a binding is never checked against template defaults.
+    expected = dict(frozen.expected)
+    invalid = (
+        set(frozen.malformed_fields) or set(TEXT_DEFAULT_FIELDS)
+        if frozen.malformed_basis
+        else set()
+    )
+    if len(expected) != len(frozen.expected) or not set(expected) <= TEXT_DEFAULT_FIELDS.keys():
+        invalid = set(TEXT_DEFAULT_FIELDS)
+    readings: dict[str, TextDefaultState] = {
+        field: "UNINSPECTABLE" if field in expected or field in invalid else "NO_FROZEN_BASIS"
+        for field in TEXT_DEFAULT_FIELDS
+    }
+    return readings, tuple(
+        (field, value)
+        for field, value in expected.items()
+        if field not in invalid and field in readings
+    )
 
 
 def inspect_candidate_docx(
@@ -436,6 +477,10 @@ def inspect_candidate_docx(
             blocking.add(MARGIN_UNINSPECTABLE)
         elif not page_margins.expected_twips:
             manual.add(MARGIN_NO_BASIS)
+    default_states, comparable = (
+        _initial_text_defaults(text_defaults) if text_defaults is not None else ({}, ())
+    )
+    defaults_examined = False
     if text_defaults is not None:
         if text_defaults.malformed_basis:
             blocking.add(TEXT_DEFAULTS_UNINSPECTABLE)
@@ -446,6 +491,19 @@ def inspect_candidate_docx(
         return pattern is not None and bool(pattern.search(_normalize(value)))
 
     def result() -> DocxCandidateCheck:
+        blocked, human = blocking.copy(), manual.copy()
+        for field, state in default_states.items():
+            code = TEXT_DEFAULT_CODES[field] + "_" + state
+            if state == "RAW_MISMATCH":
+                blocked.update((code, TEXT_DEFAULTS_MISMATCH))
+            elif state == "UNINSPECTABLE":
+                blocked.add(code)
+                if defaults_examined:
+                    blocked.add(TEXT_DEFAULTS_UNINSPECTABLE)
+            else:
+                # The unchanged v1 wire has no observations bucket. Neither
+                # a raw equality nor a missing binding grants approval.
+                human.add(code)
         return DocxCandidateCheck(
             sha(data),
             sha(
@@ -468,14 +526,16 @@ def inspect_candidate_docx(
                         "text_defaults_policy": TEXT_DEFAULTS_POLICY,
                         "expected_text_defaults": text_defaults.expected,
                         "malformed_text_defaults_basis": text_defaults.malformed_basis,
+                        "malformed_text_defaults_fields": text_defaults.malformed_fields,
+                        "partial_text_defaults_basis_sha256": text_defaults.partial_basis_digests,
                         "frozen_text_defaults_basis_sha256": text_defaults.basis_digest,
                     }
                     if text_defaults is not None
                     else {}
                 )
             ),
-            tuple(sorted(blocking)),
-            tuple(sorted(manual)),
+            tuple(sorted(blocked)),
+            tuple(sorted(human)),
         )
 
     try:
@@ -499,8 +559,9 @@ def inspect_candidate_docx(
     blocking.update(flags - {"FIELD_EVALUATION_UNSUPPORTED"})
     found_field = False
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
-        if text_defaults is not None and text_defaults.expected:
-            _inspect_text_defaults(archive, text_defaults.expected, blocking)
+        if comparable:
+            defaults_examined = True
+            default_states.update(_inspect_text_defaults(archive, comparable))
         if archive.comment:
             blocking.add("ARCHIVE_METADATA")
         for item in archive.infolist():

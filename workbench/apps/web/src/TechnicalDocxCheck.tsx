@@ -65,6 +65,79 @@ function message(code: string) {
       "）"
   );
 }
+const defaultFields = [
+  ["DOCX_DEFAULT_FONT", "默认字号"],
+  ["DOCX_DEFAULT_PARAGRAPH_AFTER", "默认段后距"],
+] as const;
+const defaultText = {
+  RAW_MATCH: "原始声明与已确认冻结字段一致；实际显示仍须人工核对。",
+  RAW_MISMATCH: "原始声明与已确认冻结字段不一致；请核对后修改或重建。",
+  NO_FROZEN_BASIS: "缺少已确认冻结依据，未作对照；模板默认值不能代替招标要求。",
+  UNINSPECTABLE: "冻结依据或 Word 原始声明无法可靠核对，须转人工。",
+} as const;
+type DefaultState = keyof typeof defaultText;
+type DefaultFinding = { label: string; state: DefaultState; code: string };
+const legacyDefaultCodes = new Set([
+  "DOCX_TEXT_DEFAULTS_MISMATCH",
+  "DOCX_TEXT_DEFAULTS_UNINSPECTABLE",
+  "DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS",
+]);
+
+function readDefaultFindings(
+  blocking: string[],
+  manual: string[],
+): DefaultFinding[] | null {
+  const rows: DefaultFinding[] = [];
+  for (const [prefix, label] of defaultFields) {
+    const blocked = blocking.filter((code) => code.startsWith(prefix + "_"));
+    const human = manual.filter((code) => code.startsWith(prefix + "_"));
+    if (!blocked.length && !human.length) continue;
+    if (blocked.length + human.length !== 1) return null;
+    const code = blocked[0] ?? human[0];
+    const state = (Object.keys(defaultText) as DefaultState[]).find(
+      (key) => code === prefix + "_" + key,
+    );
+    if (
+      !state ||
+      (state === "RAW_MISMATCH" || state === "UNINSPECTABLE") !==
+        (blocked.length === 1)
+    )
+      return null;
+    rows.push({ label, state, code });
+  }
+  if (!rows.length) return rows; // Read older advisories with their original codes.
+  if (
+    rows.length !== defaultFields.length ||
+    blocking.includes("DOCX_TEXT_DEFAULTS_MISMATCH") !==
+      rows.some((row) => row.state === "RAW_MISMATCH") ||
+    (blocking.includes("DOCX_TEXT_DEFAULTS_UNINSPECTABLE") &&
+      !rows.some((row) => row.state === "UNINSPECTABLE")) ||
+    manual.includes("DOCX_TEXT_DEFAULTS_NO_FROZEN_BASIS") !==
+      rows.every((row) => row.state === "NO_FROZEN_BASIS")
+  )
+    return null;
+  return rows;
+}
+
+function groupedFindings(report: Check) {
+  const defaults =
+    readDefaultFindings(report.blocking_codes, report.manual_check_codes) ?? [];
+  function general(codes: string[]) {
+    return defaults.length
+      ? codes.filter(
+          (code) =>
+            !legacyDefaultCodes.has(code) &&
+            !defaults.some((row) => row.code === code),
+        )
+      : codes;
+  }
+  return {
+    defaults,
+    machine: general(report.blocking_codes),
+    manual: general(report.manual_check_codes),
+  };
+}
+
 const checkKeys = [
   "protocol",
   "bid_id",
@@ -101,7 +174,8 @@ function verified(value: unknown, scope: Scope): value is Check {
     validCodes(value.blocking_codes) &&
     validCodes(value.manual_check_codes) &&
     value.manual_check_codes.includes("CONTENT_AND_PROJECT_RULE_REVIEW") &&
-    value.manual_check_codes.includes("FORMAT_AND_RENDER_REVIEW")
+    value.manual_check_codes.includes("FORMAT_AND_RENDER_REVIEW") &&
+    readDefaultFindings(value.blocking_codes, value.manual_check_codes) !== null
   );
 }
 
@@ -117,6 +191,7 @@ function InternalReviewNotes({
   );
   const finding = (code: string) =>
     "• " + (known[code] ? message(code) + "（" + code + "）" : message(code));
+  const { defaults, machine, manual } = groupedFindings(result);
   const lines = [
     "技术标 Word 内部核查摘要",
     "仅供工作台内部复核。这是固定历史文件的辅助检查，不是签收、独立审批、提交许可或版面合规证明。",
@@ -132,12 +207,26 @@ function InternalReviewNotes({
       : "本次未提供项目禁用标识，未做该项比对。",
     "",
     "机器可核项：",
-    ...(result.blocking_codes.length
-      ? result.blocking_codes.map(finding)
-      : ["可核范围内未发现需处理项；仍须完成下列人工核对。"]),
+    ...(machine.length
+      ? machine.map(finding)
+      : [
+          result.blocking_codes.length
+            ? "默认文字样式的需处理项见下；其他可核项未见问题。"
+            : "可核范围内未发现需处理项；仍须完成下列人工核对。",
+        ]),
+    ...(defaults.length
+      ? [
+          "",
+          "Word 默认文字样式（只对照原始声明，不判断排版）：",
+          ...defaults.map(
+            ({ label, state, code }) =>
+              `• ${label}：${defaultText[state]}（${code}）`,
+          ),
+        ]
+      : []),
     "",
     "待人工核对（请另行记录结果）：",
-    ...result.manual_check_codes.map(finding),
+    ...manual.map(finding),
   ];
   const summary = lines.join("\n");
   async function copy() {
@@ -171,6 +260,47 @@ function InternalReviewNotes({
         <p role="status">当前不能访问剪贴板，可手动选中上方摘要。</p>
       )}
     </details>
+  );
+}
+
+function Findings({ report }: { report: Check }) {
+  const { defaults, machine, manual } = groupedFindings(report);
+  return (
+    <div role="status">
+      <p>
+        {report.blocking_codes.length
+          ? "发现需处理项。修改或重新构建后请再检查。"
+          : "这次机器检查在可核范围内未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
+      </p>
+      {machine.length > 0 && (
+        <ul>
+          {machine.map((code) => (
+            <li key={code}>{message(code)}</li>
+          ))}
+        </ul>
+      )}
+      {defaults.length > 0 && (
+        <>
+          <p>Word 默认文字样式（只对照原始声明，不判断排版）：</p>
+          <ul aria-label="Word 默认文字样式逐字段核对">
+            {defaults.map(({ label, state, code }) => (
+              <li key={code}>
+                <strong>{label}</strong>：{defaultText[state]}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p>仍需人工核对：</p>
+      <ul>
+        {manual.map((code) => (
+          <li key={code}>{message(code)}</li>
+        ))}
+      </ul>
+      <p className="small-note identity-ref">
+        受检文件 SHA-256：{report.artifact_sha256}
+      </p>
+    </div>
   );
 }
 
@@ -311,29 +441,7 @@ function ScopedTechnicalDocxCheck({
       <ErrorNotice error={error} />
       {report && lastCheck && (
         <>
-          <div role="status">
-            <p>
-              {report.blocking_codes.length
-                ? "发现需处理项。修改或重新构建后请再检查。"
-                : "这次机器检查在可核范围内未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
-            </p>
-            {report.blocking_codes.length > 0 && (
-              <ul>
-                {report.blocking_codes.map((code) => (
-                  <li key={code}>{message(code)}</li>
-                ))}
-              </ul>
-            )}
-            <p>仍需人工核对：</p>
-            <ul>
-              {report.manual_check_codes.map((code) => (
-                <li key={code}>{message(code)}</li>
-              ))}
-            </ul>
-            <p className="small-note identity-ref">
-              受检文件 SHA-256：{report.artifact_sha256}
-            </p>
-          </div>
+          <Findings report={report} />
           <InternalReviewNotes
             result={report}
             submittedIdentifierCount={lastCheck.submittedIdentifierCount}

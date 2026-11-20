@@ -393,7 +393,11 @@ def test_text_defaults_are_separate_scoped_policy_and_unbound_never_uses_enterpr
 
     data = text_style_fixture()
     unbound = check(data, defaults=FrozenTextDefaults())
-    assert TEXT_DEFAULTS_NO_BASIS in unbound.manual_check_codes
+    assert {
+        TEXT_DEFAULTS_NO_BASIS,
+        "DOCX_DEFAULT_FONT_NO_FROZEN_BASIS",
+        "DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS",
+    } <= set(unbound.manual_check_codes)
     assert not unbound.blocking_codes
     exact = check(data, defaults=defaults)
     assert exact.artifact_sha256 == unbound.artifact_sha256 == sha(data)
@@ -401,32 +405,88 @@ def test_text_defaults_are_separate_scoped_policy_and_unbound_never_uses_enterpr
     assert exact.blocking_codes == ()
     assert "FORMAT_AND_RENDER_REVIEW" in exact.manual_check_codes
     assert TEXT_DEFAULTS_NO_BASIS not in exact.manual_check_codes
+    assert {"DOCX_DEFAULT_FONT_RAW_MATCH", "DOCX_DEFAULT_PARAGRAPH_AFTER_RAW_MATCH"} <= set(
+        exact.manual_check_codes
+    )
 
     snapshot["authoring_structure"]["metadata"]["format_binding_manifest"].pop()
     partial = frozen_text_defaults(snapshot)
     assert partial.malformed_basis and not partial.basis_digest
-    assert TEXT_DEFAULTS_UNINSPECTABLE in check(data, defaults=partial).blocking_codes
+    assert partial.malformed_fields == ("paragraph_after_twips",)
+    assert dict(partial.partial_basis_digests).keys() == {"font_size_halfpoints"}
+    observed = check(data, defaults=partial)
+    assert set(observed.blocking_codes) == {
+        TEXT_DEFAULTS_UNINSPECTABLE,
+        "DOCX_DEFAULT_PARAGRAPH_AFTER_UNINSPECTABLE",
+    }
+    assert "DOCX_DEFAULT_FONT_RAW_MATCH" in observed.manual_check_codes
+    # A second confirmed font origin with the same raw size still changes the policy.
+    snapshot["authoring_structure"]["metadata"]["format_binding_manifest"][0]["basis"][
+        "rule_semantic_digest"
+    ] = "c" * 64
+    changed = check(data, defaults=frozen_text_defaults(snapshot))
+    assert changed.policy_sha256 != observed.policy_sha256
+    assert changed.artifact_sha256 == observed.artifact_sha256
 
 
 @pytest.mark.parametrize(
-    ("size", "spacing", "code"),
+    ("size", "spacing", "font_state", "after_state"),
     [
-        ("22", 'w:after="180"', TEXT_DEFAULTS_MISMATCH),
-        ("24", 'w:after="100"', TEXT_DEFAULTS_MISMATCH),
-        ("12pt", 'w:after="180"', TEXT_DEFAULTS_UNINSPECTABLE),
-        ("24", 'w:after="3mm"', TEXT_DEFAULTS_UNINSPECTABLE),
-        ("24", 'w:after="180" w:afterAutospacing="1"', TEXT_DEFAULTS_UNINSPECTABLE),
-        ("24", 'w:after="180" w:afterLines="100"', TEXT_DEFAULTS_UNINSPECTABLE),
-        ("24", 'w:after="180" w:afterAutospacing="0"', None),
+        ("22", 'w:after="180"', "RAW_MISMATCH", "RAW_MATCH"),
+        ("24", 'w:after="100"', "RAW_MATCH", "RAW_MISMATCH"),
+        ("20", 'w:after="760"', "RAW_MISMATCH", "RAW_MISMATCH"),
+        ("12pt", 'w:after="180"', "UNINSPECTABLE", "RAW_MATCH"),
+        ("24", 'w:after="3mm"', "RAW_MATCH", "UNINSPECTABLE"),
+        ("24", 'w:after="180" w:afterAutospacing="1"', "RAW_MATCH", "UNINSPECTABLE"),
+        ("24", 'w:after="180" w:afterLines="100"', "RAW_MATCH", "UNINSPECTABLE"),
+        ("24", 'w:after="180" w:afterAutospacing="0"', "RAW_MATCH", "RAW_MATCH"),
     ],
 )
-def test_raw_default_scalars_are_not_per_paragraph_or_rendered_compliance(size, spacing, code):
+def test_raw_default_scalars_are_not_per_paragraph_or_rendered_compliance(
+    size, spacing, font_state, after_state
+):
     defaults = frozen_text_defaults(
         margin_snapshot(("font_size_halfpoints", 24), ("paragraph_after_twips", 180))
     )
     checked = check(text_style_fixture(size=size, spacing=spacing), defaults=defaults)
-    assert checked.blocking_codes == ((code,) if code else ())
+    fields = {"DOCX_DEFAULT_FONT": font_state, "DOCX_DEFAULT_PARAGRAPH_AFTER": after_state}
+    expected_blocked = {
+        prefix + "_" + state for prefix, state in fields.items() if state != "RAW_MATCH"
+    }
+    if "RAW_MISMATCH" in fields.values():
+        expected_blocked.add(TEXT_DEFAULTS_MISMATCH)
+    if "UNINSPECTABLE" in fields.values():
+        expected_blocked.add(TEXT_DEFAULTS_UNINSPECTABLE)
+    assert set(checked.blocking_codes) == expected_blocked
+    assert {
+        prefix + "_" + state for prefix, state in fields.items() if state == "RAW_MATCH"
+    } <= set(checked.manual_check_codes)
     assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+
+
+def test_partially_bound_default_does_not_compare_observed_after_to_an_unbound_rule():
+    word = text_style_fixture(size="24", spacing='w:after="120"')
+    snapshot = margin_snapshot(("font_size_halfpoints", 24))
+    # Simulate a different after-value in the effective template. Without an
+    # explicit frozen confirmed binding it remains a separate human check.
+    snapshot["authoring_structure"]["metadata"]["effective_style"]["paragraph_after_twips"] = 240
+    checked = check(word, defaults=frozen_text_defaults(snapshot))
+    assert not checked.blocking_codes
+    assert {"DOCX_DEFAULT_FONT_RAW_MATCH", "DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS"} <= set(
+        checked.manual_check_codes
+    )
+
+
+def test_unreadable_package_does_not_return_fake_default_matches():
+    checked = check(
+        b"not a Word package",
+        defaults=frozen_text_defaults(margin_snapshot(("font_size_halfpoints", 24))),
+    )
+    assert {"CANDIDATE_DOCX_INVALID", "DOCX_DEFAULT_FONT_UNINSPECTABLE"} <= set(
+        checked.blocking_codes
+    )
+    assert "DOCX_DEFAULT_PARAGRAPH_AFTER_NO_FROZEN_BASIS" in checked.manual_check_codes
+    assert all(not code.endswith("RAW_MATCH") for code in checked.manual_check_codes)
 
 
 @pytest.mark.parametrize("mode", ["duplicate_value", "orphan", "alternate", "wrong_type"])
