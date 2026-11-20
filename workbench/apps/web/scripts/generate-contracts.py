@@ -121,6 +121,7 @@ wanted = [
     "PackageRuleCorrectionEvidencePage",
     "PackageRuleCorrectionEvidenceDetail",
     "TechnicalOutlineRequest",
+    "TechnicalChapterTemplatePage",
     "AuthoringGenerationBatchCreateRequest",
     "AuthoringGenerationBatchRetryRequest",
     "AuthoringGenerationBatchResolveRequest",

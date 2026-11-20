@@ -3915,6 +3915,18 @@ export type TechnicalOutlineRequest = {
   chapter_keys: ("overview" | "method" | "schedule" | "quality" | "safety")[];
 };
 
+export type TechnicalChapterTemplatePage = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  observed_snapshot_id: string;
+  observed_draft_revision: number;
+  observed_section_revision: number;
+  available: boolean;
+  has_more: boolean;
+  items: TechnicalChapterTemplateItem[];
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -10001,6 +10013,21 @@ export type OutlineBasis = {
   inventory: OutlineInventoryReference;
 };
 
+export type TechnicalChapterTemplateItem = {
+  template_id: string;
+  template_version_id: string;
+  template_revision: number;
+  template_digest: string;
+  name: string;
+  paused: boolean;
+  input_id: string;
+  input_digest: string;
+  input_snapshot_id: string;
+  input_draft_revision: number;
+  input_section_revision: number;
+  bound_to_observed_chapter: boolean;
+};
+
 export type AuthoringGenerationJson =
   | null
   | boolean
@@ -12871,6 +12898,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/drafts",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}",
   "PATCH /api/v1/bids/{bid_id}/drafts/{draft_id}",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates",
   "GET /api/v1/sections/{section_id}",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/sections",
   "GET /api/v1/bids/{bid_id}/draft-snapshots/{snapshot_id}",

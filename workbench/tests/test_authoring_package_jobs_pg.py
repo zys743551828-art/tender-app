@@ -26,6 +26,7 @@ from authoring_package_job_fixtures import (
     queued,
     validate_wire,
 )
+from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from test_authoring_package_inputs_pg import add_new_parse, mutate_authority
@@ -1015,3 +1016,89 @@ def test_current_fee_quote_guards_native_reservation_without_new_effect_on_repla
     replayed = send(str(uuid4()), 0, key=key)
     assert replayed.status_code == 202 and replayed.json() == accepted.json()
     assert w["calls"] == []
+
+
+def test_exact_chapter_template_directory_is_read_only_and_labels_old_draft(case):
+    w = case
+    base = f"/api/v1/bids/{w['bid']}"
+    target = w["input_body"]["target_section"]
+    draft = base + "/drafts/" + target["draft_id"]
+    path = f"{draft}/sections/{target['section_id']}/technical-authoring-templates"
+    client = w["client"]
+    bid = client.get(base)
+    generic = client.post(
+        base + "/task-definitions",
+        json={
+            "name": "同章普通合成模板",
+            "task_kind": "chapter_suggestion",
+            "instructions": "仅验证普通模板不会被误列入固定输入目录",
+            "section_id": target["section_id"],
+        },
+        headers=headers(w, etag=bid.headers["etag"]),
+    )
+    assert generic.status_code == 201, generic.text
+
+    def counts():
+        with connection() as c:
+            return c.execute(
+                """SELECT
+                (SELECT count(*) FROM design.commands) AS commands,
+                (SELECT count(*) FROM design.audit_entries) AS audits,
+                (SELECT count(*) FROM design.task_runs) AS runs,
+                (SELECT count(*) FROM design.operations) AS operations,
+                (SELECT count(*) FROM design.model_calls) AS model_calls,
+                (SELECT count(*) FROM design.authoring_package_inputs) AS inputs"""
+            ).fetchone()
+
+    before = counts()
+    response = client.get(path)
+    assert response.status_code == 200, response.text
+    page = response.json()
+    assert {value.strip() for value in response.headers["cache-control"].split(",")} == {
+        "private",
+        "no-store",
+    }
+    assert page["available"] and not page["has_more"]
+    assert page["bid_id"] == w["bid"] and page["draft_id"] == target["draft_id"]
+    assert page["section_id"] == target["section_id"]
+    assert page["observed_snapshot_id"] == target["snapshot_id"]
+    [item] = page["items"]
+    template = w["template"]
+    assert item == {
+        "template_id": template["id"],
+        "template_version_id": template["version_id"],
+        "template_revision": template["revision"],
+        "template_digest": template["digest"],
+        "name": template["configuration"]["name"],
+        "paused": False,
+        "input_id": w["fixed"]["manifest"]["id"],
+        "input_digest": w["fixed"]["digest"],
+        "input_snapshot_id": target["snapshot_id"],
+        "input_draft_revision": target["base_draft_revision"],
+        "input_section_revision": target["base_section_revision"],
+        "bound_to_observed_chapter": True,
+    }
+    with TestClient(client.app, base_url=str(client.base_url)) as anonymous:
+        assert anonymous.get(path).status_code == 401
+    assert client.get(path, params={"include": "instructions"}).status_code == 422
+    assert client.get(path.replace(target["section_id"], str(uuid4()))).status_code == 404
+    assert client.get(path.replace(w["bid"], str(uuid4()))).status_code == 404
+    assert counts() == before and w["calls"] == []
+
+    added = client.post(
+        draft + "/sections",
+        json={"title": "合成后续章节"},
+        headers=headers(w, etag=client.get(draft).headers["etag"]),
+    )
+    assert added.status_code == 201, added.text
+    before = counts()
+    shifted = client.get(path)
+    assert shifted.status_code == 200, shifted.text
+    later = shifted.json()
+    assert later["observed_draft_revision"] == page["observed_draft_revision"] + 1
+    assert later["observed_snapshot_id"] != page["observed_snapshot_id"]
+    assert later["items"] == [{**item, "bound_to_observed_chapter": False}]
+    sibling = client.get(path.replace(target["section_id"], added.json()["section_id"]))
+    assert sibling.status_code == 200 and sibling.json()["items"] == []
+    assert sibling.json()["available"] is True
+    assert counts() == before and w["calls"] == []

@@ -10,6 +10,7 @@ import {
 } from "./packageAuthoringInputProtocol";
 import { executionId } from "./executionInputValidation";
 import { useResource } from "./useResource";
+import { TechnicalChapterTemplates } from "./TechnicalChapterTemplates";
 
 const PackageAuthoringTemplateEditor = lazy(() =>
   import("./PackageAuthoringTemplateEditor").then(
@@ -185,6 +186,13 @@ export function TechnicalBidChapter({
           )}
         </div>
       )}
+      <TechnicalChapterTemplates
+        key={JSON.stringify([memberId, bidId, draft.id, sectionId])}
+        bidId={bidId}
+        draft={draft}
+        sectionId={sectionId}
+        navigationDisabled={disabled || preparing || showForm}
+      />
       {templateIds.length > 0 && (
         <div role="status">
           固定编写模板已保存，未运行。
