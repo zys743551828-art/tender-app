@@ -12,6 +12,7 @@ import { knowledgeStorageKey } from "./knowledgeStorage";
 import { setAuth } from "./api";
 import { jsonDigest } from "./editorSchema";
 import type {
+  AuthoringWorkContext,
   BidPackageStoredView,
   PackageAuthoringInputRequest,
 } from "./contracts";
@@ -28,6 +29,7 @@ function reply(body: unknown, status = 200) {
 function transport(
   mode: "ok" | "lost" | "wrong" = "ok",
   outlineHead: "current" | "superseded" = "current",
+  chapterHead: "current" | "superseded" = "current",
 ) {
   const writes: {
     path: string;
@@ -36,6 +38,7 @@ function transport(
   }[] = [];
   const unexpected: string[] = [];
   const outlineHeadReads: string[] = [];
+  const reads: string[] = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: string, init: RequestInit = {}) => {
@@ -59,6 +62,7 @@ function transport(
         value.digest = await jsonDigest(value.manifest);
         return reply(value, 201);
       }
+      reads.push(url.pathname + url.search);
       for (const name of ["target", "authority"]) {
         const exact = f.responses.get(name)!;
         if (exact.path.split("/revisions/")[0] !== url.pathname) continue;
@@ -78,6 +82,17 @@ function transport(
             ([key, value]) => url.searchParams.get(key) === String(value),
           ),
       );
+      if (row?.name === "snapshot" && chapterHead === "superseded") {
+        const old = structuredClone(f.snapshot);
+        old.current_observation.draft_head.status = "changed";
+        old.current_observation.draft_head.observed_digest = "a".repeat(64);
+        old.current_observation.draft_head.reason = "EXACT_VALUE_CHANGED";
+        const observed: Partial<AuthoringWorkContext> = { ...old };
+        delete observed.observed_at;
+        delete observed.observation_digest;
+        old.observation_digest = await jsonDigest(observed);
+        return reply(old);
+      }
       if (row) return reply(row.body, row.status);
       unexpected.push(url.pathname + url.search);
       return reply(
@@ -86,7 +101,7 @@ function transport(
       );
     }),
   );
-  return { writes, unexpected, outlineHeadReads };
+  return { writes, unexpected, outlineHeadReads, reads };
 }
 beforeEach(() => {
   sessionStorage.clear();
@@ -117,16 +132,29 @@ function rememberOutline() {
     inventory: { id: inventory.id, digest: inventory.digest },
   });
 }
-async function chooseNodeAndFacts(user: ReturnType<typeof userEvent.setup>) {
-  await waitFor(() => expect(screen.getByLabelText("正文快照")).toBeEnabled());
-  await user.selectOptions(
-    screen.getByLabelText("正文快照"),
-    f.request.target_section.snapshot_id,
-  );
-  await user.selectOptions(
-    await screen.findByLabelText("快照中的章节"),
-    f.request.target_section.section_id,
-  );
+async function chooseNodeAndFacts(
+  user: ReturnType<typeof userEvent.setup>,
+  fixed = false,
+) {
+  if (fixed) {
+    const select = await screen.findByRole("button", {
+      name: "使用本章已保存版本",
+    });
+    await waitFor(() => expect(select).toBeEnabled());
+    await user.click(select);
+  } else {
+    await waitFor(() =>
+      expect(screen.getByLabelText("正文快照")).toBeEnabled(),
+    );
+    await user.selectOptions(
+      screen.getByLabelText("正文快照"),
+      f.request.target_section.snapshot_id,
+    );
+    await user.selectOptions(
+      await screen.findByLabelText("快照中的章节"),
+      f.request.target_section.section_id,
+    );
+  }
   await user.selectOptions(
     await screen.findByLabelText("稳定文字节点"),
     f.request.target_section.node_id,
@@ -298,11 +326,17 @@ it("brings in the exact checked outline refs only after a click, then requires m
   expect(await screen.findByLabelText("需求清单")).toHaveValue(
     f.request.package_context.inventory.id,
   );
-  expect(screen.getByLabelText("正文快照")).toHaveValue("");
+  expect(screen.queryByLabelText("正文快照")).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("快照中的章节")).not.toBeInTheDocument();
+  expect(calls.reads).toContain(f.responses.get("snapshot")!.path);
+  expect(
+    calls.reads.some((path) => path.includes("work-contexts/choices")),
+  ).toBe(false);
+  expect(calls.reads.some((path) => path.includes("/nodes"))).toBe(false);
   expect(screen.getByLabelText("事实集")).toHaveValue("");
   expect(save).toBeDisabled();
   expect(calls.writes).toEqual([]);
-  await chooseNodeAndFacts(user);
+  await chooseNodeAndFacts(user, true);
   await waitFor(() => expect(save).toBeEnabled());
   expect(calls.writes).toEqual([]);
   await user.click(save);
@@ -396,5 +430,33 @@ it("does not bring in a previously checked selection that was explicitly forgott
   await user.click(apply);
   expect(screen.getByText(/原会话选择已清除或更改/)).toBeInTheDocument();
   expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not choose, load nodes for, or save an exact snapshot whose draft head has advanced", async () => {
+  const calls = transport("ok", "current", "superseded");
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await screen.findByText(/已保存的草稿不是当前版本/);
+  expect(
+    screen.getByRole("button", { name: "使用本章已保存版本" }),
+  ).toBeDisabled();
+  expect(
+    screen.getByRole("button", { name: "重新核对本章保存版本" }),
+  ).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: "保存这份固定编写输入" }),
+  ).toBeDisabled();
+  expect(calls.reads).toContain(f.responses.get("snapshot")!.path);
+  expect(
+    calls.reads.some(
+      (path) =>
+        path.includes("work-contexts/choices") || path.includes("/nodes"),
+    ),
+  ).toBe(false);
   expect(calls.writes).toEqual([]);
 });

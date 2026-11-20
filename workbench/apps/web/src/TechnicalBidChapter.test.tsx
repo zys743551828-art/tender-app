@@ -126,3 +126,22 @@ it("rejects a stored input from another revision, chapter, or snapshot even in s
     }),
   ).toBe(false);
 });
+
+it("does not start any reads from a malformed saved chapter or snapshot identity", async () => {
+  const transport = protectTransport();
+  const user = userEvent.setup();
+  render(
+    <TechnicalBidChapter
+      {...props}
+      prepare={vi.fn().mockResolvedValue({
+        data: { ...draft, snapshot_id: "../../other-resource" },
+        etag: '"synthetic-draft"',
+      })}
+    />,
+  );
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  expect(await screen.findByText(/未核对本章已保存版本/)).toBeInTheDocument();
+  expect(transport).not.toHaveBeenCalled();
+});

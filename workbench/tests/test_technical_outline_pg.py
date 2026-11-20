@@ -6,6 +6,8 @@ from test_bid_package_api import world
 from test_bid_package_requirements_api import database, inventory, prepare_requirements, pytestmark
 from test_stable_lot_identity import api, headers, uid
 
+from packages.domain.review_identity import digest
+
 
 def preview_client(world):
     w = prepare_requirements(world, statement="施工工期与进度：检查合成要求")
@@ -109,7 +111,35 @@ def test_exact_outline_requires_live_basis_and_preserves_read_back_of_committed_
     if change == "after_commit":
         adopted = resolve("confirm")
         assert adopted.status_code == 200, adopted.text
-        assert adopted.json()["draft_revision"] == rev + 1
+        applied = adopted.json()
+        assert applied["draft_revision"] == rev + 1
+        snap_id = applied["snapshot_id"]
+        exact = client.get(paths + "/work-contexts/draft_snapshot/" + snap_id)
+        assert exact.status_code == 200, exact.text
+        context = exact.json()
+        assert context["selection"]["snapshot_digest"] == applied["snapshot_digest"]
+        assert context["selection_digest"] == digest(context["selection"])
+        assert context["current_observation"]["draft_head"]["status"] == "matched"
+        [section] = [row for row in context["document"]["sections"] if row["section_id"] == chapter]
+        nodes_path = (
+            f"{paths}/authoring/input-catalog/draft-snapshots/{snap_id}/sections/{chapter}/nodes"
+        )
+        params = {
+            "expected_snapshot_digest": applied["snapshot_digest"],
+            "expected_section_digest": section["digest"],
+        }
+        nodes = client.get(nodes_path, params=params)
+        assert nodes.status_code == 200, nodes.text
+        catalog = nodes.json()
+        assert catalog["target"]["section_revision_id"] == section["section_revision_id"]
+        assert catalog["target"]["base_draft_revision"] == rev + 1
+        assert catalog["blocking_reasons"] == []
+        [node] = catalog["nodes"]
+        assert node["node_type"] == "paragraph" and not node["text"]
+        assert node["node_id"] == new["content"][0]["attrs"]["id"]
+        assert node["before_node_digest"] == digest(new["content"][0])
+        wrong = client.get(nodes_path, params={**params, "expected_section_digest": "0" * 64})
+        assert wrong.status_code == 412 and wrong.json()["code"].endswith("SELECTION_CHANGED")
     if change == "source_withdrawn":
         w["database"]["owner"].execute(
             "UPDATE retrieval.source_heads SET status='withdrawn',revision=revision+1 WHERE source_id=%s",

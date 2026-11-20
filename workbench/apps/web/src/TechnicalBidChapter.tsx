@@ -4,7 +4,10 @@ import type { ApiResult } from "./api";
 import type { Bid, DraftView } from "./contracts";
 import { ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
-import type { FixedAuthoringChapter } from "./packageAuthoringInputProtocol";
+import {
+  authoringInteger,
+  type FixedAuthoringChapter,
+} from "./packageAuthoringInputProtocol";
 import { executionId } from "./executionInputValidation";
 import { useResource } from "./useResource";
 
@@ -72,7 +75,12 @@ export function TechnicalBidChapter({
         !head?.etag ||
         head.data.id !== draft.id ||
         head.data.bid_id !== bidId ||
-        !target
+        !executionId(head.data.id) ||
+        !executionId(head.data.snapshot_id) ||
+        !authoringInteger(head.data.revision) ||
+        !target ||
+        !executionId(target.id) ||
+        !authoringInteger(target.revision)
       )
         throw new Error("未核对本章已保存版本，不能建立编写模板。");
       setScope({

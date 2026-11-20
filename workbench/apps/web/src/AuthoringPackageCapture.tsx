@@ -7,6 +7,7 @@ import type {
 import { ErrorNotice } from "./components";
 import { exactKeys, recordObject } from "./executionInputValidation";
 import { historicalSame } from "./historicalImportProtocol";
+import { validateFixedAuthoringSnapshot } from "./fixedAuthoringSnapshot";
 import { knowledgeStorageKey, useKnowledgeInput } from "./knowledgeStorage";
 import { AuthoringInputSummary } from "./PackageAuthoringInput";
 import {
@@ -246,29 +247,54 @@ function CaptureWorkspace({
     [bidId],
   );
   const snapshots = useAuthoringCaptureDirectory(
-    `/bids/${bidId}/work-contexts/choices?kind=draft_snapshot&limit=20`,
+    targetChapter
+      ? null
+      : `/bids/${bidId}/work-contexts/choices?kind=draft_snapshot&limit=20`,
     verifySnapshots,
   );
-  const chapterSnapshots = targetChapter
-    ? snapshots.items.filter((item) => item.id === targetChapter.snapshot_id)
-    : snapshots.items;
+  const selectedGeneric = targetChapter ? null : draft.snapshot;
   const verifySnapshot = useCallback(
-    (v: unknown) =>
-      draft.snapshot
+    (v: unknown) => {
+      if (targetChapter)
+        return validateFixedAuthoringSnapshot(v, bidId, targetChapter);
+      return selectedGeneric
         ? validateAuthoringWorkContext(v, bidId, {
             kind: "draft_snapshot",
-            id: draft.snapshot.id,
-            selectionDigest: draft.snapshot.selection_digest,
+            id: selectedGeneric.id,
+            selectionDigest: selectedGeneric.selection_digest,
           })
-        : captureFailure(),
-    [bidId, draft.snapshot],
+        : captureFailure();
+    },
+    [bidId, selectedGeneric, targetChapter],
   );
   const snapshot = useAuthoringCaptureRead(
-    draft.snapshot
-      ? `/bids/${bidId}/work-contexts/draft_snapshot/${draft.snapshot.id}?expected_selection_digest=${draft.snapshot.selection_digest}`
-      : null,
+    targetChapter
+      ? `/bids/${bidId}/work-contexts/draft_snapshot/${targetChapter.snapshot_id}`
+      : selectedGeneric
+        ? `/bids/${bidId}/work-contexts/draft_snapshot/${selectedGeneric.id}?expected_selection_digest=${selectedGeneric.selection_digest}`
+        : null,
     verifySnapshot,
   );
+  const fixedSection =
+    targetChapter &&
+    snapshot.ready &&
+    snapshot.value?.selection.kind === "draft_snapshot" &&
+    snapshot.value.selection.draft_id === targetChapter.draft_id &&
+    snapshot.value.selection.snapshot_id === targetChapter.snapshot_id &&
+    snapshot.value.selection.draft_revision ===
+      targetChapter.base_draft_revision
+      ? snapshot.value.document?.sections.find(
+          (s) =>
+            s.section_id === targetChapter.section_id &&
+            s.section_revision === targetChapter.base_section_revision,
+        )
+      : null;
+  const fixedSelectionMatches =
+    !!fixedSection &&
+    draft.snapshot?.id === targetChapter?.snapshot_id &&
+    draft.snapshot?.selection_digest === snapshot.value?.selection_digest &&
+    draft.section?.id === fixedSection.section_id &&
+    draft.section.digest === fixedSection.digest;
   const verifyNodes = useCallback(
     (v: unknown) =>
       draft.snapshot && draft.section
@@ -282,7 +308,7 @@ function CaptureWorkspace({
     [bidId, draft.snapshot, draft.section],
   );
   const nodes = useAuthoringCaptureRead(
-    draft.snapshot && draft.section
+    draft.snapshot && draft.section && (!targetChapter || fixedSelectionMatches)
       ? captureNodePath(
           bidId,
           draft.snapshot.id,
@@ -346,6 +372,7 @@ function CaptureWorkspace({
     inventories.page?.current_inventory_id === draft.inventory?.id &&
     inventory.ready &&
     snapshot.ready &&
+    (!targetChapter || fixedSelectionMatches) &&
     nodes.ready &&
     facts.ready;
   let request: PackageAuthoringInputRequest | null = null,
@@ -394,11 +421,7 @@ function CaptureWorkspace({
     }
   }
   function chooseSnapshot(item: WorkContextChoicePage["items"][number]) {
-    if (
-      item.selection.kind !== "draft_snapshot" ||
-      (targetChapter && item.id !== targetChapter.snapshot_id)
-    )
-      return;
+    if (targetChapter || item.selection.kind !== "draft_snapshot") return;
     change({
       ...draft,
       snapshot: {
@@ -638,91 +661,143 @@ function CaptureWorkspace({
             <Feedback state={snapshots} />
             <Feedback state={snapshot} />
             <Feedback state={nodes} />
-            <label>
-              正文快照
-              <select
-                disabled={locked || !snapshots.ready}
-                value={draft.snapshot?.id ?? ""}
-                onChange={(e) => {
-                  const item = chapterSnapshots.find(
-                    (i) => i.id === e.target.value,
-                  );
-                  if (item) chooseSnapshot(item);
-                  else
+            {targetChapter ? (
+              <>
+                {fixedSection && (
+                  <p className="small-note">
+                    已核对当前保存版本：{fixedSection.title} · 草稿修订{" "}
+                    {targetChapter.base_draft_revision} · 章节修订{" "}
+                    {targetChapter.base_section_revision}
+                  </p>
+                )}
+                {draft.snapshot && !fixedSelectionMatches && snapshot.ready && (
+                  <p className="notice warning">
+                    原表单选择的正文不是本章已保存版本；选择本章前不使用原节点。
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className="button secondary"
+                  disabled={locked || !fixedSection || fixedSelectionMatches}
+                  onClick={() => {
+                    const value = snapshot.value;
+                    if (
+                      !fixedSection ||
+                      value?.selection.kind !== "draft_snapshot"
+                    )
+                      return;
                     change({
                       ...draft,
-                      snapshot: null,
-                      section: null,
-                      node: null,
-                    });
-                }}
-              >
-                <option value="">明确选择已保存快照</option>
-                {draft.snapshot &&
-                  !chapterSnapshots.some(
-                    (i) => i.id === draft.snapshot!.id,
-                  ) && (
-                    <option value={draft.snapshot.id}>
-                      保留：{draft.snapshot.label}
-                    </option>
-                  )}
-                {chapterSnapshots.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.label} · {i.id.slice(0, 8)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {snapshots.page?.has_more && (
-              <button
-                className="text-button"
-                type="button"
-                disabled={locked || snapshots.busy || !snapshots.ready}
-                onClick={() => void snapshots.load(true)}
-              >
-                加载更多正文快照
-              </button>
-            )}
-            {snapshots.ready && !snapshots.items.length && (
-              <p className="small-empty">
-                尚无已保存正文快照。请先创建并保存一份稿件。
-              </p>
-            )}
-            {snapshot.value?.document && (
-              <label>
-                快照中的章节
-                <select
-                  disabled={locked || !snapshot.ready}
-                  value={draft.section?.id ?? ""}
-                  onChange={(e) => {
-                    const section = snapshot.value?.document?.sections.find(
-                      (s) => s.section_id === e.target.value,
-                    );
-                    change({
-                      ...draft,
-                      section: section
-                        ? { id: section.section_id, digest: section.digest }
-                        : null,
+                      snapshot: {
+                        id: value.selection.snapshot_id,
+                        label: fixedSection.title,
+                        selection_digest: value.selection_digest,
+                        selection: value.selection,
+                      },
+                      section: {
+                        id: fixedSection.section_id,
+                        digest: fixedSection.digest,
+                      },
                       node: null,
                     });
                   }}
                 >
-                  <option value="">明确选择章节</option>
-                  {snapshot.value.document.sections
-                    .filter(
-                      (s) =>
-                        !targetChapter ||
-                        (s.section_id === targetChapter.section_id &&
-                          s.section_revision ===
-                            targetChapter.base_section_revision),
-                    )
-                    .map((s) => (
-                      <option key={s.section_id} value={s.section_id}>
-                        {s.title} · 原修订 {s.section_revision}
+                  {fixedSelectionMatches
+                    ? "已选择本章保存版本"
+                    : "使用本章已保存版本"}
+                </button>
+                {snapshot.error != null && (
+                  <button
+                    type="button"
+                    className="text-button"
+                    disabled={locked || snapshot.busy}
+                    onClick={() => void snapshot.reload()}
+                  >
+                    重新核对本章保存版本
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <label>
+                  正文快照
+                  <select
+                    disabled={locked || !snapshots.ready}
+                    value={draft.snapshot?.id ?? ""}
+                    onChange={(e) => {
+                      const item = snapshots.items.find(
+                        (i) => i.id === e.target.value,
+                      );
+                      if (item) chooseSnapshot(item);
+                      else
+                        change({
+                          ...draft,
+                          snapshot: null,
+                          section: null,
+                          node: null,
+                        });
+                    }}
+                  >
+                    <option value="">明确选择已保存快照</option>
+                    {draft.snapshot &&
+                      !snapshots.items.some(
+                        (i) => i.id === draft.snapshot!.id,
+                      ) && (
+                        <option value={draft.snapshot.id}>
+                          保留：{draft.snapshot.label}
+                        </option>
+                      )}
+                    {snapshots.items.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.label} · {i.id.slice(0, 8)}
                       </option>
                     ))}
-                </select>
-              </label>
+                  </select>
+                </label>
+                {snapshots.page?.has_more && (
+                  <button
+                    className="text-button"
+                    type="button"
+                    disabled={locked || snapshots.busy || !snapshots.ready}
+                    onClick={() => void snapshots.load(true)}
+                  >
+                    加载更多正文快照
+                  </button>
+                )}
+                {snapshots.ready && !snapshots.items.length && (
+                  <p className="small-empty">
+                    尚无已保存正文快照。请先创建并保存一份稿件。
+                  </p>
+                )}
+                {snapshot.value?.document && (
+                  <label>
+                    快照中的章节
+                    <select
+                      disabled={locked || !snapshot.ready}
+                      value={draft.section?.id ?? ""}
+                      onChange={(e) => {
+                        const section = snapshot.value?.document?.sections.find(
+                          (s) => s.section_id === e.target.value,
+                        );
+                        change({
+                          ...draft,
+                          section: section
+                            ? { id: section.section_id, digest: section.digest }
+                            : null,
+                          node: null,
+                        });
+                      }}
+                    >
+                      <option value="">明确选择章节</option>
+                      {snapshot.value.document.sections.map((s) => (
+                        <option key={s.section_id} value={s.section_id}>
+                          {s.title} · 原修订 {s.section_revision}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
             )}
             {nodes.value && (
               <>
