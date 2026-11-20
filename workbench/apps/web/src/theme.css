@@ -133,7 +133,8 @@
     gap: 4px;
   }
   .topbar-actions .theme-picker select {
-    width: 104px;
+    width: max-content;
+    min-width: 104px;
   }
   .login-theme {
     right: 20px;

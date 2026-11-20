@@ -1445,13 +1445,18 @@ tbody tr:hover {
     width: 100%;
   }
   .topbar {
-    height: 50px;
-    padding: 0 19px;
+    height: auto;
+    min-height: 50px;
+    padding: 2px 19px;
+    flex-wrap: wrap;
+    gap: 4px 6px;
     font-size: 10px;
   }
   .mobile-area-picker {
     display: block;
-    width: 118px;
+    width: max-content;
+    min-width: 118px;
+    max-width: 100%;
     min-height: 44px;
     font-size: 12px;
     padding: 7px;
@@ -1463,6 +1468,13 @@ tbody tr:hover {
     align-items: flex-start;
     gap: 12px;
     margin-bottom: 23px;
+  }
+  .project-page > .page-heading {
+    flex-wrap: wrap;
+  }
+  .project-page > .page-heading > div {
+    flex: 1 1 14em;
+    min-width: 0;
   }
   .page-heading > .button {
     font-size: 11px;
@@ -1747,6 +1759,19 @@ tbody tr:hover {
   }
   .button {
     white-space: normal;
+  }
+}
+@media (max-width: 480px) {
+  .topbar .breadcrumb-separator {
+    padding-inline: 6px;
+  }
+}
+@media (max-width: 360px) {
+  .topbar > span {
+    display: none;
+  }
+  .topbar-actions {
+    margin-inline-start: auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {
