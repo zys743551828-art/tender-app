@@ -76,6 +76,7 @@ const checkKeys = [
 const validCodes = (v: unknown): v is string[] =>
   Array.isArray(v) &&
   v.length <= 100 &&
+  new Set(v).size === v.length &&
   v.every((x) => typeof x === "string" && /^[A-Z][A-Z0-9_]{2,80}$/.test(x));
 function verified(value: unknown, scope: Scope): value is Check {
   return (
@@ -98,16 +99,104 @@ function verified(value: unknown, scope: Scope): value is Check {
   );
 }
 
-export function TechnicalDocxCheck({
+function InternalReviewNotes({
+  result,
+  submittedIdentifierCount,
+}: {
+  result: Check;
+  submittedIdentifierCount: number;
+}) {
+  const [copyState, setCopyState] = useState<"copied" | "unavailable" | null>(
+    null,
+  );
+  const finding = (code: string) =>
+    "• " + (known[code] ? message(code) + "（" + code + "）" : message(code));
+  const lines = [
+    "技术标 Word 内部核查摘要",
+    "仅供工作台内部复核。这是固定历史文件的辅助检查，不是签收、独立审批、提交许可或版面合规证明。",
+    `项目：${result.bid_id}`,
+    `构建：${result.build_id}`,
+    `文档版本：${result.document_version_id}`,
+    `草稿快照：${result.snapshot_id}`,
+    `草稿快照 SHA-256：${result.snapshot_digest}`,
+    `受检文件 SHA-256：${result.artifact_sha256}`,
+    `检查范围 SHA-256：${result.policy_sha256}`,
+    submittedIdentifierCount
+      ? `本次提交了 ${submittedIdentifierCount} 条自填禁用标识，不附明文，不是权威清单。`
+      : "本次未提供项目禁用标识，未做该项比对。",
+    "",
+    "机器可核项：",
+    ...(result.blocking_codes.length
+      ? result.blocking_codes.map(finding)
+      : ["可核范围内未发现需处理项；仍须完成下列人工核对。"]),
+    "",
+    "待人工核对（请另行记录结果）：",
+    ...result.manual_check_codes.map(finding),
+  ];
+  const summary = lines.join("\n");
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopyState("copied");
+    } catch {
+      setCopyState("unavailable");
+    }
+  }
+  return (
+    <details className="coverage-details">
+      <summary>内部核查摘要（单独留存）</summary>
+      <p className="small-note">
+        不附 Word
+        正文、拟用文件名或自填标识，不写入提交文件，也不会发送给任何人。
+      </p>
+      <label>
+        本次 Word 内部核查摘要
+        <textarea readOnly value={summary} rows={8} />
+      </label>
+      <button
+        type="button"
+        className="button secondary"
+        onClick={() => void copy()}
+      >
+        复制内部核查摘要
+      </button>
+      {copyState === "copied" && <p role="status">已复制，仅供内部核对。</p>}
+      {copyState === "unavailable" && (
+        <p role="status">当前不能访问剪贴板，可手动选中上方摘要。</p>
+      )}
+    </details>
+  );
+}
+
+type DocxCheckProps = Scope & { suggestedFilename: string };
+
+export function TechnicalDocxCheck(props: DocxCheckProps) {
+  const key = JSON.stringify([
+    props.bidId,
+    props.buildId,
+    props.documentId,
+    props.snapshotId,
+    props.snapshotDigest,
+    props.suggestedFilename,
+  ]);
+  return <ScopedTechnicalDocxCheck key={key} {...props} />;
+}
+
+function ScopedTechnicalDocxCheck({
   suggestedFilename,
   ...scope
-}: Scope & { suggestedFilename: string }) {
+}: DocxCheckProps) {
   const [filename, setFilename] = useState(suggestedFilename);
   const [names, setNames] = useState("");
   const [busy, setBusy] = useState(false);
-  const [report, setReport] = useState<Check | null>(null);
+  const [lastCheck, setLastCheck] = useState<{
+    result: Check;
+    submittedIdentifierCount: number;
+  } | null>(null);
   const [error, setError] = useState<unknown>(null);
   const pending = useRef(false);
+  const report =
+    lastCheck && verified(lastCheck.result, scope) ? lastCheck.result : null;
   const terms = Array.from(
     new Set(
       names
@@ -122,7 +211,7 @@ export function TechnicalDocxCheck({
     terms.every((term) => Array.from(term).length <= 200);
   function clear() {
     setError(null);
-    setReport(null);
+    setLastCheck(null);
   }
   async function inspect() {
     if (!valid || pending.current) return;
@@ -149,7 +238,10 @@ export function TechnicalDocxCheck({
         throw new Error(
           "核查结果与所选 Word 或固定快照不一致，未展示其它版本的结果。",
         );
-      setReport(response.data);
+      setLastCheck({
+        result: response.data,
+        submittedIdentifierCount: terms.length,
+      });
     } catch (failure) {
       setError(failure);
     } finally {
@@ -211,30 +303,36 @@ export function TechnicalDocxCheck({
         </fieldset>
       </form>
       <ErrorNotice error={error} />
-      {report && (
-        <div role="status">
-          <p>
-            {report.blocking_codes.length
-              ? "发现需处理项。修改或重新构建后请再检查。"
-              : "这次机器检查在可核范围内未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
-          </p>
-          {report.blocking_codes.length > 0 && (
+      {report && lastCheck && (
+        <>
+          <div role="status">
+            <p>
+              {report.blocking_codes.length
+                ? "发现需处理项。修改或重新构建后请再检查。"
+                : "这次机器检查在可核范围内未发现问题，不等于满足暗标要求，也不代表已通过独立审核。"}
+            </p>
+            {report.blocking_codes.length > 0 && (
+              <ul>
+                {report.blocking_codes.map((code) => (
+                  <li key={code}>{message(code)}</li>
+                ))}
+              </ul>
+            )}
+            <p>仍需人工核对：</p>
             <ul>
-              {report.blocking_codes.map((code) => (
+              {report.manual_check_codes.map((code) => (
                 <li key={code}>{message(code)}</li>
               ))}
             </ul>
-          )}
-          <p>仍需人工核对：</p>
-          <ul>
-            {report.manual_check_codes.map((code) => (
-              <li key={code}>{message(code)}</li>
-            ))}
-          </ul>
-          <p className="small-note identity-ref">
-            受检文件 SHA-256：{report.artifact_sha256}
-          </p>
-        </div>
+            <p className="small-note identity-ref">
+              受检文件 SHA-256：{report.artifact_sha256}
+            </p>
+          </div>
+          <InternalReviewNotes
+            result={report}
+            submittedIdentifierCount={lastCheck.submittedIdentifierCount}
+          />
+        </>
       )}
     </details>
   );

@@ -136,3 +136,91 @@ it("reports explicit placeholders as an internal check finding, not clearance", 
   expect(within(region).queryByText(/未发现问题/)).not.toBeInTheDocument();
   expect(calls).toHaveLength(1);
 });
+
+it("copies a separate internal summary pinned to the checked file without copying the names or transmitting it", async () => {
+  const calls = mock({
+    ...response,
+    blocking_codes: ["PROHIBITED_NAME_FILENAME"],
+  });
+  const user = await open();
+  await user.type(
+    screen.getByLabelText(/本项目禁用标识/),
+    "不应复制的合成单位",
+  );
+  await user.clear(screen.getByLabelText("拟用文件名"));
+  await user.type(
+    screen.getByLabelText("拟用文件名"),
+    "不应复制的拟用名称.docx",
+  );
+  expect(
+    screen.queryByText("内部核查摘要（单独留存）"),
+  ).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  await user.click(await screen.findByText("内部核查摘要（单独留存）"));
+  const summary = screen.getByLabelText(
+    "本次 Word 内部核查摘要",
+  ) as HTMLTextAreaElement;
+  expect(summary).toHaveAttribute("readonly");
+  expect(summary.value).toContain(
+    `受检文件 SHA-256：${response.artifact_sha256}`,
+  );
+  expect(summary.value).toContain(
+    `检查范围 SHA-256：${response.policy_sha256}`,
+  );
+  expect(summary.value).toContain(
+    `草稿快照 SHA-256：${response.snapshot_digest}`,
+  );
+  expect(summary.value).toContain("PROHIBITED_NAME_FILENAME");
+  expect(summary.value).toContain("FORMAT_AND_RENDER_REVIEW");
+  expect(summary.value).toContain("不是签收、独立审批、提交许可");
+  expect(summary.value).toContain("本次提交了 1 条自填禁用标识");
+  expect(summary.value).not.toMatch(/不应复制的合成单位|不应复制的拟用名称/);
+  await user.click(screen.getByRole("button", { name: "复制内部核查摘要" }));
+  await screen.findByText("已复制，仅供内部核对。");
+  expect(await navigator.clipboard.readText()).toBe(summary.value);
+  expect(calls).toHaveLength(1);
+  await user.clear(screen.getByLabelText(/本项目禁用标识/));
+  expect(
+    screen.queryByText("内部核查摘要（单独留存）"),
+  ).not.toBeInTheDocument();
+});
+
+it("makes unperformed identifier checking and a clipboard failure clear without affecting the original", async () => {
+  const calls = mock(response);
+  const user = await open();
+  const rejected = vi
+    .spyOn(navigator.clipboard, "writeText")
+    .mockRejectedValueOnce(new Error("unavailable"));
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  await user.click(await screen.findByText("内部核查摘要（单独留存）"));
+  const summary = screen.getByLabelText(
+    "本次 Word 内部核查摘要",
+  ) as HTMLTextAreaElement;
+  expect(summary.value).toContain("未提供项目禁用标识，未做该项比对");
+  await user.click(screen.getByRole("button", { name: "复制内部核查摘要" }));
+  await screen.findByText(/当前不能访问剪贴板/);
+  expect(summary.value).toContain(response.artifact_sha256);
+  expect(calls).toHaveLength(1);
+  rejected.mockRestore();
+});
+
+it("does not leave the previous summary visible if the immutable build context changes", async () => {
+  mock(response);
+  const view = render(<TechnicalDocxCheck {...scope} />);
+  const user = userEvent.setup();
+  await user.click(screen.getByText("技术标 Word 检查（送审前）"));
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  await screen.findByText("内部核查摘要（单独留存）");
+  view.rerender(
+    <TechnicalDocxCheck {...scope} snapshotDigest={"e".repeat(64)} />,
+  );
+  expect(
+    screen.queryByText("内部核查摘要（单独留存）"),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  view.rerender(<TechnicalDocxCheck {...scope} />);
+  await user.click(screen.getByText("技术标 Word 检查（送审前）"));
+  expect(
+    screen.queryByText("内部核查摘要（单独留存）"),
+  ).not.toBeInTheDocument();
+});
