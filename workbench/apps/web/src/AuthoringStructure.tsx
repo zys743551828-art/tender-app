@@ -25,6 +25,7 @@ import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
 import { TechnicalBidOutline } from "./TechnicalBidOutline";
+import { TechnicalDraftProgress } from "./TechnicalDraftProgress";
 import {
   technicalOutlineRequest,
   type OutlineBasis,
@@ -408,6 +409,18 @@ function ScopedAuthoringStructure({
               {readOnly ? "查看本章正文" : "继续编写本章"}
             </button>
           )}
+          {!tree.error &&
+            !tree.loading &&
+            tree.etag &&
+            valid.draft_revision === draftRevision && (
+              <TechnicalDraftProgress
+                key={valid.snapshot_id}
+                bidId={bidId}
+                tree={valid}
+                navigationDisabled={navigationLocked}
+                onOpenSection={onChoose}
+              />
+            )}
           {outlineAvailable && (
             <TechnicalBidOutline
               bidId={bidId}
