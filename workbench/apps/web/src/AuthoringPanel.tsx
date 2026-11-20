@@ -704,6 +704,7 @@ function DraftEditor({
               />
             </aside>
             <section
+              id="authoring-current-section"
               ref={writingRef}
               className="chapter-writing panel"
               aria-label="正文编写"

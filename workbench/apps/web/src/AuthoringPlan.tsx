@@ -142,6 +142,9 @@ export function AuthoringPlan({
           )}
 
         <p className="small-note">
+          章节计划用于手工编写。目前在这份草稿任一章保存计划后，这份草稿不能新建固定编写输入，已存计划不会自动移除。
+        </p>
+        <p className="small-note">
           计划修订 {node.plan?.revision ?? 0} ·
           页数为人工预算，不是实际排版页数。
           {node.plan_content_basis_state === "section_changed"

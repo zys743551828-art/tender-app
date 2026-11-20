@@ -38,22 +38,26 @@ def requirements(world):
     return prepare_requirements(world, statement="合成要求：明确施工进度与工期，说明质量验收。")
 
 
-def current_layout(w, draft_path, section_id):
-    def counts():
-        with connection() as c:
-            return c.execute(
-                """SELECT (SELECT count(*) FROM design.commands) AS commands,
-                (SELECT count(*) FROM design.audit_entries) AS audits,
-                (SELECT count(*) FROM design.operations) AS operations,
-                (SELECT count(*) FROM design.model_calls) AS calls"""
-            ).fetchone()
+def counts():
+    with connection() as c:
+        return c.execute(
+            """SELECT (SELECT count(*) FROM design.commands) AS commands,
+            (SELECT count(*) FROM design.audit_entries) AS audits,
+            (SELECT count(*) FROM design.operations) AS operations,
+            (SELECT count(*) FROM design.authoring_package_inputs) AS inputs,
+            (SELECT count(*) FROM design.outbox) AS outbox,
+            (SELECT count(*) FROM design.model_calls) AS calls"""
+        ).fetchone()
 
+
+def current_layout(w, draft_path, section_id):
     before = counts()
     found = w["client"].get(f"{draft_path}/sections/{section_id}/technical-authoring-layout")
     assert found.status_code == 200, found.text
     assert counts() == before
     result = found.json()
     assert result["bid_id"] == w["bid"] and result["section_id"] == section_id
+    assert bool(result["unsupported_reasons"]) == (result["state"] == "structure_not_supported")
     return result
 
 
@@ -164,7 +168,7 @@ def exact(requirements):
     return w
 
 
-def blank_target(w, applied, chapter, *, current=True):
+def blank_target(w, applied, chapter, *, expected_blockers=()):
     client = w["client"]
     selected = client.get(
         NODES_PATH.format(
@@ -177,10 +181,7 @@ def blank_target(w, applied, chapter, *, current=True):
     )
     assert selected.status_code == 200, selected.text
     nodes = selected.json()
-    if current:
-        assert nodes["blocking_reasons"] == []
-    else:
-        assert "AUTHORING_PACKAGE_DRAFT_CHANGED" in nodes["blocking_reasons"]
+    assert nodes["blocking_reasons"] == list(expected_blockers)
     [node] = nodes["nodes"]
     assert node["node_type"] == "paragraph" and node["text"] == ""
     return {
@@ -239,6 +240,72 @@ def build_structured_word(w):
     publish(build, computed)
 
     return build, word, body
+
+
+def test_a_saved_plan_blocks_fixed_authoring_without_removing_the_plan_or_writing(exact):
+    w = exact
+    target = w["input_body"]["target_section"]
+    draft_path = f"/api/v1/bids/{w['bid']}/drafts/{target['draft_id']}"
+    chapter = w["technical_journey"]["chapter"]
+    quality = w["technical_journey"]["quality"]
+    client = w["client"]
+    base = client.get(draft_path)
+    assert base.status_code == 200, base.text
+    planned = client.put(
+        f"{draft_path}/sections/{chapter['section_id']}/plan",
+        json={
+            "base_draft_revision": base.json()["revision"],
+            "base_plan_revision": 0,
+            "state": "drafting",
+            "goal": "保留人工施工先后顺序",
+            "key_points": ["由编写人补足排程"],
+            "pending_facts": ["拟开工日待核"],
+            "rule_ids": [w["rule"]],
+            "source_refs": [],
+            "planned_pages": 3,
+            "budget_basis": "manual",
+            "budget_rule_id": None,
+            "budget_note": "人工计划，不是招标要求",
+        },
+        headers=headers(w, etag=base.headers["etag"]),
+    )
+    assert planned.status_code == 200, planned.text
+    saved_plan = planned.json()
+    assert saved_plan["draft_revision"] == base.json()["revision"] + 1
+    assert saved_plan["plan"]["revision"] == 1
+    assert saved_plan["plan"]["payload"]["goal"] == "保留人工施工先后顺序"
+
+    before = counts()
+    for section in (chapter, quality):
+        gate = current_layout(w, draft_path, section["section_id"])
+        assert gate["state"] == "structure_not_supported"
+        assert gate["unsupported_reasons"] == ["saved_chapter_plans"]
+        assert gate["draft_revision"] == saved_plan["draft_revision"]
+        assert gate["snapshot_id"] == saved_plan["snapshot_id"]
+        assert not gate["ordinary_structure_protected"]
+    snapshot_path = (
+        f"/api/v1/bids/{w['bid']}/work-contexts/draft_snapshot/{saved_plan['snapshot_id']}"
+    )
+    frozen = client.get(snapshot_path)
+    assert frozen.status_code == 200, frozen.text
+    assert chapter in frozen.json()["document"]["sections"]
+    pinned = deepcopy(w["input_body"])
+    pinned["target_section"] = blank_target(
+        w,
+        dict(saved_plan, snapshot_digest=frozen.json()["selection"]["snapshot_digest"]),
+        chapter,
+        expected_blockers=("AUTHORING_PACKAGE_STRUCTURE_BASIS_UNSUPPORTED",),
+    )
+    blocked = save(w, body=pinned)
+    assert blocked.status_code == 409, blocked.text
+    assert blocked.json()["code"] == "AUTHORING_PACKAGE_STRUCTURE_BASIS_UNSUPPORTED"
+    structure = client.get(draft_path + "/structure")
+    assert structure.status_code == 200, structure.text
+    [still_planned] = [item for item in structure.json()["nodes"] if item["plan"]]
+    assert still_planned["section_id"] == chapter["section_id"]
+    assert still_planned["plan"] == saved_plan["plan"]
+    assert client.get(draft_path).headers["etag"] == planned.headers["etag"]
+    assert counts() == before
 
 
 def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
@@ -303,7 +370,10 @@ def test_two_chapters_use_their_own_saved_baselines_and_one_internal_word(adopte
     chapter_id = before["quality"]["section_id"]
     stale_body = deepcopy(first["input_body"])
     stale_body["target_section"] = blank_target(
-        first, before["snapshot"], before["quality"], current=False
+        first,
+        before["snapshot"],
+        before["quality"],
+        expected_blockers=("AUTHORING_PACKAGE_DRAFT_CHANGED", "AUTHORING_PACKAGE_SECTION_CHANGED"),
     )
     rejected = save(first, body=stale_body)
     assert rejected.status_code == 409, rejected.text

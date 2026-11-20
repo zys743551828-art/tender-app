@@ -50,6 +50,7 @@ function protectTransport(overrides: Partial<TechnicalChapterLayoutView> = {}) {
           draft_revision: ref.base_draft_revision,
           section_revision: ref.base_section_revision,
           state: "plain_draft",
+          unsupported_reasons: [],
           ordinary_structure_protected: false,
           ...overrides,
         }),
@@ -226,3 +227,71 @@ it("does not open the form when a seemingly healthy layout response describes a 
   ).not.toBeInTheDocument();
   expect(transport).toHaveBeenCalledOnce();
 });
+
+it("identifies a plan on the exact saved draft and leaves manual editing reachable without any write", async () => {
+  const transport = protectTransport({
+    state: "structure_not_supported",
+    unsupported_reasons: ["saved_chapter_plans"],
+  });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  const view = render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  expect(
+    await screen.findByRole("link", { name: "返回本章正文" }),
+  ).toHaveAttribute("href", "#authoring-current-section");
+  expect(
+    screen.getByText("这份草稿已有章节计划（也可能在别章）。"),
+  ).toBeVisible();
+  expect(screen.queryByText(/绑定了项目版式字段/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/Word 导入来源/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
+  ).not.toBeInTheDocument();
+  expect(
+    transport.mock.calls.map(([path, init]) => [path, init?.method]),
+  ).toEqual([[layoutPath, "GET"]]);
+  view.rerender(
+    <TechnicalBidChapter
+      {...props}
+      draft={{
+        ...draft,
+        snapshot_id: crypto.randomUUID(),
+        revision: draft.revision + 1,
+      }}
+      prepare={prepare}
+    />,
+  );
+  expect(screen.queryByText(/这份草稿已有章节计划/)).not.toBeInTheDocument();
+});
+
+it.each<Partial<TechnicalChapterLayoutView>>([
+  { state: "structure_not_supported", unsupported_reasons: [] },
+  { state: "plain_draft", unsupported_reasons: ["saved_chapter_plans"] },
+  {
+    state: "structure_not_supported",
+    unsupported_reasons: ["saved_chapter_plans", "saved_chapter_plans"],
+  },
+])(
+  "fails closed on an internally inconsistent prerequisite response",
+  async (bad) => {
+    const transport = protectTransport(bad);
+    const prepare = vi
+      .fn()
+      .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+    const user = userEvent.setup();
+    render(<TechnicalBidChapter {...props} prepare={prepare} />);
+    await user.click(
+      screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+    );
+    await screen.findByText(/本章保存版本已变化或版式结果无法核对/);
+    expect(transport).toHaveBeenCalledOnce();
+    expect(
+      screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
+    ).not.toBeInTheDocument();
+  },
+);

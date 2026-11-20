@@ -3954,6 +3954,11 @@ export type TechnicalChapterLayoutView = {
     | "layout_review_required"
     | "layout_basis_changed"
     | "structure_not_supported";
+  unsupported_reasons: (
+    | "saved_chapter_plans"
+    | "bound_project_format"
+    | "word_import_sources"
+  )[];
   ordinary_structure_protected: boolean;
 };
 

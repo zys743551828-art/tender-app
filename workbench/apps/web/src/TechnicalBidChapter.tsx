@@ -21,6 +21,15 @@ const PackageAuthoringTemplateEditor = lazy(() =>
   ),
 );
 
+const unsupportedReasonLabels: Record<
+  TechnicalChapterLayoutView["unsupported_reasons"][number],
+  string
+> = {
+  saved_chapter_plans: "这份草稿已有章节计划（也可能在别章）。",
+  bound_project_format: "这份草稿绑定了项目版式字段。",
+  word_import_sources: "这份草稿记录了 Word 导入来源。",
+};
+
 type Props = {
   bidId: string;
   memberId: string;
@@ -60,6 +69,12 @@ export function TechnicalBidChapter({
     draft.revision === scope.base_draft_revision &&
     section?.id === scope.section_id &&
     section.revision === scope.base_section_revision;
+  const currentLayoutBlock =
+    layoutBlock?.snapshot_id === draft.snapshot_id &&
+    layoutBlock.draft_revision === draft.revision &&
+    layoutBlock.section_revision === section?.revision
+      ? layoutBlock
+      : null;
   if (!supportsApi("GET", "/authoring/package-input-capabilities")) return null;
 
   async function open(rebind = false) {
@@ -143,20 +158,35 @@ export function TechnicalBidChapter({
         </button>
       )}
       <ErrorNotice error={error} />
-      {layoutBlock && (
-        <div className="notice warning">
-          {layoutBlock.state === "structure_not_supported" ? (
-            <p>
-              当前草稿含固定整包编写尚不支持的章节计划、版式字段绑定或 Word
-              导入来源。未清理或替换这些依据；可继续手工编写，或重新准备符合条件的草稿。
-            </p>
+      {currentLayoutBlock && (
+        <div className="notice warning" role="status">
+          {currentLayoutBlock.state === "structure_not_supported" ? (
+            <>
+              <p>当前草稿不能准备固定编写，未打开生成表单，也未启动模型。</p>
+              <ul>
+                {currentLayoutBlock.unsupported_reasons.map((reason) => (
+                  <li key={reason}>{unsupportedReasonLabels[reason]}</li>
+                ))}
+              </ul>
+              {currentLayoutBlock.ordinary_structure_protected ? (
+                <p>
+                  已有固定整包修订受保护。请保留原稿和已存依据；若需继续固定编写，另行准备符合条件的草稿。
+                </p>
+              ) : (
+                <p>
+                  已存内容和依据未被改动。可
+                  <a href="#authoring-current-section">返回本章正文</a>
+                  ，有编辑权限时可按原计划手工编写。如仍需固定编写，请保留原稿，另行准备符合条件的草稿。
+                </p>
+              )}
+            </>
           ) : (
             <>
               <p>
                 版式核对未完成或当前依据已变化。为避免采用之后无法构建内部
                 Word，这里未打开生成表单，也未启动模型。
               </p>
-              {layoutBlock.ordinary_structure_protected ? (
+              {currentLayoutBlock.ordinary_structure_protected ? (
                 <p>
                   当前草稿已有受保护的固定整包修订，不能通过普通版式操作补做确认。请保留原稿，按当前要求另行准备草稿或人工核对。
                 </p>

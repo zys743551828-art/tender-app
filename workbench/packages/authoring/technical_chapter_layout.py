@@ -18,6 +18,8 @@ LayoutState = Literal[
     "structure_not_supported",
 ]
 
+UnsupportedReason = Literal["saved_chapter_plans", "bound_project_format", "word_import_sources"]
+
 
 class TechnicalChapterLayoutView(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -29,6 +31,7 @@ class TechnicalChapterLayoutView(BaseModel):
     draft_revision: int = Field(ge=1)
     section_revision: int = Field(ge=1)
     state: LayoutState
+    unsupported_reasons: list[UnsupportedReason]
     ordinary_structure_protected: bool
 
 
@@ -42,24 +45,31 @@ def _structure_protected(c, bid, draft):
     return False
 
 
-def _state(c, bid, manifest) -> LayoutState:
+def _state(c, bid, manifest) -> tuple[LayoutState, list[UnsupportedReason]]:
     extension = snapshot_structure.snapshot_extension(manifest)
     if extension is None:
-        return "plain_draft"
+        return "plain_draft", []
     metadata = extension["metadata"]
-    if extension["plans"] or metadata.get("format_bindings") or metadata.get("word_import_sources"):
-        # Exact B1 does not inherit these advanced structural sources. Do not
-        # clear any of them or imply that a blank review is a substitute.
-        return "structure_not_supported"
+    reasons: list[UnsupportedReason] = []
+    if extension["plans"]:
+        reasons.append("saved_chapter_plans")
+    if metadata.get("format_bindings"):
+        reasons.append("bound_project_format")
+    if metadata.get("word_import_sources"):
+        reasons.append("word_import_sources")
+    if reasons:
+        # This observes the whole saved snapshot, not just the selected node.
+        # Exact B1 does not inherit these sources. Nothing is removed.
+        return "structure_not_supported", reasons
     try:
         format_bindings.assert_snapshot(c, bid, extension, lock_sources=False)
     except DomainError as error:
         if error.code == "AUTHORING_FORMAT_REVIEW_REQUIRED":
-            return "layout_review_required"
+            return "layout_review_required", []
         if error.code == "AUTHORING_FORMAT_BINDING_STALE":
-            return "layout_basis_changed"
+            return "layout_basis_changed", []
         raise
-    return "structured_layout_rechecked"
+    return "structured_layout_rechecked", []
 
 
 def read(c, bid, draft, section):
@@ -81,7 +91,7 @@ def read(c, bid, draft, section):
             raise DomainError(
                 "TECHNICAL_CHAPTER_LAYOUT_UNVERIFIED", "无法完整核对当前草稿的结构快照。", 409
             )
-        state = _state(c, bid, snapshot)
+        state, reasons = _state(c, bid, snapshot)
         protected = _structure_protected(c, bid, draft)
     except QueryCanceled as error:
         raise DomainError(
@@ -95,5 +105,6 @@ def read(c, bid, draft, section):
         draft_revision=head["draft_revision"],
         section_revision=head["section_revision"],
         state=state,
+        unsupported_reasons=reasons,
         ordinary_structure_protected=protected,
     )

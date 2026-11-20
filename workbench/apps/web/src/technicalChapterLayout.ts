@@ -11,6 +11,12 @@ const states = [
   "structure_not_supported",
 ] as const;
 
+const unsupportedReasons = [
+  "saved_chapter_plans",
+  "bound_project_format",
+  "word_import_sources",
+] as const;
+
 export async function readTechnicalChapterLayout(
   bidId: string,
   target: FixedAuthoringChapter,
@@ -28,6 +34,7 @@ export async function readTechnicalChapterLayout(
       "draft_revision",
       "section_revision",
       "state",
+      "unsupported_reasons",
       "ordinary_structure_protected",
     ]) ||
     data.bid_id !== bidId ||
@@ -37,6 +44,14 @@ export async function readTechnicalChapterLayout(
     data.draft_revision !== target.base_draft_revision ||
     data.section_revision !== target.base_section_revision ||
     !states.some((state) => state === data.state) ||
+    !Array.isArray(data.unsupported_reasons) ||
+    !data.unsupported_reasons.every((reason) =>
+      unsupportedReasons.some((allowed) => reason === allowed),
+    ) ||
+    new Set(data.unsupported_reasons).size !==
+      data.unsupported_reasons.length ||
+    (data.state === "structure_not_supported") !==
+      data.unsupported_reasons.length > 0 ||
     typeof data.ordinary_structure_protected !== "boolean"
   )
     throw new Error(

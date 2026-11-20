@@ -367,6 +367,10 @@ it("previews only additive chapters, then uses the same underlying revision to e
   expect(
     await screen.findByRole("checkbox", { name: "施工进度与资源配置" }),
   ).toBeChecked();
+  expect(screen.getByText(/暂不要在这份草稿保存章节计划/)).toBeVisible();
+  expect(
+    screen.queryByText(/请在“章节计划”补写条款与引用/),
+  ).not.toBeInTheDocument();
   await user.click(screen.getByText(/技术要求与已存章节对照/));
   expect(screen.getByText("尚无保存的章节关联")).toBeInTheDocument();
   expect(screen.getByText(/不能当作覆盖率或审批/)).toBeInTheDocument();
