@@ -333,7 +333,7 @@ export function App() {
             <select
               className="mobile-area-picker"
               aria-label="切换工作区"
-              value={area}
+              value={projectId ? "" : area}
               onChange={(event) => {
                 const value = event.target.value;
                 if (
@@ -344,9 +344,14 @@ export function App() {
                   value === "assistant"
                 )
                   void openArea(value);
-                else void navigate(null);
+                else if (value === "projects") void navigate(null);
               }}
             >
+              {projectId && (
+                <option value="" disabled>
+                  项目工作区
+                </option>
+              )}
               {supportsApi("GET", "/metrics") && (
                 <option value="metrics">业务结果与指标</option>
               )}
