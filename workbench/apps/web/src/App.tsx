@@ -660,7 +660,7 @@ function Projects({
       <section className="panel project-list">
         <div className="list-toolbar">
           <div className="list-title">
-            <h2>全部项目</h2>
+            <h2 id="project-list-title">全部项目</h2>
             {projects && (
               <span className="count">
                 {projects.length}
@@ -711,7 +711,12 @@ function Projects({
           </div>
         )}
         {!!visible?.length && (
-          <div className="table-wrap">
+          <div
+            className="table-wrap"
+            role="region"
+            aria-labelledby="project-list-title"
+            tabIndex={0}
+          >
             <table>
               <thead>
                 <tr>
@@ -719,7 +724,7 @@ function Projects({
                   <th>工作阶段</th>
                   <th>整包资料</th>
                   <th>工作下一步</th>
-                  <th>
+                  <th className="project-list-action">
                     <span className="sr-only">打开</span>
                   </th>
                 </tr>
@@ -771,7 +776,7 @@ function Projects({
                       {summaries.items.get(project.id)?.next_action.reason ??
                         "摘要尚未完整核对，风险与预测保持未知。"}
                     </td>
-                    <td>
+                    <td className="project-list-action">
                       <button
                         className="icon-button"
                         aria-label={`打开${project.title}`}

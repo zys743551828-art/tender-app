@@ -543,6 +543,9 @@ a svg {
 .project-list .table-wrap {
   position: relative;
 }
+.project-list .table-wrap:focus-visible {
+  outline-offset: -2px;
+}
 table {
   border-collapse: collapse;
   width: 100%;
@@ -1511,6 +1514,23 @@ tbody tr:hover {
   }
   .next-action-cell {
     min-width: 170px;
+  }
+  .project-list-action {
+    position: sticky;
+    inset-inline-end: 0;
+    z-index: 1;
+    padding-inline: 8px;
+    box-shadow: inset 1px 0 var(--line);
+  }
+  td.project-list-action {
+    background: var(--card);
+  }
+  tr:hover > td.project-list-action {
+    background: var(--subtle);
+  }
+  .project-list-action .icon-button {
+    width: 40px;
+    height: 40px;
   }
   .back-link {
     margin-bottom: 21px;

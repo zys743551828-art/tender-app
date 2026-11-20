@@ -1,8 +1,9 @@
-/* global console, process */
+/* global console, document, process */
 // Runs the real app in Chromium with synthetic HTTP responses and a loopback-only Vite server.
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { fileURLToPath, URL } from "node:url";
+import react from "@vitejs/plugin-react";
 import { createServer } from "vite";
 
 const widths = [390, 640, 641, 760, 761, 1440];
@@ -30,12 +31,43 @@ const bid = {
 };
 const historyId = "20000000-0000-4000-8000-000000000012";
 const layer = { state: "not_run", planned: null, completed: null, gaps: [] };
+const summary = {
+  bid_id: bid.id,
+  phase: bid.phase,
+  archived_at: null,
+  package_counts: { authority: 2, bid: 1 },
+  head_members: { total: 5, parse_not_frozen: 1 },
+  next_action: {
+    action: "inspect_package_parses",
+    reason: "核对尚未冻结的解析身份",
+    target_url: `${bidPath}/packages`,
+    blocked: true,
+  },
+  action_scope: "package_directory",
+  risk_status: "not_evaluated",
+  critical_risk_count: null,
+  other_risk_count: null,
+  prediction_status: "not_evaluated",
+  predicted_score: null,
+  inventory_complete: false,
+  formal_scoring_eligible: false,
+  submission_eligible: false,
+};
 const fixtures = new Map([
   ["/auth/session", auth],
-  ["/bids", empty],
+  ["/bids", { ...empty, items: [bid] }],
+  [
+    "/project-work-summaries",
+    {
+      version: "project-work-summary/1",
+      observed_at: "2026-11-20T00:00:00Z",
+      items: [summary],
+    },
+  ],
   ["/history", empty],
   [bidPath, bid],
   [`${bidPath}/materials`, { documents: [], conflicts: [] }],
+  [`${bidPath}/package-documents`, empty],
   [
     `${bidPath}/review-state`,
     { bid_id: bid.id, request: null, current_review: null },
@@ -64,12 +96,14 @@ const fixtures = new Map([
 const require = createRequire(import.meta.url);
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE ?? "playwright");
 const server = await createServer({
+  configFile: false,
+  plugins: [react()],
   root: fileURLToPath(new URL("..", import.meta.url)),
-  server: { host: "127.0.0.1", port: 0 },
+  server: { host: "127.0.0.1", hmr: false },
 });
 let browser;
 try {
-  await server.listen(0);
+  await server.listen();
   const origin = `http://127.0.0.1:${server.httpServer.address().port}`;
   browser = await chromium.launch({
     headless: true,
@@ -140,6 +174,66 @@ try {
       );
       assert.deepEqual(pageErrors, []);
       console.log(`${width}px 项目资料修订与历史轮次提示通过`);
+
+      await page.getByRole("button", { name: "返回项目列表" }).click();
+      await heading.waitFor();
+      const table = page.getByRole("table");
+      const scroller = page.getByRole("region", { name: "全部项目" });
+      const open = table.getByRole("button", {
+        name: `打开${bid.title}`,
+        exact: true,
+      });
+      const reason = table.getByText(summary.next_action.reason, {
+        exact: true,
+      });
+      await reason.waitFor();
+      assert.deepEqual(
+        await table.getByRole("columnheader").allTextContents(),
+        ["项目名称", "工作阶段", "整包资料", "工作下一步", "打开"],
+      );
+      const initial = await scroller.evaluate((wrap) => ({
+        scrollLeft: wrap.scrollLeft,
+        overflow: wrap.scrollWidth - wrap.clientWidth,
+        pageWidth: document.documentElement.scrollWidth,
+      }));
+      assert.equal(initial.scrollLeft, 0);
+      assert.equal(initial.pageWidth, width);
+      const withinTable = async (locator) => {
+        const tableBox = await scroller.boundingBox();
+        const controlBox = await locator.boundingBox();
+        return (
+          controlBox.x >= tableBox.x - 1 &&
+          controlBox.x + controlBox.width <= tableBox.x + tableBox.width + 1
+        );
+      };
+      assert(await withinTable(open), "打开项目行动应在表格初始视口内");
+      const create = page.getByRole("button", { name: "＋ 新建投标" });
+      assert(await create.isVisible());
+      const createBox = await create.boundingBox();
+      assert(createBox.x >= 0 && createBox.x + createBox.width <= width);
+      if (width === 390) {
+        assert(initial.overflow > 0, "390px 应覆盖实际横向滚动");
+        await scroller.press("ArrowRight");
+        await page.waitForFunction(() => document.activeElement.scrollLeft > 0);
+      }
+      await scroller.evaluate((wrap) => {
+        wrap.scrollLeft = wrap.scrollWidth;
+      });
+      assert.equal(
+        await scroller.evaluate((wrap) => wrap.scrollLeft),
+        initial.overflow,
+      );
+      assert(await withinTable(reason), "横向滚动后可以读取完整的工作下一步");
+      assert(await withinTable(open), "横向滚动后打开项目行动应保持可见");
+      await open.click();
+      await page
+        .getByRole("heading", { name: "整包核查", exact: true })
+        .waitFor();
+      assert.equal(new URL(page.url()).pathname, `${bidPath}/packages`);
+      assert.deepEqual(pageErrors, []);
+      console.log(
+        `${width}px 项目列表五列、创建与打开项目通过，表内滚动 ${initial.overflow}px`,
+      );
     } catch (error) {
       failures.push(new Error(`${width}px ${error.message}`, { cause: error }));
     } finally {
