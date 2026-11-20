@@ -1,16 +1,6 @@
-import { api } from "./api";
-import type { BidPackage_scope, RuleSetView } from "./contracts";
-import {
-  captureInventoryDirectory,
-  captureInventoryView,
-  capturePackageView,
-} from "./authoringCaptureDirectoryProtocol";
+import type { BidPackage_scope } from "./contracts";
 import type { CapturePackageReference } from "./authoringInputCatalogProtocol";
-import type {
-  AuthoringTreeChangeRequest,
-  AuthoringTreeView,
-  PackageRequirementInventoryView,
-} from "./contracts";
+import type { PackageRequirementInventoryView } from "./contracts";
 import { executionId } from "./executionInputValidation";
 
 const headings = [
@@ -80,97 +70,12 @@ export function technicalOutline(inventory: PackageRequirementInventoryView) {
   };
 }
 
-export function appendOutline(
-  tree: AuthoringTreeView,
-  chapters: ReadonlyArray<{ key: string; title: string }>,
-  basisDigest: string,
-): AuthoringTreeChangeRequest {
-  const live = tree.nodes.filter((node) => !node.deleted);
-  const names = new Set(
-    live.map((node) => node.title.normalize("NFKC").trim()),
-  );
-  const changes: AuthoringTreeChangeRequest["changes"] = [];
-  const rootCount = live.filter((node) => node.parent_id === null).length;
-  for (const { key, title } of chapters) {
-    const normalized = title.normalize("NFKC").trim();
-    if (names.has(normalized)) continue;
-    const ordinal = rootCount + changes.length;
-    if (ordinal >= 500 || live.length + changes.length >= 500)
-      throw new Error("章节数量达到目录限制，请先人工调整目录。");
-    names.add(normalized);
-    changes.push({
-      op: "add",
-      client_key: "technical-bid-" + basisDigest + "-" + key,
-      title,
-      node_type: "chapter",
-      parent: null,
-      ordinal,
-    });
-  }
-  if (!changes.length)
-    throw new Error("没有需要追加的新章；现有章节不会被覆盖。");
-  return { base_draft_revision: tree.draft_revision, changes };
-}
-
 type InventoryRef = { id: string; digest: string };
 export type OutlineBasis = {
   target: CapturePackageReference;
   authority: CapturePackageReference;
   inventory: InventoryRef;
 };
-const packagePath = (bid: string, p: CapturePackageReference) =>
-  `/bids/${bid}/packages/${p.package_id}/revisions/${p.revision_id}`;
-
-export async function verifyCurrentOutline(bid: string, basis: OutlineBasis) {
-  const targetPath = packagePath(bid, basis.target);
-  const sourcePath = packagePath(bid, basis.authority);
-  const directory = targetPath + "/requirement-inventories";
-  const [
-    { data: page },
-    { data: inventory },
-    { data: rules },
-    target,
-    authority,
-  ] = await Promise.all([
-    api<unknown>(directory + "?limit=20"),
-    api<unknown>(directory + "/" + basis.inventory.id),
-    api<RuleSetView>(`/bids/${bid}/rules`),
-    api<unknown>(targetPath.slice(0, targetPath.indexOf("/revisions/"))).then(
-      (r) => capturePackageView(r.data, bid, "target", basis.target),
-    ),
-    api<unknown>(sourcePath.slice(0, sourcePath.indexOf("/revisions/"))).then(
-      (r) => capturePackageView(r.data, bid, "authority", basis.authority),
-    ),
-  ]);
-  const checked = await captureInventoryView(
-    inventory,
-    target,
-    authority,
-    basis.inventory,
-  );
-  const fresh = new Map(rules?.rules?.map((rule) => [rule.id, rule]));
-  const rows = technicalOutline(checked).rows;
-  if (
-    !sameLot(target.manifest.scope, authority.manifest.scope) ||
-    captureInventoryDirectory(page).current_inventory_id !==
-      basis.inventory.id ||
-    rules?.bid_id !== bid ||
-    rules.id !== checked.manifest.rule_set_id ||
-    rows.some(({ ruleId, statement, evidenceIds }) => {
-      const rule = fresh.get(ruleId);
-      return (
-        rule?.confirmation !== "confirmed" ||
-        rule.provenance_status !== "effective" ||
-        rule.statement !== statement ||
-        evidenceIds.some((evidence) => !rule.evidence_ids.includes(evidence))
-      );
-    })
-  )
-    throw new Error(
-      "当前要求清单、来源或确认决定已变更，未继续大纲操作。请刷新并重新选择。",
-    );
-  return checked;
-}
 export function sameLot(a: BidPackage_scope, b: BidPackage_scope) {
   return (
     a.bid_id === b.bid_id &&

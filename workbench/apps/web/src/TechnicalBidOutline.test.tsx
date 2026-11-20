@@ -50,7 +50,6 @@ async function setup(mode: "ok" | "stale" | "foreign") {
   reference.rule_snapshot.statement = statement;
   inventory.digest = await jsonDigest(inventory.manifest);
   directory.items[0].digest = inventory.digest;
-  let hasPreview = false;
   const writes: { path: string; etag: string | null; body: unknown }[] = [];
   const onChanged = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal(
@@ -64,13 +63,14 @@ async function setup(mode: "ok" | "stale" | "foreign") {
           etag: new Headers(init.headers).get("If-Match"),
           body,
         });
-        if (url.pathname.endsWith("/structure/preview")) {
-          hasPreview = true;
+        if (url.pathname.endsWith("/technical-outline/preview")) {
           return reply(
             {
               action_id: actionId,
               base_draft_revision: tree.draft_revision,
-              created_ids: { [body.changes[0].client_key]: chapterId },
+              created_ids: {
+                ["technical-bid-" + inventory.digest + "-schedule"]: chapterId,
+              },
               plan_suggestions: {},
               before: [],
               after: [
@@ -99,7 +99,16 @@ async function setup(mode: "ok" | "stale" | "foreign") {
             201,
           );
         }
-        if (url.pathname.endsWith("/resolve"))
+        if (url.pathname.endsWith("/resolve")) {
+          if (mode === "stale" && body.decision === "confirm")
+            return reply(
+              {
+                code: "TECHNICAL_OUTLINE_BASIS_STALE",
+                message:
+                  "大纲的投标包、依据包、要求清单或确认已变化，请重新选择当前依据并预览。",
+              },
+              409,
+            );
           return reply({
             state: body.decision === "confirm" ? "applied" : "rejected",
             action_id: actionId,
@@ -108,6 +117,7 @@ async function setup(mode: "ok" | "stale" | "foreign") {
             snapshot_id: tree.snapshot_id,
             snapshot_digest: "a".repeat(64),
           });
+        }
         return reply({ message: "Unexpected write" }, 404);
       }
       if (url.pathname.endsWith("/structure")) return reply(tree);
@@ -116,21 +126,7 @@ async function setup(mode: "ok" | "stale" | "foreign") {
           config: { schema_version: 1, nodes: [] },
           name: "合成目录",
         });
-      if (url.pathname.endsWith("/rules"))
-        return reply({
-          bid_id: f.bidId,
-          id: inventory.manifest.rule_set_id,
-          rules: [
-            {
-              id: reference.rule_id,
-              statement,
-              evidence_ids: reference.rule_snapshot.evidence_ids,
-              confirmation:
-                hasPreview && mode === "stale" ? "rejected" : "confirmed",
-              provenance_status: "effective",
-            },
-          ],
-        });
+      if (url.pathname.endsWith("/rules")) return reply({ rules: [] });
       for (const name of ["target", "authority"]) {
         const row = f.responses.get(name)!;
         if (
@@ -222,19 +218,18 @@ it("previews only additive chapters, then uses the same underlying revision to e
   const apply = await screen.findByRole("button", { name: "应用这次变更" });
   expect(writes).toHaveLength(1);
   expect(writes[0]).toMatchObject({
+    path: `/api/v1/bids/${f.bidId}/drafts/${draftId}/technical-outline/preview`,
     etag,
     body: {
       base_draft_revision: 4,
-      changes: [
-        {
-          op: "add",
-          client_key: "technical-bid-" + digest + "-schedule",
-          title: "施工进度与资源配置",
-          node_type: "chapter",
-          ordinal: 0,
-          parent: null,
+      basis: {
+        ...f.request.package_context,
+        inventory: {
+          id: f.request.package_context.inventory.id,
+          digest,
         },
-      ],
+      },
+      chapter_keys: ["schedule"],
     },
   });
   await user.click(apply);
@@ -248,9 +243,12 @@ it("blocks a once-valid outline if a recorded rule is rejected between preview a
   await user.click(await screen.findByRole("button", { name: /核对当前清单/ }));
   await user.click(await screen.findByRole("button", { name: "预览追加大纲" }));
   await user.click(await screen.findByRole("button", { name: "应用这次变更" }));
-  await screen.findByText(/当前要求清单、来源或确认决定已变更/);
-  expect(writes).toHaveLength(1);
+  await screen.findByText(/大纲的投标包、依据包、要求清单或确认已变化/);
+  expect(writes).toHaveLength(2);
   expect(onChanged).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "放弃这次变更" }));
+  await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
+  expect(writes[2].body).toEqual({ decision: "reject" });
 });
 
 it("does not offer directory changes from a mismatched basis receipt", async () => {

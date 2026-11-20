@@ -13117,6 +13117,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/resolve",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/technical-outline/preview",
   "POST /api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",
   "PUT /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/plan",
   "GET /api/v1/authoring/templates",

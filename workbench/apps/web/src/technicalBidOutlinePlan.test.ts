@@ -1,9 +1,6 @@
 import { expect, it } from "vitest";
-import type {
-  AuthoringTreeView,
-  PackageRequirementInventoryView,
-} from "./contracts";
-import { appendOutline, technicalOutline } from "./technicalBidOutlinePlan";
+import type { PackageRequirementInventoryView } from "./contracts";
+import { technicalOutline } from "./technicalBidOutlinePlan";
 
 const id = (i: number) =>
   "11111111-1111-4111-8111-" + String(i).padStart(12, "0");
@@ -68,60 +65,4 @@ it("only suggests headings from supported and confirmed technical rows; unknown 
     [id(1), [id(11)], ["schedule", "quality"]],
     [id(2), [id(15)], []],
   ]);
-});
-it("only appends nonduplicate root chapters without changing current or deleted nodes", () => {
-  const tree = {
-    draft_revision: 7,
-    nodes: [
-      {
-        section_id: id(1),
-        parent_id: null,
-        title: "工程概况与施工部署",
-        deleted: false,
-      },
-      {
-        section_id: id(2),
-        parent_id: id(1),
-        title: "施工进度与资源配置",
-        deleted: false,
-      },
-      {
-        section_id: id(3),
-        parent_id: null,
-        title: "质量管理与验收",
-        deleted: true,
-      },
-    ],
-  } as AuthoringTreeView;
-  const digest = "a".repeat(64);
-  expect(
-    appendOutline(
-      tree,
-      [
-        { key: "overview", title: "工程概况与施工部署" },
-        { key: "schedule", title: "施工进度与资源配置" },
-        { key: "quality", title: "质量管理与验收" },
-      ],
-      digest,
-    ),
-  ).toEqual({
-    base_draft_revision: 7,
-    changes: [
-      {
-        op: "add",
-        client_key: "technical-bid-" + digest + "-quality",
-        title: "质量管理与验收",
-        node_type: "chapter",
-        parent: null,
-        ordinal: 1,
-      },
-    ],
-  });
-  expect(() =>
-    appendOutline(
-      tree,
-      [{ key: "overview", title: "工程概况与施工部署" }],
-      digest,
-    ),
-  ).toThrow(/不会被覆盖/);
 });

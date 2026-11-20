@@ -1,7 +1,7 @@
 import { AuthoringTemplateEditor } from "./AuthoringTemplateEditor";
 import { AuthoringFormatBindings } from "./AuthoringFormatBindings";
 import { useEffect, useLayoutEffect, useState, useRef } from "react";
-import { api, type ApiResult } from "./api";
+import { api, supportsApi, type ApiResult } from "./api";
 import type {
   AuthoringTreeView,
   AuthoringTreeChangeRequest,
@@ -24,11 +24,7 @@ import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
 import { TechnicalBidOutline } from "./TechnicalBidOutline";
-import {
-  appendOutline,
-  verifyCurrentOutline,
-  type OutlineBasis,
-} from "./technicalBidOutlinePlan";
+import type { OutlineBasis } from "./technicalBidOutlinePlan";
 import {
   treeMoveKey,
   resolveTreeMove,
@@ -285,14 +281,14 @@ function ScopedAuthoringStructure({
         }) satisfies AuthoringTreeChangeRequest,
     );
   }
+  const outlinePath = "/technical-outline/preview";
+  const outlineAvailable = supportsApi("POST", path + outlinePath);
   function previewOutline(
-    chapters: Parameters<typeof appendOutline>[1],
+    chapters: ReadonlyArray<{ key: string }>,
     basis: OutlineBasis,
   ) {
-    if (!valid || locked || tree.error) return;
-    void begin("/structure/preview", async (revision, head, current) => {
-      await verifyCurrentOutline(bidId, basis);
-      if (!current()) return undefined;
+    if (!valid || locked || tree.error || !outlineAvailable) return;
+    void begin(outlinePath, async (revision, head, current) => {
       const latest = await api<AuthoringTreeView>(path + "/structure");
       if (!current()) return undefined;
       if (
@@ -305,22 +301,12 @@ function ScopedAuthoringStructure({
         void tree.reload();
         throw new Error("草稿目录已变化，未覆盖现有章节；请重新核对后预览。");
       }
-      const request = appendOutline(
-        latest.data,
-        chapters,
-        basis.inventory.digest,
-      );
-      // Recover the exact source selection with this existing preview receipt.
-      // It is not an authoritative plan or generation authorization.
-      sessionStorage.setItem(
-        outlineBasisKey(basis.inventory.digest),
-        JSON.stringify(basis),
-      );
-      return request;
+      return {
+        base_draft_revision: revision,
+        basis,
+        chapter_keys: chapters.map(({ key }) => key),
+      };
     });
-  }
-  function outlineBasisKey(digest: string) {
-    return `tender:knowledge:${memberId}:technical-outline:${bidId}:${draftId}:${digest}`; // Workspace-local selection, not approval state.
   }
   async function decide(decision: "confirm" | "reject", retry = false) {
     if (!held?.value.action_id && !resolve.pending) return;
@@ -343,37 +329,8 @@ function ScopedAuthoringStructure({
         )
           return;
       }
-      // An uncertain confirm reuses the original structural command and ETag.
-      // It can only recover/append the same empty chapters; authority must still
-      // be frozen separately before exact generation to avoid hiding a good ACK.
-      if (!retry && decision === "confirm" && held?.value.action_id) {
-        const keys = Object.keys(held.value.created_ids);
-        const technicalKeys = keys.filter((key) =>
-          key.startsWith("technical-bid-"),
-        );
-        if (technicalKeys.length > 0) {
-          const digest = /^technical-bid-([a-f0-9]{64})-/.exec(
-            technicalKeys[0],
-          )?.[1];
-          const raw = digest
-            ? sessionStorage.getItem(outlineBasisKey(digest))
-            : null;
-          const basis = raw ? (JSON.parse(raw) as OutlineBasis) : null;
-          if (
-            !basis ||
-            !digest ||
-            basis.inventory?.digest !== digest ||
-            technicalKeys.length !== keys.length ||
-            technicalKeys.some(
-              (key) => !key.startsWith("technical-bid-" + digest + "-"),
-            )
-          )
-            throw new Error(
-              "缺少这个大纲预览的原始依据，未应用。请放弃预览并重新选择资料。",
-            );
-          await verifyCurrentOutline(bidId, basis);
-        }
-      }
+      // The structure action binds the original outline basis on the server.
+      // Retry the same key first; a committed receipt survives later source changes.
       if (!currentScope()) return;
       const r = retry
         ? await resolve.retry<AuthoringStructureResult>()
@@ -445,12 +402,14 @@ function ScopedAuthoringStructure({
               {readOnly ? "查看本章正文" : "继续编写本章"}
             </button>
           )}
-          <TechnicalBidOutline
-            bidId={bidId}
-            disabled={locked || !!tree.error || !tree.etag}
-            onPackages={onPackages}
-            onPreview={previewOutline}
-          />
+          {outlineAvailable && (
+            <TechnicalBidOutline
+              bidId={bidId}
+              disabled={locked || !!tree.error || !tree.etag}
+              onPackages={onPackages}
+              onPreview={previewOutline}
+            />
+          )}
           <details>
             <summary>新增或调整章节目录</summary>
             <fieldset disabled={locked}>
@@ -697,11 +656,13 @@ function ScopedAuthoringStructure({
               </p>
               <Preview value={held.value} />
               {Object.keys(held.value.created_ids).some((key) =>
-                key.startsWith("technical-bid-"),
+                /^technical-bid-[a-f0-9]{64}-(?:overview|method|schedule|quality|safety)$/.test(
+                  key,
+                ),
               ) && (
                 <p className="small-note">
                   这是空章节建议，不会把依据写入正文或授予生成资格。
-                  若应用回执丢失，可恢复同一目录请求；开始编写前仍需另行固定当前依据。
+                  应用时服务端复核原包修订和要求清单；若回执丢失，可恢复原命令。开始编写前仍需另行固定编写输入。
                 </p>
               )}
               <div className="review-shortcuts">

@@ -1,15 +1,16 @@
 """Complete-A2 tree/plan/template API. Include this router separately from text editing."""
 
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from apps.api.auth import auth
 from apps.api.authoring import response
 from packages.authoring import structure_repository as service
-from packages.authoring import structure_schema, templates
+from packages.authoring import structure_schema, technical_outline, templates
 from packages.authoring.repository import draft_etag
 from packages.domain.runtime import Command, clean, connection, fetch
 from packages.domain.work_access import begin
@@ -52,6 +53,73 @@ def preview(bid_id: UUID, draft_id: UUID, r: Request, body: dict = Body(...)):
             return response(cmd.replay, True)
         value = service.preview(
             c, bid_id, draft_id, actor["member_id"], body, r.headers.get("if-match")
+        )
+        return response(cmd.finish(value, 201))
+
+
+Digest = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
+class OutlinePackageReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    package_id: UUID
+    revision_id: UUID
+    digest: Digest
+
+
+class OutlineInventoryReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: UUID
+    digest: Digest
+
+
+class OutlineBasis(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    target: OutlinePackageReference
+    authority: OutlinePackageReference
+    inventory: OutlineInventoryReference
+
+
+class TechnicalOutlineRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    base_draft_revision: Annotated[int, Field(strict=True, ge=1, le=9007199254740991)]
+    basis: OutlineBasis
+    chapter_keys: Annotated[
+        list[Literal["overview", "method", "schedule", "quality", "safety"]],
+        Field(min_length=1, max_length=5),
+    ]
+
+
+@router.post(
+    "/bids/{bid_id}/drafts/{draft_id}/technical-outline/preview",
+    operation_id="previewTechnicalAuthoringOutline",
+    status_code=201,
+    openapi_extra={
+        "security": [{"SessionCookie": []}],
+        "parameters": [
+            {"in": "header", "name": name, "required": True, "schema": {"type": "string"}}
+            for name in ("Origin", "X-CSRF-Token", "Idempotency-Key", "If-Match")
+        ],
+    },
+)
+def preview_technical_outline(
+    bid_id: UUID, draft_id: UUID, r: Request, body: TechnicalOutlineRequest
+):
+    actor = auth(r, True)
+    request = body.model_dump(mode="json")
+    with connection() as c:
+        cmd = begin_draft(c, r, actor, bid_id, draft_id, "preview-technical-outline", request)
+        if cmd.replay:
+            return response(cmd.replay, True)
+        outline = technical_outline.capture(c, bid_id, request["basis"])
+        value = service.preview(
+            c,
+            bid_id,
+            draft_id,
+            actor["member_id"],
+            request,
+            r.headers.get("if-match"),
+            outline=outline,
         )
         return response(cmd.finish(value, 201))
 
