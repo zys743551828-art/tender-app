@@ -293,3 +293,63 @@ def test_all_fields_except_exact_trusted_footer_page_are_blocked():
     assert check(
         fixture(footer="<w:p>" + page.replace(" PAGE ", " NUMPAGES ") + "</w:p>")
     ).blocking_codes == ("FIELD_EVALUATION_UNSUPPORTED",)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        fixture(body="<w:p><w:r><w:t>工期：{{原始</w:t></w:r><w:r><w:t>日期}}</w:t></w:r></w:p>"),
+        fixture(
+            body="<w:tbl><w:tr><w:tc><w:p><w:r><w:t>［待填写］</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+        ),
+        fixture(footer="<w:p><w:r><w:t>【待补充】</w:t></w:r></w:p>"),
+        fixture(body="<w:p><w:r><w:t>合同工期：{{ }}</w:t></w:r></w:p>"),
+        fixture(
+            binary=(
+                "word/footnotes.xml",
+                (
+                    f'<w:footnotes xmlns:w="{W}">'
+                    '<w:footnote w:id="2"><w:p><w:r><w:t>[TODO]</w:t></w:r></w:p></w:footnote>'
+                    "</w:footnotes>"
+                ).encode(),
+            ),
+        ),
+    ],
+)
+def test_explicit_placeholders_in_exact_word_text_produce_a_bounded_advisory_code(data):
+    result = check(data, prohibited=())
+    assert result.blocking_codes == ("DOCX_EXPLICIT_PLACEHOLDER",)
+    assert result.artifact_sha256 == sha(data)
+    assert "CONTENT_AND_PROJECT_RULE_REVIEW" in result.manual_check_codes
+    assert "原始日期" not in repr(result)
+    assert result.policy_sha256 == sha(
+        {
+            "filename": "技术标.docx",
+            "prohibited_names": (),
+            "placeholder_policy": "literal-markers/1",
+        }
+    )
+
+
+def test_ordinary_tender_prose_and_split_paragraphs_do_not_become_placeholder_claims():
+    data = fixture(
+        body=(
+            "<w:p><w:r><w:t>模版例子 {{</w:t></w:r></w:p>"
+            "<w:p><w:r><w:t>字段}}</w:t></w:r></w:p>"
+            "<w:p><w:r><w:t>按规定待补充招标答疑。TODO 为词条示例。</w:t></w:r></w:p>"
+            "<w:p><w:r><w:t>单花括号{日期}或正常备注[鉴定结果]。</w:t></w:r></w:p>"
+        ),
+        properties="<title>【待填写】</title>",
+    )
+    assert check(data, prohibited=()).blocking_codes == ()
+    assert "CONTENT_AND_PROJECT_RULE_REVIEW" in check(data, prohibited=()).manual_check_codes
+
+
+def test_technical_word_from_real_assembler_flags_only_the_unchanged_marker():
+    section = empty_content("施工进度计划", 0)
+    section["content"][0]["content"] = [{"type": "text", "text": "计划开工日期：【待核实】"}]
+    unfilled = assemble_docx({"sections": [section]})
+    section["content"][0]["content"][0]["text"] = "计划开工日期：12 月 10 日（示例）"
+    filled = assemble_docx({"sections": [section]})
+    assert check(unfilled).blocking_codes == ("DOCX_EXPLICIT_PLACEHOLDER",)
+    assert check(filled).blocking_codes == ()

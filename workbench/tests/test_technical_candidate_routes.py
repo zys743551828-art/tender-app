@@ -262,3 +262,20 @@ def test_extra_or_oversize_policy_fields_are_rejected(ports):
         assert result.status_code == 422
         assert result.json()["code"] == "INVALID_REQUEST"
     assert ports.events == []
+
+
+def test_placeholder_read_checks_bound_generated_bytes_and_never_returns_the_text(ports):
+    section = empty_content("技术标测试", 0)
+    section["content"][0]["content"] = [
+        {"type": "text", "text": "待替换值：{{synthetic-private-key-not-a-secret}}"}
+    ]
+    data = assemble_docx({"sections": [section]})
+    ports.read_data = data
+    ports.descriptor.update(digest=sha(data), byte_size=len(data))
+    ports.proof.update(sha256=sha(data), byte_size=len(data))
+    result = TestClient(app).post(URL, json={**BODY, "prohibited_names": []})
+    assert result.status_code == 200
+    assert result.json()["artifact_sha256"] == sha(data)
+    assert result.json()["blocking_codes"] == ["DOCX_EXPLICIT_PLACEHOLDER"]
+    assert result.json()["publication_authorized"] is False
+    assert "synthetic-private-key-not-a-secret" not in result.text

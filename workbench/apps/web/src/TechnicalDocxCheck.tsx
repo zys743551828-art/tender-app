@@ -38,6 +38,9 @@ const known: Record<string, string> = {
   TRACKED_CHANGES: "文档保留了修订记录",
   HIDDEN_CONTENT: "文档含隐藏内容",
   CANDIDATE_DOCX_INVALID: "不是可核验的标准 DOCX",
+  DOCX_EXPLICIT_PLACEHOLDER:
+    "实际 Word 的正文、页眉页脚或脚注/尾注发现明确的占位标记，请逐项核对并补全",
+
   DOCX_PAGE_MARGINS_MISMATCH:
     "检测到 Word 页面边距与本稿冻结的已确认要求不一致",
   DOCX_PAGE_MARGINS_UNINSPECTABLE:

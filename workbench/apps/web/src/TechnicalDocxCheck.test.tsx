@@ -122,3 +122,17 @@ it("makes missing frozen page-margin basis an explicit manual check", async () =
     within(region).getByText(/也不代表已通过独立审核/),
   ).toBeInTheDocument();
 });
+
+it("reports explicit placeholders as an internal check finding, not clearance", async () => {
+  const calls = mock({
+    ...response,
+    blocking_codes: ["DOCX_EXPLICIT_PLACEHOLDER"],
+  });
+  const user = await open();
+  await user.click(screen.getByRole("button", { name: "检查这个 Word" }));
+  const region = await screen.findByRole("status");
+  expect(within(region).getByText(/发现明确的占位标记/)).toBeInTheDocument();
+  expect(within(region).getByText(/人工核对正文/)).toBeInTheDocument();
+  expect(within(region).queryByText(/未发现问题/)).not.toBeInTheDocument();
+  expect(calls).toHaveLength(1);
+});

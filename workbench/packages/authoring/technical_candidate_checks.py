@@ -46,6 +46,18 @@ MARGIN_NAMES = {f"margin_{side}_twips": side for side in ("top", "right", "botto
 MARGIN_UNINSPECTABLE = "DOCX_PAGE_MARGINS_UNINSPECTABLE"
 MARGIN_MISMATCH = "DOCX_PAGE_MARGINS_MISMATCH"
 MARGIN_NO_BASIS = "DOCX_PAGE_MARGINS_NO_FROZEN_BASIS"
+PLACEHOLDER_FOUND = "DOCX_EXPLICIT_PLACEHOLDER"
+PLACEHOLDER_POLICY = "literal-markers/1"
+_WORD_STORIES = {
+    f"{{{ns}}}{part}"
+    for ns in inspection.WORD_NS
+    for part in ("document", "hdr", "ftr", "footnotes", "endnotes")
+}
+_PLACEHOLDER_LABELS = r"(?:待填|待填写|待补|待补充|待核实|todo)"
+_PLACEHOLDER = re.compile(
+    r"\{\{[^{}]{0,80}\}\}" + rf"|\[{_PLACEHOLDER_LABELS}\]" + rf"|【{_PLACEHOLDER_LABELS}】"
+)
+
 _HEX = re.compile(r"[a-f0-9]{64}")
 _MEASUREMENT = re.compile(r"[+-]?[0-9]{1,10}")
 _FORMAT_BINDING = Draft202012Validator(FORMAT_BINDING, format_checker=FormatChecker())
@@ -312,6 +324,8 @@ def inspect_candidate_docx(
 
     Prohibited names come from an explicitly selected project policy. This lexical
     check does not attest visual/OCR content, style compliance or factual coverage.
+    Placeholder checks cover only explicit supported marks in individual readable
+    Word paragraphs, not missing values, diagrams, or project semantics.
     Callers must retain the reviewed basis and compare the hash of delivered bytes.
     """
     names = _names(prohibited_names)
@@ -331,7 +345,11 @@ def inspect_candidate_docx(
         return DocxCandidateCheck(
             sha(data),
             sha(
-                {"filename": filename, "prohibited_names": names}
+                {
+                    "filename": filename,
+                    "prohibited_names": names,
+                    "placeholder_policy": PLACEHOLDER_POLICY,
+                }
                 | (
                     {
                         "expected_page_margins_twips": page_margins.expected_twips,
@@ -407,8 +425,14 @@ def inspect_candidate_docx(
                 if _local(root.tag) in {"hdr", "ftr"}
                 else "CONTENT"
             )
-            if any(flagged(text) for text in _paragraph_strings(root)):
-                blocking.add("PROHIBITED_NAME_" + location)
+            is_story = root.tag in _WORD_STORIES
+            if pattern or is_story:
+                for paragraph in _paragraph_strings(root):
+                    normalized = _normalize(paragraph)
+                    if pattern and pattern.search(normalized):
+                        blocking.add("PROHIBITED_NAME_" + location)
+                    if is_story and _PLACEHOLDER.search(normalized):
+                        blocking.add(PLACEHOLDER_FOUND)
             for node in root.iter():
                 tag = _local(node.tag)
                 text = node.text or ""
