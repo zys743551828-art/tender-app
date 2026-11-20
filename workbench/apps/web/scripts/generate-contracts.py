@@ -124,6 +124,7 @@ wanted = [
     "TechnicalChapterTemplatePage",
     "TechnicalChapterRunPage",
     "TechnicalChapterLayoutView",
+    "HistoricalCandidateTrace",
     "AuthoringGenerationBatchCreateRequest",
     "AuthoringGenerationBatchRetryRequest",
     "AuthoringGenerationBatchResolveRequest",

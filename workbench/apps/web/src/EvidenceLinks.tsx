@@ -14,10 +14,12 @@ export function EvidenceLinks({
   ids,
   label = "查看引用原页",
   allowedSources,
+  expectedPhysicalPage,
 }: {
   ids: string[];
   label?: string;
   allowedSources?: readonly { documentVersionId: string; parseRunId: string }[];
+  expectedPhysicalPage?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [sources, setSources] = useState<Source[] | null>(null);
@@ -48,7 +50,11 @@ export function EvidenceLinks({
             const { data: evidence } = await api<EvidenceView>(
               `/evidence/${id}`,
             );
-            if (evidence.id !== id)
+            if (
+              evidence.id !== id ||
+              (expectedPhysicalPage !== undefined &&
+                evidence.physical_page !== expectedPhysicalPage)
+            )
               throw new Error("引用与文件版本身份不一致，未打开其他原件。");
             if (
               allowed &&
@@ -75,7 +81,7 @@ export function EvidenceLinks({
     return () => {
       active = false;
     };
-  }, [open, available, key, allowedKey, attempt]);
+  }, [open, available, key, allowedKey, expectedPhysicalPage, attempt]);
   return (
     <div className="evidence-links">
       <button

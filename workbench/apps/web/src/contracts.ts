@@ -3968,6 +3968,26 @@ export type TechnicalChapterLayoutView = {
   ordinary_structure_protected: boolean;
 };
 
+export type HistoricalCandidateTrace = {
+  protocol: "authoring-historical-candidate-trace/1";
+  bid_id: string;
+  action_id: string;
+  action_digest: string;
+  candidate_digest: string;
+  snapshot_id: string;
+  snapshot_digest: string;
+  section_revision_id: string;
+  qualification_digest: string;
+  node: HistoricalCandidateNode;
+  citations: HistoricalCandidateCitation[];
+  historic_only: true;
+  original_bytes_reverified: false;
+  current_effectivity_verified: false;
+  content_correctness_certified: false;
+  publication_authorized: false;
+  trace_digest: string;
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -10085,6 +10105,24 @@ export type TechnicalChapterRunItem = {
     | "unverified";
 };
 
+export type HistoricalCandidateNode = {
+  node_id: string;
+  node_type: "heading" | "paragraph";
+  before_digest: string;
+  after_digest: string;
+};
+
+export type HistoricalCandidateCitation = {
+  evidence_id: string;
+  document_version_id: string;
+  parse_run_id: string;
+  physical_page: number;
+  evidence_digest: string;
+  source_id: string;
+  source_revision: number;
+  memberships: HistoricalCandidateMembership[];
+};
+
 export type AuthoringGenerationJson =
   | null
   | boolean
@@ -11982,6 +12020,13 @@ export type OutlineInventoryReference = {
   digest: string;
 };
 
+export type HistoricalCandidateMembership = {
+  role: "authority" | "target";
+  package_id: string;
+  revision_id: string;
+  manifest_digest: string;
+};
+
 export type PackageScopeReview_Scope = {
   bid_id: PackageScopeReview_Id;
   package_id: PackageScopeReview_Id;
@@ -12971,6 +13016,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/authoring/exact-revision-capabilities",
   "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
+  "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/candidate-source-trace",
   "GET /api/v1/authoring/exact-text-edit-capabilities",
   "GET /api/v1/authoring/exact-marked-text-edit-capabilities",
   "POST /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",

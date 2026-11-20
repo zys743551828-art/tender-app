@@ -9,6 +9,8 @@ import {
 import { ErrorNotice, LoadingSkeleton } from "./components";
 import type { DraftSaved, DraftView } from "./contracts";
 import { executionId, executionSha } from "./executionInputValidation";
+import { HistoricalCandidateSources } from "./HistoricalCandidateSources";
+import type { HistoricalCandidateProof } from "./historicalCandidateSources";
 import { ResourceState } from "./ResourceState";
 import { authoringText } from "./richEditorSchema";
 import { useResource } from "./useResource";
@@ -45,6 +47,7 @@ export function AuthoringAdoptionHandoff({
     );
   const [receipt, setReceipt] = useState<{
     saved: DraftSaved;
+    proof: HistoricalCandidateProof;
     title: string;
     text: string;
   } | null>(null);
@@ -80,7 +83,7 @@ export function AuthoringAdoptionHandoff({
       const qualification = await api<unknown>(
         `/bids/${bidId}/authoring/section-revisions/${binding.section_revision_id}/exact-qualification`,
       );
-      await verifyExactQualification(
+      const accepted = await verifyExactQualification(
         qualification.data,
         binding,
         action,
@@ -89,6 +92,7 @@ export function AuthoringAdoptionHandoff({
       if (active)
         setReceipt({
           saved,
+          proof: { saved, action, qualification: accepted },
           title: action.preview.after.attrs.title,
           text: authoringText(action.preview.after),
         });
@@ -162,6 +166,10 @@ export function AuthoringAdoptionHandoff({
             <strong>{receipt.title}</strong>
             <pre>{receipt.text}</pre>
           </details>
+          <HistoricalCandidateSources
+            key={receipt.proof.qualification.digest}
+            proof={receipt.proof}
+          />
           <ResourceState
             {...current}
             hasData={!!verifiedHead}
