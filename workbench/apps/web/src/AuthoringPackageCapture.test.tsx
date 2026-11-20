@@ -11,7 +11,11 @@ import { captureCommandKey } from "./authoringCaptureCommandProtocol";
 import { knowledgeStorageKey } from "./knowledgeStorage";
 import { setAuth } from "./api";
 import { jsonDigest } from "./editorSchema";
-import type { PackageAuthoringInputRequest } from "./contracts";
+import type {
+  BidPackageStoredView,
+  PackageAuthoringInputRequest,
+} from "./contracts";
+import { storeOutlineSelection } from "./technicalOutlineSelection";
 
 const f = captureFixture();
 const props = { memberId: f.memberId, bidId: f.bidId };
@@ -21,13 +25,17 @@ function reply(body: unknown, status = 200) {
     headers: { "Content-Type": "application/json" },
   });
 }
-function transport(mode: "ok" | "lost" | "wrong" = "ok") {
+function transport(
+  mode: "ok" | "lost" | "wrong" = "ok",
+  outlineHead: "current" | "superseded" = "current",
+) {
   const writes: {
     path: string;
     body: PackageAuthoringInputRequest;
     key: string | null;
   }[] = [];
   const unexpected: string[] = [];
+  const outlineHeadReads: string[] = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: string, init: RequestInit = {}) => {
@@ -51,6 +59,17 @@ function transport(mode: "ok" | "lost" | "wrong" = "ok") {
         value.digest = await jsonDigest(value.manifest);
         return reply(value, 201);
       }
+      for (const name of ["target", "authority"]) {
+        const exact = f.responses.get(name)!;
+        if (exact.path.split("/revisions/")[0] !== url.pathname) continue;
+        outlineHeadReads.push(url.pathname);
+        const value = structuredClone(f.body<BidPackageStoredView>(name));
+        if (outlineHead === "superseded" && name === "authority") {
+          value.manifest.revision_id = crypto.randomUUID();
+          value.digest = await jsonDigest(value.manifest);
+        }
+        return reply(value);
+      }
       const row = f.bundle.responses.find(
         (row) =>
           row.name !== "saved" &&
@@ -67,7 +86,7 @@ function transport(mode: "ok" | "lost" | "wrong" = "ok") {
       );
     }),
   );
-  return { writes, unexpected };
+  return { writes, unexpected, outlineHeadReads };
 }
 beforeEach(() => {
   sessionStorage.clear();
@@ -89,38 +108,17 @@ function restoreDraft() {
   );
 }
 
-it("requires explicit package, revision, snapshot, node, identity facts and purpose before saving", async () => {
-  const calls = transport(),
-    onSaved = vi.fn(),
-    user = userEvent.setup();
-  render(<AuthoringPackageCapture {...props} onSaved={onSaved} />);
-  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
-  expect(save).toBeDisabled();
-  for (const [label, ref] of [
-    ["目标投标包", f.request.package_context.target],
-    ["招标与补遗依据包", f.request.package_context.authority],
-  ] as const) {
-    await waitFor(() =>
-      expect(
-        within(screen.getByRole("group", { name: label })).getAllByRole(
-          "option",
-        ),
-      ).toHaveLength(2),
-    );
-    await user.selectOptions(
-      screen.getByLabelText(label + "目录"),
-      ref.package_id,
-    );
-    const revision = await within(
-      screen.getByRole("group", { name: label }),
-    ).findByRole("button", { name: /选择第 1 版/ });
-    await user.click(revision);
-  }
-  await waitFor(() => expect(screen.getByLabelText("需求清单")).toBeEnabled());
-  await user.selectOptions(
-    screen.getByLabelText("需求清单"),
-    f.request.package_context.inventory.id,
-  );
+const outlineScope = { ...props, draftId: f.request.target_section.draft_id };
+function rememberOutline() {
+  const { target, authority, inventory } = f.request.package_context;
+  storeOutlineSelection(outlineScope, {
+    target,
+    authority,
+    inventory: { id: inventory.id, digest: inventory.digest },
+  });
+}
+async function chooseNodeAndFacts(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => expect(screen.getByLabelText("正文快照")).toBeEnabled());
   await user.selectOptions(
     screen.getByLabelText("正文快照"),
     f.request.target_section.snapshot_id,
@@ -162,6 +160,40 @@ it("requires explicit package, revision, snapshot, node, identity facts and purp
     screen.getByLabelText("本次用途与理由"),
     f.request.facts.uses[0].reason,
   );
+}
+it("requires explicit package, revision, snapshot, node, identity facts and purpose before saving", async () => {
+  const calls = transport(),
+    onSaved = vi.fn(),
+    user = userEvent.setup();
+  render(<AuthoringPackageCapture {...props} onSaved={onSaved} />);
+  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
+  expect(save).toBeDisabled();
+  for (const [label, ref] of [
+    ["目标投标包", f.request.package_context.target],
+    ["招标与补遗依据包", f.request.package_context.authority],
+  ] as const) {
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("group", { name: label })).getAllByRole(
+          "option",
+        ),
+      ).toHaveLength(2),
+    );
+    await user.selectOptions(
+      screen.getByLabelText(label + "目录"),
+      ref.package_id,
+    );
+    const revision = await within(
+      screen.getByRole("group", { name: label }),
+    ).findByRole("button", { name: /选择第 1 版/ });
+    await user.click(revision);
+  }
+  await waitFor(() => expect(screen.getByLabelText("需求清单")).toBeEnabled());
+  await user.selectOptions(
+    screen.getByLabelText("需求清单"),
+    f.request.package_context.inventory.id,
+  );
+  await chooseNodeAndFacts(user);
   await waitFor(() => expect(save).toBeEnabled());
   expect(calls.writes).toHaveLength(0);
   await user.click(save);
@@ -233,4 +265,136 @@ it("does not save a restored input from another chapter in the scoped authoring 
     screen.getByRole("button", { name: "保存这份固定编写输入" }),
   ).toBeDisabled();
   expect(calls.writes).toHaveLength(0);
+});
+
+it("brings in the exact checked outline refs only after a click, then requires manual node, facts, and save", async () => {
+  rememberOutline();
+  const calls = transport();
+  const onSaved = vi.fn(),
+    user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+      onSaved={onSaved}
+    />,
+  );
+  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
+  expect(calls.outlineHeadReads).toEqual([]);
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  const apply = await screen.findByRole("button", {
+    name: "将这组资料填入采集表单",
+  });
+  expect(calls.outlineHeadReads).toEqual(
+    expect.arrayContaining(
+      ["target", "authority"].map(
+        (name) => f.responses.get(name)!.path.split("/revisions/")[0],
+      ),
+    ),
+  );
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  await user.click(apply);
+  expect(await screen.findByLabelText("需求清单")).toHaveValue(
+    f.request.package_context.inventory.id,
+  );
+  expect(screen.getByLabelText("正文快照")).toHaveValue("");
+  expect(screen.getByLabelText("事实集")).toHaveValue("");
+  expect(save).toBeDisabled();
+  expect(calls.writes).toEqual([]);
+  await chooseNodeAndFacts(user);
+  await waitFor(() => expect(save).toBeEnabled());
+  expect(calls.writes).toEqual([]);
+  await user.click(save);
+  await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+  expect(calls.writes).toHaveLength(1);
+  expect(calls.writes[0].path).toBe(
+    `/api/v1/bids/${f.bidId}/authoring/package-inputs`,
+  );
+  expect(calls.writes[0].body).toMatchObject({
+    package_context: f.request.package_context,
+    target_section: f.request.target_section,
+    facts: { uses: f.request.facts.uses },
+  });
+  expect(calls.unexpected).toEqual([]);
+});
+
+it("does not import stale outline choices or silently substitute a newer authority", async () => {
+  rememberOutline();
+  const calls = transport("ok", "superseded");
+  const user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  await screen.findByText(/原选择已变化或无法核对/);
+  expect(
+    screen.queryByRole("button", { name: "将这组资料填入采集表单" }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("招标与补遗依据包目录")).toHaveValue("");
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not overwrite an existing form and is unavailable in generic capture or a different draft", async () => {
+  rememberOutline();
+  const calls = transport();
+  const generic = render(<AuthoringPackageCapture {...props} />);
+  const verifyLabel = "核对大纲的资料选择";
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  generic.unmount();
+  const other = render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={{
+        ...f.request.target_section,
+        draft_id: crypto.randomUUID(),
+      }}
+    />,
+  );
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  other.unmount();
+  restoreDraft();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  expect(await screen.findByLabelText("本次用途与理由")).toHaveValue(
+    f.draft.uses[0].reason,
+  );
+  expect(calls.outlineHeadReads).toEqual([]);
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not bring in a previously checked selection that was explicitly forgotten", async () => {
+  rememberOutline();
+  const calls = transport();
+  const user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  const apply = await screen.findByRole("button", {
+    name: "将这组资料填入采集表单",
+  });
+  storeOutlineSelection(outlineScope, null);
+  await user.click(apply);
+  expect(screen.getByText(/原会话选择已清除或更改/)).toBeInTheDocument();
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  expect(calls.writes).toEqual([]);
 });

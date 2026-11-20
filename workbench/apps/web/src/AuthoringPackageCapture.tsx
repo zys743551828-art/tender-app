@@ -49,6 +49,7 @@ import {
   useAuthoringCaptureRead,
 } from "./useAuthoringCaptureRead";
 import { useAuthoringCaptureCommand } from "./useAuthoringCaptureCommand";
+import { TechnicalOutlineSourceShortcut } from "./TechnicalOutlineSourceShortcut";
 import "./AuthoringPackageCapture.css";
 
 export type AuthoringPackageCaptureProps = {
@@ -123,7 +124,8 @@ function CaptureWorkspace({
     emptyCaptureDraft(),
   );
   const [saved, setSaved] = useState<VerifiedAuthoringInput | null>(null),
-    [failure, setFailure] = useState<unknown>(null);
+    [failure, setFailure] = useState<unknown>(null),
+    [outlineImportEpoch, setOutlineImportEpoch] = useState(0);
   let draft: CaptureDraft,
     draftError: unknown = null;
   try {
@@ -147,6 +149,14 @@ function CaptureWorkspace({
     !!command.pending ||
     command.blocked ||
     !!draftError;
+  // Only fill empty package choices. Manual package/fact selections always win.
+  const canBringOutlineSources =
+    !draft.target &&
+    !draft.authority &&
+    !draft.inventory &&
+    !draft.factSet &&
+    !draft.uses.length &&
+    !captureIdentityNames.some((name) => !!draft.identities[name]);
   const dirty = !saved && !historicalSame(stored, emptyCaptureDraft());
   usePackageScopeGuard(`authoring-package-capture:${memberId}:${bidId}`, {
     busy: command.busy,
@@ -498,8 +508,21 @@ function CaptureWorkspace({
         <>
           <section className="panel capture-step">
             <h3>1. 包与需求清单</h3>
+            {targetChapter && canBringOutlineSources && (
+              <TechnicalOutlineSourceShortcut
+                key={JSON.stringify([memberId, bidId, targetChapter.draft_id])}
+                scope={{ memberId, bidId, draftId: targetChapter.draft_id }}
+                disabled={locked}
+                onSelect={(basis) => {
+                  if (locked || !canBringOutlineSources) return;
+                  change({ ...draft, ...basis });
+                  setOutlineImportEpoch((value) => value + 1);
+                }}
+              />
+            )}
             <div className="capture-two-columns">
               <AuthoringCapturePackagePicker
+                key={`target:${outlineImportEpoch}`}
                 bidId={bidId}
                 kind="bid"
                 selected={draft.target}
@@ -516,6 +539,7 @@ function CaptureWorkspace({
                 }
               />
               <AuthoringCapturePackagePicker
+                key={`authority:${outlineImportEpoch}`}
                 bidId={bidId}
                 kind="authority"
                 selected={draft.authority}
