@@ -198,3 +198,102 @@ it("keeps a mounted editor read-only until its saved snapshot is checked, then e
   expect(fixture.state.writes).toHaveLength(0);
   expect(fixture.state.unexpected).toEqual([]);
 });
+
+function delayLayoutTree(treeGate: Promise<void>) {
+  const path = `/api/v1/bids/${layoutScope.bidId}/drafts/${layoutScope.draftId}/structure`;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn<typeof fetch>(async (input, options) => {
+      if (new URL(String(input), window.location.href).pathname === path)
+        await treeGate;
+      return fixture.fetcher(input, options);
+    }),
+  );
+}
+const layoutTitle = "目录模板与版式模板 · 分别固定版本";
+
+it.each([
+  [390, "dialog"],
+  [1100, "complementary"],
+] as const)(
+  "opens and focuses the exact format controls from a collapsed %dpx directory without saving",
+  async (size, role) => {
+    width = size;
+    const user = userEvent.setup();
+    show();
+    const body = await waitForEditableBody();
+    const directoryOpener = screen.getByRole("button", {
+      name: "章节目录与计划",
+    });
+    expect(directoryOpener).toHaveAttribute("aria-expanded", "false");
+    await user.click(
+      screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+    );
+    const shortcut = await screen.findByRole("button", {
+      name: "打开目录模板与版式模板",
+    });
+    expect(directoryOpener).toHaveAttribute("aria-expanded", "false");
+    await user.click(shortcut);
+    const directory = await screen.findByRole(role, {
+      name: "章节目录与编写计划",
+    });
+    const heading = await within(directory).findByText(layoutTitle);
+    await waitFor(() => expect(heading).toHaveFocus());
+    expect(heading.closest("details")).toHaveAttribute("open");
+    expect(within(directory).getByText(/版式模板影响纸张/)).toBeVisible();
+    expect(directoryOpener).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByLabelText("章节正文")).toBe(body);
+    await user.keyboard("{Escape}");
+    expect(shortcut).toHaveFocus();
+    expect(directory).toHaveAttribute("hidden");
+    expect(fixture.state.writes).toEqual([]);
+    expect(fixture.state.unexpected).toEqual([]);
+  },
+);
+
+it.each([false, true])(
+  "handles delayed template controls without a stale focus request after close=%s",
+  async (closeFirst) => {
+    width = 390;
+    let release!: () => void;
+    delayLayoutTree(
+      new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+    );
+    const user = userEvent.setup();
+    show();
+    await waitForEditableBody();
+    await user.click(
+      screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+    );
+    const shortcut = await screen.findByRole("button", {
+      name: "打开目录模板与版式模板",
+    });
+    await user.click(shortcut);
+    const directory = screen.getByRole("dialog", {
+      name: "章节目录与编写计划",
+    });
+    const closer = within(directory).getByRole("button", { name: "收起目录" });
+    expect(closer).toHaveFocus();
+    expect(within(directory).queryByText(layoutTitle)).toBeNull();
+    if (closeFirst) {
+      await user.keyboard("{Escape}");
+      expect(shortcut).toHaveFocus();
+    }
+    await act(async () => release());
+    const heading = await within(directory).findByText(layoutTitle);
+    if (closeFirst) {
+      expect(heading.closest("details")).not.toHaveAttribute("open");
+      expect(shortcut).toHaveFocus();
+      await user.click(screen.getByRole("button", { name: "章节目录与计划" }));
+      expect(heading.closest("details")).not.toHaveAttribute("open");
+      expect(closer).toHaveFocus();
+    } else {
+      await waitFor(() => expect(heading).toHaveFocus());
+      expect(heading.closest("details")).toHaveAttribute("open");
+    }
+    expect(fixture.state.writes).toEqual([]);
+    expect(fixture.state.unexpected).toEqual([]);
+  },
+);

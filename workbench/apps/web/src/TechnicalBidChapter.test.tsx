@@ -34,6 +34,7 @@ const props = {
   sectionId: ref.section_id,
   disabled: false,
   onPreparing: vi.fn(),
+  onOpenLayoutTemplates: vi.fn(),
 };
 
 const layoutPath = `/api/v1/bids/${f.bidId}/drafts/${ref.draft_id}/sections/${ref.section_id}/technical-authoring-layout`;
@@ -178,9 +179,15 @@ it("stops before opening authoring when the current structured layout needs revi
   await user.click(
     screen.getByRole("button", { name: "准备生成本章技术标候选" }),
   );
-  expect(
-    await screen.findByRole("link", { name: "查看目录模板与版式模板" }),
-  ).toHaveAttribute("href", "#authoring-layout-templates");
+  const shortcut = await screen.findByRole("button", {
+    name: "打开目录模板与版式模板",
+  });
+  expect(shortcut).toHaveAttribute(
+    "aria-controls",
+    "authoring-layout-templates",
+  );
+  await user.click(shortcut);
+  expect(props.onOpenLayoutTemplates).toHaveBeenCalledExactlyOnceWith(shortcut);
   expect(screen.getByText(/未打开生成表单，也未启动模型/)).toBeInTheDocument();
   expect(
     screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
@@ -205,7 +212,7 @@ it("does not direct a protected draft to an unavailable ordinary structure write
   );
   await screen.findByText(/不能通过普通版式操作补做确认/);
   expect(
-    screen.queryByRole("link", { name: "查看目录模板与版式模板" }),
+    screen.queryByRole("button", { name: "打开目录模板与版式模板" }),
   ).not.toBeInTheDocument();
   expect(transport).toHaveBeenCalledOnce();
 });

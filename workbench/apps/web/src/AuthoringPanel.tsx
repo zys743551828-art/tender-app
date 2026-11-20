@@ -346,22 +346,43 @@ function DraftEditor({
   const columns = useRef<HTMLDivElement>(null);
   const directoryPanel = useRef<HTMLElement>(null);
   const directoryClose = useRef<HTMLButtonElement>(null);
+  const directoryReturnFocus = useRef<HTMLElement>(null);
   const [directoryOpen, setDirectoryOpen] = useState(false);
-  const closeDirectory = useCallback(() => setDirectoryOpen(false), []);
+  const [layoutFocusRequest, setLayoutFocusRequest] = useState<number | null>(
+    null,
+  );
+  const nextLayoutFocusRequest = useRef(0);
+  const closeDirectory = useCallback(() => {
+    setLayoutFocusRequest(null);
+    setDirectoryOpen(false);
+  }, []);
+  const finishLayoutFocus = useCallback((request: number) => {
+    setLayoutFocusRequest((current) => (current === request ? null : current));
+  }, []);
   const compactDirectory = useElementWidth(columns, !!view) < 860;
   useAuxiliaryFocus({
     open: directoryOpen,
     modal: compactDirectory,
     panel: directoryPanel,
     initialFocus: directoryClose,
+    returnFocus: directoryReturnFocus,
     onClose: closeDirectory,
   });
   useEffect(
     () => listenWorkspaceAuxiliary(bidId, "directory", closeDirectory),
     [bidId, closeDirectory],
   );
+  function openDirectory(trigger: HTMLButtonElement) {
+    if (!directoryOpen) directoryReturnFocus.current = trigger;
+    announceWorkspaceAuxiliary(bidId, "directory");
+    setDirectoryOpen(true);
+  }
+  function openLayoutTemplates(trigger: HTMLButtonElement) {
+    openDirectory(trigger);
+    setLayoutFocusRequest(++nextLayoutFocusRequest.current);
+  }
   function continueWriting() {
-    setDirectoryOpen(false);
+    closeDirectory();
     requestAnimationFrame(() => {
       (
         writingRef.current?.querySelector<HTMLElement>(
@@ -629,12 +650,9 @@ function DraftEditor({
               className="button secondary"
               aria-expanded={directoryOpen}
               aria-controls="authoring-directory"
-              onClick={() => {
+              onClick={({ currentTarget }) => {
                 if (directoryOpen) closeDirectory();
-                else {
-                  announceWorkspaceAuxiliary(bidId, "directory");
-                  setDirectoryOpen(true);
-                }
+                else openDirectory(currentTarget);
               }}
             >
               章节目录与计划
@@ -691,6 +709,8 @@ function DraftEditor({
                 readOnly={exact.ordinaryEditBlocked}
                 onChoose={choose}
                 onContinue={continueWriting}
+                layoutFocusRequest={layoutFocusRequest}
+                onLayoutFocusHandled={finishLayoutFocus}
                 onPackages={onPackages}
                 onBusy={setStructureBusy}
                 onChanged={structureChanged}
@@ -771,6 +791,7 @@ function DraftEditor({
             return reloadHead();
           }}
           onPreparing={setTechnicalPreparing}
+          onOpenLayoutTemplates={openLayoutTemplates}
         />
       )}
       {view &&

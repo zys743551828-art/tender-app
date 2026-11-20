@@ -463,6 +463,7 @@ it("prepares the selected technical chapter, saves a handoff, and only then perm
       sectionId={section.section_id}
       disabled={false}
       onPreparing={vi.fn()}
+      onOpenLayoutTemplates={vi.fn()}
       prepare={vi
         .fn()
         .mockResolvedValue({ data: draft, etag: '"trusted-draft-head"' })}

@@ -38,6 +38,7 @@ type Props = {
   disabled: boolean;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   onPreparing: (busy: boolean) => void;
+  onOpenLayoutTemplates: (trigger: HTMLButtonElement) => void;
 };
 
 export function TechnicalBidChapter({
@@ -48,6 +49,7 @@ export function TechnicalBidChapter({
   disabled,
   prepare,
   onPreparing,
+  onOpenLayoutTemplates,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [savedForScope, setSavedForScope] = useState(false);
@@ -204,9 +206,17 @@ export function TechnicalBidChapter({
                 </p>
               ) : (
                 <p>
-                  <a href="#authoring-layout-templates">
-                    查看目录模板与版式模板
-                  </a>
+                  <button
+                    type="button"
+                    className="text-button"
+                    aria-controls="authoring-layout-templates"
+                    disabled={disabled || preparing}
+                    onClick={({ currentTarget }) =>
+                      onOpenLayoutTemplates(currentTarget)
+                    }
+                  >
+                    打开目录模板与版式模板
+                  </button>
                   ，沿用实际招标要求完成已有核对与确认，再回来准备本章。此步骤不判定暗标、版面或整包是否通过。
                 </p>
               )}

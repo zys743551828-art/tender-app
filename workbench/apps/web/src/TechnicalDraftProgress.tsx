@@ -7,7 +7,7 @@ import {
   isWritingGap,
   readTechnicalDraftProgress,
   type chapterBodyState,
-} from "./technicalDraftProgress";
+} from "./technicalDraftProgress.ts";
 import { useAuthoringCaptureRead } from "./useAuthoringCaptureRead";
 
 const labels: Record<ReturnType<typeof chapterBodyState>, string> = {

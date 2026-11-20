@@ -316,6 +316,69 @@ try {
         focus_restored: true,
       });
     }
+    if ([390, 1280].includes(width)) {
+      await page.evaluate(() => {
+        window.__formatShortcutBody = document.querySelector(
+          '[aria-label="章节正文"]',
+        );
+      });
+      await page
+        .getByRole("button", { name: "准备生成本章技术标候选" })
+        .click();
+      const shortcut = page.getByRole("button", {
+        name: "打开目录模板与版式模板",
+      });
+      await shortcut.waitFor();
+      const opener = page.getByRole("button", { name: "章节目录与计划" });
+      assert(
+        (await opener.getAttribute("aria-expanded")) === "false",
+        "prerequisite alone opened drawer",
+      );
+      await shortcut.click();
+      const directory = page.getByRole(
+        width === 390 ? "dialog" : "complementary",
+        {
+          name: "章节目录与编写计划",
+        },
+      );
+      await directory.waitFor();
+      const heading = directory.getByText("目录模板与版式模板 · 分别固定版本", {
+        exact: true,
+      });
+      await page.waitForFunction(() => {
+        const panel = document.querySelector("#authoring-layout-templates");
+        const heading = panel?.querySelector("summary");
+        if (!panel?.open || !heading || document.activeElement !== heading)
+          return false;
+        const r = heading.getBoundingClientRect();
+        return r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+      });
+      await directory.getByText(/版式模板影响纸张/).waitFor();
+      await checkLayout(page, `template-shortcut-${width}`);
+      await screenshot(page, `template-shortcut-${width}`);
+      await heading.press("Escape");
+      await directory.waitFor({ state: "hidden" });
+      assert(
+        await shortcut.evaluate((el) => document.activeElement === el),
+        "template shortcut focus not restored",
+      );
+      assert(
+        await page.evaluate(
+          () =>
+            !window.__layoutQA.state.writes.length &&
+            window.__formatShortcutBody ===
+              document.querySelector('[aria-label="章节正文"]'),
+        ),
+        "opening format controls wrote or replaced the editor",
+      );
+      receipt.cases.push({
+        workflow: "chapter layout prerequisite opens both drawers",
+        width,
+        actual_heading_focused: true,
+        focus_restored: true,
+        writes: 0,
+      });
+    }
     if (width === 1280) {
       await page.getByRole("button", { name: "项目助手", exact: true }).click();
       const question = page.getByLabel("本次提问", { exact: true });

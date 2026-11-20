@@ -8,8 +8,8 @@ import type {
 } from "./contracts";
 import { captureFixture } from "./authoringCaptureFixtures.test-support";
 import { jsonDigest } from "./editorSchema";
-import { TechnicalDraftProgress } from "./TechnicalDraftProgress";
-import { chapterBodyState } from "./technicalDraftProgress";
+import { TechnicalDraftProgress } from "./TechnicalDraftProgress.tsx";
+import { chapterBodyState } from "./technicalDraftProgress.ts";
 
 const f = captureFixture();
 const ids = [

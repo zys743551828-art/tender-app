@@ -25,7 +25,7 @@ import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
 import { TechnicalBidOutline } from "./TechnicalBidOutline";
-import { TechnicalDraftProgress } from "./TechnicalDraftProgress";
+import { TechnicalDraftProgress } from "./TechnicalDraftProgress.tsx";
 import {
   technicalOutlineRequest,
   type OutlineBasis,
@@ -48,6 +48,8 @@ type StructureProps = {
   readOnly?: boolean;
   onChoose: (id: string) => Promise<void>;
   onContinue?: () => void;
+  layoutFocusRequest?: number | null;
+  onLayoutFocusHandled?: (request: number) => void;
   onPackages?: () => void;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   onChanged: (
@@ -78,6 +80,8 @@ function ScopedAuthoringStructure({
   onChoose,
   onContinue,
   onPackages,
+  layoutFocusRequest,
+  onLayoutFocusHandled,
   prepare,
   onChanged,
   onBusy,
@@ -614,6 +618,8 @@ function ScopedAuthoringStructure({
             bidId={bidId}
             memberId={memberId}
             disabled={locked}
+            focusRequest={layoutFocusRequest}
+            onFocusHandled={onLayoutFocusHandled}
             onDirectory={(id, matches) =>
               void begin("/directory-template/preview", (r) => ({
                 base_draft_revision: r,
@@ -907,6 +913,8 @@ function TemplateSelection({
   bidId,
   memberId,
   disabled,
+  focusRequest,
+  onFocusHandled,
   onDirectory,
   onStyle,
 }: {
@@ -914,6 +922,8 @@ function TemplateSelection({
   bidId: string;
   memberId: string;
   disabled: boolean;
+  focusRequest?: number | null;
+  onFocusHandled?: (request: number) => void;
   onDirectory: (
     id: string,
     matches: { template_key: string; section_id: string }[],
@@ -932,9 +942,26 @@ function TemplateSelection({
           .format_bindings as AuthoringStyleApplyPreview["format_bindings"])
       : [],
   );
+  const templateDetails = useRef<HTMLDetailsElement>(null);
+  const templateHeading = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focusRequest == null) return;
+    // The outer drawer's initial focus is installed in its layout effect.
+    // Wait for the now-visible nested controls (which can arrive after data).
+    const frame = requestAnimationFrame(() => {
+      const details = templateDetails.current;
+      const heading = templateHeading.current;
+      if (!details || !heading || details.closest("[hidden],[inert]")) return;
+      details.open = true;
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+      onFocusHandled?.(focusRequest);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusRequest, onFocusHandled]);
   return (
-    <details id="authoring-layout-templates">
-      <summary>目录模板与版式模板 · 分别固定版本</summary>
+    <details id="authoring-layout-templates" ref={templateDetails}>
+      <summary ref={templateHeading}>目录模板与版式模板 · 分别固定版本</summary>
       <TemplateChoice
         kind="outline"
         tree={tree}
