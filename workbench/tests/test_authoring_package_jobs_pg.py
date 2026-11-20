@@ -1102,3 +1102,73 @@ def test_exact_chapter_template_directory_is_read_only_and_labels_old_draft(case
     assert sibling.status_code == 200 and sibling.json()["items"] == []
     assert sibling.json()["available"] is True
     assert counts() == before and w["calls"] == []
+
+
+@pytest.mark.parametrize("finish_mode", ["published", "reconciliation_required"])
+def test_chapter_template_run_directory_reports_native_state_without_launch(queued, finish_mode):
+    w = queued
+    target = w["input_body"]["target_section"]
+    base = f"/api/v1/bids/{w['bid']}/drafts/{target['draft_id']}/sections/{target['section_id']}"
+    root = base + "/technical-authoring-templates"
+    version = w["template"]["version_id"]
+    path = f"{root}/{version}/runs"
+    client = w["client"]
+
+    def counts():
+        with connection() as c:
+            return c.execute(
+                """SELECT
+                (SELECT count(*) FROM design.commands) AS commands,
+                (SELECT count(*) FROM design.audit_entries) AS audits,
+                (SELECT count(*) FROM design.task_runs) AS runs,
+                (SELECT count(*) FROM design.operations) AS operations,
+                (SELECT count(*) FROM design.model_calls) AS calls"""
+            ).fetchone()
+
+    def observe(stage, route=path):
+        before = counts()
+        response = client.get(route)
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert {value.strip() for value in response.headers["cache-control"].split(",")} == {
+            "private",
+            "no-store",
+        }
+        assert page["bid_id"] == w["bid"] and page["draft_id"] == target["draft_id"]
+        assert page["section_id"] == target["section_id"]
+        assert page["template_id"] == w["template"]["id"]
+        assert page["input_id"] == w["fixed"]["manifest"]["id"]
+        assert page["input_digest"] == w["fixed"]["digest"]
+        assert page["available"] and not page["has_more"]
+        if stage is None:
+            assert page["items"] == []
+        else:
+            assert page["template_version_id"] == version
+            [item] = page["items"]
+            assert set(item) == {"run_id", "recorded_at", "stage"}
+            assert item["run_id"] == w["task"]["id"] and item["stage"] == stage
+        assert counts() == before
+        return page
+
+    observe("queued")
+    assert w["calls"] == []
+    assert client.get(f"{root}/{uuid4()}/runs").status_code == 404
+    if finish_mode == "reconciliation_required":
+        w["mode"] = "timeout"
+        engine.handle(w["message"])
+        observe("reconciliation_required")
+    else:
+        engine.handle(w["message"])
+        observe("awaiting_publication")
+        coordinator.tick([w["job_id"]])
+        observe("candidate_published")
+    assert len(w["calls"]) == 1
+
+    # The original identity remains readable; a subsequent exact template
+    # revision must not adopt or inherit its historical runs.
+    change_template(w, name="同章当前模板的新版本")
+    newer = observe(None, f"{root}/{w['template']['version_id']}/runs")
+    assert newer["template_version_id"] != version
+    assert newer["template_digest"] == w["template"]["digest"]
+    observe("candidate_published" if finish_mode == "published" else finish_mode)
+    assert len(w["calls"]) == 1

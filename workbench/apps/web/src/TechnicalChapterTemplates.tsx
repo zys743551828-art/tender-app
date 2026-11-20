@@ -10,6 +10,7 @@ import {
 } from "./executionInputValidation";
 import { authoringInteger } from "./packageAuthoringInputProtocol";
 import { useAuthoringCaptureRead } from "./useAuthoringCaptureRead";
+import { TechnicalChapterTemplateRuns } from "./TechnicalChapterTemplateRuns";
 
 function checkedPage(
   value: unknown,
@@ -104,6 +105,9 @@ export function TechnicalChapterTemplates({
   navigationDisabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [selectedRunVersion, setSelectedRunVersion] = useState<string | null>(
+    null,
+  );
   const canRead =
     draft.bid_id === bidId && [bidId, draft.id, sectionId].every(executionId);
   const path = `/bids/${bidId}/drafts/${draft.id}/sections/${sectionId}/technical-authoring-templates`;
@@ -131,7 +135,10 @@ export function TechnicalChapterTemplates({
         type="button"
         className="text-button"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setSelectedRunVersion(null);
+          setOpen(!open);
+        }}
       >
         {open ? "收起本章固定编写模板" : "查看本章已保存的固定编写模板"}
       </button>
@@ -175,6 +182,41 @@ export function TechnicalChapterTemplates({
                           >
                             到任务页核对模板当前版本
                           </a>
+                        </>
+                      )}
+                      {supportsApi(
+                        "GET",
+                        path + "/" + item.template_version_id + "/runs",
+                      ) && (
+                        <>
+                          <button
+                            type="button"
+                            className="text-button"
+                            aria-expanded={
+                              selectedRunVersion === item.template_version_id
+                            }
+                            onClick={() =>
+                              setSelectedRunVersion(
+                                selectedRunVersion === item.template_version_id
+                                  ? null
+                                  : item.template_version_id,
+                              )
+                            }
+                          >
+                            {selectedRunVersion === item.template_version_id
+                              ? "收起此版本运行"
+                              : "查看此版本运行"}
+                          </button>
+                          {selectedRunVersion === item.template_version_id && (
+                            <TechnicalChapterTemplateRuns
+                              key={item.template_version_id}
+                              bidId={bidId}
+                              draftId={draft.id}
+                              sectionId={sectionId}
+                              template={item}
+                              navigationDisabled={navigationDisabled}
+                            />
+                          )}
                         </>
                       )}
                     </li>

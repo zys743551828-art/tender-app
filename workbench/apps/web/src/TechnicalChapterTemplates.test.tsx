@@ -1,7 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { DraftView, TechnicalChapterTemplatePage } from "./contracts";
+import type {
+  DraftView,
+  TechnicalChapterRunPage,
+  TechnicalChapterTemplatePage,
+} from "./contracts";
 import { captureFixture } from "./authoringCaptureFixtures.test-support";
 import { TechnicalChapterTemplates } from "./TechnicalChapterTemplates";
 
@@ -59,12 +63,51 @@ const page: TechnicalChapterTemplatePage = {
   items: [activeTemplate, old],
 };
 const path = `/api/v1/bids/${f.bidId}/drafts/${draft.id}/sections/${ref.section_id}/technical-authoring-templates`;
+const runsPath = path + "/" + activeTemplate.template_version_id + "/runs";
+const runId = "ad1531d9-4bb8-4793-8fb9-5609f456a436";
+const publishedRun = "ad1531d9-4bb8-4793-8fb9-5609f456a437";
+const unknownRun = "ad1531d9-4bb8-4793-8fb9-5609f456a438";
+const runPage: TechnicalChapterRunPage = {
+  bid_id: f.bidId,
+  draft_id: draft.id,
+  section_id: ref.section_id,
+  template_id: activeTemplate.template_id,
+  template_version_id: activeTemplate.template_version_id,
+  template_digest: activeTemplate.template_digest,
+  input_id: activeTemplate.input_id,
+  input_digest: activeTemplate.input_digest,
+  available: true,
+  has_more: false,
+  items: [
+    {
+      run_id: runId,
+      recorded_at: "2026-07-01T12:01:10Z",
+      stage: "reconciliation_required",
+    },
+    {
+      run_id: publishedRun,
+      recorded_at: "2026-07-01T12:01:09Z",
+      stage: "candidate_published",
+    },
+    {
+      run_id: unknownRun,
+      recorded_at: "2026-07-01T12:01:08Z",
+      stage: "unverified",
+    },
+  ],
+};
 const open = "查看本章已保存的固定编写模板";
 const link = "到任务页核对模板当前版本";
-function fixture(response: () => unknown, navigationDisabled = false) {
+function fixture(
+  response: () => unknown,
+  navigationDisabled = false,
+  runResponse?: () => unknown,
+) {
   const read = vi.fn(async (input: string, options: RequestInit) => {
-    expect(input).toBe(path);
     expect(options.method).toBe("GET");
+    if (runResponse && input === runsPath)
+      return new Response(JSON.stringify(runResponse()), { status: 200 });
+    expect(input).toBe(path);
     return new Response(JSON.stringify(response()), { status: 200 });
   });
   vi.stubGlobal("fetch", read);
@@ -100,7 +143,7 @@ it("reads exact saved templates only on demand and distinguishes old scope witho
     `/bids/${f.bidId}/tasks?task_template=${activeTemplate.template_id}`,
   );
   expect(
-    screen.queryByRole("button", { name: /运行/ }),
+    screen.queryByRole("button", { name: /^(运行|启动|重新运行)/ }),
   ).not.toBeInTheDocument();
 });
 it("detaches old data when a refresh no longer has the same scope", async () => {
@@ -141,4 +184,59 @@ describe("conservative template read states", () => {
     await screen.findByText("合成当前模板");
     expect(screen.queryByRole("link", { name: link })).not.toBeInTheDocument();
   });
+});
+
+it("reads one chosen exact version on demand and distinguishes publication, unknown and billing conditions", async () => {
+  const { user, read } = fixture(
+    () => page,
+    false,
+    () => runPage,
+  );
+  await user.click(screen.getByRole("button", { name: open }));
+  const versions = await screen.findAllByRole("button", {
+    name: "查看此版本运行",
+  });
+  expect(read).toHaveBeenCalledOnce();
+  await user.click(versions[0]);
+  expect(
+    await screen.findByText(/模型费用或回执待核对，不应重复运行/),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/候选已发布，不代表已采纳/)).toBeInTheDocument();
+  expect(screen.getByText(/状态待核，尚无可确认结果/)).toBeInTheDocument();
+  expect(
+    screen.getByText(/候选发布不等于已采用、批准或形成可提交文件/),
+  ).toBeInTheDocument();
+  const links = screen.getAllByRole("link", { name: "在任务页核对这次运行" });
+  expect(links).toHaveLength(2);
+  expect(links[0]).toHaveAttribute(
+    "href",
+    `/bids/${f.bidId}/tasks?run=${runId}`,
+  );
+  expect(links[1]).toHaveAttribute(
+    "href",
+    `/bids/${f.bidId}/tasks?run=${publishedRun}`,
+  );
+  expect(read).toHaveBeenCalledTimes(2);
+});
+it("does not retain another input's run results when the selected-version read changes", async () => {
+  let observed = runPage;
+  const { user } = fixture(
+    () => page,
+    false,
+    () => observed,
+  );
+  await user.click(screen.getByRole("button", { name: open }));
+  await user.click(
+    (await screen.findAllByRole("button", { name: "查看此版本运行" }))[0],
+  );
+  await screen.findByText(/候选已发布，不代表已采纳/);
+  observed = { ...runPage, input_digest: "e".repeat(64) };
+  await user.click(screen.getByRole("button", { name: "刷新此版本运行记录" }));
+  await screen.findByText(/固定运行记录与所选章节、模板版本或输入摘要不一致/);
+  expect(
+    screen.queryByRole("link", { name: "在任务页核对这次运行" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(/候选已发布，不代表已采纳/),
+  ).not.toBeInTheDocument();
 });

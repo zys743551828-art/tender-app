@@ -101,28 +101,32 @@ def checked_item(row, head, bid, draft, section):
         raise invalid() from error
 
 
+def observed_chapter_head(c, bid, draft, section):
+    # Scope before discovering any record. Removed and cross-draft sections
+    # do not resolve to an alternative chapter.
+    return fetch(
+        c,
+        """SELECT d.revision AS draft_revision,snap.id AS snapshot_id,
+                  snap.digest AS snapshot_digest,r.id AS section_revision_id,
+                  r.revision AS section_revision,r.digest AS section_digest
+           FROM design.drafts d
+           JOIN design.draft_snapshots snap
+             ON snap.bid_id=d.bid_id AND snap.draft_id=d.id AND snap.revision=d.revision
+           JOIN design.sections s ON s.bid_id=d.bid_id AND s.draft_id=d.id AND s.id=%s
+           JOIN design.draft_snapshot_sections link
+             ON link.bid_id=d.bid_id AND link.draft_id=d.id AND link.snapshot_id=snap.id
+           JOIN design.section_revisions r
+             ON r.id=link.section_revision_id AND r.bid_id=d.bid_id AND r.draft_id=d.id
+             AND r.section_id=s.id AND r.revision=s.head_revision
+           WHERE d.bid_id=%s AND d.id=%s""",
+        (section, bid, draft),
+    )
+
+
 def read(c, bid, draft, section):
     c.execute("SET LOCAL statement_timeout = '5s'")
     try:
-        # Before any discovery, resolve the nested identity in the observed
-        # current snapshot; a different bid/draft and a removed section aren't alternatives.
-        head = fetch(
-            c,
-            """SELECT d.revision AS draft_revision,snap.id AS snapshot_id,
-                      snap.digest AS snapshot_digest,r.id AS section_revision_id,
-                      r.revision AS section_revision,r.digest AS section_digest
-               FROM design.drafts d
-               JOIN design.draft_snapshots snap
-                 ON snap.bid_id=d.bid_id AND snap.draft_id=d.id AND snap.revision=d.revision
-               JOIN design.sections s ON s.bid_id=d.bid_id AND s.draft_id=d.id AND s.id=%s
-               JOIN design.draft_snapshot_sections link
-                 ON link.bid_id=d.bid_id AND link.draft_id=d.id AND link.snapshot_id=snap.id
-               JOIN design.section_revisions r
-                 ON r.id=link.section_revision_id AND r.bid_id=d.bid_id AND r.draft_id=d.id
-                 AND r.section_id=s.id AND r.revision=s.head_revision
-               WHERE d.bid_id=%s AND d.id=%s""",
-            (section, bid, draft),
-        )
+        head = observed_chapter_head(c, bid, draft, section)
         available = package_input_repository.available(c)
         rows = (
             c.execute(

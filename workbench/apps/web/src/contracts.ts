@@ -3927,6 +3927,20 @@ export type TechnicalChapterTemplatePage = {
   items: TechnicalChapterTemplateItem[];
 };
 
+export type TechnicalChapterRunPage = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  template_id: string;
+  template_version_id: string;
+  template_digest: string;
+  input_id: string;
+  input_digest: string;
+  available: boolean;
+  has_more: boolean;
+  items: TechnicalChapterRunItem[];
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -10028,6 +10042,22 @@ export type TechnicalChapterTemplateItem = {
   bound_to_observed_chapter: boolean;
 };
 
+export type TechnicalChapterRunItem = {
+  run_id: string;
+  recorded_at: string;
+  stage:
+    | "queued"
+    | "running"
+    | "cancel_requested"
+    | "awaiting_publication"
+    | "candidate_published"
+    | "failed"
+    | "cancelled"
+    | "superseded"
+    | "reconciliation_required"
+    | "unverified";
+};
+
 export type AuthoringGenerationJson =
   | null
   | boolean
@@ -12899,6 +12929,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}",
   "PATCH /api/v1/bids/{bid_id}/drafts/{draft_id}",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates/{version_id}/runs",
   "GET /api/v1/sections/{section_id}",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/sections",
   "GET /api/v1/bids/{bid_id}/draft-snapshots/{snapshot_id}",
