@@ -3909,6 +3909,12 @@ export type PackageRuleCorrectionEvidenceDetail = {
   };
 };
 
+export type TechnicalOutlineRequest = {
+  base_draft_revision: number;
+  basis: OutlineBasis;
+  chapter_keys: ("overview" | "method" | "schedule" | "quality" | "safety")[];
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -9989,6 +9995,12 @@ export type PackageRuleCorrection_RuleBand = {
   evidence_ids: string[];
 };
 
+export type OutlineBasis = {
+  target: OutlinePackageReference;
+  authority: OutlinePackageReference;
+  inventory: OutlineInventoryReference;
+};
+
 export type AuthoringGenerationJson =
   | null
   | boolean
@@ -11875,6 +11887,17 @@ export type PackageRuleCorrection_RuleScope = {
   description: string;
 };
 
+export type OutlinePackageReference = {
+  package_id: string;
+  revision_id: string;
+  digest: string;
+};
+
+export type OutlineInventoryReference = {
+  id: string;
+  digest: string;
+};
+
 export type PackageScopeReview_Scope = {
   bid_id: PackageScopeReview_Id;
   package_id: PackageScopeReview_Id;
@@ -13265,3 +13288,66 @@ export const implementedOperations: readonly string[] = [
 export const ruleConfirmationLimit: number = 500;
 
 export const taskTemplatesContractReady: boolean = true;
+
+export const technicalOutlineWireContract = {
+  request: { $ref: "#/components/schemas/TechnicalOutlineRequest" },
+  schemas: {
+    TechnicalOutlineRequest: {
+      properties: {
+        base_draft_revision: {
+          type: "integer",
+          maximum: 9007199254740991.0,
+          minimum: 1.0,
+          title: "Base Draft Revision",
+        },
+        basis: { $ref: "#/components/schemas/OutlineBasis" },
+        chapter_keys: {
+          items: {
+            type: "string",
+            enum: ["overview", "method", "schedule", "quality", "safety"],
+          },
+          type: "array",
+          maxItems: 5,
+          minItems: 1,
+          title: "Chapter Keys",
+        },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["base_draft_revision", "basis", "chapter_keys"],
+      title: "TechnicalOutlineRequest",
+    },
+    OutlineBasis: {
+      properties: {
+        target: { $ref: "#/components/schemas/OutlinePackageReference" },
+        authority: { $ref: "#/components/schemas/OutlinePackageReference" },
+        inventory: { $ref: "#/components/schemas/OutlineInventoryReference" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["target", "authority", "inventory"],
+      title: "OutlineBasis",
+    },
+    OutlinePackageReference: {
+      properties: {
+        package_id: { type: "string", format: "uuid", title: "Package Id" },
+        revision_id: { type: "string", format: "uuid", title: "Revision Id" },
+        digest: { type: "string", pattern: "^[0-9a-f]{64}$", title: "Digest" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["package_id", "revision_id", "digest"],
+      title: "OutlinePackageReference",
+    },
+    OutlineInventoryReference: {
+      properties: {
+        id: { type: "string", format: "uuid", title: "Id" },
+        digest: { type: "string", pattern: "^[0-9a-f]{64}$", title: "Digest" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["id", "digest"],
+      title: "OutlineInventoryReference",
+    },
+  },
+};

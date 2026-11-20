@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useState, useRef } from "react";
 import { api, supportsApi, type ApiResult } from "./api";
 import type {
   AuthoringTreeView,
+  TechnicalOutlineRequest,
   AuthoringTreeChangeRequest,
   AuthoringStructurePreview,
   AuthoringStylePreview,
@@ -24,7 +25,10 @@ import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
 import { TechnicalBidOutline } from "./TechnicalBidOutline";
-import type { OutlineBasis } from "./technicalBidOutlinePlan";
+import {
+  technicalOutlineRequest,
+  type OutlineBasis,
+} from "./technicalBidOutlinePlan";
 import {
   treeMoveKey,
   resolveTreeMove,
@@ -284,7 +288,9 @@ function ScopedAuthoringStructure({
   const outlinePath = "/technical-outline/preview";
   const outlineAvailable = supportsApi("POST", path + outlinePath);
   function previewOutline(
-    chapters: ReadonlyArray<{ key: string }>,
+    chapters: ReadonlyArray<{
+      key: TechnicalOutlineRequest["chapter_keys"][number];
+    }>,
     basis: OutlineBasis,
   ) {
     if (!valid || locked || tree.error || !outlineAvailable) return;
@@ -301,11 +307,11 @@ function ScopedAuthoringStructure({
         void tree.reload();
         throw new Error("草稿目录已变化，未覆盖现有章节；请重新核对后预览。");
       }
-      return {
-        base_draft_revision: revision,
+      return technicalOutlineRequest(
+        revision,
         basis,
-        chapter_keys: chapters.map(({ key }) => key),
-      };
+        chapters.map(({ key }) => key),
+      );
     });
   }
   async function decide(decision: "confirm" | "reject", retry = false) {

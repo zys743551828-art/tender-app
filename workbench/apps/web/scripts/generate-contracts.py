@@ -120,6 +120,7 @@ wanted = [
     "PackageRuleCorrectionDetail",
     "PackageRuleCorrectionEvidencePage",
     "PackageRuleCorrectionEvidenceDetail",
+    "TechnicalOutlineRequest",
     "AuthoringGenerationBatchCreateRequest",
     "AuthoringGenerationBatchRetryRequest",
     "AuthoringGenerationBatchResolveRequest",
@@ -546,5 +547,30 @@ with args.output.open("a", encoding="utf-8") as output:
     output.write(
         "\nexport const taskTemplatesContractReady: boolean = "
         + str(task_request == "#/components/schemas/TemplateRequest").lower()
+        + ";\n"
+    )
+
+# Keep this closed request shape available to browser contract regressions. This
+# uses the registered route's body reference, not a parallel hand-edited schema.
+outline_request = contract["paths"][
+    "/api/v1/bids/{bid_id}/drafts/{draft_id}/technical-outline/preview"
+]["post"]["requestBody"]["content"]["application/json"]["schema"]
+with args.output.open("a", encoding="utf-8") as output:
+    output.write(
+        "\nexport const technicalOutlineWireContract = "
+        + json.dumps(
+            {
+                "request": outline_request,
+                "schemas": {
+                    name: schemas[name]
+                    for name in (
+                        "TechnicalOutlineRequest",
+                        "OutlineBasis",
+                        "OutlinePackageReference",
+                        "OutlineInventoryReference",
+                    )
+                },
+            }
+        )
         + ";\n"
     )

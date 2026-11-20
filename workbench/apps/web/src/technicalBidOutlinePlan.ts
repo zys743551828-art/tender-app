@@ -1,4 +1,4 @@
-import type { BidPackage_scope } from "./contracts";
+import type { BidPackage_scope, TechnicalOutlineRequest } from "./contracts";
 import type { CapturePackageReference } from "./authoringInputCatalogProtocol";
 import type { PackageRequirementInventoryView } from "./contracts";
 import { executionId } from "./executionInputValidation";
@@ -83,4 +83,30 @@ export function sameLot(a: BidPackage_scope, b: BidPackage_scope) {
     a.lot_id === b.lot_id &&
     a.round_id === b.round_id
   );
+}
+
+/** A capture ref and an outline API ref use different digest field names. */
+export function technicalOutlineRequest(
+  revision: number,
+  basis: OutlineBasis,
+  keys: TechnicalOutlineRequest["chapter_keys"],
+): TechnicalOutlineRequest {
+  const outlinePackage = ({
+    package_id,
+    revision_id,
+    manifest_digest,
+  }: CapturePackageReference) => ({
+    package_id,
+    revision_id,
+    digest: manifest_digest,
+  });
+  return {
+    base_draft_revision: revision,
+    basis: {
+      target: outlinePackage(basis.target),
+      authority: outlinePackage(basis.authority),
+      inventory: { id: basis.inventory.id, digest: basis.inventory.digest },
+    },
+    chapter_keys: keys,
+  };
 }

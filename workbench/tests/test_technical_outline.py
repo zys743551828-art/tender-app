@@ -238,6 +238,12 @@ def test_exact_http_preview_rejects_custom_content_and_old_receipt_precedes_basi
     client = TestClient(app)
     assert client.post(PATH, json=REQUEST).status_code == 401
     assert client.post(PATH, json={**REQUEST, "changes": []}).status_code == 422
+    wrong_reference = deepcopy(REQUEST)
+    for ref in ("target", "authority"):
+        selected = wrong_reference["basis"][ref]
+        selected["manifest_digest"] = selected.pop("digest")
+    error = client.post(PATH, json=wrong_reference)
+    assert error.status_code == 422 and error.json()["code"] == "INVALID_REQUEST"
 
     @contextmanager
     def connection():

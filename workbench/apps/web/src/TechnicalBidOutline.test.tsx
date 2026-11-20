@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AuthoringStructure } from "./AuthoringStructure";
+import { technicalOutlineWireContract } from "./contracts";
 import type {
   AuthoringTreeView,
   PackageRequirementInventoryView,
@@ -15,6 +16,71 @@ const draftId = f.request.target_section.draft_id;
 const etag = '"synthetic-draft-head"';
 const actionId = "d43187a0-d0da-4490-ab27-1ce0898df2e7";
 const chapterId = "d43187a0-d0da-4490-ab27-1ce0898df2e9";
+const newInventoryId = "33334444-e67a-458c-8751-c5b6947eeb9d";
+const newActionId = "d43187a0-d0da-4490-ab27-1ce0898df2e8";
+type Schema = {
+  $ref?: string;
+  type?: string;
+  format?: string;
+  enum?: string[];
+  pattern?: string;
+  required?: string[];
+  additionalProperties?: boolean;
+  properties?: Record<string, Schema>;
+  items?: Schema;
+  minItems?: number;
+  maxItems?: number;
+  minimum?: number;
+  maximum?: number;
+};
+const apiRequest = technicalOutlineWireContract.request as Schema;
+const outlineSchemas = technicalOutlineWireContract.schemas as Record<
+  string,
+  Schema
+>;
+// Validate this small closed schema from the generated, implemented API snapshot,
+// not a separate mock of the request property names.
+function wireMatches(schema: Schema, value: unknown): boolean {
+  if (schema.$ref)
+    return wireMatches(outlineSchemas[schema.$ref.split("/").at(-1)!], value);
+  if (schema.type === "object") {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      return false;
+    const row = value as Record<string, unknown>;
+    const props = schema.properties!;
+    return (
+      schema.required?.every((name) => Object.hasOwn(row, name)) === true &&
+      Object.keys(row).every((key) =>
+        Object.hasOwn(props, key)
+          ? wireMatches(props[key], row[key])
+          : schema.additionalProperties !== false,
+      )
+    );
+  }
+  if (schema.type === "array")
+    return (
+      Array.isArray(value) &&
+      value.length >= (schema.minItems ?? 0) &&
+      value.length <= (schema.maxItems ?? Infinity) &&
+      value.every((el) => wireMatches(schema.items!, el))
+    );
+  if (schema.type === "integer")
+    return (
+      typeof value === "number" &&
+      Number.isSafeInteger(value) &&
+      value >= (schema.minimum ?? -Infinity) &&
+      value <= (schema.maximum ?? Infinity)
+    );
+  if (schema.type === "string")
+    return (
+      typeof value === "string" &&
+      (!schema.enum || schema.enum.includes(value)) &&
+      (!schema.pattern || new RegExp(schema.pattern).test(value)) &&
+      (schema.format !== "uuid" ||
+        /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(value))
+    );
+  return false;
+}
 const statement = "工期不超过150天";
 const tree: AuthoringTreeView = {
   draft_id: draftId,
@@ -50,6 +116,20 @@ async function setup(mode: "ok" | "stale" | "foreign") {
   reference.rule_snapshot.statement = statement;
   inventory.digest = await jsonDigest(inventory.manifest);
   directory.items[0].digest = inventory.digest;
+  const nextInventory = structuredClone(inventory);
+  nextInventory.manifest.id = newInventoryId;
+  nextInventory.manifest.revision += 1;
+  nextInventory.manifest.predecessor_digest = inventory.digest;
+  nextInventory.digest = await jsonDigest(nextInventory.manifest);
+  const nextDirectory = structuredClone(directory);
+  nextDirectory.current_inventory_id = newInventoryId;
+  nextDirectory.items[0] = {
+    ...directory.items[0],
+    id: newInventoryId,
+    digest: nextInventory.digest,
+  };
+  let superseded = false;
+
   const writes: { path: string; etag: string | null; body: unknown }[] = [];
   const onChanged = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal(
@@ -64,12 +144,30 @@ async function setup(mode: "ok" | "stale" | "foreign") {
           body,
         });
         if (url.pathname.endsWith("/technical-outline/preview")) {
+          if (!wireMatches(apiRequest, body))
+            return reply(
+              { code: "INVALID_REQUEST", message: "真实大纲接口结构不匹配" },
+              422,
+            );
+          const chosen = superseded ? nextInventory : inventory;
+          if (
+            body.basis.inventory.id !== chosen.manifest.id ||
+            body.basis.inventory.digest !== chosen.digest
+          )
+            return reply(
+              {
+                code: "TECHNICAL_OUTLINE_BASIS_STALE",
+                message: "请重新选择清单",
+              },
+              409,
+            );
+
           return reply(
             {
-              action_id: actionId,
+              action_id: superseded ? newActionId : actionId,
               base_draft_revision: tree.draft_revision,
               created_ids: {
-                ["technical-bid-" + inventory.digest + "-schedule"]: chapterId,
+                ["technical-bid-" + chosen.digest + "-schedule"]: chapterId,
               },
               plan_suggestions: {},
               before: [],
@@ -100,7 +198,8 @@ async function setup(mode: "ok" | "stale" | "foreign") {
           );
         }
         if (url.pathname.endsWith("/resolve")) {
-          if (mode === "stale" && body.decision === "confirm")
+          if (mode === "stale" && body.decision === "confirm" && !superseded) {
+            superseded = true;
             return reply(
               {
                 code: "TECHNICAL_OUTLINE_BASIS_STALE",
@@ -109,6 +208,7 @@ async function setup(mode: "ok" | "stale" | "foreign") {
               },
               409,
             );
+          }
           return reply({
             state: body.decision === "confirm" ? "applied" : "rejected",
             action_id: actionId,
@@ -159,8 +259,14 @@ async function setup(mode: "ok" | "stale" | "foreign") {
             ([key, value]) => url.searchParams.get(key) === String(value),
           ),
       );
+      if (
+        superseded &&
+        url.pathname.endsWith("/requirement-inventories/" + newInventoryId)
+      )
+        return reply(nextInventory);
       if (row?.name === "inventory") return reply(inventory);
-      if (row?.name === "inventories") return reply(directory);
+      if (row?.name === "inventories")
+        return reply(superseded ? nextDirectory : directory);
       if (row) return reply(row.body, row.status);
       return reply({ items: [], next_cursor: null });
     }),
@@ -201,7 +307,13 @@ async function setup(mode: "ok" | "stale" | "foreign") {
     await user.selectOptions(group.getByRole("combobox"), ref.package_id);
     await user.click(await group.findByRole("button", { name: /选择第 1 版/ }));
   }
-  return { user, writes, onChanged, digest: inventory.digest };
+  return {
+    user,
+    writes,
+    onChanged,
+    digest: inventory.digest,
+    nextDigest: nextInventory.digest,
+  };
 }
 
 beforeEach(() => sessionStorage.clear());
@@ -223,11 +335,17 @@ it("previews only additive chapters, then uses the same underlying revision to e
     body: {
       base_draft_revision: 4,
       basis: {
-        ...f.request.package_context,
-        inventory: {
-          id: f.request.package_context.inventory.id,
-          digest,
+        target: {
+          package_id: f.request.package_context.target.package_id,
+          revision_id: f.request.package_context.target.revision_id,
+          digest: f.request.package_context.target.manifest_digest,
         },
+        authority: {
+          package_id: f.request.package_context.authority.package_id,
+          revision_id: f.request.package_context.authority.revision_id,
+          digest: f.request.package_context.authority.manifest_digest,
+        },
+        inventory: { id: f.request.package_context.inventory.id, digest },
       },
       chapter_keys: ["schedule"],
     },
@@ -239,7 +357,7 @@ it("previews only additive chapters, then uses the same underlying revision to e
 });
 
 it("blocks a once-valid outline if a recorded rule is rejected between preview and apply", async () => {
-  const { user, writes, onChanged } = await setup("stale");
+  const { user, writes, onChanged, nextDigest } = await setup("stale");
   await user.click(await screen.findByRole("button", { name: /核对当前清单/ }));
   await user.click(await screen.findByRole("button", { name: "预览追加大纲" }));
   await user.click(await screen.findByRole("button", { name: "应用这次变更" }));
@@ -249,6 +367,16 @@ it("blocks a once-valid outline if a recorded rule is rejected between preview a
   await user.click(screen.getByRole("button", { name: "放弃这次变更" }));
   await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
   expect(writes[2].body).toEqual({ decision: "reject" });
+  await user.click(screen.getByRole("button", { name: "刷新要求清单" }));
+  await user.click(
+    await screen.findByRole("button", { name: /核对当前清单 · 33334444/ }),
+  );
+  await user.click(await screen.findByRole("button", { name: "预览追加大纲" }));
+  await screen.findByRole("button", { name: "应用这次变更" });
+  expect(writes[3].body).toMatchObject({
+    basis: { inventory: { id: newInventoryId, digest: nextDigest } },
+  });
+  expect(writes).toHaveLength(4);
 });
 
 it("does not offer directory changes from a mismatched basis receipt", async () => {
