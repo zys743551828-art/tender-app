@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, roleNames, supportsApi } from "./api";
 import type { DocumentView, EvidenceView } from "./contracts";
 import { Badge, ErrorNotice, Loading } from "./components";
 import { Evidence } from "./Evidence";
+import { HistoricalCitationPreview } from "./HistoricalCitationPreview";
 
 type Source = {
   id: string;
@@ -15,16 +16,19 @@ export function EvidenceLinks({
   label = "查看引用原页",
   allowedSources,
   expectedPhysicalPage,
+  historicalBidId,
 }: {
   ids: string[];
   label?: string;
   allowedSources?: readonly { documentVersionId: string; parseRunId: string }[];
   expectedPhysicalPage?: number;
+  historicalBidId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [sources, setSources] = useState<Source[] | null>(null);
   const [selected, setSelected] = useState<Source | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const trigger = useRef<HTMLButtonElement>(null);
   const closeEvidence = useCallback(() => setSelected(null), []);
   const available = ids.length > 0 && supportsApi("GET", `/evidence/${ids[0]}`);
   const key = ids.join(",");
@@ -68,7 +72,11 @@ export function EvidenceLinks({
             const { data: document } = await api<DocumentView>(
               `/documents/${evidence.document_version_id}`,
             );
-            if (document.id !== evidence.document_version_id)
+            if (
+              document.id !== evidence.document_version_id ||
+              (historicalBidId !== undefined &&
+                document.bid_id !== historicalBidId)
+            )
               throw new Error("引用与文件版本身份不一致，未打开其他原件。");
             return { id, evidence, document };
           } catch (error) {
@@ -81,7 +89,15 @@ export function EvidenceLinks({
     return () => {
       active = false;
     };
-  }, [open, available, key, allowedKey, expectedPhysicalPage, attempt]);
+  }, [
+    open,
+    available,
+    key,
+    allowedKey,
+    expectedPhysicalPage,
+    historicalBidId,
+    attempt,
+  ]);
   return (
     <div className="evidence-links">
       <button
@@ -125,7 +141,10 @@ export function EvidenceLinks({
                   <button
                     type="button"
                     className="text-button"
-                    onClick={() => setSelected(source)}
+                    onClick={(event) => {
+                      trigger.current = event.currentTarget;
+                      setSelected(source);
+                    }}
                   >
                     打开物理页 {source.evidence?.physical_page} · 文件版本{" "}
                     {source.document?.file_revision}
@@ -136,18 +155,27 @@ export function EvidenceLinks({
           ))}
         </div>
       )}
-      {selected?.document && (
-        <Evidence
-          document={selected.document}
-          initialPage={selected.evidence?.physical_page}
-          contextNotice={
-            selected.evidence?.source_status === "withdrawn"
-              ? "此依据来源已撤回。这里只追溯当时原文，不能视为当前有效依据。"
-              : undefined
-          }
-          onClose={closeEvidence}
-        />
-      )}
+      {selected?.document &&
+        (historicalBidId !== undefined && selected.evidence ? (
+          <HistoricalCitationPreview
+            key={selected.evidence.id}
+            document={selected.document}
+            citation={selected.evidence}
+            onClose={closeEvidence}
+            returnFocus={trigger}
+          />
+        ) : historicalBidId === undefined ? (
+          <Evidence
+            document={selected.document}
+            initialPage={selected.evidence?.physical_page}
+            contextNotice={
+              selected.evidence?.source_status === "withdrawn"
+                ? "此依据来源已撤回。这里只追溯当时原文，不能视为当前有效依据。"
+                : undefined
+            }
+            onClose={closeEvidence}
+          />
+        ) : null)}
     </div>
   );
 }

@@ -99,6 +99,7 @@ export function HistoricalCandidateSources({
                           },
                         ]}
                         expectedPhysicalPage={entry.physical_page}
+                        historicalBidId={trace.bid_id}
                       />
                     </li>
                   ))}

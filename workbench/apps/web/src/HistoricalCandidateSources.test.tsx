@@ -18,6 +18,20 @@ vi.mock("./api", async () => ({
   ...(await vi.importActual<typeof import("./api")>("./api")),
   api: vi.fn(),
 }));
+vi.mock("./PdfPreview", () => ({
+  PdfPreview: ({
+    page,
+    expectedSha256,
+  }: {
+    page: number;
+    expectedSha256?: string;
+  }) => (
+    <canvas
+      role="img"
+      aria-label={`固定原页 ${page} · 摘要 ${expectedSha256}`}
+    />
+  ),
+}));
 const mocked = vi.mocked(api);
 
 beforeEach(() => {
@@ -136,6 +150,25 @@ it("only loads the exact original trace on demand, then opens the verified physi
           filename: "合成原件.pdf",
           role: "tender",
           file_revision: 2,
+          bid_id: proof.action.target_bid_id,
+          media_type: "application/pdf",
+          sha256: "a".repeat(64),
+        },
+        etag: null,
+      };
+    if (url === `/artifacts/${source.document_version_id}/download`)
+      return {
+        data: {
+          artifact_id: source.document_version_id,
+          download_url: "http://fixture.test/historical.pdf",
+        },
+        etag: null,
+      };
+    if (url === `/documents/${source.document_version_id}/evidence`)
+      return {
+        data: {
+          document_version_id: source.document_version_id,
+          items: [{ ...source, quote: "不属于历史引用的最新版解析" }],
         },
         etag: null,
       };
@@ -157,6 +190,33 @@ it("only loads the exact original trace on demand, then opens the verified physi
     await screen.findByRole("button", { name: "打开物理页 2 · 文件版本 2" }),
   ).toBeVisible();
   expect(screen.getByText("来源已撤回")).toBeVisible();
+  const open = screen.getByRole("button", {
+    name: "打开物理页 2 · 文件版本 2",
+  });
+  await user.click(open);
+  expect(
+    await screen.findByRole("img", {
+      name: `固定原页 2 · 摘要 ${"a".repeat(64)}`,
+    }),
+  ).toBeVisible();
+  expect(
+    screen.getByRole("heading", { name: "当时解析的引用摘录" }),
+  ).toBeVisible();
+  expect(screen.getByText(`固定解析 ${source.parse_run_id}`)).toBeVisible();
+  expect(screen.getAllByText("已撤回合成原页文本")).toHaveLength(2);
+  expect(screen.queryByText("不属于历史引用的最新版解析")).toBeNull();
+  expect(screen.queryByRole("button", { name: "解析文本" })).toBeNull();
+  expect(screen.queryByText(/人工确认部分页范围|确认并保存页范围/)).toBeNull();
+  expect(screen.queryByRole("button", { name: "下载资料原件" })).toBeNull();
+  expect(mocked.mock.calls.map(([url]) => url)).toEqual([
+    path,
+    `/evidence/${source.evidence_id}`,
+    `/documents/${source.document_version_id}`,
+    `/artifacts/${source.document_version_id}/download`,
+  ]);
+  await user.click(screen.getByRole("button", { name: "关闭原件" }));
+  expect(open).toHaveFocus();
+
   expect(
     mocked.mock.calls.every(
       ([, options]) => !options?.method || options.method === "GET",
