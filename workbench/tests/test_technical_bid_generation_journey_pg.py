@@ -36,6 +36,25 @@ def requirements(world):
     return prepare_requirements(world, statement="合成要求：明确施工进度与工期，说明质量验收。")
 
 
+def current_layout(w, draft_path, section_id):
+    def counts():
+        with connection() as c:
+            return c.execute(
+                """SELECT (SELECT count(*) FROM design.commands) AS commands,
+                (SELECT count(*) FROM design.audit_entries) AS audits,
+                (SELECT count(*) FROM design.operations) AS operations,
+                (SELECT count(*) FROM design.model_calls) AS calls"""
+            ).fetchone()
+
+    before = counts()
+    found = w["client"].get(f"{draft_path}/sections/{section_id}/technical-authoring-layout")
+    assert found.status_code == 200, found.text
+    assert counts() == before
+    result = found.json()
+    assert result["bid_id"] == w["bid"] and result["section_id"] == section_id
+    return result
+
+
 @pytest.fixture
 def exact(requirements):
     w = base_exact.__wrapped__(requirements)
@@ -48,6 +67,7 @@ def exact(requirements):
     current = client.get(draft_path)
     assert current.status_code == 200, current.text
     etag = current.headers["etag"]
+    assert current_layout(w, draft_path, target["section_id"])["state"] == "plain_draft"
     context = {
         role: {
             "package_id": source[role]["package_id"],
@@ -80,6 +100,10 @@ def exact(requirements):
     )
     assert confirmation.status_code == 200, confirmation.text
     outline = confirmation.json()
+    guard = current_layout(w, draft_path, chapter_ids["schedule"])
+    assert guard["state"] == "layout_review_required"
+    assert guard["snapshot_id"] == outline["snapshot_id"]
+    assert not guard["ordinary_structure_protected"]
 
     # Layout review is a separate explicit operation before exact authoring.
     # No additional format field is inferred or treated as compliant.
@@ -116,6 +140,10 @@ def exact(requirements):
     assert layout_confirm.status_code == 200, layout_confirm.text
     applied = layout_confirm.json()
     assert applied["draft_revision"] == outline["draft_revision"] + 1
+    current_gate = current_layout(w, draft_path, chapter_ids["schedule"])
+    assert current_gate["state"] == "structured_layout_rechecked"
+    assert current_gate["snapshot_id"] == applied["snapshot_id"]
+    assert not current_gate["ordinary_structure_protected"]
 
     frozen = client.get(f"{base}/work-contexts/draft_snapshot/{applied['snapshot_id']}")
     assert frozen.status_code == 200, frozen.text
@@ -177,7 +205,12 @@ def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
     # Mirror AuthoringBuilds: an outlined snapshot must carry its two
     # selected frozen templates, not the legacy plain-writer request.
     base = f"/api/v1/bids/{w['bid']}"
-    tree = w["client"].get(f"{base}/drafts/{target['draft_id']}/structure")
+    draft_path = f"{base}/drafts/{target['draft_id']}"
+    gate = current_layout(w, draft_path, target["section_id"])
+    assert gate["state"] == "structured_layout_rechecked"
+    assert gate["ordinary_structure_protected"]
+    assert gate["snapshot_id"] == saved["snapshot_id"]
+    tree = w["client"].get(draft_path + "/structure")
     assert tree.status_code == 200, tree.text
     structure = tree.json()
     assert structure["snapshot_id"] == saved["snapshot_id"]

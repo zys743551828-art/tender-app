@@ -3941,6 +3941,22 @@ export type TechnicalChapterRunPage = {
   items: TechnicalChapterRunItem[];
 };
 
+export type TechnicalChapterLayoutView = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  snapshot_id: string;
+  draft_revision: number;
+  section_revision: number;
+  state:
+    | "plain_draft"
+    | "structured_layout_rechecked"
+    | "layout_review_required"
+    | "layout_basis_changed"
+    | "structure_not_supported";
+  ordinary_structure_protected: boolean;
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -12930,6 +12946,7 @@ export const implementedOperations: readonly string[] = [
   "PATCH /api/v1/bids/{bid_id}/drafts/{draft_id}",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates/{version_id}/runs",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-layout",
   "GET /api/v1/sections/{section_id}",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/sections",
   "GET /api/v1/bids/{bid_id}/draft-snapshots/{snapshot_id}",

@@ -679,7 +679,7 @@ function ScopedAuthoringStructure({
               ) && (
                 <p className="small-note">
                   这是空章节建议，不会把依据写入正文或授予生成资格。
-                  应用时服务端复核原包修订和要求清单；若回执丢失，可恢复原命令。开始编写前仍需另行固定编写输入。
+                  应用时服务端复核原包修订和要求清单；若回执丢失，可恢复原命令。结构化草稿先按现有流程核对版式，再固定编写输入。
                 </p>
               )}
               <div className="review-shortcuts">
@@ -920,7 +920,7 @@ function TemplateSelection({
       : [],
   );
   return (
-    <details>
+    <details id="authoring-layout-templates">
       <summary>目录模板与版式模板 · 分别固定版本</summary>
       <TemplateChoice
         kind="outline"

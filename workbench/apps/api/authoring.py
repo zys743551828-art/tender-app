@@ -8,7 +8,11 @@ from fastapi import APIRouter, Body, Query, Request
 from fastapi.responses import JSONResponse
 
 from apps.api.auth import auth
-from packages.authoring import technical_chapter_runs, technical_chapter_templates
+from packages.authoring import (
+    technical_chapter_layout,
+    technical_chapter_runs,
+    technical_chapter_templates,
+)
 from packages.authoring.build_repository import (
     DEFAULT_TEMPLATE_ID,
     configured_render_identity,
@@ -173,6 +177,25 @@ def get_technical_chapter_runs(
         page = technical_chapter_runs.read(c, bid_id, draft_id, section_id, version_id)
     return JSONResponse(
         page.model_dump(mode="json"),
+        headers={"Cache-Control": "private, no-store", "Vary": "Cookie"},
+    )
+
+
+@router.get(
+    "/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-layout",
+    operation_id="getTechnicalChapterLayout",
+    response_model=technical_chapter_layout.TechnicalChapterLayoutView,
+    openapi_extra={"security": [{"SessionCookie": []}]},
+)
+def get_technical_chapter_layout(bid_id: UUID, draft_id: UUID, section_id: UUID, r: Request):
+    auth(r)
+    if r.query_params:
+        raise DomainError("INVALID_REQUEST", "本章版式前置核对不接受筛选参数。", 422)
+    with connection() as c:
+        c.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        result = technical_chapter_layout.read(c, bid_id, draft_id, section_id)
+    return JSONResponse(
+        result.model_dump(mode="json"),
         headers={"Cache-Control": "private, no-store", "Vary": "Cookie"},
     )
 

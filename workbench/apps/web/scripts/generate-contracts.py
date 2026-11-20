@@ -123,6 +123,7 @@ wanted = [
     "TechnicalOutlineRequest",
     "TechnicalChapterTemplatePage",
     "TechnicalChapterRunPage",
+    "TechnicalChapterLayoutView",
     "AuthoringGenerationBatchCreateRequest",
     "AuthoringGenerationBatchRetryRequest",
     "AuthoringGenerationBatchResolveRequest",

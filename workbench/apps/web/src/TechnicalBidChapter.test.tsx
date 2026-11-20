@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import { TechnicalBidChapter } from "./TechnicalBidChapter";
-import type { DraftView } from "./contracts";
+import type { DraftView, TechnicalChapterLayoutView } from "./contracts";
 import { captureFixture } from "./authoringCaptureFixtures.test-support";
 import {
   matchesFixedAuthoringChapter,
@@ -36,10 +36,26 @@ const props = {
   onPreparing: vi.fn(),
 };
 
-function protectTransport() {
+const layoutPath = `/api/v1/bids/${f.bidId}/drafts/${ref.draft_id}/sections/${ref.section_id}/technical-authoring-layout`;
+function protectTransport(overrides: Partial<TechnicalChapterLayoutView> = {}) {
   const fetch = vi.fn(async (path: string, init?: RequestInit) => {
-    expect(path).toBe("/api/v1/bids/" + f.bidId);
     expect(init?.method).toBe("GET");
+    if (path === layoutPath)
+      return new Response(
+        JSON.stringify({
+          bid_id: f.bidId,
+          draft_id: ref.draft_id,
+          section_id: ref.section_id,
+          snapshot_id: ref.snapshot_id,
+          draft_revision: ref.base_draft_revision,
+          section_revision: ref.base_section_revision,
+          state: "plain_draft",
+          ordinary_structure_protected: false,
+          ...overrides,
+        }),
+        { status: 200 },
+      );
+    expect(path).toBe("/api/v1/bids/" + f.bidId);
     return new Response(JSON.stringify({ id: f.bidId }), {
       status: 200,
       headers: { ETag: '"bid:' + f.bidId + ":" + "a".repeat(64) + '"' },
@@ -69,7 +85,10 @@ it("prepares only the current saved snapshot, without sending any model or templ
     await screen.findByRole("region", { name: "固定整包编写模板编辑" }),
   ).toBeInTheDocument();
   expect(prepare).toHaveBeenCalledOnce();
-  expect(transport).toHaveBeenCalledOnce();
+  expect(transport.mock.calls.map(([path]) => path)).toEqual([
+    layoutPath,
+    "/api/v1/bids/" + f.bidId,
+  ]);
   expect(
     screen.getByRole("button", { name: "保存固定整包编写模板，不运行" }),
   ).toBeDisabled();
@@ -144,4 +163,66 @@ it("does not start any reads from a malformed saved chapter or snapshot identity
   );
   expect(await screen.findByText(/未核对本章已保存版本/)).toBeInTheDocument();
   expect(transport).not.toHaveBeenCalled();
+});
+
+it("stops before opening authoring when the current structured layout needs review", async () => {
+  const transport = protectTransport({ state: "layout_review_required" });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  expect(
+    await screen.findByRole("link", { name: "查看目录模板与版式模板" }),
+  ).toHaveAttribute("href", "#authoring-layout-templates");
+  expect(screen.getByText(/未打开生成表单，也未启动模型/)).toBeInTheDocument();
+  expect(
+    screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
+  ).not.toBeInTheDocument();
+  expect(
+    transport.mock.calls.map(([path, init]) => [path, init?.method]),
+  ).toEqual([[layoutPath, "GET"]]);
+});
+
+it("does not direct a protected draft to an unavailable ordinary structure write", async () => {
+  const transport = protectTransport({
+    state: "layout_basis_changed",
+    ordinary_structure_protected: true,
+  });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  await screen.findByText(/不能通过普通版式操作补做确认/);
+  expect(
+    screen.queryByRole("link", { name: "查看目录模板与版式模板" }),
+  ).not.toBeInTheDocument();
+  expect(transport).toHaveBeenCalledOnce();
+});
+
+it("does not open the form when a seemingly healthy layout response describes a different snapshot", async () => {
+  const transport = protectTransport({
+    state: "structured_layout_rechecked",
+    snapshot_id: crypto.randomUUID(),
+  });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  await screen.findByText(/本章保存版本已变化或版式结果无法核对/);
+  expect(
+    screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
+  ).not.toBeInTheDocument();
+  expect(transport).toHaveBeenCalledOnce();
 });

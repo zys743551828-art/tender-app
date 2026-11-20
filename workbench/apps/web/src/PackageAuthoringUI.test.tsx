@@ -413,14 +413,28 @@ it.each([false, true])(
 );
 
 it("prepares the selected technical chapter, saves a handoff, and only then permits an explicit exact run", async () => {
+  const verified = await validateAuthoringInput(f.input, bidId);
+  const section = verified.manifest.selection.target_section;
   const calls = transport({
+    reads: (path) =>
+      path ===
+      `/api/v1/bids/${bidId}/drafts/${section.draft_id}/sections/${section.section_id}/technical-authoring-layout`
+        ? json({
+            bid_id: bidId,
+            draft_id: section.draft_id,
+            section_id: section.section_id,
+            snapshot_id: section.snapshot_id,
+            draft_revision: section.base_draft_revision,
+            section_revision: section.base_section_revision,
+            state: "structured_layout_rechecked",
+            ordinary_structure_protected: false,
+          })
+        : undefined,
     writes: (path) =>
       path.endsWith("/task-definitions")
         ? json(f.template, f.template_etag, 201)
         : json(f.runs.queued, undefined, 202),
   });
-  const verified = await validateAuthoringInput(f.input, bidId);
-  const section = verified.manifest.selection.target_section;
   const draft = {
     id: section.draft_id,
     bid_id: bidId,
