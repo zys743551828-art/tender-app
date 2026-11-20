@@ -429,7 +429,10 @@ try {
         "returning desktop remounted question",
       );
       await page.getByRole("button", { name: "查证资料", exact: true }).click();
-      await page.getByRole("dialog", { name: "查找原页依据" }).waitFor();
+      const retrieval = page.getByRole("complementary", {
+        name: "查找原页依据",
+      });
+      await retrieval.waitFor();
       assert(
         !(await page
           .getByRole("complementary", { name: "项目主会话助手" })
@@ -437,9 +440,7 @@ try {
         "source and assistant both open",
       );
       await page.getByRole("button", { name: "关闭查证" }).press("Escape");
-      await page
-        .getByRole("dialog", { name: "查找原页依据" })
-        .waitFor({ state: "detached" });
+      await retrieval.waitFor({ state: "detached" });
       assert(
         await page
           .getByRole("button", { name: "查证资料", exact: true })
@@ -463,7 +464,10 @@ try {
       const directory = page.getByRole("dialog", {
         name: "章节目录与编写计划",
       });
-      await directory.getByRole("button", { name: /质量保障措施/ }).click();
+      const nextChapter = directory.getByRole("button", {
+        name: /^章\s+质量保障措施/,
+      });
+      await nextChapter.click();
       await directory.getByText(/本章保存尚未确认，未切换章节/).waitFor();
       await screenshot(page, "directory-save-failure-390");
       assert(
@@ -492,7 +496,7 @@ try {
         "save did not retry original key/body/tag",
       );
       await page.getByRole("button", { name: "章节目录与计划" }).click();
-      await directory.getByRole("button", { name: /质量保障措施/ }).click();
+      await nextChapter.click();
       await directory.waitFor({ state: "hidden" });
       await page.waitForFunction(
         () =>
