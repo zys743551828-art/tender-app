@@ -346,6 +346,9 @@ a svg {
   color: var(--foreground);
   font-weight: 500;
 }
+.mobile-area-picker {
+  display: none;
+}
 .breadcrumb-separator {
   padding: 0 13px;
   color: var(--muted-foreground);
@@ -1410,6 +1413,12 @@ tbody tr:hover {
     height: 46px;
     padding: 0 19px;
     font-size: 10px;
+  }
+  .mobile-area-picker {
+    display: block;
+    width: 118px;
+    font-size: 12px;
+    padding: 7px;
   }
   .page-content {
     padding: 26px 18px 35px;
@@ -3435,9 +3444,6 @@ textarea:focus-visible {
   display: grid;
   gap: 18px;
 }
-.mobile-area-picker {
-  display: none;
-}
 .workspace-nav-hint {
   display: none;
 }
@@ -3493,12 +3499,6 @@ textarea:focus-visible {
   .research-page > .panel,
   .outcomes-panel {
     padding: 17px;
-  }
-  .mobile-area-picker {
-    display: block;
-    width: 118px;
-    font-size: 12px;
-    padding: 7px;
   }
   .workspace-nav-hint {
     display: block;
