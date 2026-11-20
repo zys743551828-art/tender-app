@@ -1,13 +1,15 @@
 """One actual outline-to-Word path: native DB/Worker, synthetic inputs and model."""
 # ruff: noqa: F401,F811
 
+from copy import deepcopy
 from io import BytesIO
+from uuid import uuid4
 from zipfile import ZipFile
 
 import pytest
-from authoring_package_input_fixtures import ADMIN_DSN, world
+from authoring_package_input_fixtures import ADMIN_DSN, save, world
 from authoring_package_input_fixtures import exact as base_exact
-from authoring_package_job_fixtures import case, input_database, queued
+from authoring_package_job_fixtures import bind_task, case, finish, input_database, queued
 from authoring_package_job_fixtures import database as job_database
 from test_authoring_exact_builds_pg import (
     adopted,
@@ -17,8 +19,8 @@ from test_authoring_exact_builds_pg import (
     publish,
     request_build,
 )
+from test_authoring_exact_revisions_pg import confirm, published, qualified
 from test_authoring_exact_revisions_pg import database as revision_database
-from test_authoring_exact_revisions_pg import published
 from test_bid_package_requirements_api import prepare_requirements
 from test_stable_lot_identity import api, headers
 
@@ -157,6 +159,13 @@ def exact(requirements):
     assert quality["title"] == "质量管理与验收"
     assert quality["content"] == proposal["after_sections"][quality["section_id"]]
 
+    body["target_section"] = blank_target(w, applied, chapter)
+    w["technical_journey"] = {"chapter": chapter, "quality": quality, "snapshot": applied}
+    return w
+
+
+def blank_target(w, applied, chapter, *, current=True):
+    client = w["client"]
     selected = client.get(
         NODES_PATH.format(
             bid_id=w["bid"], snapshot_id=applied["snapshot_id"], section_id=chapter["section_id"]
@@ -168,40 +177,21 @@ def exact(requirements):
     )
     assert selected.status_code == 200, selected.text
     nodes = selected.json()
-    assert nodes["blocking_reasons"] == []
+    if current:
+        assert nodes["blocking_reasons"] == []
+    else:
+        assert "AUTHORING_PACKAGE_DRAFT_CHANGED" in nodes["blocking_reasons"]
     [node] = nodes["nodes"]
     assert node["node_type"] == "paragraph" and node["text"] == ""
-    body["target_section"] = {
+    return {
         **nodes["target"],
         **{key: node[key] for key in ("node_id", "before_node_digest")},
     }
-    w["technical_journey"] = {"chapter": chapter, "quality": quality, "snapshot": applied}
-    return w
 
 
-def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
-    # The existing fixtures save explicit fixed input, create a manual
-    # template, launch one offline model call, then separately confirm adoption.
-    w = adopted
-    saved = w["saved"]
-    journey = w["technical_journey"]
+def build_structured_word(w):
     target = w["input_body"]["target_section"]
-    fixed = w["fixed"]["manifest"]["selection"]
-    action = w["action_response"].json()["preview"]
-    assert len(w["calls"]) == 1 and fixed["target_section"] == target
-    assert target["section_id"] == journey["chapter"]["section_id"]
-    assert target["snapshot_id"] == journey["snapshot"]["snapshot_id"]
-    assert action["before"] == journey["chapter"]["content"]
-    assert saved["draft_revision"] == target["base_draft_revision"] + 1
-
-    frozen = w["client"].get(
-        f"/api/v1/bids/{w['bid']}/work-contexts/draft_snapshot/{saved['snapshot_id']}"
-    )
-    assert frozen.status_code == 200, frozen.text
-    sections = {item["section_id"]: item for item in frozen.json()["document"]["sections"]}
-    assert sections[target["section_id"]]["content"] == action["after"]
-    assert sections[journey["quality"]["section_id"]] == journey["quality"]
-
+    saved = w["saved"]
     # Mirror AuthoringBuilds: an outlined snapshot must carry its two
     # selected frozen templates, not the legacy plain-writer request.
     base = f"/api/v1/bids/{w['bid']}"
@@ -244,10 +234,38 @@ def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
     assert word["format"] == "docx" and sha(raw) == word["digest"]
     with ZipFile(BytesIO(raw)) as archive:
         body = archive.read("word/document.xml").decode()
-        assert w["raw"]["replacement_text"] in body
         assert "施工进度与资源配置" in body and "质量管理与验收" in body
         assert "<w:p" in body and "<w:t" in body
     publish(build, computed)
+
+    return build, word, body
+
+
+def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
+    # The existing fixtures save explicit fixed input, create a manual
+    # template, launch one offline model call, then separately confirm adoption.
+    w = adopted
+    saved = w["saved"]
+    journey = w["technical_journey"]
+    target = w["input_body"]["target_section"]
+    fixed = w["fixed"]["manifest"]["selection"]
+    action = w["action_response"].json()["preview"]
+    assert len(w["calls"]) == 1 and fixed["target_section"] == target
+    assert target["section_id"] == journey["chapter"]["section_id"]
+    assert target["snapshot_id"] == journey["snapshot"]["snapshot_id"]
+    assert action["before"] == journey["chapter"]["content"]
+    assert saved["draft_revision"] == target["base_draft_revision"] + 1
+
+    frozen = w["client"].get(
+        f"/api/v1/bids/{w['bid']}/work-contexts/draft_snapshot/{saved['snapshot_id']}"
+    )
+    assert frozen.status_code == 200, frozen.text
+    sections = {item["section_id"]: item for item in frozen.json()["document"]["sections"]}
+    assert sections[target["section_id"]]["content"] == action["after"]
+    assert sections[journey["quality"]["section_id"]] == journey["quality"]
+
+    build, word, body = build_structured_word(w)
+    assert w["raw"]["replacement_text"] in body
 
     document = adoption_body(w, build)["member"]["document_version_id"]
     advisory = w["client"].post(
@@ -271,3 +289,103 @@ def test_confirmed_outline_to_exact_chapter_and_editable_internal_word(adopted):
             "SELECT 1 FROM design.submission_records WHERE bid_id=%s", (w["bid"],)
         ).fetchone()
     assert len(w["calls"]) == 1
+
+
+def test_two_chapters_use_their_own_saved_baselines_and_one_internal_word(adopted, monkeypatch):
+    first = adopted
+    before = first["technical_journey"]
+    initial = first["saved"]
+    first_calls = first["calls"]
+    first_text = first["raw"]["replacement_text"]
+    first_proof = qualified(first)
+    bid = first["bid"]
+    chapter_path = f"/api/v1/bids/{bid}"
+    chapter_id = before["quality"]["section_id"]
+    stale_body = deepcopy(first["input_body"])
+    stale_body["target_section"] = blank_target(
+        first, before["snapshot"], before["quality"], current=False
+    )
+    rejected = save(first, body=stale_body)
+    assert rejected.status_code == 409, rejected.text
+    assert rejected.json()["code"] == "AUTHORING_PACKAGE_DRAFT_CHANGED"
+    assert len(first_calls) == 1
+
+    latest = first["client"].get(
+        f"{chapter_path}/work-contexts/draft_snapshot/{initial['snapshot_id']}"
+    )
+    assert latest.status_code == 200, latest.text
+    sections = {item["section_id"]: item for item in latest.json()["document"]["sections"]}
+    assert sections[chapter_id] == before["quality"]
+    pinned = deepcopy(first["input_body"])
+    pinned["target_section"] = blank_target(first, initial, sections[chapter_id])
+    assert pinned["target_section"]["snapshot_id"] != stale_body["target_section"]["snapshot_id"]
+    assert (
+        pinned["target_section"]["base_section_revision"]
+        == stale_body["target_section"]["base_section_revision"]
+    )
+
+    second = case.__wrapped__({**first, "input_body": pinned}, monkeypatch)
+    second["raw"]["replacement_text"] = "合成质量章：按已固定证据核对质量验收，不作合规结论。"
+    template_path = f"{chapter_path}/task-definitions/{second['template']['id']}"
+    quoted = second["client"].get(template_path + "/authoring-fee-quote")
+    assert quoted.status_code == 200, quoted.text
+    fee = quoted.json()
+    assert fee["definition_version_id"] == second["template"]["version_id"]
+    assert fee["estimate_not_provider_spend_cap"]
+    assert not second["calls"]
+    claimed = second["client"].post(
+        template_path + "/runs",
+        json={
+            "rerun": False,
+            "authoring_fee": {
+                "price_version_id": fee["price_version_id"],
+                "max_reserved_minor": fee["reserved_minor"],
+            },
+        },
+        headers=headers(second, etag=fee["template_etag"]),
+    )
+    assert claimed.status_code == 202, claimed.text
+    bind_task(second, claimed.json())
+    assert not second["calls"]
+    candidate = finish(second)
+    assert candidate["state"] == "succeeded"
+    assert candidate["result"]["section_id"] == chapter_id
+    second["action_ref"] = candidate["result"]["action_ref"]
+    second["action_response"] = second["client"].get(second["action_ref"])
+    assert second["action_response"].status_code == 200, second["action_response"].text
+    second["action_id"] = second["action_response"].json()["action_id"]
+    second["adoption_key"] = uuid4().hex
+    result = confirm(second)
+    assert result.status_code == 200, result.text
+    second["saved"] = result.json()["result"]["assistant_resolution"]["domain_result"]
+    assert second["saved"]["draft_revision"] == initial["draft_revision"] + 1
+    second_proof = qualified(second)
+    assert second_proof["manifest"]["section_id"] == chapter_id
+    assert second_proof["input_id"] != first_proof["input_id"]
+    assert second_proof["section_revision_id"] != first_proof["section_revision_id"]
+    with connection() as c:
+        snapshot = c.execute(
+            "SELECT manifest FROM design.draft_snapshots WHERE bid_id=%s AND id=%s",
+            (bid, second["saved"]["snapshot_id"]),
+        ).fetchone()["manifest"]
+        proofs = snapshot["authoring_exact_sections"]["sections"]
+        assert {item["qualification_digest"] for item in proofs} == {
+            first_proof["digest"],
+            second_proof["digest"],
+        }
+
+    build, _, text = build_structured_word(second)
+    assert first_text in text and second["raw"]["replacement_text"] in text
+    document = adoption_body(second, build)["member"]["document_version_id"]
+    with connection() as c:
+        assert not package_outputs.admitted(c, bid, document)
+        assert not c.execute(
+            "SELECT 1 FROM design.submission_records WHERE bid_id=%s", (bid,)
+        ).fetchone()
+        assert (
+            c.execute(
+                "SELECT count(*) AS n FROM design.task_runs WHERE bid_id=%s", (bid,)
+            ).fetchone()["n"]
+            == 2
+        )
+    assert len(first_calls) == len(second["calls"]) == 1
