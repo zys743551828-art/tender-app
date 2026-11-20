@@ -66,6 +66,12 @@ function AdoptionReceipt({
       active = false;
     };
   }, [action, saved, input, epoch]);
+  const receiptQuery = new URLSearchParams({
+    draft: saved.draft_id,
+    adoption: action.action_id,
+    snapshot: saved.snapshot_id,
+    snapshot_digest: saved.snapshot_digest,
+  });
   return (
     <section aria-label="固定整包正文采纳结果">
       <p className="inline-success" role="status">
@@ -90,10 +96,8 @@ function AdoptionReceipt({
             已核验章节修订 {proof.binding.section_revision}
             、采纳后的固定快照和原输入来源关系；采纳不表示内容正确、核查通过或已入包。
           </p>
-          <a
-            href={`/bids/${action.target_bid_id}/authoring?draft=${encodeURIComponent(saved.draft_id)}`}
-          >
-            打开这份正文草稿，核对修订并生成文件
+          <a href={`/bids/${action.target_bid_id}/authoring?${receiptQuery}`}>
+            查看本次采纳的固定快照
           </a>
           <details className="identity-details">
             <summary>本次采纳的固定身份</summary>

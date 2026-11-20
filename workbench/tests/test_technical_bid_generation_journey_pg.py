@@ -444,10 +444,59 @@ def test_two_chapters_use_their_own_saved_baselines_and_one_internal_word(adopte
             second_proof["digest"],
         }
 
+    # Simulate a client recovering the first adoption after another chapter
+    # already advanced the project. The original build would now be stale.
+    before_handoff = counts()
+    replayed = confirm(first)
+    assert replayed.status_code == 200, replayed.text
+    assert replayed.headers["idempotent-replayed"] == "true"
+    original = replayed.json()["result"]["assistant_resolution"]["domain_result"]
+    assert original == initial and original["snapshot_id"] != second["saved"]["snapshot_id"]
+    history = first["client"].get(f"{chapter_path}/draft-snapshots/{original['snapshot_id']}")
+    assert history.status_code == 200, history.text
+    assert history.json()["snapshot_digest"] == original["snapshot_digest"]
+    assert "合成质量章" not in str(history.json()["sections"])
+    draft_path = f"{chapter_path}/drafts/{original['draft_id']}"
+    current = first["client"].get(draft_path)
+    assert current.status_code == 200
+    assert current.json()["snapshot_id"] == second["saved"]["snapshot_id"]
+    assert current.json()["revision"] > original["draft_revision"]
+    assert counts() == before_handoff
+
+    structure = first["client"].get(draft_path + "/structure").json()
+    stale_build = request_build(
+        first,
+        body={
+            "draft_id": original["draft_id"],
+            "draft_revision": original["draft_revision"],
+            "follow_up": "none",
+            "formats": ["docx"],
+            "directory_template_version_id": structure["directory_template_version_id"],
+            "style_template_version_id": structure["style_template_version_id"],
+            "pagination_mode": "chapter_start_new_page",
+        },
+    )
+    assert stale_build.status_code == 412, stale_build.text
+    assert stale_build.json()["code"] == "DRAFT_REVISION_CONFLICT"
+    assert counts() == before_handoff
+
+    # Only a separately selected current revision can produce the next Word.
     build, _, text = build_structured_word(second)
     assert first_text in text and second["raw"]["replacement_text"] in text
     document = adoption_body(second, build)["member"]["document_version_id"]
     with connection() as c:
+        persisted = c.execute(
+            """SELECT s.id::text AS snapshot_id,s.revision,s.digest
+               FROM design.builds b JOIN design.build_inputs i ON b.input_id=i.id AND b.bid_id=i.bid_id
+               JOIN design.draft_snapshots s ON s.id=i.draft_snapshot_id AND s.bid_id=b.bid_id
+               WHERE b.id=%s AND b.bid_id=%s""",
+            (build["id"], bid),
+        ).fetchone()
+        assert persisted == {
+            "snapshot_id": second["saved"]["snapshot_id"],
+            "revision": second["saved"]["draft_revision"],
+            "digest": second["saved"]["snapshot_digest"],
+        }
         assert not package_outputs.admitted(c, bid, document)
         assert not c.execute(
             "SELECT 1 FROM design.submission_records WHERE bid_id=%s", (bid,)

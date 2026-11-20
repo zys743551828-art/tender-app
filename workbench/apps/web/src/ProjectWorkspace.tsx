@@ -19,6 +19,11 @@ const AuthoringPanel = lazy(() =>
     default: module.AuthoringPanel,
   })),
 );
+const AuthoringAdoptionHandoff = lazy(() =>
+  import("./AuthoringAdoptionHandoff").then((module) => ({
+    default: module.AuthoringAdoptionHandoff,
+  })),
+);
 const SubmissionPanel = lazy(() =>
   import("./SubmissionPanel").then((module) => ({
     default: module.SubmissionPanel,
@@ -131,8 +136,10 @@ export function ProjectWorkspace({
     bid?.current_review_id;
 
   const page = parseWorkspacePage(route.split("?")[0]);
-  const explicitReview = new URLSearchParams(route.split("?")[1] ?? "").get(
-    "review",
+  const query = new URLSearchParams(route.split("?")[1] ?? "");
+  const explicitReview = query.get("review");
+  const adoptionHandoff = ["adoption", "snapshot", "snapshot_digest"].some(
+    (field) => query.has(field),
   );
   const restoredPosition = useRef<string | null>(null);
   useEffect(() => {
@@ -425,21 +432,27 @@ export function ProjectWorkspace({
           )}
           {page === "authoring" && (
             <Suspense fallback={<Loading text="正在打开章节编制…" />}>
-              <AuthoringPanel
-                bidId={id}
-                memberId={memberId}
-                projectTitle={bid.title}
-                disabled={
-                  !!bid.archived_at ||
-                  bid.phase === "closed" ||
-                  bid.phase === "terminated"
-                }
-                onPackages={() => onNavigate("packages")}
-                draftId={new URLSearchParams(route.split("?")[1] ?? "").get(
-                  "draft",
-                )}
-                onOpenDraft={onOpenDraft ?? (() => {})}
-              />
+              {adoptionHandoff ? (
+                <AuthoringAdoptionHandoff
+                  key={route}
+                  bidId={id}
+                  query={query}
+                />
+              ) : (
+                <AuthoringPanel
+                  bidId={id}
+                  memberId={memberId}
+                  projectTitle={bid.title}
+                  disabled={
+                    !!bid.archived_at ||
+                    bid.phase === "closed" ||
+                    bid.phase === "terminated"
+                  }
+                  onPackages={() => onNavigate("packages")}
+                  draftId={query.get("draft")}
+                  onOpenDraft={onOpenDraft ?? (() => {})}
+                />
+              )}
             </Suspense>
           )}
           {page === "pricing" && (
