@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
-import { api } from "./api";
+import { ApiError, api } from "./api";
 import {
   exactActionSaved,
   exactAdoptionBinding,
   verifyExactAction,
   verifyExactQualification,
 } from "./authoringExactProtocol";
+import { ErrorNotice, LoadingSkeleton } from "./components";
 import type { DraftSaved, DraftView } from "./contracts";
 import { executionId, executionSha } from "./executionInputValidation";
 import { ResourceState } from "./ResourceState";
 import { authoringText } from "./richEditorSchema";
 import { useResource } from "./useResource";
+
+function temporaryReadError(error: unknown) {
+  return (
+    error instanceof ApiError &&
+    (error.status === 0 ||
+      error.status === 408 ||
+      error.status === 429 ||
+      error.status >= 500)
+  );
+}
 
 export function AuthoringAdoptionHandoff({
   bidId,
@@ -45,12 +56,14 @@ export function AuthoringAdoptionHandoff({
     setError(null);
     void (async () => {
       const result = await api<unknown>(`/assistant/actions/${actionId}`);
+      if (!active) return;
       const action = await verifyExactAction(
         result.data,
         result.etag,
         actionId,
         bidId,
       );
+      if (!active) return;
       const saved = exactActionSaved(action);
       if (
         !saved ||
@@ -63,6 +76,7 @@ export function AuthoringAdoptionHandoff({
         `/bids/${bidId}/draft-snapshots/${saved.snapshot_id}`,
       );
       const binding = await exactAdoptionBinding(frozen.data, action, saved);
+      if (!active) return;
       const qualification = await api<unknown>(
         `/bids/${bidId}/authoring/section-revisions/${binding.section_revision_id}/exact-qualification`,
       );
@@ -111,14 +125,30 @@ export function AuthoringAdoptionHandoff({
           采纳快照链接缺少有效的固定身份，请返回原采纳回执重新打开。
         </p>
       )}
-      {valid && (
-        <ResourceState
-          loading={!error && !receipt}
-          error={error}
-          hasData={!!receipt}
-          onRetry={() => setEpoch((n) => n + 1)}
-          loadingLabel="正在核对原采纳回执与固定快照…"
-        />
+      {valid && !receipt && !error && (
+        <LoadingSkeleton text="正在核对原采纳回执与固定快照…" />
+      )}
+      {valid && !!error && (
+        <>
+          <ErrorNotice error={error} />
+          {temporaryReadError(error) && (
+            <>
+              <p className="small-note">
+                可以重新读取原回执、原快照与原章节资格，不会改稿或生成文件。
+              </p>
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => {
+                  setError(null);
+                  setEpoch((n) => n + 1);
+                }}
+              >
+                重试核对原采纳快照
+              </button>
+            </>
+          )}
+        </>
       )}
       {receipt && (
         <>

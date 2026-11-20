@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
-import { api } from "./api";
+import { ApiError, api } from "./api";
 import { AuthoringAdoptionHandoff } from "./AuthoringAdoptionHandoff";
 import {
   exactAuthoringFixture,
@@ -52,6 +52,7 @@ async function setup(mode = "advanced") {
         : exactId(9920),
     sections: [],
   };
+  let qualificationReads = 0;
   mocked.mockImplementation(async (path, options) => {
     if (options?.method && options.method !== "GET")
       throw new Error("This handoff must never write");
@@ -69,6 +70,12 @@ async function setup(mode = "advanced") {
       };
     }
     if (path === fields.qualification) {
+      if (mode === "temporary qualification" && !qualificationReads++)
+        throw new ApiError(
+          "暂时无法读取原章节资格",
+          503,
+          "SYNTHETIC_UNAVAILABLE",
+        );
       return {
         data:
           mode === "bad qualification"
@@ -147,6 +154,9 @@ it.each([
     expect(await screen.findByRole("alert")).toHaveTextContent(error);
     expect(screen.queryByRole("link", { name: "查看当前草稿" })).toBeNull();
     expect(screen.queryByRole("button", { name: /生成文件/ })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "重试核对原采纳快照" }),
+    ).toBeNull();
     expect(mocked).toHaveBeenCalledTimes(expectedReads);
     expect(
       mocked.mock.calls.every(
@@ -180,4 +190,44 @@ it("the project authoring route mounts no writable editor until explicitly openi
       ([, args]) => !args?.method || args.method === "GET",
     ),
   ).toBe(true);
+});
+
+it("allows explicit retry of the identical historical proof after a read failure, without any write", async () => {
+  const { f, query, bidId, fields, head } = await setup(
+    "temporary qualification",
+  );
+  const user = userEvent.setup();
+  render(<AuthoringAdoptionHandoff bidId={bidId} query={query} />);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "暂时无法读取原章节资格",
+  );
+  expect(screen.queryByText("查看本次采纳的章节正文")).toBeNull();
+  expect(screen.queryByRole("link", { name: "查看当前草稿" })).toBeNull();
+  const historicalReads = [fields.action, fields.frozen, fields.qualification];
+  expect(mocked.mock.calls.map(([path]) => path)).toEqual(historicalReads);
+  await user.click(screen.getByRole("button", { name: "重试核对原采纳快照" }));
+  expect(
+    await screen.findByText(
+      `本次采纳固定为草稿修订 ${f.saved.draft_revision}。`,
+    ),
+  ).toBeVisible();
+  expect(
+    await screen.findByText(
+      `当前草稿已更新到修订 ${head.revision}。本页仍只显示原采纳快照。`,
+    ),
+  ).toBeVisible();
+  expect(mocked.mock.calls.map(([path]) => path)).toEqual([
+    ...historicalReads,
+    ...historicalReads,
+    fields.current,
+  ]);
+  expect(
+    mocked.mock.calls.every(
+      ([, args]) => !args?.method || args.method === "GET",
+    ),
+  ).toBe(true);
+  expect(
+    screen.queryByRole("button", { name: "重试核对原采纳快照" }),
+  ).toBeNull();
+  expect(screen.queryByRole("button", { name: /生成文件|提交/ })).toBeNull();
 });
