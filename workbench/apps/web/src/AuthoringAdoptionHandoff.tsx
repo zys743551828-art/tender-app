@@ -9,8 +9,8 @@ import {
 import { ErrorNotice, LoadingSkeleton } from "./components";
 import type { DraftSaved, DraftView } from "./contracts";
 import { executionId, executionSha } from "./executionInputValidation";
-import { HistoricalCandidateSources } from "./HistoricalCandidateSources";
-import type { HistoricalCandidateProof } from "./historicalCandidateSources";
+import { HistoricalCandidateSources } from "./HistoricalCandidateSources.tsx";
+import type { HistoricalCandidateProof } from "./historicalCandidateSources.ts";
 import { ResourceState } from "./ResourceState";
 import { authoringText } from "./richEditorSchema";
 import { useResource } from "./useResource";

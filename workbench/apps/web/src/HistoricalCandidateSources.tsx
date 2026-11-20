@@ -7,7 +7,7 @@ import {
   checkedHistoricalSources,
   historicalSourcesPath,
   type HistoricalCandidateProof,
-} from "./historicalCandidateSources";
+} from "./historicalCandidateSources.ts";
 
 const PAGE = 20;
 const roleLabel = { authority: "依据包", target: "工作投标包" };

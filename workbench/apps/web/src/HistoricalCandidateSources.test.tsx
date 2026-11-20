@@ -7,12 +7,12 @@ import {
   exactId,
 } from "./authoringExactFixtures.test-support";
 import { jsonDigest } from "./editorSchema";
-import { HistoricalCandidateSources } from "./HistoricalCandidateSources";
+import { HistoricalCandidateSources } from "./HistoricalCandidateSources.tsx";
 import {
   candidateParseSourceId,
   checkedHistoricalSources,
   historicalSourcesPath,
-} from "./historicalCandidateSources";
+} from "./historicalCandidateSources.ts";
 
 vi.mock("./api", async () => ({
   ...(await vi.importActual<typeof import("./api")>("./api")),
