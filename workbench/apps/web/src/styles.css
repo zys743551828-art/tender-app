@@ -1520,9 +1520,6 @@ tbody tr:hover {
     gap: 8px;
     line-height: 1.7;
   }
-  .project-meta > span:last-child {
-    display: none;
-  }
   .project-tabs {
     gap: 15px;
     margin-bottom: 19px;
