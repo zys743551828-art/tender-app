@@ -81,7 +81,9 @@ export function sameLot(a: BidPackage_scope, b: BidPackage_scope) {
     a.bid_id === b.bid_id &&
     a.engineering_project_id === b.engineering_project_id &&
     a.lot_id === b.lot_id &&
-    a.round_id === b.round_id
+    a.round_id === b.round_id &&
+    a.bidder_id === b.bidder_id &&
+    a.bidder_status === b.bidder_status
   );
 }
 

@@ -413,6 +413,15 @@ function ScopedAuthoringStructure({
               bidId={bidId}
               disabled={locked || !!tree.error || !tree.etag}
               onPackages={onPackages}
+              tree={
+                !tree.error &&
+                !tree.loading &&
+                valid.draft_revision === draftRevision
+                  ? valid
+                  : null
+              }
+              chapterNavigationDisabled={navigationLocked}
+              onOpenSection={onChoose}
               onPreview={previewOutline}
             />
           )}

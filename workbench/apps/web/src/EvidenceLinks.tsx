@@ -13,9 +13,11 @@ type Source = {
 export function EvidenceLinks({
   ids,
   label = "查看引用原页",
+  allowedSources,
 }: {
   ids: string[];
   label?: string;
+  allowedSources?: readonly { documentVersionId: string; parseRunId: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [sources, setSources] = useState<Source[] | null>(null);
@@ -24,10 +26,19 @@ export function EvidenceLinks({
   const closeEvidence = useCallback(() => setSelected(null), []);
   const available = ids.length > 0 && supportsApi("GET", `/evidence/${ids[0]}`);
   const key = ids.join(",");
+  const allowedKey = allowedSources
+    ? allowedSources
+        .map(
+          ({ documentVersionId, parseRunId }) =>
+            documentVersionId + ":" + parseRunId,
+        )
+        .join(",")
+    : null;
   useEffect(() => {
     if (!open || !available) return;
     let active = true;
     setSources(null);
+    const allowed = allowedKey === null ? null : new Set(allowedKey.split(","));
     void Promise.all(
       key
         .split(",")
@@ -37,13 +48,21 @@ export function EvidenceLinks({
             const { data: evidence } = await api<EvidenceView>(
               `/evidence/${id}`,
             );
+            if (evidence.id !== id)
+              throw new Error("引用与文件版本身份不一致，未打开其他原件。");
+            if (
+              allowed &&
+              !allowed.has(
+                evidence.document_version_id + ":" + evidence.parse_run_id,
+              )
+            )
+              throw new Error(
+                "引用不属于所选依据包的固定文件和解析，不打开其他原件。",
+              );
             const { data: document } = await api<DocumentView>(
               `/documents/${evidence.document_version_id}`,
             );
-            if (
-              evidence.id !== id ||
-              document.id !== evidence.document_version_id
-            )
+            if (document.id !== evidence.document_version_id)
               throw new Error("引用与文件版本身份不一致，未打开其他原件。");
             return { id, evidence, document };
           } catch (error) {
@@ -56,7 +75,7 @@ export function EvidenceLinks({
     return () => {
       active = false;
     };
-  }, [open, available, key, attempt]);
+  }, [open, available, key, allowedKey, attempt]);
   return (
     <div className="evidence-links">
       <button

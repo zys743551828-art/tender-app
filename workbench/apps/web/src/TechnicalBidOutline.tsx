@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { AuthoringCapturePackagePicker } from "./AuthoringCapturePackagePicker";
 import { ErrorNotice } from "./components";
-import { EvidenceLinks } from "./EvidenceLinks";
+import type { AuthoringTreeView } from "./contracts";
+import { TechnicalDraftTrace } from "./TechnicalDraftTrace";
 import {
   captureInventoryDirectory,
   captureInventoryView,
@@ -23,6 +24,9 @@ type Props = {
   bidId: string;
   disabled: boolean;
   onPackages?: () => void;
+  tree: AuthoringTreeView | null;
+  chapterNavigationDisabled: boolean;
+  onOpenSection: (sectionId: string) => Promise<void>;
   onPreview: (chapters: Outline["chapters"], basis: OutlineBasis) => void;
 };
 
@@ -44,7 +48,15 @@ export function TechnicalBidOutline(props: Props) {
   );
 }
 
-function OutlineWorkspace({ bidId, disabled, onPackages, onPreview }: Props) {
+function OutlineWorkspace({
+  bidId,
+  disabled,
+  onPackages,
+  onPreview,
+  tree,
+  chapterNavigationDisabled,
+  onOpenSection,
+}: Props) {
   const [target, setTarget] = useState<CapturePackageReference | null>(null);
   const [authority, setAuthority] = useState<CapturePackageReference | null>(
     null,
@@ -153,7 +165,9 @@ function OutlineWorkspace({ bidId, disabled, onPackages, onPreview }: Props) {
         }}
       />
       {ready && !matchingScope && (
-        <p role="alert">投标包与依据包不属于同一项目、标段和轮次，不能混用。</p>
+        <p role="alert">
+          投标包与依据包的项目、标段、轮次或主体不一致，不能混用。
+        </p>
       )}
       <ErrorNotice
         error={
@@ -256,25 +270,18 @@ function OutlineWorkspace({ bidId, disabled, onPackages, onPreview }: Props) {
               预览追加大纲
             </button>
           </fieldset>
-          <details>
-            <summary>
-              展开建议依据与待映射技术条款（{result.rows.length}）
-            </summary>
-            <ul>
-              {result.rows.map((row) => (
-                <li key={row.ruleId}>
-                  <p>{row.statement}</p>
-                  <small>
-                    {result.chapters
-                      .filter((chapter) => row.suggested.includes(chapter.key))
-                      .map((chapter) => chapter.title)
-                      .join("、") || "待人工映射"}
-                  </small>
-                  <EvidenceLinks ids={row.evidenceIds} />
-                </li>
-              ))}
-            </ul>
-          </details>
+          {inventory.value && authorityView.value && (
+            <TechnicalDraftTrace
+              key={inventory.value.digest}
+              inventory={inventory.value}
+              authority={authorityView.value}
+              outline={result}
+              bidId={bidId}
+              tree={tree}
+              navigationDisabled={chapterNavigationDisabled}
+              onOpenSection={onOpenSection}
+            />
+          )}
           <p className="small-note">
             目录应用后，请在“章节计划”补写条款与引用，再到项目任务中保存固定编写输入；此步骤不代表已取得生成资格。
           </p>

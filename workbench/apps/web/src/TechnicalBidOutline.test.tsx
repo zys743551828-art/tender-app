@@ -325,6 +325,9 @@ it("previews only additive chapters, then uses the same underlying revision to e
   expect(
     await screen.findByRole("checkbox", { name: "施工进度与资源配置" }),
   ).toBeChecked();
+  await user.click(screen.getByText(/技术要求与已存章节对照/));
+  expect(screen.getByText("尚无保存的章节关联")).toBeInTheDocument();
+  expect(screen.getByText(/不能当作覆盖率或审批/)).toBeInTheDocument();
   expect(writes).toEqual([]);
   await user.click(screen.getByRole("button", { name: "预览追加大纲" }));
   const apply = await screen.findByRole("button", { name: "应用这次变更" });
