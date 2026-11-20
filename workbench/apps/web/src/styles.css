@@ -1111,11 +1111,11 @@ tbody tr:hover {
   color: var(--foreground);
 }
 .login-form input {
-  height: 42px;
+  min-height: max(42px, calc(1.5em + 18px));
 }
 .login-form .full {
   margin-top: 8px;
-  height: 42px;
+  min-height: 42px;
 }
 .login-help {
   font-size: 10px;
