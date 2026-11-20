@@ -9,6 +9,11 @@ import { createServer } from "vite";
 
 const engine = process.argv[2] ?? "chromium";
 assert(["chromium", "webkit"].includes(engine), "Use chromium or webkit");
+const suite = process.argv[3] ?? "all";
+assert(
+  ["all", "mobile", "desktop"].includes(suite),
+  "Use all, mobile or desktop",
+);
 const require = createRequire(import.meta.url);
 const browserType = require(process.env.PLAYWRIGHT_MODULE ?? "playwright")[
   engine
@@ -256,6 +261,12 @@ async function checkTable(page) {
   const project = row.getByRole("button", { name: titles[0], exact: true });
   await checkFocus(project);
   await checkVisibleText(project);
+  await scroller.evaluate((el) => {
+    el.scrollLeft = el.scrollWidth;
+  });
+  await hitTarget(open, 44);
+  await open.tap();
+  await page.waitForURL(`**/bids/${bids[0].id}/packages`);
 }
 
 async function checkMobileNavigation(page) {
@@ -321,6 +332,69 @@ async function checkMobileTargets(page) {
   await page.getByRole("button", { name: "登录工作区" }).waitFor();
 }
 
+async function checkDesktopSidebar(page) {
+  const sidebar = page.locator(".sidebar");
+  const nav = sidebar.getByRole("navigation", { name: "主导航" });
+  const buttons = await nav.getByRole("button").all();
+  assert(buttons.length > 0);
+  const final = buttons.at(-1);
+  const logout = sidebar.getByRole("button", { name: "退出登录", exact: true });
+  const scroll = await sidebar.evaluate((el) => ({
+    scrollable: el.scrollHeight - el.clientHeight,
+    overflow: getComputedStyle(el).overflowY,
+  }));
+  assert(
+    scroll.scrollable > 0,
+    "Short viewport must exercise overflowing sidebar",
+  );
+  assert.equal(
+    scroll.overflow,
+    "auto",
+    "Sidebar must allow vertical scrolling",
+  );
+  const initialPageScroll = await page.evaluate(
+    () => document.scrollingElement.scrollTop,
+  );
+  const box = await sidebar.boundingBox();
+  await page.mouse.move(
+    Math.round(box.x + box.width / 2),
+    Math.round(box.y + box.height / 2),
+  );
+  await page.mouse.wheel(0, 800);
+  await page.waitForFunction(
+    (distance) => document.querySelector(".sidebar").scrollTop >= distance - 1,
+    scroll.scrollable,
+  );
+  await hitTarget(final, 24);
+  await hitTarget(logout, 24);
+  assert.equal(
+    await page.evaluate(() => document.scrollingElement.scrollTop),
+    initialPageScroll,
+  );
+
+  await page.mouse.wheel(0, -800);
+  await page.waitForFunction(
+    () => document.querySelector(".sidebar").scrollTop === 0,
+  );
+  await page.keyboard.press("Tab");
+  await checkFocus(page.getByRole("link", { name: "跳到主要内容" }));
+  for (const control of [...buttons, logout]) {
+    await page.keyboard.press("Tab");
+    await checkFocus(control);
+    await hitTarget(control, 24);
+  }
+
+  await page.keyboard.press("Shift+Tab");
+  await checkFocus(final);
+  await page.keyboard.press("Enter");
+  await page.waitForURL("**/assistant");
+  await page.keyboard.press("Tab");
+  await checkFocus(logout);
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "登录工作区" }).waitFor();
+  console.log(`Sidebar scrollable distance: ${scroll.scrollable}px`);
+}
+
 let browser;
 try {
   await app.listen();
@@ -331,48 +405,72 @@ try {
       ? { executablePath: process.env.CHROMIUM_EXECUTABLE }
       : {}),
   });
-  const checks = [
+  const mobileChecks = [
     ["table", checkTable],
     ["navigation", checkMobileNavigation],
     ["targets", checkMobileTargets],
   ];
+  const cases = [];
+  if (suite !== "desktop") {
+    for (const [width, height] of [
+      [320, 640],
+      [390, 844],
+    ]) {
+      for (const [name, check] of mobileChecks)
+        cases.push({ width, height, mobile: true, name, check });
+    }
+  }
+  if (suite !== "mobile") {
+    for (const [width, height] of [
+      [761, 360],
+      [1024, 400],
+      [1440, 420],
+    ])
+      cases.push({
+        width,
+        height,
+        mobile: false,
+        name: "sidebar",
+        check: checkDesktopSidebar,
+      });
+  }
   const failures = [];
-  for (const width of [320, 390]) {
-    for (const [name, check] of checks) {
-      const page = await browser.newPage({
-        viewport: { width, height: width === 320 ? 640 : 844 },
-        isMobile: true,
-        hasTouch: true,
-      });
-      page.setDefaultTimeout(5_000);
-      const errors = [];
-      page.on("pageerror", (error) => errors.push(error.message));
-      await page.route("**/*", (route) => {
-        const url = new URL(route.request().url());
-        if (url.origin !== origin) return route.abort();
-        if (!url.pathname.startsWith("/api/v1/")) return route.continue();
-        const path = url.pathname.slice("/api/v1".length);
-        const method = route.request().method();
-        if (method === "POST" && path === "/auth/logout")
-          return route.fulfill({ status: 204 });
-        const data = method === "GET" ? fixture(path, url.searchParams) : null;
-        return data
-          ? route.fulfill({ json: data })
-          : route.fulfill({ status: 404 });
-      });
-      try {
-        await page.goto(`${origin}/projects`);
-        await heading(page, "投标项目").waitFor();
-        await check(page);
-        assert.deepEqual(errors, []);
-        console.log(`${engine} ${browser.version()} ${width}px ${name} passed`);
-      } catch (error) {
-        const failure = `${engine} ${width}px ${name}: ${error.message}`;
-        console.error(failure);
-        failures.push(failure);
-      } finally {
-        await page.close();
-      }
+  for (const { width, height, mobile, name, check } of cases) {
+    const page = await browser.newPage({
+      viewport: { width, height },
+      isMobile: mobile,
+      hasTouch: mobile,
+    });
+    page.setDefaultTimeout(5_000);
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.route("**/*", (route) => {
+      const url = new URL(route.request().url());
+      if (url.origin !== origin) return route.abort();
+      if (!url.pathname.startsWith("/api/v1/")) return route.continue();
+      const path = url.pathname.slice("/api/v1".length);
+      const method = route.request().method();
+      if (method === "POST" && path === "/auth/logout")
+        return route.fulfill({ status: 204 });
+      const data = method === "GET" ? fixture(path, url.searchParams) : null;
+      return data
+        ? route.fulfill({ json: data })
+        : route.fulfill({ status: 404 });
+    });
+    try {
+      await page.goto(`${origin}/projects`);
+      await heading(page, "投标项目").waitFor();
+      await check(page);
+      assert.deepEqual(errors, []);
+      console.log(
+        `${engine} ${browser.version()} ${width}×${height}px ${name} passed`,
+      );
+    } catch (error) {
+      const failure = `${engine} ${width}×${height}px ${name}: ${error.message}`;
+      console.error(failure);
+      failures.push(failure);
+    } finally {
+      await page.close();
     }
   }
   assert.deepEqual(failures, []);

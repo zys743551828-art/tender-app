@@ -55,7 +55,7 @@ A1骨架区分执行失败和业务无法判断、事实未知和false、处理�
 
 安装 Playwright 和 Chromium 后，可在本目录运行 `node scripts/check-responsive-workbench-browser.mjs`。脚本用实际页面与合成 HTTP 响应检查 390、640、641、760、761、1440px 的导航、项目页、项目列表和章节编辑器。可用 `PLAYWRIGHT_MODULE`、`CHROMIUM_EXECUTABLE` 指定独立安装路径，设置 `RESPONSIVE_EVIDENCE_DIR` 保存截图。
 
-运行 `node scripts/check-workbench-interactions-browser.mjs chromium` 或 `node scripts/check-workbench-interactions-browser.mjs webkit` 可复验 320px 和 390px 的五列表格、项目切换、退出和键盘焦点。Chromium 通过浏览器输入协议发送触摸手势，WebKit 使用触摸点击与可滚动容器的位置校验。
+运行 `node scripts/check-workbench-interactions-browser.mjs chromium` 或 `node scripts/check-workbench-interactions-browser.mjs webkit` 可复验 320px 和 390px 的五列表格、项目切换、退出和键盘焦点，以及短高度桌面侧栏的滚动和 Tab 顺序。可追加 `mobile` 或 `desktop` 只测对应部分。Chromium 通过浏览器输入协议发送触摸手势，WebKit 使用触摸点击与可滚动容器的位置校验。
 
 ## 章节编制与固定版本（候选04）
 

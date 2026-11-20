@@ -208,6 +208,7 @@ a svg {
   padding: 29px 16px 16px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   z-index: 10;
 }
 .sidebar > .brand {
@@ -303,6 +304,9 @@ a svg {
 }
 .account .logout {
   flex: 0 0 auto;
+  justify-content: center;
+  min-inline-size: 24px;
+  min-block-size: 24px;
   white-space: nowrap;
 }
 .account small {
@@ -1385,6 +1389,7 @@ tbody tr:hover {
     position: static;
     width: auto;
     min-width: 0;
+    overflow: visible;
     flex-direction: row;
     align-items: center;
     padding: 7px 18px;
@@ -1427,7 +1432,6 @@ tbody tr:hover {
     font-size: 11px;
   }
   .account .logout {
-    justify-content: center;
     min-inline-size: 44px;
     min-block-size: 44px;
     margin-left: 3px;
