@@ -544,7 +544,32 @@ a svg {
   position: relative;
 }
 .project-list .table-wrap:focus-visible {
+  outline: 2px solid var(--ring);
   outline-offset: -2px;
+}
+.project-list .project-link {
+  min-width: 160px;
+}
+.project-list-packages {
+  min-width: 154px;
+}
+.project-list .next-action-cell {
+  min-width: 170px;
+}
+.project-list-action {
+  position: sticky;
+  inset-inline-end: 0;
+  z-index: 1;
+  text-align: center;
+}
+td.project-list-action {
+  background: var(--card);
+}
+tr:hover > td.project-list-action {
+  background: var(--subtle);
+}
+.project-list-action .icon-button {
+  margin-inline: auto;
 }
 table {
   border-collapse: collapse;
@@ -1510,23 +1535,10 @@ tbody tr:hover {
   }
   .project-link {
     font-size: 12px;
-    min-width: 160px;
-  }
-  .next-action-cell {
-    min-width: 170px;
   }
   .project-list-action {
-    position: sticky;
-    inset-inline-end: 0;
-    z-index: 1;
     padding-inline: 8px;
     box-shadow: inset 1px 0 var(--line);
-  }
-  td.project-list-action {
-    background: var(--card);
-  }
-  tr:hover > td.project-list-action {
-    background: var(--subtle);
   }
   .project-list-action .icon-button {
     width: 40px;

@@ -206,7 +206,9 @@ try {
       const reason = table.getByText(summary.next_action.reason, {
         exact: true,
       });
+      const counts = table.getByText("依据包 2 · 投标包 1", { exact: true });
       await reason.waitFor();
+      await page.evaluate(() => document.fonts.ready.then(() => {}));
       assert.deepEqual(
         await table.getByRole("columnheader").allTextContents(),
         ["项目名称", "工作阶段", "整包资料", "工作下一步", "打开"],
@@ -238,6 +240,24 @@ try {
         await scroller.press("ArrowRight");
         await page.waitForFunction(() => document.activeElement.scrollLeft > 0);
       }
+      await counts.evaluate((el) => {
+        el.scrollIntoView({ block: "nearest", inline: "center" });
+      });
+      assert(await withinTable(counts), "表内滚动可读到整包数量");
+      assert(
+        await counts.evaluate((el) => {
+          const rects = [...el.getClientRects()];
+          return (
+            rects.length > 0 &&
+            rects.every((rect) => Math.abs(rect.top - rects[0].top) < 3)
+          );
+        }),
+        "整包数量应在同一行",
+      );
+      if (width === 390 && evidence)
+        await page.screenshot({
+          path: join(evidence, "projects-packages-390.png"),
+        });
       await scroller.evaluate((wrap) => {
         wrap.scrollLeft = wrap.scrollWidth;
       });
@@ -247,6 +267,10 @@ try {
       );
       assert(await withinTable(reason), "横向滚动后可以读取完整的工作下一步");
       assert(await withinTable(open), "横向滚动后打开项目行动应保持可见");
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+        width,
+      );
       if (width === 390 && evidence)
         await page.screenshot({
           path: join(evidence, "projects-scrolled-390.png"),

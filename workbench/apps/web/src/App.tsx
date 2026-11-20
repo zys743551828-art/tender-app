@@ -724,9 +724,7 @@ function Projects({
                   <th>工作阶段</th>
                   <th>整包资料</th>
                   <th>工作下一步</th>
-                  <th className="project-list-action">
-                    <span className="sr-only">打开</span>
-                  </th>
+                  <th className="project-list-action">打开</th>
                 </tr>
               </thead>
               <tbody>
@@ -767,7 +765,7 @@ function Projects({
                         }
                       </Badge>
                     </td>
-                    <td>
+                    <td className="project-list-packages">
                       <ProjectPackageCounts
                         summary={summaries.items.get(project.id)}
                       />
