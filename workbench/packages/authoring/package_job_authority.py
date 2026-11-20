@@ -35,10 +35,31 @@ def assert_job(c, job_id):
             # parse after ordinary project writing membership has changed.
             row = c.execute(
                 """SELECT input_manifest#>>'{plan,execution_policy,saved_plan_method}' AS method,
-                          input_manifest#>>'{plan,execution_policy,bound_format_method}' AS format_method
+                          input_manifest#>>'{plan,execution_policy,bound_format_method}' AS format_method,
+                          input_manifest#>>'{plan,execution_policy,combined_scope_method}' AS combined_method
                    FROM design.assistant_jobs WHERE id=%s""",
                 (job_id,),
             ).fetchone()
+            if row and row["combined_method"] is not None:
+                from packages.authoring import (
+                    bound_format_scope,
+                    combined_authoring_scope,
+                    saved_chapter_plans,
+                )
+
+                if (
+                    row["combined_method"] != combined_authoring_scope.EXECUTION_METHOD
+                    or row["format_method"] != bound_format_scope.EXECUTION_METHOD
+                    or row["method"] != saved_chapter_plans.EXECUTION_METHOD
+                    or not combined_authoring_scope.installed(c)
+                ):
+                    raise DomainError(
+                        "AUTHORING_PACKAGE_COMBINED_SCOPE_UNVERIFIED",
+                        "未能核对联合原生执行范围，没有启动或发布候选",
+                        409,
+                    )
+                # The combined native job authority already ran both validators in this transaction.
+                return
             if row and row["format_method"] is not None:
                 from packages.authoring import bound_format_scope
 

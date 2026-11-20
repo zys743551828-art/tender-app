@@ -7,6 +7,7 @@ import pytest
 from packages.authoring import bound_format_scope, package_admission, package_generation
 from packages.authoring import plan_policy_compatibility as compatibility
 from packages.authoring.bound_format_policy_compatibility import V2_EQUIVALENTS
+from packages.authoring.combined_scope_policy_compatibility import V3_EQUIVALENTS
 from packages.domain.runtime import ROOT, sha
 
 
@@ -40,13 +41,13 @@ def test_new_method_keeps_both_previous_exact_byte_identities(
     assert "saved_plan_method" not in numeric
     assert sha(numeric) not in (legacy_digest, saved_plan_digest)
     for name, digest in numeric["source_sha256"].items():
-        assert digest == sha((ROOT / name).read_bytes())
+        newest = sha((ROOT / name).read_bytes())
+        previous, vetted = V3_EQUIVALENTS.get(name, (newest, newest))
+        assert newest == vetted and digest == previous
     for name, (previous, current) in V2_EQUIVALENTS.items():
         if name in numeric["source_sha256"]:
             assert numeric["source_sha256"][name] == current
             assert planned["source_sha256"][name] == previous
-    with pytest.raises(ValueError):
-        method(saved_plans=True, bound_format=True)
 
 
 def test_vetted_aliases_never_certify_an_unknown_checked_file(tmp_path, monkeypatch):

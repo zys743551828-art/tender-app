@@ -3,7 +3,7 @@
 import json
 from dataclasses import dataclass, field
 
-from packages.authoring import bound_format_scope, saved_chapter_plans
+from packages.authoring import bound_format_scope, combined_authoring_scope, saved_chapter_plans
 from packages.authoring import package_input_observation as readers
 from packages.authoring.package_input_contracts import PackageAuthoringInputRequest
 from packages.authoring.plan_policy_compatibility import source_hashes
@@ -67,6 +67,8 @@ def profile(*, saved_plans=False, bound_format=False):
         method["saved_plan_method"] = saved_chapter_plans.INPUT_METHOD
     if bound_format:
         method["bound_format_method"] = bound_format_scope.INPUT_METHOD
+    if saved_plans and bound_format:
+        method["combined_scope_method"] = combined_authoring_scope.INPUT_METHOD
     return method
 
 
@@ -110,9 +112,11 @@ def capture(c, bid, request):
     has_plans = saved_chapter_plans.retained(target)
     structure = saved_chapter_plans.extension(target)
     has_format = bound_format_scope.present(structure)
+    if has_plans and has_format:
+        combined_authoring_scope.require_schema(c)
     if has_format:
-        bound_format_scope.check(c, bid, structure, docs, closure, inventory)
-    elif has_plans:
+        bound_format_scope.check(c, bid, structure, docs, closure, inventory, saved_plans=has_plans)
+    if has_plans:
         section = body["target_section"]
         saved_chapter_plans.check(
             c,

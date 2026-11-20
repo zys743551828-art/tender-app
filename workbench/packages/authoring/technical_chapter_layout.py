@@ -7,7 +7,7 @@ from psycopg.errors import QueryCanceled
 from pydantic import BaseModel, ConfigDict, Field
 
 from packages.authoring import (
-    bound_format_scope,
+    combined_authoring_scope,
     exact_sources,
     format_bindings,
     saved_chapter_plans,
@@ -73,7 +73,7 @@ def _state(c, bid, extension, plan_state) -> tuple[LayoutState, list[Unsupported
     reasons: list[UnsupportedReason] = []
     if plan_state in {"not_configured", "target_stale"}:
         reasons.append("saved_chapter_plans")
-    if bound_format_scope.present(extension) and not bound_format_scope.ready(c, extension):
+    if not combined_authoring_scope.ready(c, extension):
         reasons.append("bound_project_format")
     if metadata.get("word_import_sources"):
         reasons.append("word_import_sources")

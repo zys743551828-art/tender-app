@@ -5,6 +5,7 @@ from copy import deepcopy
 from packages.authoring import package_admission, package_generation, saved_chapter_plans
 from packages.authoring import plan_policy_compatibility as compatibility
 from packages.authoring.bound_format_policy_compatibility import V2_EQUIVALENTS
+from packages.authoring.combined_scope_policy_compatibility import V3_EQUIVALENTS
 from packages.domain.runtime import ROOT, sha
 
 
@@ -25,7 +26,9 @@ def test_known_no_plan_profile_uses_only_tested_equivalences():
             if path in old["source_sha256"]:
                 seen.add(path)
                 assert old["source_sha256"][path] == previous
-                actual = sha((ROOT / path).read_bytes())
+                newest = sha((ROOT / path).read_bytes())
+                actual, vetted = V3_EQUIVALENTS.get(path, (newest, newest))
+                assert newest == vetted
                 assert planned["source_sha256"][path] == current
                 assert (current, actual) == V2_EQUIVALENTS.get(path, (current, current))
     assert seen == set(compatibility.LEGACY_EQUIVALENTS)

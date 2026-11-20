@@ -42,12 +42,12 @@ def installed(c):
     )
 
 
-def supported(structure):
+def supported(structure, *, saved_plans=False):
     metadata = (structure or {}).get("metadata", {})
     bindings = metadata.get("format_bindings")
     if (
         not structure
-        or structure["plans"]
+        or bool(structure["plans"]) != saved_plans
         or metadata.get("word_import_sources")
         or not isinstance(bindings, list)
         or not 0 < len(bindings) <= len(FIELDS)
@@ -63,8 +63,8 @@ def supported(structure):
     return len({row["field"] for row in bindings}) == len(bindings)
 
 
-def ready(c, structure):
-    return supported(structure) and installed(c)
+def ready(c, structure, *, saved_plans=False):
+    return supported(structure, saved_plans=saved_plans) and installed(c)
 
 
 def _claim(ref):
@@ -76,8 +76,8 @@ def _claim(ref):
     )
 
 
-def check(c, bid, structure, documents, closure, inventory):
-    if not ready(c, structure):
+def check(c, bid, structure, documents, closure, inventory, *, saved_plans=False):
+    if not ready(c, structure, saved_plans=saved_plans):
         raise DomainError(
             "AUTHORING_PACKAGE_STRUCTURE_BASIS_UNSUPPORTED",
             "此固定编写暂不支持该项目版式范围或缺少可选约束；原稿和版式保持不变",

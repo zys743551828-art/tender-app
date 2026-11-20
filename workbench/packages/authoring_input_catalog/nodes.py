@@ -1,7 +1,12 @@
 """Stable nodes from an explicitly saved snapshot, with current heads only as blockers."""
 
 from packages.assistant.generation import node_text, nodes
-from packages.authoring import bound_format_scope, content, saved_chapter_plans, snapshot_structure
+from packages.authoring import (
+    combined_authoring_scope,
+    content,
+    saved_chapter_plans,
+    snapshot_structure,
+)
 from packages.authoring_input_catalog import policy
 from packages.domain.runtime import clean
 from packages.work_contexts import authoring_repository
@@ -72,9 +77,7 @@ def catalog(c, bid, snapshot_id, section_id, expected_snapshot_digest, expected_
                     or saved_chapter_plans.stale_target(extension, section_id)
                 )
             )
-            or (
-                bound_format_scope.present(extension) and not bound_format_scope.ready(c, extension)
-            )
+            or not combined_authoring_scope.ready(c, extension)
             or extension["metadata"].get("word_import_sources")
         )
     if not supported:

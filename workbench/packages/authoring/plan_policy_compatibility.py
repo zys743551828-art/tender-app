@@ -4,8 +4,9 @@ Unknown execution bytes are never relabeled as the previous implementation.
 Editing one of the mapped files subsequently requires a new compatibility review.
 """
 
-from packages.authoring import bound_format_scope
+from packages.authoring import bound_format_scope, combined_authoring_scope
 from packages.authoring.bound_format_policy_compatibility import V2_EQUIVALENTS
+from packages.authoring.combined_scope_policy_compatibility import V3_EQUIVALENTS
 from packages.authoring.saved_chapter_plans import DDL, HELPER
 from packages.domain.runtime import ROOT, sha
 
@@ -36,8 +37,7 @@ LEGACY_EQUIVALENTS: dict[str, tuple[str, str]] = {
 
 
 def source_hashes(paths, *, saved_plans, bound_format=False):
-    if saved_plans and bound_format:
-        raise ValueError("A combined plan and bound format is not an eligible execution method")
+    combined = saved_plans and bound_format
     if saved_plans or bound_format:
         paths = (
             *paths,
@@ -57,7 +57,19 @@ def source_hashes(paths, *, saved_plans, bound_format=False):
             "packages/domain/human_decisions.py",
             "packages/domain/review_data.py",
         )
+    if combined:
+        paths = (
+            *paths,
+            combined_authoring_scope.HELPER,
+            combined_authoring_scope.DDL,
+            "packages/authoring/combined_scope_policy_compatibility.py",
+        )
     values = {name: sha((ROOT / name).read_bytes()) for name in paths}
+    if combined:
+        return values
+    for name, (old, equivalent) in V3_EQUIVALENTS.items():
+        if values.get(name) == equivalent:
+            values[name] = old
     if bound_format:
         return values
     for name, (old, equivalent) in V2_EQUIVALENTS.items():

@@ -6,7 +6,7 @@ from uuid import UUID
 from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.assistant.protocol import HASH, ID, NODE_ID, array, obj
-from packages.authoring import bound_format_scope, saved_chapter_plans
+from packages.authoring import bound_format_scope, combined_authoring_scope, saved_chapter_plans
 from packages.authoring.package_job_authority import MODE
 from packages.authoring.patches import replace_node
 from packages.authoring.plan_policy_compatibility import source_hashes
@@ -48,11 +48,15 @@ def policy(*, saved_plans=False, bound_format=False):
         method["saved_plan_method"] = saved_chapter_plans.EXECUTION_METHOD
     if bound_format:
         method["bound_format_method"] = bound_format_scope.EXECUTION_METHOD
+    if saved_plans and bound_format:
+        method["combined_scope_method"] = combined_authoring_scope.EXECUTION_METHOD
     return method
 
 
 def _policy_for_target(target):
     if bound_format_scope.present(saved_chapter_plans.extension(target)):
+        if saved_chapter_plans.retained(target):
+            return policy(saved_plans=True, bound_format=True)
         return policy(bound_format=True)
     return policy(saved_plans=True) if saved_chapter_plans.retained(target) else policy()
 
@@ -104,6 +108,7 @@ def checked(manifest, *, live_policy=False):
         has_plans = saved_chapter_plans.retained(context["target"])
         structure = saved_chapter_plans.extension(context["target"])
         has_format = bound_format_scope.present(structure)
+        combined = has_plans and has_format
         if (
             manifest.get("generation_mode") != MODE
             or manifest["kind"] != "authoring"
@@ -119,7 +124,11 @@ def checked(manifest, *, live_policy=False):
             != (saved_chapter_plans.INPUT_METHOD if has_plans else None)
             or frozen["execution_policy"].get("saved_plan_method")
             != (saved_chapter_plans.EXECUTION_METHOD if has_plans else None)
-            or (has_format and not bound_format_scope.supported(structure))
+            or (has_format and not bound_format_scope.supported(structure, saved_plans=has_plans))
+            or context["method"].get("combined_scope_method")
+            != (combined_authoring_scope.INPUT_METHOD if combined else None)
+            or frozen["execution_policy"].get("combined_scope_method")
+            != (combined_authoring_scope.EXECUTION_METHOD if combined else None)
             or context["method"].get("bound_format_method")
             != (bound_format_scope.INPUT_METHOD if has_format else None)
             or frozen["execution_policy"].get("bound_format_method")
@@ -157,11 +166,10 @@ def request_parts(manifest):
             "Manual planning text, page estimates and pending facts are not provided."
         )
         frozen = saved_chapter_plans.model_projection(frozen)
-    elif (
-        frozen["execution_policy"].get("bound_format_method") == bound_format_scope.EXECUTION_METHOD
-    ):
+    if frozen["execution_policy"].get("bound_format_method") == bound_format_scope.EXECUTION_METHOD:
         system += " Rendering layout is handled separately. Do not invent or apply formatting requirements."
-        frozen = bound_format_scope.model_projection(frozen)
+        if frozen["execution_policy"].get("combined_scope_method") is None:
+            frozen = bound_format_scope.model_projection(frozen)
     return system, {"complete_fixed_package_plan": frozen}, MODEL_SCHEMA
 
 
