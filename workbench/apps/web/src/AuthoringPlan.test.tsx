@@ -74,9 +74,7 @@ it("人工预算保存走plan revision 0与draft11，不借section10冒充plan�
     />,
   );
   await userEvent.click(screen.getByText("本章编写计划 · 施工"));
-  expect(
-    screen.getByText(/任一章保存计划后，这份草稿不能新建固定编写输入/),
-  ).toBeVisible();
+  expect(screen.getByText(/计划正文、预算和待核事实留在工作台/)).toBeVisible();
   await userEvent.type(screen.getByLabelText("人工计划页数"), "8");
   await userEvent.type(screen.getByLabelText("本章目标"), "人工目标");
   await userEvent.click(screen.getByRole("button", { name: "保存编写计划" }));

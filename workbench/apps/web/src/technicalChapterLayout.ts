@@ -1,7 +1,10 @@
 import { api } from "./api";
 import type { TechnicalChapterLayoutView } from "./contracts";
 import { exactKeys, recordObject } from "./executionInputValidation";
-import type { FixedAuthoringChapter } from "./packageAuthoringInputProtocol";
+import {
+  authoringInteger,
+  type FixedAuthoringChapter,
+} from "./packageAuthoringInputProtocol";
 
 const states = [
   "plain_draft",
@@ -15,6 +18,13 @@ const unsupportedReasons = [
   "saved_chapter_plans",
   "bound_project_format",
   "word_import_sources",
+] as const;
+
+const planStates = [
+  "none",
+  "requires_fixed_evidence",
+  "not_configured",
+  "target_stale",
 ] as const;
 
 export async function readTechnicalChapterLayout(
@@ -35,6 +45,8 @@ export async function readTechnicalChapterLayout(
       "section_revision",
       "state",
       "unsupported_reasons",
+      "plan_state",
+      "section_plan_revision",
       "ordinary_structure_protected",
     ]) ||
     data.bid_id !== bidId ||
@@ -52,6 +64,16 @@ export async function readTechnicalChapterLayout(
       data.unsupported_reasons.length ||
     (data.state === "structure_not_supported") !==
       data.unsupported_reasons.length > 0 ||
+    !planStates.some((state) => state === data.plan_state) ||
+    (data.section_plan_revision !== null &&
+      !authoringInteger(data.section_plan_revision)) ||
+    (data.plan_state === "none" && data.section_plan_revision !== null) ||
+    (data.plan_state === "target_stale" &&
+      data.section_plan_revision === null) ||
+    (data.plan_state === "not_configured" ||
+      data.plan_state === "target_stale") !==
+      data.unsupported_reasons.includes("saved_chapter_plans") ||
+    (data.state === "plain_draft" && data.plan_state !== "none") ||
     typeof data.ordinary_structure_protected !== "boolean"
   )
     throw new Error(

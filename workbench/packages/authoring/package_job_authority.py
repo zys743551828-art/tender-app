@@ -31,6 +31,25 @@ def assert_job(c, job_id):
     try:
         with c.transaction():
             c.execute("SELECT design.authoring_package_assert_job(%s)", (job_id,))
+            # A selected authority package can still point to an active old
+            # parse after ordinary project writing membership has changed.
+            row = c.execute(
+                """SELECT input_manifest#>>'{plan,execution_policy,saved_plan_method}' AS method
+                   FROM design.assistant_jobs WHERE id=%s""",
+                (job_id,),
+            ).fetchone()
+            if row and row["method"] is not None:
+                from packages.authoring import saved_chapter_plans
+
+                if row[
+                    "method"
+                ] != saved_chapter_plans.EXECUTION_METHOD or not saved_chapter_plans.installed(c):
+                    raise DomainError(
+                        "AUTHORING_PACKAGE_SAVED_PLAN_UNVERIFIED",
+                        "未能核对已保存章节计划的原生执行范围，没有启动或发布候选",
+                        409,
+                    )
+                c.execute("SELECT design.authoring_saved_plan_assert_current(%s)", (job_id,))
     except psycopg.Error as error:
         code = error.diag.message_primary or ""
         if code.startswith("AUTHORING_PACKAGE_") or code.startswith("ASSISTANT_"):

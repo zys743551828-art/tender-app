@@ -4,13 +4,14 @@ import json
 from dataclasses import dataclass, field
 
 from packages.authoring import package_input_observation as readers
+from packages.authoring import saved_chapter_plans
 from packages.authoring.package_input_contracts import PackageAuthoringInputRequest
+from packages.authoring.plan_policy_compatibility import source_hashes
 from packages.domain import original_verification
 from packages.domain.bid_package_service import lock_bid
 from packages.domain.review_data import effective_at
 from packages.domain.review_identity import utc
 from packages.domain.runtime import (
-    ROOT,
     DomainError,
     connection,
     fetch,
@@ -51,8 +52,8 @@ def encoded(value):
     )
 
 
-def profile():
-    return {
+def profile(*, saved_plans=False):
+    method = {
         "protocol": "package-authoring-input-policy/1",
         "purpose": "authoring",
         "target_relation": "draft_using_package_context",
@@ -60,8 +61,11 @@ def profile():
         "context_limit_bytes": MAX_CONTEXT_BYTES,
         "complete_package_required": True,
         "implicit_source_selection": False,
-        "source_sha256": {name: sha((ROOT / name).read_bytes()) for name in FILES},
+        "source_sha256": source_hashes(FILES, saved_plans=saved_plans),
     }
+    if saved_plans:
+        method["saved_plan_method"] = saved_chapter_plans.INPUT_METHOD
+    return method
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +105,20 @@ def capture(c, bid, request):
     inventory = readers.inventory(c, bid, body, selection, docs)
     facts = readers.facts(c, bid, body, docs, identity, at)
     target = readers.target(c, bid, body, docs)
-    policy = profile()
+    has_plans = saved_chapter_plans.retained(target)
+    if has_plans:
+        section = body["target_section"]
+        saved_chapter_plans.check(
+            c,
+            bid,
+            section["draft_id"],
+            section["section_id"],
+            saved_chapter_plans.extension(target),
+            docs,
+            closure,
+            inventory,
+        )
+    policy = profile(saved_plans=has_plans)
     context = {
         "protocol": "package-authoring-context/1",
         "bid_id": bid,

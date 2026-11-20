@@ -190,7 +190,7 @@ def blank_target(w, applied, chapter, *, expected_blockers=()):
     }
 
 
-def build_structured_word(w):
+def build_structured_word(w, *, gate_state="structured_layout_rechecked"):
     target = w["input_body"]["target_section"]
     saved = w["saved"]
     # Mirror AuthoringBuilds: an outlined snapshot must carry its two
@@ -198,7 +198,7 @@ def build_structured_word(w):
     base = f"/api/v1/bids/{w['bid']}"
     draft_path = f"{base}/drafts/{target['draft_id']}"
     gate = current_layout(w, draft_path, target["section_id"])
-    assert gate["state"] == "structured_layout_rechecked"
+    assert gate["state"] == gate_state
     assert gate["ordinary_structure_protected"]
     assert gate["snapshot_id"] == saved["snapshot_id"]
     tree = w["client"].get(draft_path + "/structure")

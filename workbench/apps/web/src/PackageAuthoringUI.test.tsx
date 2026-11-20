@@ -428,6 +428,8 @@ it("prepares the selected technical chapter, saves a handoff, and only then perm
             section_revision: section.base_section_revision,
             state: "structured_layout_rechecked",
             unsupported_reasons: [],
+            plan_state: "none",
+            section_plan_revision: null,
             ordinary_structure_protected: false,
           })
         : undefined,

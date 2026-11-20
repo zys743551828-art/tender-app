@@ -51,6 +51,8 @@ function protectTransport(overrides: Partial<TechnicalChapterLayoutView> = {}) {
           section_revision: ref.base_section_revision,
           state: "plain_draft",
           unsupported_reasons: [],
+          plan_state: "none",
+          section_plan_revision: null,
           ordinary_structure_protected: false,
           ...overrides,
         }),
@@ -232,6 +234,8 @@ it("identifies a plan on the exact saved draft and leaves manual editing reachab
   const transport = protectTransport({
     state: "structure_not_supported",
     unsupported_reasons: ["saved_chapter_plans"],
+    plan_state: "not_configured",
+    section_plan_revision: 1,
   });
   const prepare = vi
     .fn()
@@ -244,9 +248,7 @@ it("identifies a plan on the exact saved draft and leaves manual editing reachab
   expect(
     await screen.findByRole("link", { name: "返回本章正文" }),
   ).toHaveAttribute("href", "#authoring-current-section");
-  expect(
-    screen.getByText("这份草稿已有章节计划（也可能在别章）。"),
-  ).toBeVisible();
+  expect(screen.getByText(/当前工作台未配置固定编写的计划核验/)).toBeVisible();
   expect(screen.queryByText(/绑定了项目版式字段/)).not.toBeInTheDocument();
   expect(screen.queryByText(/Word 导入来源/)).not.toBeInTheDocument();
   expect(
@@ -295,3 +297,56 @@ it.each<Partial<TechnicalChapterLayoutView>>([
     ).not.toBeInTheDocument();
   },
 );
+
+it("opens the exact frozen chapter when plan scope can be checked and shows what is excluded from the model", async () => {
+  const transport = protectTransport({
+    state: "structured_layout_rechecked",
+    plan_state: "requires_fixed_evidence",
+    section_plan_revision: 2,
+  });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  const form = await screen.findByRole("region", {
+    name: "固定整包编写模板编辑",
+  });
+  expect(form).toBeVisible();
+  expect(screen.getByText(/原本章计划修订 2 会保留；/)).toBeVisible();
+  expect(
+    screen.getByText(/不发送计划正文、人工计划页数或待核事实/),
+  ).toBeVisible();
+  expect(
+    transport.mock.calls.map(([path, init]) => [path, init?.method]),
+  ).toEqual([
+    [layoutPath, "GET"],
+    ["/api/v1/bids/" + f.bidId, "GET"],
+  ]);
+});
+
+it("does not prepare paid authoring when the selected saved plan relates to old chapter content", async () => {
+  const transport = protectTransport({
+    state: "structure_not_supported",
+    unsupported_reasons: ["saved_chapter_plans"],
+    plan_state: "target_stale",
+    section_plan_revision: 2,
+    ordinary_structure_protected: true,
+  });
+  const prepare = vi
+    .fn()
+    .mockResolvedValue({ data: draft, etag: '"draft-head"' });
+  const user = userEvent.setup();
+  render(<TechnicalBidChapter {...props} prepare={prepare} />);
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  await screen.findByText(/本章计划修订 2 仍对照旧正文，不随正文自动更新/);
+  expect(
+    screen.queryByRole("region", { name: "固定整包编写模板编辑" }),
+  ).not.toBeInTheDocument();
+  expect(transport).toHaveBeenCalledOnce();
+});

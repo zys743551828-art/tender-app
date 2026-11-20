@@ -6,9 +6,11 @@ from uuid import UUID
 from jsonschema import Draft202012Validator, FormatChecker
 
 from packages.assistant.protocol import HASH, ID, NODE_ID, array, obj
+from packages.authoring import saved_chapter_plans
 from packages.authoring.package_job_authority import MODE
 from packages.authoring.patches import replace_node
-from packages.domain.runtime import ROOT, DomainError, sha
+from packages.authoring.plan_policy_compatibility import source_hashes
+from packages.domain.runtime import DomainError, sha
 from packages.rag.indexing import parse_source_id
 
 MODEL_SCHEMA = obj(
@@ -21,7 +23,7 @@ MODEL_SCHEMA = obj(
 )
 
 
-def policy():
+def policy(*, saved_plans=False):
     paths = (
         "packages/authoring/package_generation.py",
         "packages/authoring/package_job_identity.py",
@@ -34,14 +36,28 @@ def policy():
         "packages/assistant/paid_execution.py",
         "packages/domain/providers/deepseek.py",
     )
-    return {
+    method = {
         "protocol": "package-authoring-generation-policy/1",
         "generation_mode": MODE,
         "complete_input_required": True,
         "prompt_character_limit": 200000,
         "provider_call_key": "authoring.generate/1",
-        "source_sha256": {name: sha((ROOT / name).read_bytes()) for name in paths},
+        "source_sha256": source_hashes(paths, saved_plans=saved_plans),
     }
+    if saved_plans:
+        method["saved_plan_method"] = saved_chapter_plans.EXECUTION_METHOD
+    return method
+
+
+def _policy_for_target(target):
+    return policy(saved_plans=True) if saved_chapter_plans.retained(target) else policy()
+
+
+def policy_for(input_row):
+    from packages.authoring.package_input_repository import public_context
+
+    context = public_context(input_row)["context"]
+    return _policy_for_target(context["target"])
 
 
 def plan(row, instruction, *, policy_snapshot=None):
@@ -52,7 +68,9 @@ def plan(row, instruction, *, policy_snapshot=None):
     original = next(
         s for s in context["target"]["sections"] if s["id"] == selected["section_revision_id"]
     )
-    execution_policy = policy_snapshot if policy_snapshot is not None else policy()
+    execution_policy = (
+        policy_snapshot if policy_snapshot is not None else _policy_for_target(context["target"])
+    )
     return {
         "protocol": "package-authoring-plan/1",
         "generation_mode": MODE,
@@ -78,6 +96,8 @@ def checked(manifest, *, live_policy=False):
     try:
         frozen = manifest["plan"]
         choice = frozen["target"]
+        context = frozen["context"]
+        has_plans = saved_chapter_plans.retained(context["target"])
         if (
             manifest.get("generation_mode") != MODE
             or manifest["kind"] != "authoring"
@@ -89,10 +109,14 @@ def checked(manifest, *, live_policy=False):
             or manifest["request"]["instruction"] != frozen["instruction"]
             or frozen["context"]["bid_id"] != manifest["bid_id"]
             or frozen["execution_policy"]["protocol"] != "package-authoring-generation-policy/1"
+            or context["method"].get("saved_plan_method")
+            != (saved_chapter_plans.INPUT_METHOD if has_plans else None)
+            or frozen["execution_policy"].get("saved_plan_method")
+            != (saved_chapter_plans.EXECUTION_METHOD if has_plans else None)
             or sha(frozen["execution_policy"]) != frozen["execution_policy_digest"]
         ):
             raise ValueError
-        if live_policy and frozen["execution_policy"] != policy():
+        if live_policy and frozen["execution_policy"] != _policy_for_target(context["target"]):
             raise DomainError(
                 "AUTHORING_PACKAGE_METHOD_CHANGED",
                 "冻结编写方法已变化，未切换新方法执行旧请求",
@@ -115,6 +139,13 @@ def request_parts(manifest):
         "Return replacement_text and evidence_ids only with those identifiers. Do not return HTML or "
         "executable links. This is a candidate; no draft is changed and no submission is authorized."
     )
+    if frozen["execution_policy"].get("saved_plan_method") == saved_chapter_plans.EXECUTION_METHOD:
+        system += (
+            " Optional saved_chapter_plan_links identify related authority evidence and requirements only. "
+            "They are not factual assertions, must not be blindly cited, and do not approve any plan or result. "
+            "Manual planning text, page estimates and pending facts are not provided."
+        )
+        frozen = saved_chapter_plans.model_projection(frozen)
     return system, {"complete_fixed_package_plan": frozen}, MODEL_SCHEMA
 
 

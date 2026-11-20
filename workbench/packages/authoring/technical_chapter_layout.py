@@ -6,7 +6,12 @@ from uuid import UUID
 from psycopg.errors import QueryCanceled
 from pydantic import BaseModel, ConfigDict, Field
 
-from packages.authoring import exact_sources, format_bindings, snapshot_structure
+from packages.authoring import (
+    exact_sources,
+    format_bindings,
+    saved_chapter_plans,
+    snapshot_structure,
+)
 from packages.authoring.technical_chapter_templates import observed_chapter_head
 from packages.domain.runtime import DomainError, fetch, sha
 
@@ -19,6 +24,7 @@ LayoutState = Literal[
 ]
 
 UnsupportedReason = Literal["saved_chapter_plans", "bound_project_format", "word_import_sources"]
+PlanState = Literal["none", "requires_fixed_evidence", "not_configured", "target_stale"]
 
 
 class TechnicalChapterLayoutView(BaseModel):
@@ -32,6 +38,8 @@ class TechnicalChapterLayoutView(BaseModel):
     section_revision: int = Field(ge=1)
     state: LayoutState
     unsupported_reasons: list[UnsupportedReason]
+    plan_state: PlanState
+    section_plan_revision: int | None = Field(ge=1)
     ordinary_structure_protected: bool
 
 
@@ -45,21 +53,32 @@ def _structure_protected(c, bid, draft):
     return False
 
 
-def _state(c, bid, manifest) -> tuple[LayoutState, list[UnsupportedReason]]:
-    extension = snapshot_structure.snapshot_extension(manifest)
+def _plan_state(c, extension, section) -> tuple[PlanState, int | None]:
+    if not extension or not extension["plans"]:
+        return "none", None
+    selected = saved_chapter_plans.selected_plan(extension, str(section))
+    revision = selected["revision"] if selected else None
+    if not saved_chapter_plans.installed(c):
+        return "not_configured", revision
+    if saved_chapter_plans.stale_target(extension, str(section)):
+        return "target_stale", revision
+    return "requires_fixed_evidence", revision
+
+
+def _state(c, bid, extension, plan_state) -> tuple[LayoutState, list[UnsupportedReason]]:
     if extension is None:
         return "plain_draft", []
     metadata = extension["metadata"]
     reasons: list[UnsupportedReason] = []
-    if extension["plans"]:
+    if plan_state in {"not_configured", "target_stale"}:
         reasons.append("saved_chapter_plans")
     if metadata.get("format_bindings"):
         reasons.append("bound_project_format")
     if metadata.get("word_import_sources"):
         reasons.append("word_import_sources")
     if reasons:
-        # This observes the whole saved snapshot, not just the selected node.
-        # Exact B1 does not inherit these sources. Nothing is removed.
+        # This reads the saved prerequisite only. Full rules and original
+        # source selection still require B1; nothing is removed or authorized.
         return "structure_not_supported", reasons
     try:
         format_bindings.assert_snapshot(c, bid, extension, lock_sources=False)
@@ -91,7 +110,9 @@ def read(c, bid, draft, section):
             raise DomainError(
                 "TECHNICAL_CHAPTER_LAYOUT_UNVERIFIED", "无法完整核对当前草稿的结构快照。", 409
             )
-        state, reasons = _state(c, bid, snapshot)
+        extension = snapshot_structure.snapshot_extension(snapshot)
+        plan_state, plan_revision = _plan_state(c, extension, section)
+        state, reasons = _state(c, bid, extension, plan_state)
         protected = _structure_protected(c, bid, draft)
     except QueryCanceled as error:
         raise DomainError(
@@ -106,5 +127,7 @@ def read(c, bid, draft, section):
         section_revision=head["section_revision"],
         state=state,
         unsupported_reasons=reasons,
+        plan_state=plan_state,
+        section_plan_revision=plan_revision,
         ordinary_structure_protected=protected,
     )

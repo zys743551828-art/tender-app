@@ -54,7 +54,7 @@ export function TechnicalBidChapter({
   const [scope, setScope] = useState<FixedAuthoringChapter | null>(null);
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [layoutBlock, setLayoutBlock] =
+  const [layoutResult, setLayoutResult] =
     useState<TechnicalChapterLayoutView | null>(null);
   const [templateIds, setTemplateIds] = useState<string[]>([]);
   const waiting = useRef(false);
@@ -69,11 +69,17 @@ export function TechnicalBidChapter({
     draft.revision === scope.base_draft_revision &&
     section?.id === scope.section_id &&
     section.revision === scope.base_section_revision;
+  const currentLayout =
+    layoutResult?.snapshot_id === draft.snapshot_id &&
+    layoutResult.draft_revision === draft.revision &&
+    layoutResult.section_revision === section?.revision
+      ? layoutResult
+      : null;
   const currentLayoutBlock =
-    layoutBlock?.snapshot_id === draft.snapshot_id &&
-    layoutBlock.draft_revision === draft.revision &&
-    layoutBlock.section_revision === section?.revision
-      ? layoutBlock
+    currentLayout &&
+    currentLayout.state !== "plain_draft" &&
+    currentLayout.state !== "structured_layout_rechecked"
+      ? currentLayout
       : null;
   if (!supportsApi("GET", "/authoring/package-input-capabilities")) return null;
 
@@ -87,7 +93,7 @@ export function TechnicalBidChapter({
     waiting.current = true;
     setPreparing(true);
     setError(null);
-    setLayoutBlock(null);
+    setLayoutResult(null);
     onPreparing(true);
     try {
       let selected = scope && !rebind && !savedForScope ? scope : null;
@@ -118,11 +124,11 @@ export function TechnicalBidChapter({
         };
       }
       const layout = await readTechnicalChapterLayout(bidId, selected);
+      setLayoutResult(layout);
       if (
         layout.state !== "plain_draft" &&
         layout.state !== "structured_layout_rechecked"
       ) {
-        setLayoutBlock(layout);
         setShowForm(false);
         return;
       }
@@ -165,7 +171,13 @@ export function TechnicalBidChapter({
               <p>当前草稿不能准备固定编写，未打开生成表单，也未启动模型。</p>
               <ul>
                 {currentLayoutBlock.unsupported_reasons.map((reason) => (
-                  <li key={reason}>{unsupportedReasonLabels[reason]}</li>
+                  <li key={reason}>
+                    {reason !== "saved_chapter_plans"
+                      ? unsupportedReasonLabels[reason]
+                      : currentLayoutBlock.plan_state === "target_stale"
+                        ? `本章计划修订 ${currentLayoutBlock.section_plan_revision} 仍对照旧正文，不随正文自动更新。`
+                        : "这份草稿已有章节计划（也可能在别章），当前工作台未配置固定编写的计划核验。"}
+                  </li>
                 ))}
               </ul>
               {currentLayoutBlock.ordinary_structure_protected ? (
@@ -201,6 +213,14 @@ export function TechnicalBidChapter({
             </>
           )}
         </div>
+      )}
+      {showForm && currentLayout?.plan_state === "requires_fixed_evidence" && (
+        <p className="small-note" role="status">
+          {currentLayout.section_plan_revision === null
+            ? "原草稿中其他章节的计划会保留。"
+            : `原本章计划修订 ${currentLayout.section_plan_revision} 会保留；固定输入仍须核对计划关联的已选依据包原页和已确认要求。`}
+          只向模型提供核验后的关联，不发送计划正文、人工计划页数或待核事实。采用正文不会自动更新或批准计划。
+        </p>
       )}
       {scope && !savedForScope && (
         <div hidden={!showForm}>

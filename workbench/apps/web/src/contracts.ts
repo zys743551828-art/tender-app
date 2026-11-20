@@ -3959,6 +3959,12 @@ export type TechnicalChapterLayoutView = {
     | "bound_project_format"
     | "word_import_sources"
   )[];
+  plan_state:
+    | "none"
+    | "requires_fixed_evidence"
+    | "not_configured"
+    | "target_stale";
+  section_plan_revision: number | null;
   ordinary_structure_protected: boolean;
 };
 
