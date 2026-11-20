@@ -398,8 +398,7 @@ def target(c, bid, body, docs):
     extension = snapshot_structure.snapshot_extension(snapshot["manifest"])
     if extension:
         require(
-            not extension["metadata"].get("format_bindings")
-            and not extension["metadata"].get("word_import_sources"),
+            not extension["metadata"].get("word_import_sources"),
             "AUTHORING_PACKAGE_STRUCTURE_BASIS_UNSUPPORTED",
         )
         bound = fetch(

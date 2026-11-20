@@ -26,7 +26,7 @@ const unsupportedReasonLabels: Record<
   string
 > = {
   saved_chapter_plans: "这份草稿已有章节计划（也可能在别章）。",
-  bound_project_format: "这份草稿绑定了项目版式字段。",
+  bound_project_format: "当前安装或草稿组合暂不支持这份草稿的项目版式绑定；已保存的版式不变。",
   word_import_sources: "这份草稿记录了 Word 导入来源。",
 };
 

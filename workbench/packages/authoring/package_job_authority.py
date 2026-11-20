@@ -34,10 +34,25 @@ def assert_job(c, job_id):
             # A selected authority package can still point to an active old
             # parse after ordinary project writing membership has changed.
             row = c.execute(
-                """SELECT input_manifest#>>'{plan,execution_policy,saved_plan_method}' AS method
+                """SELECT input_manifest#>>'{plan,execution_policy,saved_plan_method}' AS method,
+                          input_manifest#>>'{plan,execution_policy,bound_format_method}' AS format_method
                    FROM design.assistant_jobs WHERE id=%s""",
                 (job_id,),
             ).fetchone()
+            if row and row["format_method"] is not None:
+                from packages.authoring import bound_format_scope
+
+                if (
+                    row["format_method"] != bound_format_scope.EXECUTION_METHOD
+                    or row["method"] is not None
+                    or not bound_format_scope.installed(c)
+                ):
+                    raise DomainError(
+                        "AUTHORING_PACKAGE_BOUND_FORMAT_UNVERIFIED",
+                        "未能核对项目数字版式的原生执行范围，没有启动或发布候选",
+                        409,
+                    )
+                # The exact native job RPC has already rechecked this scope under the existing locks.
             if row and row["method"] is not None:
                 from packages.authoring import saved_chapter_plans
 

@@ -3,8 +3,8 @@
 import json
 from dataclasses import dataclass, field
 
+from packages.authoring import bound_format_scope, saved_chapter_plans
 from packages.authoring import package_input_observation as readers
-from packages.authoring import saved_chapter_plans
 from packages.authoring.package_input_contracts import PackageAuthoringInputRequest
 from packages.authoring.plan_policy_compatibility import source_hashes
 from packages.domain import original_verification
@@ -52,7 +52,7 @@ def encoded(value):
     )
 
 
-def profile(*, saved_plans=False):
+def profile(*, saved_plans=False, bound_format=False):
     method = {
         "protocol": "package-authoring-input-policy/1",
         "purpose": "authoring",
@@ -61,10 +61,12 @@ def profile(*, saved_plans=False):
         "context_limit_bytes": MAX_CONTEXT_BYTES,
         "complete_package_required": True,
         "implicit_source_selection": False,
-        "source_sha256": source_hashes(FILES, saved_plans=saved_plans),
+        "source_sha256": source_hashes(FILES, saved_plans=saved_plans, bound_format=bound_format),
     }
     if saved_plans:
         method["saved_plan_method"] = saved_chapter_plans.INPUT_METHOD
+    if bound_format:
+        method["bound_format_method"] = bound_format_scope.INPUT_METHOD
     return method
 
 
@@ -106,7 +108,11 @@ def capture(c, bid, request):
     facts = readers.facts(c, bid, body, docs, identity, at)
     target = readers.target(c, bid, body, docs)
     has_plans = saved_chapter_plans.retained(target)
-    if has_plans:
+    structure = saved_chapter_plans.extension(target)
+    has_format = bound_format_scope.present(structure)
+    if has_format:
+        bound_format_scope.check(c, bid, structure, docs, closure, inventory)
+    elif has_plans:
         section = body["target_section"]
         saved_chapter_plans.check(
             c,
@@ -118,7 +124,7 @@ def capture(c, bid, request):
             closure,
             inventory,
         )
-    policy = profile(saved_plans=has_plans)
+    policy = profile(saved_plans=has_plans, bound_format=has_format)
     context = {
         "protocol": "package-authoring-context/1",
         "bid_id": bid,

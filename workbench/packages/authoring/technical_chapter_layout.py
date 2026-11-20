@@ -7,6 +7,7 @@ from psycopg.errors import QueryCanceled
 from pydantic import BaseModel, ConfigDict, Field
 
 from packages.authoring import (
+    bound_format_scope,
     exact_sources,
     format_bindings,
     saved_chapter_plans,
@@ -72,7 +73,7 @@ def _state(c, bid, extension, plan_state) -> tuple[LayoutState, list[Unsupported
     reasons: list[UnsupportedReason] = []
     if plan_state in {"not_configured", "target_stale"}:
         reasons.append("saved_chapter_plans")
-    if metadata.get("format_bindings"):
+    if bound_format_scope.present(extension) and not bound_format_scope.ready(c, extension):
         reasons.append("bound_project_format")
     if metadata.get("word_import_sources"):
         reasons.append("word_import_sources")
@@ -85,7 +86,15 @@ def _state(c, bid, extension, plan_state) -> tuple[LayoutState, list[Unsupported
     except DomainError as error:
         if error.code == "AUTHORING_FORMAT_REVIEW_REQUIRED":
             return "layout_review_required", []
-        if error.code == "AUTHORING_FORMAT_BINDING_STALE":
+        if error.code in {
+            "AUTHORING_FORMAT_BINDING_INVALID",
+            "AUTHORING_FORMAT_BINDING_STALE",
+            "AUTHORING_FORMAT_RULE_STALE",
+            "AUTHORING_FORMAT_RULE_UNCONFIRMED",
+            "AUTHORING_SOURCE_STALE",
+            "FACT_EVIDENCE_REQUIRED",
+            "SOURCE_CLOSURE_INCOMPLETE",
+        }:
             return "layout_basis_changed", []
         raise
     return "structured_layout_rechecked", []
