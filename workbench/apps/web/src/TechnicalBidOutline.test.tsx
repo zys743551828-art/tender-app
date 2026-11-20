@@ -10,6 +10,7 @@ import type {
 } from "./contracts";
 import { captureFixture } from "./authoringCaptureFixtures.test-support";
 import { jsonDigest } from "./editorSchema";
+import { outlineSelectionKey } from "./technicalOutlineSelection";
 
 const f = captureFixture();
 const draftId = f.request.target_section.draft_id;
@@ -129,7 +130,10 @@ async function setup(mode: "ok" | "stale" | "foreign") {
     digest: nextInventory.digest,
   };
   let superseded = false;
+  let supersedeAuthority = false;
+  let pageCurrentInventoryLater = false;
 
+  const reads: string[] = [];
   const writes: { path: string; etag: string | null; body: unknown }[] = [];
   const onChanged = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal(
@@ -220,6 +224,7 @@ async function setup(mode: "ok" | "stale" | "foreign") {
         }
         return reply({ message: "Unexpected write" }, 404);
       }
+      reads.push(url.pathname);
       if (url.pathname.endsWith("/structure")) return reply(tree);
       if (url.pathname.includes("/authoring/template-versions/"))
         return reply({
@@ -233,6 +238,21 @@ async function setup(mode: "ok" | "stale" | "foreign") {
           row.path === url.pathname ||
           row.path.split("/revisions/")[0] === url.pathname
         ) {
+          if (
+            supersedeAuthority &&
+            name === "authority" &&
+            row.path !== url.pathname
+          ) {
+            const changed = structuredClone(
+              f.body<{
+                manifest: { revision_id: string };
+                digest: string;
+              }>(name),
+            );
+            changed.manifest.revision_id = chapterId;
+            changed.digest = await jsonDigest(changed.manifest);
+            return reply(changed);
+          }
           if (mode === "foreign" && name === "authority") {
             const foreign = structuredClone(
               f.body<{
@@ -265,8 +285,23 @@ async function setup(mode: "ok" | "stale" | "foreign") {
       )
         return reply(nextInventory);
       if (row?.name === "inventory") return reply(inventory);
-      if (row?.name === "inventories")
+      if (row?.name === "inventories") {
+        if (pageCurrentInventoryLater && !url.searchParams.has("cursor")) {
+          return reply({
+            ...directory,
+            items: [
+              {
+                ...directory.items[0],
+                id: newInventoryId,
+                digest: nextInventory.digest,
+              },
+            ],
+            has_more: true,
+            next_cursor: "synthetic-next",
+          });
+        }
         return reply(superseded ? nextDirectory : directory);
+      }
       if (row) return reply(row.body, row.status);
       return reply({ items: [], next_cursor: null });
     }),
@@ -310,9 +345,16 @@ async function setup(mode: "ok" | "stale" | "foreign") {
   return {
     user,
     writes,
+    reads,
     onChanged,
     digest: inventory.digest,
     nextDigest: nextInventory.digest,
+    pageInventoryLater: () => {
+      pageCurrentInventoryLater = true;
+    },
+    moveAuthorityHead: () => {
+      supersedeAuthority = true;
+    },
   };
 }
 
@@ -370,6 +412,14 @@ it("blocks a once-valid outline if a recorded rule is rejected between preview a
   await user.click(screen.getByRole("button", { name: "放弃这次变更" }));
   await waitFor(() => expect(onChanged).toHaveBeenCalledOnce());
   expect(writes[2].body).toEqual({ decision: "reject" });
+  await user.click(screen.getByRole("button", { name: "收起技术标大纲" }));
+  await user.click(screen.getByRole("button", { name: "生成技术标大纲" }));
+  await screen.findByText(/先前清单不是目前核到的版本/);
+  expect(screen.queryByText(/技术要求与已存章节对照/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "预览追加大纲" }),
+  ).not.toBeInTheDocument();
+  expect(writes).toHaveLength(3);
   await user.click(screen.getByRole("button", { name: "刷新要求清单" }));
   await user.click(
     await screen.findByRole("button", { name: /核对当前清单 · 33334444/ }),
@@ -389,4 +439,92 @@ it("does not offer directory changes from a mismatched basis receipt", async () 
     screen.queryByRole("button", { name: "预览追加大纲" }),
   ).not.toBeInTheDocument();
   expect(writes).toHaveLength(0);
+});
+
+it("restores only checked references, rereads them and permits forgetting without a write", async () => {
+  const { user, writes, reads, digest } = await setup("ok");
+  const key = outlineSelectionKey({
+    memberId: f.memberId,
+    bidId: f.bidId,
+    draftId,
+  });
+  expect(sessionStorage.getItem(key)).toBeNull();
+  await user.click(await screen.findByRole("button", { name: /核对当前清单/ }));
+  await screen.findByRole("checkbox", { name: "施工进度与资源配置" });
+  expect(JSON.parse(sessionStorage.getItem(key) ?? "null")?.basis).toEqual({
+    target: f.request.package_context.target,
+    authority: f.request.package_context.authority,
+    inventory: { id: f.request.package_context.inventory.id, digest },
+  });
+  await user.click(screen.getByRole("button", { name: "收起技术标大纲" }));
+  reads.length = 0;
+  await user.click(screen.getByRole("button", { name: "生成技术标大纲" }));
+  await screen.findByText(/已按原身份重新核对本次会话记住的包和清单/);
+  for (const ref of [
+    f.request.package_context.target,
+    f.request.package_context.authority,
+  ])
+    expect(reads).toContain(
+      `/api/v1/bids/${f.bidId}/packages/${ref.package_id}`,
+    );
+  expect(reads.some((path) => path.endsWith("/requirement-inventories"))).toBe(
+    true,
+  );
+  expect(
+    reads.some((path) =>
+      path.endsWith(
+        "/requirement-inventories/" + f.request.package_context.inventory.id,
+      ),
+    ),
+  ).toBe(true);
+  await user.click(screen.getByRole("button", { name: "清除已记住的选择" }));
+  expect(sessionStorage.getItem(key)).toBeNull();
+  await user.click(screen.getByRole("button", { name: "收起技术标大纲" }));
+  await user.click(screen.getByRole("button", { name: "生成技术标大纲" }));
+  expect(screen.queryByText(/本次会话/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: "预览追加大纲" }),
+  ).not.toBeInTheDocument();
+  expect(writes).toEqual([]);
+});
+
+it("retains a historical authority selection but blocks its use when the current head has advanced", async () => {
+  const { user, writes, reads, moveAuthorityHead } = await setup("ok");
+  await user.click(await screen.findByRole("button", { name: /核对当前清单/ }));
+  await screen.findByRole("checkbox", { name: "施工进度与资源配置" });
+  moveAuthorityHead();
+  await user.click(screen.getByRole("button", { name: "收起技术标大纲" }));
+  reads.length = 0;
+  await user.click(screen.getByRole("button", { name: "生成技术标大纲" }));
+  await screen.findByText(/原包修订可能不再是当前版本/);
+  expect(reads.some((path) => path.includes("/requirement-inventories"))).toBe(
+    false,
+  );
+  expect(
+    screen.queryByRole("button", { name: "预览追加大纲" }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByText(/已按原身份重新核对/)).not.toBeInTheDocument();
+  expect(writes).toEqual([]);
+});
+
+it("rereads the exact current inventory even when its directory row is not on the first page", async () => {
+  const { user, writes, reads, pageInventoryLater } = await setup("ok");
+  await user.click(await screen.findByRole("button", { name: /核对当前清单/ }));
+  await screen.findByRole("checkbox", { name: "施工进度与资源配置" });
+  pageInventoryLater();
+  await user.click(screen.getByRole("button", { name: "收起技术标大纲" }));
+  reads.length = 0;
+  await user.click(screen.getByRole("button", { name: "生成技术标大纲" }));
+  await screen.findByText(/已按原身份重新核对/);
+  expect(
+    reads.some((path) =>
+      path.endsWith(
+        "/requirement-inventories/" + f.request.package_context.inventory.id,
+      ),
+    ),
+  ).toBe(true);
+  expect(
+    screen.queryByText(/先前清单不是目前核到的版本/),
+  ).not.toBeInTheDocument();
+  expect(writes).toEqual([]);
 });

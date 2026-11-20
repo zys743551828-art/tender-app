@@ -411,6 +411,8 @@ function ScopedAuthoringStructure({
           {outlineAvailable && (
             <TechnicalBidOutline
               bidId={bidId}
+              memberId={memberId}
+              draftId={draftId}
               disabled={locked || !!tree.error || !tree.etag}
               onPackages={onPackages}
               tree={

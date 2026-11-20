@@ -1,8 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthoringCapturePackagePicker } from "./AuthoringCapturePackagePicker";
 import { ErrorNotice } from "./components";
 import type { AuthoringTreeView } from "./contracts";
 import { TechnicalDraftTrace } from "./TechnicalDraftTrace";
+import {
+  recoverOutlineSelection,
+  storeOutlineSelection,
+} from "./technicalOutlineSelection";
 import {
   captureInventoryDirectory,
   captureInventoryView,
@@ -22,6 +26,8 @@ import {
 type Outline = ReturnType<typeof technicalOutline>;
 type Props = {
   bidId: string;
+  memberId: string;
+  draftId: string;
   disabled: boolean;
   onPackages?: () => void;
   tree: AuthoringTreeView | null;
@@ -43,13 +49,20 @@ export function TechnicalBidOutline(props: Props) {
       >
         {open ? "收起技术标大纲" : "生成技术标大纲"}
       </button>
-      {open && <OutlineWorkspace {...props} />}
+      {open && (
+        <OutlineWorkspace
+          key={JSON.stringify([props.memberId, props.bidId, props.draftId])}
+          {...props}
+        />
+      )}
     </section>
   );
 }
 
 function OutlineWorkspace({
   bidId,
+  memberId,
+  draftId,
   disabled,
   onPackages,
   onPreview,
@@ -57,12 +70,21 @@ function OutlineWorkspace({
   chapterNavigationDisabled,
   onOpenSection,
 }: Props) {
-  const [target, setTarget] = useState<CapturePackageReference | null>(null);
+  const scope = useMemo(
+    () => ({ memberId, bidId, draftId }),
+    [memberId, bidId, draftId],
+  );
+  const [initial] = useState(() => recoverOutlineSelection(scope));
+  const [restored, setRestored] = useState(!!initial);
+  const [resetEpoch, setResetEpoch] = useState(0);
+  const [target, setTarget] = useState<CapturePackageReference | null>(
+    initial?.target ?? null,
+  );
   const [authority, setAuthority] = useState<CapturePackageReference | null>(
-    null,
+    initial?.authority ?? null,
   );
   const [selection, setSelection] = useState<OutlineBasis["inventory"] | null>(
-    null,
+    initial?.inventory ?? null,
   );
   const [excluded, setExcluded] = useState<string[]>([]);
   const verifyTarget = useCallback(
@@ -79,19 +101,20 @@ function OutlineWorkspace({
     },
     [bidId, authority],
   );
-  const targetPath =
-    target &&
-    `/bids/${bidId}/packages/${target.package_id}/revisions/${target.revision_id}`;
+  const targetPath = target && `/bids/${bidId}/packages/${target.package_id}`;
   const sourcePath =
-    authority &&
-    `/bids/${bidId}/packages/${authority.package_id}/revisions/${authority.revision_id}`;
+    authority && `/bids/${bidId}/packages/${authority.package_id}`;
   const targetView = useAuthoringCaptureRead(targetPath, verifyTarget);
   const authorityView = useAuthoringCaptureRead(sourcePath, verifyAuthority);
   const ready = !!(
+    target &&
+    authority &&
     targetView.ready &&
     authorityView.ready &&
-    targetView.value &&
-    authorityView.value
+    targetView.value?.manifest.revision_id === target.revision_id &&
+    targetView.value.digest === target.manifest_digest &&
+    authorityView.value?.manifest.revision_id === authority.revision_id &&
+    authorityView.value.digest === authority.manifest_digest
   );
   const matchingScope = !!(
     targetView.value &&
@@ -106,8 +129,12 @@ function OutlineWorkspace({
     directoryPath && directoryPath + "?limit=20",
     captureInventoryDirectory,
   );
+  const listed = directory.items.find((row) => row.id === selection?.id);
   const current =
-    directory.ready && selection?.id === directory.page?.current_inventory_id;
+    directory.ready &&
+    !!selection &&
+    selection.id === directory.page?.current_inventory_id &&
+    (!listed || listed.digest === selection.digest);
   const verifyInventory = useCallback(
     (v: unknown) => {
       if (!targetView.value || !authorityView.value || !selection)
@@ -126,14 +153,29 @@ function OutlineWorkspace({
       ? `/bids/${bidId}/packages/${target!.package_id}/revisions/${target!.revision_id}/requirement-inventories/${selection.id}`
       : null;
   const inventory = useAuthoringCaptureRead(inventoryPath, verifyInventory);
-  const result =
-    inventory.ready && inventory.value
-      ? technicalOutline(inventory.value)
+  const checkedInventory =
+    ready &&
+    matchingScope &&
+    current &&
+    selection &&
+    inventory.ready &&
+    inventory.value?.manifest.id === selection.id &&
+    inventory.value.digest === selection.digest
+      ? inventory.value
       : null;
+  const result = checkedInventory ? technicalOutline(checkedInventory) : null;
+
+  useEffect(() => {
+    if (checkedInventory && target && authority && selection) {
+      storeOutlineSelection(scope, { target, authority, inventory: selection });
+    }
+  }, [checkedInventory, target, authority, selection, scope]);
 
   function clearSelection() {
     setSelection(null);
     setExcluded([]);
+    setRestored(false);
+    storeOutlineSelection(scope, null);
   }
 
   const chosen =
@@ -144,7 +186,36 @@ function OutlineWorkspace({
       <p className="small-note">
         按已确认且适用的技术要求建议空章节。不会生成正文、核定覆盖、调用模型或改动现有内容。
       </p>
+      {restored && (
+        <p role="status" className="small-note">
+          {checkedInventory
+            ? "已按原身份重新核对本次会话记住的包和清单。"
+            : "已恢复本次会话上次明确选择，须重新核对原包和清单，不自动换成当前版本。"}
+        </p>
+      )}
+      {restored &&
+        (targetView.error != null || authorityView.error != null) && (
+          <p className="small-note">
+            原包修订可能不再是当前版本或无法核验，请在目录里明确重新选择。
+          </p>
+        )}
+      {(target || authority) && (
+        <button
+          type="button"
+          className="text-button"
+          disabled={disabled}
+          onClick={() => {
+            clearSelection();
+            setTarget(null);
+            setAuthority(null);
+            setResetEpoch((value) => value + 1);
+          }}
+        >
+          清除已记住的选择
+        </button>
+      )}
       <AuthoringCapturePackagePicker
+        key={`target:${resetEpoch}`}
         bidId={bidId}
         kind="bid"
         selected={target}
@@ -155,6 +226,7 @@ function OutlineWorkspace({
         }}
       />
       <AuthoringCapturePackagePicker
+        key={`authority:${resetEpoch}`}
         bidId={bidId}
         kind="authority"
         selected={authority}
@@ -180,6 +252,11 @@ function OutlineWorkspace({
       {directoryPath && (
         <fieldset disabled={disabled}>
           <legend>依据要求清单</legend>
+          {selection && directory.ready && !current && (
+            <p role="status" className="small-note">
+              先前清单不是目前核到的版本，不会沿用其章节对照。请明确选择当前清单。
+            </p>
+          )}
           <button
             type="button"
             className="text-button"
@@ -201,7 +278,7 @@ function OutlineWorkspace({
                 disabled={!directory.ready}
                 aria-pressed={selection?.id === item.id}
                 onClick={() => {
-                  setExcluded([]);
+                  clearSelection();
                   setSelection({ id: item.id, digest: item.digest });
                 }}
               >
