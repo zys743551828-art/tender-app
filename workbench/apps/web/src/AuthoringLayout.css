@@ -85,25 +85,6 @@
   min-width: 0;
   max-width: 100%;
 }
-@media (max-width: 600px) {
-  .authoring-workspace > .panel.authoring-draft-management {
-    padding: 12px;
-  }
-  .authoring-management-summary > span:last-child {
-    font-size: 12px;
-    margin-inline-start: 8px;
-  }
-  .project-page--authoring > .page-heading h1 {
-    font-size: 18px;
-  }
-  .authoring-task-toolbar {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .authoring-columns--body-first .chapter-writing.panel {
-    padding: 12px;
-  }
-}
 .project-page.project-page--authoring {
   padding-block-start: 18px;
 }
@@ -122,4 +103,23 @@
 }
 .project-page--authoring .project-meta {
   margin-top: 8px;
+}
+@media (max-width: 640px) {
+  .authoring-workspace > .panel.authoring-draft-management {
+    padding: 12px;
+  }
+  .authoring-management-summary > span:last-child {
+    font-size: 12px;
+    margin-inline-start: 8px;
+  }
+  .project-page--authoring > .page-heading h1 {
+    font-size: 18px;
+  }
+  .authoring-task-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .authoring-columns--body-first .chapter-writing.panel {
+    padding: 12px;
+  }
 }

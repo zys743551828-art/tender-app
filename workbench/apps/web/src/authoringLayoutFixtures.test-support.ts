@@ -23,7 +23,7 @@ export const layoutScope = {
 };
 const digest = "a".repeat(64);
 const titles = ["施工组织与进度", "质量保障措施"];
-export function authoringLayoutFixture() {
+export function authoringLayoutFixture(baseUrl = window.location.href) {
   const scope = layoutScope;
   const sections: SectionView[] = titles.map((title, i) => ({
     id: id(4 + i),
@@ -140,7 +140,7 @@ export function authoringLayoutFixture() {
   const fetcher: typeof fetch = async (input, options = {}) => {
     const url = new URL(
       typeof input === "string" || input instanceof URL ? input : input.url,
-      window.location.href,
+      baseUrl,
     );
     const route = url.pathname.replace(/^\/api\/v1/, "");
     const method = options.method ?? "GET";
