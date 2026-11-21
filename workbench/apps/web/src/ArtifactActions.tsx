@@ -80,9 +80,7 @@ function ScopedArtifactActions({
           document.artifact_kind !== expectedArtifactKind) ||
         (expectedMediaType && document.media_type !== expectedMediaType)
       )
-        throw new Error(
-          "文件用途或格式与此取件入口不一致，请刷新核对。",
-        );
+        throw new Error("文件用途或格式与此取件入口不一致，请刷新核对。");
       if (!download) {
         if (document.media_type !== "application/pdf")
           throw new Error("该文件格式不支持 PDF 原页预览。");
