@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api } from "./api";
+import { api, ApiError } from "./api";
 import type {
   AuthoringDocument,
   AuthoringSourceReference,
@@ -112,20 +112,31 @@ export function AuthoringRulePicker({
   onToggle: (id: string, checked: boolean) => void;
 }) {
   const rules = useResource<RuleSetView>(`/bids/${bidId}/rules`);
+  const notReady =
+    rules.error instanceof ApiError &&
+    rules.error.status === 409 &&
+    rules.error.code === "RULE_SET_NOT_READY";
+  const currentRules = rules.error ? undefined : rules.data?.rules;
   return (
     <fieldset className="authoring-rule-picker">
       <legend>关联当前项目要求</legend>
       <ResourceState
         {...rules}
-        hasData={!!rules.data}
+        error={notReady ? undefined : rules.error}
+        hasData={!!currentRules}
+        emptyLabel={
+          notReady
+            ? "项目要求清单尚未就绪，可以继续人工编写。清单就绪后可重新读取并核对要求。"
+            : undefined
+        }
         onRetry={() => void rules.reload()}
       />
-      {rules.data?.rules.length === 0 && (
+      {currentRules?.length === 0 && (
         <p className="small-note">
           当前尚无可关联的生效规则，仍可人工编写；这不表示项目没有要求。
         </p>
       )}
-      {rules.data?.rules.map((rule) => (
+      {currentRules?.map((rule) => (
         <label className="checkbox-label" key={rule.id}>
           <input
             type="checkbox"
