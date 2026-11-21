@@ -1,15 +1,27 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { beforeEach, expect, it, vi } from "vitest";
 import type { DocumentEvidenceView, DocumentView } from "./contracts";
+import { Evidence } from "./Evidence";
 import { PartialPageSelection } from "./PartialPageSelection";
+import {
+  sourceDocument,
+  sourceEvidence,
+  sourceGrant,
+} from "./sourceSurfaceFixtures.test-support";
 
 const mocks = vi.hoisted(() => ({ api: vi.fn() }));
 vi.mock("./api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./api")>()),
   api: mocks.api,
   commandKey: () => "stable-key",
+}));
+vi.mock("./PdfPreview", () => ({
+  PdfPreview({ onPageCount }: { onPageCount: (count: number) => void }) {
+    useEffect(() => onPageCount(3), [onPageCount]);
+    return null;
+  },
 }));
 const document = {
   id: "document",
@@ -70,6 +82,65 @@ const record = {
 beforeEach(() => {
   mocks.api.mockReset();
 });
+
+async function openRangeOnSecondPage() {
+  mocks.api
+    .mockResolvedValueOnce({ data: sourceEvidence })
+    .mockResolvedValueOnce({ data: sourceGrant });
+  render(<Evidence document={sourceDocument} onClose={vi.fn()} />);
+  const user = userEvent.setup();
+  const pages = await screen.findByRole("combobox", { name: "物理页" });
+  await user.selectOptions(pages, "2");
+  await user.click(screen.getByText("人工确认部分页范围"));
+  return {
+    user,
+    pages,
+    first: screen.getByLabelText("起始物理页"),
+    last: screen.getByLabelText("结束物理页"),
+  };
+}
+
+it("confirms the original page being reviewed and keeps it selected while browsing other pages", async () => {
+  const { user, pages, first, last } = await openRangeOnSecondPage();
+  expect(first).toHaveValue(2);
+  expect(last).toHaveValue(2);
+  await user.selectOptions(pages, "3");
+  expect(first).toHaveValue(3);
+  expect(last).toHaveValue(3);
+  await user.click(screen.getByRole("checkbox"));
+  await user.selectOptions(pages, "1");
+  expect(first).toHaveValue(3);
+  expect(last).toHaveValue(3);
+  expect(screen.getByRole("checkbox")).toBeChecked();
+  mocks.api.mockReturnValueOnce(deferred().promise);
+  await user.click(screen.getByRole("button", { name: "确认并保存页范围" }));
+  expect(mocks.api).toHaveBeenLastCalledWith(
+    `/bids/${sourceDocument.bid_id}/partial-page-selections`,
+    expect.objectContaining({
+      body: expect.objectContaining({ first_page: 3, last_page: 3 }),
+    }),
+  );
+});
+
+it.each(["first", "last", "purpose"])(
+  "retains the whole draft when the first edit is to %s and the reviewer turns the page",
+  async (field) => {
+    const { user, pages, first, last } = await openRangeOnSecondPage();
+    if (field === "purpose")
+      await user.selectOptions(
+        screen.getByLabelText("用途"),
+        "requirement_reference",
+      );
+    else
+      fireEvent.change(field === "first" ? first : last, {
+        target: { value: field === "first" ? "1" : "3" },
+      });
+    await user.selectOptions(pages, "1");
+    expect(first).toHaveValue(field === "first" ? 1 : 2);
+    expect(last).toHaveValue(field === "last" ? 3 : 2);
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+  },
+);
 
 it("requires explicit confirmation and shows only the selected evidence with its original page", async () => {
   const onPage = vi.fn();
@@ -288,7 +359,11 @@ it.each(["project", "document", "digest", "parse"])(
     }>();
     mocks.api.mockReturnValueOnce(pending.promise);
     const view = render(panel());
-    await history();
+    const user = await history();
+    fireEvent.change(screen.getByLabelText("结束物理页"), {
+      target: { value: "70" },
+    });
+    await user.click(screen.getByRole("checkbox"));
     const doc =
       change === "project"
         ? { ...document, bid_id: "new-bid" }
@@ -323,6 +398,7 @@ it.each(["project", "document", "digest", "parse"])(
     expect(screen.getByRole("checkbox")).not.toBeChecked();
     expect(screen.getByRole("button", { name: "查看历史范围" })).toBeEnabled();
     expect(screen.getByLabelText("起始物理页")).toHaveValue(66);
+    expect(screen.getByLabelText("结束物理页")).toHaveValue(66);
   },
 );
 it("suppresses synchronous duplicate saves in StrictMode and permits a later deliberate save", async () => {

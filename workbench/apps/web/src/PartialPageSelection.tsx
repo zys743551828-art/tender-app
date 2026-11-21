@@ -62,8 +62,11 @@ function ScopedSelection({
   pageCount,
   onPage,
 }: Props) {
-  const [first, setFirst] = useState(page);
-  const [last, setLast] = useState(page);
+  const [draftRange, setDraftRange] = useState<{
+    first: number;
+    last: number;
+  } | null>(null);
+  const { first, last } = draftRange ?? { first: page, last: page };
   const [purpose, setPurpose] = useState<
     "technical_reference" | "requirement_reference"
   >("technical_reference");
@@ -252,7 +255,7 @@ function ScopedSelection({
           max={pageCount || undefined}
           value={first}
           onChange={(event) => {
-            setFirst(Number(event.target.value));
+            setDraftRange({ first: Number(event.target.value), last });
             setConfirmed(false);
           }}
         />
@@ -265,7 +268,7 @@ function ScopedSelection({
           max={pageCount || undefined}
           value={last}
           onChange={(event) => {
-            setLast(Number(event.target.value));
+            setDraftRange({ first, last: Number(event.target.value) });
             setConfirmed(false);
           }}
         />
@@ -275,6 +278,7 @@ function ScopedSelection({
         <select
           value={purpose}
           onChange={(event) => {
+            setDraftRange({ first, last });
             setPurpose(event.target.value as typeof purpose);
             setConfirmed(false);
           }}
@@ -287,7 +291,10 @@ function ScopedSelection({
         <input
           type="checkbox"
           checked={confirmed}
-          onChange={(event) => setConfirmed(event.target.checked)}
+          onChange={(event) => {
+            setDraftRange({ first, last });
+            setConfirmed(event.target.checked);
+          }}
         />
         我已核对所选原页，理解缺失与未选页仍未知。
       </label>
