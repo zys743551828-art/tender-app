@@ -123,3 +123,21 @@
     padding: 12px;
   }
 }
+@media (max-width: 480px) {
+  .project-page--authoring > .page-heading {
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .project-page--authoring > .page-heading > div {
+    display: contents;
+  }
+  .project-page--authoring > .page-heading h1 {
+    flex-basis: 100%;
+  }
+  .project-page--authoring .project-meta {
+    margin-top: 0;
+  }
+  .project-page--authoring .workspace-nav-tools .workspace-navigation {
+    padding-block: 0;
+  }
+}
