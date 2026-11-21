@@ -101,6 +101,14 @@
   min-height: 34px;
   font-size: 12px;
 }
+@media (max-width: 899px) {
+  .source-surface > .evidence-dialog {
+    overflow-y: auto;
+  }
+  .source-surface .evidence-body--single {
+    flex: 1 0 min(24rem, 70dvh);
+  }
+}
 @media (max-width: 600px) {
   .source-surface .evidence-heading h2 {
     font-size: 14px;

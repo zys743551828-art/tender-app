@@ -21,13 +21,14 @@ const assert = (value, message) => {
 };
 await fs.mkdir(out, { recursive: true });
 
-// Three real, intentionally synthetic PDF pages. They assert no business facts.
+// Generated pages carry no business information.
+const pageCount = 36;
 const objects = [
   "<< /Type /Catalog /Pages 2 0 R >>",
-  "<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R] /Count 3 >>",
+  `<< /Type /Pages /Kids [${Array.from({ length: pageCount }, (_, i) => `${4 + i * 2} 0 R`).join(" ")}] /Count ${pageCount} >>`,
   "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
 ];
-for (let number = 1; number <= 3; number++) {
+for (let number = 1; number <= pageCount; number++) {
   const contentId = objects.length + 2;
   objects.push(
     `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentId} 0 R >>`,
@@ -72,9 +73,14 @@ import { ResourceState } from "./src/ResourceState";
 import { ApiError } from "./src/api";
 import { ThemePicker } from "./src/ThemePicker";
 import { useTheme } from "./src/theme";
-import { sourceDocument, sourceSurfaceFixture } from "./src/sourceSurfaceFixtures.test-support";
+import { sourceDocument, sourceEvidence, sourceSurfaceFixture } from "./src/sourceSurfaceFixtures.test-support";
 import "./src/styles.css";
 sourceDocument.sha256 = ${JSON.stringify(hash(pdf))}; sourceDocument.byte_size = ${Buffer.byteLength(pdf)};
+sourceEvidence.gaps = ["合成资料含未核对的文字。"];
+for (let page = 4; page <= ${pageCount}; page++) {
+  sourceEvidence.items.push({...sourceEvidence.items[0], id:"long-page-"+page, physical_page:page,
+    quote:"合成第"+page+"页："+"施工方案与工期，仅供本地滚动测试。".repeat(5)});
+}
 const fixture = sourceSurfaceFixture(); window.__sourceQA = fixture;
 const nativeFetch = window.fetch.bind(window);
 window.fetch = (input, init) => new URL(String(input), location.href).pathname.startsWith("/api/v1/") ? fixture.fetcher(input, init) : nativeFetch(input, init);
@@ -171,10 +177,10 @@ await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const receipt = {
   scope:
-    "Actual RetrievalDrawer/Evidence/SourceSurface/PdfPreview and shared feedback; synthetic HTTP and a real three-page synthetic PDF. No backend service, private originals or paid calls.",
+    "Actual RetrievalDrawer/Evidence/SourceSurface/PdfPreview and shared feedback; synthetic HTTP and a real synthetic PDF. No backend service, private originals or paid calls.",
   source_sha256: source,
   bundle_sha256: hash(await fs.readFile(path.join(out, "app.js"))),
-  pdf: { sha256: hash(pdf), bytes: Buffer.byteLength(pdf), pages: 3 },
+  pdf: { sha256: hash(pdf), bytes: Buffer.byteLength(pdf), pages: pageCount },
   cases: [],
   screenshots: [],
   page_errors: [],
@@ -208,6 +214,129 @@ async function layout(page, label) {
     JSON.stringify({ label, value }),
   );
 }
+async function visiblePortion(target) {
+  return target.evaluate((el) => {
+    const rect = el.getBoundingClientRect();
+    let top = Math.max(0, rect.top);
+    let bottom = Math.min(window.innerHeight, rect.bottom);
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      if (window.getComputedStyle(parent).overflowY === "visible") continue;
+      const start = parent.getBoundingClientRect().top + parent.clientTop;
+      top = Math.max(top, start);
+      bottom = Math.min(bottom, start + parent.clientHeight);
+    }
+    const x = rect.x + rect.width / 2;
+    const y = (top + bottom) / 2;
+    const height =
+      bottom > top && el.contains(document.elementFromPoint(x, y))
+        ? Math.floor(bottom - top)
+        : 0;
+    return { x, y, height };
+  });
+}
+
+async function wheelToReading(page, target, height) {
+  // Start in the dialog gutter, outside the expanded forms.
+  await page.mouse.move(4, height / 2);
+  let visible = (await visiblePortion(target)).height;
+  for (let i = 0; i < 12; i++) {
+    await page.mouse.wheel(0, 100);
+    await page.evaluate(
+      () =>
+        new Promise((done) =>
+          window.requestAnimationFrame(() =>
+            window.requestAnimationFrame(done),
+          ),
+        ),
+    );
+    visible = Math.max(visible, (await visiblePortion(target)).height);
+  }
+  return visible;
+}
+
+async function expandedReading(page, width, height) {
+  await page.setViewportSize({ width, height });
+  await page.goto(origin);
+  const opener = page.getByRole("button", { name: "直接打开原件" });
+  await opener.scrollIntoViewIfNeeded();
+  const openerY = (await opener.boundingBox()).y;
+  await opener.click();
+  const dialog = page.getByRole("dialog", { name: "合成工期要求.pdf" });
+  const pages = dialog.getByRole("combobox", { name: "物理页", exact: true });
+  await pages.selectOption(String(pageCount));
+  const canvas = dialog.getByRole("img", {
+    name: `合成工期要求.pdf，物理页${pageCount}原页`,
+  });
+  await canvas.waitFor();
+  await dialog.getByLabel("查找本文件解析文本").fill("施工方案");
+  await dialog.getByText(`查看 ${pageCount - 3} 个可能相关页`).click();
+  await dialog.getByText("人工确认部分页范围").click();
+  await dialog.getByLabel("起始物理页").fill(String(pageCount - 1));
+  const confirm = dialog.getByRole("checkbox");
+  await confirm.check();
+  await layout(page, `${width}x${height}-expanded`);
+  const canvasHeight = await wheelToReading(page, canvas, height);
+  const paper = await visiblePortion(canvas);
+  let scrolledPdf = false;
+  if (paper.height > 0) {
+    const container = dialog.locator(".pdf-canvas-container");
+    const before = await container.evaluate((el) => el.scrollTop);
+    await page.mouse.move(paper.x, paper.y);
+    await page.mouse.wheel(0, before > 5 ? -140 : 140);
+    await page.waitForFunction(
+      (previous) =>
+        Math.abs(
+          document.querySelector(".pdf-canvas-container").scrollTop - previous,
+        ) > 1,
+      before,
+    );
+    scrolledPdf = true;
+  }
+  await screenshot(page, `expanded-original-${width}x${height}`);
+  await dialog.getByRole("button", { name: "解析文本", exact: true }).click();
+  const textHeight = await wheelToReading(
+    page,
+    dialog.locator(".evidence-quote p").first(),
+    height,
+  );
+  const confirmed =
+    (await confirm.isChecked()) &&
+    (await dialog.getByLabel("起始物理页").inputValue()) ===
+      String(pageCount - 1);
+  await screenshot(page, `expanded-text-${width}x${height}`);
+  await page.keyboard.press("Escape");
+  await dialog.waitFor({ state: "detached" });
+  const restored = await opener.evaluate(
+    (el, y) =>
+      document.activeElement === el &&
+      document.body.style.overflow !== "hidden" &&
+      Math.abs(el.getBoundingClientRect().y - y) <= 1,
+    openerY,
+  );
+  return {
+    width,
+    height,
+    canvasHeight,
+    textHeight,
+    scrolledPdf,
+    confirmed,
+    restored,
+  };
+}
+async function localRequests(page) {
+  page.on("pageerror", (error) => receipt.page_errors.push(error.message));
+  await page.route("**/*", (route) => {
+    if (
+      route
+        .request()
+        .url()
+        .startsWith(origin + "/")
+    )
+      return route.continue();
+    receipt.external_requests.push(route.request().url());
+    return route.abort();
+  });
+}
 try {
   browser = await chromium.launch({
     headless: true,
@@ -216,6 +345,28 @@ try {
       ? { executablePath: process.env.CHROMIUM_EXECUTABLE }
       : {}),
   });
+  receipt.expanded = [];
+  for (const [width, height] of [
+    [390, 640],
+    [760, 360],
+  ]) {
+    const page = await browser.newPage();
+    lastPage = page;
+    await localRequests(page);
+    receipt.expanded.push(await expandedReading(page, width, height));
+    await page.close();
+  }
+  assert(
+    receipt.expanded.every(
+      (item) =>
+        item.canvasHeight >= 80 &&
+        item.textHeight >= 16 &&
+        item.scrolledPdf &&
+        item.confirmed &&
+        item.restored,
+    ),
+    "Expanded source reading: " + JSON.stringify(receipt.expanded),
+  );
   for (const width of [1440, 1280, 768, 390])
     for (const theme of ["light", "dark"]) {
       const context = await browser.newContext({
@@ -224,18 +375,7 @@ try {
       });
       const page = await context.newPage();
       lastPage = page;
-      page.on("pageerror", (error) => receipt.page_errors.push(error.message));
-      await page.route("**/*", (route) => {
-        if (
-          route
-            .request()
-            .url()
-            .startsWith(origin + "/")
-        )
-          return route.continue();
-        receipt.external_requests.push(route.request().url());
-        return route.abort();
-      });
+      await localRequests(page);
       await page.goto(origin);
       await page.getByLabel("外观主题").selectOption(theme);
       const body = page.getByRole("textbox", { name: "正文草稿" });
@@ -457,7 +597,7 @@ try {
   );
   console.log(
     JSON.stringify({
-      passed: receipt.cases.length,
+      passed: receipt.cases.length + receipt.expanded.length,
       screenshots: receipt.screenshots.length,
       source_files: Object.keys(source).length,
       page_errors: receipt.page_errors.length,
