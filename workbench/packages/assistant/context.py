@@ -460,8 +460,13 @@ def choices(c, kind, *, bid=None, query=None, trace_id=None, physical_page=None)
         ).fetchall()
     elif kind == "section" and bid:
         rows = c.execute(
-            "SELECT s.id,r.content->'attrs'->>'title' AS title FROM sections s JOIN section_revisions r ON r.section_id=s.id AND r.revision=s.head_revision JOIN bid_profiles p ON p.current_draft_id=s.draft_id AND p.bid_id=s.bid_id WHERE s.bid_id=%s ORDER BY s.id LIMIT 30",
-            (bid,),
+            """SELECT s.id,r.content->'attrs'->>'title' AS title
+               FROM sections s
+               JOIN section_revisions r ON r.section_id=s.id AND r.revision=s.head_revision
+               JOIN bid_profiles p ON p.current_draft_id=s.draft_id AND p.bid_id=s.bid_id
+               WHERE s.bid_id=%s AND (%s='' OR strpos(lower(r.content->'attrs'->>'title'),lower(%s))>0)
+               ORDER BY s.id LIMIT 30""",
+            (bid, query, query),
         ).fetchall()
     elif kind == "knowledge_unit" and trace_id:
         trace = trace_row(c, trace_id)

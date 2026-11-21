@@ -59,6 +59,8 @@ export const assistantReason = (code: string) =>
     ASSISTANT_SOURCE_NOT_READY:
       "所选资料尚未形成可核验解析，请选可读物理页或稍后重试。",
     ASSISTANT_SOURCE_INVALID: "所选来源身份无法核对，请重新选择真实来源。",
+    KNOWLEDGE_SOURCE_INVALID:
+      "这份资料或其上游来源缺少当前有效的发布记录，暂时无法引用。可在项目资料中查看原页，或选择其他有效来源。",
     MODEL_NOT_CONFIGURED:
       "助手服务尚未配置，本次没有形成模型处理。输入仍保留。",
     ASSISTANT_CONTEXT_CHANGED:

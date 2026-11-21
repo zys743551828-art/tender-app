@@ -59,7 +59,7 @@ def project_identity(c, bid):
     if identity["binding_status"] != "confirmed":
         raise DomainError(
             "ASSISTANT_TARGET_IDENTITY_UNPROVEN",
-            "项目主体尚无当前确认依据，不能据项目壳证明独立",
+            "请先在项目设置中按投标文件确认本项目的投标主体和标段，再返回助手继续。",
             409,
         )
     head = fetch(c, "SELECT fact_set_id FROM fact_heads WHERE bid_id=%s", (bid,))

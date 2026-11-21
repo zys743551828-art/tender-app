@@ -40,6 +40,7 @@ export function AssistantSourcePicker({
   if (kind === "document") params.set("physical_page", String(page));
   if (kind === "knowledge_unit" && traceId) params.set("trace_id", traceId);
   const available = !!sourceBid && (kind !== "knowledge_unit" || !!traceId);
+  const canSearch = kind === "document" || kind === "section";
   const choices = useResource<AssistantSourcePage>(
     available ? `/assistant/sources?${params}` : null,
   );
@@ -48,6 +49,10 @@ export function AssistantSourcePicker({
     !choices.loading &&
     !choices.error &&
     !choices.unavailable;
+  function searchByName() {
+    if (search === query.trim()) void choices.reload();
+    else setSearch(query.trim());
+  }
   const selectedInScope = selected.filter(
     (source) => !bidId || source.bidId === bidId,
   );
@@ -146,9 +151,11 @@ export function AssistantSourcePicker({
           <select
             aria-label="助手来源类型"
             value={kind}
-            onChange={(event) =>
-              setKind(event.target.value as keyof typeof sourceKinds)
-            }
+            onChange={(event) => {
+              setKind(event.target.value as keyof typeof sourceKinds);
+              setQuery("");
+              setSearch("");
+            }}
           >
             {Object.entries(sourceKinds).map(([key, title]) => (
               <option key={key} value={key}>
@@ -181,26 +188,31 @@ export function AssistantSourcePicker({
             取得实际参考，再用“带此查证进入项目助手”打开；不手填检索编号。
           </p>
         )}
-        <div className="assistant-source-search">
-          <label>
-            查找来源名称
-            <input
-              maxLength={200}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </label>
-          <button
-            type="button"
-            className="button secondary"
-            onClick={() => {
-              if (search === query.trim()) void choices.reload();
-              else setSearch(query.trim());
-            }}
-          >
-            查找可信来源
-          </button>
-        </div>
+        {canSearch && (
+          <div className="assistant-source-search">
+            <label>
+              查找来源名称
+              <input
+                maxLength={200}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                    event.preventDefault();
+                    searchByName();
+                  }
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={searchByName}
+            >
+              查找可信来源
+            </button>
+          </div>
+        )}
         <ResourceState
           {...choices}
           hasData={!!choices.data}
@@ -210,6 +222,7 @@ export function AssistantSourcePicker({
           <>
             <p className="small-note">
               {choices.data.notice}
+              <br />
               当前返回范围不完整；没有列出不代表资料不存在。
             </p>
             {choices.data.items
@@ -296,9 +309,7 @@ export function AssistantSourcePicker({
                   </div>
                 );
               })}
-            {!choices.data.items.some(
-              (item) => !bidId || item.bid_id === bidId,
-            ) && (
+            {!choices.data.items.some((item) => item.bid_id === sourceBid) && (
               <p className="small-empty">
                 当前范围没有可选择来源。可调整名称、物理页或核对资料处理状态。
               </p>
