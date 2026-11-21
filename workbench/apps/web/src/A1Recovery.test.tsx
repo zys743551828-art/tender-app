@@ -589,7 +589,8 @@ it("已受理新请求后，上一条服务器终态尚未刷新不能造成双�
   ).toHaveLength(1);
 });
 
-it("新浏览器没有本地任务缓存仍能从服务器准备请求找到操作与失败详情入口", async () => {
+it("新浏览器没有本地缓存也能从服务端请求查看操作标识和执行版本", async () => {
+  const user = userEvent.setup();
   render(
     <ProjectWorkspace
       id={bid.id}
@@ -599,9 +600,15 @@ it("新浏览器没有本地任务缓存仍能从服务器准备请求找到操�
     />,
   );
   expect(await screen.findByText("评审要求准备")).toBeVisible();
+  await user.click(
+    screen.getByRole("button", { name: "查看处理标识与执行版本" }),
+  );
   expect(
-    screen.getByRole("button", { name: "查看字段与范围详情" }),
-  ).toBeEnabled();
+    screen.getByText("记录标识：op-prepare · 执行版本：test"),
+  ).toBeVisible();
+  expect(
+    transport.mock.calls.some(([url]) => String(url).endsWith("/diagnostics")),
+  ).toBe(false);
   expect(
     screen.queryByText(/尚未收到可恢复的任务记录/),
   ).not.toBeInTheDocument();
