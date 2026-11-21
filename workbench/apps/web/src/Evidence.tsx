@@ -2,6 +2,8 @@ import { DocumentRelationNotice } from "./DocumentRelationNotice";
 import {
   useCallback,
   useEffect,
+  useId,
+  useMemo,
   useRef,
   useState,
   type RefObject,
@@ -51,6 +53,19 @@ export function Evidence({
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<unknown>(null);
   const [view, setView] = useState<"original" | "text">("original");
+  const toolGroup = useId();
+  const searchTool = useRef<HTMLDetailsElement>(null);
+  const cluesTool = useRef<HTMLDetailsElement>(null);
+  const textSwitch = useRef<HTMLButtonElement>(null);
+  const clues = useMemo(() => contentClues(evidence?.items ?? []), [evidence]);
+  function showTextAt(number: number, tool: HTMLDetailsElement | null) {
+    setPage(number);
+    setView("text");
+    if (textSwitch.current && tool) {
+      tool.open = false;
+      textSwitch.current.focus();
+    }
+  }
   const closeButton = useRef<HTMLButtonElement>(null);
   const request = useRef(0);
   const downloadActive = useRef(false);
@@ -193,6 +208,7 @@ export function Evidence({
   const isPdf =
     document.media_type === "application/pdf" ||
     document.filename.toLowerCase().endsWith(".pdf");
+  const gaps = evidence?.gaps.map((gap, index) => <li key={index}>{gap}</li>);
   return (
     <SourceSurface
       bidId={document.bid_id}
@@ -251,6 +267,29 @@ export function Evidence({
                 </select>
               </label>
             )}
+            {singlePane && (
+              <div
+                className="source-view-switch"
+                role="group"
+                aria-label="查看原页或解析文本"
+              >
+                <button
+                  type="button"
+                  aria-pressed={view === "original"}
+                  onClick={() => setView("original")}
+                >
+                  原页
+                </button>
+                <button
+                  type="button"
+                  ref={textSwitch}
+                  aria-pressed={view === "text"}
+                  onClick={() => setView("text")}
+                >
+                  解析文本
+                </button>
+              </div>
+            )}
             {grant && (
               <button
                 type="button"
@@ -264,71 +303,91 @@ export function Evidence({
             )}
           </div>
           {evidence && evidence.coverage !== "pending" && (
-            <EvidenceSearch
-              key={`search:${document.id}:${evidence.parse_run_id}`}
-              items={evidence.items}
-              onPage={(number) => {
-                setPage(number);
-                setView("text");
-              }}
-            />
-          )}
-          {evidence && evidence.coverage !== "pending" && (
-            <div className="notice evidence-gaps">
-              <div>
-                <strong>内容线索（请核对原文）</strong>
-                <p>
-                  以下来自已解析文字或
-                  OCR，仅用于定位，可能遗漏或误识别；不会自动分类、拆分文件或改变资料用途。
-                </p>
-                {contentClues(evidence.items).length ? (
-                  <ul>
-                    {contentClues(evidence.items).map((clue) => (
-                      <li key={clue.label}>
-                        {clue.label}：
-                        <details>
-                          <summary>
-                            查看 {clue.pages.length} 个可能相关页
-                          </summary>
-                          {clue.pages.map((number) => (
-                            <button
-                              key={number}
-                              type="button"
-                              className="text-button"
-                              onClick={() => {
-                                setPage(number);
-                                setView("text");
-                              }}
-                            >
-                              第 {number} 页
-                            </button>
-                          ))}
-                        </details>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>未找到上述关键词；不能据此判断文件不包含相关内容。</p>
+            <div
+              className={
+                singlePane
+                  ? "evidence-reading-tools evidence-reading-tools--compact"
+                  : "evidence-reading-tools"
+              }
+            >
+              <details
+                className="evidence-tool"
+                key={`search:${document.id}:${evidence.parse_run_id}`}
+                ref={searchTool}
+                open={!singlePane}
+                name={singlePane ? toolGroup : undefined}
+              >
+                <summary>查找解析文本</summary>
+                <EvidenceSearch
+                  items={evidence.items}
+                  onPage={(number) => showTextAt(number, searchTool.current)}
+                />
+              </details>
+              <details
+                className="evidence-tool"
+                key={`clues:${document.id}:${evidence.parse_run_id}`}
+                ref={cluesTool}
+                open={!singlePane}
+                name={singlePane ? toolGroup : undefined}
+              >
+                <summary>内容线索</summary>
+                <div className="notice evidence-gaps">
+                  <div>
+                    <strong>内容线索（请核对原文）</strong>
+                    <p>
+                      以下来自已解析文字或
+                      OCR，仅用于定位，可能遗漏或误识别；不会自动分类、拆分文件或改变资料用途。
+                    </p>
+                    {clues.length ? (
+                      <ul>
+                        {clues.map((clue) => (
+                          <li key={clue.label}>
+                            {clue.label}：
+                            <details>
+                              <summary>
+                                查看 {clue.pages.length} 个可能相关页
+                              </summary>
+                              {clue.pages.map((number) => (
+                                <button
+                                  key={number}
+                                  type="button"
+                                  className="text-button"
+                                  onClick={() =>
+                                    showTextAt(number, cluesTool.current)
+                                  }
+                                >
+                                  第 {number} 页
+                                </button>
+                              ))}
+                            </details>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>未找到上述关键词；不能据此判断文件不包含相关内容。</p>
+                    )}
+                  </div>
+                </div>
+              </details>
+              {document.role !== "official_result" &&
+                ["source_original", "bid_body"].includes(
+                  document.artifact_kind,
+                ) &&
+                ["partial", "complete"].includes(evidence.coverage) && (
+                  <PartialPageSelection
+                    key={`${document.id}:${evidence.parse_run_id}`}
+                    document={document}
+                    evidence={evidence}
+                    page={page}
+                    pageCount={pageCount}
+                    onPage={(number) => {
+                      setPage(number);
+                      setView("original");
+                    }}
+                  />
                 )}
-              </div>
             </div>
           )}
-          {evidence &&
-            document.role !== "official_result" &&
-            ["source_original", "bid_body"].includes(document.artifact_kind) &&
-            ["partial", "complete"].includes(evidence.coverage) && (
-              <PartialPageSelection
-                key={`${document.id}:${evidence.parse_run_id}`}
-                document={document}
-                evidence={evidence}
-                page={page}
-                pageCount={pageCount}
-                onPage={(number) => {
-                  setPage(number);
-                  setView("original");
-                }}
-              />
-            )}
           <div className="evidence-error">
             <ErrorNotice
               error={error}
@@ -340,14 +399,24 @@ export function Evidence({
             />
           </div>
           {evidence?.gaps.length ? (
-            <div className="notice warning evidence-gaps">
+            <div className="notice warning evidence-gaps evidence-gap-list">
               <div>
-                <strong>以下范围尚未完整核对</strong>
-                <ul>
-                  {evidence.gaps.map((gap, index) => (
-                    <li key={index}>{gap}</li>
-                  ))}
-                </ul>
+                {singlePane && evidence.gaps.length > 1 ? (
+                  <details key={`gaps:${document.id}:${evidence.parse_run_id}`}>
+                    <summary>
+                      <strong>以下范围尚未完整核对</strong> · 查看全部{" "}
+                      {evidence.gaps.length} 项解析缺口
+                    </summary>
+                    <ul tabIndex={0} aria-label="全部解析缺口">
+                      {gaps}
+                    </ul>
+                  </details>
+                ) : (
+                  <>
+                    <strong>以下范围尚未完整核对</strong>
+                    <ul>{gaps}</ul>
+                  </>
+                )}
               </div>
             </div>
           ) : null}
@@ -359,28 +428,6 @@ export function Evidence({
                   当前切片尚未提供Word转换。可返回资料页，将此修改稿的PDF作为独立文件上传。所选PDF有独立版本，不自动取得Word对应检查资格。
                 </p>
               </div>
-            </div>
-          )}
-          {singlePane && (
-            <div
-              className="source-view-switch"
-              role="group"
-              aria-label="查看原页或解析文本"
-            >
-              <button
-                type="button"
-                aria-pressed={view === "original"}
-                onClick={() => setView("original")}
-              >
-                原页
-              </button>
-              <button
-                type="button"
-                aria-pressed={view === "text"}
-                onClick={() => setView("text")}
-              >
-                解析文本
-              </button>
             </div>
           )}
           <div

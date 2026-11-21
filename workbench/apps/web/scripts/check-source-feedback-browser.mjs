@@ -76,7 +76,7 @@ import { useTheme } from "./src/theme";
 import { sourceDocument, sourceEvidence, sourceSurfaceFixture } from "./src/sourceSurfaceFixtures.test-support";
 import "./src/styles.css";
 sourceDocument.sha256 = ${JSON.stringify(hash(pdf))}; sourceDocument.byte_size = ${Buffer.byteLength(pdf)};
-sourceEvidence.gaps = ["合成资料含未核对的文字。"];
+sourceEvidence.gaps = Array.from({length: location.search === "?single-gap" ? 1 : 123}, (_, i) => "合成范围 "+(i+1)+" 的文字尚未核对。");
 for (let page = 4; page <= ${pageCount}; page++) {
   sourceEvidence.items.push({...sourceEvidence.items[0], id:"long-page-"+page, physical_page:page,
     quote:"合成第"+page+"页："+"施工方案与工期，仅供本地滚动测试。".repeat(5)});
@@ -268,7 +268,13 @@ async function expandedReading(page, width, height) {
     name: `合成工期要求.pdf，物理页${pageCount}原页`,
   });
   await canvas.waitFor();
+  await dialog.getByText("查找解析文本", { exact: true }).press("Enter");
   await dialog.getByLabel("查找本文件解析文本").fill("施工方案");
+  await dialog.getByText("内容线索", { exact: true }).press("Space");
+  assert(
+    !(await dialog.getByLabel("查找本文件解析文本").isVisible()),
+    "clues replace the open search without losing its query",
+  );
   await dialog.getByText(`查看 ${pageCount - 3} 个可能相关页`).click();
   await dialog.getByText("人工确认部分页范围").click();
   await dialog.getByLabel("起始物理页").fill(String(pageCount - 1));
@@ -337,6 +343,89 @@ async function localRequests(page) {
     return route.abort();
   });
 }
+async function defaultReading(page, width, height) {
+  await page.setViewportSize({ width, height });
+  await page.goto(origin);
+  await page.getByRole("button", { name: "直接打开原件" }).click();
+  const canvas = page.getByRole("img", {
+    name: "合成工期要求.pdf，物理页1原页",
+  });
+  await canvas.waitFor();
+  const rect = await canvas.boundingBox();
+  const available = await visiblePortion(canvas);
+  await screenshot(page, `first-original-${width}x${height}`);
+  const pages = page.getByRole("combobox", { name: "物理页", exact: true });
+  assert(
+    (await visiblePortion(pages)).height > 0,
+    "page selector initially visible",
+  );
+  const search = page.getByLabel("查找本文件解析文本");
+  if (width === 940) {
+    assert(
+      (await search.isVisible()) &&
+        (await page.getByRole("region", { name: "解析文本依据" }).isVisible()),
+      "wide comparison shows text and search",
+    );
+  } else {
+    assert(!(await search.isVisible()), "initial compact search is closed");
+    const gaps = page.locator(".evidence-gap-list summary", {
+      hasText: "查看全部 123 项解析缺口",
+    });
+    const last = page.getByText("合成范围 123 的文字尚未核对。", {
+      exact: true,
+    });
+    await gaps.press("Enter");
+    await page.keyboard.press("Tab");
+    const gapList = page.getByRole("list", { name: "全部解析缺口" });
+    assert(
+      await gapList.evaluate((el) => el === document.activeElement),
+      "keyboard focus enters all gaps",
+    );
+    await gapList.press("End");
+    await page.waitForFunction(() => {
+      const list = document.querySelector(".evidence-gap-list ul");
+      return list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+    });
+    assert((await visiblePortion(last)).height > 0, "last gap reachable");
+    await gaps.press("Enter");
+    await page.getByText("查找解析文本", { exact: true }).press("Enter");
+    await search.fill("施工方案");
+    await page
+      .getByRole("button", { name: "查看匹配文本 · 第 4 页", exact: true })
+      .press("Enter");
+    const textTab = page.getByRole("button", { name: "解析文本", exact: true });
+    assert(
+      (await pages.inputValue()) === "4" &&
+        (await textTab.evaluate((el) => el === document.activeElement)) &&
+        !(await search.isVisible()),
+      "match opens exact text with keyboard focus",
+    );
+    await page.getByText("内容线索", { exact: true }).press("Enter");
+    await page
+      .getByText(`查看 ${pageCount - 3} 个可能相关页`, { exact: true })
+      .press("Enter");
+    await page
+      .getByRole("button", { name: `第 ${pageCount} 页`, exact: true })
+      .press("Enter");
+    assert(
+      (await pages.inputValue()) === String(pageCount) &&
+        (await textTab.evaluate((el) => el === document.activeElement)),
+      "clue opens exact text with keyboard focus",
+    );
+    await page.getByText("查找解析文本", { exact: true }).press("Enter");
+    assert(
+      (await search.inputValue()) === "施工方案",
+      "search retained after following a clue",
+    );
+  }
+  return {
+    width,
+    height,
+    top: Math.round(rect.y),
+    paperHeight: Math.round(rect.height),
+    visible: available.height,
+  };
+}
 try {
   browser = await chromium.launch({
     headless: true,
@@ -346,6 +435,25 @@ try {
       : {}),
   });
   receipt.expanded = [];
+  receipt.initial = [];
+  for (const [width, height] of [
+    [1440, 900],
+    [390, 640],
+    [760, 360],
+    [940, 900],
+  ]) {
+    const page = await browser.newPage();
+    lastPage = page;
+    await localRequests(page);
+    receipt.initial.push(await defaultReading(page, width, height));
+    await page.close();
+  }
+  assert(
+    receipt.initial.every(
+      (m) => m.visible >= { 1440: 440, 390: 220, 760: 100, 940: 100 }[m.width],
+    ),
+    "Initial source reading: " + JSON.stringify(receipt.initial),
+  );
   for (const [width, height] of [
     [390, 640],
     [760, 360],
@@ -376,7 +484,7 @@ try {
       const page = await context.newPage();
       lastPage = page;
       await localRequests(page);
-      await page.goto(origin);
+      await page.goto(origin + "/?single-gap");
       if (width === 1440 && theme === "light") {
         const syntheticUrl = origin + "/synthetic.pdf";
         const changed = pdf.replace("240 days", "241 days");
@@ -556,6 +664,12 @@ try {
         exact: true,
       });
       await canvas.waitFor();
+      assert(
+        await original
+          .getByText("合成范围 1 的文字尚未核对。", { exact: true })
+          .isVisible(),
+        "single gap remains explicit",
+      );
       await page.waitForFunction(() => {
         const paper = document.querySelector(".pdf-canvas-container canvas");
         const container = paper?.parentElement;
@@ -633,7 +747,7 @@ try {
         width,
         theme,
         source: desktop ? "nonmodal beside editable body" : "single modal task",
-        real_pdf_pages: 3,
+        real_pdf_pages: pageCount,
         exact_page_retained: 2,
         nested_focus_restored: true,
         source_resize: desktop
@@ -654,7 +768,8 @@ try {
   );
   console.log(
     JSON.stringify({
-      passed: receipt.cases.length + receipt.expanded.length,
+      passed:
+        receipt.cases.length + receipt.expanded.length + receipt.initial.length,
       screenshots: receipt.screenshots.length,
       source_files: Object.keys(source).length,
       page_errors: receipt.page_errors.length,
