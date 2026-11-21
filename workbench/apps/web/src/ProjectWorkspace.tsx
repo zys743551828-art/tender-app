@@ -43,7 +43,7 @@ import { OperationCenter } from "./OperationCenter";
 import { ReviewProgress } from "./ReviewProgress";
 import { ReviewHistory } from "./ReviewHistory";
 import { RetrievalDrawer } from "./RetrievalDrawer";
-import { Project } from "./Project";
+import { Project, type UploadSelection } from "./Project";
 import { ResourceState } from "./ResourceState";
 import { ReviewPanel } from "./ReviewPanel";
 import { RulesPanel } from "./RulesPanel";
@@ -110,6 +110,8 @@ export function ProjectWorkspace({
 }) {
   const [retrievalOpen, setRetrievalOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  // App keys this workspace by member and project. File references live only in this tab.
+  const pendingUploads = useRef<UploadSelection[]>([]);
   const closeAssistant = useCallback(() => setAssistantOpen(false), []);
   const closeRetrieval = useCallback(() => setRetrievalOpen(false), []);
   const resource = useResource<Bid>(`/bids/${id}`, 5000);
@@ -238,6 +240,7 @@ export function ProjectWorkspace({
         <Project
           id={id}
           memberId={memberId}
+          pendingSelections={pendingUploads}
           onBack={onBack}
           onAuthoring={() => onNavigate("authoring")}
           onPackages={() => onNavigate("packages")}

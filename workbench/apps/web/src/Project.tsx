@@ -1,8 +1,15 @@
 import { DocumentRelationNotice } from "./DocumentRelationNotice";
 import { sameUploadFormat, uploadMediaType } from "./uploadFormats";
 import { WordOriginals } from "./WordOriginals";
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { ChangeEvent, ReactNode } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import type { ChangeEvent, ReactNode, RefObject } from "react";
 import {
   api,
   ApiError,
@@ -40,19 +47,22 @@ import {
 import { UploadStatus } from "./UploadStatus";
 import { UploadBatchDiscovery } from "./UploadBatchDiscovery";
 import { BidPackages } from "./BidPackages";
+import { NavigationGuardContext } from "./navigationGuard";
 
-type DraftFile = {
+export type UploadSelection = {
   key: string;
   file: File;
   role: UploadRequest["role"] | "" | null;
   target: string;
+  uploadKey: string;
+  declaredSource?: string;
+};
+type DraftFile = UploadSelection & {
   state: string;
   error?: unknown;
   grant?: UploadGrant;
   digest?: string;
   completeKey?: string;
-  uploadKey: string;
-  declaredSource?: string;
 };
 const uploadNames: Record<string, string> = {
   authorized: "等待上传",
@@ -78,6 +88,7 @@ function batchStorageKey(id: string) {
 export function Project({
   id,
   memberId = "current",
+  pendingSelections,
   onBack,
   navigation,
   reviewNotice,
@@ -86,6 +97,7 @@ export function Project({
 }: {
   id: string;
   memberId?: string;
+  pendingSelections?: RefObject<UploadSelection[]>;
   onBack: () => void;
   navigation?: ReactNode;
   reviewNotice?: ReactNode;
@@ -100,7 +112,25 @@ export function Project({
     localStorage.getItem(batchStorageKey(id)),
   );
   const [batch, setBatch] = useState<UploadBatchView | null>(null);
-  const [files, setFiles] = useState<DraftFile[]>([]);
+  const [files, setFiles] = useState<DraftFile[]>(() =>
+    (pendingSelections?.current ?? []).map((selection) => ({
+      ...selection,
+      state: "待上传",
+    })),
+  );
+  useLayoutEffect(() => {
+    if (pendingSelections)
+      pendingSelections.current = files
+        .filter((item) => !item.digest && !item.grant)
+        .map(({ key, file, role, target, uploadKey, declaredSource }) => ({
+          key,
+          file,
+          role,
+          target,
+          uploadKey,
+          declaredSource,
+        }));
+  }, [files, pendingSelections]);
   const [busy, setBusy] = useState(false);
   const [partial, setPartial] = useState(false);
   const [operation, setOperation] = useState<Operation | null>(null);
@@ -113,6 +143,24 @@ export function Project({
   const active = useRef(true);
   const uploadGeneration = useRef(0);
   const transport = useRef<AbortController | null>(null);
+  const registerGuard = useContext(NavigationGuardContext);
+  useEffect(() => {
+    if (!busy || !transport.current) return;
+    const unregister = registerGuard(async () =>
+      window.confirm(
+        "原件正在上传。离开会中断本轮传输，可返回项目资料查看批次并接续。确定离开？",
+      ),
+    );
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      unregister();
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [busy, registerGuard]);
   const readGeneration = useRef(0);
   const batchGeneration = useRef(0);
   const invalidateTransfers = useCallback(() => {
@@ -233,6 +281,11 @@ export function Project({
           patchFile(item.key, { state: "正在核对文件…", error: undefined });
           const digest = item.digest ?? (await fileSha256(item.file));
           if (!currentRun()) return;
+          // A batch or grant request may succeed even if navigation discards its response.
+          if (pendingSelections)
+            pendingSelections.current = pendingSelections.current.filter(
+              (file) => file.key !== item.key,
+            );
           patchFile(item.key, { digest });
           if (!currentBatch) {
             const { data } = await api<UploadBatchView>(
