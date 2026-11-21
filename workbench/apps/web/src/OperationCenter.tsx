@@ -62,7 +62,9 @@ export function OperationCenter({
       <div className="panel">
         <div className="section-heading">
           <div>
-            <h2>处理记录</h2>
+            <h2 id="project-operation-history" tabIndex={-1}>
+              处理记录
+            </h2>
             <details className="identity-details">
               <summary>处理记录的恢复范围</summary>
               <p>
@@ -138,8 +140,10 @@ function OperationCard({
   const resource = useResource<Operation>(`/operations/${id}`, 3000);
   const operation = resource.data;
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const diagnosticsPath = `/operations/${id}/diagnostics`;
+  const hasDiagnostics = supportsApi("GET", diagnosticsPath);
   const diagnostics = useResource<DiagnosticPage>(
-    showDiagnostics ? `/operations/${id}/diagnostics` : null,
+    showDiagnostics && hasDiagnostics ? diagnosticsPath : null,
   );
   const [reason, setReason] = useState("");
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -192,7 +196,7 @@ function OperationCard({
               onClick={() => setShowDiagnostics(!showDiagnostics)}
               aria-expanded={showDiagnostics}
             >
-              查看字段与范围详情
+              {hasDiagnostics ? "查看字段与范围详情" : "查看处理标识与执行版本"}
             </button>
             {["queued", "running"].includes(operation.state) &&
               supportsApi("POST", `/operations/${id}/cancel`) && (

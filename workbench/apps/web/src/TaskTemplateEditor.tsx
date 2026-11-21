@@ -472,14 +472,16 @@ function LegacyTaskTemplateEditor({
               仅保存草案，不建模板
             </button>
           )}
-          <button
-            type="button"
-            className="text-button"
-            disabled={locked}
-            onClick={() => void rebase()}
-          >
-            已核对当前版本，保留输入继续
-          </button>
+          {(conflict || !basis || (etag && basis !== etag)) && (
+            <button
+              type="button"
+              className="text-button"
+              disabled={locked}
+              onClick={() => void rebase()}
+            >
+              已核对当前版本，保留输入继续
+            </button>
+          )}
         </div>
       </form>
       {command.pending && !command.busy && (

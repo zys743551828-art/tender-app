@@ -232,6 +232,7 @@ export function ProjectWorkspace({
       unavailable={reviewState.unavailable}
       onRetry={refresh}
       onNavigate={onNavigate}
+      onOperationsPage={page === "operations"}
     />
   );
   if (page === "materials")
@@ -253,20 +254,6 @@ export function ProjectWorkspace({
                   {progress}
                 </details>
               )}
-              <div className="notice neutral">
-                <div>
-                  <strong>原件入库后明确选择整包修订</strong>
-                  <p>
-                    解析完成不表示核心规则已满足。进入整包核查工作面选择确切包、要求清单和输入；已有单稿历史与原件继续保留。
-                  </p>
-                  <button
-                    className="text-button"
-                    onClick={() => onNavigate("packages")}
-                  >
-                    选择整包继续核查
-                  </button>
-                </div>
-              </div>
             </>
           }
         />

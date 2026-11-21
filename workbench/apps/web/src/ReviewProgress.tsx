@@ -29,6 +29,7 @@ export function ReviewProgress({
   onRetry,
   etag,
   onNavigate,
+  onOperationsPage = false,
 }: {
   state?: ReviewStateView;
   loading: boolean;
@@ -37,6 +38,7 @@ export function ReviewProgress({
   onRetry: () => void;
   etag?: string | null;
   onNavigate: (page: WorkspacePage, reviewId?: string) => void;
+  onOperationsPage?: boolean;
 }) {
   const request = state?.request;
   const [cancelling, setCancelling] = useState(false);
@@ -313,12 +315,18 @@ export function ReviewProgress({
                   打开本次实际评审
                 </button>
               )}
-              <button
-                className="text-button"
-                onClick={() => onNavigate("operations")}
-              >
-                查看处理记录与失败范围
-              </button>
+              {onOperationsPage ? (
+                <a className="text-button" href="#project-operation-history">
+                  跳到本页处理记录
+                </a>
+              ) : (
+                <button
+                  className="text-button"
+                  onClick={() => onNavigate("operations")}
+                >
+                  查看处理记录与失败范围
+                </button>
+              )}
               <button className="text-button" onClick={onRetry}>
                 刷新实际进度
               </button>

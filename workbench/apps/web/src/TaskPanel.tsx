@@ -131,23 +131,26 @@ export function TaskPanel({
             ))}
           </details>
         )}
-        <button
-          className="button primary"
-          disabled={!bid.etag}
-          onClick={() => setCreating(!creating)}
-          aria-expanded={creating}
-        >
-          新建任务模板
-        </button>
-        <button
-          type="button"
-          className="button secondary"
-          disabled={!bid.etag}
-          onClick={() => setCreatingAuthoring(!creatingAuthoring)}
-          aria-expanded={creatingAuthoring}
-        >
-          新建固定整包编写模板
-        </button>
+        <div className="review-shortcuts">
+          <button
+            type="button"
+            className="button primary"
+            disabled={!bid.etag}
+            onClick={() => setCreating(!creating)}
+            aria-expanded={creating}
+          >
+            新建任务模板
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={!bid.etag}
+            onClick={() => setCreatingAuthoring(!creatingAuthoring)}
+            aria-expanded={creatingAuthoring}
+          >
+            新建固定整包编写模板
+          </button>
+        </div>
         {supportsApi("POST", `/bids/${bidId}/task-definition-drafts`) && (
           <TaskDraftPanel
             bidId={bidId}
