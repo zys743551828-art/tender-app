@@ -12,6 +12,7 @@ import { RulesPanel } from "./RulesPanel";
 import { useResource } from "./useResource";
 import type {
   Bid,
+  FactView,
   FindingView,
   ReviewCoverage,
   ReviewStateView,
@@ -409,6 +410,132 @@ it("按物理页和原文筛选长文件，跨筛选与文件保留明确勾选�
       },
     ]),
   );
+});
+
+it("保存第一条事实后可直接继续补充，清空上次字段和依据且保留已登记事实", async () => {
+  const user = userEvent.setup();
+  const facts: FactView[] = [];
+  const writes: {
+    etag: string | null;
+    key: string | null;
+    replaces: string | null;
+  }[] = [];
+  let acknowledge!: () => void;
+  const firstReceipt = new Promise<void>((resolve) => {
+    acknowledge = resolve;
+  });
+  fetchMock.mockImplementation(async (url, options) => {
+    if (String(url).endsWith("/materials"))
+      return json({
+        documents: [
+          {
+            id: "file",
+            role: "tender",
+            filename: "合成招标.pdf",
+            file_revision: 1,
+          },
+        ],
+      });
+    if (String(url).endsWith("/evidence"))
+      return json({
+        gaps: [],
+        items: [1, 2].map((p) => ({
+          id: `e${p}`,
+          physical_page: p,
+          quote: `第${p}处摘录`,
+          source_status: "published",
+        })),
+      });
+    if (options?.method === "POST") {
+      const headers = new Headers(options.headers);
+      const body = JSON.parse(String(options.body));
+      writes.push({
+        etag: headers.get("If-Match"),
+        key: headers.get("Idempotency-Key"),
+        replaces: body.replaces_fact_id,
+      });
+      if (writes.length === 1) await firstReceipt;
+      facts.push({
+        ...body.fact,
+        id: `fact-${writes.length}`,
+        confirmation: "confirmed",
+        decision_revision: 1,
+        decision: null,
+        carryover: null,
+        source_validity: "effective",
+        source_issues: [],
+      });
+    }
+    return json({ facts }, 200, `"facts:${facts.length}"`);
+  });
+  render(<FactsPanel bid={bid} onChanged={vi.fn()} />);
+  const add = screen.getByRole("button", { name: "补充有据事实" });
+  async function enter(name: string, page: number) {
+    await user.type(screen.getByLabelText("事实主体"), `主体${page}`);
+    await user.type(screen.getByLabelText("适用范围"), `范围${page}`);
+    await user.selectOptions(
+      screen.getByLabelText("事实名称", { exact: true }),
+      name,
+    );
+    await user.type(screen.getByLabelText("事实取值"), `值${page}`);
+    await user.type(screen.getByLabelText("单位（如适用）"), `单位${page}`);
+    await user.type(screen.getByLabelText("依据与变更原因"), `理由${page}`);
+    await user.selectOptions(screen.getByLabelText("选择来源文件"), "file");
+    const evidence = await screen.findByRole("checkbox", {
+      name: new RegExp(`第${page}处摘录`),
+    });
+    expect(evidence).not.toBeChecked();
+    await user.click(evidence);
+  }
+  await user.click(add);
+  await enter("工程项目编号", 1);
+  const save = screen.getByRole("button", { name: "保存并确认事实" });
+  await user.dblClick(save);
+  expect(writes).toHaveLength(1);
+  expect(save).toBeDisabled();
+  acknowledge();
+  expect(await screen.findByText(/已保存新事实集/)).toBeVisible();
+  expect(
+    await screen.findByRole("heading", { name: "工程项目编号" }),
+  ).toBeVisible();
+  await user.click(add);
+  for (const name of [
+    "事实主体",
+    "适用范围",
+    "事实名称",
+    "事实取值",
+    "单位（如适用）",
+    "选择来源文件",
+    "依据与变更原因",
+  ])
+    expect(screen.getByLabelText(name, { exact: true })).toHaveValue("");
+  expect(screen.getByText(/已选 0 处依据/)).toBeVisible();
+  expect(screen.getByRole("button", { name: "保存并确认事实" })).toBeDisabled();
+  await enter("标段编号", 2);
+  expect(screen.getByRole("checkbox", { name: /第1处摘录/ })).not.toBeChecked();
+  await user.click(screen.getByRole("button", { name: "保存并确认事实" }));
+  expect(
+    await screen.findByRole("heading", { name: "标段编号" }),
+  ).toBeVisible();
+  expect(screen.getByRole("heading", { name: "工程项目编号" })).toBeVisible();
+  expect(
+    facts.map((fact) => [
+      fact.name,
+      fact.subject,
+      fact.value,
+      fact.evidence_ids,
+    ]),
+  ).toEqual([
+    ["procurement_project_identifier", "主体1", "值1", ["e1"]],
+    ["procurement_lot_identifier", "主体2", "值2", ["e2"]],
+  ]);
+  expect(writes.map(({ etag, replaces }) => [etag, replaces])).toEqual([
+    ['"facts:0"', null],
+    ['"facts:1"', null],
+  ]);
+  expect(writes[0].key).toBeTruthy();
+  expect(writes[1].key).toBeTruthy();
+  expect(writes[1].key).not.toBe(writes[0].key);
 });
 
 it.each([

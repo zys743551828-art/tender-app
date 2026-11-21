@@ -23,9 +23,11 @@ export function FactsPanel({
   onChanged: () => void;
 }) {
   const resource = useResource<FactSetView>(`/bids/${bid.id}/facts`);
-  const [editing, setEditing] = useState<FactView | "new" | null>(null);
+  const [editing, setEditing] = useState<FactView | "new" | "saved" | null>(
+    null,
+  );
   function refresh() {
-    void resource.reload();
+    void resource.reloadFresh();
     onChanged();
   }
   return (
@@ -57,12 +59,30 @@ export function FactsPanel({
           </p>
         )}
       </section>
-      {editing && (
+      {editing === "saved" && (
+        <div className="notice neutral">
+          <p role="status">
+            已保存新事实集，旧记录与来源保留。请按当前资料核对评审是否需要更新。
+          </p>
+          <button
+            className="text-button"
+            type="button"
+            onClick={() => setEditing(null)}
+          >
+            收起
+          </button>
+        </div>
+      )}
+      {editing && editing !== "saved" && (
         <FactForm
           key={editing === "new" ? "new" : editing.id}
           bid={bid}
           fact={editing === "new" ? null : editing}
-          onSaved={refresh}
+          onSaved={() => {
+            setEditing("saved");
+            refresh();
+          }}
+          onRefresh={refresh}
           onClose={() => setEditing(null)}
         />
       )}
@@ -150,11 +170,13 @@ function FactForm({
   bid,
   fact,
   onSaved,
+  onRefresh,
   onClose,
 }: {
   bid: Bid;
   fact: FactView | null;
   onSaved: () => void;
+  onRefresh: () => void;
   onClose: () => void;
 }) {
   const project = useResource<FactSetView>(`/bids/${bid.id}/facts`);
@@ -182,7 +204,6 @@ function FactForm({
     fact?.evidence_ids ?? [],
   );
   const [reason, setReason] = useState("");
-  const [saved, setSaved] = useState(false);
   const command = useCommand(`fact:change:${bid.id}:${fact?.id ?? "new"}`);
   return (
     <section className="panel fact-form-panel">
@@ -197,170 +218,162 @@ function FactForm({
           收起
         </button>
       </div>
-      {saved ? (
-        <div className="notice neutral" role="status">
-          已保存新事实集，旧记录与来源保留。请按当前资料核对评审是否需要更新。
-        </div>
-      ) : (
-        <form
-          className="fact-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const input = {
-              subject: subject.trim(),
-              scope: scope.trim(),
-              name: nameKind === "custom" ? customName.trim() : nameKind,
-              value:
-                valueType === "unknown"
-                  ? null
-                  : valueType === "boolean"
-                    ? booleanValue
-                    : value,
-              unit: unit.trim() || null,
-              evidence_ids: evidenceIds,
-              reason: reason.trim(),
-            };
-            void command
-              .run<FactSetView>(
-                `/bids/${bid.id}/facts`,
-                { fact: input, replaces_fact_id: fact?.id ?? null },
-                project.etag,
-              )
-              .then((result) => {
-                if (result) {
-                  setSaved(true);
-                  onSaved();
-                }
-              });
-          }}
-        >
-          <div className="field-pair">
-            <label>
-              事实主体
-              <input
-                required
-                value={subject}
-                onChange={(event) => setSubject(event.target.value)}
-              />
-            </label>
-            <label>
-              适用范围
-              <input
-                required
-                value={scope}
-                onChange={(event) => setScope(event.target.value)}
-              />
-            </label>
-          </div>
+      <form
+        className="fact-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (command.busy || !project.etag || !evidenceIds.length) return;
+          const input = {
+            subject: subject.trim(),
+            scope: scope.trim(),
+            name: nameKind === "custom" ? customName.trim() : nameKind,
+            value:
+              valueType === "unknown"
+                ? null
+                : valueType === "boolean"
+                  ? booleanValue
+                  : value,
+            unit: unit.trim() || null,
+            evidence_ids: evidenceIds,
+            reason: reason.trim(),
+          };
+          void command
+            .run<FactSetView>(
+              `/bids/${bid.id}/facts`,
+              { fact: input, replaces_fact_id: fact?.id ?? null },
+              project.etag,
+            )
+            .then((result) => {
+              if (result) onSaved();
+            });
+        }}
+      >
+        <div className="field-pair">
           <label>
-            事实名称
-            <select
-              required
-              value={nameKind}
-              onChange={(event) => setNameKind(event.target.value)}
-            >
-              <option value="" disabled>
-                选择事实名称
-              </option>
-              {captureIdentityNames.map((identity) => (
-                <option key={identity} value={identity}>
-                  {captureIdentityLabels[identity]}
-                </option>
-              ))}
-              <option value="custom">自定义名称</option>
-            </select>
-          </label>
-          {nameKind === "custom" && (
-            <label>
-              自定义事实名称
-              <input
-                required
-                value={customName}
-                onChange={(event) => setCustomName(event.target.value)}
-              />
-            </label>
-          )}
-          <label>
-            取值类型
-            <select
-              value={valueType}
-              onChange={(event) => setValueType(event.target.value)}
-            >
-              <option value="text">文字／数值</option>
-              <option value="boolean">是／否</option>
-              <option value="unknown">未知</option>
-            </select>
-          </label>
-          {valueType === "text" && (
-            <label>
-              事实取值
-              <input
-                required
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-              />
-            </label>
-          )}
-          {valueType === "boolean" && (
-            <label>
-              事实取值
-              <select
-                value={String(booleanValue)}
-                onChange={(event) =>
-                  setBooleanValue(event.target.value === "true")
-                }
-              >
-                <option value="true">是</option>
-                <option value="false">否</option>
-              </select>
-            </label>
-          )}
-          <label>
-            单位（如适用）
+            事实主体
             <input
-              value={unit}
-              onChange={(event) => setUnit(event.target.value)}
-              placeholder="保留原单位，不自动换算或省略"
-            />
-          </label>
-          <SourceSelection
-            bidId={bid.id}
-            selected={evidenceIds}
-            onChange={setEvidenceIds}
-          />
-          <label>
-            依据与变更原因
-            <textarea
               required
-              rows={2}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
             />
           </label>
-          <ErrorNotice error={project.error ?? command.error} />
-          {command.conflict && (
-            <div className="notice warning">
-              <p>项目或事实已变化，输入保留；请刷新后重新核对。</p>
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => {
-                  void project.reload();
-                  onSaved();
-                }}
-              >
-                刷新当前事实与项目
-              </button>
-            </div>
-          )}
-          <button
-            className="button primary"
-            disabled={command.busy || !project.etag || evidenceIds.length === 0}
+          <label>
+            适用范围
+            <input
+              required
+              value={scope}
+              onChange={(event) => setScope(event.target.value)}
+            />
+          </label>
+        </div>
+        <label>
+          事实名称
+          <select
+            required
+            value={nameKind}
+            onChange={(event) => setNameKind(event.target.value)}
           >
-            {fact ? "保存并确认有据更正" : "保存并确认事实"}
-          </button>
-        </form>
-      )}
+            <option value="" disabled>
+              选择事实名称
+            </option>
+            {captureIdentityNames.map((identity) => (
+              <option key={identity} value={identity}>
+                {captureIdentityLabels[identity]}
+              </option>
+            ))}
+            <option value="custom">自定义名称</option>
+          </select>
+        </label>
+        {nameKind === "custom" && (
+          <label>
+            自定义事实名称
+            <input
+              required
+              value={customName}
+              onChange={(event) => setCustomName(event.target.value)}
+            />
+          </label>
+        )}
+        <label>
+          取值类型
+          <select
+            value={valueType}
+            onChange={(event) => setValueType(event.target.value)}
+          >
+            <option value="text">文字／数值</option>
+            <option value="boolean">是／否</option>
+            <option value="unknown">未知</option>
+          </select>
+        </label>
+        {valueType === "text" && (
+          <label>
+            事实取值
+            <input
+              required
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+            />
+          </label>
+        )}
+        {valueType === "boolean" && (
+          <label>
+            事实取值
+            <select
+              value={String(booleanValue)}
+              onChange={(event) =>
+                setBooleanValue(event.target.value === "true")
+              }
+            >
+              <option value="true">是</option>
+              <option value="false">否</option>
+            </select>
+          </label>
+        )}
+        <label>
+          单位（如适用）
+          <input
+            value={unit}
+            onChange={(event) => setUnit(event.target.value)}
+            placeholder="保留原单位，不自动换算或省略"
+          />
+        </label>
+        <SourceSelection
+          bidId={bid.id}
+          selected={evidenceIds}
+          onChange={setEvidenceIds}
+        />
+        <label>
+          依据与变更原因
+          <textarea
+            required
+            rows={2}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+          />
+        </label>
+        <ErrorNotice error={project.error ?? command.error} />
+        {command.conflict && (
+          <div className="notice warning">
+            <p>项目或事实已变化，输入保留；请刷新后重新核对。</p>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
+                void project.reload();
+                onRefresh();
+              }}
+            >
+              刷新当前事实与项目
+            </button>
+          </div>
+        )}
+        <button
+          className="button primary"
+          disabled={command.busy || !project.etag || evidenceIds.length === 0}
+        >
+          {fact ? "保存并确认有据更正" : "保存并确认事实"}
+        </button>
+      </form>
     </section>
   );
 }
