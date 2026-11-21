@@ -2226,6 +2226,17 @@ th,
   flex-wrap: wrap;
   margin: 12px 0;
 }
+.research-view-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.research-view-switch button[aria-pressed="true"] {
+  background: var(--primary-soft);
+  color: var(--primary-soft-foreground);
+  border-color: var(--primary);
+  box-shadow: inset 0 -2px var(--primary);
+}
 .small-note {
   font-size: 12px !important;
   color: var(--muted-foreground);
@@ -3400,6 +3411,8 @@ textarea:focus-visible {
 .authoring-builds,
 .archives-page > .panel,
 .research-page > .panel,
+.metrics-page > section.panel,
+.pricing-scope-panel,
 .outcomes-panel {
   padding: 23px;
 }
@@ -3651,6 +3664,8 @@ textarea:focus-visible {
   .authoring-builds,
   .archives-page > .panel,
   .research-page > .panel,
+  .metrics-page > section.panel,
+  .pricing-scope-panel,
   .outcomes-panel {
     padding: 17px;
   }
@@ -3847,6 +3862,21 @@ textarea:focus-visible {
   }
 }
 
+.pricing-scope-panel {
+  display: grid;
+  gap: 14px;
+}
+.pricing-scope-panel > label {
+  width: min(100%, 32rem);
+  min-width: 0;
+}
+.pricing-scope-panel > button {
+  justify-self: start;
+  white-space: normal;
+}
+.pricing-scope-panel > .small-empty {
+  padding: 0;
+}
 .pricing-fields {
   border: 0;
   padding: 0;
@@ -4016,6 +4046,23 @@ textarea:focus-visible {
 .metrics-filter {
   display: grid;
   gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.metrics-filter > label {
+  min-width: 0;
+}
+.metrics-filter > .coverage-details {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.metrics-filter > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+@media (max-width: 960px) {
+  .metrics-filter {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .result-summary h4 {
   margin-bottom: 10px;

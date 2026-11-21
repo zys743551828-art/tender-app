@@ -79,7 +79,7 @@ export function PricingPanel({
     settings.data.settings?.pricing === false
   )
     return (
-      <section className="panel">
+      <section className="panel pricing-scope-panel">
         <h2>本项目报价辅助已关闭</h2>
         <p>公式、历史方案与未提交输入保留。开启后不会自动重跑或保存。</p>
         <button className="button secondary" onClick={onSettings}>
@@ -117,7 +117,7 @@ export function PricingPanel({
   return (
     <>
       {packageAvailable && (
-        <section className="panel">
+        <section className="panel pricing-scope-panel">
           <label>
             报价范围
             <select

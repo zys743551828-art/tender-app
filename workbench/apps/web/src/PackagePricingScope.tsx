@@ -33,7 +33,7 @@ export function PackagePricingScope({
     (item) => `${item.id}:${item.revision_id}` === authorityChoice,
   );
   return (
-    <section className="panel">
+    <section className="panel pricing-scope-panel">
       <h2>选择本次整包报价范围</h2>
       <p>
         分别选择投标包和招标补遗包的确切修订。报价公式、试算与已保存方案都会保留这份选择；包更新后需要重新核对。

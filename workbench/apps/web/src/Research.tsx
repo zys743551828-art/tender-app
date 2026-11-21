@@ -41,9 +41,10 @@ export function Research({
         </div>
         <Badge>回溯研究 · 正式预测未开放</Badge>
       </header>
-      <nav className="review-shortcuts" aria-label="研究记录类型">
+      <nav className="research-view-switch" aria-label="研究记录类型">
         <button
           type="button"
+          className="button secondary"
           aria-pressed={view === "package"}
           onClick={() => setView("package")}
         >
@@ -51,6 +52,7 @@ export function Research({
         </button>
         <button
           type="button"
+          className="button secondary"
           aria-pressed={view === "legacy"}
           onClick={() => {
             setLegacyOpened(true);
