@@ -1,5 +1,6 @@
 """分片边界：票据不能换会话/片号，状态元数据拒绝误解释。"""
 
+import asyncio
 from datetime import timedelta
 from types import SimpleNamespace
 from uuid import uuid4
@@ -7,6 +8,7 @@ from uuid import uuid4
 import pytest
 import requests
 
+from apps.api import multipart_routes
 from apps.api.object_transfer import _verify
 from packages.domain import storage
 from packages.domain.providers.oss import OssClient
@@ -14,6 +16,74 @@ from packages.domain.runtime import DomainError, now, validate
 from packages.uploads import service
 from packages.uploads.native import NativeMultipart
 from packages.uploads.protocol import PART_SIZE, check_parts, layout, pack, unpack
+
+
+@pytest.mark.parametrize(
+    ("chunks", "status"),
+    [
+        ([(45, b"a"), (45, b"b"), (45, b"c")], 200),
+        ([(45, b""), (50, b"abc")], 408),
+        ([(65, b"a"), (65, b"b"), (65, b"c")], 408),
+    ],
+    ids=["ongoing-progress", "no-byte-progress", "total-deadline"],
+)
+def test_multipart_body_progress_and_deadlines(monkeypatch, chunks, status):
+    monkeypatch.setenv("OBJECT_TRANSFER_DEADLINE_SECONDS", "180")
+    staging = "staging/test-object"
+    state = pack("ready", key=staging, nonce=str(uuid4()), provider_id="existing-upload")
+    row = {
+        "part_size": PART_SIZE,
+        "part_count": 2,
+        "declared_size": PART_SIZE + 3,
+        "staging_key": staging,
+        "provider_upload_id": state,
+    }
+    written = []
+    published = []
+    monkeypatch.setattr(multipart_routes, "auth", lambda *_: {})
+    monkeypatch.setattr(service, "snapshot", lambda *_: row)
+    monkeypatch.setattr(service, "publish_part", lambda *args: published.append(args))
+
+    def upload(*args):
+        written.append(args)
+        return "stored-etag"
+
+    async def run_locally(call, *args):
+        return call(*args)
+
+    monkeypatch.setattr(multipart_routes, "NativeMultipart", lambda: SimpleNamespace(upload=upload))
+    monkeypatch.setattr(multipart_routes, "run_in_threadpool", run_locally)
+
+    async def transfer():
+        loop = asyncio.get_running_loop()
+        clock = loop.time()
+        monkeypatch.setattr(loop, "time", lambda: clock)
+
+        async def stream():
+            nonlocal clock
+            for delay, data in chunks:
+                clock += delay
+                # Let the event loop fire any timeout due before the next chunk arrives.
+                await asyncio.sleep(0)
+                await asyncio.sleep(0)
+                yield data
+
+        request = SimpleNamespace(
+            headers={"content-type": "application/octet-stream", "content-length": "3"},
+            stream=stream,
+        )
+        return await multipart_routes.put_part(uuid4(), 2, request, "existing-ticket")
+
+    if status == 200:
+        response = asyncio.run(transfer())
+        assert response.status_code == 200 and response.headers["ETag"] == "stored-etag"
+        assert written == [(staging, "existing-upload", 2, b"abc")]
+        assert len(published) == 1 and published[0][-1] == "stored-etag"
+    else:
+        with pytest.raises(DomainError) as error:
+            asyncio.run(transfer())
+        assert (error.value.status, error.value.code) == (408, "UPLOAD_INTERRUPTED")
+        assert not written and not published
 
 
 def test_layout_and_complete_receipts_reject_missing_duplicate_or_wrong_size():

@@ -25,6 +25,49 @@ export type UploadProgress = {
   phase: "observing" | "transferring" | "completing";
 };
 const completionKey = (id: string) => `tender:upload-completion:${id}`;
+const uploadErrors = new Map<string, string>([
+  ["UPLOAD_INTERRUPTED", "传输中断或超时"],
+  ["MULTIPART_PROVIDER_UNAVAILABLE", "存储服务尚未确认收到分片"],
+  ["OBJECT_STORE_UNAVAILABLE", "暂时无法连接存储服务"],
+  ["UPLOAD_SIZE_MISMATCH", "传输的字节数与授权不符"],
+  ["UPLOAD_TOO_LARGE", "文件超过当前大小上限"],
+  ["UPLOAD_FORMAT_MISMATCH", "实际原件格式与文件名不符"],
+  ["TRANSFER_TICKET_INVALID", "传输授权无效，请刷新授权"],
+  ["TRANSFER_TICKET_EXPIRED", "传输授权已过期，请刷新授权"],
+  ["UPLOAD_EXPIRED", "上传会话已过期"],
+  ["UPLOAD_AUTHORIZATION_CLOSED", "上传会话已关闭"],
+  ["REVISION_CONFLICT", "上传状态已变化"],
+  ["SESSION_EXPIRED", "登录已过期"],
+  ["CSRF_REJECTED", "登录状态需要刷新"],
+]);
+
+async function uploadFailure(url: string, response: Response) {
+  let code = "UPLOAD_TRANSFER_FAILED";
+  let message = "传输未完成";
+  let retryable = false;
+  if (
+    new URL(url, window.location.href).origin === window.location.origin &&
+    !response.redirected &&
+    response.headers.get("content-type")?.split(";")[0].trim().toLowerCase() ===
+      "application/json"
+  ) {
+    const problem = await response.json().catch(() => null);
+    const known = uploadErrors.get(problem?.code);
+    if (known) {
+      code = problem.code;
+      message = known;
+      retryable = problem.retryable === true;
+    }
+  }
+  return new ApiError(
+    `${message}（${response.status}）。已收到的内容保留，重新查询后可只补缺片。`,
+    response.status,
+    code,
+    undefined,
+    retryable,
+  );
+}
+
 export function pendingUploadCompletion(id: string): UploadCompletion | null {
   try {
     return JSON.parse(
@@ -253,12 +296,7 @@ export async function transferUpload({
     active();
     if (response.status === 401)
       window.dispatchEvent(new Event("session-expired"));
-    if (!response.ok)
-      throw new ApiError(
-        `传输未完成（${response.status}）。已收到的内容保留，重新查询后可只补缺片。`,
-        response.status,
-        "UPLOAD_TRANSFER_FAILED",
-      );
+    if (!response.ok) throw await uploadFailure(url, response);
   }
   if (grant.mode === "single") {
     if (!receipts.length) {

@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.requests import ClientDisconnect
 
 from apps.api.auth import auth
+from apps.api.object_transfer import _limits
 from packages.domain.runtime import DomainError
 from packages.uploads import service
 from packages.uploads.native import NativeMultipart
@@ -17,6 +18,7 @@ from packages.uploads.protocol import part_size, unpack
 router = APIRouter(tags=["Private multipart transfers"])
 # Per-process transport limit. Browser scheduler must also cap its pool at four.
 _pool = asyncio.Semaphore(4)
+_BODY_IDLE_SECONDS = 90
 
 
 @router.put(
@@ -54,13 +56,18 @@ async def put_part(
             raise DomainError("CONTENT_LENGTH_REQUIRED", "请提供准确的分片字节数", 411) from None
         if length != expected:
             raise DomainError("UPLOAD_SIZE_MISMATCH", "分片大小与授权不符", 422)
+        _, deadline = _limits()
         data = bytearray()
         try:
-            async with asyncio.timeout(90):
-                async for chunk in request.stream():
-                    if len(data) + len(chunk) > expected:
-                        raise DomainError("UPLOAD_SIZE_MISMATCH", "分片实际大小超出授权", 422)
-                    data.extend(chunk)
+            async with asyncio.timeout(deadline):
+                loop = asyncio.get_running_loop()
+                async with asyncio.timeout(_BODY_IDLE_SECONDS) as idle:
+                    async for chunk in request.stream():
+                        if len(data) + len(chunk) > expected:
+                            raise DomainError("UPLOAD_SIZE_MISMATCH", "分片实际大小超出授权", 422)
+                        if chunk:
+                            data.extend(chunk)
+                            idle.reschedule(loop.time() + _BODY_IDLE_SECONDS)
                 if len(data) != expected:
                     raise DomainError("UPLOAD_SIZE_MISMATCH", "分片未传输完整", 422)
                 if part_number == 1:

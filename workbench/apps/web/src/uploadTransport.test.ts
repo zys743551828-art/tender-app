@@ -179,6 +179,59 @@ it("分片ACK丢失后重新观察并跳过已被存储接收的片，不重传�
   expect(new Set(server.put).size).toBe(6);
   expect(server.completes).toHaveLength(1);
 });
+
+it.each([
+  [
+    "application/json",
+    JSON.stringify({
+      code: "UPLOAD_INTERRUPTED",
+      message: "synthetic-private-ticket",
+      details: { url: "synthetic-private-ticket" },
+      retryable: true,
+    }),
+    "UPLOAD_INTERRUPTED",
+  ],
+  [
+    "application/json",
+    JSON.stringify({ code: "SYNTHETIC_PRIVATE_TICKET" }),
+    "UPLOAD_TRANSFER_FAILED",
+  ],
+  [
+    "text/html",
+    "<html>synthetic-private-ticket</html>",
+    "UPLOAD_TRANSFER_FAILED",
+  ],
+])(
+  "reports only known transfer codes from %s errors",
+  async (type, body, code) => {
+    backend();
+    const observe = window.fetch;
+    vi.stubGlobal("fetch", (url: string, options?: RequestInit) =>
+      options?.method === "PUT"
+        ? Promise.resolve(
+            new Response(body, {
+              status: 408,
+              headers: { "Content-Type": type },
+            }),
+          )
+        : observe(url, options),
+    );
+    const failure = await transferUpload({
+      file,
+      initialGrant: base,
+      digest: "a".repeat(64),
+      key: "complete",
+      onProgress: vi.fn(),
+    }).catch((error: unknown) => error);
+    expect(failure).toMatchObject({
+      status: 408,
+      code,
+      retryable: code === "UPLOAD_INTERRUPTED",
+      details: undefined,
+    });
+    expect(String(failure).toLowerCase()).not.toContain("synthetic");
+  },
+);
 it("完成受理失响应跨刷新原key/If-Match/body重放，且不再次传分片", async () => {
   const server = backend({ loseComplete: true });
   await expect(
