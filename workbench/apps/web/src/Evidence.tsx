@@ -13,7 +13,7 @@ import type {
 } from "./contracts";
 import { PdfPreview } from "./PdfPreview";
 import { SourceSurface } from "./SourceSurface";
-import { api, objectFetch, parseNames, roleNames } from "./api";
+import { api, objectFetch, parseNames, roleNames, sha256Hex } from "./api";
 import { Badge, ErrorNotice, Icon, Loading } from "./components";
 import { contentClues } from "./contentClues";
 import { EvidenceSearch } from "./EvidenceSearch";
@@ -35,7 +35,9 @@ export function Evidence({
   const [evidenceRecord, setEvidence] = useState<DocumentEvidenceView | null>(
     null,
   );
-  const [grantRecord, setGrant] = useState<DownloadGrant | null>(null);
+  const [grantRecord, setGrant] = useState<
+    (DownloadGrant & { attempt: number }) | null
+  >(null);
   const evidence =
     evidenceRecord?.document_version_id === document.id ? evidenceRecord : null;
   const grant = grantRecord?.artifact_id === document.id ? grantRecord : null;
@@ -43,18 +45,16 @@ export function Evidence({
   const [page, setPage] = useState(initialPage);
   const [pageCount, setPageCount] = useState(0);
   const [downloading, setDownloading] = useState(false);
-  const [errorAction, setErrorAction] = useState<"reload" | "download">(
-    "reload",
-  );
+  const [downloadError, setDownloadError] = useState<unknown>(null);
   const [view, setView] = useState<"original" | "text">("original");
   const closeButton = useRef<HTMLButtonElement>(null);
   const request = useRef(0);
-  const downloadRequest = useRef(0);
   const downloadActive = useRef(false);
-  const downloadWorking = useRef(false);
+  const downloadController = useRef<AbortController | null>(null);
   const invalidate = useCallback(() => {
     request.current++;
-    downloadRequest.current++;
+    downloadController.current?.abort();
+    downloadController.current = null;
     downloadActive.current = false;
   }, []);
   const close = useCallback(() => {
@@ -64,7 +64,6 @@ export function Evidence({
   const load = useCallback(async () => {
     const current = ++request.current;
     setError(null);
-    setErrorAction("reload");
     const results = await Promise.allSettled([
       api<DocumentEvidenceView>(`/documents/${document.id}/evidence`),
       api<DownloadGrant>(`/artifacts/${document.id}/download`),
@@ -82,39 +81,49 @@ export function Evidence({
     } else setError(results[0].reason);
     if (results[1].status === "fulfilled") {
       const value = results[1].value.data;
-      if (value.artifact_id === document.id) setGrant(value);
+      if (value.artifact_id === document.id)
+        setGrant({ ...value, attempt: current });
       else
         setError(new Error("原件访问地址的文件身份不一致，未打开其他文件。"));
     } else setError(results[1].reason);
   }, [document.id]);
   async function downloadOriginal() {
-    if (!downloadActive.current || downloadWorking.current) return;
-    downloadWorking.current = true;
-    const ticket = ++downloadRequest.current;
-    const current = () =>
-      downloadActive.current && ticket === downloadRequest.current;
+    if (!downloadActive.current || downloadController.current) return;
+    const controller = new AbortController();
+    downloadController.current = controller;
     setDownloading(true);
-    setError(null);
-    setErrorAction("download");
+    setDownloadError(null);
     try {
       const { data } = await api<DownloadGrant>(
         `/artifacts/${document.id}/download`,
       );
-      if (!current()) return;
+      if (controller.signal.aborted) return;
       if (data.artifact_id !== document.id)
         throw new Error("原件下载身份不一致，未下载其他文件。");
-      const response = await objectFetch(data.download_url);
-      if (!current()) return;
+      const response = await objectFetch(data.download_url, {
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
       if (!response.ok)
         throw new Error(
           `原件取回失败（${response.status}）。已保存的原件仍保留，请重试取件。`,
         );
-      const blob = await response.blob();
-      if (!current()) return;
-      const url = URL.createObjectURL(blob);
+      const bytes = await response.arrayBuffer();
+      if (controller.signal.aborted) return;
+      if (
+        bytes.byteLength !== document.byte_size ||
+        (await sha256Hex(bytes)) !== document.sha256
+      )
+        throw new Error(
+          "取回字节与本版本的原件摘要或大小不一致，未保存文件。请重试取件。",
+        );
+      if (controller.signal.aborted) return;
+      const url = URL.createObjectURL(
+        new Blob([bytes], { type: document.media_type }),
+      );
       const link = window.document.createElement("a");
       link.href = url;
-      link.download = data.filename;
+      link.download = document.filename;
       link.style.display = "none";
       try {
         window.document.body.appendChild(link);
@@ -124,18 +133,18 @@ export function Evidence({
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     } catch (failure) {
-      if (current()) setError(failure);
+      if (!controller.signal.aborted) setDownloadError(failure);
     } finally {
-      if (current()) {
-        downloadWorking.current = false;
+      if (!controller.signal.aborted) {
+        downloadController.current = null;
         setDownloading(false);
       }
     }
   }
   useEffect(() => {
     downloadActive.current = true;
-    downloadWorking.current = false;
     setDownloading(false);
+    setDownloadError(null);
     setPage(initialPage);
     setPageCount(0);
     setView("original");
@@ -316,11 +325,11 @@ export function Evidence({
           <div className="evidence-error">
             <ErrorNotice
               error={error}
-              onRetry={() =>
-                errorAction === "download"
-                  ? void downloadOriginal()
-                  : void load().catch(setError)
-              }
+              onRetry={() => void load().catch(setError)}
+            />
+            <ErrorNotice
+              error={downloadError}
+              onRetry={() => void downloadOriginal()}
             />
           </div>
           {evidence?.gaps.length ? (
@@ -378,15 +387,16 @@ export function Evidence({
               {isPdf && grant ? (
                 <>
                   <PdfPreview
+                    key={grant.attempt}
                     url={grant.download_url}
+                    expectedSha256={document.sha256}
                     filename={document.filename}
                     page={page}
                     onPageCount={setPageCount}
                     onRefresh={() => void load().catch(setError)}
                   />
                   <p className="preview-hint">
-                    定位到物理页 {page}
-                    。当前显示真实整页，不绘制未经验证的坐标高亮。扫描及空白页也可切换查看。
+                    所选物理页 {page}。扫描页和空白页均按原件页序显示。
                   </p>
                 </>
               ) : (

@@ -5,7 +5,7 @@ import type {
   RenderTask,
 } from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
-import { objectFetch } from "./api";
+import { objectFetch, sha256Hex } from "./api";
 import { ErrorNotice, Loading } from "./components";
 
 export function PdfPreview({
@@ -44,16 +44,14 @@ export function PdfPreview({
           `原页读取失败（${response.status}）。请刷新原件访问地址后重试。`,
         );
       const buffer = await response.arrayBuffer();
-      if (expectedSha256 !== undefined) {
-        const digest = await crypto.subtle.digest("SHA-256", buffer);
-        const hex = Array.from(new Uint8Array(digest), (byte) =>
-          byte.toString(16).padStart(2, "0"),
-        ).join("");
-        if (hex !== expectedSha256)
-          throw new Error(
-            "原件字节与固定版本摘要不一致，未显示其他文件的物理页。",
-          );
-      }
+      if (!active) return;
+      if (
+        expectedSha256 !== undefined &&
+        (await sha256Hex(buffer)) !== expectedSha256
+      )
+        throw new Error(
+          "原件字节与固定版本摘要不一致，未显示其他文件的物理页。",
+        );
       if (!active) return;
       const data = new Uint8Array(buffer);
       // Use PDF.js's own compatibility build for the supported browser baseline.

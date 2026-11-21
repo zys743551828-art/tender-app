@@ -377,6 +377,63 @@ try {
       lastPage = page;
       await localRequests(page);
       await page.goto(origin);
+      if (width === 1440 && theme === "light") {
+        const syntheticUrl = origin + "/synthetic.pdf";
+        const changed = pdf.replace("240 days", "241 days");
+        assert(
+          changed !== pdf &&
+            Buffer.byteLength(changed) === Buffer.byteLength(pdf),
+          "same-size PDF fixture",
+        );
+        let reads = 0;
+        await page.route(syntheticUrl, (route) => {
+          reads++;
+          return route.fulfill({
+            contentType: "application/pdf",
+            body: reads % 2 ? changed : pdf,
+          });
+        });
+        await page.getByRole("button", { name: "直接打开原件" }).click();
+        const failure = page.locator(".original-view").getByRole("alert");
+        await failure
+          .getByText(/与固定版本摘要不一致/)
+          .waitFor({ timeout: 5000 });
+        assert(
+          !(await page.locator(".original-view canvas").isVisible()),
+          "Mismatch must not display a page",
+        );
+        await failure.getByRole("button", { name: "重试" }).click();
+        await page.locator(".original-view canvas:visible").waitFor();
+        assert(
+          reads === 2,
+          "One original request per preview attempt, including retry with the same URL",
+        );
+        let saved = 0;
+        page.on("download", () => saved++);
+        await page.getByRole("button", { name: "下载资料原件" }).click();
+        const downloadError = page
+          .locator(".evidence-error")
+          .getByRole("alert");
+        await downloadError.getByText(/本版本的原件摘要或大小不一致/).waitFor();
+        assert(saved === 0, "Mismatched bytes must not be saved");
+        const [download] = await Promise.all([
+          page.waitForEvent("download"),
+          downloadError.getByRole("button", { name: "重试" }).click(),
+        ]);
+        assert(
+          hash(await fs.readFile(await download.path())) === hash(pdf) &&
+            reads === 4,
+          "Retry must save the exact original with a single read",
+        );
+        receipt.original_byte_verification = {
+          rejected_same_size_change: true,
+          recovered_with_same_url: true,
+          download_matches_registered_sha256: true,
+          object_reads: reads,
+        };
+        await page.getByRole("button", { name: "关闭原件" }).click();
+        await page.unroute(syntheticUrl);
+      }
       await page.getByLabel("外观主题").selectOption(theme);
       const body = page.getByRole("textbox", { name: "正文草稿" });
       await body.fill("保持正文与光标上下文。");

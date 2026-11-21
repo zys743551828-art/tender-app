@@ -158,14 +158,19 @@ export async function api<T>(
   };
 }
 
-export async function fileSha256(file: File) {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    await file.arrayBuffer(),
-  );
+export async function sha256Hex(bytes: ArrayBuffer) {
+  if (!crypto.subtle)
+    throw new Error(
+      "当前连接无法核验文件摘要，请用 HTTPS 或本机地址打开后重试。",
+    );
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");
+}
+
+export async function fileSha256(file: File) {
+  return sha256Hex(await file.arrayBuffer());
 }
 
 export const roleNames: Record<string, string> = {
