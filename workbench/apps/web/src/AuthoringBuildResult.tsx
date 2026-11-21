@@ -243,9 +243,11 @@ export function AuthoringBuildResult({
               >
                 {output.state === "succeeded"
                   ? "此格式生成成功"
-                  : output.state === "failed"
-                    ? "此格式生成失败"
-                    : "此格式正在生成"}
+                  : op?.state === "cancelled"
+                    ? "任务已取消，未生成此格式"
+                    : output.state === "failed" || terminal
+                      ? "此格式生成失败"
+                      : "此格式正在生成"}
               </Badge>
               {output.gaps.map((gap, index) => (
                 <p className="small-note" key={index}>

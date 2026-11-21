@@ -131,8 +131,9 @@ def queue_build(env, follow_up="none"):
     return build, message, manifest
 
 
-def test_actual_registered_export_engine_closes_db_then_publishes_verified_PAGE(
-    environment, monkeypatch
+@pytest.mark.parametrize("complete_coverage", [True, False])
+def test_actual_export_publishes_outputs_and_binds_only_verified_correspondence(
+    environment, monkeypatch, complete_coverage
 ):
     from apps.worker import engine, export_handlers
 
@@ -161,11 +162,16 @@ def test_actual_registered_export_engine_closes_db_then_publishes_verified_PAGE(
     assert computed["render_coverage"] == "complete", computed
     assert computed["conversion_chain"]["page_count"] >= 2
     assert all(p["footer_matches"] for p in computed["render_correspondence"]["pages"])
+    if not complete_coverage:
+        computed["render_coverage"] = "partial"
+        next(o for o in computed["outputs"] if o["format"] == "pdf")["gaps"].append(
+            "PAGE_CORRESPONDENCE_UNVERIFIED"
+        )
     assert engine.finish(message, lease, computed)
     assert engine.acquire(message) is None
     with connection() as c:
         outputs = c.execute(
-            "SELECT format,state,document_version_id FROM build_outputs WHERE build_id=%s ORDER BY format",
+            "SELECT format,state,document_version_id,gaps FROM build_outputs WHERE build_id=%s ORDER BY format",
             (build,),
         ).fetchall()
         assert len(outputs) == 2 and all(o["state"] == "succeeded" for o in outputs)
@@ -173,7 +179,13 @@ def test_actual_registered_export_engine_closes_db_then_publishes_verified_PAGE(
             "SELECT r.* FROM document_relations r JOIN build_outputs b ON b.document_version_id=r.document_version_id WHERE b.build_id=%s AND b.format='pdf'",
             (build,),
         ).fetchone()
-        assert relation["verification"] == "verified" and relation["kind"] == "controlled_render"
+        if complete_coverage:
+            assert relation["verification"] == "verified" and relation["kind"] == "controlled_render"
+        else:
+            assert relation is None
+            assert "PAGE_CORRESPONDENCE_UNVERIFIED" in next(
+                o["gaps"] for o in outputs if o["format"] == "pdf"
+            )
         assert (
             c.execute(
                 "SELECT current_body_id FROM bid_profiles WHERE bid_id=%s", (env["bid"],)

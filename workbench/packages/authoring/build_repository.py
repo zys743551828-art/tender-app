@@ -505,16 +505,12 @@ def publish_build(c, bid, build_id, computed, actor=None):
                 Jsonb(output["gaps"]),
             ),
         )
-    if "pdf" in versions and "docx" in versions:
+    # Partial coverage still yields downloadable previews. The relation confers
+    # verified correspondence and is only valid when the render established it.
+    if computed.get("render_coverage") == "complete" and {"pdf", "docx"} <= versions.keys():
         c.execute(
-            "INSERT INTO document_relations(bid_id,document_version_id,source_document_version_id,kind,verification,evidence_ids) VALUES(%s,%s,%s,'controlled_render',%s,%s)",
-            (
-                bid,
-                versions["pdf"],
-                versions["docx"],
-                "verified" if computed.get("render_coverage") == "complete" else "unverified",
-                [],
-            ),
+            "INSERT INTO document_relations(bid_id,document_version_id,source_document_version_id,kind,verification,evidence_ids) VALUES(%s,%s,%s,'controlled_render','verified',%s)",
+            (bid, versions["pdf"], versions["docx"], []),
         )
     audit(
         c,

@@ -3,6 +3,8 @@
 from contextlib import contextmanager
 from uuid import UUID
 
+import pytest
+
 from apps.api import authoring, history_routes
 from apps.api.export_openapi import implemented_openapi
 from apps.api.main import app
@@ -63,6 +65,10 @@ class Rows:
 class BuildReadFixture:
     """Controlled immutable DB observations; executes actual list/detail projections."""
 
+    def __init__(self, state="running", outputs=()):
+        self.state = state
+        self.outputs = outputs
+
     def execute(self, sql, params=()):
         if sql.startswith("SET TRANSACTION"):
             return Rows([])
@@ -80,6 +86,7 @@ class BuildReadFixture:
                         "snapshot_digest": "a" * 64,
                         "input_digest": "b" * 64,
                         "operation_kind": "build",
+                        "operation_state": self.state,
                         "manifest": {
                             "writer_kind": "generated_rich/3",
                             "snapshot_digest": "a" * 64,
@@ -93,7 +100,7 @@ class BuildReadFixture:
                 ]
             )
         if "FROM build_outputs" in sql:
-            return Rows([])
+            return Rows(self.outputs)
         if "FROM audit_entries" in sql:
             return Rows([])
         raise AssertionError(sql)
@@ -117,3 +124,18 @@ def test_list_and_single_build_share_exact_frozen_identity_and_layout(monkeypatc
     assert listed["identity"]["request"]["pagination_mode"] == "chapter_start_new_page"
     assert listed["layout"]["state"] == "pending"
     assert listed["layout"]["page_count"] is None
+
+
+@pytest.mark.parametrize("state", ["failed", "cancelled"])
+def test_terminal_build_only_fails_formats_without_a_published_output(state):
+    published = {
+        "format": "docx",
+        "state": "succeeded",
+        "document_version_id": identity(9),
+        "gaps": [],
+    }
+    view = history_routes.build_view(BuildReadFixture(state, [published]), identity(1))
+    assert view["outputs"] == [
+        published | {"document_version_id": str(identity(9))},
+        {"format": "pdf", "state": "failed", "document_version_id": None, "gaps": []},
+    ]

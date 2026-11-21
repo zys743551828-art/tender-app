@@ -51,7 +51,7 @@ def build_view(c, build_id):
         c,
         """SELECT b.*,i.draft_snapshot_id,i.manifest,s.draft_id,
         s.revision AS draft_revision,s.digest AS snapshot_digest,
-        o.input_digest,o.kind AS operation_kind
+        o.input_digest,o.kind AS operation_kind,o.state AS operation_state
         FROM builds b JOIN build_inputs i ON i.id=b.input_id AND i.bid_id=b.bid_id
         JOIN draft_snapshots s ON s.id=i.draft_snapshot_id AND s.bid_id=b.bid_id
         JOIN operations o ON o.id=b.operation_id AND o.bid_id=b.bid_id WHERE b.id=%s""",
@@ -62,9 +62,12 @@ def build_view(c, build_id):
         (build_id,),
     ).fetchall()
     by_format = {item["format"]: dict(item) for item in outputs}
+    missing_state = (
+        "failed" if row["operation_state"] in {"failed", "cancelled", "succeeded"} else "pending"
+    )
     for fmt in list(dict.fromkeys(["docx"] + row["manifest"]["formats"])):
         by_format.setdefault(
-            fmt, {"format": fmt, "state": "pending", "document_version_id": None, "gaps": []}
+            fmt, {"format": fmt, "state": missing_state, "document_version_id": None, "gaps": []}
         )
     value = clean(
         {
