@@ -7,7 +7,7 @@ from uuid import UUID
 
 from psycopg.types.json import Jsonb
 
-from packages.authoring import format_bindings, snapshot_structure, templates
+from packages.authoring import format_bindings, snapshot_structure, technical_outline, templates
 from packages.authoring.content import empty_content
 from packages.authoring.repository import (
     append_section,
@@ -161,7 +161,7 @@ def view(c, bid, draft):
     )
 
 
-def preview(c, bid, draft, actor, body, condition, *, prospective=None):
+def preview(c, bid, draft, actor, body, condition, *, prospective=None, outline=None):
     from packages.authoring.exact_sources import assert_ordinary_edit
 
     row = lock_draft(c, bid, draft)
@@ -172,7 +172,21 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
     templates.ensure_defaults(c, actor)
     state, contents = load(c, bid, draft)
     if prospective is None:
-        result = mutate(state["nodes"], contents, body["changes"])
+        if outline is None:
+            changes = body["changes"]
+            if any(
+                technical_outline.is_outline_key(change.get("client_key", "")) for change in changes
+            ):
+                raise DomainError(
+                    "TECHNICAL_OUTLINE_PREVIEW_REQUIRED",
+                    "请按当前依据重新创建技术标大纲预览。",
+                    409,
+                )
+        else:
+            changes = technical_outline.build_changes(
+                state, contents, body["chapter_keys"], outline
+            )
+        result = mutate(state["nodes"], contents, changes)
         after = deepcopy(state) | {"nodes": result["nodes"]}
         if result["copied_from"] and "word_import_sources" in after["metadata"]:
             from packages.authoring.docx_import_sources import extend_import_copies
@@ -195,6 +209,11 @@ def preview(c, bid, draft, actor, body, condition, *, prospective=None):
             "created_ids": created,
         }
     )
+    if outline is not None:
+        payload["technical_outline"] = {
+            "basis": outline.basis,
+            "suggested_digest": sha(outline.suggested),
+        }
     if len(json.dumps(payload, ensure_ascii=False).encode()) > 16 * 1024 * 1024:
         raise DomainError("AUTHORING_STRUCTURE_TOO_LARGE", "结构预览完整内容超过16MiB，未截断", 422)
     deleted = [
@@ -305,6 +324,14 @@ def resolve(c, bid, action, actor, command_id, decision, condition):
             or sha({"state": state, "contents": contents}) != p["before_digest"]
         ):
             raise DomainError("DRAFT_REVISION_CONFLICT", "当前正文或结构已变化，请重新预览", 412)
+        if p.get("technical_outline") is not None:
+            technical_outline.verify_apply(c, bid, p["technical_outline"])
+        elif any(technical_outline.is_outline_key(key) for key in p["created_ids"]):
+            raise DomainError(
+                "TECHNICAL_OUTLINE_PREVIEW_REQUIRED",
+                "旧版大纲没有服务端固定依据。请放弃并重新预览。",
+                409,
+            )
         if (
             context(c, bid) != p["context"]
             or validate_use(c, bid, p["after"], p["contents"]) != p["authority"]

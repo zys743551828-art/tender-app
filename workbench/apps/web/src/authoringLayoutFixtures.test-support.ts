@@ -289,6 +289,25 @@ export function authoringLayoutFixture(baseUrl = window.location.href) {
       };
       return response(tree);
     }
+    const layoutSection = draft.sections.find(
+      (section) =>
+        route ===
+        `/bids/${scope.bidId}/drafts/${scope.draftId}/sections/${section.id}/technical-authoring-layout`,
+    );
+    if (layoutSection)
+      return response({
+        bid_id: scope.bidId,
+        draft_id: draft.id,
+        section_id: layoutSection.id,
+        snapshot_id: draft.snapshot_id,
+        draft_revision: draft.revision,
+        section_revision: layoutSection.revision,
+        state: "layout_review_required",
+        unsupported_reasons: [],
+        plan_state: "none",
+        section_plan_revision: null,
+        ordinary_structure_protected: false,
+      });
     if (route.startsWith("/sections/")) {
       const section = sections.find((item) => route === `/sections/${item.id}`);
       if (section) return response(section);

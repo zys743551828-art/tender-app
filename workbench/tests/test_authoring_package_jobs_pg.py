@@ -26,6 +26,7 @@ from authoring_package_job_fixtures import (
     queued,
     validate_wire,
 )
+from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from test_authoring_package_inputs_pg import add_new_parse, mutate_authority
@@ -962,3 +963,212 @@ def test_closed_project_runner_notifies_original_terminal_once(queued, publicati
         ).fetchall()
         assert [n["payload"]["state"] for n in notices] == [expected]
     assert len(w["calls"]) == calls
+
+
+def test_current_fee_quote_guards_native_reservation_without_new_effect_on_replay(case):
+    w = case
+    base = f"/api/v1/bids/{w['bid']}/task-definitions/{w['template']['id']}"
+    quoted = w["client"].get(base + "/authoring-fee-quote")
+    assert quoted.status_code == 200, quoted.text
+    price = quoted.json()
+    assert price["definition_version_id"] == w["template"]["version_id"]
+    assert price["template_etag"] == w["template_response"].headers["etag"]
+    assert price["reserved_minor"] > 0
+    assert price["estimate_not_provider_spend_cap"] is True
+
+    def send(price_id, limit, key=None):
+        return w["client"].post(
+            base + "/runs",
+            json={
+                "rerun": False,
+                "authoring_fee": {"price_version_id": price_id, "max_reserved_minor": limit},
+            },
+            headers=headers(w, key=key, etag=price["template_etag"]),
+        )
+
+    mismatch = send(str(uuid4()), price["reserved_minor"])
+    assert mismatch.status_code == 409, mismatch.text
+    assert mismatch.json()["code"] == "AUTHORING_PACKAGE_PRICE_CHANGED"
+    limited = send(price["price_version_id"], price["reserved_minor"] - 1)
+    assert limited.status_code == 409, limited.text
+    assert limited.json()["code"] == "AUTHORING_PACKAGE_FEE_LIMIT"
+    with connection() as c:
+        assert not c.execute(
+            "SELECT 1 FROM design.task_runs WHERE bid_id=%s", (w["bid"],)
+        ).fetchone()
+    assert w["calls"] == []
+
+    key = uuid4().hex
+    accepted = send(price["price_version_id"], price["reserved_minor"], key=key)
+    assert accepted.status_code == 202, accepted.text
+    job_id = accepted.json()["frozen_manifest"]["assistant_job_id"]
+    with connection() as c:
+        held = c.execute(
+            "SELECT reserved_minor, price_id, state FROM design.assistant_budget_reservations "
+            "WHERE job_id=%s",
+            (job_id,),
+        ).fetchone()
+    assert held["reserved_minor"] == price["reserved_minor"]
+    assert str(held["price_id"]) == price["price_version_id"]
+    assert held["state"] == "held"
+    # Reopening the historical receipt does not reserve another fee even if the
+    # advisory request cap no longer matches current pricing.
+    replayed = send(str(uuid4()), 0, key=key)
+    assert replayed.status_code == 202 and replayed.json() == accepted.json()
+    assert w["calls"] == []
+
+
+def test_exact_chapter_template_directory_is_read_only_and_labels_old_draft(case):
+    w = case
+    base = f"/api/v1/bids/{w['bid']}"
+    target = w["input_body"]["target_section"]
+    draft = base + "/drafts/" + target["draft_id"]
+    path = f"{draft}/sections/{target['section_id']}/technical-authoring-templates"
+    client = w["client"]
+    bid = client.get(base)
+    generic = client.post(
+        base + "/task-definitions",
+        json={
+            "name": "同章普通合成模板",
+            "task_kind": "chapter_suggestion",
+            "instructions": "仅验证普通模板不会被误列入固定输入目录",
+            "section_id": target["section_id"],
+        },
+        headers=headers(w, etag=bid.headers["etag"]),
+    )
+    assert generic.status_code == 201, generic.text
+
+    def counts():
+        with connection() as c:
+            return c.execute(
+                """SELECT
+                (SELECT count(*) FROM design.commands) AS commands,
+                (SELECT count(*) FROM design.audit_entries) AS audits,
+                (SELECT count(*) FROM design.task_runs) AS runs,
+                (SELECT count(*) FROM design.operations) AS operations,
+                (SELECT count(*) FROM design.model_calls) AS model_calls,
+                (SELECT count(*) FROM design.authoring_package_inputs) AS inputs"""
+            ).fetchone()
+
+    before = counts()
+    response = client.get(path)
+    assert response.status_code == 200, response.text
+    page = response.json()
+    assert {value.strip() for value in response.headers["cache-control"].split(",")} == {
+        "private",
+        "no-store",
+    }
+    assert page["available"] and not page["has_more"]
+    assert page["bid_id"] == w["bid"] and page["draft_id"] == target["draft_id"]
+    assert page["section_id"] == target["section_id"]
+    assert page["observed_snapshot_id"] == target["snapshot_id"]
+    [item] = page["items"]
+    template = w["template"]
+    assert item == {
+        "template_id": template["id"],
+        "template_version_id": template["version_id"],
+        "template_revision": template["revision"],
+        "template_digest": template["digest"],
+        "name": template["configuration"]["name"],
+        "paused": False,
+        "input_id": w["fixed"]["manifest"]["id"],
+        "input_digest": w["fixed"]["digest"],
+        "input_snapshot_id": target["snapshot_id"],
+        "input_draft_revision": target["base_draft_revision"],
+        "input_section_revision": target["base_section_revision"],
+        "bound_to_observed_chapter": True,
+    }
+    with TestClient(client.app, base_url=str(client.base_url)) as anonymous:
+        assert anonymous.get(path).status_code == 401
+    assert client.get(path, params={"include": "instructions"}).status_code == 422
+    assert client.get(path.replace(target["section_id"], str(uuid4()))).status_code == 404
+    assert client.get(path.replace(w["bid"], str(uuid4()))).status_code == 404
+    assert counts() == before and w["calls"] == []
+
+    added = client.post(
+        draft + "/sections",
+        json={"title": "合成后续章节"},
+        headers=headers(w, etag=client.get(draft).headers["etag"]),
+    )
+    assert added.status_code == 201, added.text
+    before = counts()
+    shifted = client.get(path)
+    assert shifted.status_code == 200, shifted.text
+    later = shifted.json()
+    assert later["observed_draft_revision"] == page["observed_draft_revision"] + 1
+    assert later["observed_snapshot_id"] != page["observed_snapshot_id"]
+    assert later["items"] == [{**item, "bound_to_observed_chapter": False}]
+    sibling = client.get(path.replace(target["section_id"], added.json()["section_id"]))
+    assert sibling.status_code == 200 and sibling.json()["items"] == []
+    assert sibling.json()["available"] is True
+    assert counts() == before and w["calls"] == []
+
+
+@pytest.mark.parametrize("finish_mode", ["published", "reconciliation_required"])
+def test_chapter_template_run_directory_reports_native_state_without_launch(queued, finish_mode):
+    w = queued
+    target = w["input_body"]["target_section"]
+    base = f"/api/v1/bids/{w['bid']}/drafts/{target['draft_id']}/sections/{target['section_id']}"
+    root = base + "/technical-authoring-templates"
+    version = w["template"]["version_id"]
+    path = f"{root}/{version}/runs"
+    client = w["client"]
+
+    def counts():
+        with connection() as c:
+            return c.execute(
+                """SELECT
+                (SELECT count(*) FROM design.commands) AS commands,
+                (SELECT count(*) FROM design.audit_entries) AS audits,
+                (SELECT count(*) FROM design.task_runs) AS runs,
+                (SELECT count(*) FROM design.operations) AS operations,
+                (SELECT count(*) FROM design.model_calls) AS calls"""
+            ).fetchone()
+
+    def observe(stage, route=path):
+        before = counts()
+        response = client.get(route)
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert {value.strip() for value in response.headers["cache-control"].split(",")} == {
+            "private",
+            "no-store",
+        }
+        assert page["bid_id"] == w["bid"] and page["draft_id"] == target["draft_id"]
+        assert page["section_id"] == target["section_id"]
+        assert page["template_id"] == w["template"]["id"]
+        assert page["input_id"] == w["fixed"]["manifest"]["id"]
+        assert page["input_digest"] == w["fixed"]["digest"]
+        assert page["available"] and not page["has_more"]
+        if stage is None:
+            assert page["items"] == []
+        else:
+            assert page["template_version_id"] == version
+            [item] = page["items"]
+            assert set(item) == {"run_id", "recorded_at", "stage"}
+            assert item["run_id"] == w["task"]["id"] and item["stage"] == stage
+        assert counts() == before
+        return page
+
+    observe("queued")
+    assert w["calls"] == []
+    assert client.get(f"{root}/{uuid4()}/runs").status_code == 404
+    if finish_mode == "reconciliation_required":
+        w["mode"] = "timeout"
+        engine.handle(w["message"])
+        observe("reconciliation_required")
+    else:
+        engine.handle(w["message"])
+        observe("awaiting_publication")
+        coordinator.tick([w["job_id"]])
+        observe("candidate_published")
+    assert len(w["calls"]) == 1
+
+    # The original identity remains readable; a subsequent exact template
+    # revision must not adopt or inherit its historical runs.
+    change_template(w, name="同章当前模板的新版本")
+    newer = observe(None, f"{root}/{w['template']['version_id']}/runs")
+    assert newer["template_version_id"] != version
+    assert newer["template_digest"] == w["template"]["digest"]
+    observe("candidate_published" if finish_mode == "published" else finish_mode)
+    assert len(w["calls"]) == 1

@@ -12,12 +12,14 @@ export function PdfPreview({
   url,
   filename,
   page,
+  expectedSha256,
   onPageCount,
   onRefresh,
 }: {
   url: string;
   filename: string;
   page: number;
+  expectedSha256?: string;
   onPageCount: (count: number) => void;
   onRefresh: () => void;
 }) {
@@ -41,7 +43,19 @@ export function PdfPreview({
         throw new Error(
           `原页读取失败（${response.status}）。请刷新原件访问地址后重试。`,
         );
-      const data = new Uint8Array(await response.arrayBuffer());
+      const buffer = await response.arrayBuffer();
+      if (expectedSha256 !== undefined) {
+        const digest = await crypto.subtle.digest("SHA-256", buffer);
+        const hex = Array.from(new Uint8Array(digest), (byte) =>
+          byte.toString(16).padStart(2, "0"),
+        ).join("");
+        if (hex !== expectedSha256)
+          throw new Error(
+            "原件字节与固定版本摘要不一致，未显示其他文件的物理页。",
+          );
+      }
+      if (!active) return;
+      const data = new Uint8Array(buffer);
       // Use PDF.js's own compatibility build for the supported browser baseline.
       const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -69,12 +83,12 @@ export function PdfPreview({
       controller.abort();
       if (loadingTask) void loadingTask.destroy();
     };
-  }, [url, onPageCount]);
+  }, [url, onPageCount, expectedSha256]);
   useEffect(() => {
     const element = container.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) =>
-      setWidth(Math.max(100, entry.contentRect.width - 32)),
+      setWidth(Math.max(1, entry.contentRect.width)),
     );
     observer.observe(element);
     return () => observer.disconnect();

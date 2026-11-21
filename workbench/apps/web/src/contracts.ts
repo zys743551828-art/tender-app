@@ -3909,6 +3909,85 @@ export type PackageRuleCorrectionEvidenceDetail = {
   };
 };
 
+export type TechnicalOutlineRequest = {
+  base_draft_revision: number;
+  basis: OutlineBasis;
+  chapter_keys: ("overview" | "method" | "schedule" | "quality" | "safety")[];
+};
+
+export type TechnicalChapterTemplatePage = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  observed_snapshot_id: string;
+  observed_draft_revision: number;
+  observed_section_revision: number;
+  available: boolean;
+  has_more: boolean;
+  items: TechnicalChapterTemplateItem[];
+};
+
+export type TechnicalChapterRunPage = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  template_id: string;
+  template_version_id: string;
+  template_digest: string;
+  input_id: string;
+  input_digest: string;
+  available: boolean;
+  has_more: boolean;
+  items: TechnicalChapterRunItem[];
+};
+
+export type TechnicalChapterLayoutView = {
+  bid_id: string;
+  draft_id: string;
+  section_id: string;
+  snapshot_id: string;
+  draft_revision: number;
+  section_revision: number;
+  state:
+    | "plain_draft"
+    | "structured_layout_rechecked"
+    | "layout_review_required"
+    | "layout_basis_changed"
+    | "structure_not_supported";
+  unsupported_reasons: (
+    | "saved_chapter_plans"
+    | "bound_project_format"
+    | "word_import_sources"
+  )[];
+  plan_state:
+    | "none"
+    | "requires_fixed_evidence"
+    | "not_configured"
+    | "target_stale";
+  section_plan_revision: number | null;
+  ordinary_structure_protected: boolean;
+};
+
+export type HistoricalCandidateTrace = {
+  protocol: "authoring-historical-candidate-trace/1";
+  bid_id: string;
+  action_id: string;
+  action_digest: string;
+  candidate_digest: string;
+  snapshot_id: string;
+  snapshot_digest: string;
+  section_revision_id: string;
+  qualification_digest: string;
+  node: HistoricalCandidateNode;
+  citations: HistoricalCandidateCitation[];
+  historic_only: true;
+  original_bytes_reverified: false;
+  current_effectivity_verified: false;
+  content_correctness_certified: false;
+  publication_authorized: false;
+  trace_digest: string;
+};
+
 export type AuthoringGenerationBatchCreateRequest = {
   base_draft_revision: number;
   price_version_id: string;
@@ -7163,6 +7242,7 @@ export type TemplateVersionView = {
 
 export type RunRequest = {
   rerun?: boolean;
+  authoring_fee?: AuthoringFeeApproval | null;
 };
 
 export type TaskAuthoringResult = {
@@ -9988,6 +10068,61 @@ export type PackageRuleCorrection_RuleBand = {
   evidence_ids: string[];
 };
 
+export type OutlineBasis = {
+  target: OutlinePackageReference;
+  authority: OutlinePackageReference;
+  inventory: OutlineInventoryReference;
+};
+
+export type TechnicalChapterTemplateItem = {
+  template_id: string;
+  template_version_id: string;
+  template_revision: number;
+  template_digest: string;
+  name: string;
+  paused: boolean;
+  input_id: string;
+  input_digest: string;
+  input_snapshot_id: string;
+  input_draft_revision: number;
+  input_section_revision: number;
+  bound_to_observed_chapter: boolean;
+};
+
+export type TechnicalChapterRunItem = {
+  run_id: string;
+  recorded_at: string;
+  stage:
+    | "queued"
+    | "running"
+    | "cancel_requested"
+    | "awaiting_publication"
+    | "candidate_published"
+    | "failed"
+    | "cancelled"
+    | "superseded"
+    | "reconciliation_required"
+    | "unverified";
+};
+
+export type HistoricalCandidateNode = {
+  node_id: string;
+  node_type: "heading" | "paragraph";
+  before_digest: string;
+  after_digest: string;
+};
+
+export type HistoricalCandidateCitation = {
+  evidence_id: string;
+  document_version_id: string;
+  parse_run_id: string;
+  physical_page: number;
+  evidence_digest: string;
+  source_id: string;
+  source_revision: number;
+  memberships: HistoricalCandidateMembership[];
+};
+
 export type AuthoringGenerationJson =
   | null
   | boolean
@@ -10753,6 +10888,11 @@ export type TemplateSnapshotConfig = {
   definition: TemplateRequest;
   paused: boolean;
   formal_decisions_allowed: false;
+};
+
+export type AuthoringFeeApproval = {
+  price_version_id: string;
+  max_reserved_minor: number;
 };
 
 export type TaskKindView = {
@@ -11869,6 +12009,24 @@ export type PackageRuleCorrection_RuleScope = {
   description: string;
 };
 
+export type OutlinePackageReference = {
+  package_id: string;
+  revision_id: string;
+  digest: string;
+};
+
+export type OutlineInventoryReference = {
+  id: string;
+  digest: string;
+};
+
+export type HistoricalCandidateMembership = {
+  role: "authority" | "target";
+  package_id: string;
+  revision_id: string;
+  manifest_digest: string;
+};
+
 export type PackageScopeReview_Scope = {
   bid_id: PackageScopeReview_Id;
   package_id: PackageScopeReview_Id;
@@ -12842,6 +13000,9 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/drafts",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}",
   "PATCH /api/v1/bids/{bid_id}/drafts/{draft_id}",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-templates/{version_id}/runs",
+  "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/technical-authoring-layout",
   "GET /api/v1/sections/{section_id}",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/sections",
   "GET /api/v1/bids/{bid_id}/draft-snapshots/{snapshot_id}",
@@ -12855,6 +13016,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/authoring/exact-revision-capabilities",
   "GET /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-qualification",
   "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/exact-qualification",
+  "GET /api/v1/bids/{bid_id}/authoring/section-revisions/{revision_id}/candidate-source-trace",
   "GET /api/v1/authoring/exact-text-edit-capabilities",
   "GET /api/v1/authoring/exact-marked-text-edit-capabilities",
   "POST /api/v1/bids/{bid_id}/authoring/drafts/{draft_id}/exact-text-edits",
@@ -12956,6 +13118,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/packages/{package_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/manifest",
+  "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/technical-authoring-handoff",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/evidence",
   "POST /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
   "GET /api/v1/bids/{bid_id}/packages/{package_id}/revisions/{revision_id}/requirement-inventories/{inventory_id}/frozen-review-inputs",
@@ -13100,6 +13263,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/bids/{bid_id}/word-originals/{version_id}",
   "POST /api/v1/bids/{bid_id}/word-originals/{version_id}/retry-conversion",
   "GET /api/v1/bids/{bid_id}/word-materials/{version_id}",
+  "GET /api/v1/bids/{bid_id}/task-definitions/{definition_id}/authoring-fee-quote",
   "GET /api/v1/authoring/generation-batch-capabilities",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches",
@@ -13109,6 +13273,7 @@ export const implementedOperations: readonly string[] = [
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/generation-batches/{batch_id}/resolve",
   "GET /api/v1/bids/{bid_id}/drafts/{draft_id}/structure",
   "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/structure/preview",
+  "POST /api/v1/bids/{bid_id}/drafts/{draft_id}/technical-outline/preview",
   "POST /api/v1/bids/{bid_id}/authoring-structure-actions/{action_id}/resolve",
   "PUT /api/v1/bids/{bid_id}/drafts/{draft_id}/sections/{section_id}/plan",
   "GET /api/v1/authoring/templates",
@@ -13150,6 +13315,7 @@ export const implementedOperations: readonly string[] = [
   "GET /api/v1/technical-scales/{scale_id}",
   "POST /api/v1/technical-scales/{scale_id}/corrections",
   "POST /api/v1/technical-scales/{scale_id}/withdrawals",
+  "POST /api/v1/bids/{bid_id}/builds/{build_id}/technical-docx-check",
   "GET /api/v1/bids/{bid_id}/lifecycle",
   "POST /api/v1/bids/{bid_id}/lifecycle",
   "GET /api/v1/bids/{bid_id}/upload-batches/{batch_id}/closure-state",
@@ -13255,3 +13421,66 @@ export const implementedOperations: readonly string[] = [
 export const ruleConfirmationLimit: number = 500;
 
 export const taskTemplatesContractReady: boolean = true;
+
+export const technicalOutlineWireContract = {
+  request: { $ref: "#/components/schemas/TechnicalOutlineRequest" },
+  schemas: {
+    TechnicalOutlineRequest: {
+      properties: {
+        base_draft_revision: {
+          type: "integer",
+          maximum: 9007199254740991.0,
+          minimum: 1.0,
+          title: "Base Draft Revision",
+        },
+        basis: { $ref: "#/components/schemas/OutlineBasis" },
+        chapter_keys: {
+          items: {
+            type: "string",
+            enum: ["overview", "method", "schedule", "quality", "safety"],
+          },
+          type: "array",
+          maxItems: 5,
+          minItems: 1,
+          title: "Chapter Keys",
+        },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["base_draft_revision", "basis", "chapter_keys"],
+      title: "TechnicalOutlineRequest",
+    },
+    OutlineBasis: {
+      properties: {
+        target: { $ref: "#/components/schemas/OutlinePackageReference" },
+        authority: { $ref: "#/components/schemas/OutlinePackageReference" },
+        inventory: { $ref: "#/components/schemas/OutlineInventoryReference" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["target", "authority", "inventory"],
+      title: "OutlineBasis",
+    },
+    OutlinePackageReference: {
+      properties: {
+        package_id: { type: "string", format: "uuid", title: "Package Id" },
+        revision_id: { type: "string", format: "uuid", title: "Revision Id" },
+        digest: { type: "string", pattern: "^[0-9a-f]{64}$", title: "Digest" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["package_id", "revision_id", "digest"],
+      title: "OutlinePackageReference",
+    },
+    OutlineInventoryReference: {
+      properties: {
+        id: { type: "string", format: "uuid", title: "Id" },
+        digest: { type: "string", pattern: "^[0-9a-f]{64}$", title: "Digest" },
+      },
+      additionalProperties: false,
+      type: "object",
+      required: ["id", "digest"],
+      title: "OutlineInventoryReference",
+    },
+  },
+};

@@ -71,11 +71,11 @@ it("requires explicit full-content acknowledgement, then verifies the saved revi
   await user.click(check);
   await user.click(confirm);
   const link = await screen.findByRole("link", {
-    name: "打开这份正文草稿，核对修订并生成文件",
+    name: "查看本次采纳的固定快照",
   });
   expect(link).toHaveAttribute(
     "href",
-    `/bids/${f.f.bid.id}/authoring?draft=${f.saved.draft_id}`,
+    `/bids/${f.f.bid.id}/authoring?draft=${f.saved.draft_id}&adoption=${f.action.action_id}&snapshot=${f.saved.snapshot_id}&snapshot_digest=${f.saved.snapshot_digest}`,
   );
   expect(f.writes).toHaveLength(1);
   expect(f.onChanged).toHaveBeenCalledOnce();
@@ -99,7 +99,7 @@ it("keeps an accepted save receipt but refuses a mismatched qualification link",
   await screen.findByText(/固定整包采纳的身份、正文修订或原回执不一致/);
   expect(
     screen.queryByRole("link", {
-      name: "打开这份正文草稿，核对修订并生成文件",
+      name: "查看本次采纳的固定快照",
     }),
   ).toBeNull();
   expect(screen.getByText(/服务端已记录采纳/)).toBeVisible();

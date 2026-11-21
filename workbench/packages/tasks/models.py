@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from packages.assistant.generation_batch_contracts import MAX_MINOR
 from packages.tasks.scheduling import Schedule
 
 
@@ -164,8 +165,14 @@ class TemplateVersionView(StrictModel):
     digest: str = Field(pattern="^[0-9a-f]{64}$")
 
 
+class AuthoringFeeApproval(StrictModel):
+    price_version_id: UUID
+    max_reserved_minor: int = Field(strict=True, ge=0, le=MAX_MINOR)
+
+
 class RunRequest(StrictModel):
     rerun: bool = Field(default=False, strict=True)
+    authoring_fee: AuthoringFeeApproval | None = None
 
 
 class TaskAuthoringResult(StrictModel):

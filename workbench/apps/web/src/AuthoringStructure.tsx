@@ -1,9 +1,10 @@
 import { AuthoringTemplateEditor } from "./AuthoringTemplateEditor";
 import { AuthoringFormatBindings } from "./AuthoringFormatBindings";
 import { useEffect, useLayoutEffect, useState, useRef } from "react";
-import { api, type ApiResult } from "./api";
+import { api, supportsApi, type ApiResult } from "./api";
 import type {
   AuthoringTreeView,
+  TechnicalOutlineRequest,
   AuthoringTreeChangeRequest,
   AuthoringStructurePreview,
   AuthoringStylePreview,
@@ -23,6 +24,12 @@ import { ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { AuthoringPlan } from "./AuthoringPlan";
 import { AuthoringChapterTree } from "./AuthoringChapterTree";
+import { TechnicalBidOutline } from "./TechnicalBidOutline";
+import { TechnicalDraftProgress } from "./TechnicalDraftProgress.tsx";
+import {
+  technicalOutlineRequest,
+  type OutlineBasis,
+} from "./technicalBidOutlinePlan";
 import {
   treeMoveKey,
   resolveTreeMove,
@@ -41,6 +48,9 @@ type StructureProps = {
   readOnly?: boolean;
   onChoose: (id: string) => Promise<void>;
   onContinue?: () => void;
+  layoutFocusRequest?: number | null;
+  onLayoutFocusHandled?: (request: number) => void;
+  onPackages?: () => void;
   prepare: () => Promise<ApiResult<DraftView> | null>;
   onChanged: (
     applied?:
@@ -69,6 +79,9 @@ function ScopedAuthoringStructure({
   readOnly = false,
   onChoose,
   onContinue,
+  onPackages,
+  layoutFocusRequest,
+  onLayoutFocusHandled,
   prepare,
   onChanged,
   onBusy,
@@ -277,6 +290,35 @@ function ScopedAuthoringStructure({
         }) satisfies AuthoringTreeChangeRequest,
     );
   }
+  const outlinePath = "/technical-outline/preview";
+  const outlineAvailable = supportsApi("POST", path + outlinePath);
+  function previewOutline(
+    chapters: ReadonlyArray<{
+      key: TechnicalOutlineRequest["chapter_keys"][number];
+    }>,
+    basis: OutlineBasis,
+  ) {
+    if (!valid || locked || tree.error || !outlineAvailable) return;
+    void begin(outlinePath, async (revision, head, current) => {
+      const latest = await api<AuthoringTreeView>(path + "/structure");
+      if (!current()) return undefined;
+      if (
+        latest.data.draft_id !== draftId ||
+        latest.data.draft_revision !== revision ||
+        latest.data.snapshot_id !== head.data.snapshot_id ||
+        latest.etag !== head.etag ||
+        treeMoveKey(latest.data) !== treeMoveKey(valid)
+      ) {
+        void tree.reload();
+        throw new Error("草稿目录已变化，未覆盖现有章节；请重新核对后预览。");
+      }
+      return technicalOutlineRequest(
+        revision,
+        basis,
+        chapters.map(({ key }) => key),
+      );
+    });
+  }
   async function decide(decision: "confirm" | "reject", retry = false) {
     if (!held?.value.action_id && !resolve.pending) return;
     if (working || previewWorking.current) return;
@@ -298,6 +340,8 @@ function ScopedAuthoringStructure({
         )
           return;
       }
+      // The structure action binds the original outline basis on the server.
+      // Retry the same key first; a committed receipt survives later source changes.
       if (!currentScope()) return;
       const r = retry
         ? await resolve.retry<AuthoringStructureResult>()
@@ -368,6 +412,37 @@ function ScopedAuthoringStructure({
             >
               {readOnly ? "查看本章正文" : "继续编写本章"}
             </button>
+          )}
+          {!tree.error &&
+            !tree.loading &&
+            tree.etag &&
+            valid.draft_revision === draftRevision && (
+              <TechnicalDraftProgress
+                key={valid.snapshot_id}
+                bidId={bidId}
+                tree={valid}
+                navigationDisabled={navigationLocked}
+                onOpenSection={onChoose}
+              />
+            )}
+          {outlineAvailable && (
+            <TechnicalBidOutline
+              bidId={bidId}
+              memberId={memberId}
+              draftId={draftId}
+              disabled={locked || !!tree.error || !tree.etag}
+              onPackages={onPackages}
+              tree={
+                !tree.error &&
+                !tree.loading &&
+                valid.draft_revision === draftRevision
+                  ? valid
+                  : null
+              }
+              chapterNavigationDisabled={navigationLocked}
+              onOpenSection={onChoose}
+              onPreview={previewOutline}
+            />
           )}
           <details>
             <summary>新增或调整章节目录</summary>
@@ -543,6 +618,8 @@ function ScopedAuthoringStructure({
             bidId={bidId}
             memberId={memberId}
             disabled={locked}
+            focusRequest={layoutFocusRequest}
+            onFocusHandled={onLayoutFocusHandled}
             onDirectory={(id, matches) =>
               void begin("/directory-template/preview", (r) => ({
                 base_draft_revision: r,
@@ -614,6 +691,16 @@ function ScopedAuthoringStructure({
                 ，确认时仍核对原修订。后续编辑不会被静默覆盖。
               </p>
               <Preview value={held.value} />
+              {Object.keys(held.value.created_ids).some((key) =>
+                /^technical-bid-[a-f0-9]{64}-(?:overview|method|schedule|quality|safety)$/.test(
+                  key,
+                ),
+              ) && (
+                <p className="small-note">
+                  这是空章节建议，不会把依据写入正文或授予生成资格。
+                  应用时服务端复核原包修订和要求清单；若回执丢失，可恢复原命令。结构化草稿先按现有流程核对版式；是否能按已存计划固定编写，还须在本章核对。
+                </p>
+              )}
               <div className="review-shortcuts">
                 <button
                   className="button primary"
@@ -826,6 +913,8 @@ function TemplateSelection({
   bidId,
   memberId,
   disabled,
+  focusRequest,
+  onFocusHandled,
   onDirectory,
   onStyle,
 }: {
@@ -833,6 +922,8 @@ function TemplateSelection({
   bidId: string;
   memberId: string;
   disabled: boolean;
+  focusRequest?: number | null;
+  onFocusHandled?: (request: number) => void;
   onDirectory: (
     id: string,
     matches: { template_key: string; section_id: string }[],
@@ -851,9 +942,26 @@ function TemplateSelection({
           .format_bindings as AuthoringStyleApplyPreview["format_bindings"])
       : [],
   );
+  const templateDetails = useRef<HTMLDetailsElement>(null);
+  const templateHeading = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (focusRequest == null) return;
+    // The outer drawer's initial focus is installed in its layout effect.
+    // Wait for the now-visible nested controls (which can arrive after data).
+    const frame = requestAnimationFrame(() => {
+      const details = templateDetails.current;
+      const heading = templateHeading.current;
+      if (!details || !heading || details.closest("[hidden],[inert]")) return;
+      details.open = true;
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+      onFocusHandled?.(focusRequest);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusRequest, onFocusHandled]);
   return (
-    <details>
-      <summary>目录模板与版式模板 · 分别固定版本</summary>
+    <details id="authoring-layout-templates" ref={templateDetails}>
+      <summary ref={templateHeading}>目录模板与版式模板 · 分别固定版本</summary>
       <TemplateChoice
         kind="outline"
         tree={tree}

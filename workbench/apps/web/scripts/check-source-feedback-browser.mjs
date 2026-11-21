@@ -359,9 +359,18 @@ try {
         exact: true,
       });
       await canvas.waitFor();
-      await page.waitForFunction(
-        () => document.querySelector("canvas")?.width > 100,
-      );
+      await page.waitForFunction(() => {
+        const paper = document.querySelector(".pdf-canvas-container canvas");
+        const container = paper?.parentElement;
+        if (!container || !paper.style.width) return false;
+        const style = window.getComputedStyle(container);
+        const available =
+          container.clientWidth -
+          parseFloat(style.paddingLeft) -
+          parseFloat(style.paddingRight);
+        // The fixture is 612 points wide and the renderer caps its scale at 2.
+        return Math.abs(paper.clientWidth - Math.min(available, 1224)) <= 1;
+      });
       await page.evaluate(() => {
         window.__sourceCanvas = document.querySelector("canvas");
       });

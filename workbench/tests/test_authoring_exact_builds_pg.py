@@ -471,3 +471,41 @@ def test_mixed_snapshot_legacy_chapter_retains_guards_at_build_publish_and_adopt
     unpublished(pending)
     selected = adopt(w, ready, body)
     assert selected.status_code == 409 and selected.json()["code"] == "AUTHORING_SOURCE_STALE"
+
+
+def test_technical_chapter_to_word_advisory_retains_same_artifact_and_no_approval(adopted):
+    """Explicit offline model -> human adoption -> native export -> advisory, no delivery."""
+    w = adopted
+    assert len(w["calls"]) == 1
+    build = start(w)
+    computed = compute(build)
+    publish(build, computed)
+    document = adoption_body(w, build)["member"]["document_version_id"]
+    output = computed["outputs"][0]
+    assert output["format"] == "docx"
+    path = f"/api/v1/bids/{w['bid']}/builds/{build['id']}/technical-docx-check"
+    response = w["client"].post(
+        path,
+        json={
+            "document_version_id": document,
+            "filename": "合成技术标.docx",
+            "prohibited_names": ["来自合成完整整包"],
+        },
+        headers=headers(w),
+    )
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["artifact_sha256"] == output["digest"]
+    assert result["snapshot_id"] == w["saved"]["snapshot_id"]
+    assert result["snapshot_digest"] == w["saved"]["snapshot_digest"]
+    assert result["historical_advisory"] is True
+    assert result["publication_authorized"] is False
+    assert "PROHIBITED_NAME_CONTENT" in result["blocking_codes"]
+    assert "CONTENT_AND_PROJECT_RULE_REVIEW" in result["manual_check_codes"]
+    with connection() as c:
+        assert not package_outputs.admitted(c, w["bid"], document)
+        assert not c.execute(
+            "SELECT 1 FROM design.submission_records WHERE bid_id=%s",
+            (w["bid"],),
+        ).fetchone()
+    assert len(w["calls"]) == 1

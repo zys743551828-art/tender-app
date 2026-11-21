@@ -315,6 +315,18 @@ it("首次请求失响应后刷新，结束项目仍只按原 key 与原包条�
     screen.getByRole("button", { name: "恢复原文件采用请求" }),
   );
   await screen.findByText(/生成文件已采用到投标包/);
+  expect(
+    screen.getByRole("link", { name: "打开本次包修订，继续内部核查" }),
+  ).toHaveAttribute(
+    "href",
+    "/bids/" +
+      scope.bidId +
+      "/packages?package=" +
+      uid(21) +
+      "&revision=" +
+      uid(22),
+  );
+  expect(screen.getByText(/不会自动送审或提交/)).toBeInTheDocument();
   expect(writes).toHaveLength(2);
   expect(writes[1].body).toEqual(writes[0].body);
   expect(new Headers(writes[1].headers).get("Idempotency-Key")).toEqual(
@@ -351,6 +363,9 @@ it.each(["conflict", "foreign_ack"])(
     ).toEqual(request);
     expect(
       screen.queryByText(/生成文件已采用到投标包/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "打开本次包修订，继续内部核查" }),
     ).not.toBeInTheDocument();
     expect(writes).toHaveLength(1);
   },

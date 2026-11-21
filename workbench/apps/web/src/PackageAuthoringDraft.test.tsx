@@ -52,6 +52,29 @@ function transport(lost?: Step, damagedCreate = false) {
           return json(f.input);
         if (path === `${base}/task-definitions/${f.template.id}`)
           return json(f.template, f.template_etag);
+        if (
+          path ===
+          `${base}/task-definitions/${f.template.id}/authoring-fee-quote`
+        ) {
+          expect(url.searchParams.get("template_version")).toBe(
+            f.template.version_id,
+          );
+          // Restoring a saved template may open its read-only quote panel. It
+          // is still unauthorized to send a request that starts a run.
+          return json({
+            protocol: "exact-authoring-fee-quote/1",
+            bid_id: bidId,
+            definition_id: f.template.id,
+            definition_version_id: f.template.version_id,
+            template_etag: f.template_etag,
+            price_version_id: "01010101-1111-4111-8111-000000000001",
+            currency: "CNY",
+            amount_scale: 1000000000,
+            reserved_minor: 1234567890,
+            valid_until: "2099-12-31T00:00:00Z",
+            estimate_not_provider_spend_cap: true,
+          });
+        }
         if (path === `${base}/task-definitions/${f.template.id}/runs`)
           return json({ items: [], has_more: false, next_cursor: null });
         if (path === `${base}/task-definitions/${f.template.id}/schedules`)
@@ -247,7 +270,14 @@ it("recovers a lost template-save ACK from the original revision after the curre
       screen.queryByRole("button", { name: "恢复同一次模板保存结果" }),
     ).not.toBeInTheDocument(),
   );
+  await screen.findByText(/本次最多预留/);
   expect(calls.sent[3]).toEqual(calls.sent[2]);
+  expect(calls.sent.map(({ path }) => path)).toEqual([
+    `${base}/task-definition-drafts`,
+    draftPath,
+    `${draftPath}/save`,
+    `${draftPath}/save`,
+  ]);
   expect(calls.attempts).toEqual({ created: 1, revised: 1, saved: 2 });
   expect(calls.unexpected).toEqual([]);
 });

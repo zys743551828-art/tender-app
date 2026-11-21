@@ -4,7 +4,6 @@ import {
   fireEvent,
   render,
   screen,
-  within,
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -171,15 +170,19 @@ it.each(["moveDisabled", "navigationLocked"] as const)(
 it("500节点及已删除节点，保持原有章/修订/计划文案", () => {
   const nodes = Array.from({ length: 500 }, (_, i) => node(`n${i}`, null, i));
   const view = setup([...nodes, { ...node("deleted"), deleted: true }]);
+  const list = screen.getByRole("list", { name: "当前章节层级" });
+  const items = Array.from(list.children);
+  expect(items).toHaveLength(500);
+  // Keep the accessible list assertion without recomputing every row's role and name.
+  for (const item of items) {
+    expect(item.tagName).toBe("LI");
+    expect(item.querySelector("small")).toHaveTextContent(
+      /修订 1.*未填.*未建计划/,
+    );
+  }
   expect(
-    within(screen.getByRole("list", { name: "当前章节层级" })).getAllByRole(
-      "listitem",
-    ),
-  ).toHaveLength(500);
-  expect(
-    screen.queryByRole("button", { name: "选择移动章节：deleted" }),
+    list.querySelector('button[aria-label="选择移动章节：deleted"]'),
   ).toBeNull();
-  expect(screen.getAllByText(/修订 1.*未填.*未建计划/)).toHaveLength(500);
   expect(view.props.onMove).not.toHaveBeenCalled();
 });
 

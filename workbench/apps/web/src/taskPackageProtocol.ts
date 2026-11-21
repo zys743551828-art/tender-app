@@ -1,3 +1,4 @@
+import type { AuthoringFeeCap } from "./packageAuthoringFeeQuote";
 import { ApiError } from "./api";
 import type { Bid, PackageReviewSelection, RunView } from "./contracts";
 import type {
@@ -68,7 +69,10 @@ export type TaskPackageTriggerCancelExpected = {
 export type TaskPackageCommandRequest = {
   path: string;
   method: "POST" | "PUT";
-  body: TemplateRequest | { rerun: false } | { reason: string };
+  body:
+    | TemplateRequest
+    | { rerun: false; authoring_fee?: AuthoringFeeCap }
+    | { reason: string };
   etag: string;
   expected:
     | TaskPackageTemplateExpected
@@ -988,6 +992,9 @@ const definitiveCodes = new Set([
 ]);
 const authoringRunRefusals = new Set([
   "AUTHORING_PACKAGE_ORIGINAL_JOB_REQUIRED",
+  "AUTHORING_PACKAGE_PRICE_CHANGED",
+  "AUTHORING_PACKAGE_FEE_LIMIT",
+  "AUTHORING_PACKAGE_FEE_CONFIRMATION_REQUIRED",
   "AUTHORING_PACKAGE_RERUN_NOT_SUPPORTED",
   "AUTHORING_PACKAGE_TEMPLATE_CHANGED",
   "AUTHORING_PACKAGE_INPUT_CHANGED",

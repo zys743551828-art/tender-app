@@ -11,7 +11,12 @@ import { captureCommandKey } from "./authoringCaptureCommandProtocol";
 import { knowledgeStorageKey } from "./knowledgeStorage";
 import { setAuth } from "./api";
 import { jsonDigest } from "./editorSchema";
-import type { PackageAuthoringInputRequest } from "./contracts";
+import type {
+  AuthoringWorkContext,
+  BidPackageStoredView,
+  PackageAuthoringInputRequest,
+} from "./contracts";
+import { storeOutlineSelection } from "./technicalOutlineSelection";
 
 const f = captureFixture();
 const props = { memberId: f.memberId, bidId: f.bidId };
@@ -21,13 +26,19 @@ function reply(body: unknown, status = 200) {
     headers: { "Content-Type": "application/json" },
   });
 }
-function transport(mode: "ok" | "lost" | "wrong" = "ok") {
+function transport(
+  mode: "ok" | "lost" | "wrong" = "ok",
+  outlineHead: "current" | "superseded" = "current",
+  chapterHead: "current" | "superseded" = "current",
+) {
   const writes: {
     path: string;
     body: PackageAuthoringInputRequest;
     key: string | null;
   }[] = [];
   const unexpected: string[] = [];
+  const outlineHeadReads: string[] = [];
+  const reads: string[] = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: string, init: RequestInit = {}) => {
@@ -51,6 +62,18 @@ function transport(mode: "ok" | "lost" | "wrong" = "ok") {
         value.digest = await jsonDigest(value.manifest);
         return reply(value, 201);
       }
+      reads.push(url.pathname + url.search);
+      for (const name of ["target", "authority"]) {
+        const exact = f.responses.get(name)!;
+        if (exact.path.split("/revisions/")[0] !== url.pathname) continue;
+        outlineHeadReads.push(url.pathname);
+        const value = structuredClone(f.body<BidPackageStoredView>(name));
+        if (outlineHead === "superseded" && name === "authority") {
+          value.manifest.revision_id = crypto.randomUUID();
+          value.digest = await jsonDigest(value.manifest);
+        }
+        return reply(value);
+      }
       const row = f.bundle.responses.find(
         (row) =>
           row.name !== "saved" &&
@@ -59,6 +82,17 @@ function transport(mode: "ok" | "lost" | "wrong" = "ok") {
             ([key, value]) => url.searchParams.get(key) === String(value),
           ),
       );
+      if (row?.name === "snapshot" && chapterHead === "superseded") {
+        const old = structuredClone(f.snapshot);
+        old.current_observation.draft_head.status = "changed";
+        old.current_observation.draft_head.observed_digest = "a".repeat(64);
+        old.current_observation.draft_head.reason = "EXACT_VALUE_CHANGED";
+        const observed: Partial<AuthoringWorkContext> = { ...old };
+        delete observed.observed_at;
+        delete observed.observation_digest;
+        old.observation_digest = await jsonDigest(observed);
+        return reply(old);
+      }
       if (row) return reply(row.body, row.status);
       unexpected.push(url.pathname + url.search);
       return reply(
@@ -67,7 +101,7 @@ function transport(mode: "ok" | "lost" | "wrong" = "ok") {
       );
     }),
   );
-  return { writes, unexpected };
+  return { writes, unexpected, outlineHeadReads, reads };
 }
 beforeEach(() => {
   sessionStorage.clear();
@@ -89,46 +123,38 @@ function restoreDraft() {
   );
 }
 
-it("requires explicit package, revision, snapshot, node, identity facts and purpose before saving", async () => {
-  const calls = transport(),
-    onSaved = vi.fn(),
-    user = userEvent.setup();
-  render(<AuthoringPackageCapture {...props} onSaved={onSaved} />);
-  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
-  expect(save).toBeDisabled();
-  for (const [label, ref] of [
-    ["目标投标包", f.request.package_context.target],
-    ["招标与补遗依据包", f.request.package_context.authority],
-  ] as const) {
+const outlineScope = { ...props, draftId: f.request.target_section.draft_id };
+function rememberOutline() {
+  const { target, authority, inventory } = f.request.package_context;
+  storeOutlineSelection(outlineScope, {
+    target,
+    authority,
+    inventory: { id: inventory.id, digest: inventory.digest },
+  });
+}
+async function chooseNodeAndFacts(
+  user: ReturnType<typeof userEvent.setup>,
+  fixed = false,
+) {
+  if (fixed) {
+    const select = await screen.findByRole("button", {
+      name: "使用本章已保存版本",
+    });
+    await waitFor(() => expect(select).toBeEnabled());
+    await user.click(select);
+  } else {
     await waitFor(() =>
-      expect(
-        within(screen.getByRole("group", { name: label })).getAllByRole(
-          "option",
-        ),
-      ).toHaveLength(2),
+      expect(screen.getByLabelText("正文快照")).toBeEnabled(),
     );
     await user.selectOptions(
-      screen.getByLabelText(label + "目录"),
-      ref.package_id,
+      screen.getByLabelText("正文快照"),
+      f.request.target_section.snapshot_id,
     );
-    const revision = await within(
-      screen.getByRole("group", { name: label }),
-    ).findByRole("button", { name: /选择第 1 版/ });
-    await user.click(revision);
+    await user.selectOptions(
+      await screen.findByLabelText("快照中的章节"),
+      f.request.target_section.section_id,
+    );
   }
-  await waitFor(() => expect(screen.getByLabelText("需求清单")).toBeEnabled());
-  await user.selectOptions(
-    screen.getByLabelText("需求清单"),
-    f.request.package_context.inventory.id,
-  );
-  await user.selectOptions(
-    screen.getByLabelText("正文快照"),
-    f.request.target_section.snapshot_id,
-  );
-  await user.selectOptions(
-    await screen.findByLabelText("快照中的章节"),
-    f.request.target_section.section_id,
-  );
   await user.selectOptions(
     await screen.findByLabelText("稳定文字节点"),
     f.request.target_section.node_id,
@@ -162,6 +188,40 @@ it("requires explicit package, revision, snapshot, node, identity facts and purp
     screen.getByLabelText("本次用途与理由"),
     f.request.facts.uses[0].reason,
   );
+}
+it("requires explicit package, revision, snapshot, node, identity facts and purpose before saving", async () => {
+  const calls = transport(),
+    onSaved = vi.fn(),
+    user = userEvent.setup();
+  render(<AuthoringPackageCapture {...props} onSaved={onSaved} />);
+  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
+  expect(save).toBeDisabled();
+  for (const [label, ref] of [
+    ["目标投标包", f.request.package_context.target],
+    ["招标与补遗依据包", f.request.package_context.authority],
+  ] as const) {
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("group", { name: label })).getAllByRole(
+          "option",
+        ),
+      ).toHaveLength(2),
+    );
+    await user.selectOptions(
+      screen.getByLabelText(label + "目录"),
+      ref.package_id,
+    );
+    const revision = await within(
+      screen.getByRole("group", { name: label }),
+    ).findByRole("button", { name: /选择第 1 版/ });
+    await user.click(revision);
+  }
+  await waitFor(() => expect(screen.getByLabelText("需求清单")).toBeEnabled());
+  await user.selectOptions(
+    screen.getByLabelText("需求清单"),
+    f.request.package_context.inventory.id,
+  );
+  await chooseNodeAndFacts(user);
   await waitFor(() => expect(save).toBeEnabled());
   expect(calls.writes).toHaveLength(0);
   await user.click(save);
@@ -212,4 +272,191 @@ it("preserves recovery and local input when the ACK belongs to a different actor
   expect(screen.getByLabelText("本次用途与理由")).toHaveValue(
     f.draft.uses[0].reason,
   );
+});
+
+it("does not save a restored input from another chapter in the scoped authoring entry", async () => {
+  restoreDraft();
+  const calls = transport();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={{
+        ...f.request.target_section,
+        section_id: crypto.randomUUID(),
+      }}
+    />,
+  );
+  expect(
+    await screen.findByText(/本章入口只接受当前草稿及当前章节修订/),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "保存这份固定编写输入" }),
+  ).toBeDisabled();
+  expect(calls.writes).toHaveLength(0);
+});
+
+it("brings in the exact checked outline refs only after a click, then requires manual node, facts, and save", async () => {
+  rememberOutline();
+  const calls = transport();
+  const onSaved = vi.fn(),
+    user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+      onSaved={onSaved}
+    />,
+  );
+  const save = screen.getByRole("button", { name: "保存这份固定编写输入" });
+  expect(calls.outlineHeadReads).toEqual([]);
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  const apply = await screen.findByRole("button", {
+    name: "将这组资料填入采集表单",
+  });
+  expect(calls.outlineHeadReads).toEqual(
+    expect.arrayContaining(
+      ["target", "authority"].map(
+        (name) => f.responses.get(name)!.path.split("/revisions/")[0],
+      ),
+    ),
+  );
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  await user.click(apply);
+  expect(await screen.findByLabelText("需求清单")).toHaveValue(
+    f.request.package_context.inventory.id,
+  );
+  expect(screen.queryByLabelText("正文快照")).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("快照中的章节")).not.toBeInTheDocument();
+  expect(calls.reads).toContain(f.responses.get("snapshot")!.path);
+  expect(
+    calls.reads.some((path) => path.includes("work-contexts/choices")),
+  ).toBe(false);
+  expect(calls.reads.some((path) => path.includes("/nodes"))).toBe(false);
+  expect(screen.getByLabelText("事实集")).toHaveValue("");
+  expect(save).toBeDisabled();
+  expect(calls.writes).toEqual([]);
+  await chooseNodeAndFacts(user, true);
+  await waitFor(() => expect(save).toBeEnabled());
+  expect(calls.writes).toEqual([]);
+  await user.click(save);
+  await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+  expect(calls.writes).toHaveLength(1);
+  expect(calls.writes[0].path).toBe(
+    `/api/v1/bids/${f.bidId}/authoring/package-inputs`,
+  );
+  expect(calls.writes[0].body).toMatchObject({
+    package_context: f.request.package_context,
+    target_section: f.request.target_section,
+    facts: { uses: f.request.facts.uses },
+  });
+  expect(calls.unexpected).toEqual([]);
+});
+
+it("does not import stale outline choices or silently substitute a newer authority", async () => {
+  rememberOutline();
+  const calls = transport("ok", "superseded");
+  const user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  await screen.findByText(/原选择已变化或无法核对/);
+  expect(
+    screen.queryByRole("button", { name: "将这组资料填入采集表单" }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("招标与补遗依据包目录")).toHaveValue("");
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not overwrite an existing form and is unavailable in generic capture or a different draft", async () => {
+  rememberOutline();
+  const calls = transport();
+  const generic = render(<AuthoringPackageCapture {...props} />);
+  const verifyLabel = "核对大纲的资料选择";
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  generic.unmount();
+  const other = render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={{
+        ...f.request.target_section,
+        draft_id: crypto.randomUUID(),
+      }}
+    />,
+  );
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  other.unmount();
+  restoreDraft();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  expect(
+    screen.queryByRole("button", { name: verifyLabel }),
+  ).not.toBeInTheDocument();
+  expect(await screen.findByLabelText("本次用途与理由")).toHaveValue(
+    f.draft.uses[0].reason,
+  );
+  expect(calls.outlineHeadReads).toEqual([]);
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not bring in a previously checked selection that was explicitly forgotten", async () => {
+  rememberOutline();
+  const calls = transport();
+  const user = userEvent.setup();
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: "核对大纲的资料选择" }));
+  const apply = await screen.findByRole("button", {
+    name: "将这组资料填入采集表单",
+  });
+  storeOutlineSelection(outlineScope, null);
+  await user.click(apply);
+  expect(screen.getByText(/原会话选择已清除或更改/)).toBeInTheDocument();
+  expect(screen.queryByLabelText("需求清单")).not.toBeInTheDocument();
+  expect(calls.writes).toEqual([]);
+});
+
+it("does not choose, load nodes for, or save an exact snapshot whose draft head has advanced", async () => {
+  const calls = transport("ok", "current", "superseded");
+  render(
+    <AuthoringPackageCapture
+      {...props}
+      targetChapter={f.request.target_section}
+    />,
+  );
+  await screen.findByText(/已保存的草稿不是当前版本/);
+  expect(
+    screen.getByRole("button", { name: "使用本章已保存版本" }),
+  ).toBeDisabled();
+  expect(
+    screen.getByRole("button", { name: "重新核对本章保存版本" }),
+  ).toBeEnabled();
+  expect(
+    screen.getByRole("button", { name: "保存这份固定编写输入" }),
+  ).toBeDisabled();
+  expect(calls.reads).toContain(f.responses.get("snapshot")!.path);
+  expect(
+    calls.reads.some(
+      (path) =>
+        path.includes("work-contexts/choices") || path.includes("/nodes"),
+    ),
+  ).toBe(false);
+  expect(calls.writes).toEqual([]);
 });

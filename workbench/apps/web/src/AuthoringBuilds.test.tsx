@@ -203,7 +203,7 @@ it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改
   expect(screen.getByText("此格式生成成功")).toBeInTheDocument();
   expect(screen.getByText("此格式生成失败")).toBeInTheDocument();
   expect(
-    screen.getAllByRole("button", { name: "下载投标正文（Word）" }),
+    screen.getAllByRole("button", { name: "下载内部预览（Word）" }),
   ).toHaveLength(1);
 });
 it("失响应恢复重试原修订和幂等键，刷新后也不悄悄改用新稿", async () => {

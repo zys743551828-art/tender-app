@@ -52,7 +52,7 @@ def queue(c, bid, actor, template, input_row, command_id):
         "authoring_input_digest": input_row["digest"],
         "max_tokens": 2048,
     }
-    execution_policy = generation.policy()
+    execution_policy = generation.policy_for(input_row)
     semantic = prior_semantic(c, bid, input_row, config["instructions"], sha(execution_policy))
     if semantic:
         if (

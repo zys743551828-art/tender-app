@@ -171,7 +171,7 @@ def prepare_package(c, actor, body, bid, input_id, input_digest):
     Final reserve/dispatch authority is the protected exact job binding in SQL.
     This shared preparation keeps legacy and exact requests in one fee scope.
     """
-    return _prepare(
+    prepared = _prepare(
         c,
         actor,
         body,
@@ -180,6 +180,12 @@ def prepare_package(c, actor, body, bid, input_id, input_digest):
         explicit_send=True,
         package_input=(input_id, input_digest),
     )
+
+    if "reuse_id" not in prepared:
+        from packages.authoring.package_fee_quote import require_admitted_price
+
+        require_admitted_price(c, prepared["price_version_id"])
+    return prepared
 
 
 def _prepare(

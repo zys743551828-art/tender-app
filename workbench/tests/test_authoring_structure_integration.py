@@ -910,9 +910,16 @@ def test_deleted_section_rejects_old_save_generation_and_patch_and_order_bypass(
         )
 
 
-def test_project_format_binding_requires_current_confirmation_and_overrides_enterprise(structured):
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("font_size_halfpoints", 24), ("margin_top_twips", 1200), ("paragraph_after_twips", 240)],
+)
+def test_project_format_binding_requires_current_confirmation_and_overrides_enterprise(
+    structured, field, value
+):
     from psycopg.types.json import Jsonb
 
+    from packages.authoring import structured_docx, technical_candidate_checks
     from packages.authoring.build_repository import freeze_build
     from packages.authoring.snapshot_structure import frozen_authority
     from packages.authoring.structure_repository import resolve, style_preview
@@ -945,8 +952,8 @@ def test_project_format_binding_requires_current_confirmation_and_overrides_ente
         ext = snapshot_content(c, bid, UUID(initial["snapshot_id"]))["authoring_structure"]
         binding = {
             "rule_id": str(rule),
-            "field": "font_size_halfpoints",
-            "value": 24,
+            "field": field,
+            "value": value,
             "source_refs": [ref],
             "reason": "显式人工字段绑定机制，不自动证明原文语义",
         }
@@ -991,10 +998,7 @@ def test_project_format_binding_requires_current_confirmation_and_overrides_ente
         )
         cmd.finish(saved)
         frozen = snapshot_content(c, bid, UUID(saved["snapshot_id"]))
-        assert (
-            frozen["authoring_structure"]["metadata"]["effective_style"]["font_size_halfpoints"]
-            == 24
-        )
+        assert frozen["authoring_structure"]["metadata"]["effective_style"][field] == value
         request = {
             "draft_id": str(draft),
             "draft_revision": 3,
@@ -1008,9 +1012,34 @@ def test_project_format_binding_requires_current_confirmation_and_overrides_ente
         assert (
             frozen_authority(c, bid, frozen["authoring_structure"], frozen["sections"])["format"][
                 "effective_config"
-            ]["font_size_halfpoints"]
-            == 24
+            ][field]
+            == value
         )
+        if field == "margin_top_twips":
+            checker = technical_candidate_checks
+            margins = checker.frozen_page_margins(frozen)
+            assert margins.expected_twips == (("top", value),) and not margins.malformed_basis
+            checked = checker.inspect_candidate_docx(
+                structured_docx.assemble(frozen), filename="合成技术标.docx", page_margins=margins
+            )
+            assert checker.MARGIN_MISMATCH not in checked.blocking_codes
+            assert checker.MARGIN_UNINSPECTABLE not in checked.blocking_codes
+            assert "FORMAT_AND_RENDER_REVIEW" in checked.manual_check_codes
+        elif field in {"font_size_halfpoints", "paragraph_after_twips"}:
+            checker = technical_candidate_checks
+            defaults = checker.frozen_text_defaults(frozen)
+            assert defaults.expected == ((field, value),) and not defaults.malformed_basis
+            checked = checker.inspect_candidate_docx(
+                structured_docx.assemble(frozen), filename="合成技术标.docx", text_defaults=defaults
+            )
+            assert checker.TEXT_DEFAULTS_MISMATCH not in checked.blocking_codes
+            assert checker.TEXT_DEFAULTS_UNINSPECTABLE not in checked.blocking_codes
+            [unbound] = set(checker.TEXT_DEFAULT_CODES) - {field}
+            assert {
+                checker.TEXT_DEFAULT_CODES[field] + "_RAW_MATCH",
+                checker.TEXT_DEFAULT_CODES[unbound] + "_NO_FROZEN_BASIS",
+                "FORMAT_AND_RENDER_REVIEW",
+            } <= set(checked.manual_check_codes)
     with connection() as c:
         append_decision(
             c,

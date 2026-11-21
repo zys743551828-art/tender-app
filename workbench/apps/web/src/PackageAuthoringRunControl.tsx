@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "./api";
+import { useResource } from "./useResource";
+import { generationAmountText } from "./authoringGenerationBudget";
+import { exactAuthoringFeeQuote } from "./packageAuthoringFeeQuote";
 import type { RunView, TaskKindPage, TemplateView } from "./contracts";
 import { ErrorNotice } from "./components";
 import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
@@ -138,7 +141,7 @@ export function PackageAuthoringRunControl({
     command.error.details.new_attempt_authorized === false
       ? command.error.details.task_run_id
       : null;
-  const available =
+  const availableBasis =
     exact &&
     !!current &&
     boundInput &&
@@ -149,6 +152,46 @@ export function PackageAuthoringRunControl({
     !feeUnknown &&
     !priorRequired &&
     (adoptedEtag === null || adoptedEtag === etag);
+  const fees = useResource<unknown>(
+    availableBasis && current
+      ? "/bids/" +
+          bidId +
+          "/task-definitions/" +
+          id +
+          "/authoring-fee-quote?template_version=" +
+          current.version_id
+      : null,
+  );
+  const fee =
+    current && etag && !fees.error && !fees.loading
+      ? exactAuthoringFeeQuote(fees.data, {
+          bidId,
+          definitionId: id,
+          versionId: current.version_id,
+          etag,
+        })
+      : null;
+  const [expiredQuote, setExpiredQuote] = useState<unknown>(null);
+  const expiry = fee ? Date.parse(fee.valid_until) : null;
+  useEffect(() => {
+    if (!fee || expiry === null || expiry <= Date.now()) return;
+    const id = window.setTimeout(
+      () => setExpiredQuote(fees.data),
+      Math.min(expiry - Date.now() + 1, 2_147_483_647),
+    );
+    return () => window.clearTimeout(id);
+  }, [fee, expiry, fees.data]);
+  const expired =
+    expiry !== null && (expiry <= Date.now() || expiredQuote === fees.data);
+  const changedFee =
+    command.error instanceof ApiError &&
+    [
+      "AUTHORING_PACKAGE_PRICE_CHANGED",
+      "AUTHORING_PACKAGE_FEE_LIMIT",
+      "AUTHORING_PACKAGE_FEE_CONFIRMATION_REQUIRED",
+      "ASSISTANT_PRICE_UNAVAILABLE",
+    ].includes(command.error.code);
+  const available = availableBasis && !!fee && !expired && !changedFee;
   function accept(value: RunView | undefined) {
     if (value) {
       setAccepted(value);
@@ -157,14 +200,29 @@ export function PackageAuthoringRunControl({
     }
   }
   async function run() {
-    if (!available || busy || pending || command.conflict || !current || !etag)
+    if (
+      !available ||
+      busy ||
+      pending ||
+      command.conflict ||
+      !current ||
+      !etag ||
+      !fee ||
+      Date.parse(fee.valid_until) <= Date.now()
+    )
       return;
     accept(
       (
         await command.run({
           path: `/bids/${bidId}/task-definitions/${id}/runs`,
           method: "POST",
-          body: { rerun: false },
+          body: {
+            rerun: false,
+            authoring_fee: {
+              price_version_id: fee.price_version_id,
+              max_reserved_minor: fee.reserved_minor,
+            },
+          },
           etag,
           expected: { kind: "authoring_run", template: current },
         })
@@ -229,6 +287,43 @@ export function PackageAuthoringRunControl({
         <p role="status">正在读取已采用的服务器模板基准…</p>
       )}
       <ErrorNotice error={command.error ?? readError ?? capabilityError} />
+      {availableBasis && (
+        <section aria-label="本次手动运行费用">
+          {fees.loading && <p role="status">正在读取本次费用预留上限…</p>}
+          {fee && !expired && !changedFee ? (
+            <p>
+              本次最多预留{" "}
+              <strong>
+                {generationAmountText(fee.reserved_minor)} {fee.currency}
+              </strong>
+              。
+              这是当前定价下的系统预留上限，不是实际费用或模型供应商的账单上限。
+            </p>
+          ) : (
+            !fees.loading && (
+              <p className="notice warning">
+                {expired || changedFee
+                  ? "本次费用基准已失效，请重新读取再明确运行。"
+                  : "未取得与本模板匹配的费用上限，不能启动新模型调用。"}
+              </p>
+            )
+          )}
+          <ErrorNotice error={fees.error} />
+          {!fees.unavailable && (
+            <button
+              type="button"
+              className="text-button"
+              disabled={busy || pending || fees.loading}
+              onClick={() => {
+                if (changedFee) command.clearError();
+                void fees.reloadFresh();
+              }}
+            >
+              重新读取费用上限
+            </button>
+          )}
+        </section>
+      )}
       {exact && (
         <button
           type="button"

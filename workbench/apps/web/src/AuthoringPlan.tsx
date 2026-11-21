@@ -142,6 +142,9 @@ export function AuthoringPlan({
           )}
 
         <p className="small-note">
+          章节计划可用于手工编写。工作台支持固定计划时，只有核验后的要求和原页关联可用于模型；计划正文、预算和待核事实留在工作台。采用正文不会替换计划。
+        </p>
+        <p className="small-note">
           计划修订 {node.plan?.revision ?? 0} ·
           页数为人工预算，不是实际排版页数。
           {node.plan_content_basis_state === "section_changed"

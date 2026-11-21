@@ -16,6 +16,10 @@ import type { SectionView, DraftView } from "./contracts";
 import { setAuth } from "./api";
 afterEach(() => vi.restoreAllMocks());
 
+// The synthetic fixture still verifies snapshot and original-content hashes
+// asynchronously. Observe the actual ready state with a bounded CI allowance.
+const verifiedEditorRead = { timeout: 4_000 };
+
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
@@ -230,10 +234,11 @@ async function setup(mode: Mode = "success") {
       onOpenDraft={vi.fn()}
     />,
   );
-  const begin = await screen.findByRole("button", {
-    name: "修改本章固定来源文字",
-  });
-  await waitFor(() => expect(begin).toBeEnabled());
+  const begin = await waitFor(() => {
+    const ready = screen.getByRole("button", { name: "修改本章固定来源文字" });
+    expect(ready).toBeEnabled();
+    return ready;
+  }, verifiedEditorRead);
   return {
     ordinary,
     section,
@@ -321,10 +326,12 @@ it.each([
       ).toBeDisabled();
       return;
     }
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "修改本章固定来源文字" }),
-      ).toBeEnabled(),
+    await waitFor(
+      () =>
+        expect(
+          screen.getByRole("button", { name: "修改本章固定来源文字" }),
+        ).toBeEnabled(),
+      verifiedEditorRead,
     );
     expect(f.ordinary.state.draft.revision).toBe(3);
     expect(f.section.revision).toBe(3);
@@ -350,4 +357,5 @@ it.each([
       native.parent_section.content.attrs.rule_ids,
     );
   },
+  12_000,
 );

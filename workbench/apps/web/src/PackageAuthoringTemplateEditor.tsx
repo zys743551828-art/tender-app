@@ -10,6 +10,8 @@ import { PackageAuthoringInputDetails } from "./PackageAuthoringInput";
 import { PackageAuthoringInputChooser } from "./PackageAuthoringInputChooser";
 import {
   packageAuthoringScope,
+  matchesFixedAuthoringChapter,
+  type FixedAuthoringChapter,
   type VerifiedAuthoringInput,
 } from "./packageAuthoringInputProtocol";
 import {
@@ -33,7 +35,12 @@ export function PackageAuthoringTemplateEditor({
   initialConfiguration,
   formIdentity,
   external,
-}: TaskTemplateEditorProps) {
+  targetChapter,
+  writesDisabled = false,
+}: TaskTemplateEditorProps & {
+  targetChapter?: FixedAuthoringChapter;
+  writesDisabled?: boolean;
+}) {
   const identity = template?.id ?? "new";
   const formKey =
     knowledgeStorageKey(memberId, bidId) +
@@ -81,6 +88,7 @@ export function PackageAuthoringTemplateEditor({
   const sourceMatches = !fixed || samePackageAuthoringSource(input, initial);
   const exactInput =
     !!verified &&
+    matchesFixedAuthoringChapter(verified, targetChapter) &&
     selected?.authoring_input_id === verified.manifest.id &&
     selected.authoring_input_digest === verified.digest &&
     input.section_id === verified.manifest.selection.target_section.section_id;
@@ -108,9 +116,10 @@ export function PackageAuthoringTemplateEditor({
   } catch {
     /* Editable fields may be incomplete. */
   }
-  const locked = busy || pending || saved;
+  const locked = busy || pending || saved || writesDisabled;
   function select(value: VerifiedAuthoringInput) {
-    if (fixed || locked) return;
+    if (fixed || locked || !matchesFixedAuthoringChapter(value, targetChapter))
+      return;
     setVerified(null);
     setInput((old) => ({
       ...old,
@@ -221,6 +230,7 @@ export function PackageAuthoringTemplateEditor({
           memberId={memberId}
           disabled={locked}
           onSelect={select}
+          targetChapter={targetChapter}
         />
       )}
       {selected && (
@@ -355,7 +365,7 @@ export function PackageAuthoringTemplateEditor({
           上次保存尚未取得可信回执。保留完整原请求、原修订和原键，恢复前不能改变绑定输入。
         </p>
       )}
-      {command.pending && !command.busy && (
+      {command.pending && !command.busy && !targetChapter && (
         <button
           type="button"
           className="button secondary"
@@ -365,6 +375,12 @@ export function PackageAuthoringTemplateEditor({
         >
           恢复原固定整包模板保存结果
         </button>
+      )}
+      {command.pending && !command.busy && targetChapter && (
+        <p className="notice warning">
+          请在“可复用任务 →
+          新建固定整包编写模板”中恢复原请求，避免把其他章节的回执作为本章结果。
+        </p>
       )}
       {command.blocked && (
         <p className="notice error">

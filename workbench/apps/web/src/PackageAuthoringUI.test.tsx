@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { setAuth } from "./api";
 import { PackageAuthoringTemplateEditor } from "./PackageAuthoringTemplateEditor";
+import { TechnicalBidChapter } from "./TechnicalBidChapter";
+import { validateAuthoringInput } from "./packageAuthoringInputProtocol";
 import { PackageAuthoringRunControl } from "./PackageAuthoringRunControl";
 import { AssistantActionCard } from "./AssistantActionCard";
 import { TaskRunCard } from "./TaskRunCard";
@@ -22,6 +24,22 @@ function json(data: unknown, etag?: string, status = 200) {
     },
   });
 }
+const testQuote = {
+  protocol: "exact-authoring-fee-quote/1",
+  price_version_id: "01010101-1111-4111-8111-000000000001",
+  currency: "CNY",
+  amount_scale: 1000000000,
+  reserved_minor: 1234567890,
+  valid_until: "2099-12-31T00:00:00Z",
+  estimate_not_provider_spend_cap: true,
+};
+const quotedRequest = {
+  rerun: false,
+  authoring_fee: {
+    price_version_id: testQuote.price_version_id,
+    max_reserved_minor: testQuote.reserved_minor,
+  },
+};
 function transport({
   state = "published",
   writes,
@@ -51,6 +69,21 @@ function transport({
       if (path === `/api/v1/bids/${currentBid}`)
         return json(selected.bid, selected.bid_etag);
       if (path === "/api/v1/task-kinds") return json(selected.kinds);
+      if (
+        path ===
+        "/api/v1/bids/" +
+          currentBid +
+          "/task-definitions/" +
+          selected.template.id +
+          "/authoring-fee-quote"
+      )
+        return json({
+          ...testQuote,
+          bid_id: currentBid,
+          definition_id: selected.template.id,
+          definition_version_id: selected.template.version_id,
+          template_etag: selected.template_etag,
+        });
       if (path === `/api/v1/bids/${bidId}/authoring/package-inputs`)
         return json(f.input_page);
       if (
@@ -206,10 +239,11 @@ it("validates B2 execution independently from the B1 generation=false capture re
   );
   const run = screen.getByRole("button", { name: "手动生成固定整包章节候选" });
   await waitFor(() => expect(run).toBeEnabled());
+  expect(screen.getByText("1.23456789 CNY")).toBeInTheDocument();
   await userEvent.click(run);
   await waitFor(() => expect(onRun).toHaveBeenCalledWith(f.runs.queued.id));
   expect(calls.sent).toHaveLength(1);
-  expect(JSON.parse(String(calls.sent[0].init.body))).toEqual({ rerun: false });
+  expect(JSON.parse(String(calls.sent[0].init.body))).toEqual(quotedRequest);
   expect(calls.unexpected).toEqual([]);
 });
 it("shows the bound full proposal and concrete changes without a write or legacy source claim", async () => {
@@ -357,6 +391,7 @@ it.each([false, true])(
       name: "手动生成固定整包章节候选",
     });
     await waitFor(() => expect(run).toBeEnabled());
+    expect(screen.getByText("1.23456789 CNY")).toBeInTheDocument();
     await userEvent.click(run);
     await screen.findByText(/本次没有新建调用/);
     expect(run).toBeDisabled();
@@ -376,3 +411,225 @@ it.each([false, true])(
     expect(calls.unexpected).toEqual([]);
   },
 );
+
+it("prepares the selected technical chapter, saves a handoff, and only then permits an explicit exact run", async () => {
+  const verified = await validateAuthoringInput(f.input, bidId);
+  const section = verified.manifest.selection.target_section;
+  const calls = transport({
+    reads: (path) =>
+      path ===
+      `/api/v1/bids/${bidId}/drafts/${section.draft_id}/sections/${section.section_id}/technical-authoring-layout`
+        ? json({
+            bid_id: bidId,
+            draft_id: section.draft_id,
+            section_id: section.section_id,
+            snapshot_id: section.snapshot_id,
+            draft_revision: section.base_draft_revision,
+            section_revision: section.base_section_revision,
+            state: "structured_layout_rechecked",
+            unsupported_reasons: [],
+            plan_state: "none",
+            section_plan_revision: null,
+            ordinary_structure_protected: false,
+          })
+        : undefined,
+    writes: (path) =>
+      path.endsWith("/task-definitions")
+        ? json(f.template, f.template_etag, 201)
+        : json(f.runs.queued, undefined, 202),
+  });
+  const draft = {
+    id: section.draft_id,
+    bid_id: bidId,
+    revision: section.base_draft_revision,
+    snapshot_id: section.snapshot_id,
+    sections: [
+      {
+        id: section.section_id,
+        revision: section.base_section_revision,
+        title: "合成技术章节",
+        ordinal: 0,
+        rule_ids: [],
+        save_state: "saved" as const,
+      },
+    ],
+  };
+  const user = userEvent.setup();
+  const chapter = render(
+    <TechnicalBidChapter
+      bidId={bidId}
+      memberId={memberId}
+      draft={draft}
+      sectionId={section.section_id}
+      disabled={false}
+      onPreparing={vi.fn()}
+      onOpenLayoutTemplates={vi.fn()}
+      prepare={vi
+        .fn()
+        .mockResolvedValue({ data: draft, etag: '"trusted-draft-head"' })}
+    />,
+  );
+  await user.click(
+    screen.getByRole("button", { name: "准备生成本章技术标候选" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "读取固定输入目录" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: /选择这份编写输入/ }),
+  );
+  await user.type(
+    screen.getByLabelText("固定整包编写模板名称"),
+    f.template.configuration.name,
+  );
+  await user.type(
+    screen.getByLabelText("固定整包编写要求"),
+    f.template.configuration.instructions,
+  );
+  const save = screen.getByRole("button", {
+    name: "保存固定整包编写模板，不运行",
+  });
+  await waitFor(() => expect(save).toBeEnabled());
+  expect(calls.sent).toHaveLength(0);
+  await user.click(save);
+  expect(
+    await screen.findByRole("link", { name: "打开本次模板，核对后手动运行" }),
+  ).toHaveAttribute(
+    "href",
+    "/bids/" + bidId + "/tasks?task_template=" + f.template.id,
+  );
+  expect(calls.sent).toHaveLength(1);
+  expect(
+    screen.getByRole("button", { name: "重新准备一份本章候选" }),
+  ).toBeEnabled();
+  expect(calls.sent[0].path.endsWith("/task-definitions")).toBe(true);
+  expect(JSON.parse(String(calls.sent[0].init.body))).toEqual(
+    f.template.configuration,
+  );
+  chapter.unmount();
+  const onRun = vi.fn();
+  render(
+    <PackageAuthoringRunControl
+      bidId={bidId}
+      memberId={memberId}
+      id={f.template.id}
+      template={f.template}
+      etag={f.template_etag}
+      kinds={f.kinds}
+      disabled={false}
+      onRun={onRun}
+      onChanged={vi.fn()}
+    />,
+  );
+  const run = screen.getByRole("button", { name: "手动生成固定整包章节候选" });
+  await waitFor(() => expect(run).toBeEnabled());
+  expect(screen.getByText("1.23456789 CNY")).toBeInTheDocument();
+  expect(calls.sent).toHaveLength(1);
+  await user.click(run);
+  await waitFor(() => expect(onRun).toHaveBeenCalledWith(f.runs.queued.id));
+  expect(calls.sent[1].path).toBe(
+    "/api/v1/bids/" + bidId + "/task-definitions/" + f.template.id + "/runs",
+  );
+  expect(JSON.parse(String(calls.sent[1].init.body))).toEqual(quotedRequest);
+  expect(calls.unexpected).toEqual([]);
+});
+
+it("keeps new model calls disabled when the requested template fee cannot be verified", async () => {
+  const calls = transport({
+    reads: (path) =>
+      path.endsWith("/authoring-fee-quote")
+        ? json({
+            ...testQuote,
+            bid_id: bidId,
+            definition_id: f.template.id,
+            definition_version_id: crypto.randomUUID(),
+            template_etag: f.template_etag,
+          })
+        : undefined,
+  });
+  render(
+    <PackageAuthoringRunControl
+      bidId={bidId}
+      memberId={memberId}
+      id={f.template.id}
+      template={f.template}
+      etag={f.template_etag}
+      kinds={f.kinds}
+      disabled={false}
+      onRun={vi.fn()}
+      onChanged={vi.fn()}
+    />,
+  );
+  await screen.findByText(/未取得与本模板匹配的费用上限/);
+  const run = screen.getByRole("button", { name: "手动生成固定整包章节候选" });
+  expect(run).toBeDisabled();
+  await userEvent.click(run);
+  expect(calls.sent).toEqual([]);
+  expect(calls.unexpected).toEqual([]);
+});
+
+it("requires a new fee read and manual click after the server rejects a stale cap", async () => {
+  const newPrice = crypto.randomUUID();
+  let quotes = 0;
+  let launches = 0;
+  const calls = transport({
+    reads: (path) =>
+      path.endsWith("/authoring-fee-quote")
+        ? json({
+            ...testQuote,
+            bid_id: bidId,
+            definition_id: f.template.id,
+            definition_version_id: f.template.version_id,
+            template_etag: f.template_etag,
+            ...(++quotes > 1
+              ? { price_version_id: newPrice, reserved_minor: 2000000000 }
+              : {}),
+          })
+        : undefined,
+    writes: () =>
+      ++launches === 1
+        ? json(
+            {
+              code: "AUTHORING_PACKAGE_PRICE_CHANGED",
+              message: "价格已更新",
+              retryable: false,
+            },
+            undefined,
+            409,
+          )
+        : json(f.runs.queued, undefined, 202),
+  });
+  const user = userEvent.setup();
+  const onRun = vi.fn();
+  render(
+    <PackageAuthoringRunControl
+      bidId={bidId}
+      memberId={memberId}
+      id={f.template.id}
+      template={f.template}
+      etag={f.template_etag}
+      kinds={f.kinds}
+      disabled={false}
+      onRun={onRun}
+      onChanged={vi.fn()}
+    />,
+  );
+  const run = screen.getByRole("button", { name: "手动生成固定整包章节候选" });
+  await waitFor(() => expect(run).toBeEnabled());
+  await user.click(run);
+  await screen.findByText(/本次费用基准已失效/);
+  expect(run).toBeDisabled();
+  expect(onRun).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "重新读取费用上限" }));
+  await screen.findByText("2 CNY");
+  expect(calls.sent).toHaveLength(1);
+  await user.click(run);
+  await waitFor(() => expect(onRun).toHaveBeenCalledOnce());
+  expect(JSON.parse(String(calls.sent[1].init.body))).toEqual({
+    rerun: false,
+    authoring_fee: {
+      price_version_id: newPrice,
+      max_reserved_minor: 2000000000,
+    },
+  });
+});

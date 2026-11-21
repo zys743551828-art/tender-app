@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { api } from "./api";
@@ -287,7 +288,12 @@ it("实交阶段原记录使用同一冻结绑定和动作入口", async () => {
       }}
     />,
   );
-  await screen.findByRole("region", { name: "实交关联核查的当前下一步" });
+  const nextActions = await screen.findByRole("region", {
+    name: "实交关联核查的当前下一步",
+  });
+  await within(nextActions).findByRole("button", {
+    name: "核对实交所关联的关键问题（1项）",
+  });
   expect(vi.mocked(api).mock.calls.map(([path]) => path)).toEqual([
     `/submissions/${record.id}`,
     `/bids/${record.bid_id}/package-next-actions/${m.review_run!.id}?expected_input_digest=${m.review_run!.input_digest}`,

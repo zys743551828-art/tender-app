@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { supportsApi } from "./api";
+import { TechnicalDocxCheck } from "./TechnicalDocxCheck";
 import type { AuthoringSnapshot, BuildView, Operation } from "./contracts";
 import { ArtifactActions } from "./ArtifactActions";
 import { generatedFilename } from "./artifactNames";
@@ -226,6 +228,13 @@ export function AuthoringBuildResult({
                 : "尚无格式输出；受理不表示文件已生成。"}
             </p>
           )}
+          {verified.outputs.some(
+            (item) => item.state === "succeeded" && item.document_version_id,
+          ) && (
+            <p className="small-note">
+              以下文件仅供内部预览与编辑。生成或核查成功不等于正式候选件已获批准。
+            </p>
+          )}
           {verified.outputs.map((output) => (
             <div className="build-output" key={output.format}>
               <strong>{output.format === "docx" ? "Word" : "PDF"}</strong>
@@ -256,11 +265,37 @@ export function AuthoringBuildResult({
                         ? "application/pdf"
                         : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     }
-                    downloadLabel={`下载投标正文（${output.format === "docx" ? "Word" : "PDF"}）`}
+                    downloadLabel={`下载内部预览（${output.format === "docx" ? "Word" : "PDF"}）`}
                     suggestedFilename={generatedFilename(
                       projectTitle,
                       verified.draft_snapshot_id,
                       output.format,
+                    )}
+                  />
+                )}
+              {op?.state === "succeeded" &&
+                output.format === "docx" &&
+                output.state === "succeeded" &&
+                output.document_version_id &&
+                supportsApi(
+                  "POST",
+                  "/bids/" +
+                    bidId +
+                    "/builds/" +
+                    verified.id +
+                    "/technical-docx-check",
+                ) && (
+                  <TechnicalDocxCheck
+                    key={output.document_version_id}
+                    bidId={bidId}
+                    buildId={verified.id}
+                    documentId={output.document_version_id}
+                    snapshotId={verified.draft_snapshot_id}
+                    snapshotDigest={verified.identity.snapshot_digest}
+                    suggestedFilename={generatedFilename(
+                      projectTitle,
+                      verified.draft_snapshot_id,
+                      "docx",
                     )}
                   />
                 )}

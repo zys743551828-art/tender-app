@@ -4,6 +4,7 @@ from fastapi.routing import APIRoute
 
 
 def mount(app):
+    from apps.api.authoring_fee_routes import router as authoring_fee
     from apps.api.authoring_generation_batches import router as authoring_generation_batches
     from apps.api.authoring_rich import router as authoring_rich
     from apps.api.authoring_structure import router as authoring_structure
@@ -27,9 +28,11 @@ def mount(app):
     from apps.api.package_unified_report_routes import router as unified_report
     from apps.api.scoring_routes import router as scoring
     from apps.api.task_draft_routes import router as task_drafts
+    from apps.api.technical_candidate_routes import router as technical_candidates
     from apps.api.technical_scale_routes import router as technical_scale
 
     routers = (
+        authoring_fee,
         authoring_generation_batches,
         authoring_structure,
         authoring_rich,
@@ -37,6 +40,7 @@ def mount(app):
         package_rule_corrections,
         package_submissions,
         technical_scale,
+        technical_candidates,
         lifecycle,
         task_drafts,
         governance,
