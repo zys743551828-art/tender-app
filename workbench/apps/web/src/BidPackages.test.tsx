@@ -243,13 +243,17 @@ it("未明确选解析时保存未知原件，多用途逗号输入保留，未�
   await user.click(
     await screen.findByRole("checkbox", { name: "选择 技术册.pdf 版本 1" }),
   );
-  const purposes = screen.getByRole("combobox", { name: "用途 doc" });
+  const purposes = screen.getByRole("combobox", {
+    name: "用途（逗号分隔）· 技术册.pdf 版本 1",
+  });
   await user.clear(purposes);
   await user.type(purposes, "资格,商务,自定义");
   expect(purposes).toHaveValue("资格,商务,自定义");
-  expect(screen.getByRole("combobox", { name: "解析记录 doc" })).toHaveValue(
-    "",
-  );
+  expect(
+    screen.getByRole("combobox", {
+      name: "明确选择解析记录 · 技术册.pdf 版本 1",
+    }),
+  ).toHaveValue("");
   expect(
     screen.getByRole("button", { name: "添加明确逻辑范围" }),
   ).toBeDisabled();
@@ -282,7 +286,9 @@ it("用户明确选精确解析后添加物理页范围，失败解析不能选�
     ).toBeDisabled(),
   );
   await user.selectOptions(
-    screen.getByRole("combobox", { name: "解析记录 doc" }),
+    screen.getByRole("combobox", {
+      name: "明确选择解析记录 · 技术册.pdf 版本 1",
+    }),
     "run-explicit",
   );
   await user.click(screen.getByRole("button", { name: "添加明确逻辑范围" }));
@@ -412,7 +418,9 @@ it("CAS冲突保留本地选择，读取核对最新记录后才允许继续，�
   await user.click(
     await screen.findByRole("button", { name: "基于当前修订编辑" }),
   );
-  const purposes = await screen.findByRole("combobox", { name: "用途 doc" });
+  const purposes = await screen.findByRole("combobox", {
+    name: "用途（逗号分隔）· 技术册.pdf 版本 1",
+  });
   await user.clear(purposes);
   await user.type(purposes, "商务,资格");
   await user.click(screen.getByRole("button", { name: "保存新修订" }));
@@ -460,16 +468,20 @@ it("切换类型使用独立目录，跨项目文档不显示，项目切换清�
   await user.click(
     await screen.findByRole("checkbox", { name: "选择 招标文件.pdf 版本 1" }),
   );
-  expect(screen.getByRole("combobox", { name: "用途 doc" })).toHaveValue(
-    "要求依据",
-  );
+  expect(
+    screen.getByRole("combobox", {
+      name: "用途（逗号分隔）· 招标文件.pdf 版本 1",
+    }),
+  ).toHaveValue("要求依据");
   expect(requests).toContain(
     "/api/v1/bids/bid/package-documents?kind=authority&limit=20",
   );
   rerender(<BidPackages bidId="other" />);
   await waitFor(() =>
     expect(
-      screen.queryByRole("combobox", { name: "用途 doc" }),
+      screen.queryByRole("combobox", {
+        name: "用途（逗号分隔）· 招标文件.pdf 版本 1",
+      }),
     ).not.toBeInTheDocument(),
   );
   expect(
@@ -543,7 +555,9 @@ it("未决A操作冻结body和key，无法编辑B覆盖；刷新恢复A原操作
   );
   await user.click(screen.getByRole("button", { name: "保存新资料包" }));
   await screen.findByText(/暂时无法连接服务/);
-  const purposes = screen.getByRole("combobox", { name: "用途 doc" });
+  const purposes = screen.getByRole("combobox", {
+    name: "用途（逗号分隔）· 技术册.pdf 版本 1",
+  });
   expect(purposes).toBeDisabled();
   await user.type(purposes, "报价");
   expect(purposes).toHaveValue("技术");
@@ -556,9 +570,11 @@ it("未决A操作冻结body和key，无法编辑B覆盖；刷新恢复A原操作
   expect(original.body).toEqual(writes[0].body);
   unmount();
   render(<BidPackages bidId="bid" memberId="actor" />);
-  expect(screen.getByRole("combobox", { name: "用途 doc" })).toHaveValue(
-    "技术",
-  );
+  expect(
+    await screen.findByRole("combobox", {
+      name: "用途（逗号分隔）· 技术册.pdf 版本 1",
+    }),
+  ).toHaveValue("技术");
   await user.click(screen.getByRole("button", { name: "核对并重试原保存" }));
   await waitFor(() => expect(writes).toHaveLength(2));
   expect(writes[1].body).toEqual(writes[0].body);
@@ -653,7 +669,11 @@ it("未知结果重试遇登录失效仍保留原命令，不解除编辑锁", a
   await screen.findByText(/暂时无法连接服务/);
   await user.click(screen.getByRole("button", { name: "核对并重试原保存" }));
   await screen.findByText("请重新登录");
-  expect(screen.getByRole("combobox", { name: "用途 doc" })).toBeDisabled();
+  expect(
+    screen.getByRole("combobox", {
+      name: "用途（逗号分隔）· 技术册.pdf 版本 1",
+    }),
+  ).toBeDisabled();
   expect(screen.getByRole("button", { name: "清空选择并新建" })).toBeDisabled();
   expect(writes[1].headers.get("Idempotency-Key")).toBe(
     writes[0].headers.get("Idempotency-Key"),

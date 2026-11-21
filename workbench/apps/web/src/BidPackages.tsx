@@ -1077,6 +1077,9 @@ function MemberEditor({
   onRemove: () => void;
 }) {
   const [purposeText, setPurposeText] = useState(member.purposes.join(","));
+  const documentLabel = document
+    ? `${document.filename} 版本 ${document.file_revision}`
+    : `已选原件 ${member.document_version_id.slice(0, 8)}`;
   const parses = useDirectory<BidPackageParsePage>(
     `/bids/${bidId}/package-documents/${member.document_version_id}/parses?limit=20`,
   );
@@ -1088,7 +1091,7 @@ function MemberEditor({
   return (
     <>
       <fieldset disabled={disabled}>
-        <legend>{document?.filename ?? "已选原件（版本身份见详情）"}</legend>
+        <legend>{documentLabel}</legend>
         <button className="text-button" onClick={onRemove}>
           从本次选择移除
         </button>
@@ -1096,7 +1099,7 @@ function MemberEditor({
           用途（逗号分隔）
           <input
             list={`package-purposes-${member.document_version_id}`}
-            aria-label={`用途 ${member.document_version_id}`}
+            aria-label={`用途（逗号分隔）· ${documentLabel}`}
             value={purposeText}
             onChange={(e) => {
               setPurposeText(e.target.value);
@@ -1135,7 +1138,7 @@ function MemberEditor({
         <label>
           明确选择解析记录
           <select
-            aria-label={`解析记录 ${member.document_version_id}`}
+            aria-label={`明确选择解析记录 · ${documentLabel}`}
             value={member.parse_run_id ?? ""}
             onChange={(e) =>
               onChange({ parse_run_id: e.target.value || undefined, parts: [] })
