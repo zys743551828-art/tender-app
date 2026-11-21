@@ -241,7 +241,8 @@ export function AuthoringPanel({
                   支持文字、标题、列表、章节目录、编写计划与分别固定的目录和版式模板。
                   {richCapabilities.data
                     ? "表格和已登记图片可在章节中明确插入、编辑和保存；构建会分别记录实际目录、章页范围及未核验项。"
-                    : "表格和图片编辑能力尚未就绪，请保留原稿。"}
+                    : !richCapabilities.loading &&
+                      "表格和图片编辑能力尚未就绪，请保留原稿。"}
                   {supportsApi("GET", "/authoring/word-import-capabilities")
                     ? "外部Word须先预览结构和转换损失，再明确追加新章节；实际支持范围见Word导入区。"
                     : "外部Word结构导入尚未开放，原Word可先保存或转PDF核对。"}
@@ -249,6 +250,7 @@ export function AuthoringPanel({
                 <ResourceState
                   {...richCapabilities}
                   hasData={!!richCapabilities.data}
+                  loadingLabel="正在读取表格与图片编辑能力…"
                   onRetry={() => void richCapabilities.reload()}
                 />
               </>
