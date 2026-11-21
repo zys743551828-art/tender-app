@@ -229,6 +229,7 @@ def extend_openapi(actual):
             "unsupported": array(STRING),
         }
     )
+    schemas["AuthoringCapabilities"]["properties"]["default_outline_template_version_id"] = UUID
     routes = [
         (
             "/authoring/capabilities",

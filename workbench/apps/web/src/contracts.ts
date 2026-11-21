@@ -6347,6 +6347,7 @@ export type AuthoringTreeView = {
     actual_total: null;
     actual_ranges_state: "unknown";
   };
+  contains_tables_or_images?: boolean;
 };
 
 export type AuthoringTreeChangeRequest = {
@@ -9093,6 +9094,7 @@ export type AuthoringCapabilities = {
   supports_external_docx_import: boolean;
   supported_nodes: string[];
   unsupported: string[];
+  default_outline_template_version_id?: string;
 };
 
 export type AuthoringDraftPage = {

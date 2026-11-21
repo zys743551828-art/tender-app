@@ -25,6 +25,21 @@ import { rememberOperation } from "./operationStorage";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
 
+function templateMode(tree: AuthoringTreeView, fixed: boolean) {
+  if (tree.structure_version_id === null) {
+    if (tree.contains_tables_or_images === true) return "needs_templates";
+    if (tree.contains_tables_or_images === false || fixed) return "plain";
+    return "unknown_content";
+  }
+  if (
+    tree.structure_version_id &&
+    tree.style_template_version_id &&
+    tree.directory_template_version_id
+  )
+    return "structured";
+  return null;
+}
+
 export function AuthoringBuilds({
   bidId,
   memberId,
@@ -37,6 +52,8 @@ export function AuthoringBuilds({
   setBusy,
   onPackages,
   fixedRevision,
+  savedHead,
+  onOpenLayoutTemplates,
 }: {
   bidId: string;
   memberId: string;
@@ -49,6 +66,8 @@ export function AuthoringBuilds({
   setBusy: (busy: boolean) => void;
   onPackages?: () => void;
   fixedRevision?: DraftSaved;
+  savedHead?: Pick<DraftView, "revision" | "snapshot_id">;
+  onOpenLayoutTemplates?: (trigger: HTMLButtonElement) => void;
 }) {
   const cacheKey = `tender:authoring:${memberId}:${bidId}:${draftId}:builds`;
   const scope = `authoring-build:${memberId}:${bidId}:${draftId}`;
@@ -77,24 +96,40 @@ export function AuthoringBuilds({
   }, []);
   const [error, setError] = useState<unknown>(null);
   const structurePath = `/bids/${bidId}/drafts/${draftId}/structure`;
-  const exactStructureRead = useResource<AuthoringTreeView>(
-    fixedRevision ? structurePath : null,
+  const expectedRevision = fixedRevision?.draft_revision ?? savedHead?.revision;
+  const expectedSnapshot = fixedRevision?.snapshot_id ?? savedHead?.snapshot_id;
+  const structureRead = useResource<AuthoringTreeView>(
+    expectedSnapshot ? structurePath : null,
   );
-  const exactStructure =
-    fixedRevision &&
-    exactStructureRead.data?.draft_id === draftId &&
-    exactStructureRead.data.draft_revision === fixedRevision.draft_revision &&
-    exactStructureRead.data.snapshot_id === fixedRevision.snapshot_id
-      ? exactStructureRead.data
+  const reloadStructure = structureRead.reload;
+  const reloadFresh = structureRead.reloadFresh;
+  const lastSnapshot = useRef(expectedSnapshot);
+  useEffect(() => {
+    if (lastSnapshot.current !== expectedSnapshot) {
+      lastSnapshot.current = expectedSnapshot;
+      void reloadFresh();
+    }
+  }, [expectedSnapshot, reloadFresh]);
+  const displayedStructure =
+    structureRead.data?.draft_id === draftId &&
+    structureRead.data.draft_revision === expectedRevision &&
+    structureRead.data.snapshot_id === expectedSnapshot
+      ? structureRead.data
       : null;
-  const exactStructureBlocked =
-    !!fixedRevision &&
-    (!exactStructure ||
-      exactStructureRead.loading ||
-      !!exactStructureRead.error ||
-      exactStructureRead.unavailable);
-  const plainExact =
-    !!exactStructure && exactStructure.structure_version_id === null;
+  const mode =
+    displayedStructure && templateMode(displayedStructure, !!fixedRevision);
+  const needsTemplates =
+    mode === "needs_templates" || mode === "unknown_content";
+  const richUnavailable =
+    displayedStructure?.contains_tables_or_images === true && !richCapabilities;
+  const structureBlocked =
+    !!expectedSnapshot &&
+    (!mode ||
+      needsTemplates ||
+      richUnavailable ||
+      structureRead.loading ||
+      !!structureRead.error ||
+      structureRead.unavailable);
   const historyPath = `/bids/${bidId}/builds?draft_id=${encodeURIComponent(draftId)}`;
   const history = useResource<BuildPage>(historyPath);
   const [more, setMore] = useState<BuildPage[]>([]);
@@ -132,7 +167,7 @@ export function AuthoringBuilds({
       working.current ||
       recovery.blocked ||
       (!cacheRef.current.pending &&
-        (disabled || exactStructureBlocked || !formats.length))
+        (disabled || structureBlocked || !formats.length))
     )
       return;
     working.current = true;
@@ -169,10 +204,7 @@ export function AuthoringBuilds({
         if (
           structure.data.draft_id !== draftId ||
           structure.data.draft_revision !== head.data.revision ||
-          (fixedRevision &&
-            structure.data.snapshot_id !== head.data.snapshot_id) ||
-          !structure.data.directory_template_version_id ||
-          !structure.data.style_template_version_id
+          structure.data.snapshot_id !== head.data.snapshot_id
         )
           throw new Error(
             "目录与已保存正文修订不一致，请读取最新目录后重试生成。",
@@ -183,25 +215,38 @@ export function AuthoringBuilds({
           formats: [...formats],
           follow_up: "none" as const,
         };
-        const isPlain =
-          !!fixedRevision && structure.data.structure_version_id === null;
-        if (fixedRevision && isPlain !== plainExact)
+        const savedMode = templateMode(structure.data, !!fixedRevision);
+        if (
+          savedMode === "needs_templates" ||
+          savedMode === "unknown_content"
+        ) {
+          await reloadStructure();
+          throw new Error("请先预览并固定版式模板，确认新修订后再生成文件。");
+        }
+        if (
+          !savedMode ||
+          (structure.data.contains_tables_or_images === true &&
+            !richCapabilities)
+        )
+          throw new Error("无法确认当前修订的模板或表图生成能力，请重新读取。");
+        if (fixedRevision && savedMode !== mode)
           throw new Error(
             "本稿的冻结目录结构已变化，请重新核对版式选择后生成文件。",
           );
-        const body: BuildRequest = isPlain
-          ? {
-              ...common,
-              template_version_id: capabilities.default_template_version_id,
-            }
-          : {
-              ...common,
-              directory_template_version_id:
-                structure.data.directory_template_version_id,
-              style_template_version_id:
-                structure.data.style_template_version_id,
-              ...(richCapabilities ? { pagination_mode: pagination } : {}),
-            };
+        const body: BuildRequest =
+          savedMode === "plain"
+            ? {
+                ...common,
+                template_version_id: capabilities.default_template_version_id,
+              }
+            : {
+                ...common,
+                directory_template_version_id:
+                  structure.data.directory_template_version_id,
+                style_template_version_id:
+                  structure.data.style_template_version_id,
+                ...(richCapabilities ? { pagination_mode: pagination } : {}),
+              };
         pending = {
           body,
           key: crypto.randomUUID(),
@@ -309,24 +354,84 @@ export function AuthoringBuilds({
             先等待所有章节保存确认，再冻结该草稿修订。后续编辑不会改变本次输出。
           </p>
         </div>
-        <Badge>{plainExact ? "内置正文版式" : "目录与版式分别固定"}</Badge>
+        {mode && (
+          <Badge>
+            {mode === "plain"
+              ? "内置正文版式"
+              : mode === "structured"
+                ? "目录与版式分别固定"
+                : "模板尚未固定"}
+          </Badge>
+        )}
       </div>
-      {fixedRevision && (
+      {expectedSnapshot && (
         <ResourceState
-          {...exactStructureRead}
-          hasData={!!exactStructure}
-          onRetry={() => void exactStructureRead.reload()}
-          loadingLabel="正在核对本次固定正文的目录与版式…"
+          {...structureRead}
+          hasData={!!displayedStructure}
+          onRetry={() => void reloadStructure()}
+          loadingLabel="正在核对已保存正文的目录与版式…"
         />
       )}
-      {fixedRevision && exactStructureRead.data && !exactStructure && (
-        <p className="notice error">
-          目录结构与所选固定正文修订不一致，未改用其他版本生成。
-        </p>
+      {expectedSnapshot &&
+        structureRead.data &&
+        !mode &&
+        !structureRead.loading && (
+          <p className="notice error">
+            目录结构与所选正文修订不一致，请重新读取后核对。
+            <button
+              type="button"
+              className="text-button"
+              onClick={() => void reloadStructure()}
+            >
+              重新读取目录
+            </button>
+          </p>
+        )}
+      {mode === "plain" && (
+        <p className="small-note">此修订使用内置正文模板生成。</p>
       )}
-      {plainExact && (
-        <p className="small-note">
-          本次固定正文未附加目录或自定义版式，将使用内置正文模板生成；尚不提供章页排版选择。
+      {needsTemplates && (
+        <div className="notice warning">
+          <div>
+            <strong>
+              {mode === "needs_templates"
+                ? "已保存的表格或图片需要固定目录与版式"
+                : "此修订尚无固定模板，当前服务未提供表图状态"}
+            </strong>
+            {fixedRevision ? (
+              <p>
+                此处已指定确切快照。请返回正文工作区处理模板，再明确选择要生成的修订。
+              </p>
+            ) : (
+              <>
+                <p>
+                  在「版式模板」点「预览应用版式模板」，核对后确认。现有章节和表图将保留在新修订中，随后可生成文件。
+                </p>
+                {onOpenLayoutTemplates && (
+                  <button
+                    type="button"
+                    className="button secondary"
+                    disabled={
+                      disabled ||
+                      busy ||
+                      !!cache.pending ||
+                      !!structureRead.error
+                    }
+                    onClick={(event) =>
+                      onOpenLayoutTemplates(event.currentTarget)
+                    }
+                  >
+                    预览并固定版式模板
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      {richUnavailable && !needsTemplates && (
+        <p className="notice warning">
+          当前修订含表格或图片，需等待表图生成能力就绪。
         </p>
       )}
       <div className="review-shortcuts">
@@ -349,7 +454,7 @@ export function AuthoringBuilds({
               {format === "docx" ? "Word" : "PDF"}
             </label>
           ))}
-        {richCapabilities && !plainExact && !exactStructureBlocked && (
+        {richCapabilities && mode === "structured" && !structureBlocked && (
           <label>
             章页排版
             <select
@@ -374,7 +479,7 @@ export function AuthoringBuilds({
             busy ||
             recovery.blocked ||
             (!cache.pending &&
-              (disabled || exactStructureBlocked || !formats.length))
+              (disabled || structureBlocked || !formats.length))
           }
           onClick={() => void build()}
         >
@@ -395,7 +500,7 @@ export function AuthoringBuilds({
         本次仅生成文件，不自动切换受检正文或开始评审。Word与PDF独立显示结果，生成成功不表示内容通过。
       </p>
       {richCapabilities &&
-        !plainExact &&
+        mode === "structured" &&
         !richCapabilities.renderer_configured && (
           <p className="notice warning">
             表图转换器尚未配置；可生成

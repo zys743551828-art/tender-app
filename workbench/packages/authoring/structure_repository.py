@@ -8,7 +8,7 @@ from uuid import UUID
 from psycopg.types.json import Jsonb
 
 from packages.authoring import format_bindings, snapshot_structure, technical_outline, templates
-from packages.authoring.content import empty_content
+from packages.authoring.content import empty_content, has_rich
 from packages.authoring.repository import (
     append_section,
     assert_sources,
@@ -106,7 +106,14 @@ def validate_use(c, bid, state, contents):
 
 def view(c, bid, draft):
     state, contents = load(c, bid, draft)
-    head = fetch(c, "SELECT revision FROM drafts WHERE id=%s AND bid_id=%s", (draft, bid))
+    head = fetch(
+        c,
+        """SELECT d.revision,s.id AS snapshot_id,s.manifest FROM drafts d
+           JOIN draft_snapshots s ON s.bid_id=d.bid_id AND s.draft_id=d.id AND s.revision=d.revision
+           WHERE d.id=%s AND d.bid_id=%s""",
+        (draft, bid),
+    )
+    structure = snapshot_structure.snapshot_extension(head["manifest"])
     nodes, pages, missing = [], 0, []
     for item in state["nodes"]:
         plan = (
@@ -141,12 +148,11 @@ def view(c, bid, draft):
         {
             "draft_id": draft,
             "draft_revision": head["revision"],
-            "snapshot_id": fetch(
-                c,
-                "SELECT id FROM draft_snapshots WHERE draft_id=%s AND revision=%s",
-                (draft, head["revision"]),
-            )["id"],
-            "structure_version_id": (snapshot_structure.latest(c, bid, draft) or {}).get("id"),
+            "snapshot_id": head["snapshot_id"],
+            "structure_version_id": structure["id"] if structure else None,
+            "contains_tables_or_images": any(
+                has_rich(contents[item["id"]]) for item in head["manifest"]["sections"]
+            ),
             "nodes": nodes,
             "directory_template_version_id": state["directory_template_version_id"],
             "style_template_version_id": state["style_template_version_id"],

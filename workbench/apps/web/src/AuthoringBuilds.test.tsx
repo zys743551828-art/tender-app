@@ -97,6 +97,135 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+it.each([false, true])(
+  "selects build input from the saved ordinary snapshot (table/image present: %s)",
+  async (rich) => {
+    let revision = 4;
+    const writes: unknown[] = [];
+    const openLayout = vi.fn();
+    const current = () => ({
+      ...head,
+      data: { ...head.data, revision, snapshot_id: `snapshot-${revision}` },
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, options?: RequestInit) => {
+        if (url.endsWith("/structure"))
+          return response({
+            draft_id: "draft",
+            draft_revision: revision,
+            snapshot_id: `snapshot-${revision}`,
+            structure_version_id: revision === 4 ? null : "fixed-structure",
+            contains_tables_or_images: rich,
+            directory_template_version_id: "outline-v2",
+            style_template_version_id: "layout-v3",
+          });
+        if (options?.method === "POST") {
+          writes.push(JSON.parse(String(options.body)));
+          return new Response(
+            JSON.stringify({
+              code: "TEST_ACK_INTERRUPTED",
+              message: "测试不启动生成",
+            }),
+            { status: 409 },
+          );
+        }
+        return response({ items: [], has_more: false, next_cursor: null });
+      }),
+    );
+    const props = () => (
+      <AuthoringBuilds
+        bidId="bid"
+        memberId="member"
+        draftId="draft"
+        capabilities={capabilities}
+        richCapabilities={{
+          schema_digest: "a".repeat(64),
+          schema: {},
+          build_schema_digest: "b".repeat(64),
+          image_upload_max_bytes: 8388608,
+          renderer_configured: true,
+          runtime_verified_by_this_read: false,
+          table_pdf_geometry: "unverified",
+          pagination_modes: [],
+        }}
+        disabled={false}
+        setBusy={vi.fn()}
+        prepare={async () => current()}
+        savedHead={current().data}
+        onOpenLayoutTemplates={openLayout}
+      />
+    );
+    const { rerender } = render(props());
+    const submit = screen.getByRole("button", { name: "保存确认后生成文件" });
+    if (rich) {
+      const fix = await screen.findByRole("button", {
+        name: "预览并固定版式模板",
+      });
+      expect(submit).toBeDisabled();
+      await userEvent.click(fix);
+      expect(openLayout).toHaveBeenCalledWith(fix);
+      expect(writes).toEqual([]);
+      revision = 5;
+      rerender(props());
+      await screen.findByLabelText("章页排版");
+    } else {
+      await screen.findByText("内置正文版式");
+      expect(screen.queryByLabelText("章页排版")).not.toBeInTheDocument();
+    }
+    await userEvent.click(submit);
+    await waitFor(() => expect(writes).toHaveLength(1));
+    expect(writes[0]).toEqual({
+      draft_id: "draft",
+      draft_revision: revision,
+      formats: ["docx", "pdf"],
+      follow_up: "none",
+      ...(rich
+        ? {
+            directory_template_version_id: "outline-v2",
+            style_template_version_id: "layout-v3",
+            pagination_mode: "chapter_start_new_page",
+          }
+        : { template_version_id: "template" }),
+    });
+  },
+);
+
+it("rejects a tree with a different snapshot after flushing ordinary edits", async () => {
+  const writes: RequestInit[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, options?: RequestInit) => {
+      if (options?.method === "POST") writes.push(options);
+      if (url.endsWith("/structure"))
+        return response({
+          draft_id: "draft",
+          draft_revision: head.data.revision,
+          snapshot_id: "another-snapshot",
+          structure_version_id: null,
+          contains_tables_or_images: false,
+        });
+      return response({ items: [], has_more: false, next_cursor: null });
+    }),
+  );
+  render(
+    <AuthoringBuilds
+      bidId="bid"
+      memberId="member"
+      draftId="draft"
+      capabilities={capabilities}
+      disabled={false}
+      prepare={async () => head}
+      setBusy={vi.fn()}
+    />,
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: "保存确认后生成文件" }),
+  );
+  await screen.findByText(/目录与已保存正文修订不一致/);
+  expect(writes).toEqual([]);
+});
+
 it("does not replace an explicitly selected exact adoption revision with a newer draft during build preparation", async () => {
   const writes: RequestInit[] = [];
   vi.stubGlobal(
@@ -153,6 +282,8 @@ it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改
         return response({
           draft_id: "draft",
           draft_revision: 8,
+          snapshot_id: "snapshot-8",
+          structure_version_id: "structure-8",
           directory_template_version_id: "outline-v2",
           style_template_version_id: "layout-v3",
         });
@@ -215,6 +346,8 @@ it("失响应恢复重试原修订和幂等键，刷新后也不悄悄改用新�
         return response({
           draft_id: "draft",
           draft_revision: 8,
+          snapshot_id: "snapshot-8",
+          structure_version_id: "structure-8",
           directory_template_version_id: "outline-v2",
           style_template_version_id: "layout-v3",
         });
@@ -367,6 +500,8 @@ it.each(["IDEMPOTENCY_CONFLICT", "accepted_detail_unavailable"])(
           return response({
             draft_id: "draft",
             draft_revision: 8,
+            snapshot_id: "snapshot-8",
+            structure_version_id: "structure-8",
             directory_template_version_id: "outline-v2",
             style_template_version_id: "layout-v3",
           });

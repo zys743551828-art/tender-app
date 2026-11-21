@@ -61,6 +61,45 @@ function show() {
     />,
   );
 }
+it("creates an ordinary draft with the built-in directory version advertised by the service", async () => {
+  const requests: unknown[] = [];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/authoring/capabilities"))
+        return Response.json({
+          ...fixture.capabilities,
+          default_outline_template_version_id: "default-outline",
+        });
+      if (url.endsWith("/drafts") && options?.method === "POST") {
+        requests.push(JSON.parse(String(options.body)));
+        return Response.json({ id: layoutScope.draftId }, { status: 201 });
+      }
+      return fixture.fetcher(input, options);
+    }),
+  );
+  const openDraft = vi.fn();
+  render(
+    <AuthoringPanel
+      {...layoutScope}
+      draftId={null}
+      projectTitle="合成编制项目"
+      onOpenDraft={openDraft}
+    />,
+  );
+  await userEvent.type(
+    await screen.findByPlaceholderText("例如：技术投标文件"),
+    "合成草稿",
+  );
+  await userEvent.click(screen.getByRole("button", { name: "创建正文草稿" }));
+  await waitFor(() =>
+    expect(openDraft).toHaveBeenCalledWith(layoutScope.draftId),
+  );
+  expect(requests).toEqual([
+    { title: "合成草稿", outline_template_version_id: "default-outline" },
+  ]);
+});
 async function waitForEditableBody() {
   // Capabilities, draft head, section and saved snapshot load in separate
   // effects. A mounted editor alone does not prove its source check finished.
@@ -78,6 +117,38 @@ async function waitForEditableBody() {
   );
   return screen.getByLabelText("章节正文");
 }
+it("opens the style preview controls from an ordinary unstructured rich draft without writing", async () => {
+  width = 390;
+  const fetcher: typeof fetch = async (input, options) => {
+    const result = await fixture.fetcher(input, options);
+    if (String(input).endsWith("/structure"))
+      return Response.json({
+        ...(await result.json()),
+        structure_version_id: null,
+        contains_tables_or_images: true,
+      });
+    return result;
+  };
+  vi.stubGlobal("fetch", vi.fn(fetcher));
+  show();
+  await waitForEditableBody();
+  expect(
+    screen.getByRole("button", { name: "保存确认后生成文件" }),
+  ).toBeDisabled();
+  const shortcut = await screen.findByRole("button", {
+    name: "预览并固定版式模板",
+  });
+  await userEvent.click(shortcut);
+  const directory = await screen.findByRole("dialog", {
+    name: "章节目录与编写计划",
+  });
+  const stylePreview = await within(directory).findByRole("button", {
+    name: "预览应用版式模板",
+  });
+  expect(stylePreview).toBeEnabled();
+  expect(stylePreview.closest("details")).toHaveAttribute("open");
+  expect(fixture.state.writes).toEqual([]);
+});
 it("starts with the body, keeps directory/editor mounted while collapsed, and restores directory focus", async () => {
   width = 390;
   const user = userEvent.setup();

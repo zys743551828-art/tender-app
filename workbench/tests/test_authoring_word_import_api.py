@@ -1,6 +1,6 @@
 """Registered import routes and exact historical image delivery; no live IO claims."""
 
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from types import SimpleNamespace
 from uuid import UUID
 
@@ -17,6 +17,10 @@ from packages.domain.runtime import DomainError, sha
 
 def test_word_import_capability_only_follows_actual_router_registration(monkeypatch):
     monkeypatch.setattr(authoring, "auth", lambda *_: {})
+    monkeypatch.setattr(authoring, "connection", lambda: nullcontext(None))
+    from packages.authoring import snapshot_structure, templates
+
+    monkeypatch.setattr(snapshot_structure, "available", lambda _: False)
     isolated = FastAPI()
     isolated.include_router(authoring.router)
     assert not authoring.capabilities(Request({"type": "http", "app": isolated}))[
@@ -25,6 +29,13 @@ def test_word_import_capability_only_follows_actual_router_registration(monkeypa
     assert authoring.capabilities(Request({"type": "http", "app": app}))[
         "supports_external_docx_import"
     ]
+    assert "default_outline_template_version_id" not in authoring.capabilities(
+        Request({"type": "http", "app": app})
+    )
+    monkeypatch.setattr(snapshot_structure, "available", lambda _: True)
+    assert authoring.capabilities(Request({"type": "http", "app": app}))[
+        "default_outline_template_version_id"
+    ] == str(templates.DEFAULT_IDS["outline"])
 
 
 def test_registered_word_import_contracts_include_binary_image_and_exact_mutations():

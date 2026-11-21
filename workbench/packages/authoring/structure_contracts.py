@@ -97,6 +97,7 @@ def extend_openapi(actual):
             ),
         }
     )
+    schemas["AuthoringTreeView"]["properties"]["contains_tables_or_images"] = {"type": "boolean"}
     from packages.authoring.structure_schema import OUTLINE, STYLE
 
     schemas["AuthoringTemplateVersionView"] = obj(

@@ -93,7 +93,20 @@ def capabilities(r: Request):
         getattr(route, "path", None) == "/api/v1/authoring/word-import-capabilities"
         for route in getattr(application, "routes", ())
     )
+    defaults = {}
+    if any(
+        getattr(route, "path", None) == "/api/v1/bids/{bid_id}/drafts/{draft_id}/structure"
+        for route in getattr(application, "routes", ())
+    ):
+        from packages.authoring import snapshot_structure, templates
+
+        with connection() as c:
+            if snapshot_structure.available(c):
+                defaults["default_outline_template_version_id"] = str(
+                    templates.DEFAULT_IDS["outline"]
+                )
     return {
+        **defaults,
         "schema_digest": SCHEMA_DIGEST,
         "schema": SCHEMA,
         "default_template_version_id": str(DEFAULT_TEMPLATE_ID),

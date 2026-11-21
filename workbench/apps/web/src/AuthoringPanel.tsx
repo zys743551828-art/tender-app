@@ -119,7 +119,8 @@ export function AuthoringPanel({
     if (disabled) return;
     const body: CreateDraftRequest = {
       title: title.trim(),
-      outline_template_version_id: null,
+      outline_template_version_id:
+        capabilities.data?.default_outline_template_version_id ?? null,
     };
     const result = await command.run<DraftView>(
       `/bids/${bidId}/drafts`,
@@ -888,6 +889,8 @@ function DraftEditor({
                 }
               : undefined
           }
+          savedHead={view}
+          onOpenLayoutTemplates={openLayoutTemplates}
           prepare={async () => {
             if (
               sectionId &&

@@ -1065,14 +1065,18 @@ function TemplateChoice({
           }}
         >
           {!items.some((i) => i.id === selected) && (
-            <option value={selected}>正在读取当前固定版本</option>
+            <option value={selected}>正在读取所选版本</option>
           )}
           {items
             .filter((i) => i.kind === kind)
             .map((i) => (
               <option value={i.id} key={i.id}>
                 {i.name} · 版本{i.revision}
-                {i.id === id ? "（当前）" : ""}
+                {i.id === id
+                  ? tree.structure_version_id
+                    ? "（当前）"
+                    : "（默认，待固定）"
+                  : ""}
               </option>
             ))}
         </select>
@@ -1096,7 +1100,9 @@ function TemplateChoice({
         <>
           <p className="small-note">
             {detail.data.name} · 版本{detail.data.revision} ·{" "}
-            {selected === id ? "当前固定版本" : "尚未应用"}
+            {selected === id && tree.structure_version_id
+              ? "当前固定版本"
+              : "尚未应用"}
           </p>
           <details>
             <summary>查看{label}配置</summary>
