@@ -527,20 +527,20 @@ a svg {
   .project-work-summary {
     padding: 18px 16px;
   }
-  .heading-with-action {
-    flex-wrap: wrap;
-  }
-  .heading-with-action > div {
-    flex: 1 1 13rem;
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  .heading-with-action > .button {
-    flex: none;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
+}
+.heading-with-action {
+  flex-wrap: wrap;
+}
+.heading-with-action > div {
+  flex: 1 1 13rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.heading-with-action > :is(.button, .text-button) {
+  flex: none;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .list-toolbar {
   display: flex;
@@ -3202,6 +3202,50 @@ textarea:focus-visible {
 .review-progress {
   border-left: 3px solid var(--border-strong);
   margin-bottom: 20px;
+}
+.review-progress,
+.submission-panel,
+.submission-history {
+  padding: 22px 23px;
+  overflow-wrap: anywhere;
+}
+.review-progress > .section-heading,
+.submission-panel > .section-heading {
+  padding: 0 0 16px;
+}
+.review-progress > .review-shortcuts:last-child,
+.submission-panel > .review-shortcuts:last-child {
+  margin-bottom: 0;
+}
+.review-document-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.review-document-identity > span {
+  min-width: 0;
+}
+.submission-history > .small-empty {
+  padding: 16px 0 0;
+}
+.submission-retrospectives > summary {
+  padding: 16px 23px;
+  cursor: pointer;
+}
+@media (max-width: 760px) {
+  .review-progress,
+  .submission-panel,
+  .submission-history {
+    padding: 18px 16px;
+  }
+  .submission-retrospectives > summary {
+    padding: 14px 16px;
+  }
+  .review-progress .text-button,
+  .submission-panel .text-button {
+    min-height: 44px;
+  }
 }
 .review-progress.attention {
   border-left-color: var(--warning-border);

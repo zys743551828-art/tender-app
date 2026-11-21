@@ -180,7 +180,7 @@ export function PackageSubmissionPanel({
       className="panel package-submission-panel"
       aria-label="整包提交检查与线下事实登记"
     >
-      <div className="section-heading">
+      <div className="section-heading heading-with-action">
         <div>
           <h2>整包提交检查与实交登记</h2>
           <p className="small-note">

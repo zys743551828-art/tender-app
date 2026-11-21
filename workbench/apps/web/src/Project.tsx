@@ -1109,7 +1109,7 @@ export function Project({
       </section>
       {onAuthoring && (
         <section className="panel">
-          <div className="section-heading">
+          <div className="section-heading heading-with-action">
             <div>
               <h2>编写与生成投标正文</h2>
               <p className="muted">
@@ -1129,7 +1129,7 @@ export function Project({
       )}
       {onPackages ? (
         <section className="panel">
-          <div className="section-heading">
+          <div className="section-heading heading-with-action">
             <div>
               <h2>继续整包核查</h2>
               <p className="muted">

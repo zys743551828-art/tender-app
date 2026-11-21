@@ -136,13 +136,15 @@ export function ReviewProgress({
                 本次正文身份不一致，未打开其他资料，请刷新核对。
               </div>
             )}
-            <p>
-              本次正文：
-              <strong>
-                {source
-                  ? `${source.filename} · 文件版本 ${source.file_revision}`
-                  : "正在读取实际版本身份…"}
-              </strong>
+            <p className="review-document-identity">
+              <span>
+                本次正文：
+                <strong>
+                  {source
+                    ? `${source.filename} · 文件版本 ${source.file_revision}`
+                    : "正在读取实际版本身份…"}
+                </strong>
+              </span>
               {source && (
                 <button className="text-button" onClick={() => setOpen(true)}>
                   查看本次正文原件

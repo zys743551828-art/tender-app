@@ -182,7 +182,7 @@ export function SubmissionPanel({
       />
       {available && (
         <section className="panel submission-panel">
-          <div className="section-heading">
+          <div className="section-heading heading-with-action">
             <div>
               <h2>提交检查与实交登记</h2>
               <p className="small-note">
@@ -297,7 +297,7 @@ export function SubmissionPanel({
           )}
         </section>
       )}
-      <section className="panel">
+      <section className="panel submission-history">
         <h2>实交记录与更正历史</h2>
         <ResourceState
           {...history}
@@ -357,7 +357,7 @@ export function SubmissionPanel({
       </section>
       {supportsApi("GET", `/bids/${bidId}/package-retrospectives`) && (
         <details
-          className="panel"
+          className="panel submission-retrospectives"
           onToggle={(event) => {
             if (event.currentTarget.open) setRetrospectivesStarted(true);
           }}

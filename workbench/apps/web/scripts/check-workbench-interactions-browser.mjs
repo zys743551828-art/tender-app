@@ -233,6 +233,110 @@ async function checkMaterialRow(page) {
   await checkVisibleText(action);
 }
 
+async function checkReviewAndSubmissionPanels(page) {
+  const bid = bids[0];
+  const base = `/bids/${bid.id}`;
+  const doc = {
+    ...fixture(`${base}/materials`).documents[0],
+    role: "body",
+    artifact_kind: "bid_body",
+  };
+  const replies = new Map([
+    [
+      `${base}/review-state`,
+      {
+        bid_id: bid.id,
+        material_revision: 1,
+        current_body_id: doc.id,
+        current_review: null,
+        request: {
+          request_id: "request-qa",
+          trigger: "automatic",
+          state: "preparing",
+          body_version_id: doc.id,
+          material_revision: 1,
+          prepare_operation_id: "operation-qa",
+          gaps: [],
+        },
+      },
+    ],
+    [`/documents/${doc.id}`, doc],
+    ["/operations/operation-qa", { bid_id: bid.id, state: "running" }],
+    [
+      `${base}/submission-gate`,
+      {
+        allowed: false,
+        material_revision: 1,
+        blockers: [
+          { code: "IDENTITY_REQUIRED", message: "请核对当前投标主体" },
+        ],
+        warnings: ["未登记实际提交"],
+      },
+    ],
+    [`${base}/submissions`, empty],
+  ]);
+  for (const [path, data] of replies)
+    await page.route(
+      (url) => url.pathname === `/api/v1${path}`,
+      (route) => route.fulfill({ json: data }),
+    );
+  async function inset(panel, locator) {
+    await locator.waitFor();
+    const outer = await panel.boundingBox(),
+      inner = await locator.boundingBox();
+    const margins = [
+      inner.x - outer.x,
+      outer.x + outer.width - inner.x - inner.width,
+    ];
+    assert(
+      Math.min(...margins) >= 12,
+      `Expected inset on both sides, got ${margins}`,
+    );
+  }
+  const visit = (tab) => page.goto(new URL(`${base}/${tab}`, page.url()).href);
+  await visit("matrix");
+  const progress = page.getByRole("region", { name: "本次评审进度" });
+  const source = progress.getByRole("button", { name: "查看本次正文原件" });
+  await source.scrollIntoViewIfNeeded();
+  const identity = progress.getByText(`${doc.filename} · 文件版本 1`, {
+    exact: true,
+  });
+  await inset(progress, identity);
+  const label = await identity.boundingBox(),
+    action = await source.boundingBox();
+  assert(
+    action.x >= label.x + label.width + 5 ||
+      action.y >= label.y + label.height + 3,
+    "Original action runs into the registered document identity",
+  );
+  await hitTarget(source);
+  await visit("outcomes");
+  const submission = page.locator(".submission-panel");
+  for (const item of [
+    submission.getByText("请核对当前投标主体", { exact: true }),
+    submission.getByRole("button", { name: "补录线下已发生的提交" }),
+  ])
+    await inset(submission, item);
+  const history = heading(page, "实交记录与更正历史");
+  await inset(page.locator("section.panel").filter({ has: history }), history);
+  async function checkButtons(names) {
+    for (const name of names) {
+      const target = page.getByRole("button", { name, exact: true });
+      await target.scrollIntoViewIfNeeded();
+      await checkVisibleText(target);
+      const lines = await target.evaluate((el) => {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        return range.getClientRects().length;
+      });
+      assert.equal(lines, 1, `Control label wraps at this viewport: ${name}`);
+    }
+  }
+  await checkButtons(["检查并登记整包线下事实", "刷新提交检查与记录"]);
+  await visit("materials");
+  await checkButtons(["打开章节编写与生成", "打开整包核查工作面"]);
+}
+
 async function checkPanelActions(page) {
   const visit = (path) => page.goto(new URL(path, page.url()).href);
   await visit(`/bids/${bids[0].id}/overview`);
@@ -699,6 +803,13 @@ try {
         width,
         height,
         mobile,
+        name: "review-submission-panels",
+        check: checkReviewAndSubmissionPanels,
+      });
+      cases.push({
+        width,
+        height,
+        mobile,
         name: "file-pickers",
         check: checkFilePickers,
       });
@@ -740,6 +851,10 @@ try {
   for (const { width, height, mobile, name, check } of cases) {
     const page = await browser.newPage({
       viewport: { width, height },
+      colorScheme:
+        name === "review-submission-panels" && width !== 1440
+          ? "dark"
+          : "light",
       isMobile: mobile,
       hasTouch: mobile,
     });
