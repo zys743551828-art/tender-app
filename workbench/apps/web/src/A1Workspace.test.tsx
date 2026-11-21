@@ -300,6 +300,184 @@ it("事实未知和布尔否不替换成0，空事实库不加首次评审前置
   expect(screen.queryByText("0", { exact: true })).not.toBeInTheDocument();
 });
 
+it("按物理页和原文筛选长文件，跨筛选与文件保留明确勾选的来源，按规范名提交事实", async () => {
+  const user = userEvent.setup();
+  const writes: unknown[] = [];
+  const items = Array.from({ length: 219 }, (_, index) => ({
+    id: `source-${index + 1}`,
+    physical_page: index + 1,
+    quote: index === 218 ? "标\n段编号 GC-03" : `项目摘录 ${index + 1}`,
+    source_status: index === 3 ? "withdrawn" : "published",
+  }));
+  fetchMock.mockImplementation(async (url, options) => {
+    if (String(url).endsWith("/materials"))
+      return json({
+        documents: ["tender", "clarification", "body", "official_result"].map(
+          (role) => ({
+            id: role,
+            role,
+            filename: role + ".pdf",
+            file_revision: 1,
+          }),
+        ),
+      });
+    if (String(url).endsWith("/evidence"))
+      return json({
+        gaps: [],
+        items: String(url).includes("/tender/")
+          ? items
+          : [
+              {
+                id: "addendum",
+                physical_page: 1,
+                quote: "补充标段编号",
+                source_status: "published",
+              },
+            ],
+      });
+    if (options?.method === "POST")
+      writes.push(JSON.parse(String(options.body)));
+    return json({ facts: [] }, 200, '"fact-basis:1"');
+  });
+  render(<FactsPanel bid={bid} onChanged={vi.fn()} />);
+  await user.click(screen.getByRole("button", { name: "补充有据事实" }));
+  await user.type(screen.getByLabelText("事实主体"), "施工一标");
+  await user.type(screen.getByLabelText("适用范围"), "本次招标");
+  const factName = screen.getByRole("combobox", { name: "事实名称" });
+  expect(
+    within(factName)
+      .getAllByRole("option")
+      .map((option) => option.textContent),
+  ).toEqual([
+    "选择事实名称",
+    "采购方编号",
+    "工程项目编号",
+    "标段编号",
+    "投标轮次编号",
+    "投标主体编号",
+    "自定义名称",
+  ]);
+  await user.selectOptions(factName, "标段编号");
+  await user.type(screen.getByLabelText("事实取值"), "GC-03");
+  await user.type(screen.getByLabelText("依据与变更原因"), "已核对两份文件");
+  const document = screen.getByLabelText("选择来源文件");
+  expect(
+    within(document).queryByRole("option", { name: /body|official_result/ }),
+  ).not.toBeInTheDocument();
+  await user.selectOptions(document, "tender");
+  const page = await screen.findByLabelText("按物理页筛选");
+  const query = screen.getByRole("searchbox", { name: "按摘录原文筛选" });
+  expect(screen.getByText("显示 219 / 219 处原页摘录。")).toBeVisible();
+  await user.type(page, "4");
+  expect(screen.getByRole("checkbox")).toBeDisabled();
+  await user.clear(page);
+  await user.type(page, "12");
+  await user.click(
+    screen.getByRole("checkbox", { name: /物理页 12 项目摘录 12/ }),
+  );
+  await user.type(query, "标段");
+  expect(screen.getByText(/219 处原页摘录中没有匹配项/)).toBeVisible();
+  await user.clear(page);
+  await user.type(query, "编号 gc-03{Enter}");
+  expect(writes).toHaveLength(0);
+  await user.click(screen.getByRole("checkbox", { name: /物理页 219/ }));
+  await user.click(screen.getByRole("button", { name: "清除摘录筛选" }));
+  await user.type(page, "12");
+  expect(screen.getByRole("checkbox")).toBeChecked();
+  await user.selectOptions(document, "clarification");
+  expect(await screen.findByLabelText("按物理页筛选")).toHaveValue("");
+  await user.click(screen.getByRole("checkbox", { name: /补充标段编号/ }));
+  await user.selectOptions(document, "tender");
+  await user.type(await screen.findByLabelText("按物理页筛选"), "219");
+  expect(screen.getByRole("checkbox")).toBeChecked();
+  await user.click(screen.getByRole("checkbox"));
+  expect(writes).toHaveLength(0);
+  await user.click(screen.getByRole("button", { name: "保存并确认事实" }));
+  await waitFor(() =>
+    expect(writes).toEqual([
+      {
+        fact: {
+          subject: "施工一标",
+          scope: "本次招标",
+          name: "procurement_lot_identifier",
+          value: "GC-03",
+          unit: null,
+          evidence_ids: ["source-12", "addendum"],
+          reason: "已核对两份文件",
+        },
+        replaces_fact_id: null,
+      },
+    ]),
+  );
+});
+
+it.each([
+  ["标段编号", "custom"],
+  ["procurement_lot_identifier", "procurement_lot_identifier"],
+])(
+  "有据更正 %s 保留历史名称，切换类型可继续编辑自定义名称",
+  async (oldName, initial) => {
+    const user = userEvent.setup();
+    const writes: unknown[] = [];
+    const fact = {
+      id: "previous",
+      name: oldName,
+      value: "03",
+      subject: "合成标段",
+      scope: "当前轮次",
+      unit: null,
+      evidence_ids: ["source-12"],
+      decision_revision: 1,
+      confirmation: "confirmed",
+      source_validity: "effective",
+      source_issues: [],
+      decision: null,
+      carryover: null,
+    };
+    fetchMock.mockImplementation(async (url, options) => {
+      if (String(url).endsWith("/materials")) return json({ documents: [] });
+      if (options?.method === "POST")
+        writes.push(JSON.parse(String(options.body)));
+      return json({ facts: [fact] }, 200, '"fact-basis:1"');
+    });
+    render(<FactsPanel bid={bid} onChanged={vi.fn()} />);
+    expect(
+      await screen.findByRole("heading", { name: "标段编号" }),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "以有据更正替换此事实" }),
+    );
+    const name = screen.getByRole("combobox", { name: "事实名称" });
+    expect(name).toHaveValue(initial);
+    if (initial === "custom")
+      expect(screen.getByLabelText("自定义事实名称")).toHaveValue(oldName);
+    await user.selectOptions(name, "自定义名称");
+    const custom = screen.getByLabelText("自定义事实名称");
+    await user.clear(custom);
+    await user.type(custom, "围挡高度");
+    await user.selectOptions(name, "采购方编号");
+    await user.selectOptions(name, "自定义名称");
+    expect(screen.getByLabelText("自定义事实名称")).toHaveValue("围挡高度");
+    await user.type(screen.getByLabelText("依据与变更原因"), "按原文更正");
+    expect(writes).toHaveLength(0);
+    await user.click(
+      screen.getByRole("button", { name: "保存并确认有据更正" }),
+    );
+    await waitFor(() =>
+      expect(writes).toEqual([
+        expect.objectContaining({
+          fact: expect.objectContaining({
+            name: "围挡高度",
+            value: "03",
+            evidence_ids: ["source-12"],
+          }),
+          replaces_fact_id: "previous",
+        }),
+      ]),
+    );
+  },
+);
+
 it("批量规则只提交明确勾选的pending项，不覆盖驳回和暂缓", async () => {
   const user = userEvent.setup();
   fetchMock.mockImplementation(async (url, options) => {

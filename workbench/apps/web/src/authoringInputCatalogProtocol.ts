@@ -18,26 +18,20 @@ import {
   validateAuthoringTarget,
 } from "./packageAuthoringInputProtocol";
 import { readAuthoringContent } from "./richEditorSchema";
+import {
+  captureIdentityNames,
+  type CaptureIdentityName,
+} from "./captureIdentity";
+export {
+  captureIdentityLabels,
+  captureIdentityNames,
+  type CaptureIdentityName,
+} from "./captureIdentity";
 
 export type CapturePackageReference =
   PackageAuthoringInputRequest["package_context"]["target"];
 export type CaptureFactSelection = PackageAuthoringFactCatalog["selection"];
 export type CaptureFact = PackageAuthoringFactCatalog["items"][number];
-export const captureIdentityNames = [
-  "procurement_issuer_identifier",
-  "procurement_project_identifier",
-  "procurement_lot_identifier",
-  "procurement_round_identifier",
-  "bidder_identity_identifier",
-] as const;
-export type CaptureIdentityName = (typeof captureIdentityNames)[number];
-export const captureIdentityLabels: Record<CaptureIdentityName, string> = {
-  procurement_issuer_identifier: "采购方编号",
-  procurement_project_identifier: "工程项目编号",
-  procurement_lot_identifier: "标段编号",
-  procurement_round_identifier: "投标轮次编号",
-  bidder_identity_identifier: "投标主体编号",
-};
 export const captureSubjectLabels = {
   engineering_project: "工程项目",
   lot: "标段",

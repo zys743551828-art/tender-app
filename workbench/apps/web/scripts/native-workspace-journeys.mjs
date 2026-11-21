@@ -136,7 +136,12 @@ export async function journeys({ browser, origin, config }) {
     await page
       .getByLabel("适用范围", { exact: true })
       .fill("仅合成工程机制测试");
-    await page.getByLabel("事实名称", { exact: true }).fill("合成人工核对事实");
+    await page
+      .getByLabel("事实名称", { exact: true })
+      .selectOption({ label: "自定义名称" });
+    await page
+      .getByLabel("自定义事实名称", { exact: true })
+      .fill("合成人工核对事实");
     await page
       .getByLabel("事实取值", { exact: true })
       .fill("不代表真实工程材料");

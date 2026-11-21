@@ -2,6 +2,11 @@ import { useState } from "react";
 import type { Bid, FactSetView, FactView } from "./contracts";
 import { supportsApi } from "./api";
 import { Badge, ErrorNotice } from "./components";
+import {
+  captureIdentityLabels,
+  captureIdentityNames,
+  isCaptureIdentityName,
+} from "./captureIdentity";
 import { DecisionForm } from "./DecisionForm";
 import { EvidenceLinks } from "./EvidenceLinks";
 import { ResourceState } from "./ResourceState";
@@ -65,7 +70,11 @@ export function FactsPanel({
         <article className="panel fact-card" key={fact.id}>
           <div className="section-heading">
             <div>
-              <h3>{fact.name}</h3>
+              <h3>
+                {isCaptureIdentityName(fact.name)
+                  ? captureIdentityLabels[fact.name]
+                  : fact.name}
+              </h3>
               <p className="muted">
                 {fact.subject} · {fact.scope}
               </p>
@@ -151,7 +160,12 @@ function FactForm({
   const project = useResource<FactSetView>(`/bids/${bid.id}/facts`);
   const [subject, setSubject] = useState(fact?.subject ?? "");
   const [scope, setScope] = useState(fact?.scope ?? "");
-  const [name, setName] = useState(fact?.name ?? "");
+  const [nameKind, setNameKind] = useState(
+    fact ? (isCaptureIdentityName(fact.name) ? fact.name : "custom") : "",
+  );
+  const [customName, setCustomName] = useState(
+    nameKind === "custom" ? (fact?.name ?? "") : "",
+  );
   const [valueType, setValueType] = useState(
     fact?.value === null
       ? "unknown"
@@ -195,7 +209,7 @@ function FactForm({
             const input = {
               subject: subject.trim(),
               scope: scope.trim(),
-              name: name.trim(),
+              name: nameKind === "custom" ? customName.trim() : nameKind,
               value:
                 valueType === "unknown"
                   ? null
@@ -240,12 +254,32 @@ function FactForm({
           </div>
           <label>
             事实名称
-            <input
+            <select
               required
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
+              value={nameKind}
+              onChange={(event) => setNameKind(event.target.value)}
+            >
+              <option value="" disabled>
+                选择事实名称
+              </option>
+              {captureIdentityNames.map((identity) => (
+                <option key={identity} value={identity}>
+                  {captureIdentityLabels[identity]}
+                </option>
+              ))}
+              <option value="custom">自定义名称</option>
+            </select>
           </label>
+          {nameKind === "custom" && (
+            <label>
+              自定义事实名称
+              <input
+                required
+                value={customName}
+                onChange={(event) => setCustomName(event.target.value)}
+              />
+            </label>
+          )}
           <label>
             取值类型
             <select
