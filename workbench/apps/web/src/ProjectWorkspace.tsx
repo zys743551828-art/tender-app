@@ -474,7 +474,13 @@ export function ProjectWorkspace({
                 memberId={memberId}
                 onChanged={refresh}
               />
-              <RulesPanel bid={bid} onChanged={refresh} />
+              <RulesPanel
+                key={bid.id}
+                bid={bid}
+                reviewState={state}
+                reviewStateError={stateError}
+                onChanged={refresh}
+              />
             </>
           )}
           {page === "facts" && <FactsPanel bid={bid} onChanged={refresh} />}

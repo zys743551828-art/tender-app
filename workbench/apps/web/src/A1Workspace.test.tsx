@@ -14,6 +14,7 @@ import type {
   Bid,
   FindingView,
   ReviewCoverage,
+  ReviewStateView,
   ReviewView,
   RuleView,
 } from "./contracts";
@@ -532,9 +533,139 @@ it("矩阵默认将否决和强制要求置前，不因原始返回顺序让一�
   ).toEqual(["规则 否决失败", "规则 强制待核对", "规则 普通评分"]);
 });
 
-it("offers explicitly partial manual initial entry when no rules are ready", async () => {
+const noRules = () =>
+  json({ code: "RULE_SET_NOT_READY", message: "本轮要求尚未准备完成" }, 409);
+const emptyReviewState: ReviewStateView = {
+  bid_id: bid.id,
+  revision: 1,
+  current_body_id: null,
+  material_revision: bid.material_revision,
+  current_material_snapshot_id: null,
+  current_rule_set_id: null,
+  request: null,
+  current_review: null,
+};
+const blockedReviewState: ReviewStateView = {
+  ...emptyReviewState,
+  current_body_id: "body",
+  current_material_snapshot_id: "snapshot",
+  request: {
+    request_id: "request-1",
+    trigger: "manual",
+    body_version_id: "body",
+    material_snapshot_id: "snapshot",
+    material_revision: bid.material_revision,
+    state: "blocked",
+    prepare_operation_id: "op-prepare",
+    review_id: null,
+    error_code: "PREPARATION_FAILED",
+    gaps: [],
+    updated_at: "2026-11-20T00:00:00Z",
+  },
+};
+const failedPreparation = {
+  id: "op-prepare",
+  bid_id: bid.id,
+  kind: "prepare-review",
+  state: "failed",
+};
+
+it("shows the empty rules workspace for a new project without offering a retry or manual recovery", async () => {
+  let resolveSources!: (response: Response) => void;
+  const sources = new Promise<Response>((resolve) => {
+    resolveSources = resolve;
+  });
   fetchMock.mockImplementation(async (input) => {
     const url = String(input);
+    if (url.endsWith("/rules")) return noRules();
+    if (url.endsWith("/source-effectivity")) return sources;
+    if (url.endsWith("/review-state")) return json(emptyReviewState);
+    if (url.endsWith(`/bids/${bid.id}`))
+      return json({ ...bid, current_review_id: null });
+    throw new Error(`Unexpected route ${url}`);
+  });
+  render(
+    <ProjectWorkspace
+      id={bid.id}
+      route={`/bids/${bid.id}/rules`}
+      onNavigate={vi.fn()}
+      onBack={vi.fn()}
+    />,
+  );
+  await screen.findByRole("heading", { name: "规则核对" });
+  expect(
+    await screen.findByText(/请先在「项目资料」上传招标原件/),
+  ).toBeVisible();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  resolveSources(json({ bid_id: bid.id, ambiguities: [] }));
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("heading", { name: "补遗来源核对" }),
+    ).not.toBeInTheDocument(),
+  );
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: /重试|人工建立要求清单/ }),
+  ).not.toBeInTheDocument();
+});
+
+it.each([
+  ["preparing", "prepare-review", "running", "snapshot", /正在准备本轮要求/],
+  ["blocked", "parse-materials", "failed", "snapshot", /本次准备未完成/],
+  ["blocked", "prepare-review", "cancelled", "snapshot", /本次准备未完成/],
+  ["blocked", "prepare-review", "failed", "older-snapshot", /尚未生成要求清单/],
+] as const)(
+  "keeps %s / %s / %s / %s distinct from a failed current extraction",
+  async (state, kind, status, snapshot, label) => {
+    const progress = {
+      ...blockedReviewState,
+      request: {
+        ...blockedReviewState.request!,
+        state,
+        material_snapshot_id: snapshot,
+      },
+    };
+    fetchMock.mockImplementation(async (input) => {
+      if (String(input).endsWith("/rules")) return noRules();
+      return json({ ...failedPreparation, kind, state: status });
+    });
+    render(<RulesPanel bid={bid} reviewState={progress} onChanged={vi.fn()} />);
+    expect(await screen.findByText(label)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "人工建立要求清单" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  },
+);
+
+it("keeps a service failure actionable and retries reading the rules", async () => {
+  fetchMock.mockResolvedValueOnce(
+    json({ code: "SERVICE_UNAVAILABLE", message: "暂时无法读取规则" }, 503),
+  );
+  fetchMock.mockImplementation(async () => noRules());
+  render(
+    <RulesPanel bid={bid} reviewState={emptyReviewState} onChanged={vi.fn()} />,
+  );
+  const alert = await screen.findByRole("alert");
+  expect(within(alert).getByText("SERVICE_UNAVAILABLE")).toBeInTheDocument();
+  await userEvent.click(within(alert).getByRole("button", { name: "重试" }));
+  expect(
+    await screen.findByText(/请先在「项目资料」上传招标原件/),
+  ).toBeVisible();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it("offers explicitly partial manual initial entry after a failed current rules extraction", async () => {
+  let operationReadable = false;
+  fetchMock.mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.endsWith("/operations/op-prepare"))
+      return operationReadable
+        ? json(failedPreparation)
+        : json(
+            { code: "SERVICE_UNAVAILABLE", message: "暂时无法读取处理记录" },
+            503,
+          );
     if (url.endsWith("/rules"))
       return json({ code: "RULE_SET_NOT_READY", message: "尚未准备完成" }, 409);
     if (url.endsWith("/materials"))
@@ -548,7 +679,21 @@ it("offers explicitly partial manual initial entry when no rules are ready", asy
     if (url.endsWith(`/bids/${bid.id}`)) return json(bid, 200, '"bid-1"');
     throw new Error(`Unexpected route ${url}`);
   });
-  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  render(
+    <RulesPanel
+      bid={bid}
+      reviewState={blockedReviewState}
+      onChanged={vi.fn()}
+    />,
+  );
+  const alert = await screen.findByRole("alert");
+  expect(within(alert).getByText("暂时无法读取处理记录")).toBeVisible();
+  expect(
+    screen.queryByRole("button", { name: "人工建立要求清单" }),
+  ).not.toBeInTheDocument();
+  operationReadable = true;
+  await userEvent.click(within(alert).getByRole("button", { name: "重试" }));
+  expect(await screen.findByText(/本次要求提取失败/)).toBeVisible();
   await userEvent.click(
     await screen.findByRole("button", { name: "人工建立要求清单" }),
   );
@@ -604,6 +749,7 @@ it("submits a source-bound manual initial rule with the current bid ETag", async
   };
   fetchMock.mockImplementation(async (input, options) => {
     const url = String(input);
+    if (url.endsWith("/operations/op-prepare")) return json(failedPreparation);
     if (url.endsWith("/manual-rule-set")) {
       posted = options;
       return json(result, 201, '"ruleset-2"');
@@ -646,7 +792,13 @@ it("submits a source-bound manual initial rule with the current bid ETag", async
     throw new Error(`Unexpected route ${url}`);
   });
   const user = userEvent.setup();
-  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  const { rerender } = render(
+    <RulesPanel
+      bid={bid}
+      reviewState={blockedReviewState}
+      onChanged={vi.fn()}
+    />,
+  );
   await user.click(
     await screen.findByRole("button", { name: "人工建立要求清单" }),
   );
@@ -658,7 +810,26 @@ it("submits a source-bound manual initial rule with the current bid ETag", async
     "doc-1",
   );
   await user.click(await screen.findByRole("button", { name: "加入此页依据" }));
-  await user.click(screen.getByRole("button", { name: "补充并确认此条款" }));
+  const submit = screen.getByRole("button", { name: "补充并确认此条款" });
+  expect(submit).toBeEnabled();
+  rerender(
+    <RulesPanel
+      bid={bid}
+      reviewState={blockedReviewState}
+      reviewStateError={new Error("暂时无法更新评审进度")}
+      onChanged={vi.fn()}
+    />,
+  );
+  expect(screen.getByLabelText("条款解释")).toHaveValue("人工核对条款");
+  expect(submit).toBeDisabled();
+  rerender(
+    <RulesPanel
+      bid={bid}
+      reviewState={blockedReviewState}
+      onChanged={vi.fn()}
+    />,
+  );
+  await user.click(submit);
   await waitFor(() => expect(posted).toBeDefined());
   expect((posted?.headers as Record<string, string>)["If-Match"]).toBe(
     '"bid-1"',
@@ -677,6 +848,7 @@ it("keeps manual input after stale ETag and requires explicit source reselection
   let attempted = false;
   fetchMock.mockImplementation(async (input) => {
     const url = String(input);
+    if (url.endsWith("/operations/op-prepare")) return json(failedPreparation);
     if (url.endsWith("/manual-rule-set")) {
       attempted = true;
       return json({ code: "REVISION_CONFLICT", message: "版本已变" }, 412);
@@ -718,7 +890,13 @@ it("keeps manual input after stale ETag and requires explicit source reselection
     throw new Error(`Unexpected route ${url}`);
   });
   const user = userEvent.setup();
-  render(<RulesPanel bid={bid} onChanged={vi.fn()} />);
+  render(
+    <RulesPanel
+      bid={bid}
+      reviewState={blockedReviewState}
+      onChanged={vi.fn()}
+    />,
+  );
   await user.click(
     await screen.findByRole("button", { name: "人工建立要求清单" }),
   );

@@ -21,12 +21,14 @@ export function ManualRuleForm({
   bid,
   ruleSet,
   ruleSetETag,
+  initialAvailable,
   onSaved,
   onClose,
 }: {
   bid: Bid;
   ruleSet: RuleSetView | null;
   ruleSetETag: string | null;
+  initialAvailable: boolean;
   onSaved: () => void;
   onClose: () => void;
 }) {
@@ -65,6 +67,7 @@ export function ManualRuleForm({
       (ruleSet !== null &&
         ruleSet.material_revision !== project.data.material_revision));
   async function submit() {
+    if (!ruleSet && !initialAvailable) return;
     const addition: RuleAddition = {
       kind,
       statement: statement.trim(),
@@ -439,6 +442,7 @@ export function ManualRuleForm({
             className="button primary"
             disabled={
               command.busy ||
+              (!ruleSet && !initialAvailable) ||
               !(ruleSet ? ruleSetETag : project.etag) ||
               !statement.trim() ||
               !scope.trim() ||

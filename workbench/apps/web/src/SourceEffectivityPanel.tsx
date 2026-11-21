@@ -101,7 +101,9 @@ function SourceEffectivityForm({
   const path = `/bids/${bid.id}/source-effectivity`;
   const decisionPath = `/bids/${bid.id}/source-effectivity-decisions`;
   const resource = useResource<View>(path);
-  const rules = useResource<RuleSetView>(`/bids/${bid.id}/rules`);
+  const rules = useResource<RuleSetView>(
+    resource.data?.rule_set_id ? `/bids/${bid.id}/rules` : null,
+  );
   const [base, setBase] = useState<{ etag: string; ruleSet: string } | null>(
     null,
   );

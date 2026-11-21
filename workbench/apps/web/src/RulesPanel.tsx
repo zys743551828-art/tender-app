@@ -1,5 +1,11 @@
 import { useState } from "react";
-import type { BatchRuleConfirmation, Bid, RuleSetView } from "./contracts";
+import type {
+  BatchRuleConfirmation,
+  Bid,
+  Operation,
+  ReviewStateView,
+  RuleSetView,
+} from "./contracts";
 import { ApiError, supportsApi } from "./api";
 import { ruleConfirmationLimit } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
@@ -13,12 +19,53 @@ import { confirmationNames, ruleKindNames } from "./workspaceTypes";
 
 export function RulesPanel({
   bid,
+  reviewState,
+  reviewStateError,
   onChanged,
 }: {
   bid: Bid;
+  reviewState?: ReviewStateView;
+  reviewStateError?: unknown;
   onChanged: () => void;
 }) {
   const resource = useResource<RuleSetView>(`/bids/${bid.id}/rules`);
+  const notReady =
+    !resource.data &&
+    resource.error instanceof ApiError &&
+    resource.error.status === 409 &&
+    resource.error.code === "RULE_SET_NOT_READY";
+  const state =
+    reviewState?.bid_id === bid.id &&
+    reviewState.material_revision === bid.material_revision
+      ? reviewState
+      : undefined;
+  const request =
+    state?.request &&
+    state.request.material_snapshot_id === state.current_material_snapshot_id &&
+    state.request.material_revision === state.material_revision
+      ? state.request
+      : null;
+  const blocked =
+    notReady &&
+    !state?.current_rule_set_id &&
+    request?.state === "blocked" &&
+    !request.review_id;
+  const operation = useResource<Operation>(
+    blocked ? `/operations/${request.prepare_operation_id}` : null,
+  );
+  const operationError =
+    operation.error ??
+    (operation.data &&
+    (operation.data.bid_id !== bid.id ||
+      operation.data.id !== request?.prepare_operation_id)
+      ? new Error("准备任务与当前请求不一致，请重新读取。")
+      : undefined);
+  const failedExtraction =
+    blocked &&
+    !reviewStateError &&
+    !operationError &&
+    operation.data?.kind === "prepare-review" &&
+    operation.data.state === "failed";
   const [selected, setSelected] = useState<string[]>([]);
   const [manual, setManual] = useState(false);
   const [batchResult, setBatchResult] = useState<{
@@ -49,14 +96,25 @@ export function RulesPanel({
         </div>
         <ResourceState
           {...resource}
+          error={notReady ? reviewStateError : resource.error}
           hasData={!!resource.data}
-          onRetry={() => void resource.reload()}
+          onRetry={notReady ? onChanged : () => void resource.reload()}
         />
-        {resource.error instanceof ApiError &&
-          resource.error.code === "RULE_SET_NOT_READY" && (
+        {blocked && !reviewStateError && (
+          <ResourceState
+            {...operation}
+            error={operationError}
+            hasData={!!operation.data}
+            onRetry={() => void operation.reload()}
+          />
+        )}
+        {notReady &&
+          !reviewStateError &&
+          (!blocked || (!operationError && operation.data)) &&
+          (failedExtraction ? (
             <div className="notice warning">
               <p>
-                要求提取失败时，可按冻结原文人工逐条建立清单；整体覆盖仍为未知。
+                本次要求提取失败。可按本次冻结的原文逐条建立清单，整体覆盖仍为未知。
               </p>
               <button
                 className="button secondary"
@@ -69,7 +127,17 @@ export function RulesPanel({
                 人工建立要求清单
               </button>
             </div>
-          )}
+          ) : (
+            <p className="small-empty" role="status">
+              {state?.current_material_snapshot_id === null
+                ? "尚未生成要求清单。请先在「项目资料」上传招标原件和受检正文。"
+                : request?.state === "preparing"
+                  ? "正在准备本轮要求，清单生成后可在这里核对。"
+                  : blocked
+                    ? "本次准备未完成。请在「处理记录」查看具体原因。"
+                    : "尚未生成要求清单。请在「项目资料」核对招标原件和受检正文，再开始评审。"}
+            </p>
+          ))}
         {resource.data && (
           <div className="rules-intro">
             {rules.length > 0 &&
@@ -111,18 +179,16 @@ export function RulesPanel({
           </div>
         )}
       </section>
-      {manual &&
-        (resource.data ||
-          (resource.error instanceof ApiError &&
-            resource.error.code === "RULE_SET_NOT_READY")) && (
-          <ManualRuleForm
-            bid={bid}
-            ruleSet={resource.data ?? null}
-            ruleSetETag={resource.etag}
-            onSaved={refresh}
-            onClose={() => setManual(false)}
-          />
-        )}
+      {manual && (
+        <ManualRuleForm
+          bid={bid}
+          ruleSet={resource.data ?? null}
+          ruleSetETag={resource.etag}
+          initialAvailable={failedExtraction}
+          onSaved={refresh}
+          onClose={() => setManual(false)}
+        />
+      )}
       {rules.length > 0 && (
         <div className="batch-rule-toolbar">
           <span>
