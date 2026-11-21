@@ -62,6 +62,7 @@ async function fitsNativeSelect(locator) {
     actual >= intrinsic - 1,
     `Select clips its options: ${Math.round(actual)}px available, ${Math.round(intrinsic)}px needed`,
   );
+  return intrinsic;
 }
 
 async function checkVisibleFocus(locator) {
@@ -167,6 +168,43 @@ async function checkProject(page, scale, section) {
   const theme = page.getByLabel("外观主题");
   const breadcrumb = topbar.locator(":scope > span");
   const topbarBox = await topbar.boundingBox();
+  if (await picker.isVisible()) {
+    const areaBox = await picker.boundingBox();
+    const themeBox = await theme.boundingBox();
+    const available = await topbar.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return (
+        el.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
+      );
+    });
+    const areaWidth = await fitsNativeSelect(picker);
+    const themeWidth = await fitsNativeSelect(theme);
+    console.log(
+      `Topbar ${Math.round(available)}px, workspace y=${areaBox.y} h=${areaBox.height}, theme y=${themeBox.y} h=${themeBox.height}`,
+    );
+    if (process.env.TOPBAR_EVIDENCE_DIR && section === "materials") {
+      const scheme = await page.evaluate(
+        () => document.documentElement.dataset.theme,
+      );
+      await topbar.screenshot({
+        path: `${process.env.TOPBAR_EVIDENCE_DIR}/topbar-${page.viewportSize().width}-${scale}x-${scheme}.png`,
+      });
+    }
+    assert(
+      areaBox.height >= 44 && Math.abs(areaBox.height - themeBox.height) < 1,
+      "Mobile topbar controls need matching touch heights",
+    );
+    if (Math.max(118, areaWidth) + Math.max(104, themeWidth) + 8 <= available)
+      assert(
+        Math.abs(areaBox.y - themeBox.y) < 1,
+        "Workspace and theme controls should share a row when both fit",
+      );
+    await picker.focus();
+    await page.keyboard.press("Tab");
+    await checkVisibleFocus(theme);
+  }
   const items = [];
   for (const el of [breadcrumb, picker, theme]) {
     if (!(await el.isVisible())) continue;
@@ -216,11 +254,6 @@ async function checkProject(page, scale, section) {
       "Adjacent project actions need a visible gap",
     );
   }
-  if (scale === 2) {
-    await fitsNativeSelect(picker);
-    await fitsNativeSelect(theme);
-  }
-
   const projectPicker = page.getByLabel("当前工作区");
   const navigation = (await projectPicker.isVisible())
     ? projectPicker
@@ -303,8 +336,12 @@ try {
     for (const [width, height, scale] of [
       [1440, 900, 1],
       [640, 450, 1],
+      [760, 900, 2],
+      [430, 932, 1],
+      [375, 844, 1],
       [390, 844, 1],
       [390, 844, 2],
+      [320, 640, 1],
       [320, 640, 2],
     ]) {
       for (const screen of screens) {

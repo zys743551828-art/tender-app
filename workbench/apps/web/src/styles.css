@@ -1868,16 +1868,16 @@ tbody tr:hover {
   .project-page > .page-heading > div {
     flex-basis: 100%;
   }
-  .topbar .breadcrumb-separator {
-    padding-inline: 6px;
-  }
-}
-@media (max-width: 360px) {
   .topbar > span {
     display: none;
   }
   .topbar-actions {
-    margin-inline-start: auto;
+    width: 100%;
+  }
+  .mobile-area-picker,
+  .topbar-actions .theme-picker,
+  .topbar-actions .theme-picker select {
+    flex: 1 0 auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {

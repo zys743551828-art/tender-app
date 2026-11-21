@@ -330,42 +330,42 @@ export function App() {
                           : "投标项目"}
               </strong>
             </span>
-            <select
-              className="mobile-area-picker"
-              aria-label="切换工作区"
-              value={projectId ? "" : area}
-              onChange={(event) => {
-                const value = event.target.value;
-                if (
-                  value === "history" ||
-                  value === "research" ||
-                  value === "knowledge" ||
-                  value === "metrics" ||
-                  value === "assistant"
-                )
-                  void openArea(value);
-                else if (value === "projects") void navigate(null);
-              }}
-            >
-              {projectId && (
-                <option value="" disabled>
-                  项目工作区
-                </option>
-              )}
-              {supportsApi("GET", "/metrics") && (
-                <option value="metrics">业务结果与指标</option>
-              )}
-              {supportsApi("GET", "/assistant/global-conversations/main") && (
-                <option value="assistant">工作助手</option>
-              )}
-              <option value="projects">投标项目</option>
-              <option value="history">项目档案</option>
-              <option value="research">评分研究</option>
-              {supportsApi("GET", "/knowledge") && (
-                <option value="knowledge">企业知识</option>
-              )}
-            </select>
             <div className="topbar-actions">
+              <select
+                className="mobile-area-picker"
+                aria-label="切换工作区"
+                value={projectId ? "" : area}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  if (
+                    value === "history" ||
+                    value === "research" ||
+                    value === "knowledge" ||
+                    value === "metrics" ||
+                    value === "assistant"
+                  )
+                    void openArea(value);
+                  else if (value === "projects") void navigate(null);
+                }}
+              >
+                {projectId && (
+                  <option value="" disabled>
+                    项目工作区
+                  </option>
+                )}
+                {supportsApi("GET", "/metrics") && (
+                  <option value="metrics">业务结果与指标</option>
+                )}
+                {supportsApi("GET", "/assistant/global-conversations/main") && (
+                  <option value="assistant">工作助手</option>
+                )}
+                <option value="projects">投标项目</option>
+                <option value="history">项目档案</option>
+                <option value="research">评分研究</option>
+                {supportsApi("GET", "/knowledge") && (
+                  <option value="knowledge">企业知识</option>
+                )}
+              </select>
               <span className="environment-label">资料工作区</span>
               <ThemePicker {...theme} />
             </div>

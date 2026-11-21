@@ -130,11 +130,16 @@
     display: none;
   }
   .topbar-actions {
-    gap: 4px;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    max-width: 100%;
+    gap: 4px 8px;
   }
   .topbar-actions .theme-picker select {
     width: max-content;
     min-width: 104px;
+    min-height: 44px;
+    padding-block: 7px;
   }
   .login-theme {
     right: 20px;
