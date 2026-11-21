@@ -517,7 +517,7 @@ it("shows completed exact-run scope and opens its verified native details withou
   );
   await screen.findByText(/服务器当前任务状态：已记录处理结果/);
   expect(screen.getByText(/整体覆盖仍为部分/)).toBeVisible();
-  expect(screen.queryByText("核对本次冻结受检稿原件")).not.toBeInTheDocument();
+  expect(screen.queryByText("下载本次冻结受检稿原件")).not.toBeInTheDocument();
   expect(screen.queryByRole("link", { name: /api/ })).not.toBeInTheDocument();
   await user.click(
     screen.getByRole("button", { name: "查看任务绑定的原生整包核查" }),
@@ -541,7 +541,7 @@ it("rejects a forged native path without exposing a single-body or alternate run
   expect(
     screen.queryByRole("button", { name: "查看任务绑定的原生整包核查" }),
   ).not.toBeInTheDocument();
-  expect(screen.queryByText("核对本次冻结受检稿原件")).not.toBeInTheDocument();
+  expect(screen.queryByText("下载本次冻结受检稿原件")).not.toBeInTheDocument();
   expect(
     transport.paths.some(
       (path) => path.includes("/operations/") || path.includes("/review-runs/"),

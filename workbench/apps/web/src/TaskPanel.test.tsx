@@ -6,6 +6,10 @@ import { TaskTemplateEditor } from "./TaskTemplateEditor";
 import { TaskTemplateCard } from "./TaskTemplateCard";
 import { TaskDraftPanel } from "./TaskDraftPanel";
 import { TaskRunCard } from "./TaskRunCard";
+import {
+  sourceDocument,
+  sourceEvidence,
+} from "./sourceSurfaceFixtures.test-support";
 import { newTaskConfiguration } from "./taskState";
 import type {
   TaskDraftView,
@@ -430,8 +434,19 @@ it("仅保存草案失响应后的恢复不能变成保存模板", async () => {
 it("补遗本地处理成功仍明确语义未检查，不能把取消请求说成取消终态", async () => {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (url: string) =>
-      url.includes("task-runs")
+    vi.fn(async (url: string) => {
+      if (url.endsWith(`/documents/${sourceDocument.id}`))
+        return json({
+          ...sourceDocument,
+          bid_id: "bid",
+          filename: "合成资审.pdf",
+          artifact_kind: "bid_body",
+          role: "body",
+        });
+      if (url.endsWith("/evidence")) return json(sourceEvidence);
+      if (url.endsWith("/download"))
+        return json({ message: "此夹具只核对版本说明" }, 403);
+      return url.includes("task-runs")
         ? json({
             id: "run",
             bid_id: "bid",
@@ -440,7 +455,10 @@ it("补遗本地处理成功仍明确语义未检查，不能把取消请求说�
             final_operation_id: null,
             state: "succeeded",
             stage: "execution",
-            frozen_manifest: { definition_id: "template" },
+            frozen_manifest: {
+              definition_id: "template",
+              context: { body_version_id: sourceDocument.id },
+            },
             result: { impacts: [] },
             error_code: null,
             formal_decisions_created: false,
@@ -463,8 +481,8 @@ it("补遗本地处理成功仍明确语义未检查，不能把取消请求说�
             })
           : url.includes("/operations/")
             ? json({ id: "operation", bid_id: "bid", state: "succeeded" })
-            : fallback(url),
-    ),
+            : fallback(url);
+    }),
   );
   render(<TaskRunCard bidId="bid" memberId="member" id="run" />);
   await screen.findByText(/已汇总已登记关系，语义影响尚未检查/);
@@ -472,6 +490,18 @@ it("补遗本地处理成功仍明确语义未检查，不能把取消请求说�
   expect(
     screen.queryByRole("button", { name: "取消本次在途处理" }),
   ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "下载本次冻结受检稿原件" }),
+  ).toBeVisible();
+  await userEvent.click(
+    screen.getByRole("button", { name: "查看此版PDF原页" }),
+  );
+  expect(
+    await screen.findByRole("heading", { name: "合成资审.pdf" }),
+  ).toBeVisible();
+  expect(
+    screen.getByText(/当前预览的是本次任务冻结的受检稿版本/),
+  ).toBeVisible();
 });
 it("已成功保存的编辑草稿不保留旧CAS基准，下一次编辑按当前暂停修订", async () => {
   const user = userEvent.setup();

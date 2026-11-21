@@ -98,7 +98,7 @@ export function AssistantActionCard({
                 bidId={action.target_bid_id}
                 documentId={action.preview.body_version_id}
                 isPdf
-                downloadLabel="核对提议中的受检稿原件"
+                downloadLabel="下载提议中的受检稿原件"
               />
             </>
           )}
@@ -123,7 +123,7 @@ export function AssistantActionCard({
                   bidId={action.target_bid_id}
                   documentId={documentId}
                   isPdf
-                  downloadLabel="核对候选知识来源原件"
+                  downloadLabel="下载候选知识来源原件"
                 />
               ))}
             </>

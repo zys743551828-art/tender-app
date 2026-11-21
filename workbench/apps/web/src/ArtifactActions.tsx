@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { api, objectFetch } from "./api";
-import type { DocumentView, DownloadGrant } from "./contracts";
+import { api } from "./api";
+import type { DocumentView } from "./contracts";
+import { downloadDocument } from "./downloadDocument";
 import { ErrorNotice } from "./components";
 import { Evidence } from "./Evidence";
 
@@ -38,86 +39,63 @@ function ScopedArtifactActions({
   bidId,
   documentId,
   isPdf,
-  downloadLabel = "下载生成文件",
+  downloadLabel = "下载此版本文件",
   suggestedFilename,
   expectedArtifactKind,
   expectedMediaType,
   previewNotice,
 }: Props) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"download" | "preview" | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [preview, setPreview] = useState<DocumentView | null>(null);
   const previewTrigger = useRef<HTMLElement | null>(null);
-  const active = useRef(false);
-  const working = useRef(false);
-  const generation = useRef(0);
+  const request = useRef<AbortController | null>(null);
   useEffect(() => {
-    active.current = true;
-    const requests = generation;
-    return () => {
-      active.current = false;
-      requests.current++;
-    };
+    return () => request.current?.abort();
   }, []);
+  function cancelDownload() {
+    request.current?.abort();
+    request.current = null;
+    setBusy(null);
+  }
   async function open(download: boolean) {
-    if (!active.current || working.current) return;
-    working.current = true;
-    const request = ++generation.current;
-    const current = () => active.current && generation.current === request;
+    if (request.current) return;
+    const controller = new AbortController();
+    request.current = controller;
+    const { signal } = controller;
     if (!download)
       previewTrigger.current = document.activeElement as HTMLElement | null;
-    setBusy(true);
+    setBusy(download ? "download" : "preview");
     setError(null);
     try {
       const { data: document } = await api<DocumentView>(
         `/documents/${documentId}`,
+        { signal },
       );
-      if (!current()) return;
+      signal.throwIfAborted();
       if (document.id !== documentId || document.bid_id !== bidId)
-        throw new Error("生成文件身份无法核对，未打开其他项目原件。");
+        throw new Error("文件版本与当前项目或记录不一致，请刷新核对。");
       if (
         (expectedArtifactKind &&
           document.artifact_kind !== expectedArtifactKind) ||
         (expectedMediaType && document.media_type !== expectedMediaType)
       )
         throw new Error(
-          "文件用途或格式与此取件入口不一致，未将正文或其他副本作为报告取回。请刷新核对。",
+          "文件用途或格式与此取件入口不一致，请刷新核对。",
         );
       if (!download) {
         if (document.media_type !== "application/pdf")
-          throw new Error("此输出不是PDF，不能作为原页预览。");
+          throw new Error("该文件格式不支持 PDF 原页预览。");
         setPreview(document);
         return;
       }
-      const { data: grant } = await api<DownloadGrant>(
-        `/artifacts/${documentId}/download`,
-      );
-      if (!current()) return;
-      if (grant.artifact_id !== documentId)
-        throw new Error("取件授权与生成文件身份不一致，请重试。");
-      const response = await objectFetch(grant.download_url);
-      if (!current()) return;
-      if (!response.ok)
-        throw new Error(`生成文件取回失败（${response.status}），请重试取件。`);
-      const blob = await response.blob();
-      if (!current()) return;
-      const url = URL.createObjectURL(blob);
-      const link = window.document.createElement("a");
-      link.href = url;
-      link.download = suggestedFilename ?? grant.filename;
-      try {
-        window.document.body.appendChild(link);
-        link.click();
-      } finally {
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
+      await downloadDocument(document, signal, suggestedFilename);
     } catch (failure) {
-      if (current()) setError(failure);
+      if (!signal.aborted) setError(failure);
     } finally {
-      if (current()) {
-        working.current = false;
-        setBusy(false);
+      if (request.current === controller && !signal.aborted) {
+        request.current = null;
+        setBusy(null);
       }
     }
   }
@@ -127,19 +105,28 @@ function ScopedArtifactActions({
         <button
           type="button"
           className="button secondary"
-          disabled={busy}
+          disabled={!!busy}
           onClick={() => void open(true)}
         >
-          {busy ? "正在取回文件…" : downloadLabel}
+          {busy === "download" ? "正在取回并核验文件…" : downloadLabel}
         </button>
+        {busy === "download" && (
+          <button
+            type="button"
+            className="text-button"
+            onClick={cancelDownload}
+          >
+            取消下载
+          </button>
+        )}
         {isPdf && (
           <button
             type="button"
             className="text-button"
-            disabled={busy}
+            disabled={!!busy}
             onClick={() => void open(false)}
           >
-            查看此版PDF原页
+            {busy === "preview" ? "正在打开预览…" : "查看此版PDF原页"}
           </button>
         )}
       </div>
@@ -150,8 +137,7 @@ function ScopedArtifactActions({
           returnFocus={previewTrigger}
           onClose={() => setPreview(null)}
           contextNotice={
-            previewNotice ??
-            "这是本次固定快照生成的文件。生成成功不表示已经评审或解决风险。"
+            previewNotice ?? "当前预览的是这条记录引用的文件版本。"
           }
         />
       )}

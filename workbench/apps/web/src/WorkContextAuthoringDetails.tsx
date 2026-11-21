@@ -233,6 +233,7 @@ export function WorkContextAuthoringDetails({
                     documentId={out.document.document_version_id}
                     isPdf={out.format === "pdf"}
                     expectedMediaType={out.document.media_type}
+                    previewNotice="此文件由所选生成记录的草稿快照生成。"
                     downloadLabel={`下载此次 ${out.format.toUpperCase()}`}
                   />
                 )}

@@ -403,7 +403,8 @@ export function TaskRunCard({
               bidId={bidId}
               documentId={bodyId}
               isPdf
-              downloadLabel="核对本次冻结受检稿原件"
+              downloadLabel="下载本次冻结受检稿原件"
+              previewNotice="当前预览的是本次任务冻结的受检稿版本。评审结论请查看对应的评审记录。"
             />
           )}
           {config?.config.definition.task_kind === "supplement_impact" && (

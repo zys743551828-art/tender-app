@@ -15,7 +15,8 @@ import type {
 } from "./contracts";
 import { PdfPreview } from "./PdfPreview";
 import { SourceSurface } from "./SourceSurface";
-import { api, objectFetch, parseNames, roleNames, sha256Hex } from "./api";
+import { api, parseNames, roleNames } from "./api";
+import { downloadDocument, hasDocumentDigest } from "./downloadDocument";
 import { Badge, ErrorNotice, Icon, Loading } from "./components";
 import { contentClues } from "./contentClues";
 import { EvidenceSearch } from "./EvidenceSearch";
@@ -42,9 +43,7 @@ export function Evidence({
   >(null);
   const evidence =
     evidenceRecord?.document_version_id === document.id ? evidenceRecord : null;
-  const hasDigest =
-    typeof document.sha256 === "string" &&
-    /^[0-9a-f]{64}$/.test(document.sha256);
+  const hasDigest = hasDocumentDigest(document);
   const grant =
     hasDigest && grantRecord?.artifact_id === document.id ? grantRecord : null;
   const [error, setError] = useState<unknown>(null);
@@ -116,44 +115,7 @@ export function Evidence({
     setDownloading(true);
     setDownloadError(null);
     try {
-      const { data } = await api<DownloadGrant>(
-        `/artifacts/${document.id}/download`,
-      );
-      if (controller.signal.aborted) return;
-      if (data.artifact_id !== document.id)
-        throw new Error("原件下载身份不一致，未下载其他文件。");
-      const response = await objectFetch(data.download_url, {
-        signal: controller.signal,
-      });
-      if (controller.signal.aborted) return;
-      if (!response.ok)
-        throw new Error(
-          `原件取回失败（${response.status}）。已保存的原件仍保留，请重试取件。`,
-        );
-      const bytes = await response.arrayBuffer();
-      if (controller.signal.aborted) return;
-      if (
-        bytes.byteLength !== document.byte_size ||
-        (await sha256Hex(bytes)) !== document.sha256
-      )
-        throw new Error(
-          "取回字节与本版本的原件摘要或大小不一致，未保存文件。请重试取件。",
-        );
-      if (controller.signal.aborted) return;
-      const url = URL.createObjectURL(
-        new Blob([bytes], { type: document.media_type }),
-      );
-      const link = window.document.createElement("a");
-      link.href = url;
-      link.download = document.filename;
-      link.style.display = "none";
-      try {
-        window.document.body.appendChild(link);
-        link.click();
-      } finally {
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
+      await downloadDocument(document, controller.signal);
     } catch (failure) {
       if (!controller.signal.aborted) setDownloadError(failure);
     } finally {

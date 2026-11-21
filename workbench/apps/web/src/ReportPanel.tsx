@@ -366,6 +366,7 @@ function ReportCard({
               downloadLabel={`下载${reportLabel(report)}`}
               suggestedFilename={filename(projectTitle, report)}
               expectedArtifactKind={report.artifact_kind}
+              previewNotice={`当前预览的是本次评审导出的${reportLabel(report)}。`}
               expectedMediaType={
                 report.format === "pdf"
                   ? "application/pdf"

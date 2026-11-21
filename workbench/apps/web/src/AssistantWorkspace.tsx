@@ -942,7 +942,7 @@ function AssistantMessageCard({
             bidId={part.source_bid_id}
             documentId={part.document_version_id}
             isPdf
-            downloadLabel="核对当时附带的资料原件"
+            downloadLabel="下载当时附带的资料原件"
           />
         ) : (
           <AssistantAnswer key={index} part={part} memberId={memberId} />
@@ -1008,7 +1008,7 @@ function AssistantAnswer({
                 bidId={citation.position.bid_id}
                 documentId={citation.position.document_version_id}
                 isPdf
-                downloadLabel="核对答复对应的原件版本"
+                downloadLabel="下载答复对应的原件版本"
               />
             )}
         </section>

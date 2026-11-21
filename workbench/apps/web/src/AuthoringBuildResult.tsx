@@ -260,6 +260,7 @@ export function AuthoringBuildResult({
                     documentId={output.document_version_id}
                     isPdf={output.format === "pdf"}
                     expectedArtifactKind="bid_body"
+                    previewNotice="此文件由本次草稿快照生成。请在对应的评审轮次核对范围和结论。"
                     expectedMediaType={
                       output.format === "pdf"
                         ? "application/pdf"

@@ -84,6 +84,7 @@ export async function api<T>(
     etag?: string | null;
     ifNoneMatch?: "*" | null;
     key?: string;
+    signal?: AbortSignal;
   } = {},
 ): Promise<ApiResult<T>> {
   const method = options.method ?? "GET";
@@ -107,11 +108,13 @@ export async function api<T>(
       method,
       credentials: "same-origin",
       headers,
+      signal: options.signal,
       ...(options.body === undefined
         ? {}
         : { body: JSON.stringify(options.body) }),
     });
   } catch {
+    options.signal?.throwIfAborted();
     throw new ApiError(
       "暂时无法连接服务。已完成的资料仍保留，请稍后重试。",
       0,
