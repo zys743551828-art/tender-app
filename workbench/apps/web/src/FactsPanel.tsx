@@ -26,7 +26,7 @@ export function FactsPanel({
   return (
     <div>
       <section className="panel">
-        <div className="section-heading">
+        <div className="section-heading heading-with-action">
           <div>
             <h2>工程事实</h2>
             <p className="muted">

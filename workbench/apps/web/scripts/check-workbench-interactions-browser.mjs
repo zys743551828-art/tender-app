@@ -85,7 +85,7 @@ function fixture(path, query) {
     };
   }
   if (path === "/bids") return { ...empty, items: bids };
-  if (path === "/history") return empty;
+  if (path === "/history" || path === "/knowledge") return empty;
   if (path === "/project-work-summaries")
     return {
       version: "project-work-summary/1",
@@ -98,6 +98,7 @@ function fixture(path, query) {
   if (!bid) return null;
   const suffix = path.slice(`/bids/${bid.id}`.length);
   if (suffix === "") return bid;
+  if (suffix === "/facts") return { bid_id: bid.id, facts: [] };
   if (suffix === "/review-state")
     return { bid_id: bid.id, request: null, current_review: null };
   if (suffix === "/settings")
@@ -230,6 +231,62 @@ async function checkMaterialRow(page) {
   await page.keyboard.press("Tab");
   await checkFocus(action);
   await checkVisibleText(action);
+}
+
+async function checkPanelActions(page) {
+  const visit = (path) => page.goto(new URL(path, page.url()).href);
+  await visit(`/bids/${bids[0].id}/overview`);
+  const summary = page.getByRole("region", { name: "项目整包摘要" });
+  const counts = summary.getByText("依据包 2 · 投标包 1");
+  await counts.waitFor();
+  const inset = await summary.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const title = el.querySelector("h2").getBoundingClientRect();
+    const action = el.querySelector(".primary").getBoundingClientRect();
+    const note = el
+      .querySelector(":scope > .small-note")
+      .getBoundingClientRect();
+    return {
+      title: title.left - box.left,
+      note: note.left - box.left,
+      right: box.right - note.right,
+      bottom: box.bottom - action.bottom,
+    };
+  });
+  assert(
+    inset.note >= 12 &&
+      inset.right >= 12 &&
+      inset.bottom >= 12 &&
+      Math.abs(inset.title - inset.note) <= 1,
+    "Summary text and action need the heading's inset",
+  );
+  for (const [path, label] of [
+    [`/bids/${bids[0].id}/facts`, "补充有据事实"],
+    ["/knowledge", "建立知识候选"],
+  ]) {
+    await visit(path);
+    const button = page.getByRole("button", { name: label, exact: true });
+    await button.scrollIntoViewIfNeeded();
+    await hitTarget(button);
+    const layout = await button.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const box = el.getBoundingClientRect();
+      const panel = el.parentElement.getBoundingClientRect();
+      const copy = el.previousElementSibling.getBoundingClientRect();
+      return {
+        lines: range.getClientRects().length,
+        fits: box.left >= panel.left && box.right <= panel.right,
+        stacked: box.top >= copy.bottom - 1,
+      };
+    });
+    assert(layout.lines === 1 && layout.fits, `${label} is split or clipped`);
+    if (page.viewportSize().width <= 195)
+      assert(
+        layout.stacked,
+        `${label} needs a separate row at 200% zoom width`,
+      );
+  }
 }
 
 async function checkFilePickers(page) {
@@ -648,6 +705,15 @@ try {
     }
   }
   if (suite !== "desktop") {
+    // 195 CSS px is the layout width of a 390px window at 200% browser zoom.
+    for (const width of [390, 195])
+      cases.push({
+        width,
+        height: 844,
+        mobile: true,
+        name: "panel-actions",
+        check: checkPanelActions,
+      });
     for (const [width, height] of [
       [320, 640],
       [390, 844],

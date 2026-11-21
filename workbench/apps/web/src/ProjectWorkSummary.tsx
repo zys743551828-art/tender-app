@@ -30,7 +30,7 @@ export function ProjectWorkSummary({
   const resource = useProjectSummaries([bidId]);
   const summary = resource.items.get(bidId);
   return (
-    <section className="panel" aria-label="项目整包摘要">
+    <section className="panel project-work-summary" aria-label="项目整包摘要">
       <div className="section-heading">
         <h2>整包工作概况</h2>
         <button

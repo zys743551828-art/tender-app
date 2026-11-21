@@ -99,7 +99,7 @@ export function Knowledge({
   }
   return (
     <div className="page-content knowledge-page">
-      <header className="page-heading">
+      <header className="page-heading heading-with-action">
         <div>
           <span className="eyebrow">有来源、有范围的可靠复用</span>
           <h1>企业知识</h1>
