@@ -133,6 +133,7 @@ export function HistoricalCitationPreview({
                     filename={document.filename}
                     page={citation.physical_page}
                     expectedSha256={document.sha256}
+                    byteSize={document.byte_size}
                     onPageCount={ignorePageCount}
                     onRefresh={refresh}
                   />

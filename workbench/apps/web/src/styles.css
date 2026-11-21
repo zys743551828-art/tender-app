@@ -1967,6 +1967,17 @@ th,
   max-width: 100%;
   flex-shrink: 0;
 }
+.pdf-read-progress {
+  display: grid;
+  width: min(100%, 20rem);
+  gap: 4px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.pdf-read-progress progress {
+  width: 100%;
+  accent-color: var(--green);
+}
 .pdf-canvas-container canvas[hidden] {
   display: none;
 }

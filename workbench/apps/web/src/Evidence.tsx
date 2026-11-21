@@ -397,6 +397,7 @@ export function Evidence({
                     key={grant.attempt}
                     url={grant.download_url}
                     expectedSha256={document.sha256}
+                    byteSize={document.byte_size}
                     filename={document.filename}
                     page={page}
                     onPageCount={setPageCount}
