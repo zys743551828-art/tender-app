@@ -40,6 +40,13 @@ type Member = CreateBidPackage["members"][number];
 type Part = Member["parts"][number];
 type Document = BidPackageDocumentPage["items"][number];
 type Base = { id: string; etag: string };
+function packageRecordKey(
+  kind: CreateBidPackage["kind"],
+  packageId: string,
+  revisionId: string,
+) {
+  return `${kind}/${packageId}/${revisionId}`;
+}
 type Pending = {
   version: 1;
   bidId: string;
@@ -175,7 +182,16 @@ function PackageWorkspace({
   const navigationEnabled = !!navigation;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
-  const [notice, setNotice] = useState("");
+  const recordKey = packageRecordKey(kind, selected, revision);
+  const [notice, setNotice] = useState<{
+    recordKey: string;
+    text: string;
+  } | null>(null);
+  useEffect(() => {
+    setNotice((previous) =>
+      previous?.recordKey === recordKey ? previous : null,
+    );
+  }, [recordKey]);
   const [conflict, setConflict] = useState(false);
   const [candidateBase, setCandidateBase] = useState<
     | (Base & { digest: string; revision: number; view?: BidPackageStoredView })
@@ -381,7 +397,10 @@ function PackageWorkspace({
           parts: structuredClone(m.parts),
         })),
       );
-      setNotice("本地选择来自刚读取的当前修订；修改后将保存为新修订。");
+      setNotice({
+        recordKey,
+        text: "本地选择来自刚读取的当前修订；修改后将保存为新修订。",
+      });
     } catch (failure) {
       if (active.current) setError(failure);
     } finally {
@@ -434,7 +453,7 @@ function PackageWorkspace({
     }
     setBusy(true);
     setError(null);
-    setNotice("");
+    setNotice(null);
     const body: CreateBidPackage | AppendBidPackage = base
       ? { members: draft }
       : { kind, members: draft };
@@ -482,9 +501,14 @@ function PackageWorkspace({
       );
       setDraft([]);
       setBase(null);
-      setNotice(
-        `已保存修订 ${result.data.manifest.revision}。这是该次操作的冻结记录；当前版本请单独读取。`,
-      );
+      setNotice({
+        recordKey: packageRecordKey(
+          operation.kind,
+          result.data.manifest.package_id,
+          result.data.manifest.revision_id,
+        ),
+        text: `已保存修订 ${result.data.manifest.revision}。这是该次操作的冻结记录；当前版本请单独读取。`,
+      });
       void packages.reload();
     } catch (failure) {
       if (active.current) {
@@ -954,9 +978,11 @@ function PackageWorkspace({
                 document.artifact_kind !==
                   (kind === "bid" ? "bid_body" : "source_original")
               }
-              onChange={(e) =>
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setNotice(null);
                 setDraft((old) =>
-                  e.target.checked
+                  checked
                     ? [
                         ...old,
                         {
@@ -967,8 +993,8 @@ function PackageWorkspace({
                         },
                       ]
                     : old.filter((m) => m.document_version_id !== document.id),
-                )
-              }
+                );
+              }}
             />
             <span>
               {document.filename} · {roleNames[document.role]} · 文件版本{" "}
@@ -999,6 +1025,7 @@ function PackageWorkspace({
           key={m.document_version_id}
           bidId={bidId}
           memberId={memberId}
+          kind={kind}
           member={m}
           document={documents.items.find((d) => d.id === m.document_version_id)}
           disabled={
@@ -1020,9 +1047,9 @@ function PackageWorkspace({
         />
       ))}
       <ErrorNotice error={error} />
-      {notice && (
+      {notice?.recordKey === recordKey && (
         <p role="status" className="notice neutral">
-          {notice}
+          {notice.text}
         </p>
       )}
       {conflict && (
@@ -1072,7 +1099,10 @@ function PackageWorkspace({
             setConflict(false);
             setCandidateBase(null);
             setError(null);
-            setNotice("已清空本地选择；服务器已保存历史仍保留。");
+            setNotice({
+              recordKey,
+              text: "已清空本地选择；服务器已保存历史仍保留。",
+            });
           }}
         >
           清空选择并新建
@@ -1105,6 +1135,7 @@ function PackageWorkspace({
 function MemberEditor({
   bidId,
   memberId,
+  kind,
   member,
   document,
   disabled,
@@ -1113,6 +1144,7 @@ function MemberEditor({
 }: {
   bidId: string;
   memberId: string;
+  kind: CreateBidPackage["kind"];
   member: Member;
   document?: Document;
   disabled: boolean;
@@ -1120,6 +1152,9 @@ function MemberEditor({
   onRemove: () => void;
 }) {
   const [purposeText, setPurposeText] = useState(member.purposes.join(","));
+  const purposeListId = `package-purposes-${member.document_version_id}`;
+  const purposeOptions =
+    kind === "bid" ? ["资格", "商务", "技术", "报价", "附件"] : ["要求依据"];
   const documentLabel = document
     ? `${document.filename} 版本 ${document.file_revision}`
     : `已选原件 ${member.document_version_id.slice(0, 8)}`;
@@ -1141,7 +1176,8 @@ function MemberEditor({
         <label>
           用途（逗号分隔）
           <input
-            list={`package-purposes-${member.document_version_id}`}
+            list={purposeListId}
+            aria-describedby={`${purposeListId}-help`}
             aria-label={`用途（逗号分隔）· ${documentLabel}`}
             value={purposeText}
             onChange={(e) => {
@@ -1155,13 +1191,14 @@ function MemberEditor({
             }}
           />
         </label>
-        <datalist id={`package-purposes-${member.document_version_id}`}>
-          {["资格", "商务", "技术", "报价", "附件", "要求依据"].map((value) => (
+        <datalist id={purposeListId}>
+          {purposeOptions.map((value) => (
             <option key={value} value={value} />
           ))}
         </datalist>
-        <p className="small-note">
-          可选资格、商务、技术、报价、附件，也可输入自定义用途；多个用途以逗号分隔。
+        <p id={`${purposeListId}-help`} className="small-note">
+          可选{purposeOptions.join("、")}
+          ，也可输入自定义用途。多个用途以逗号分隔。
         </p>
         <details>
           <summary>原件与解析身份</summary>

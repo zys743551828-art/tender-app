@@ -151,6 +151,55 @@ it("records explicit revision changes, clears their old inventory, and restores 
   expect(f.server.writes).toHaveLength(0);
 });
 
+it.each(["同包其他修订", "同类其他资料包"])(
+  "保存后浏览器返回%s时不沿用保存回执",
+  async (destination) => {
+    const f = await navigationFixture();
+    const user = userEvent.setup();
+    const other = structuredClone(f.f.target);
+    const samePackage = destination === "同包其他修订";
+    if (!samePackage) other.manifest.package_id = id(791);
+    other.manifest.revision_id = id(792);
+    other.manifest.revision = samePackage ? 2 : 1;
+    other.digest = await jsonDigest(other.manifest);
+    const otherRoute = packageLocation(f.scope.bidId, {
+      packageId: other.manifest.package_id,
+      revisionId: other.manifest.revision_id,
+      inventoryId: null,
+    });
+    f.server.onRead = (path) =>
+      path.endsWith(
+        `/packages/${other.manifest.package_id}/revisions/${other.manifest.revision_id}`,
+      )
+        ? navResponse(other)
+        : null;
+    f.server.onWrite = (_path, options) => f.acceptedPackage(options);
+    history.replaceState({}, "", otherRoute);
+    history.pushState({}, "", packageLocation(f.scope.bidId, null));
+    render(<App />);
+    await user.click(
+      await screen.findByRole("checkbox", {
+        name: "选择 合成技术册.pdf 版本 1",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "保存新资料包" }));
+    expect(await screen.findByText(/已保存修订 1/)).toBeVisible();
+    act(() => history.back());
+    await waitFor(() => expect(currentLocation()).toBe(otherRoute));
+    await screen.findByText(other.digest);
+    expect(
+      await screen.findByRole("heading", {
+        name: `明确选择的冻结记录 · 修订 ${other.manifest.revision}`,
+      }),
+    ).toBeVisible();
+    expect(screen.queryByText(/已保存修订/)).not.toBeInTheDocument();
+    act(() => history.forward());
+    await screen.findByText(f.server.package.digest);
+    expect(screen.queryByText(/已保存修订/)).not.toBeInTheDocument();
+    expect(f.server.writes).toHaveLength(1);
+  },
+);
+
 it("blocks normal navigation and popstate with unsent package input, then permits leaving after explicit cancellation", async () => {
   const f = await navigationFixture(),
     user = userEvent.setup(),

@@ -291,6 +291,7 @@ it("未明确选解析时保存未知原件，多用途逗号输入保留，未�
   const purposes = screen.getByRole("combobox", {
     name: "用途（逗号分隔）· 技术册.pdf 版本 1",
   });
+  expect(purposes).toHaveAccessibleDescription(/资格、商务、技术、报价、附件/);
   await user.clear(purposes);
   await user.type(purposes, "资格,商务,自定义");
   expect(purposes).toHaveValue("资格,商务,自定义");
@@ -488,6 +489,40 @@ it("CAS冲突保留本地选择，读取核对最新记录后才允许继续，�
   expect(writes[1].headers.get("If-Match")).toBe('"head:2"');
 });
 
+it("本方包保存回执在切到空的权威依据包及选择依据原件时消失", async () => {
+  const user = userEvent.setup();
+  const { writes } = install((url) => {
+    if (url.includes("package-documents?kind=authority"))
+      return json(
+        page([
+          {
+            ...document,
+            role: "tender",
+            artifact_kind: "source_original",
+            filename: "招标文件.pdf",
+          },
+        ]),
+      );
+  });
+  render(<BidPackages bidId="bid" />);
+  await user.click(
+    await screen.findByRole("checkbox", { name: "选择 技术册.pdf 版本 1" }),
+  );
+  await user.click(screen.getByRole("button", { name: "保存新资料包" }));
+  expect(await screen.findByText(/已保存修订 1/)).toBeVisible();
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "资料包类型" }),
+    "authority",
+  );
+  expect(await screen.findByText(/尚无此类资料包/)).toBeVisible();
+  expect(screen.queryByText(/已保存修订/)).not.toBeInTheDocument();
+  await user.click(
+    await screen.findByRole("checkbox", { name: "选择 招标文件.pdf 版本 1" }),
+  );
+  expect(screen.queryByText(/已保存修订/)).not.toBeInTheDocument();
+  expect(writes).toHaveLength(1);
+});
+
 it("切换类型使用独立目录，跨项目文档不显示，项目切换清空本地草稿", async () => {
   const user = userEvent.setup();
   const { requests } = install((url) => {
@@ -513,11 +548,14 @@ it("切换类型使用独立目录，跨项目文档不显示，项目切换清�
   await user.click(
     await screen.findByRole("checkbox", { name: "选择 招标文件.pdf 版本 1" }),
   );
-  expect(
-    screen.getByRole("combobox", {
-      name: "用途（逗号分隔）· 招标文件.pdf 版本 1",
-    }),
-  ).toHaveValue("要求依据");
+  const purposes = screen.getByRole<HTMLInputElement>("combobox", {
+    name: "用途（逗号分隔）· 招标文件.pdf 版本 1",
+  });
+  expect(purposes).toHaveValue("要求依据");
+  expect(purposes).toHaveAccessibleDescription(/要求依据.*自定义用途.*逗号/);
+  expect(Array.from(purposes.list!.options, (item) => item.value)).toEqual([
+    "要求依据",
+  ]);
   expect(requests).toContain(
     "/api/v1/bids/bid/package-documents?kind=authority&limit=20",
   );
