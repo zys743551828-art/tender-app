@@ -76,7 +76,11 @@ const result: BuildView = {
       format: "docx",
       state: "succeeded",
       document_version_id: "word",
-      gaps: [],
+      gaps: [
+        "AUTHORING_TABLE_PDF_GEOMETRY_UNVERIFIED",
+        "AUTHORING_CAPTION_OBJECT_UNVERIFIED",
+        "AUTHORING_RICH_OBJECT_LAYOUT_UNVERIFIED",
+      ],
     },
     {
       format: "pdf",
@@ -324,6 +328,9 @@ it("构建等待保存ACK，使用确认修订；PDF失败不会把Word成功改
     ack!(head);
   });
   await screen.findByText("转换器未就绪，Word仍可取件");
+  expect(screen.getByText(/核对表格的位置、行列/)).toBeInTheDocument();
+  expect(screen.getByText(/图题、表题与对应图表/)).toBeInTheDocument();
+  expect(screen.getByText(/图表在各章中的位置/)).toBeInTheDocument();
   expect(JSON.parse(writes[0].body as string)).toMatchObject({
     draft_id: "draft",
     draft_revision: 8,

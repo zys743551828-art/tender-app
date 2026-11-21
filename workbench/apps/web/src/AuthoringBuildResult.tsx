@@ -22,6 +22,12 @@ const explanations: Record<string, string> = {
     "各章实际物理页范围尚未测得；计划页数不代表实际页数。",
   AUTHORING_RICH_RENDER_NOT_CONFIGURED:
     "表格与图片的受控转换器未配置。可取回已生成的 Word；PDF、目录页码及章页范围仍未知。",
+  AUTHORING_TABLE_PDF_GEOMETRY_UNVERIFIED:
+    "请打开 PDF 原页，核对表格的位置、行列和单元格边界。",
+  AUTHORING_CAPTION_OBJECT_UNVERIFIED:
+    "请核对图题、表题与对应图表是否一一匹配。",
+  AUTHORING_RICH_OBJECT_LAYOUT_UNVERIFIED:
+    "请核对图表在各章中的位置和排列顺序。",
   PAGE_CORRESPONDENCE_UNVERIFIED:
     "页眉页脚及页码对应尚未完整核验，请核对生成原页。",
   PLACEHOLDER_CONTENT_PRESENT: "正文仍可能有待填写内容，请人工检查后再交付。",

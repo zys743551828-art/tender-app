@@ -641,7 +641,7 @@ function Projects({
   );
   return (
     <div className="page-content">
-      <div className="page-heading">
+      <div className="page-heading project-list-heading">
         <div>
           <span className="eyebrow">投标工作</span>
           <h1>投标项目</h1>

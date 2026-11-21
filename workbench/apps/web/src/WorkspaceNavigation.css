@@ -86,3 +86,17 @@
     font-size: 14px;
   }
 }
+@media (640px < width <= 1000px) {
+  .workspace-nav-tools:has(.workspace-navigation__picker) {
+    align-items: flex-end;
+    margin-bottom: 24px;
+  }
+  .workspace-nav-tools .workspace-navigation--grouped {
+    margin: 0;
+    padding-bottom: 0;
+  }
+  .workspace-nav-tools > .button {
+    min-height: 44px;
+    margin-top: 0;
+  }
+}

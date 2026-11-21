@@ -8,10 +8,9 @@ export function hasDocumentDigest(document: DocumentView) {
   );
 }
 
-export async function downloadDocument(
+export async function readVerifiedDocument(
   document: DocumentView,
   signal: AbortSignal,
-  filename = document.filename,
 ) {
   if (
     !hasDocumentDigest(document) ||
@@ -27,7 +26,16 @@ export async function downloadDocument(
   signal.throwIfAborted();
   if (grant.artifact_id !== document.id)
     throw new Error("下载授权与文件版本不一致，请重试取件。");
-  const response = await objectFetch(grant.download_url, { signal });
+  let response: Response;
+  try {
+    response = await objectFetch(grant.download_url, { signal });
+  } catch (failure) {
+    signal.throwIfAborted();
+    if (!(failure instanceof TypeError)) throw failure;
+    throw new Error(
+      "未能取回此版本文件。请检查网络连接和文件存储的访问权限后重试。",
+    );
+  }
   signal.throwIfAborted();
   if (!response.ok)
     throw new Error(`文件取回失败（${response.status}），请重试取件。`);
@@ -41,18 +49,30 @@ export async function downloadDocument(
       "取回字节与本版本的原件摘要或大小不一致，未保存文件。请重试取件。",
     );
   signal.throwIfAborted();
-  const url = URL.createObjectURL(
-    new Blob([bytes], { type: document.media_type }),
-  );
+  return new Blob([bytes], { type: document.media_type });
+}
+
+export function requestFileSave(blob: Blob, filename: string) {
   const link = window.document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.style.display = "none";
+  const url = URL.createObjectURL(blob);
   try {
+    link.download = filename;
+    link.href = url;
+    link.style.display = "none";
     window.document.body.appendChild(link);
     link.click();
   } finally {
     link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+}
+
+export async function downloadDocument(
+  document: DocumentView,
+  signal: AbortSignal,
+  filename = document.filename,
+) {
+  const blob = await readVerifiedDocument(document, signal);
+  signal.throwIfAborted();
+  requestFileSave(blob, filename);
 }

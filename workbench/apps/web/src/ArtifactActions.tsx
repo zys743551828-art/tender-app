@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import type { DocumentView } from "./contracts";
-import { downloadDocument } from "./downloadDocument";
+import { readVerifiedDocument, requestFileSave } from "./downloadDocument";
 import { ErrorNotice } from "./components";
 import { Evidence } from "./Evidence";
 
@@ -47,15 +47,31 @@ function ScopedArtifactActions({
 }: Props) {
   const [busy, setBusy] = useState<"download" | "preview" | null>(null);
   const [error, setError] = useState<unknown>(null);
+  const [receipt, setReceipt] = useState<{
+    url: string;
+    filename: string;
+    size: number;
+    automatic: boolean;
+  } | null>(null);
   const [preview, setPreview] = useState<DocumentView | null>(null);
   const previewTrigger = useRef<HTMLElement | null>(null);
   const request = useRef<AbortController | null>(null);
+  const manualUrl = useRef<string | null>(null);
+  function releaseManualUrl() {
+    if (manualUrl.current) URL.revokeObjectURL(manualUrl.current);
+    manualUrl.current = null;
+  }
   useEffect(() => {
-    return () => request.current?.abort();
+    return () => {
+      request.current?.abort();
+      releaseManualUrl();
+    };
   }, []);
   function cancelDownload() {
     request.current?.abort();
     request.current = null;
+    releaseManualUrl();
+    setReceipt(null);
     setBusy(null);
   }
   async function open(download: boolean) {
@@ -67,6 +83,8 @@ function ScopedArtifactActions({
       previewTrigger.current = document.activeElement as HTMLElement | null;
     setBusy(download ? "download" : "preview");
     setError(null);
+    releaseManualUrl();
+    setReceipt(null);
     try {
       const { data: document } = await api<DocumentView>(
         `/documents/${documentId}`,
@@ -87,7 +105,22 @@ function ScopedArtifactActions({
         setPreview(document);
         return;
       }
-      await downloadDocument(document, signal, suggestedFilename);
+      const blob = await readVerifiedDocument(document, signal);
+      signal.throwIfAborted();
+      const filename = suggestedFilename ?? document.filename;
+      // A persistent save link can also be opened in a tab. Offer the bytes as a download.
+      const url = URL.createObjectURL(
+        blob.slice(0, blob.size, "application/octet-stream"),
+      );
+      manualUrl.current = url;
+      let automatic = true;
+      try {
+        requestFileSave(blob, filename);
+      } catch {
+        automatic = false;
+      }
+      signal.throwIfAborted();
+      setReceipt({ url, filename, size: blob.size, automatic });
     } catch (failure) {
       if (!signal.aborted) setError(failure);
     } finally {
@@ -128,6 +161,24 @@ function ScopedArtifactActions({
           </button>
         )}
       </div>
+      {receipt && (
+        <div>
+          <p className="small-note" role="status">
+            文件已核验（SHA-256，{receipt.size} 字节）。
+            {receipt.automatic
+              ? "已请求浏览器下载。"
+              : "浏览器未能启动自动下载，请手动保存。"}
+          </p>
+          <a
+            className="text-button"
+            href={receipt.url}
+            download={receipt.filename}
+            style={{ overflowWrap: "anywhere" }}
+          >
+            手动保存 {receipt.filename}
+          </a>
+        </div>
+      )}
       <ErrorNotice error={error} />
       {preview && (
         <Evidence

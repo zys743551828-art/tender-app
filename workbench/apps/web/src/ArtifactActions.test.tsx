@@ -1,5 +1,6 @@
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -62,21 +63,27 @@ const grant = (id = "first") => ({
   },
   etag: null,
 });
-const createUrl = vi.fn(() => "blob:artifact");
+let nextUrl = 0;
+const createUrl = vi.fn<(blob: Blob) => string>(
+  () => `blob:artifact-${++nextUrl}`,
+);
+const revokeUrl = vi.fn();
 beforeEach(() => {
   vi.mocked(api).mockReset();
   vi.mocked(objectFetch).mockReset();
   createUrl.mockClear();
+  revokeUrl.mockClear();
   vi.stubGlobal(
     "URL",
     Object.assign(class extends URL {}, {
       createObjectURL: createUrl,
-      revokeObjectURL: vi.fn(),
+      revokeObjectURL: revokeUrl,
     }),
   );
   vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 });
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -228,15 +235,19 @@ it("suppresses same-turn repeated clicks and allows a new explicit download afte
   await act(async () => {
     pending.resolve(metadata());
   });
-  await waitFor(() => expect(createUrl).toHaveBeenCalledTimes(1));
+  await screen.findByRole("link", { name: /手动保存/ });
   expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+  const firstUrl = screen.getByRole("link").getAttribute("href");
   vi.mocked(api)
     .mockResolvedValueOnce(metadata())
     .mockResolvedValueOnce(grant());
   await act(async () => {
     fireEvent.click(screen.getByRole("button", { name: "下载此版本文件" }));
   });
-  await waitFor(() => expect(createUrl).toHaveBeenCalledTimes(2));
+  await waitFor(() =>
+    expect(screen.getByRole("link").getAttribute("href")).not.toBe(firstUrl),
+  );
+  expect(revokeUrl).toHaveBeenCalledWith(firstUrl);
   expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(2);
 });
 
@@ -314,7 +325,10 @@ it("cancels a pending download before saving and allows a new explicit download 
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1),
   );
   await act(async () => pending.resolve(verified));
-  expect(createUrl).toHaveBeenCalledTimes(1);
+  expect(
+    screen.getByRole("link", { name: "手动保存 合成报告.pdf" }),
+  ).toBeVisible();
+  expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
   expect(
     vi.mocked(HTMLAnchorElement.prototype.click).mock.contexts[0],
   ).toHaveProperty("download", "合成报告.pdf");
@@ -333,4 +347,130 @@ it("rejects malformed registration before asking for a download grant", async ()
   );
   expect(api).toHaveBeenCalledTimes(1);
   expect(objectFetch).not.toHaveBeenCalled();
+});
+
+it.each(["PDF", "Word"])(
+  "只为已核验的 %s 提供可再次保存的本地文件",
+  async (format) => {
+    const isPdf = format === "PDF";
+    const filename = isPdf ? "项目草稿.pdf" : "项目草稿.docx";
+    const mediaType = isPdf
+      ? "application/pdf"
+      : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const signedUrl = "/bytes/first?signature=synthetic-ticket";
+    vi.mocked(api)
+      .mockResolvedValueOnce({
+        data: { ...metadata().data, media_type: mediaType },
+        etag: null,
+      })
+      .mockResolvedValueOnce({
+        data: { ...grant().data, download_url: signedUrl },
+        etag: null,
+      });
+    vi.mocked(objectFetch).mockResolvedValueOnce(new Response("source"));
+    if (!isPdf)
+      vi.mocked(HTMLAnchorElement.prototype.click).mockImplementationOnce(
+        () => {
+          throw Error("synthetic blocked download");
+        },
+      );
+    const view = render(
+      <ArtifactActions
+        {...props}
+        isPdf={isPdf}
+        expectedMediaType={mediaType}
+        expectedArtifactKind="bid_body"
+        suggestedFilename={filename}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "下载此版本文件" }));
+    const link = await screen.findByRole("link", {
+      name: `手动保存 ${filename}`,
+    });
+    const manual = link.getAttribute("href")!;
+    const automatic = vi.mocked(HTMLAnchorElement.prototype.click).mock
+      .contexts[0] as HTMLAnchorElement;
+    expect(automatic.download).toBe(filename);
+    expect(manual).toMatch(/^blob:/);
+    expect(automatic.href).not.toBe(manual);
+    expect(link).toHaveAttribute("download", filename);
+    expect(view.container.innerHTML).not.toContain(signedUrl);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "文件已核验（SHA-256，6 字节）",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      isPdf ? "已请求浏览器下载" : "请手动保存",
+    );
+    expect(createUrl.mock.calls[0][0]).toMatchObject({
+      size: 6,
+      type: "application/octet-stream",
+    });
+    expect(createUrl.mock.calls[1][0]).toMatchObject({
+      size: 6,
+      type: mediaType,
+    });
+    await waitFor(
+      () => expect(revokeUrl).toHaveBeenCalledWith(automatic.href),
+      { timeout: 2200 },
+    );
+    expect(revokeUrl).not.toHaveBeenCalledWith(manual);
+    link.addEventListener("click", (event) => event.preventDefault(), {
+      once: true,
+    });
+    fireEvent.click(link);
+    expect(api).toHaveBeenCalledTimes(2);
+    expect(objectFetch).toHaveBeenCalledTimes(1);
+    if (isPdf) {
+      view.rerender(<ArtifactActions {...props} documentId="second" />);
+      expect(screen.queryByRole("link")).not.toBeInTheDocument();
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    }
+    view.unmount();
+    expect(revokeUrl.mock.calls.filter(([url]) => url === manual)).toHaveLength(
+      1,
+    );
+  },
+);
+
+it("重新取件失败时撤销先前的链接，不沿用成功回执", async () => {
+  vi.mocked(api)
+    .mockResolvedValueOnce(metadata())
+    .mockResolvedValueOnce(grant())
+    .mockResolvedValueOnce(metadata())
+    .mockResolvedValueOnce(grant("other"));
+  vi.mocked(objectFetch).mockResolvedValueOnce(new Response("source"));
+  render(<ArtifactActions {...props} />);
+  const button = screen.getByRole("button", { name: "下载此版本文件" });
+  fireEvent.click(button);
+  const url = (
+    await screen.findByRole("link", { name: /手动保存/ })
+  ).getAttribute("href");
+  fireEvent.click(button);
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "下载授权与文件版本不一致",
+  );
+  expect(revokeUrl).toHaveBeenCalledWith(url);
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(objectFetch).toHaveBeenCalledTimes(1);
+});
+
+it("取回对象失败时页面不会显示带签名的地址", async () => {
+  const signed = "/bytes/first?signature=synthetic-private";
+  vi.mocked(api)
+    .mockResolvedValueOnce(metadata())
+    .mockResolvedValueOnce({
+      data: { ...grant().data, download_url: signed },
+      etag: null,
+    });
+  vi.mocked(objectFetch).mockRejectedValueOnce(
+    new TypeError(`fetch failed for ${signed}`),
+  );
+  const view = render(<ArtifactActions {...props} />);
+  fireEvent.click(screen.getByRole("button", { name: "下载此版本文件" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "未能取回此版本文件",
+  );
+  expect(view.container.innerHTML).not.toContain(signed);
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
 });
