@@ -49,6 +49,9 @@ export function RulesPanel({
     state.request.material_revision === state.material_revision
       ? state.request
       : null;
+  const waitingForService =
+    state?.review_execution_configured === false &&
+    (!request || request.state === "preparing");
   const blocked =
     notReady &&
     !state?.current_rule_set_id &&
@@ -136,13 +139,15 @@ export function RulesPanel({
               <p role="status">
                 {needsMaterials
                   ? "尚未生成要求清单。请先在「项目资料」上传招标原件和受检正文。"
-                  : request?.state === "preparing"
-                    ? "正在准备本轮要求，清单生成后可在这里核对。"
-                    : blocked
-                      ? "本次准备未完成。请在「处理记录」查看具体原因。"
-                      : "尚未生成要求清单。请在「项目资料」核对招标原件和受检正文，再开始评审。"}
+                  : waitingForService
+                    ? "当前部署未启用单稿评审服务，尚未生成要求清单。可先在项目资料中核对招标原件。"
+                    : request?.state === "preparing"
+                      ? "正在准备本轮要求，清单生成后可在这里核对。"
+                      : blocked
+                        ? "本次准备未完成。请在「处理记录」查看具体原因。"
+                        : "尚未生成要求清单。请在「项目资料」核对招标原件和受检正文，再开始评审。"}
               </p>
-              {needsMaterials && onMaterials && (
+              {(needsMaterials || waitingForService) && onMaterials && (
                 <button
                   type="button"
                   className="button secondary"
