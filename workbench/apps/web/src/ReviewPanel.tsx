@@ -59,7 +59,9 @@ export function ReviewPanel({
             <div>
               <h2>尚未形成评审结果</h2>
               <p className="muted">
-                已上传或已解析不表示完成规则核对。使用当前稿明确开始评审，服务不可用时会保留资料并说明缺口。
+                {reviewState?.review_execution_configured === false
+                  ? "当前部署未启用单稿付费评审执行服务。可继续入库原件并查看 PDF 解析。"
+                  : "已上传或已解析不表示完成规则核对。使用当前稿明确开始评审，服务不可用时会保留资料并说明缺口。"}
               </p>
             </div>
           </div>
@@ -223,6 +225,7 @@ export function ReviewStart({
   );
   const command = useCommand(`review:start:${bid.id}`);
   const body = bodyId || bid.current_body_id;
+  const executionDisabled = reviewState?.review_execution_configured === false;
   const selected = materials.data?.documents.find(
     (document) => document.id === body,
   );
@@ -234,7 +237,7 @@ export function ReviewStart({
       (reviewState.material_revision !== bid.material_revision ||
         reviewState.current_body_id !== bid.current_body_id));
   async function start() {
-    if (!body || statePending || active) return;
+    if (!body || statePending || active || executionDisabled) return;
     const request: ReviewRequest = {
       body_version_id: body,
       material_revision: bid.material_revision,
@@ -319,7 +322,7 @@ export function ReviewStart({
           <input
             type="checkbox"
             checked={!!rerun}
-            disabled={!!active}
+            disabled={!!active || executionDisabled}
             onChange={(event) =>
               setRerun(event.target.checked ? crypto.randomUUID() : null)
             }
@@ -353,7 +356,7 @@ export function ReviewStart({
                   : state === "cancelled"
                     ? "本次处理已取消，业务记录保留"
                     : accepted.resource_kind === "pending_intent"
-                      ? "正在准备本轮要求，完成后自动开始评审"
+                      ? "本次评审请求已记录，请查看服务器进度"
                       : accepted.disposition === "reused"
                         ? "已接续此输入的处理记录"
                         : accepted.disposition === "pending_latest"
@@ -370,6 +373,7 @@ export function ReviewStart({
           className="button primary"
           disabled={
             command.busy ||
+            executionDisabled ||
             statePending ||
             !!active ||
             !body ||
@@ -379,17 +383,19 @@ export function ReviewStart({
           }
           onClick={() => void start()}
         >
-          {statePending
-            ? "正在核对服务器处理状态…"
-            : command.busy
-              ? "正在受理…"
-              : active
-                ? "本次处理已受理，请查看真实进度"
-                : failed || state === "failed"
-                  ? "重试并继续评审"
-                  : superseded
-                    ? "使用当前稿开始评审"
-                    : "开始评审所选正文"}
+          {executionDisabled
+            ? "当前部署未启用单稿付费评审"
+            : statePending
+              ? "正在核对服务器处理状态…"
+              : command.busy
+                ? "正在受理…"
+                : active
+                  ? "本次处理已受理，请查看真实进度"
+                  : failed || state === "failed"
+                    ? "重试并继续评审"
+                    : superseded
+                      ? "使用当前稿开始评审"
+                      : "开始评审所选正文"}
         </button>
       </div>
     </section>

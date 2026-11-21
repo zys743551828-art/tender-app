@@ -55,6 +55,7 @@ def extend_openapi(actual):
             "current_review": {"anyOf": [ref("ReviewView"), {"type": "null"}]},
         }
     )
+    schemas["ReviewStateView"]["properties"]["review_execution_configured"] = {"type": "boolean"}
     schemas["EvidenceAuthoringReferenceView"] = obj(
         {
             "evidence_id": uuid,

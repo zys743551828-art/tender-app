@@ -37,9 +37,11 @@ const labels: [keyof ProjectSettings, string, string][] = [
 export function SettingsPanel({
   bidId,
   onSaved,
+  reviewExecutionConfigured,
 }: {
   bidId: string;
   onSaved: () => void;
+  reviewExecutionConfigured?: boolean;
 }) {
   const resource = useResource<SettingsView>(`/bids/${bidId}/settings`);
   const [draft, setDraft] = useState<ProjectSettings | null>(null);
@@ -94,8 +96,18 @@ export function SettingsPanel({
             {labels.map(([key, label, description]) => (
               <label className="setting-row" key={key}>
                 <span>
-                  <strong>{label}</strong>
-                  <small>{description}</small>
+                  <strong>
+                    {key === "auto_review" &&
+                    reviewExecutionConfigured === false
+                      ? "入库后登记自动评审请求"
+                      : label}
+                  </strong>
+                  <small>
+                    {key === "auto_review" &&
+                    reviewExecutionConfigured === false
+                      ? "资料满足条件时会记录请求。当前部署未启用单稿付费评审执行服务。"
+                      : description}
+                  </small>
                 </span>
                 <input
                   type="checkbox"

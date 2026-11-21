@@ -65,6 +65,7 @@ def environment(profile, component):
         if "WORKER_DATABASE_DSN" in profile["environment"]
         else "api",
         **profile["environment"],
+        "WORKBENCH_SINGLE_REVIEW_CONFIGURED": "1" if profile["plan"]["model_configured"] else "0",
         **parsing_environment(profile["plan"], component),
     }
 

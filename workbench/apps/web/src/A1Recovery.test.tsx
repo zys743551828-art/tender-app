@@ -184,6 +184,41 @@ function workspace() {
     />,
   );
 }
+it("未启用单稿执行时，保留真实的自动请求和取消入口，并禁用手动新增", async () => {
+  const state = {
+    ...initial,
+    review_execution_configured: false,
+    request: { ...initial.request!, trigger: "automatic" as const },
+  };
+  render(
+    <>
+      <ReviewProgress
+        state={state}
+        loading={false}
+        unavailable={false}
+        onRetry={vi.fn()}
+        onNavigate={vi.fn()}
+      />
+      <ReviewStart bid={bid} reviewState={state} onAccepted={vi.fn()} />
+    </>,
+  );
+  expect(
+    await screen.findByRole("heading", {
+      name: "单稿评审请求已记录，等待执行服务",
+    }),
+  ).toBeVisible();
+  expect(screen.getByText(/当前部署未启用单稿付费评审执行服务/)).toBeVisible();
+  expect(
+    screen.queryByText(/完成后自动开始评审|准备结束后自动接续/),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.getByRole("button", { name: "当前部署未启用单稿付费评审" }),
+  ).toBeDisabled();
+  expect(screen.getByRole("button", { name: /取消.*准备/ })).toBeEnabled();
+  expect(transport.mock.calls.some(([, init]) => init?.method === "POST")).toBe(
+    false,
+  );
+});
 it("用可理解的原因说明未能从原文核对的条件", () => {
   render(
     <ReviewProgress
@@ -212,7 +247,7 @@ it("刷新后从服务端恢复准备请求与固定稿件，运行中不再次�
   workspace();
   expect(
     await screen.findByRole("heading", {
-      name: "正在准备本轮要求，完成后自动开始评审，可离开",
+      name: "本轮评审请求已记录，查看要求准备进度",
     }),
   ).toBeVisible();
   expect(

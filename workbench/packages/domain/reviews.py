@@ -37,6 +37,21 @@ from packages.identity.repository import snapshot as identity_snapshot
 from packages.lifecycle.service import assert_work_writable
 
 
+def review_execution_configured() -> bool | None:
+    # Older/non-native launchers do not declare a review execution profile.
+    value = os.environ.get("WORKBENCH_SINGLE_REVIEW_CONFIGURED")
+    return None if value is None else value == "1"
+
+
+def require_review_execution():
+    if review_execution_configured() is False:
+        raise DomainError(
+            "REVIEW_EXECUTION_NOT_CONFIGURED",
+            "当前部署未启用单稿付费评审执行服务。原件入库、解析和历史评审记录仍可使用。",
+            503,
+        )
+
+
 def _unregistered_task_guard(c, bid, intent):
     if intent.get("task_binding"):
         raise DomainError("TASK_REVIEW_EXECUTOR_NOT_READY", "任务评审输入守卫尚未接通", 503)

@@ -499,6 +499,7 @@ export function ProjectWorkspace({
               <IdentityPanel key={bid.id} bidId={bid.id} onSaved={refresh} />
               <SettingsPanel
                 bidId={bid.id}
+                reviewExecutionConfigured={state?.review_execution_configured}
                 onSaved={() => void resource.reload()}
               />
             </>

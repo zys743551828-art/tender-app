@@ -334,8 +334,9 @@ def dispatch(
         }
     )
     if kind == "denial_check":
-        from packages.domain.reviews import queue_intent
+        from packages.domain.reviews import queue_intent, require_review_execution
 
+        require_review_execution()
         slot = fetch(c, "SELECT pending_intent FROM review_slots WHERE bid_id=%s", (bid,))
         previous = slot["pending_intent"] or {}
         equivalent = (

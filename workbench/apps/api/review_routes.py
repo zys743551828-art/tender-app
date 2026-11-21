@@ -18,7 +18,7 @@ from apps.api.review_views import (
 from apps.api.views import evidence_view, match_bid
 from packages.domain.finding_lifecycle import visible_rows
 from packages.domain.providers.deepseek import DeepSeekClient
-from packages.domain.reviews import _locked, _write_intent, queue_intent
+from packages.domain.reviews import _locked, _write_intent, queue_intent, require_review_execution
 from packages.domain.runtime import (
     Command,
     DomainError,
@@ -58,7 +58,6 @@ def _response(body, kind, identity, revision=None):
 def request_review(bid_id: UUID, r: Request, body: dict = Body(...)):
     actor = auth(r, True)
     validate("ReviewRequest", body)
-    DeepSeekClient.from_env()
     with connection() as c:
         cmd = begin(
             c,
@@ -76,6 +75,8 @@ def request_review(bid_id: UUID, r: Request, body: dict = Body(...)):
                 status_code=cmd.replay["status"],
                 headers=cmd.replay["headers"] | {"Idempotent-Replayed": "true"},
             )
+        require_review_execution()
+        DeepSeekClient.from_env()
         fetch(c, "SELECT * FROM bids WHERE id=%s FOR UPDATE", (bid_id,))
         match_bid(c, r.headers.get("if-match"), bid_id)
         value = queue_intent(c, bid_id, cmd.id, body)

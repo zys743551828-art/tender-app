@@ -46,16 +46,19 @@ def bid_view(c, bid):
                     reason="Word原件已保存，正在转换对应PDF；检查尚未完成",
                 )
     if row["current_body_id"]:
+        from packages.domain.reviews import review_execution_configured
+
+        execution_disabled = review_execution_configured() is False
         action.update(
             action="start_review", reason="使用当前稿开始评审", target_url=f"/bids/{bid}/review"
         )
         if intent and intent["state"] == "preparing":
             action.update(
                 action="wait_preparation",
-                reason="正在准备本轮要求，完成后自动开始评审，可离开",
+                reason="本轮评审请求已记录，查看要求准备进度",
                 target_url=f"/bids/{bid}/review",
             )
-            if not os.environ.get("DEEPSEEK_API_KEY"):
+            if not execution_disabled and not os.environ.get("DEEPSEEK_API_KEY"):
                 action.update(
                     action="view_materials",
                     reason="资料已保存，评审服务暂不可用",
@@ -79,6 +82,21 @@ def bid_view(c, bid):
             from apps.api.review_views import review_view
 
             action = review_view(c, row["current_review_id"])["next_action"]
+        if execution_disabled:
+            if intent and intent["state"] in ("preparing", "queued", "running", "cancel_requested"):
+                action.update(
+                    action="wait_preparation",
+                    reason="单稿评审请求已记录，当前部署未启用评审执行服务",
+                    target_url=f"/bids/{bid}/review",
+                    blocked=True,
+                )
+            elif not row["current_review_id"]:
+                action.update(
+                    action="view_materials",
+                    reason="当前部署未启用单稿评审执行服务，可继续查看原件与解析",
+                    target_url=f"/bids/{bid}/materials",
+                    blocked=True,
+                )
     return {
         k: clean(row[k])
         for k in [

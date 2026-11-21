@@ -9294,6 +9294,7 @@ export type ReviewStateView = {
   current_rule_set_id: string | null;
   request: ReviewIntentView | null;
   current_review: ReviewView | null;
+  review_execution_configured?: boolean;
 };
 
 export type ReviewPage = {

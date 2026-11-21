@@ -347,8 +347,9 @@ def resolve(c, identity, actor, decision, command_id, condition):
                     c, proposed["bid_id"], source["input_manifest"]["project_memory"]
                 )
             if row["tool"] == "review.request":
-                from packages.domain.reviews import queue_intent
+                from packages.domain.reviews import queue_intent, require_review_execution
 
+                require_review_execution()
                 domain = queue_intent(c, proposed["bid_id"], command_id, payload["arguments"])
             elif row["tool"] == "authoring.generate":
                 domain = jobs.queue_generation(

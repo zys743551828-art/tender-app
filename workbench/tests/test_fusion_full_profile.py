@@ -125,6 +125,7 @@ def test_nonowner_role_profiles_never_inherit_foreign_credentials_or_test_switch
         "API_DATABASE_DSN",
         "ASSISTANT_BUDGET_ADMIN_DSN",
         "DEEPSEEK_API_KEY",
+        "WORKBENCH_SINGLE_REVIEW_CONFIGURED",
         "HTTP_PROXY",
         "PYTHONHOME",
         "PYTHONPATH",
@@ -153,6 +154,7 @@ def test_nonowner_role_profiles_never_inherit_foreign_credentials_or_test_switch
             else "API_DATABASE_DSN"
         ]
         assert not any(key in environment for key in spec.MODEL_KEYS)
+        assert environment["WORKBENCH_SINGLE_REVIEW_CONFIGURED"] == "0"
         assert environment["WORKBENCH_ENV_FILE"] == "explicit-fusion-full-runtime"
     assert profiles["api"]["environment"]["OBJECT_TRANSFER_MODE"] == "same_origin"
     assert profiles["api"]["environment"]["WORD_INTAKE_ENABLED"] == "1"

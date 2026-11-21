@@ -13,7 +13,7 @@ from packages.domain.finding_lifecycle import (
     visible_rows,
 )
 from packages.domain.review_data import effective_at, source_closure
-from packages.domain.reviews import POLICY, method_profile
+from packages.domain.reviews import POLICY, method_profile, review_execution_configured
 from packages.domain.rule_sets import current_decision, rules
 from packages.domain.runtime import DomainError, clean, fetch, sha
 
@@ -366,6 +366,7 @@ def review_state(c, bid_id):
         (bid_id,),
     )
     intent = row["pending_intent"]
+    configured = review_execution_configured()
     request = None
     if intent:
         request = {
@@ -387,6 +388,7 @@ def review_state(c, bid_id):
     return clean(
         {
             "bid_id": bid_id,
+            **({"review_execution_configured": configured} if configured is not None else {}),
             "revision": row["revision"],
             "current_body_id": row["current_body_id"],
             "material_revision": row["material_revision"],

@@ -41,6 +41,13 @@ export function ReviewProgress({
   onOperationsPage?: boolean;
 }) {
   const request = state?.request;
+  const executionDisabled = state?.review_execution_configured === false;
+  const waitingForService =
+    executionDisabled &&
+    !!request &&
+    ["preparing", "queued", "running", "cancel_requested"].includes(
+      request.state,
+    );
   const [cancelling, setCancelling] = useState(false);
   const [cancelBase, setCancelBase] = useState<{
     requestId: string;
@@ -72,7 +79,7 @@ export function ReviewProgress({
   const heading =
     request &&
     {
-      preparing: "正在准备本轮要求，完成后自动开始评审，可离开",
+      preparing: "本轮评审请求已记录，查看要求准备进度",
       blocked: request.review_id ? "本轮核心核对未完成" : "要求准备未完成",
       superseded: "资料已更新，原请求已过期",
       queued: "要求已准备，正在等待本轮评审",
@@ -105,11 +112,21 @@ export function ReviewProgress({
             <div className="section-heading">
               <div>
                 <span className="eyebrow">可恢复的本次处理</span>
-                <h2>{heading}</h2>
+                <h2>
+                  {waitingForService
+                    ? request.state === "cancel_requested"
+                      ? "取消请求已记录，等待执行服务处理"
+                      : request.state === "running"
+                        ? "上次记录为执行中，当前执行服务未启用"
+                        : "单稿评审请求已记录，等待执行服务"
+                    : heading}
+                </h2>
                 <p className="muted">
-                  {request.state === "superseded"
-                    ? "原请求不会悄悄改为另一份稿件的评审，请使用当前稿明确开始。"
-                    : "受理、准备与任务结束均不等于核心核对通过。"}
+                  {waitingForService
+                    ? "当前部署未启用单稿付费评审执行服务。请求和原件已保留，PDF 解析进度可单独查看。"
+                    : request.state === "superseded"
+                      ? "原请求不会悄悄改为另一份稿件的评审，请使用当前稿明确开始。"
+                      : "受理、准备与任务结束均不等于核心核对通过。"}
                 </p>
               </div>
               <Badge
@@ -159,10 +176,11 @@ export function ReviewProgress({
                 ? " · 本请求对应先前输入，请核对当前稿"
                 : ""}
             </p>
-            {request.state === "preparing" &&
+            {!executionDisabled &&
+              request.state === "preparing" &&
               request.trigger === "automatic" && (
                 <p className="small-note">
-                  按当前服务器请求准备，旧轮仍保留；准备结束后自动接续，无须再次开始。
+                  已按项目设置登记自动评审请求，可在处理记录中查看准备结果。
                 </p>
               )}
             {request.gaps.length > 0 && (
@@ -180,7 +198,7 @@ export function ReviewProgress({
                 {groundingErrors[request.error_code] ?? request.error_code}
               </p>
             )}
-            {request.state === "blocked" && (
+            {request.state === "blocked" && !executionDisabled && (
               <p className="small-note">
                 已保存的资料和依据保留。查看影响范围后，可进入评审工作面，使用当前稿重试并继续评审。
               </p>
