@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Accepted, UploadPartsView, UploadLayoutView } from "./contracts";
 import { Badge, ErrorNotice } from "./components";
 import { api, ApiError, commandKey } from "./api";
@@ -13,12 +13,14 @@ import {
 export function UploadStatus({
   uploadId,
   hasLocalFile,
+  resumeControl,
   disabled,
   onWorking,
   onAccepted,
 }: {
   uploadId: string;
   hasLocalFile: boolean;
+  resumeControl?: ReactNode;
   disabled: boolean;
   onWorking: (busy: boolean) => void;
   onAccepted: (accepted: Accepted) => void;
@@ -121,8 +123,9 @@ export function UploadStatus({
   return (
     <div className="upload-recovery-status">
       <div className="review-shortcuts">
+        {resumeControl}
         <button
-          className="text-button"
+          className="button secondary"
           disabled={reading || replaying}
           onClick={() => void inspect()}
         >

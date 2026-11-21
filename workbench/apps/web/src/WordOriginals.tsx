@@ -7,6 +7,7 @@ import type {
 } from "./contracts";
 import { api } from "./api";
 import { ArtifactActions } from "./ArtifactActions";
+import { FilePicker } from "./FilePicker";
 import { Badge, ErrorNotice } from "./components";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
@@ -304,9 +305,8 @@ export function WordCard({
       )}
       <div className="review-shortcuts">
         <label className="resume-file">
-          上传此修改稿的PDF
-          <input
-            type="file"
+          <FilePicker
+            action="上传此修改稿的PDF"
             accept=".pdf,application/pdf"
             disabled={disabled}
             onChange={(e) => {

@@ -144,6 +144,7 @@ it("已授权的传输离开前确认，返回时只恢复尚未开始的文件"
     );
   await user.click(screen.getByRole("button", { name: "上传并核验原件" }));
   await waitFor(() => expect(transferring).toHaveBeenCalledTimes(1));
+  expect(screen.getByLabelText("选择需要上传的资料")).toBeDisabled();
   const current = transferring.mock.calls[0][0];
   expect(current.file).toBe(file);
   const confirm = vi

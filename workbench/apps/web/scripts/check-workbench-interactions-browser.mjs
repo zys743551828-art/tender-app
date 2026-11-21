@@ -1,6 +1,7 @@
 /* global console, document, getComputedStyle, innerWidth, NodeFilter, process */
 // Real app on loopback, with synthetic projects and a synthetic session.
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { createRequire } from "node:module";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath, URL } from "node:url";
@@ -101,7 +102,42 @@ function fixture(path, query) {
     return { bid_id: bid.id, request: null, current_review: null };
   if (suffix === "/settings")
     return { bid_id: bid.id, settings: { pricing: false } };
-  if (suffix === "/materials") return { documents: [], conflicts: [] };
+  if (suffix === "/upload-batches" || suffix === "/upload-batches/batch-qa") {
+    const batch = {
+      id: "batch-qa",
+      bid_id: bid.id,
+      revision: 1,
+      state: "open",
+      uploads: [
+        { id: "upload-qa", filename: "合成续传原件.pdf", state: "authorized" },
+      ],
+    };
+    return suffix === "/upload-batches" ? { ...empty, items: [batch] } : batch;
+  }
+  if (suffix === "/materials")
+    return {
+      documents: [
+        {
+          id: "synthetic-version",
+          bid_id: bid.id,
+          file_id: "synthetic-file",
+          file_head_version_id: "synthetic-version",
+          file_revision: 1,
+          file_head_revision: 1,
+          previous_version_id: null,
+          source_relation: null,
+          role: "tender",
+          artifact_kind: "source_original",
+          filename: `合成工程管网施工标段-${"DWG20261121REV".repeat(5)}-补充说明.pdf`,
+          byte_size: 8192,
+          sha256: "a".repeat(64),
+          media_type: "application/pdf",
+          obtained_at: "2026-11-21T00:00:00Z",
+          parse_coverage: "partial",
+        },
+      ],
+      conflicts: [],
+    };
   if (suffix === "/package-documents" || suffix === "/packages") return empty;
   return null;
 }
@@ -163,6 +199,183 @@ async function checkFocus(locator) {
         getComputedStyle(el).outlineStyle !== "none",
     ),
     "Expected visible keyboard focus",
+  );
+}
+
+async function checkMaterialRow(page) {
+  await page.goto(new URL(`/bids/${bids[0].id}/materials`, page.url()).href);
+  const row = page.locator(".materials-panel tbody tr");
+  const action = row.getByRole("button", { name: "查看原件与依据" });
+  await action.scrollIntoViewIfNeeded();
+  await hitTarget(action);
+  for (const label of [row.locator("td").nth(1), action]) {
+    const lines = await label.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el.firstChild);
+      return range.getClientRects().length;
+    });
+    assert.equal(
+      lines,
+      1,
+      `Short material label wraps: ${await label.innerText()}`,
+    );
+  }
+  assert(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  );
+  await action.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await checkFocus(action);
+  await checkVisibleText(action);
+}
+
+async function checkFilePickers(page) {
+  await page.goto(new URL(`/bids/${bids[0].id}/materials`, page.url()).href);
+  await page
+    .getByRole("button", { name: "查找本项目已保存的上传批次" })
+    .click();
+  await page.getByRole("button", { name: "切换到此批次继续核对" }).click();
+  const resume = page.getByLabel("重新选择合成续传原件.pdf的原文件以接续上传");
+  const mainPicker = page.getByLabel("选择需要上传的资料");
+  for (const input of [resume, mainPicker]) {
+    await input.scrollIntoViewIfNeeded();
+    await hitTarget(input, 38);
+    await input.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    for (const forcedColors of engine === "chromium"
+      ? ["none", "active"]
+      : ["none"]) {
+      await page.emulateMedia({ forcedColors });
+      assert(
+        await input.evaluate((el) => {
+          const box = el.getBoundingClientRect();
+          const face = el.nextElementSibling;
+          const visual = face.getBoundingClientRect();
+          return (
+            el === document.activeElement &&
+            el.matches(":focus-visible") &&
+            getComputedStyle(el).opacity === "0" &&
+            getComputedStyle(face).outlineStyle === "solid" &&
+            parseFloat(getComputedStyle(face).outlineWidth) >= 2 &&
+            Math.abs(box.width - visual.width) < 1 &&
+            Math.abs(box.height - visual.height) < 1
+          );
+        }),
+        "Native file chooser must cover its styled, visibly focused button",
+      );
+    }
+    await page.emulateMedia({ forcedColors: "none" });
+  }
+  const resumeFace = page.locator(".resume-file .file-picker-control");
+  const status = page.getByRole("button", { name: "查询已收到的传输状态" });
+  const [a, b] = await Promise.all([
+    resumeFace.boundingBox(),
+    status.boundingBox(),
+  ]);
+  assert(
+    Math.abs(a.height - b.height) <= 1,
+    "Resume and status buttons have different heights",
+  );
+  assert(
+    Math.abs(a.y - b.y) <= 1,
+    "Resume and status buttons should fit on the same row",
+  );
+  const [resumeChooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.locator(".batch-file label.resume-file").click(),
+  ]);
+  assert.equal(await resumeChooser.isMultiple(), false);
+  const name = `合成附件-${"DWG-REVISION-QA-".repeat(8)}.pdf`;
+  const file = {
+    name,
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4\nSynthetic fixture"),
+  };
+  let finishRead;
+  const reading = new Promise((resolve) => {
+    finishRead = resolve;
+  });
+  await page.route("**/api/v1/uploads/upload-qa/layout", async (route) => {
+    await reading;
+    await route.fulfill({
+      status: 503,
+      json: { code: "QA_RETRY", message: "合成批次暂时无法读取" },
+    });
+  });
+  try {
+    await resumeChooser.setFiles(file);
+    await page.locator("#project-files:disabled").waitFor();
+    assert(await resume.isDisabled());
+    assert(
+      await resume.evaluate(
+        (el) => parseFloat(getComputedStyle(el.nextElementSibling).opacity) < 1,
+      ),
+    );
+    if (engine === "chromium") {
+      await page.emulateMedia({ forcedColors: "active" });
+      assert(
+        await resume.evaluate((el) => {
+          const face = getComputedStyle(el.nextElementSibling);
+          return face.opacity === "1" && face.color === face.borderTopColor;
+        }),
+        "Disabled chooser must remain visible in forced colors",
+      );
+      await page.emulateMedia({ forcedColors: "none" });
+    }
+  } finally {
+    finishRead();
+  }
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "合成批次暂时无法读取" })
+    .waitFor();
+  const selection = page.locator(".resume-file .file-picker-selection");
+  assert.equal(await selection.innerText(), `已选择：${name}`);
+  assert(
+    await selection.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+    "Selected resume filename overflows",
+  );
+  await mainPicker.focus();
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.keyboard.press("Enter"),
+  ]);
+  assert.equal(await chooser.isMultiple(), true);
+  await chooser.setFiles(file);
+  await page.getByText("当前列表有 1 项资料").waitFor();
+  const filename = page
+    .locator(".draft-file .file-summary strong")
+    .filter({ hasText: name });
+  await filename.scrollIntoViewIfNeeded();
+  assert(
+    await filename.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+    "File name overflows its row",
+  );
+  const draft = page.locator(".draft-file-actions");
+  const add = draft.getByRole("button", { name: `为${name}添加另一用途` });
+  const remove = draft.getByRole("button", { name: `移除${name}` });
+  const [first, last] = await Promise.all([
+    add.boundingBox(),
+    remove.boundingBox(),
+  ]);
+  assert(
+    Math.abs(first.y + first.height / 2 - last.y - last.height / 2) <= 1,
+    "Draft file actions are misaligned",
+  );
+  await remove.click();
+  await filename.waitFor({ state: "detached" });
+  assert.equal(
+    await page.locator(".file-drop .file-picker-selection").innerText(),
+    "",
+  );
+  assert(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
   );
 }
 
@@ -411,6 +624,29 @@ try {
     ["targets", checkMobileTargets],
   ];
   const cases = [];
+  for (const [width, height] of [
+    [1440, 900],
+    [390, 844],
+    [844, 390],
+  ]) {
+    const mobile = width !== 1440;
+    if (suite === "all" || suite === (mobile ? "mobile" : "desktop")) {
+      cases.push({
+        width,
+        height,
+        mobile,
+        name: "material-row",
+        check: checkMaterialRow,
+      });
+      cases.push({
+        width,
+        height,
+        mobile,
+        name: "file-pickers",
+        check: checkFilePickers,
+      });
+    }
+  }
   if (suite !== "desktop") {
     for (const [width, height] of [
       [320, 640],

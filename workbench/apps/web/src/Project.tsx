@@ -45,6 +45,7 @@ import {
   transferUpload,
 } from "./uploadTransport";
 import { UploadStatus } from "./UploadStatus";
+import { FilePicker } from "./FilePicker";
 import { UploadBatchDiscovery } from "./UploadBatchDiscovery";
 import { BidPackages } from "./BidPackages";
 import { NavigationGuardContext } from "./navigationGuard";
@@ -668,20 +669,19 @@ export function Project({
           }}
         />
         <label className="file-drop" htmlFor="project-files">
-          <span className="upload-icon">
-            <Icon name="upload" />
-          </span>
-          <strong>选择需要上传的资料</strong>
-          <span>支持PDF与DOCX；Word原件保存、转换和对应检查分别显示</span>
-          <input
+          <FilePicker
             ref={inputRef}
             id="project-files"
-            type="file"
+            action="选择需要上传的资料"
+            selection={files.length ? `当前列表有 ${files.length} 项资料` : ""}
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             multiple
             onChange={chooseFiles}
             disabled={busy}
           />
+          <span className="file-drop-hint">
+            支持PDF与DOCX；Word原件保存、转换和对应检查分别显示
+          </span>
         </label>
         {files.length > 0 && (
           <div className="draft-files">
@@ -769,44 +769,45 @@ export function Project({
                     此PDF由你声明对应指定Word修改稿，作为独立PDF保存。对应关系尚未核验，不继承Word检查资格。
                   </p>
                 )}
-                {!item.grant &&
-                  !item.declaredSource &&
-                  item.file.name.toLowerCase().endsWith(".pdf") && (
+                {!item.grant && (
+                  <div className="draft-file-actions">
+                    {!item.declaredSource &&
+                      item.file.name.toLowerCase().endsWith(".pdf") && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          disabled={busy}
+                          aria-label={`为${item.file.name}添加另一用途`}
+                          onClick={() =>
+                            setFiles((old) => [
+                              ...old,
+                              {
+                                key: crypto.randomUUID(),
+                                uploadKey: crypto.randomUUID(),
+                                file: item.file,
+                                role: "",
+                                target: "",
+                                state: "待上传",
+                              },
+                            ])
+                          }
+                        >
+                          为同一原件添加另一用途
+                        </button>
+                      )}
                     <button
-                      type="button"
                       className="text-button"
                       disabled={busy}
-                      aria-label={`为${item.file.name}添加另一用途`}
+                      aria-label={`移除${item.file.name}`}
                       onClick={() =>
-                        setFiles((old) => [
-                          ...old,
-                          {
-                            key: crypto.randomUUID(),
-                            uploadKey: crypto.randomUUID(),
-                            file: item.file,
-                            role: "",
-                            target: "",
-                            state: "待上传",
-                          },
-                        ])
+                        setFiles((old) =>
+                          old.filter((file) => file.key !== item.key),
+                        )
                       }
                     >
-                      为同一原件添加另一用途
+                      移除
                     </button>
-                  )}
-                {!item.grant && (
-                  <button
-                    className="text-button"
-                    disabled={busy}
-                    aria-label={`移除${item.file.name}`}
-                    onClick={() =>
-                      setFiles((old) =>
-                        old.filter((file) => file.key !== item.key),
-                      )
-                    }
-                  >
-                    移除
-                  </button>
+                  </div>
                 )}
                 <div className="draft-error">
                   <ErrorNotice error={item.error} />
@@ -871,6 +872,23 @@ export function Project({
                 batch.state !== "committed" && (
                   <UploadStatus
                     uploadId={upload.id}
+                    resumeControl={
+                      upload.state === "authorized" && (
+                        <label className="resume-file">
+                          <FilePicker
+                            action="选择原文件接续"
+                            aria-label={`重新选择${upload.filename}的原文件以接续上传`}
+                            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            disabled={busy}
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              if (file) void resumeUpload(upload, file);
+                              event.target.value = "";
+                            }}
+                          />
+                        </label>
+                      )
+                    }
                     hasLocalFile={files.some(
                       (file) => file.grant?.upload_id === upload.id,
                     )}
@@ -885,22 +903,6 @@ export function Project({
                     }}
                   />
                 )}
-              {upload.state === "authorized" && batch.state !== "committed" && (
-                <label className="resume-file">
-                  接续此文件
-                  <input
-                    aria-label={`重新选择${upload.filename}的原文件以接续上传`}
-                    type="file"
-                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    disabled={busy}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) void resumeUpload(upload, file);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-              )}
               {upload.word_pdf_declaration && (
                 <div className="notice warning">
                   <p>

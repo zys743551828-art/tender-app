@@ -8,6 +8,7 @@ import type {
   AuthoringSourceReference,
 } from "./contracts";
 import { ErrorNotice } from "./components";
+import { FilePicker } from "./FilePicker";
 import { jsonDigest } from "./editorSchema";
 import { ResourceState } from "./ResourceState";
 import { useResource } from "./useResource";
@@ -325,8 +326,10 @@ export function AuthoringImagePicker({
         <label>
           图片原件（PNG/JPEG，最多 {Math.floor(maximumBytes / 1024 / 1024)}{" "}
           MiB）
-          <input
-            type="file"
+          <FilePicker
+            action="选择图片"
+            aria-label={`图片原件（PNG/JPEG，最多 ${Math.floor(maximumBytes / 1024 / 1024)} MiB）`}
+            selection={file?.name ?? ""}
             accept="image/png,image/jpeg"
             disabled={disabled || busy || !!pending || recovery.blocked}
             onChange={(event) => {

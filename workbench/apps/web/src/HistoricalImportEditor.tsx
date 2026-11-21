@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { HistoricalImportRequest } from "./contracts";
 import { ErrorNotice } from "./components";
+import { FilePicker } from "./FilePicker";
 import { HistoricalImportRecordDetails } from "./HistoricalImportRecords";
 import {
   historicalImportLimit,
@@ -125,9 +126,9 @@ export function HistoricalImportEditor({
       )}
       <div className="historical-import-toolbar">
         <label>
-          选择 JSON 清单
-          <input
-            type="file"
+          <FilePicker
+            action="选择 JSON 清单"
+            selection=""
             accept=".json,application/json"
             disabled={disabled || reading}
             onChange={(event) => {
