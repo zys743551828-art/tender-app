@@ -40,7 +40,11 @@ export function Evidence({
   >(null);
   const evidence =
     evidenceRecord?.document_version_id === document.id ? evidenceRecord : null;
-  const grant = grantRecord?.artifact_id === document.id ? grantRecord : null;
+  const hasDigest =
+    typeof document.sha256 === "string" &&
+    /^[0-9a-f]{64}$/.test(document.sha256);
+  const grant =
+    hasDigest && grantRecord?.artifact_id === document.id ? grantRecord : null;
   const [error, setError] = useState<unknown>(null);
   const [page, setPage] = useState(initialPage);
   const [pageCount, setPageCount] = useState(0);
@@ -66,7 +70,9 @@ export function Evidence({
     setError(null);
     const results = await Promise.allSettled([
       api<DocumentEvidenceView>(`/documents/${document.id}/evidence`),
-      api<DownloadGrant>(`/artifacts/${document.id}/download`),
+      hasDigest
+        ? api<DownloadGrant>(`/artifacts/${document.id}/download`)
+        : null,
     ]);
     if (request.current !== current) return;
     if (results[0].status === "fulfilled") {
@@ -80,13 +86,14 @@ export function Evidence({
         setError(new Error("解析依据的原件身份不一致，未展示其他文件内容。"));
     } else setError(results[0].reason);
     if (results[1].status === "fulfilled") {
+      if (!results[1].value) return;
       const value = results[1].value.data;
       if (value.artifact_id === document.id)
         setGrant({ ...value, attempt: current });
       else
         setError(new Error("原件访问地址的文件身份不一致，未打开其他文件。"));
     } else setError(results[1].reason);
-  }, [document.id]);
+  }, [document.id, hasDigest]);
   async function downloadOriginal() {
     if (!downloadActive.current || downloadController.current) return;
     const controller = new AbortController();
@@ -403,9 +410,11 @@ export function Evidence({
                 <div className="empty-state">
                   <Icon name="file" />
                   <p>
-                    {grant
-                      ? "此格式暂不支持页内预览，可下载原件。"
-                      : "正在取得私有原件访问地址…"}
+                    {!hasDigest
+                      ? "该版本缺少有效的原件 SHA-256 摘要，无法核验文件。请重新打开资料或联系管理员核对记录。"
+                      : grant
+                        ? "此格式暂不支持页内预览，可下载原件。"
+                        : "正在取得私有原件访问地址…"}
                   </p>
                 </div>
               )}

@@ -83,6 +83,26 @@ async function show() {
 const start = () =>
   fireEvent.click(screen.getByRole("button", { name: /下载资料原件/ }));
 
+it.each([undefined, "invalid"])(
+  "keeps a document without a valid registered digest out of the original renderer",
+  async (sha256) => {
+    render(
+      <Evidence
+        document={{ ...original, sha256 } as typeof original}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(
+      await screen.findByText(/该版本缺少有效的原件 SHA-256 摘要/),
+    ).toBeVisible();
+    expect(screen.queryByText("PDF")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "下载资料原件" })).toBeNull();
+    expect(vi.mocked(api).mock.calls.map(([path]) => path)).toEqual([
+      `/documents/${original.id}/evidence`,
+    ]);
+  },
+);
+
 it.each(["关闭原件", "关闭侧栏", "unmount"])(
   "ignores late grants after %s",
   async (close) => {
