@@ -19,6 +19,7 @@ import { ResourceState } from "./ResourceState";
 import { useCommand } from "./useCommand";
 import { useResource } from "./useResource";
 import { useDirectory } from "./useDirectory";
+import { ProjectLotRegistration } from "./ProjectLotRegistration";
 
 type Company = BiddingCompanyPage["items"][number];
 function companyLabel(company: Company) {
@@ -229,12 +230,16 @@ function EngineeringPicker({
   onChange,
   disabled = false,
   allowNew = true,
+  currentEngineering,
+  allowRegistration = false,
 }: {
   engineeringId: string;
   roundId: string;
   onChange: (engineeringId: string, roundId: string) => void;
   disabled?: boolean;
   allowNew?: boolean;
+  currentEngineering?: EngineeringIdentityPage["items"][number];
+  allowRegistration?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const projects = useDirectory<EngineeringIdentityPage>(
@@ -247,7 +252,17 @@ function EngineeringPicker({
   );
   const [heldProject, setHeldProject] = useState<
     EngineeringIdentityPage["items"][number] | null
+  >(currentEngineering ?? null);
+  const [registerFor, setRegisterFor] = useState("");
+  const [registeredRound, setRegisteredRound] = useState<
+    EngineeringRoundPage["items"][number] | null
   >(null);
+  const roundOptions = [...rounds.items];
+  if (
+    registeredRound?.engineering_project_id === engineeringId &&
+    !roundOptions.some((round) => round.id === registeredRound.id)
+  )
+    roundOptions.unshift(registeredRound);
   const selected =
     projects.items.find((project) => project.id === engineeringId) ??
     (heldProject?.id === engineeringId ? heldProject : undefined);
@@ -281,6 +296,7 @@ function EngineeringPicker({
           aria-label="关联工程"
           value={engineeringId}
           onChange={(event) => {
+            setRegisterFor("");
             setHeldProject(
               projectOptions.find(
                 (project) => project.id === event.target.value,
@@ -326,10 +342,22 @@ function EngineeringPicker({
                   ? "为所选工程建立新标段／下一轮"
                   : "请选择明确的已有标段与轮次"}
               </option>
-              {rounds.items.map((round) => (
-                <option key={round.id} value={round.id}>
+              {roundOptions.map((round) => (
+                <option
+                  key={round.id}
+                  value={round.id}
+                  disabled={!allowNew && !round.lot_id}
+                >
                   {round.engineering_title} · {round.lot ?? "未注明标段"} · 第
                   {round.round_no}轮
+                  {roundOptions.some(
+                    (other) =>
+                      other.id !== round.id &&
+                      other.lot === round.lot &&
+                      other.round_no === round.round_no,
+                  )
+                    ? ` · ${round.lot_id}`
+                    : ""}
                 </option>
               ))}
             </select>
@@ -348,6 +376,35 @@ function EngineeringPicker({
             error={rounds.moreError}
             onRetry={() => void rounds.loadMore()}
           />
+          {allowRegistration && (
+            <>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() =>
+                  setRegisterFor(
+                    registerFor === engineeringId ? "" : engineeringId,
+                  )
+                }
+              >
+                {registerFor === engineeringId
+                  ? "收起补登"
+                  : "目录缺少对应的标段或轮次？补登记录"}
+              </button>
+              {registerFor === engineeringId && (
+                <ProjectLotRegistration
+                  key={engineeringId}
+                  engineeringId={engineeringId}
+                  onRegistered={(round) => {
+                    setRegisteredRound(round);
+                    onChange(engineeringId, round.id);
+                    setRegisterFor("");
+                    void rounds.reloadFresh();
+                  }}
+                />
+              )}
+            </>
+          )}
         </>
       )}
       <p className="small-note">
@@ -440,6 +497,9 @@ export function CreateIdentityForm({
             />
             关联工程、标段或轮次（可选）
           </label>
+          <p className="small-note">
+            计划使用整包核查时，请按招标文件关联标段与轮次。仅上传和解析资料可先留空。
+          </p>
           {link && (
             <>
               <EngineeringPicker
@@ -533,8 +593,15 @@ export function IdentityPanel({
   const [saved, setSaved] = useState(false);
   const command = useCommand(`identity-correct:${bidId}`);
   const identity = resource.data?.identity;
+  const canCorrect =
+    !!selected &&
+    !!base &&
+    !!reason.trim() &&
+    !!identity &&
+    !command.conflict &&
+    (!(engineeringId || !identity.lot_id) || !!roundId);
   async function correct() {
-    if (!selected || !base) return;
+    if (!selected || !base || !canCorrect) return;
     const body: CorrectBidIdentity = {
       bidder_id: selected.id,
       reason: reason.trim(),
@@ -587,6 +654,8 @@ export function IdentityPanel({
             disabled={command.busy}
             onClick={() => {
               if (!editing) setBase(resource.etag);
+              if (!editing && !identity.lot_id && !engineeringId)
+                setEngineeringId(identity.engineering_project_id);
               setEditing((old) => !old);
               setSaved(false);
             }}
@@ -609,12 +678,28 @@ export function IdentityPanel({
                 onSelect={setSelected}
                 disabled={command.busy}
               />
-              <details>
-                <summary>同时有据纠正工程与已有轮次（可选）</summary>
+              <details open={!identity.lot_id || undefined}>
+                <summary>
+                  {identity.lot_id
+                    ? "同时有据纠正工程与已有轮次（可选）"
+                    : "为本项目关联有据可查的标段与轮次"}
+                </summary>
+                {!identity.lot_id && (
+                  <p className="small-note">
+                    请选择有稳定标段的轮次。标段与轮次可以先登记到工程目录；确认本项目身份还需要投标主体及其依据。
+                  </p>
+                )}
                 <EngineeringPicker
                   engineeringId={engineeringId}
                   roundId={roundId}
                   allowNew={false}
+                  allowRegistration={!identity.lot_id}
+                  currentEngineering={{
+                    id: identity.engineering_project_id,
+                    title: identity.engineering_title,
+                    region: identity.region,
+                    engineering_type: identity.engineering_type,
+                  }}
                   disabled={command.busy}
                   onChange={(engineering, round) => {
                     setEngineeringId(engineering);
@@ -680,14 +765,7 @@ export function IdentityPanel({
               )}
               <button
                 className="button primary"
-                disabled={
-                  command.busy ||
-                  !selected ||
-                  !reason.trim() ||
-                  !base ||
-                  command.conflict ||
-                  (!!engineeringId && !roundId)
-                }
+                disabled={command.busy || !canCorrect}
               >
                 {command.busy ? "正在记录身份依据…" : "确认本项目身份"}
               </button>

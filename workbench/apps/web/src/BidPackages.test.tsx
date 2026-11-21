@@ -182,6 +182,51 @@ beforeEach(() => {
   localStorage.clear();
 });
 
+it.each(["snapshot", "rejection"])(
+  "缺稳定标段可在另一标签页处理，核对后保留成员并保存（%s）",
+  async (mode) => {
+    const user = userEvent.setup();
+    let corrected = false;
+    const { writes } = install((url, options) => {
+      if (url.endsWith("/bids/bid/identity"))
+        return json({
+          identity: {
+            ...frozen.identity,
+            lot_id: mode === "rejection" || corrected ? "lot" : null,
+          },
+        });
+      if (options?.method === "POST" && !corrected)
+        return json(
+          { code: "PACKAGE_STABLE_LOT_REQUIRED", message: "资料包操作未完成" },
+          undefined,
+          422,
+        );
+    });
+    render(<BidPackages bidId="bid" />);
+    const choice = await screen.findByRole("checkbox", {
+      name: "选择 技术册.pdf 版本 1",
+    });
+    await user.click(choice);
+    const save = screen.getByRole("button", { name: "保存新资料包" });
+    if (mode === "rejection") await user.click(save);
+    const settings = await screen.findByRole("link", {
+      name: "在新标签页打开本项目设置",
+    });
+    expect(settings).toHaveAttribute("href", "/bids/bid/settings");
+    expect(settings).toHaveAttribute("target", "_blank");
+    expect(save).toBeDisabled();
+    expect(writes).toHaveLength(mode === "rejection" ? 1 : 0);
+    corrected = true;
+    await user.click(
+      screen.getByRole("button", { name: "已处理，重新核对标段" }),
+    );
+    await waitFor(() => expect(save).toBeEnabled());
+    expect(choice).toBeChecked();
+    await user.click(save);
+    await screen.findByText(/已保存修订 1/);
+  },
+);
+
 it("受控Word派生来源单独显示并可选，不冒充上传核验", async () => {
   const user = userEvent.setup();
   const { writes } = install((url) =>

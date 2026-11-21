@@ -66,6 +66,118 @@ beforeEach(() => {
     expires_at: "2099-01-01T00:00:00Z",
   });
 });
+it("在原项目补登有依据的标段和轮次，再独立确认投标主体，不创建第二个项目", async () => {
+  const user = userEvent.setup();
+  const writes: { path: string; body: unknown; etag: string | null }[] = [];
+  const project = {
+    id: "engineering",
+    title: "原工程",
+    region: null,
+    engineering_type: null,
+  };
+  const lot = {
+    id: "lot",
+    engineering_project_id: project.id,
+    label: "合成标段",
+  };
+  const round = {
+    id: "stable-round",
+    lot: lot.label,
+    lot_id: lot.id,
+    engineering_project_id: project.id,
+    round_no: 2,
+    engineering_title: project.title,
+    region: null,
+    engineering_type: null,
+  };
+  const initial = {
+    ...identity,
+    identity: { ...identity.identity, lot_id: null, lot: null },
+  };
+  const page = (items: unknown[]) =>
+    json({ items, has_more: false, next_cursor: null });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string, options?: RequestInit) => {
+      if (["POST", "PUT"].includes(options?.method ?? "")) {
+        writes.push({
+          path: url,
+          body: JSON.parse(String(options?.body)),
+          etag: new Headers(options?.headers).get("If-Match"),
+        });
+        if (url.endsWith("/identity/lots")) return json(lot, 201);
+        if (url.endsWith("/identity/rounds")) return json(round, 201);
+        return json(initial, 200, '"bid-new"');
+      }
+      if (url.includes("/identity/bidders")) return json(companies);
+      if (url.includes("/identity/engineering-projects"))
+        return page([project]);
+      if (url.includes("/identity/lots?"))
+        return page(writes.length ? [lot] : []);
+      if (url.includes("/identity/rounds?"))
+        return page([
+          { ...round, id: "old", lot: null, lot_id: null, round_no: 1 },
+        ]);
+      return json(initial, 200, '"bid-old"');
+    }),
+  );
+  const saved = vi.fn();
+  render(<IdentityPanel bidId="bid" onSaved={saved} />);
+  await user.click(
+    await screen.findByRole("button", { name: "确认本项目投标主体" }),
+  );
+  expect(
+    await screen.findByRole("option", { name: /未注明标段.*第1轮/ }),
+  ).toBeDisabled();
+  await user.click(screen.getByRole("button", { name: /补登记录/ }));
+  await user.type(screen.getByLabelText("新标段名称或编号"), lot.label);
+  await user.type(screen.getByLabelText("标段登记依据"), "招标文件第三页");
+  await user.click(screen.getByRole("button", { name: "登记工程标段" }));
+  await user.type(await screen.findByLabelText("要登记的招标轮次"), "2");
+  await user.type(screen.getByLabelText("轮次登记依据"), "第二次招标公告");
+  await user.click(screen.getByRole("button", { name: "登记并选用此轮次" }));
+  await waitFor(() =>
+    expect(screen.getByLabelText("标段与轮次")).toHaveValue("stable-round"),
+  );
+  expect(writes.map((entry) => entry.path)).toEqual([
+    "/api/v1/identity/lots",
+    "/api/v1/identity/rounds",
+  ]);
+  expect(writes[0].body).toEqual({
+    engineering_project_id: project.id,
+    label: lot.label,
+    reason: "招标文件第三页",
+  });
+  expect(writes[1].body).toEqual({
+    engineering_project_id: project.id,
+    lot_id: lot.id,
+    round_no: 2,
+    reason: "第二次招标公告",
+  });
+  const confirm = screen.getByRole("button", { name: "确认本项目身份" });
+  expect(confirm).toBeDisabled();
+  expect(saved).not.toHaveBeenCalled();
+  await user.selectOptions(
+    screen.getByLabelText("本次选择的投标主体"),
+    "company-b",
+  );
+  expect(confirm).toBeDisabled();
+  await user.type(
+    screen.getByLabelText("本次选择与纠正依据"),
+    "已核对本轮投标人的授权文件",
+  );
+  await user.click(confirm);
+  await waitFor(() => expect(saved).toHaveBeenCalledOnce());
+  expect(writes[2]).toEqual({
+    path: "/api/v1/bids/bid/identity",
+    body: {
+      bidder_id: "company-b",
+      round_id: "stable-round",
+      reason: "已核对本轮投标人的授权文件",
+    },
+    etag: '"bid-old"',
+  });
+});
 it("真实默认主体在表单可见，创建一次即绑定所选ID，无第二次确认且不按近似名合并", async () => {
   const user = userEvent.setup();
   const writes: RequestInit[] = [];

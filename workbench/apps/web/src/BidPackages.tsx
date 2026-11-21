@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { api, ApiError, roleNames, supportsApi } from "./api";
 import type {
   AppendBidPackage,
+  BidIdentityView,
   BidPackageDocumentPage,
   BidPackageHeadPage,
   BidPackageParsePage,
@@ -132,6 +133,15 @@ function PackageWorkspace({
   navigation?: Navigation;
 }) {
   const path = `/bids/${bidId}/packages`;
+  const identity = useResource<BidIdentityView>(`/bids/${bidId}/identity`);
+  const [lotRejection, setLotRejection] = useState<{
+    snapshot?: BidIdentityView;
+  } | null>(null);
+  const lotMissing =
+    identity.data?.identity?.lot_id === null ||
+    (!!lotRejection &&
+      (!identity.data?.identity?.lot_id ||
+        lotRejection.snapshot === identity.data));
   const deepState = usePackageScopeState();
   const [recovery] = useState(() => restorePending(bidId, memberId));
   const [pending, setPending] = useState<Pending | null>(recovery.pending);
@@ -383,7 +393,7 @@ function PackageWorkspace({
       !draft.length ||
       busy ||
       childLocked ||
-      (!pending && disabled) ||
+      (!pending && (disabled || lotMissing)) ||
       conflict ||
       recovery.blocked
     )
@@ -478,7 +488,13 @@ function PackageWorkspace({
       void packages.reload();
     } catch (failure) {
       if (active.current) {
-        setError(failure);
+        if (
+          failure instanceof ApiError &&
+          failure.code === "PACKAGE_STABLE_LOT_REQUIRED"
+        ) {
+          setLotRejection({ snapshot: identity.data });
+          setError(null);
+        } else setError(failure);
         const definitive =
           failure instanceof ApiError &&
           failure.status >= 400 &&
@@ -876,6 +892,33 @@ function PackageWorkspace({
         </div>
       )}
       <h3>{base ? "编辑下一修订" : "建立新资料包"}</h3>
+      {lotMissing && (
+        <div className="notice warning">
+          <div>
+            <strong>保存资料包前，请先关联本项目的标段与轮次</strong>
+            <p>
+              请根据招标文件核对标段及轮次，在项目设置中选用已有记录或补登，并凭依据确认本项目的投标主体。资料可以继续入库。
+            </p>
+            <a
+              className="text-button"
+              href={`/bids/${encodeURIComponent(bidId)}/settings`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              在新标签页打开本项目设置
+            </a>{" "}
+            <button
+              type="button"
+              className="text-button"
+              disabled={identity.loading}
+              onClick={() => void identity.reloadFresh()}
+            >
+              已处理，重新核对标段
+            </button>
+            <ErrorNotice error={identity.error} />
+          </div>
+        </div>
+      )}
       <ResourceState
         {...documents}
         hasData={!!documents.data}
@@ -1037,7 +1080,7 @@ function PackageWorkspace({
         <button
           className="button primary"
           disabled={
-            (!pending && disabled) ||
+            (!pending && (disabled || lotMissing)) ||
             busy ||
             conflict ||
             !draft.length ||
