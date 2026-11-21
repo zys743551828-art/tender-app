@@ -571,6 +571,8 @@ const failedPreparation = {
 };
 
 it("shows the empty rules workspace for a new project without offering a retry or manual recovery", async () => {
+  const navigate = vi.fn();
+  const user = userEvent.setup();
   let resolveSources!: (response: Response) => void;
   const sources = new Promise<Response>((resolve) => {
     resolveSources = resolve;
@@ -588,7 +590,7 @@ it("shows the empty rules workspace for a new project without offering a retry o
     <ProjectWorkspace
       id={bid.id}
       route={`/bids/${bid.id}/rules`}
-      onNavigate={vi.fn()}
+      onNavigate={navigate}
       onBack={vi.fn()}
     />,
   );
@@ -607,6 +609,14 @@ it("shows the empty rules workspace for a new project without offering a retry o
   expect(
     screen.queryByRole("button", { name: /重试|人工建立要求清单/ }),
   ).not.toBeInTheDocument();
+  const openMaterials = screen.getByRole("button", { name: "打开项目资料" });
+  openMaterials.focus();
+  await user.tab({ shift: true });
+  expect(openMaterials).not.toHaveFocus();
+  await user.tab();
+  expect(openMaterials).toHaveFocus();
+  await user.keyboard("{Enter}");
+  expect(navigate).toHaveBeenCalledWith("materials");
 });
 
 it.each([
@@ -629,12 +639,22 @@ it.each([
       if (String(input).endsWith("/rules")) return noRules();
       return json({ ...failedPreparation, kind, state: status });
     });
-    render(<RulesPanel bid={bid} reviewState={progress} onChanged={vi.fn()} />);
+    render(
+      <RulesPanel
+        bid={bid}
+        reviewState={progress}
+        onChanged={vi.fn()}
+        onMaterials={vi.fn()}
+      />,
+    );
     expect(await screen.findByText(label)).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "人工建立要求清单" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "打开项目资料" }),
+    ).not.toBeInTheDocument();
   },
 );
 
@@ -684,6 +704,7 @@ it("offers explicitly partial manual initial entry after a failed current rules 
       bid={bid}
       reviewState={blockedReviewState}
       onChanged={vi.fn()}
+      onMaterials={vi.fn()}
     />,
   );
   const alert = await screen.findByRole("alert");
@@ -694,6 +715,9 @@ it("offers explicitly partial manual initial entry after a failed current rules 
   operationReadable = true;
   await userEvent.click(within(alert).getByRole("button", { name: "重试" }));
   expect(await screen.findByText(/本次要求提取失败/)).toBeVisible();
+  expect(
+    screen.queryByRole("button", { name: "打开项目资料" }),
+  ).not.toBeInTheDocument();
   await userEvent.click(
     await screen.findByRole("button", { name: "人工建立要求清单" }),
   );

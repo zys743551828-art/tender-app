@@ -480,6 +480,7 @@ export function ProjectWorkspace({
                 reviewState={state}
                 reviewStateError={stateError}
                 onChanged={refresh}
+                onMaterials={() => onNavigate("materials")}
               />
             </>
           )}

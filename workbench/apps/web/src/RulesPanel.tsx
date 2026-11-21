@@ -22,11 +22,13 @@ export function RulesPanel({
   reviewState,
   reviewStateError,
   onChanged,
+  onMaterials,
 }: {
   bid: Bid;
   reviewState?: ReviewStateView;
   reviewStateError?: unknown;
   onChanged: () => void;
+  onMaterials?: () => void;
 }) {
   const resource = useResource<RuleSetView>(`/bids/${bid.id}/rules`);
   const notReady =
@@ -39,6 +41,8 @@ export function RulesPanel({
     reviewState.material_revision === bid.material_revision
       ? reviewState
       : undefined;
+  const needsMaterials =
+    state?.current_material_snapshot_id === null && state.request === null;
   const request =
     state?.request &&
     state.request.material_snapshot_id === state.current_material_snapshot_id &&
@@ -128,15 +132,26 @@ export function RulesPanel({
               </button>
             </div>
           ) : (
-            <p className="small-empty" role="status">
-              {state?.current_material_snapshot_id === null
-                ? "尚未生成要求清单。请先在「项目资料」上传招标原件和受检正文。"
-                : request?.state === "preparing"
-                  ? "正在准备本轮要求，清单生成后可在这里核对。"
-                  : blocked
-                    ? "本次准备未完成。请在「处理记录」查看具体原因。"
-                    : "尚未生成要求清单。请在「项目资料」核对招标原件和受检正文，再开始评审。"}
-            </p>
+            <div className="small-empty resource-empty">
+              <p role="status">
+                {needsMaterials
+                  ? "尚未生成要求清单。请先在「项目资料」上传招标原件和受检正文。"
+                  : request?.state === "preparing"
+                    ? "正在准备本轮要求，清单生成后可在这里核对。"
+                    : blocked
+                      ? "本次准备未完成。请在「处理记录」查看具体原因。"
+                      : "尚未生成要求清单。请在「项目资料」核对招标原件和受检正文，再开始评审。"}
+              </p>
+              {needsMaterials && onMaterials && (
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={onMaterials}
+                >
+                  打开项目资料
+                </button>
+              )}
+            </div>
           ))}
         {resource.data && (
           <div className="rules-intro">
