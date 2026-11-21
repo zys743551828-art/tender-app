@@ -1762,6 +1762,9 @@ tbody tr:hover {
   }
 }
 @media (max-width: 480px) {
+  .project-page > .page-heading > div {
+    flex-basis: 100%;
+  }
   .topbar .breadcrumb-separator {
     padding-inline: 6px;
   }
@@ -3038,8 +3041,12 @@ textarea:focus-visible {
 @media (max-width: 640px) {
   .workspace-nav-tools {
     flex-wrap: wrap;
-    gap: 0;
+    gap: 8px;
     margin-bottom: 16px;
+  }
+  .workspace-nav-tools > .button {
+    min-height: 44px;
+    margin-top: 0;
   }
   .workspace-nav-tools .workspace-navigation {
     flex-basis: 100%;

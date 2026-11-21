@@ -190,7 +190,7 @@ async function checkProject(page, scale, section) {
     );
     items.push(box);
   }
-  if (scale === 2) {
+  if (page.viewportSize().width <= 480) {
     const titleBox = await title.boundingBox();
     const headerBox = await page
       .locator(".project-page > .page-heading")
@@ -202,8 +202,21 @@ async function checkProject(page, scale, section) {
     assert(
       titleBox.width >= headerBox.width - 1 &&
         (await upload.boundingBox()).y >= titleBox.y + titleBox.height - 1,
-      "The upload button crowds the enlarged title",
+      "The upload button crowds the project title on a phone",
     );
+    const assistant = await page
+      .getByRole("button", { name: "项目助手", exact: true })
+      .boundingBox();
+    const sources = await page
+      .getByRole("button", { name: "查证资料", exact: true })
+      .boundingBox();
+    assert(
+      sources.x >= assistant.x + assistant.width + 7 ||
+        sources.y >= assistant.y + assistant.height + 7,
+      "Adjacent project actions need a visible gap",
+    );
+  }
+  if (scale === 2) {
     await fitsNativeSelect(picker);
     await fitsNativeSelect(theme);
   }
@@ -290,6 +303,7 @@ try {
     for (const [width, height, scale] of [
       [1440, 900, 1],
       [640, 450, 1],
+      [390, 844, 1],
       [390, 844, 2],
       [320, 640, 2],
     ]) {
